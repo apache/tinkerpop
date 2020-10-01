@@ -44,6 +44,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.identity;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.junit.Assert.assertEquals;
@@ -182,6 +183,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX();
+
+    // triggers labelled path requirements
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXperson_name_markoX_barrier_asXaX_outXknows_selectXaX();
+
+    public abstract Traversal<Vertex, String> get_g_V_hasXperson_name_markoX_elementMapXnameX_asXaX_unionXidentity_identityX_selectXaX_selectXnameX();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasXperson_name_markoX_count_asXaX_unionXidentity_identityX_selectXaX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -847,6 +858,34 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(convertToVertex(graph, "ripple"), convertToVertex(graph, "lop")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXperson_name_markoX_barrier_asXaX_outXknows_selectXaX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXperson_name_markoX_barrier_asXaX_outXknows_selectXaX();
+        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "marko")), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXperson_name_markoX_elementMapXnameX_asXaX_unionXidentity_identityX_selectXaX_selectXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasXperson_name_markoX_elementMapXnameX_asXaX_unionXidentity_identityX_selectXaX_selectXnameX();
+        checkResults(Arrays.asList("marko", "marko"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXperson_name_markoX_count_asXaX_unionXidentity_identityX_selectXaX() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXperson_name_markoX_count_asXaX_unionXidentity_identityX_selectXaX();
+        checkResults(Arrays.asList(1L, 1L), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold();
+        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "marko")), traversal);
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -1149,6 +1188,26 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX(final Object v1Id) {
             return g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.last, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXperson_name_markoX_barrier_asXaX_outXknows_selectXaX() {
+            return g.V().has("person","name","marko").barrier().as("a").out("knows").select("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasXperson_name_markoX_elementMapXnameX_asXaX_unionXidentity_identityX_selectXaX_selectXnameX() {
+            return g.V().has("person","name","marko").elementMap("name").as("a").union(identity(),identity()).select("a").select("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXperson_name_markoX_count_asXaX_unionXidentity_identityX_selectXaX() {
+            return g.V().has("person","name","marko").count().as("a").union(identity(),identity()).select("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold() {
+            return g.V().has("person","name","marko").path().as("a").union(identity(),identity()).select("a").unfold();
         }
     }
 }

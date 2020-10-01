@@ -63,8 +63,8 @@ your particular environment.
 #!/bin/bash
 # Variables to be adapted to the actual environment
 GREMLIN_HOME=/home/yourdir/lib/apache-tinkerpop-gremlin-console-x.y.z-standalone
-export HADOOP_HOME=/usr/local/lib/hadoop-2.7.2
-export HADOOP_CONF_DIR=/usr/local/lib/hadoop-2.7.2/etc/hadoop
+export HADOOP_HOME=/usr/local/lib/hadoop-2.7.7
+export HADOOP_CONF_DIR=/usr/local/lib/hadoop-2.7.7/etc/hadoop
 
 # Have TinkerPop find the hadoop cluster configs and hadoop native libraries
 export CLASSPATH=$HADOOP_CONF_DIR
@@ -105,7 +105,7 @@ conf.setProperty('spark.executor.extraLibraryPath', "$hadoop/lib/native:$hadoop/
 conf.setProperty('gremlin.spark.persistContext', 'true')
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 graph = GraphFactory.open(conf)
-g = graph.traversal().withComputer(SparkGraphComputer)
+g = traversal().withEmbedded(graph).withComputer(SparkGraphComputer)
 g.V().group().by(values('name')).by(both().count())
 ----
 

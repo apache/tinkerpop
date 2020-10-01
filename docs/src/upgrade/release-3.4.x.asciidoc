@@ -30,14 +30,84 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
-== TinkerPop 3.4.8
+== TinkerPop 3.4.9
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== withEmbedded()
+
+The `AnonymousTraversalSource` was introduced in 3.3.5 and is most typically used for constructing remote
+`TraversalSource` instances, but it also provides a way to construct a `TraversalSource` from an embedded `Graph`
+instance:
+
+[source,text]
+----
+gremlin> g = traversal().withGraph(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using('localhost',8182))
+==>graphtraversalsource[emptygraph[empty], standard]
+----
+
+The `withGraph(Graph)` method is now deprecated in favor the new `withEmbedded(Graph)` method that is more explicit
+about its intent:
+
+[source,text]
+----
+gremlin> g = traversal().withEmbedded(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+----
+
+This change is mostly applicable to JVM languages where embedded `Graph` instances are available. For Gremlin Language
+Variants not on the JVM, the `withGraph(Graph)` method has simply been deprecated and not replaced (with the preference
+to use `withRemote()` variants).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2413[TINKERPOP-2413]
+
+==== TraversalStrategy in Javascript
+
+Using `SubgraphStrategy`, `PartitionStrategy` and other `TraversalStrategy` implementations is now possible in
+Javascript.
+
+[source,javascript]
+----
+const sg = g.withStrategies(
+          new SubgraphStrategy({vertices:__.hasLabel("person"), edges:__.hasLabel("created")}));
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2054[TINKERPOP-2054]
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== Custom TraverserSet
+
+It is now possible to provide a custom `TraverserSet` to `Step` implementations that make use of those objects to
+introduce new logic for how they are populated and managed. Providers can take advantage of this capability by
+constructing their own `Traversal` implementation and overriding the `getTraverserSetSupplier()` method. When new
+`TraverserSet` instances are needed during traversal execution, steps will consult this method to get those instances.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2396[TINKERPOP-2396]
+
+== TinkerPop 3.4.8
+
+*Release Date: August 3, 2020*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.8/CHANGELOG.asciidoc#release-3-4-8[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
 
+==== Gremlin.NET: Automatic Reconnect
+
+The Gremlin.NET driver now automatically tries to reconnect to a server when no open connection is available to submit
+a request. This should enable the driver to handle cases where the server is only temporarily unavailable or where the
+server has closed connections which some graph providers do when no requests were sent for some time.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2288[TINKERPOP-2288]
 
 == TinkerPop 3.4.7
 
@@ -54,14 +124,6 @@ Gremlin Console now has the `:cls` command to clear the screen. This feature act
 specific clear operations and provides a common way to perform that function.
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2357[TINKERPOP-2357]
-
-==== Gremlin.NET: Automatic Reconnect
-
-The Gremlin.NET driver now automatically tries to reconnect to a server when no open connection is available to submit
-a request. This should enable the driver to handle cases where the server is only temporarily unavailable or where the
-server has closed connections which some graph providers do when no requests were sent for some time.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2288[TINKERPOP-2288]
 
 == TinkerPop 3.4.6
 

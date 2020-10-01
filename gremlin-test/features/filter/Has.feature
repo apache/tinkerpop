@@ -117,6 +117,18 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  Scenario: g_V_hasXlabel_isXsoftwareXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has(T.label, __.is('software'))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+      | v[ripple] |
+
   Scenario: g_VX1X_hasXage_gt_30X
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"

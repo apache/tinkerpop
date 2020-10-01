@@ -29,6 +29,12 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Java 11
+
+TinkerPop now builds and is compatible with Java 11.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2076[TINKERPOP-2076]
+
 ==== Anonymous Child Traversals
 
 TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
@@ -70,7 +76,7 @@ advisable to take this approach.
 
 For best compatibility between 3.4.x and 3.5.x, please use GraphBinary.
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
 
 ==== Configuration Upgrade
 
@@ -235,6 +241,28 @@ be replaced by `by(id)`, thus replacing a step-based traversal with a token-base
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
+==== SeedStrategy
+
+The new `SeedStrategy` allows the user to set a seed value for steps that make use of `Random` so that the traversal
+has the ability to return deterministic results. While this feature is useful for testing and debugging purposes,
+there are also some practical applications as well.
+
+[source,text]
+----
+gremlin> g.V().values('name').fold().order(local).by(shuffle)
+==>[josh,marko,vadas,peter,ripple,lop]
+gremlin> g.V().values('name').fold().order(local).by(shuffle)
+==>[vadas,lop,marko,peter,josh,ripple]
+gremlin> g.V().values('name').fold().order(local).by(shuffle)
+==>[peter,ripple,josh,lop,marko,vadas]
+gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
+==>[lop,peter,josh,marko,vadas,ripple]
+gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
+==>[lop,peter,josh,marko,vadas,ripple]
+gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
+==>[lop,peter,josh,marko,vadas,ripple]
+----
+
 ==== by(T) for Property
 
 The `Property` interface is not included in the hierarchy of `Element`. This means that an edge property or a
@@ -264,6 +292,20 @@ appropriate token versions automatically.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
+==== Complex dict Deserialization
+
+In Gremlin it is common to return a `dict` as a key value in another `dict`. The problem for Python is that a `dict`
+is not hashable and will result in an error. By introducing a `HashableDict` for those keys, it is now possible to
+return these types of results and not have to work around them:
+
+[source,text]
+----
+>>> g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+{{<T.id: 1>: 1, <T.label: 4>: 'person', 'name': 'marko'}: 1}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395]
+
 ==== Python 2.x Support
 
 The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from
@@ -273,6 +315,19 @@ change means that the `GremlinJythonScriptEngine` no longer exists and there is 
 All lambdas should be written using `gremlin-groovy` if they are needed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
+
+==== Python Kerberos Support
+
+The Python Driver now supports Kerberos based authentication:
+
+[source,python]
+----
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
+link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
 
 ==== .NET Standard 2.0 Only
 

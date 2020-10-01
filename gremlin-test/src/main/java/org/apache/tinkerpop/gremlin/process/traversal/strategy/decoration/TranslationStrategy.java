@@ -60,6 +60,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             PartitionStrategy.class,
             RequirementsStrategy.class,
             SackStrategy.class,
+            SeedStrategy.class,
             SideEffectStrategy.class,
             SubgraphStrategy.class,
             RemoteStrategy.class,

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Seedable;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
@@ -36,15 +37,20 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleLocalStep<S> extends ScalarMapStep<S, S> {
+public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements Seedable {
 
-    private static final Random RANDOM = new Random();
+    private final Random random = new Random();
 
     private final int amountToSample;
 
     public SampleLocalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
         this.amountToSample = amountToSample;
+    }
+
+    @Override
+    public void resetSeed(final long seed) {
+        this.random.setSeed(seed);
     }
 
     @Override
@@ -66,7 +72,7 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> {
         final List<S> original = new ArrayList<>(collection);
         final List<S> target = new ArrayList<>();
         while (target.size() < this.amountToSample) {
-            target.add(original.remove(RANDOM.nextInt(original.size())));
+            target.add(original.remove(random.nextInt(original.size())));
         }
         return (S) target;
     }
@@ -78,7 +84,7 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> {
         final List<Map.Entry> original = new ArrayList<>(map.entrySet());
         final Map target = new LinkedHashMap<>(this.amountToSample);
         while (target.size() < this.amountToSample) {
-            final Map.Entry entry = original.remove(RANDOM.nextInt(original.size()));
+            final Map.Entry entry = original.remove(random.nextInt(original.size()));
             target.put(entry.getKey(), entry.getValue());
         }
         return (S) target;

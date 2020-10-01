@@ -35,6 +35,9 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -55,7 +58,7 @@ public interface Channelizer extends ChannelHandler {
     public void init(final Connection connection);
 
     /**
-     * Called on {@link Connection#close()} to perform an {@code Channelizer} specific functions.  Note that the
+     * Called on {@link Connection#closeAsync()} to perform an {@code Channelizer} specific functions.  Note that the
      * {@link Connection} already calls {@code Channel.close()} so there is no need to call that method here.
      * An implementation will typically use this method to send a {@code Channelizer} specific message to the
      * server to notify of shutdown coming from the client side (e.g. a "close" websocket frame).
@@ -145,6 +148,7 @@ public interface Channelizer extends ChannelHandler {
      * WebSocket {@link Channelizer} implementation.
      */
     public final class WebSocketChannelizer extends AbstractChannelizer {
+        private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
         private WebSocketClientHandler handler;
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
@@ -177,7 +181,12 @@ public interface Channelizer extends ChannelHandler {
          */
         @Override
         public void close(final Channel channel) {
-            if (channel.isOpen()) channel.writeAndFlush(new CloseWebSocketFrame());
+            if (channel.isOpen()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Sending CloseWS frame to server.");
+                }
+                channel.writeAndFlush(new CloseWebSocketFrame());
+            }
         }
 
         @Override

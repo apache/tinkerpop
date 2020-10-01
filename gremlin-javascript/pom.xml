@@ -29,10 +29,21 @@ limitations under the License.
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
+        <npm.version>6.14.6</npm.version>
+        <node.version>v10.22.0</node.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.10.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <!--
@@ -46,6 +57,11 @@ limitations under the License.
                     <dependency>
                         <groupId>org.apache.tinkerpop</groupId>
                         <artifactId>gremlin-server</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>gremlin-test</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -64,24 +80,19 @@ limitations under the License.
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>generate-javascript</id>
+                        <id>update-version</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <properties>
-                                <property>
-                                    <name>projectBaseDir</name>
-                                    <value>${project.basedir}</value>
-                                </property>
-                                <property>
-                                    <name>projectVersion</name>
-                                    <value>${project.version}</value>
-                                </property>
-                            </properties>
                             <scripts>
-                                <script>${project.basedir}/glv/generate.groovy</script>
+                                <script>
+def mavenVersion = "${project.version}"
+def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
+def file = new File("${project.basedir}/src/main/javascript/gremlin-javascript/package.json")
+file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
+                                </script>
                             </scripts>
                         </configuration>
                     </execution>
@@ -157,7 +168,6 @@ limitations under the License.
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.7.6</version>
                 <executions>
                     <execution>
                         <id>install node and npm</id>
@@ -213,7 +223,8 @@ limitations under the License.
                 </executions>
                 <configuration>
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                    <nodeVersion>v6.12.3</nodeVersion>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <npmVersion>${npm.version}</npmVersion>
                 </configuration>
             </plugin>
             <!--
@@ -269,7 +280,6 @@ limitations under the License.
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
-                        <version>1.4</version>
                         <executions>
                             <execution>
                                 <id>npm publish</id>
@@ -290,7 +300,8 @@ limitations under the License.
                             -->
                             <skip>false</skip>
                             <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                            <nodeVersion>v6.12.3</nodeVersion>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                     </plugin>
                 </plugins>

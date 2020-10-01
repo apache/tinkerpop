@@ -29,4 +29,12 @@ def serverSecure = project.getContextValue("gremlin.server.secure")
 log.info("Shutting down $serverSecure")
 serverSecure.stop().join()
 
+def kdcServer = project.getContextValue("gremlin.server.kdcserver")
+log.info("Shutting down $kdcServer")
+kdcServer.close()
+
+def serverKrb5 = project.getContextValue("gremlin.server.krb5")
+log.info("Shutting down $serverKrb5")
+serverKrb5.stop().join()
+
 log.info("All Gremlin Server instances are shutdown for ${executionName}")

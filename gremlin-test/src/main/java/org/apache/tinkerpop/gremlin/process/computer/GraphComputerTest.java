@@ -1168,6 +1168,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     /////////////////////////////////////////////
 
     /////////////////////////////////////////////
+
     @Test
     @LoadGraphWith(MODERN)
     public void shouldStartAndEndWorkersForVertexProgramAndMapReduce() throws Exception {
@@ -1175,17 +1176,17 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         MapReduceI.WORKER_END.clear();
         assertEquals(3, graphProvider.getGraphComputer(graph).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get().memory().<Integer>get("a").intValue());
         if (MapReduceI.WORKER_START.size() == 2) {
-            assertEquals(2, MapReduceI.WORKER_START.size());
+            assertEquals(2, MapReduceI.countTrue(MapReduceI.WORKER_START));
             assertTrue(MapReduceI.WORKER_START.contains(MapReduce.Stage.MAP) && MapReduceI.WORKER_START.contains(MapReduce.Stage.REDUCE));
         } else {
-            assertEquals(3, MapReduceI.WORKER_START.size());
+            assertEquals(3, MapReduceI.countTrue(MapReduceI.WORKER_START));
             assertTrue(MapReduceI.WORKER_START.contains(MapReduce.Stage.MAP) && MapReduceI.WORKER_START.contains(MapReduce.Stage.COMBINE) && MapReduceI.WORKER_START.contains(MapReduce.Stage.REDUCE));
         }
         if (MapReduceI.WORKER_END.size() == 2) {
-            assertEquals(2, MapReduceI.WORKER_END.size());
+            assertEquals(2, MapReduceI.countTrue(MapReduceI.WORKER_END));
             assertTrue(MapReduceI.WORKER_END.contains(MapReduce.Stage.MAP) && MapReduceI.WORKER_END.contains(MapReduce.Stage.REDUCE));
         } else {
-            assertEquals(3, MapReduceI.WORKER_END.size());
+            assertEquals(3, MapReduceI.countTrue(MapReduceI.WORKER_END));
             assertTrue(MapReduceI.WORKER_END.contains(MapReduce.Stage.MAP) && MapReduceI.WORKER_END.contains(MapReduce.Stage.COMBINE) && MapReduceI.WORKER_END.contains(MapReduce.Stage.REDUCE));
         }
     }
@@ -1272,14 +1273,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, Integer> emitter) {
             emitter.emit(1);
-            assertEquals(1, WORKER_START.size());
+            assertEquals(1, countTrue(WORKER_START));
             assertTrue(WORKER_START.contains(Stage.MAP));
         }
 
         @Override
         public void combine(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
             emitter.emit(2);
-            assertEquals(2, WORKER_START.size());
+            assertEquals(2, countTrue(WORKER_START));
             assertTrue(WORKER_START.contains(Stage.MAP) && WORKER_START.contains(Stage.COMBINE));
             assertFalse(WORKER_END.isEmpty());
         }
@@ -1287,11 +1288,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void reduce(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
             emitter.emit(3);
-            if (WORKER_START.size() == 2) {
-                assertEquals(2, WORKER_START.size());
+            if (IteratorUtils.count(WORKER_START) == 2) {
+                assertEquals(2, countTrue(WORKER_START));
                 assertTrue(WORKER_START.contains(Stage.MAP) && WORKER_START.contains(Stage.REDUCE));
             } else {
-                assertEquals(3, WORKER_START.size());
+                assertEquals(3, countTrue(WORKER_START));
                 assertTrue(WORKER_START.contains(Stage.MAP) && WORKER_START.contains(Stage.COMBINE) && WORKER_START.contains(Stage.REDUCE));
             }
             assertFalse(WORKER_END.isEmpty());
@@ -1314,6 +1315,15 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public String getMemoryKey() {
             return "a";
+        }
+
+        /**
+         * Javadoc for {@code ConcurrentSkipListSet} includes this little note: "Beware that, unlike in most
+         * collections, the size method is not a constant-time operation." Doing a traversal of elements will yield
+         * the correct count. Java 11 upgrade seemed to force this failure consistently.
+         */
+        static int countTrue(final Set<Stage> s) {
+            return Long.valueOf(IteratorUtils.count(s)).intValue();
         }
     }
 

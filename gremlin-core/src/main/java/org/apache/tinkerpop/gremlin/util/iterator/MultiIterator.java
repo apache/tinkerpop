@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.iterator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MultiIterator<T> implements Iterator<T>, Serializable {
+public final class MultiIterator<T> implements Iterator<T>, Serializable, AutoCloseable {
 
     private final List<Iterator<T>> iterators = new ArrayList<>();
     private int current = 0;
@@ -85,4 +86,14 @@ public final class MultiIterator<T> implements Iterator<T>, Serializable {
         this.current = 0;
     }
 
+    /**
+     * Close the underlying iterators if auto-closeable. Note that when Exception is thrown from any iterator
+     * in the for loop on closing, remaining iterators possibly left unclosed.
+     */
+    @Override
+    public void close() {
+        for (Iterator<T> iterator : this.iterators) {
+            CloseableIterator.closeIterator(iterator);
+        }
+    }
 }

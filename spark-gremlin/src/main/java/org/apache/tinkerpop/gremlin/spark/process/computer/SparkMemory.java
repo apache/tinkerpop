@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
-import org.apache.spark.Accumulator;
+import org.apache.spark.util.AccumulatorV2;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class SparkMemory implements Memory.Admin, Serializable {
 
     public final Map<String, MemoryComputeKey> memoryComputeKeys = new HashMap<>();
-    private final Map<String, Accumulator<ObjectWritable>> sparkMemory = new HashMap<>();
+    private final Map<String, AccumulatorV2<ObjectWritable,ObjectWritable>> sparkMemory = new HashMap<>();
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
     private Broadcast<Map<String, Object>> broadcast;
@@ -62,9 +62,9 @@ public final class SparkMemory implements Memory.Admin, Serializable {
             this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), Operator.assign, false, false));
         }
         for (final MemoryComputeKey memoryComputeKey : this.memoryComputeKeys.values()) {
-            this.sparkMemory.put(
-                    memoryComputeKey.getKey(),
-                    sparkContext.accumulator(ObjectWritable.empty(), memoryComputeKey.getKey(), new MemoryAccumulator<>(memoryComputeKey)));
+            final AccumulatorV2<ObjectWritable, ObjectWritable> accumulator = new MemoryAccumulator<>(memoryComputeKey);
+            JavaSparkContext.toSparkContext(sparkContext).register(accumulator, memoryComputeKey.getKey());
+            this.sparkMemory.put(memoryComputeKey.getKey(), accumulator);
         }
         this.broadcast = sparkContext.broadcast(Collections.emptyMap());
     }
@@ -135,8 +135,10 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         checkKeyValue(key, value);
         if (this.inExecute)
             throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
-        else
-            this.sparkMemory.get(key).setValue(new ObjectWritable<>(value));
+        else {
+            this.sparkMemory.get(key).reset();
+            this.sparkMemory.get(key).add(new ObjectWritable<>(value));
+        }
     }
 
     @Override

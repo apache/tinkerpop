@@ -34,11 +34,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
- * __.out().map(v -> v.get().value("name"))           // throws an IllegalStateException
- * __.out().filter(v -> v.bulk() > 2)                 // throws an IllegalStateException
- * __.choose(v -> v.sack() == 1,out(),in())           // throws an IllegalStateException
- * __.select().by(v -> v.get().id())                  // throws an IllegalStateException
- * __.order().by(a,b -> a > b)                        // throws an IllegalStateException
+ * __.out().map(v -&gt; v.get().value("name"))           // throws an IllegalStateException
+ * __.out().filter(v -&gt; v.bulk() &gt; 2)              // throws an IllegalStateException
+ * __.choose(v -&gt; v.sack() == 1,out(),in())           // throws an IllegalStateException
+ * __.select().by(v -&gt; v.get().id())                  // throws an IllegalStateException
+ * __.order().by(a,b -&gt; a &gt; b)                        // throws an IllegalStateException
  * </pre>
  */
 public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {

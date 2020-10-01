@@ -92,7 +92,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
         final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(traverser));
-        if (this.callbackRegistry != null) {
+        if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
             final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
             final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
             this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));

@@ -135,7 +135,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate kerberos six"/>
                                         </exec>
                                         <copy todir="${project.build.directory}/python-packaged">
                                             <fileset dir="src/main/python"/>
@@ -208,6 +208,8 @@ limitations under the License.
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python3"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
+                                            <env key="KRB5_CONFIG" value="${project.build.directory}/kdc/krb5.conf"/>
+                                            <env key="KRB5CCNAME" value="${project.build.directory}/kdc/test-tkt.cc"/>
                                             <arg line="setup.py test"/>
                                         </exec>
                                         <!-- radish seems to like all dependencies in place -->
@@ -245,6 +247,11 @@ limitations under the License.
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-test</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
@@ -259,24 +266,6 @@ limitations under the License.
                             </dependency>
                         </dependencies>
                         <executions>
-                            <execution>
-                                <id>generate-dsl</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <properties>
-                                        <property>
-                                            <name>projectBaseDir</name>
-                                            <value>${project.basedir}</value>
-                                        </property>
-                                    </properties>
-                                    <scripts>
-                                        <script>${project.basedir}/glv/generate.groovy</script>
-                                    </scripts>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>gremlin-server-start</id>
                                 <phase>pre-integration-test</phase>

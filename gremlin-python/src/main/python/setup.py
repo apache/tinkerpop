@@ -48,7 +48,8 @@ install_requires = [
     'aenum>=1.4.5,<3.0.0',
     'tornado>=4.4.1,<6.0',
     'six>=1.10.0,<2.0.0',
-    'isodate>=0.6.0,<1.0.0'
+    'isodate>=0.6.0,<1.0.0',
+    'pyparsing>=2.4.7,<3.0.0'
 ]
 
 if sys.version_info < (3, 2):
@@ -80,6 +81,9 @@ setup(
         'PyHamcrest>=1.9.0,<2.0.0'
     ],
     install_requires=install_requires,
+    extra_require={
+        'kerberos': 'kerberos>=1.3.0,<2.0.0'    # Does not install in Microsoft Windows
+    },
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",

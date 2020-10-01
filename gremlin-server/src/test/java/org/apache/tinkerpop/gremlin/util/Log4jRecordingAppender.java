@@ -70,10 +70,7 @@ public class Log4jRecordingAppender extends AppenderSkeleton {
      *         $ matches the end of the string
      */
     public boolean logContainsAny(final String regex) {
-        Pattern pattern;
-
-        pattern = Pattern.compile( regex, Pattern.DOTALL );
-
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
         return messages.stream().anyMatch(m -> pattern.matcher( m ).find());
     }
 

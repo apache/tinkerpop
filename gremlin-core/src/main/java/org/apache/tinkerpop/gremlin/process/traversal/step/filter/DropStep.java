@@ -50,7 +50,7 @@ public class DropStep<S> extends FilterStep<S> implements Mutating<Event> {
         final S s = traverser.get();
         if (s instanceof Element) {
             final Element toRemove = (Element) s;
-            if (callbackRegistry != null) {
+            if (callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
                 final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
                 final Event removeEvent;
                 if (s instanceof Vertex)
@@ -68,7 +68,7 @@ public class DropStep<S> extends FilterStep<S> implements Mutating<Event> {
             toRemove.remove();
         } else if (s instanceof Property) {
             final Property toRemove = (Property) s;
-            if (callbackRegistry != null) {
+            if (callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
                 final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
                 final Event.ElementPropertyEvent removeEvent;
                 if (toRemove.element() instanceof Edge)

@@ -25,7 +25,7 @@ RUN add-apt-repository ppa:openjdk-r/ppa
 RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
 RUN sh -c 'dpkg -i packages-microsoft-prod.deb'
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN apt-get install apt-transport-https ca-certificates
+RUN apt-get install apt-transport-https gnupg ca-certificates
 RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
 
@@ -38,7 +38,9 @@ RUN apt-get install -y --force-yes dotnet-sdk-3.1 mono-devel
 # custom build and install 3.5.3 and upgrade pip along the way. this could be resolved by using bionic
 # but trying to keep all of our release branches on the same docker image and the older versions sorta
 # suit 3.3.x and 3.4.x
-RUN apt-get install -y --force-yes python python-dev python-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y python python-dev python-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev \
+    libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libkrb5-dev krb5-user
 RUN cd /opt && wget https://www.python.org/ftp/python/3.5.3/Python-3.5.3.tgz && tar -xvf Python-3.5.3.tgz
 RUN cd /opt/Python-3.5.3 && ./configure && make && make install
 RUN ln -sf /usr/bin/python3.5.3 /usr/bin/python3

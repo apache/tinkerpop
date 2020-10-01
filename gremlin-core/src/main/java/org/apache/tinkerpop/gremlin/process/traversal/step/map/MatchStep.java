@@ -70,7 +70,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
 
-    private List<Traversal.Admin<Object, Object>> matchTraversals = new ArrayList<>();
+    private List<Traversal.Admin<Object, Object>> matchTraversals;
     private boolean first = true;
     private Set<String> matchStartLabels = new HashSet<>();
     private Set<String> matchEndLabels = new HashSet<>();
@@ -91,6 +91,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         this.matchTraversals = (List) Stream.of(matchTraversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.matchTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to MatchStep, MatchStartStep, or MatchEndStep
         this.matchTraversals.forEach(this::integrateChild);
+        this.standardAlgorithmBarrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         this.computedStartLabel = Helper.computeStartLabel(this.matchTraversals);
     }
 
@@ -246,7 +247,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             clone.matchTraversals.add(traversal.clone());
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
-        clone.standardAlgorithmBarrier = new TraverserSet();
+        clone.standardAlgorithmBarrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         return clone;
     }
 
@@ -353,7 +354,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.referencedLabelsMap;
     }
 
-    private TraverserSet standardAlgorithmBarrier = new TraverserSet();
+    private TraverserSet standardAlgorithmBarrier;
 
     @Override
     protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {

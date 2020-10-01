@@ -16,23 +16,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import pytest
 
-from tornado import ioloop, gen
+import pytest
 
 from gremlin_python import statics
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
-from gremlin_python.driver.driver_remote_connection import (
-    DriverRemoteConnection)
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.traversal import Bindings
-from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import P, Order, T
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
-from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy
+from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy, SeedStrategy
+from gremlin_python.structure.io.util import HashableDict
+from gremlin_python.driver.serializer import GraphSONSerializersV2d0
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -99,7 +98,12 @@ class TestDriverRemoteConnection(object):
         # test binding in P
         results = g.V().has('person', 'age', Bindings.of('x', lt(30))).count().next()
         assert 2 == results
-
+        # #
+        # test dict keys which can only work on GraphBinary and GraphSON3 which include specific serialization
+        # types for dict
+        if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
+            results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+            assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
@@ -187,6 +191,12 @@ class TestDriverRemoteConnection(object):
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
         #
+        g = traversal().withRemote(remote_connection).withStrategies(SeedStrategy(12345))
+        shuffledResult = g.V().values("name").order().by(Order.shuffle).toList()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
+        #
         g = traversal().withRemote(remote_connection). \
             withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
         try:
@@ -201,3 +211,9 @@ class TestDriverRemoteConnection(object):
         assert 6 == t.next()
         assert 6 == t.clone().next()
         assert 6 == t.clone().next()
+
+    def test_authenticated(self, remote_connection_authenticated):
+        statics.load_statics(globals())
+        g = traversal().withRemote(remote_connection_authenticated)
+
+        assert long(6) == g.V().count().toList()[0]

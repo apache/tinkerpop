@@ -48,11 +48,12 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
 
     private Traversal.Admin<S, Object> aggregateTraversal = null;
     private String sideEffectKey;
-    private TraverserSet<S> barrier = new TraverserSet<>();
+    private TraverserSet<S> barrier;
 
     public AggregateGlobalStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
+        this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
     }
 
@@ -90,7 +91,7 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
     @Override
     public AggregateGlobalStep<S> clone() {
         final AggregateGlobalStep<S> clone = (AggregateGlobalStep<S>) super.clone();
-        clone.barrier = new TraverserSet<>();
+        clone.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         if (null != this.aggregateTraversal)
             clone.aggregateTraversal = this.aggregateTraversal.clone();
         return clone;
@@ -149,7 +150,7 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
             throw FastNoSuchElementException.instance();
         else {
             final TraverserSet<S> temp = this.barrier;
-            this.barrier = new TraverserSet<>();
+            this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
             return temp;
         }
     }

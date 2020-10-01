@@ -25,6 +25,9 @@
 const gt = require('../process/graph-traversal');
 const { TraversalStrategies } = require('../process/traversal-strategy');
 
+/**
+ * An "empty" graph object to server only as a reference.
+ */
 class Graph {
   /**
    * Returns the graph traversal source.

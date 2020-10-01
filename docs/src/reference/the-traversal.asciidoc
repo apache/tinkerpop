@@ -475,9 +475,9 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/grateful-dead.xml').read().iterate()
-g = graph.traversal().withoutStrategies(LazyBarrierStrategy) <1>
+g = traversal().withEmbedded(graph).withoutStrategies(LazyBarrierStrategy) <1>
 clockWithResult(1){g.V().both().both().both().count().next()} <2>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
 clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <4>
@@ -498,7 +498,7 @@ optimization scenario with the added benefit of reducing the risk of an out-of-m
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()  <1>
+g = traversal().withEmbedded(graph)  <1>
 g.io('data/grateful-dead.xml').read().iterate()
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <2>
@@ -696,7 +696,7 @@ that supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal().withComputer()
+g = traversal().withEmbedded(graph).withComputer()
 g.V().
   connectedComponent().
     with(ConnectedComponent.propertyName, 'component').
@@ -1647,7 +1647,7 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 
 [gremlin-groovy]
 ----
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
@@ -2119,7 +2119,7 @@ supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal().withComputer()
+g = traversal().withEmbedded(graph).withComputer()
 g.V().pageRank().with(PageRank.propertyName, 'friendRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
@@ -2137,7 +2137,7 @@ The <<explain-step,`explain()`>>-step can be used to understand how the traversa
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal().withComputer()
+g = traversal().withEmbedded(graph).withComputer()
 g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
@@ -2255,7 +2255,7 @@ IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, ca
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal().withComputer()
+g = traversal().withEmbedded(graph).withComputer()
 g.V().peerPressure().with(PeerPressure.propertyName, 'cluster').values('cluster')
 g.V().hasLabel('person').
   peerPressure().
@@ -2316,16 +2316,22 @@ the current state of the traverser.
 
 [gremlin-groovy,modern]
 ----
+g.V().has('name','marko').
+  project('id', 'name', 'out', 'in').
+    by(id).
+    by('name').
+    by(outE().count()).
+    by(inE().count())
+g.V().has('name','marko').
+  project('name', 'friendsNames').
+    by('name').
+    by(out('knows').values('name').fold())
 g.V().out('created').
   project('a','b').
     by('name').
     by(__.in('created').count()).
   order().by(select('b'),desc).
   select('a')
-g.V().has('name','marko').
-               project('out','in').
-                 by(outE().count()).
-                 by(inE().count())
 ----
 
 *Additional References*
@@ -2420,7 +2426,7 @@ Finally, an example is provided using `PageRankVertexProgram` which doesn't use 
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal().withComputer()
+g = traversal().withEmbedded(graph).withComputer()
 g.V().hasLabel('person').
   program(PageRankVertexProgram.build().property('rank').create(graph)).
     order().by('rank', asc).
@@ -2797,7 +2803,7 @@ ranking.
 
 [gremlin-groovy]
 ----
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
       order(local).by(values,desc).limit(local, 5)
@@ -2811,7 +2817,7 @@ Similarly, for extracting the values from a path or map.
 
 [gremlin-groovy]
 ----
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
@@ -3050,7 +3056,7 @@ The following example demonstrates how to produce the "knows" subgraph:
 [gremlin-groovy,modern]
 ----
 subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
-sg = subGraph.traversal()
+sg = traversal().withEmbedded(subGraph)
 sg.E() <2>
 ----
 
@@ -3062,7 +3068,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 [gremlin-groovy,modern]
 ----
 subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
-sg = subGraph.traversal()
+sg = traversal().withEmbedded(subGraph)
 sg.E()
 ----
 
@@ -3075,8 +3081,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').traversal().E()
-t.sideEffects.get('createdG').traversal().E()
+traversal().withEmbedded(t.sideEffects.get('knowsG')).E()
+traversal().withEmbedded(t.sideEffects.get('createdG')).E()
 ----
 
 TinkerGraph is the ideal (and default) `Graph` into which a subgraph is extracted as it's fast, in-memory, and supports
@@ -3938,7 +3944,7 @@ allow specification of custom identifiers when creating elements:
 
 [gremlin-groovy]
 ----
-g = TinkerGraph.open().traversal()
+g = traversal().withEmbedded(TinkerGraph.open())
 v = g.addV().property(id,'42a').next()
 g.V('42a')
 ----
@@ -3951,7 +3957,7 @@ under the hood.
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
-g = graph.traversal().withStrategies(strategy)
+g = traversal().withEmbedded(graph).withStrategies(strategy)
 g.addV().property(id, '42a').id()
 ----
 
@@ -3986,7 +3992,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*
 graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
-g = graph.traversal().withStrategies(strategy)
+g = traversal().withEmbedded(graph).withStrategies(strategy)
 g.addV().property('name','stephen')
 g.V().has('name','stephen').
   property(list, 'location', 'centreville', 'startTime', 1990, 'endTime', 2000).
@@ -4041,9 +4047,9 @@ The best way to understand `PartitionStrategy` is via example.
 graph = TinkerFactory.createModern()
 strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").readPartitions("a").create()
 strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").readPartitions("b").create()
-gA = graph.traversal().withStrategies(strategyA)
+gA = traversal().withEmbedded(graph).withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
-gB = graph.traversal().withStrategies(strategyB)
+gB = traversal().withEmbedded(graph).withStrategies(strategyB)
 gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
@@ -4075,6 +4081,44 @@ Type ':help' or ':h' for help.
 Display stack trace? [yN]
 ----
 
+=== SeedStrategy
+
+There are number of components of the Gremlin language that, by design, can produce non-deterministic results:
+
+* <<coin-step,coin()>>
+* <<order-step,order()>> when `Order.shuffle` is used
+* <<sample-step,sample()>>
+
+To get these steps to return deterministic results, `SeedStrategy` allows assignment of a seed value to the `Random`
+operations of the steps. The following example demonstrates the random nature of `shuffle`:
+
+[gremlin-groovy,modern]
+----
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+----
+
+With `SeedStrategy` in place, however, the same order is applied each time:
+
+[gremlin-groovy,modern]
+----
+seedStrategy = new SeedStrategy(999998L)
+g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+----
+
+IMPORTANT: `SeedStrategy` only makes specific steps behave in a deterministic fashion and does not necessarily make
+the entire traversal deterministic itself. If the underlying graph database or processing engine happens to not
+guarantee iteration order, then it is possible that the final result of the traversal will appear to be
+non-deterministic. In these cases, it would be necessary to enforce a deterministic iteration with `order()` prior to
+these steps that make use of randomness to return results.
+
 === SubgraphStrategy
 
 `SubgraphStrategy` is similar to `PartitionStrategy` in that it constrains a `Traversal` to certain vertices, edges,
@@ -4083,7 +4127,7 @@ Display stack trace? [yN]
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.V().as('a').values('location').as('b').  <1>
   select('a','b').by('name').by()
 g = g.withStrategies(SubgraphStrategy.build().vertexProperties(hasNot('endTime')).create()) <2>
@@ -4106,7 +4150,7 @@ edges must be labeled "develops," and vertex properties must be the persons curr
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = graph.traversal().withStrategies(SubgraphStrategy.build().
+g = traversal().withEmbedded(graph).withStrategies(SubgraphStrategy.build().
   vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
   edges(hasLabel('develops')).
   vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())

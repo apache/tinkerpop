@@ -339,6 +339,14 @@ limitations under the License.
                                         <copy todir="${project.build.directory}/python">
                                             <fileset dir="src/test/python"/>
                                         </copy>
+                                        <exec dir="${project.build.directory}/python" executable="python3"
+                                              failonerror="true">
+                                            <arg line="--version"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--version"/>
+                                        </exec>
                                         <exec dir="${project.build.directory}/python" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>

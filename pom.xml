@@ -150,20 +150,21 @@ limitations under the License.
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.8.1</commons.lang3.version>
         <groovy.version>3.0.3</groovy.version>
-        <hadoop.version>2.7.2</hadoop.version>
+        <hadoop.version>2.7.7</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
-        <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
+        <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
         <log4j.version>1.2.17</log4j.version>
         <metrics.version>3.0.2</metrics.version>
-        <netty.version>4.1.49.Final</netty.version>
+        <netty.version>4.1.52.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.15</snakeyaml.version>
-        <spark.version>2.4.0</spark.version>
+        <spark.version>3.0.0</spark.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
+        <suresafeArgs> </suresafeArgs>
 
         <!--
         This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
@@ -188,7 +189,9 @@ limitations under the License.
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
                 <executions>
                     <execution>
                         <id>enforce-all</id>
@@ -199,7 +202,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[1.8.0-40,)</version>
+                                    <version>[1.8,12)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.3.9,)</version>
@@ -237,7 +240,7 @@ limitations under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
                     <tags>
                         <tag>
                             <name>example</name>
@@ -254,7 +257,7 @@ limitations under the License.
                         </goals>
                         <phase>site</phase>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
                             <includeDependencySources>true</includeDependencySources>
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
@@ -404,11 +407,9 @@ limitations under the License.
                         <exclude>**/.vs/**</exclude>
                         <exclude>**/NuGet.Config</exclude>
                         <exclude>**/*.nuspec</exclude>
-                        <exclude>**/*.nuspec.template</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
                         <exclude>**/gremlin-javascript/doc/**</exclude>
-                        <exclude>**/node/node_modules/**</exclude>
-                        <exclude>**/node/node</exclude>
+                        <exclude>**/node/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
@@ -443,6 +444,7 @@ limitations under the License.
         </plugins>
         <pluginManagement>
             <plugins>
+                <!-- there is a jdk11 profile that will be enabled if built with that version - these settings will be overriden -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -463,11 +465,14 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.21.0</version>
+                    <version>2.22.2</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
+                        <argLine>
+                            -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
+                        <forkCount>1</forkCount>
+                        <reuseForks>false</reuseForks>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
                         </excludes>
@@ -476,7 +481,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.21.0</version>
+                    <version>2.22.2</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -488,8 +493,11 @@ limitations under the License.
                                     <include>**/*IntegrateTest.java</include>
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
+                                <argLine>
+                                    -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                                 </argLine>
+                                <forkCount>1</forkCount>
+                                <reuseForks>false</reuseForks>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                             </configuration>
                         </execution>
@@ -525,6 +533,9 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
+                    <configuration>
+                        <source>1.8</source>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
@@ -758,6 +769,33 @@ limitations under the License.
     </dependencyManagement>
 
     <profiles>
+
+        <profile>
+            <id>jdk11</id>
+            <activation>
+                <jdk>11</jdk>
+            </activation>
+            <properties>
+                <suresafeArgs>--illegal-access=permit</suresafeArgs>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <version>3.8.1</version>
+                            <configuration>
+                                <release>8</release>
+                                <compilerArgs>
+                                    <arg>-parameters</arg>
+                                </compilerArgs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
 
         <profile>
             <id>asciidoc</id>
@@ -1203,12 +1241,16 @@ limitations under the License.
                                 <inherited>false</inherited>
                                 <configuration>
                                     <destDir>full</destDir>
-                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                    <additionalJOption>-Xdoclint:none</additionalJOption>
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
                                         gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                                    </dependencySourceIncludes>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1220,7 +1262,7 @@ limitations under the License.
                                 <inherited>false</inherited>
                                 <configuration>
                                     <destDir>core</destDir>
-                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                    <additionalJOption>-Xdoclint:none</additionalJOption>
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
@@ -1426,7 +1468,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1523,7 +1565,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine} -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
@@ -1531,7 +1573,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine} -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
@@ -1539,7 +1581,7 @@ limitations under the License.
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-report-plugin</artifactId>
-                        <version>2.20</version>
+                        <version>2.22.2</version>
                         <executions>
                             <execution>
                                 <id>aggregate-surefire-report</id>

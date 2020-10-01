@@ -103,21 +103,27 @@ limitations under the License.
                         <artifactId>gmavenplus-plugin</artifactId>
                         <dependencies>
                             <dependency>
-                                <groupId>log4j</groupId>
-                                <artifactId>log4j</artifactId>
-                                <version>1.2.17</version>
-                                <scope>runtime</scope>
-                            </dependency>
-                            <dependency>
                                 <groupId>org.apache.tinkerpop</groupId>
                                 <artifactId>gremlin-server</artifactId>
                                 <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-test</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>${log4j.version}</version>
                                 <scope>runtime</scope>
                             </dependency>
                             <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
-                                <artifactId>groovy-ant</artifactId>
+                                <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
+                                <type>pom</type>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                         <executions>

@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -49,9 +50,11 @@ import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 
 /**
  * A {@link Traversal} represents a directed walk over a {@link Graph}.
@@ -429,6 +432,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          * @return the generator of traversers
          */
         public TraverserGenerator getTraverserGenerator();
+
+        /**
+         * Gets a generator that creates new {@link TraverserSet} instances for steps in the traversal. Providers may
+         * override this default implementation to provider their own {@link TraverserSet}.
+         */
+        public default Supplier<TraverserSet<S>> getTraverserSetSupplier() {
+            return TraverserSetSupplier.instance();
+        }
 
         /**
          * Get the set of all {@link TraverserRequirement}s for this traversal.

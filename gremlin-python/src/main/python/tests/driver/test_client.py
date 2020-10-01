@@ -16,15 +16,14 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import pytest
-
+import threading
 import uuid
-from gremlin_python.driver.protocol import GremlinServerError
+
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
-from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.process.graph_traversal import __
+from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
@@ -158,6 +157,47 @@ def test_multi_conn_pool(client):
     assert len(result_set.all().result()) == 6
 
 
+def test_multi_thread_pool(client):
+    g = Graph().traversal()
+    traversals = [g.V(),
+                  g.V().count(),
+                  g.E(),
+                  g.E().count()
+                  ]
+    results = [[] for _ in traversals]
+
+    # Use a condition variable to synchronise a group of threads, which should also inject some
+    # non-determinism into the run-time execution order
+    condition = threading.Condition()
+
+    def thread_run(tr, result_list):
+        message = RequestMessage('traversal', 'bytecode', {'gremlin': tr.bytecode, 'aliases': {'g': 'gmodern'}})
+        with condition:
+            condition.wait(5)
+        result_set = client.submit(message)
+        for result in result_set:
+            result_list.append(result)
+
+    threads = []
+    for i in range(len(results)):
+        thread = threading.Thread(target=thread_run,
+                                  args=(traversals[i], results[i]),
+                                  name="test_multi_thread_pool_%d" % i)
+        thread.daemon = True
+        threads.append(thread)
+        thread.start()
+    with condition:
+        condition.notify_all()
+
+    for t in threads:
+        t.join(5)
+
+    assert len(results[0][0]) == 6
+    assert results[1][0][0].object == 6
+    assert len(results[2][0]) == 6
+    assert results[3][0][0].object == 6
+
+
 def test_client_bytecode_with_int(client):
     g = Graph().traversal()
     t = g.V().has('age', 851401972585122).count()
@@ -242,11 +282,11 @@ def test_big_result_set(client):
     assert len(results) == 10000
 
 
-def test_big_result_set_secure(secure_client):
+def test_big_result_set_secure(authenticated_client):
     g = Graph().traversal()
     t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -254,7 +294,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(10)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -262,7 +302,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(100)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -270,7 +310,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(1000)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -278,7 +318,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(10000)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result

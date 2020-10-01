@@ -74,8 +74,8 @@ create an empty TinkerGraph as follows:
 
 [gremlin-groovy]
 ----
-graph = TinkerGraph.open()   <1>
-g = graph.traversal()        <2>
+graph = TinkerGraph.open()                 <1>
+g = traversal().withEmbedded(graph)        <2>
 ----
 
 <1> Creates the `Graph` instance that is the API to the
@@ -86,6 +86,13 @@ link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_graph_t
 that `Graph`.
 
 IMPORTANT: TinkerPop recommends creating the `TraversalSource` once and re-using it as necessary in your application.
+
+NOTE: The `traversal()` method is statically imported from the `AnonymousTraversalSource` class so that it can be used
+in a more fluent fashion. There are common imports for all languages that support Gremlin to make it easier to read
+and to write (link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-java-imports[Java],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python-imports[Python],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-dotnet-imports[.NET],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-javascript-imports[Javascript]).
 
 [[toy-graphs]]
 Now that you have an empty TinkerGraph instance, you could load a sample of your data and get started with some
@@ -105,7 +112,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 ----
 
 image:grateful-gremlin.png[float=right,width=110] As you might have noticed from the diagrams of these graphs or from
@@ -118,7 +125,7 @@ However, if you find that a larger graph might be helpful, there is another opti
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createGratefulDead()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 ----
 
 The Grateful Dead graph ships with the Gremlin Console and the data can be found in several formats (along with the
@@ -399,7 +406,7 @@ the data of the "person" vertices in the graph:
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 
 g.V().hasLabel('person').valueMap()
 ----

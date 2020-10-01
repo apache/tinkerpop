@@ -39,7 +39,7 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
-                 headers=None, session=""):
+                 kerberized_service="", headers=None, session=""):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -64,7 +64,8 @@ class Client:
             protocol_factory = lambda: protocol.GremlinServerWSProtocol(
                 self._message_serializer,
                 username=self._username,
-                password=self._password)
+                password=self._password,
+                kerberized_service=kerberized_service)
         self._protocol_factory = protocol_factory
         if self._sessionEnabled:
             if pool_size is None:
@@ -76,9 +77,9 @@ class Client:
         self._pool_size = pool_size
         # This is until concurrent.futures backport 3.1.0 release
         if max_workers is None:
-            # Use this number because ThreadPoolExecutor is often
-            # used to overlap I/O instead of CPU work.
-            max_workers = (cpu_count() or 1) * 5
+            # If your application is overlapping Gremlin I/O on multiple threads
+            # consider passing kwarg max_workers = (cpu_count() or 1) * 5
+            max_workers = pool_size
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
         # Threadsafe queue
         self._pool = queue.Queue()

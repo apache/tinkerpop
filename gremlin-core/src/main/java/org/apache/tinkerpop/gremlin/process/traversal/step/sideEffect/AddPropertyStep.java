@@ -92,7 +92,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
         final Element element = traverser.get();
 
-        if (this.callbackRegistry != null) {
+        if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
             getTraversal().getStrategies().getStrategy(EventStrategy.class)
                     .ifPresent(eventStrategy -> {
                         Event.ElementPropertyChangedEvent evt = null;

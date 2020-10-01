@@ -220,6 +220,20 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
+        public void ShouldUseSeedStrategyToReturnDeterministicResults()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection).WithStrategies(new SeedStrategy(664664));
+
+            var shuffledResults = g.V().Values<string>("name").Order().By(Order.Shuffle).ToList();
+            Assert.Equal(shuffledResults, g.V().Values<string>("name").Order().By(Order.Shuffle).ToList());
+            Assert.Equal(shuffledResults, g.V().Values<string>("name").Order().By(Order.Shuffle).ToList());
+            Assert.Equal(shuffledResults, g.V().Values<string>("name").Order().By(Order.Shuffle).ToList());
+            Assert.Equal(shuffledResults, g.V().Values<string>("name").Order().By(Order.Shuffle).ToList());
+            Assert.Equal(shuffledResults, g.V().Values<string>("name").Order().By(Order.Shuffle).ToList());
+        }
+
+        [Fact]
         public async Task ShouldExecuteAsynchronouslyWhenPromiseIsCalled()
         {
             var connection = _connectionFactory.CreateRemoteConnection();

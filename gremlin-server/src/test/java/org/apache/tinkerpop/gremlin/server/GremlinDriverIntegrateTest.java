@@ -197,25 +197,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
-        final Client client = cluster.connect().alias("g");
-
         try {
-            final Map<String,Object> params = new HashMap<>();
-            params.put("r", Color.RED);
-            client.submit("r", params).all().get();
-            fail("Should have thrown exception over bad serialization");
-        } catch (Exception ex) {
-            final Throwable inner = ExceptionUtils.getRootCause(ex);
-            assertThat(inner, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
-            assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
+            final Client client = cluster.connect().alias("g");
+
+            try {
+                final Map<String, Object> params = new HashMap<>();
+                params.put("r", Color.RED);
+                client.submit("r", params).all().get();
+                fail("Should have thrown exception over bad serialization");
+            } catch (Exception ex) {
+                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                assertThat(inner, instanceOf(ResponseException.class));
+                assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+                assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
+            }
+
+            // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+            // from time to time, especially in the console if you're just exploring.
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
         }
-
-        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
-        // from time to time, especially in the console if you're just exploring.
-        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-
-        cluster.close();
     }
 
     @Test
@@ -229,9 +231,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test
@@ -245,9 +247,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test
@@ -259,25 +261,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 maxConnectionPoolSize(1).
                 keepAliveInterval(1000).create();
         final Client client = cluster.connect();
+        try {
 
-        // fire up lots of requests so as to schedule/deschedule lots of ping jobs
-        for (int ix = 0; ix < 500; ix++) {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            // fire up lots of requests so as to schedule/deschedule lots of ping jobs
+            for (int ix = 0; ix < 500; ix++) {
+                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            }
+
+            // don't send any messages for a bit so that the driver pings in the background
+            Thread.sleep(3000);
+
+            // make sure no bonus messages sorta fire off once we get back to sending requests
+            for (int ix = 0; ix < 500; ix++) {
+                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            }
+
+            // there really shouldn't be more than 3 of these sent. should definitely be at least one though
+            final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Received response from keep-alive request")).count();
+            assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
+        } finally {
+            cluster.close();
         }
-
-        // don't send any messages for a bit so that the driver pings in the background
-        Thread.sleep(3000);
-
-        // make sure no bonus messages sorta fire off once we get back to sending requests
-        for (int ix = 0; ix < 500; ix++) {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-        }
-
-        // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-        final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Received response from keep-alive request")).count();
-        assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
-
-        cluster.close();
     }
 
     @Test
@@ -288,16 +292,19 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("def x = '';(0..<1024).each{x = x + '$it'};x").all().get();
-            fail("Request should have failed because it exceeded the max content length allowed");
-        } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root.getMessage(), containsString("Max frame length of 1024 has been exceeded."));
+            try {
+                client.submit("def x = '';(0..<1024).each{x = x + '$it'};x").all().get();
+                fail("Request should have failed because it exceeded the max content length allowed");
+            } catch (Exception ex) {
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                assertThat(root.getMessage(), containsString("Max frame length of 1024 has been exceeded."));
+            }
+
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+        } finally {
+            cluster.close();
         }
-
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-
-        cluster.close();
     }
 
     @Test
@@ -305,20 +312,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        // tested independently to 10000 iterations but for speed, bumped back to 1000
-        IntStream.range(0,1000).forEach(i -> {
-            try {
-                client.submit("1 + 9 9").all().join().get(0).getInt();
-                fail("Should not have gone through due to syntax error");
-            } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
-                assertThat(root, instanceOf(ResponseException.class));
-            }
-        });
+        try {
+            // tested independently to 10000 iterations but for speed, bumped back to 1000
+            IntStream.range(0, 1000).forEach(i -> {
+                try {
+                    client.submit("1 + 9 9").all().join().get(0).getInt();
+                    fail("Should not have gone through due to syntax error");
+                } catch (Exception ex) {
+                    final Throwable root = ExceptionUtils.getRootCause(ex);
+                    assertThat(root, instanceOf(ResponseException.class));
+                }
+            });
 
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
 
-        cluster.close();
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -329,30 +339,33 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().join().get(0).getInt();
-            fail("Should not have gone through because the server is not running");
-        } catch (Exception i) {
-            final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(TimeoutException.class));
-        }
-
-        startServer();
-
-        // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
-        // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
-        // waiting for Gremlin Server to pop back up
-        for (int ix = 3; ix < 13; ix++) {
-            TimeUnit.SECONDS.sleep(ix);
             try {
-                final int result = client.submit("1+1").all().join().get(0).getInt();
-                assertEquals(2, result);
-                break;
-            } catch (Exception ignored) {
-                logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithDefault", ix);
+                client.submit("1+1").all().join().get(0).getInt();
+                fail("Should not have gone through because the server is not running");
+            } catch (Exception i) {
+                final Throwable root = ExceptionUtils.getRootCause(i);
+                assertThat(root, instanceOf(TimeoutException.class));
             }
-        }
 
-        cluster.close();
+            startServer();
+
+            // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
+            // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
+            // waiting for Gremlin Server to pop back up
+            for (int ix = 3; ix < 13; ix++) {
+                TimeUnit.SECONDS.sleep(ix);
+                try {
+                    final int result = client.submit("1+1").all().join().get(0).getInt();
+                    assertEquals(2, result);
+                    break;
+                } catch (Exception ignored) {
+                    logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithDefault", ix);
+                }
+            }
+
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -393,16 +406,19 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldEventuallySucceedWithRoundRobin() throws Exception {
         final String noGremlinServer = "74.125.225.19";
         final Cluster cluster = TestClientFactory.build().addContactPoint(noGremlinServer).create();
-        final Client client = cluster.connect();
 
-        // the first host is dead on init.  request should succeed on localhost
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        try {
+            final Client client = cluster.connect();
 
-        cluster.close();
+            // the first host is dead on init.  request should succeed on localhost
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -410,38 +426,41 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        final String script = "g.V().drop().iterate();\n" +
-                "\n" +
-                "List ids = new ArrayList();\n" +
-                "\n" +
-                "int ii = 0;\n" +
-                "Vertex v = graph.addVertex();\n" +
-                "v.property(\"ii\", ii);\n" +
-                "v.property(\"sin\", Math.sin(ii));\n" +
-                "ids.add(v.id());\n" +
-                "\n" +
-                "Random rand = new Random();\n" +
-                "for (; ii < size; ii++) {\n" +
-                "    v = graph.addVertex();\n" +
-                "    v.property(\"ii\", ii);\n" +
-                "    v.property(\"sin\", Math.sin(ii/5.0));\n" +
-                "    Vertex u = graph.vertices(ids.get(rand.nextInt(ids.size()))).next();\n" +
-                "    v.addEdge(\"linked\", u);\n" +
-                "    ids.add(u.id());\n" +
-                "    ids.add(v.id());\n" +
-                "}\n" +
-                "g.V()";
+        try {
 
-        final List<Integer> sizes = Arrays.asList(1, 10, 20, 50, 75, 100, 250, 500, 750, 1000, 5000, 10000);
-        for (Integer size : sizes) {
-            final Map<String, Object> params = new HashMap<>();
-            params.put("size", size - 1);
-            final ResultSet results = client.submit(script, params);
+            final String script = "g.V().drop().iterate();\n" +
+                    "\n" +
+                    "List ids = new ArrayList();\n" +
+                    "\n" +
+                    "int ii = 0;\n" +
+                    "Vertex v = graph.addVertex();\n" +
+                    "v.property(\"ii\", ii);\n" +
+                    "v.property(\"sin\", Math.sin(ii));\n" +
+                    "ids.add(v.id());\n" +
+                    "\n" +
+                    "Random rand = new Random();\n" +
+                    "for (; ii < size; ii++) {\n" +
+                    "    v = graph.addVertex();\n" +
+                    "    v.property(\"ii\", ii);\n" +
+                    "    v.property(\"sin\", Math.sin(ii/5.0));\n" +
+                    "    Vertex u = graph.vertices(ids.get(rand.nextInt(ids.size()))).next();\n" +
+                    "    v.addEdge(\"linked\", u);\n" +
+                    "    ids.add(u.id());\n" +
+                    "    ids.add(v.id());\n" +
+                    "}\n" +
+                    "g.V()";
 
-            assertEquals(size.intValue(), results.all().get().size());
+            final List<Integer> sizes = Arrays.asList(1, 10, 20, 50, 75, 100, 250, 500, 750, 1000, 5000, 10000);
+            for (Integer size : sizes) {
+                final Map<String, Object> params = new HashMap<>();
+                params.put("size", size - 1);
+                final ResultSet results = client.submit(script, params);
+
+                assertEquals(size.intValue(), results.all().get().size());
+            }
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test
@@ -449,126 +468,140 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("java.awt.Color.RED");
-
         try {
-            results.all().join();
-            fail("Should have thrown exception over bad serialization");
-        } catch (Exception ex) {
-            final Throwable inner = ExceptionUtils.getRootCause(ex);
-            assertThat(inner, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+
+            final ResultSet results = client.submit("java.awt.Color.RED");
+
+            try {
+                results.all().join();
+                fail("Should have thrown exception over bad serialization");
+            } catch (Exception ex) {
+                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                assertThat(inner, instanceOf(ResponseException.class));
+                assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+            }
+
+            // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+            // from time to time, especially in the console if you're just exploring.
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
         }
-
-        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
-        // from time to time, especially in the console if you're just exploring.
-        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-
-        cluster.close();
     }
 
     @Test
     public void shouldFailWithScriptExecutionException() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("1/0");
-
         try {
-            results.all().join();
-            fail("Should have thrown exception over bad serialization");
-        } catch (Exception ex) {
-            final Throwable inner = ExceptionUtils.getRootCause(ex);
-            assertTrue(inner instanceof ResponseException);
-            assertThat(inner.getMessage(), endsWith("Division by zero"));
+            try {
+                final ResultSet results = client.submit("1/0");
+                results.all().join();
+                fail("Should have thrown exception over bad serialization");
+            } catch (Exception ex) {
+                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                assertTrue(inner instanceof ResponseException);
+                assertThat(inner.getMessage(), endsWith("Division by zero"));
 
-            final ResponseException rex = (ResponseException) inner;
-            assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
-            assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-            assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java"));
+                final ResponseException rex = (ResponseException) inner;
+                assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
+                assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
+                assertThat(rex.getRemoteStackTrace().get(), containsString("Division by zero"));
+            }
+
+            // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+            // from time to time, especially in the console if you're just exploring.
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
         }
-
-        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
-        // from time to time, especially in the console if you're just exploring.
-        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-
-        cluster.close();
     }
 
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
+        try {
+            final Client client = cluster.connect();
 
-        final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-        final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+            final ResultSet rsZero = client.submit("'zero'");
 
-        final CompletableFuture<List<Result>> futureFive = rsFive.all();
-        final CompletableFuture<List<Result>> futureZero = rsZero.all();
+            final CompletableFuture<List<Result>> futureFive = rsFive.all();
+            final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
-        final long start = System.nanoTime();
-        assertFalse(futureFive.isDone());
-        assertEquals("zero", futureZero.get().get(0).getString());
+            final long start = System.nanoTime();
+            assertFalse(futureFive.isDone());
+            assertEquals("zero", futureZero.get().get(0).getString());
 
-        logger.info("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
+            logger.info("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
 
-        assertFalse(futureFive.isDone());
-        assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
+            assertFalse(futureFive.isDone());
+            assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
 
-        logger.info("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+            logger.info("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldProcessSessionRequestsInOrder() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
+        try {
+            final Client client = cluster.connect(name.getMethodName());
 
-        final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-        final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+            final ResultSet rsZero = client.submit("'zero'");
 
-        final CompletableFuture<List<Result>> futureFive = rsFive.all();
-        final CompletableFuture<List<Result>> futureZero = rsZero.all();
+            final CompletableFuture<List<Result>> futureFive = rsFive.all();
+            final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
-        final CountDownLatch latch = new CountDownLatch(2);
-        final List<String> order = new ArrayList<>();
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
+            final CountDownLatch latch = new CountDownLatch(2);
+            final List<String> order = new ArrayList<>();
+            final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        futureFive.thenAcceptAsync(r -> {
-            order.add(r.get(0).getString());
-            latch.countDown();
-        }, executor);
+            futureFive.thenAcceptAsync(r -> {
+                order.add(r.get(0).getString());
+                latch.countDown();
+            }, executor);
 
-        futureZero.thenAcceptAsync(r -> {
-            order.add(r.get(0).getString());
-            latch.countDown();
-        }, executor);
+            futureZero.thenAcceptAsync(r -> {
+                order.add(r.get(0).getString());
+                latch.countDown();
+            }, executor);
 
-        // wait for both results
-        latch.await(30000, TimeUnit.MILLISECONDS);
+            // wait for both results
+            latch.await(30000, TimeUnit.MILLISECONDS);
 
-        // should be two results
-        assertEquals(2, order.size());
+            // should be two results
+            assertEquals(2, order.size());
 
-        // ensure that "five" is first then "zero"
-        assertThat(order, contains("five", "zero"));
+            // ensure that "five" is first then "zero"
+            assertThat(order, contains("five", "zero"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldWaitForAllResultsToArrive() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
+        try {
+            final Client client = cluster.connect();
 
-        final AtomicInteger checked = new AtomicInteger(0);
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        while (!results.allItemsAvailable()) {
-            assertTrue(results.getAvailableItemCount() < 10);
-            checked.incrementAndGet();
-            Thread.sleep(100);
+            final AtomicInteger checked = new AtomicInteger(0);
+            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            while (!results.allItemsAvailable()) {
+                assertTrue(results.getAvailableItemCount() < 10);
+                checked.incrementAndGet();
+                Thread.sleep(100);
+            }
+
+            assertTrue(checked.get() > 0);
+            assertEquals(9, results.getAvailableItemCount());
+        } finally {
+            cluster.close();
         }
-
-        assertTrue(checked.get() > 0);
-        assertEquals(9, results.getAvailableItemCount());
-        cluster.close();
     }
 
     @Test
@@ -576,16 +609,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        final AtomicInteger counter = new AtomicInteger(0);
-        results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
-        assertEquals(9, counter.get());
-        assertThat(results.allItemsAvailable(), is(true));
+        try {
+            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final AtomicInteger counter = new AtomicInteger(0);
+            results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+            assertEquals(9, counter.get());
+            assertThat(results.allItemsAvailable(), is(true));
 
-        // cant stream it again
-        assertThat(results.stream().iterator().hasNext(), is(false));
-
-        cluster.close();
+            // cant stream it again
+            assertThat(results.stream().iterator().hasNext(), is(false));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -593,21 +628,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        final Iterator<Result> itty = results.iterator();
-        final AtomicInteger counter = new AtomicInteger(0);
-        while (itty.hasNext()) {
-            counter.incrementAndGet();
-            assertEquals(counter.get(), itty.next().getInt());
+        try {
+            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final Iterator<Result> itty = results.iterator();
+            final AtomicInteger counter = new AtomicInteger(0);
+            while (itty.hasNext()) {
+                counter.incrementAndGet();
+                assertEquals(counter.get(), itty.next().getInt());
+            }
+
+            assertEquals(9, counter.get());
+            assertThat(results.allItemsAvailable(), is(true));
+
+            // can't stream it again
+            assertThat(results.iterator().hasNext(), is(false));
+        } finally {
+            cluster.close();
         }
-
-        assertEquals(9, counter.get());
-        assertThat(results.allItemsAvailable(), is(true));
-
-        // can't stream it again
-        assertThat(results.iterator().hasNext(), is(false));
-
-        cluster.close();
     }
 
     @Test
@@ -615,27 +652,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        final CompletableFuture<List<Result>> batch1 = results.some(5);
-        final CompletableFuture<List<Result>> batch2 = results.some(5);
-        final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
+        try {
+            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final CompletableFuture<List<Result>> batch1 = results.some(5);
+            final CompletableFuture<List<Result>> batch2 = results.some(5);
+            final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
 
-        assertEquals(5, batch1.get().size());
-        assertEquals(1, batch1.get().get(0).getInt());
-        assertEquals(2, batch1.get().get(1).getInt());
-        assertEquals(3, batch1.get().get(2).getInt());
-        assertEquals(4, batch1.get().get(3).getInt());
-        assertEquals(5, batch1.get().get(4).getInt());
+            assertEquals(5, batch1.get().size());
+            assertEquals(1, batch1.get().get(0).getInt());
+            assertEquals(2, batch1.get().get(1).getInt());
+            assertEquals(3, batch1.get().get(2).getInt());
+            assertEquals(4, batch1.get().get(3).getInt());
+            assertEquals(5, batch1.get().get(4).getInt());
 
-        assertEquals(4, batch2.get().size());
-        assertEquals(6, batch2.get().get(0).getInt());
-        assertEquals(7, batch2.get().get(1).getInt());
-        assertEquals(8, batch2.get().get(2).getInt());
-        assertEquals(9, batch2.get().get(3).getInt());
+            assertEquals(4, batch2.get().size());
+            assertEquals(6, batch2.get().get(0).getInt());
+            assertEquals(7, batch2.get().get(1).getInt());
+            assertEquals(8, batch2.get().get(2).getInt());
+            assertEquals(9, batch2.get().get(3).getInt());
 
-        assertEquals(0, batchNothingLeft.get().size());
-
-        cluster.close();
+            assertEquals(0, batchNothingLeft.get().size());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -643,29 +682,31 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        final Result one = results.one();
-        final CompletableFuture<List<Result>> batch1 = results.some(4);
-        final CompletableFuture<List<Result>> batch2 = results.some(5);
-        final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
+        try {
+            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final Result one = results.one();
+            final CompletableFuture<List<Result>> batch1 = results.some(4);
+            final CompletableFuture<List<Result>> batch2 = results.some(5);
+            final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
 
-        assertEquals(1, one.getInt());
+            assertEquals(1, one.getInt());
 
-        assertEquals(4, batch1.get().size());
-        assertEquals(2, batch1.get().get(0).getInt());
-        assertEquals(3, batch1.get().get(1).getInt());
-        assertEquals(4, batch1.get().get(2).getInt());
-        assertEquals(5, batch1.get().get(3).getInt());
+            assertEquals(4, batch1.get().size());
+            assertEquals(2, batch1.get().get(0).getInt());
+            assertEquals(3, batch1.get().get(1).getInt());
+            assertEquals(4, batch1.get().get(2).getInt());
+            assertEquals(5, batch1.get().get(3).getInt());
 
-        assertEquals(4, batch2.get().size());
-        assertEquals(6, batch2.get().get(0).getInt());
-        assertEquals(7, batch2.get().get(1).getInt());
-        assertEquals(8, batch2.get().get(2).getInt());
-        assertEquals(9, batch2.get().get(3).getInt());
+            assertEquals(4, batch2.get().size());
+            assertEquals(6, batch2.get().get(0).getInt());
+            assertEquals(7, batch2.get().get(1).getInt());
+            assertEquals(8, batch2.get().get(2).getInt());
+            assertEquals(9, batch2.get().get(3).getInt());
 
-        assertEquals(0, batchNothingLeft.get().size());
-
-        cluster.close();
+            assertEquals(0, batchNothingLeft.get().size());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -692,70 +733,80 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 .workerPoolSize(workerPoolSizeForDriver)
                 .maxWaitForConnection(300000)
                 .create();
-        final Client client = cluster.connect();
+        try {
+            final Client client = cluster.connect();
 
-        final CountDownLatch latch = new CountDownLatch(requests);
-        final AtomicReference[] refs = new AtomicReference[requests];
-        IntStream.range(0, requests).forEach(ix -> {
-            refs[ix] = new AtomicReference();
-            client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
-                    rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
-        });
+            final CountDownLatch latch = new CountDownLatch(requests);
+            final AtomicReference[] refs = new AtomicReference[requests];
+            IntStream.range(0, requests).forEach(ix -> {
+                refs[ix] = new AtomicReference();
+                client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
+                        rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
+            });
 
-        // countdown should have reached zero as results should have eventually been all returned and processed
-        assertTrue(latch.await(30, TimeUnit.SECONDS));
+            // countdown should have reached zero as results should have eventually been all returned and processed
+            assertTrue(latch.await(30, TimeUnit.SECONDS));
 
-        final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
-        IntStream.range(0, requests).forEach(r ->
-                assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
+            final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
+            IntStream.range(0, requests).forEach(r ->
+                    assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldCloseWithServerDown() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        cluster.connect().init();
+        try {
+            cluster.connect().init();
 
-        stopServer();
-
-        cluster.close();
+            stopServer();
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldMarkHostDeadSinceServerIsDown() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        assertEquals(0, cluster.availableHosts().size());
-        cluster.connect().init();
-        assertEquals(1, cluster.availableHosts().size());
+        try {
+            assertEquals(0, cluster.availableHosts().size());
+            cluster.connect().init();
+            assertEquals(1, cluster.availableHosts().size());
 
-        stopServer();
+            stopServer();
 
-        cluster.connect().init();
-        assertEquals(0, cluster.availableHosts().size());
-
-        cluster.close();
+            cluster.connect().init();
+            assertEquals(0, cluster.availableHosts().size());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldFailWithBadServerSideSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("TinkerGraph.open().variables()");
-
         try {
-            results.all().join();
-            fail();
-        } catch (Exception ex) {
-            final Throwable inner = ExceptionUtils.getRootCause(ex);
-            assertTrue(inner instanceof ResponseException);
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+
+            final ResultSet results = client.submit("TinkerGraph.open().variables()");
+
+            try {
+                results.all().join();
+                fail();
+            } catch (Exception ex) {
+                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                assertTrue(inner instanceof ResponseException);
+                assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+            }
+
+            // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+            // from time to time, especially in the console if you're just exploring.
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
         }
-
-        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
-        // from time to time, especially in the console if you're just exploring.
-        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-
-        cluster.close();
     }
 
     @Test
@@ -786,12 +837,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
-        final List<Result> results = resultSet.all().join();
-        assertEquals(1, results.size());
-        assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
-
-        cluster.close();
+        try {
+            final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
+            final List<Result> results = resultSet.all().join();
+            assertEquals(1, results.size());
+            assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -804,12 +857,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
-        final List<Result> results = resultSet.all().join();
-        assertEquals(1, results.size());
-        assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
-
-        cluster.close();
+        try {
+            final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
+            final List<Result> results = resultSet.all().join();
+            assertEquals(1, results.size());
+            assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -822,9 +877,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
-        assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
-        cluster.close();
+        try {
+            final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+            assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -837,9 +895,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
-        assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
-        cluster.close();
+        try {
+            final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+            assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -847,35 +908,38 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
-        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-        assertEquals(1, r.size());
+        try {
 
-        final Map<String,Object> m = r.get(0).get(Map.class);
-        assertEquals(4, m.size());
-        assertEquals(1, m.get("id"));
-        assertEquals("person", m.get("label"));
-        assertEquals("vertex", m.get("type"));
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+            assertEquals(1, r.size());
 
-        final Map<String,Object> properties = (Map<String,Object>) m.get("properties");
-        assertEquals(2, properties.size());
+            final Map<String, Object> m = r.get(0).get(Map.class);
+            assertEquals(4, m.size());
+            assertEquals(1, m.get("id"));
+            assertEquals("person", m.get("label"));
+            assertEquals("vertex", m.get("type"));
 
-        final List<Object> names = (List<Object>) properties.get("name");
-        assertEquals(1, names.size());
+            final Map<String, Object> properties = (Map<String, Object>) m.get("properties");
+            assertEquals(2, properties.size());
 
-        final Map<String,Object> nameProperties = (Map<String,Object>) names.get(0);
-        assertEquals(2, nameProperties.size());
-        assertEquals(0l, nameProperties.get("id"));
-        assertEquals("marko", nameProperties.get("value"));
+            final List<Object> names = (List<Object>) properties.get("name");
+            assertEquals(1, names.size());
 
-        final List<Object> ages = (List<Object>) properties.get("age");
-        assertEquals(1, ages.size());
+            final Map<String, Object> nameProperties = (Map<String, Object>) names.get(0);
+            assertEquals(2, nameProperties.size());
+            assertEquals(0l, nameProperties.get("id"));
+            assertEquals("marko", nameProperties.get("value"));
 
-        final Map<String,Object> ageProperties = (Map<String,Object>) ages.get(0);
-        assertEquals(2, ageProperties.size());
-        assertEquals(1l, ageProperties.get("id"));
-        assertEquals(29, ageProperties.get("value"));
+            final List<Object> ages = (List<Object>) properties.get("age");
+            assertEquals(1, ages.size());
 
-        cluster.close();
+            final Map<String, Object> ageProperties = (Map<String, Object>) ages.get(0);
+            assertEquals(2, ageProperties.size());
+            assertEquals(1l, ageProperties.get("id"));
+            assertEquals(29, ageProperties.get("value"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -883,18 +947,20 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
         final Client client = cluster.connect();
 
-        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-        assertEquals(1, r.size());
+        try {
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+            assertEquals(1, r.size());
 
-        final Vertex v = r.get(0).get(DetachedVertex.class);
-        assertEquals(1, v.id());
-        assertEquals("person", v.label());
+            final Vertex v = r.get(0).get(DetachedVertex.class);
+            assertEquals(1, v.id());
+            assertEquals("person", v.label());
 
-        assertEquals(2, IteratorUtils.count(v.properties()));
-        assertEquals("marko", v.value("name"));
-        assertEquals(29, Integer.parseInt(v.value("age").toString()));
-
-        cluster.close();
+            assertEquals(2, IteratorUtils.count(v.properties()));
+            assertEquals("marko", v.value("name"));
+            assertEquals(29, Integer.parseInt(v.value("age").toString()));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -902,14 +968,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
         final Client client = cluster.connect();
 
-        final Instant now = Instant.now();
-        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
-        assertEquals(1, r.size());
+        try {
+            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
+            assertEquals(1, r.size());
 
-        final Instant then = r.get(0).get(Instant.class);
-        assertEquals(now, then);
-
-        cluster.close();
+            final Instant then = r.get(0).get(Instant.class);
+            assertEquals(Instant.EPOCH, then);
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -917,18 +984,20 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
         final Client client = cluster.connect();
 
-        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-        assertEquals(1, r.size());
+        try {
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+            assertEquals(1, r.size());
 
-        final Vertex v = r.get(0).get(DetachedVertex.class);
-        assertEquals(1, v.id());
-        assertEquals("person", v.label());
+            final Vertex v = r.get(0).get(DetachedVertex.class);
+            assertEquals(1, v.id());
+            assertEquals("person", v.label());
 
-        assertEquals(2, IteratorUtils.count(v.properties()));
-        assertEquals("marko", v.value("name"));
-        assertEquals(29, Integer.parseInt(v.value("age").toString()));
-
-        cluster.close();
+            assertEquals(2, IteratorUtils.count(v.properties()));
+            assertEquals("marko", v.value("name"));
+            assertEquals(29, Integer.parseInt(v.value("age").toString()));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -936,14 +1005,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
         final Client client = cluster.connect();
 
-        final Instant now = Instant.now();
-        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
-        assertEquals(1, r.size());
+        try {
+            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
+            assertEquals(1, r.size());
 
-        final Instant then = r.get(0).get(Instant.class);
-        assertEquals(now, then);
-
-        cluster.close();
+            final Instant then = r.get(0).get(Instant.class);
+            assertEquals(Instant.EPOCH, then);
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -951,14 +1021,16 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
         final Client client = cluster.connect();
 
-        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-        assertEquals(1, r.size());
+        try {
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+            assertEquals(1, r.size());
 
-        final Vertex v = r.get(0).get(ReferenceVertex.class);
-        assertEquals(1, v.id());
-        assertEquals("person", v.label());
-
-        cluster.close();
+            final Vertex v = r.get(0).get(ReferenceVertex.class);
+            assertEquals(1, v.id());
+            assertEquals("person", v.label());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -1125,26 +1197,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.open();
-        final Client sessionClient = cluster.connect(name.getMethodName());
-        final Client sessionlessClient = cluster.connect();
+        try {
+            final Client sessionClient = cluster.connect(name.getMethodName());
+            final Client sessionlessClient = cluster.connect();
 
-        //open transaction in session, then add vertex and commit
-        sessionClient.submit("g.tx().open()").all().get();
-        final Vertex vertexBeforeTx = sessionClient.submit("v=g.addV(\"person\").property(\"name\",\"stephen\").next()").all().get().get(0).getVertex();
-        assertEquals("person", vertexBeforeTx.label());
-        sessionClient.submit("g.tx().commit()").all().get();
+            //open transaction in session, then add vertex and commit
+            sessionClient.submit("g.tx().open()").all().get();
+            final Vertex vertexBeforeTx = sessionClient.submit("v=g.addV(\"person\").property(\"name\",\"stephen\").next()").all().get().get(0).getVertex();
+            assertEquals("person", vertexBeforeTx.label());
+            sessionClient.submit("g.tx().commit()").all().get();
 
-        // check that session transaction is closed
-        final boolean isOpen = sessionClient.submit("g.tx().isOpen()").all().get().get(0).getBoolean();
-        assertTrue("Transaction should be closed", !isOpen);
+            // check that session transaction is closed
+            final boolean isOpen = sessionClient.submit("g.tx().isOpen()").all().get().get(0).getBoolean();
+            assertTrue("Transaction should be closed", !isOpen);
 
-        //run a sessionless read
-        sessionlessClient.submit("g.V()").all().get();
+            //run a sessionless read
+            sessionlessClient.submit("g.V()").all().get();
 
-        // check that session transaction is still closed
-        final boolean isOpenAfterSessionless = sessionClient.submit("g.tx().isOpen()").all().get().get(0).getBoolean();
-        assertTrue("Transaction should stil be closed", !isOpenAfterSessionless);
-
+            // check that session transaction is still closed
+            final boolean isOpenAfterSessionless = sessionClient.submit("g.tx().isOpen()").all().get().get(0).getBoolean();
+            assertTrue("Transaction should stil be closed", !isOpenAfterSessionless);
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -1199,25 +1274,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldExecuteScriptsInMultipleSession() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client1 = cluster.connect(name.getMethodName() + "1");
-        final Client client2 = cluster.connect(name.getMethodName() + "2");
-        final Client client3 = cluster.connect(name.getMethodName() + "3");
+        try {
+            final Client client1 = cluster.connect(name.getMethodName() + "1");
+            final Client client2 = cluster.connect(name.getMethodName() + "2");
+            final Client client3 = cluster.connect(name.getMethodName() + "3");
 
-        final ResultSet results11 = client1.submit("x = 1");
-        final ResultSet results21 = client2.submit("x = 2");
-        final ResultSet results31 = client3.submit("x = 3");
-        assertEquals(1, results11.all().get().get(0).getInt());
-        assertEquals(2, results21.all().get().get(0).getInt());
-        assertEquals(3, results31.all().get().get(0).getInt());
+            final ResultSet results11 = client1.submit("x = 1");
+            final ResultSet results21 = client2.submit("x = 2");
+            final ResultSet results31 = client3.submit("x = 3");
+            assertEquals(1, results11.all().get().get(0).getInt());
+            assertEquals(2, results21.all().get().get(0).getInt());
+            assertEquals(3, results31.all().get().get(0).getInt());
 
-        final ResultSet results12 = client1.submit("x + 100");
-        final ResultSet results22 = client2.submit("x * 2");
-        final ResultSet results32 = client3.submit("x * 10");
-        assertEquals(101, results12.all().get().get(0).getInt());
-        assertEquals(4, results22.all().get().get(0).getInt());
-        assertEquals(30, results32.all().get().get(0).getInt());
-
-        cluster.close();
+            final ResultSet results12 = client1.submit("x + 100");
+            final ResultSet results22 = client2.submit("x * 2");
+            final ResultSet results32 = client3.submit("x * 10");
+            assertEquals(101, results12.all().get().get(0).getInt());
+            assertEquals(4, results22.all().get().get(0).getInt());
+            assertEquals(30, results32.all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -1367,22 +1444,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldAliasTraversalSourceVariables() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
         final Client client = cluster.connect();
+        try {    
+            try {
+                client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
+                fail("Should have tossed an exception because \"g\" is readonly in this context");
+            } catch (Exception ex) {
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                assertThat(root, instanceOf(ResponseException.class));
+                final ResponseException re = (ResponseException) root;
+                assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+            }
 
-        try {
-            client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
-            fail("Should have tossed an exception because \"g\" is readonly in this context");
-        } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+            final Client clientAliased = client.alias("g1");
+            final Vertex v = clientAliased.submit("g.addV().property('name','jason')").all().get().get(0).getVertex();
+            assertEquals("jason", v.value("name"));
+        } finally {
+            cluster.close();
         }
-
-        final Client clientAliased = client.alias("g1");
-        final Vertex v = clientAliased.submit("g.addV().property('name','jason')").all().get().get(0).getVertex();
-        assertEquals("jason", v.value("name"));
-
-        cluster.close();
     }
 
     @Test
@@ -1472,43 +1550,47 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldProcessSessionRequestsInOrderAfterTimeout() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
 
-        for(int index = 0; index < 50; index++)
-        {
-            final CompletableFuture<ResultSet> first = client.submitAsync(
-                    "Object mon1 = 'mon1';\n" +
-                            "synchronized (mon1) {\n" +
-                            "    mon1.wait();\n" +
-                            "} ");
+        try {
+            final Client client = cluster.connect(name.getMethodName());
 
-            final CompletableFuture<ResultSet> second = client.submitAsync(
-                    "Object mon2 = 'mon2';\n" +
-                            "synchronized (mon2) {\n" +
-                            "    mon2.wait();\n" +
-                            "}");
+            for (int index = 0; index < 50; index++) {
+                final CompletableFuture<ResultSet> first = client.submitAsync(
+                        "Object mon1 = 'mon1';\n" +
+                                "synchronized (mon1) {\n" +
+                                "    mon1.wait();\n" +
+                                "} ");
 
-            final CompletableFuture<ResultSet> third = client.submitAsync(
-                    "Object mon3 = 'mon3';\n" +
-                            "synchronized (mon3) {\n" +
-                            "    mon3.wait();\n" +
-                            "}");
+                final CompletableFuture<ResultSet> second = client.submitAsync(
+                        "Object mon2 = 'mon2';\n" +
+                                "synchronized (mon2) {\n" +
+                                "    mon2.wait();\n" +
+                                "}");
 
-            final CompletableFuture<ResultSet> fourth = client.submitAsync(
-                    "Object mon4 = 'mon4';\n" +
-                            "synchronized (mon4) {\n" +
-                            "    mon4.wait();\n" +
-                            "}");
+                final CompletableFuture<ResultSet> third = client.submitAsync(
+                        "Object mon3 = 'mon3';\n" +
+                                "synchronized (mon3) {\n" +
+                                "    mon3.wait();\n" +
+                                "}");
 
-            final CompletableFuture<List<Result>> futureFirst = first.get().all();
-            final CompletableFuture<List<Result>> futureSecond = second.get().all();
-            final CompletableFuture<List<Result>> futureThird = third.get().all();
-            final CompletableFuture<List<Result>> futureFourth = fourth.get().all();
+                final CompletableFuture<ResultSet> fourth = client.submitAsync(
+                        "Object mon4 = 'mon4';\n" +
+                                "synchronized (mon4) {\n" +
+                                "    mon4.wait();\n" +
+                                "}");
 
-            assertFutureTimeout(futureFirst);
-            assertFutureTimeout(futureSecond);
-            assertFutureTimeout(futureThird);
-            assertFutureTimeout(futureFourth);
+                final CompletableFuture<List<Result>> futureFirst = first.get().all();
+                final CompletableFuture<List<Result>> futureSecond = second.get().all();
+                final CompletableFuture<List<Result>> futureThird = third.get().all();
+                final CompletableFuture<List<Result>> futureFourth = fourth.get().all();
+
+                assertFutureTimeout(futureFirst);
+                assertFutureTimeout(futureSecond);
+                assertFutureTimeout(futureThird);
+                assertFutureTimeout(futureFourth);
+            }
+        } finally {
+            cluster.close();
         }
     }
 
@@ -1619,21 +1701,22 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldSendRequestIdBytecode() {
         final UUID overrideRequestId = UUID.randomUUID();
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
-        final Client client = Mockito.spy(cluster.connect().alias("g"));
-        Mockito.when(client.alias("g")).thenReturn(client);
-        GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client));
-        g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
-        cluster.close();
-        ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
-        verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
-        RequestOptions requestOptions = requestOptionsCaptor.getValue();
-        assertTrue(requestOptions.getOverrideRequestId().isPresent());
-        assertEquals(overrideRequestId, requestOptions.getOverrideRequestId().get());
+            final Client client = Mockito.spy(cluster.connect().alias("g"));
+            Mockito.when(client.alias("g")).thenReturn(client);
+            GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client));
+            g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
+            cluster.close();
+            ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
+            verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
+            RequestOptions requestOptions = requestOptionsCaptor.getValue();
+            assertTrue(requestOptions.getOverrideRequestId().isPresent());
+            assertEquals(overrideRequestId, requestOptions.getOverrideRequestId().get());
 
-        ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
-        verify(client).submitAsync(requestMessageCaptor.capture());
-        RequestMessage requestMessage = requestMessageCaptor.getValue();
-        assertEquals(overrideRequestId, requestMessage.getRequestId());
+            ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+            verify(client).submitAsync(requestMessageCaptor.capture());
+            RequestMessage requestMessage = requestMessageCaptor.getValue();
+            assertEquals(overrideRequestId, requestMessage.getRequestId());
+
     }
 
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
@@ -1654,5 +1737,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldClusterReadFileFromResources() throws Exception {
         final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);
         assertTrue(cluster != null);
+        cluster.close();
     }
 }

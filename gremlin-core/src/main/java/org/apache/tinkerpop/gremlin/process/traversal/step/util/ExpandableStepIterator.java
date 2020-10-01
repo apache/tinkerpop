@@ -30,11 +30,16 @@ import java.util.Iterator;
  */
 public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin<S>>, Serializable {
 
-    private final TraverserSet<S> traverserSet = new TraverserSet<>();
+    private TraverserSet<S> traverserSet;
     private final Step<S, ?> hostStep;
 
     public ExpandableStepIterator(final Step<S, ?> hostStep) {
+        this(hostStep, new TraverserSet<>());
+    }
+
+    public ExpandableStepIterator(final Step<S, ?> hostStep, final TraverserSet<S> traverserSet) {
         this.hostStep = hostStep;
+        this.traverserSet = traverserSet;
     }
 
     @Override

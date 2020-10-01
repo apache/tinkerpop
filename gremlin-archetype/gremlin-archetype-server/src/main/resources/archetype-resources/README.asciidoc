@@ -24,8 +24,8 @@ distributed by TinkerPop.
 
 == Prerequisites
 
-* Java 8 Update 40+
-* link:https://maven.apache.org/[Maven 3.x]
+* Java 11
+* link:https://maven.apache.org/[Maven 3.3+]
 * Gremlin Server is link:http://archive.apache.org/dist/tinkerpop/[downloaded] and unpackaged
 
 == Building and Running

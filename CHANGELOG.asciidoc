@@ -29,8 +29,11 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Fixed a bug where spark-gremlin was not re-attaching properties when using `dedup()`.
 * Ensured better consistency of the use of `null` as arguments to mutation steps.
 * Allowed `property(T.label,Object)` to be used if no value was supplied to `addV(String)`.
+* Allowed additional arguments to `Client.submit()` in Javascript driver to enable setting of parameters like `scriptEvaluationTimeout`.
+* Supported deserialization of `dict` as a key in a `dict` for Python.
 * Added a `Graph.Feature` for `supportsNullPropertyValues`.
 * Modified `TokenTraversal` to support `Property` thus `by(key)` and `by(value)` can now apply to `Edge` and meta-properties.
+* Added `SeedStrategy` to allow deterministic behavior for `coin()`, `sample()` and `Order.shuffle`.
 * Added `Grouping` step interface.
 * Added `TraversalParent.replaceTraversal()` which can replace a direct child traversal.
 * Added `ByModulatorOptimizationStrategy` which replaces certain standard traversals w/ optimized traversals (e.g. `TokenTraversal`).
@@ -49,12 +52,17 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
 * Configured GraphSON 3.0 as the default setting for the `GraphSONMapper`.
 * Bumped to Neo4j 3.4.11.
+* Bumped to Spark 3.0.0.
 * Bumped to Groovy 3.0.3.
+* Bumped to Jackson 2.11.x.
+* Supported build for Java 11.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
+* Added a kerberos KDC to the docker container for testing GLV's.
+* Added kerberos authentication to Gremlin-Python.
+* Added audit logging to bytecode-based traversals.
 * Changed `TraversalStrategy` application methodology to apply each strategy in turn to each level of the traversal hierarchy starting from root down to children.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
-* Bumped to Jackson 2.11.x.
 * Removed internal functionality for the session close message in Gremlin Server - the message is accepted but ignored if sent.
 * Removed `Property.Exceptions.propertyValueCanNotBeNull` exception type as `null` now has meaning in Gremlin.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.
@@ -79,10 +87,45 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
-[[release-3-4-8]]
-=== TinkerPop 3.4.8 (Release Date: NOT OFFICIALLY RELEASED YET)
+[[release-3-4-9]]
+=== TinkerPop 3.4.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Fix authorization bug when using `WsAndHttpChannelizerHandler` with keep-alive enabled.
+* Bumped to Jackson 2.11.x.
+* Bumped Netty 4.1.52.
+* Established a default read and write timeout for the `TornadoTransport` in Python, allowing it to be configurable.
+* Delegated handling of erroneous response to the worker thread pool instead of event loop thread pool in Java Driver.
+* Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.
+* Improved initialization time of Java Driver if the default serializer is replaced.
+* Deprecated `withGraph()` in favor of `withEmbedded()` on `AnonymousTraversalSource`.
+* Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
+* Implemented `AutoCloseable` on `MultiIterator`.
+* Fixed an iterator leak in `HasContainer`.
+* Avoid creating unnecessary detached objects in JVM.
+* Added support for `TraversalStrategy` usage in Javascript.
+* Added `Traversal.getTraverserSetSupplier()` to allow providers to supply their own `TraverserSet` instances.
+
+[[release-3-4-8]]
+=== TinkerPop 3.4.8 (Release Date: August 3, 2020)
+
+* Fixed bug in `has(T,Traversal)` where results were not being returned.
+* Fixed bug in `select(Traversal)` where side-effects were getting lost if accessed from the child traversal.
+* Fixed authorization bug when using `WsAndHttpChannelizerHandler` with keep-alive enabled.
+* Fixed bug in option-less construction of `DriverRemoteConnection` in Javascript.
+* Bumped Jackson to 2.9.10.5.
+* Improved sampling distribution for global scope `sample()` operations.
+
+==== Bugs
+
+* TINKERPOP-2288 Get ConnectionPoolBusyException and then ServerUnavailableExceptions
+* TINKERPOP-2352 Gremlin Python driver default pool size makes Gremlin keep-alive difficult
+* TINKERPOP-2374 SaslAndHttpBasicAuthenticationHandler can't extract authorization
+* TINKERPOP-2383 has(T,Traversal) does not return results
+* TINKERPOP-2384 Inject and withSideEffect causing different outcomes in order step
+
+==== Improvements
+
+* TINKERPOP-2328 Do not close all connections if just one has became closed
+* TINKERPOP-2376 Probability distribution controlled by weight when using sample step
 
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: June 1, 2020)
@@ -94,7 +137,7 @@ This release also includes changes from <<release-3-3-11, 3.3.11>>.
 * Modified `ImportGremlinPlugin` to allow for field imports.
 * Improved error message for `math()` when the selected key in a `Map` is `null` or not a `Number`.
 * Added `:cls` command to Gremlin Console to clear the screen.
-* Bump Netty 4.1.49.
+* Bumped Netty 4.1.49.
 
 ==== Bugs
 
@@ -134,7 +177,7 @@ This release also includes changes from <<release-3-3-10, 3.3.10>>.
 
 * Expanded the use of `by(String)` modulator so that it can work on `Map` as well as `Element`.
 * Improved error messaging for `by(String)` so that it is more clear as to what the problem is
-* Bump to Netty 4.1.42
+* Bumped to Netty 4.1.42
 * Improved SPARQL query translation to better allow for index optimizations during execution.
 * Improved Gremlin Server websocket handling preventing automatic server close of the channel for protocol errors.
 * Introduced internal `Buffer` API as a way to wrap Netty's Buffer API and moved `GraphBinaryReader`, `GraphBinaryWriter` and `TypeSerializer<T>` to `gremlin-core`.
@@ -218,8 +261,8 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 * Added a Docker command to start Gremlin Server with the standard GLV test configurations.
 * Added `aggregate(Scope,String)` and deprecated `store()` in favor of `aggregate(local)`.
 * Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
-* Bump to Netty 4.1.36.
-* Bump to Groovy 2.5.7.
+* Bumped to Netty 4.1.36.
+* Bumped to Groovy 2.5.7.
 * Added `userAgent` to RequestOptions. Gremlin Console sends `Gremlin Console/<version>` as the `userAgent`.
 * Fixed DriverRemoteConnection ignoring `with` `Token` options when multiple were set.
 * Added `:set warnings <true|false>` to Gremlin Console.
@@ -318,7 +361,7 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Added fallback resolver to `TypeSerializerRegistry` for GraphBinary.
 * Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
 * Support configuring the type registry builder for GraphBinary.
-* Bump to Groovy 2.5.6.
+* Bumped to Groovy 2.5.6.
 * Release working buffers in case of failure for GraphBinary.
 * GraphBinary: Use the same `ByteBuf` instance to write during serialization. Changed signature of write methods in type serializers.
 * Remove unused parameter in GraphBinary's `ResponseMessageSerializer`.
@@ -661,7 +704,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Made `Cluster` be able to open configuration file on resources directory.
 * Implemented `Traversal.clone()` operations for all language variants.
 * Refactored `PathProcessorStrategy` to use the marker model.
-* Bump to Tornado 5.x for gremlin-python.
+* Bumped to Tornado 5.x for gremlin-python.
 * Started keep-alive polling on `Connection` construction to ensure that a `Connection` doesn't die in the pool.
 * Deprecated `TraversalStrategies.applyStrategies()`.
 * Deprecated Jython support in `gremlin-python`.
@@ -859,6 +902,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped `httpclient` to 4.5.7.
 * Bumped `slf4j` to 1.7.25.
 * Bumped `commons-codec` to 1.12.
+* Bumped to Groovy 2.5.6.
+* Bumped to Hadoop 2.7.7.
 * Fixed partial response failures when using authentication in `gremlin-python`.
 * Fixed concurrency issues in `TraverserSet.toString()` and `ObjectWritable.toString()`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
@@ -1609,7 +1654,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `LambdaRestrictionStrategy` where traversals using `Lambda` scripts weren't causing the strategy to trigger.
 * Improved error messaging for bytecode deserialization errors in Gremlin Server.
 * Fixed an `ArrayOutOfBoundsException` in `hasId()` for the rare situation when the provided collection is empty.
-* Bump to Netty 4.0.53
+* Bumped to Netty 4.0.53
 * `TraversalVertexProgram` `profile()` now accounts for worker iteration in `GraphComputer` OLAP.
 * Returned the `Builder` instance from the `DetachedEdge.Builder` methods of `setOutE` and `setOutV`.
 * Added test framework for GLVs.
@@ -1627,10 +1672,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `GremlinScriptEngine.eval()` methods and replaced them with new overloads that include the specific `TraversalSource` to bind to.
 * Added `GraphHelper.cloneElements(Graph original, Graph clone)` to the `gremlin-test` module to quickly clone a graph.
 * Added `GremlinDsl.AnonymousMethod` annotation to help provide explicit types for anonymous methods when the types are not easily inferred.
-* Bump to GMavenPlus 1.6.
+* Bumped to GMavenPlus 1.6.
 * Added better error message for illegal use of `repeat()`-step.
 * Fixed a bug in `RangeByIsCountStrategy` that led to unexpected behaviors when predicates were used with floating point numbers.
-* Bump to Jackson 2.8.10.
+* Bumped to Jackson 2.8.10.
 * Deprecated `MutationListener.vertexPropertyChanged()` method that did not use `VertexProperty` and added a new method that does.
 * Added an `EmbeddedRemoteConnection` so that it's possible to mimic a remote connection within the same JVM.
 * Supported interruption for remote traversals.
@@ -1716,7 +1761,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
-* Bump to Netty 4.0.50
+* Bumped to Netty 4.0.50
 * Registered `HashMap$TreeNode` to Gryo.
 * Fixed a lambda-leak in `SackValueStep` where `BiFunction` must be tested for true lambda status.
 * Fixed a bug in `RangeByIsCountStrategy` that broke any `ConnectiveStep` that included a child traversal with an optimizable pattern.

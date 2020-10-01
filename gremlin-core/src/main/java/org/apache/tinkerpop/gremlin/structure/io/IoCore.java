@@ -28,7 +28,11 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
  * methods statically.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
+ * @deprecated As of release 3.4.0, partially replaced by {@link GraphTraversalSource#io(String)}. Notice
+ * {@link GraphTraversalSource#io(String)} doesn't support read operation from {@code java.io.InputStream} or write
+ * operation to {@code java.io.OutputStream}. Thus for readers or writers which need this functionality are safe to
+ * use this deprecated method. There is no intention to remove this method unless all the functionality is replaced
+ * by the `io` step of {@link GraphTraversalSource}.
  */
 @Deprecated
 public final class IoCore {

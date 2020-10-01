@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
-import org.codehaus.groovy.tools.shell.Groovysh;
+import org.apache.groovy.groovysh.Groovysh;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

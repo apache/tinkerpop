@@ -247,7 +247,9 @@ public class GremlinExecutor implements AutoCloseable {
     public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars,  final LifeCycle lifeCycle) {
         final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
-        logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
+        }
 
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(globalBindings);

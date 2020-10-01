@@ -23,8 +23,8 @@ tests in `SocialDslTest` for actual DSL usage.
 
 == Prerequisites
 
-* Java 8 Update 40+
-* link:https://maven.apache.org/[Maven 3.x]
+* Java 11
+* link:https://maven.apache.org/[Maven 3.3+]
 
 == Building and Running
 

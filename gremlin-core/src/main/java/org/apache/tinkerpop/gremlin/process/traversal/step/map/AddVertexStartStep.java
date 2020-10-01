@@ -100,7 +100,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
             this.first = false;
             final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
             final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(generator.generate(false, (Step) this, 1L)));
-            if (this.callbackRegistry != null) {
+            if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
                 final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
                 final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
                 this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));

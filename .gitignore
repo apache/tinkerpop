@@ -10,6 +10,7 @@ build_output.txt
 .classpath
 .project
 .settings
+.factorypath
 _bsp/
 doc/out
 docs/*.asciidoc
@@ -22,6 +23,7 @@ __pycache__/
 __version__.py
 .glv
 settings.xml
+package-lock.json
 tools/
 [Dd]ebug/
 [Rr]elease/

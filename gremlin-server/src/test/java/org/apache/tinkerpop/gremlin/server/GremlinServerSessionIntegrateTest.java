@@ -57,7 +57,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerIntegrationTest {
+public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private Log4jRecordingAppender recordingAppender = null;
     private Level originalLevel;
 
@@ -65,15 +65,23 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     public void setupForEachTest() {
         recordingAppender = new Log4jRecordingAppender();
         final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.addAppender(recordingAppender);
         originalLevel = rootLogger.getLevel();
+        final String nameOfTest = name.getMethodName();
+        switch (nameOfTest) {
+            case "shouldCloseSessionOnceOnRequest":
+            case "shouldHaveTheSessionTimeout":
+            case "shouldCloseSessionOnClientClose":
+                Logger.getRootLogger().setLevel(Level.INFO);
+                break;
+        }
+        rootLogger.addAppender(recordingAppender);
     }
 
     @After
     public void teardownForEachTest() {
         final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.removeAppender(recordingAppender);
         rootLogger.setLevel(originalLevel);
+        rootLogger.removeAppender(recordingAppender);
     }
 
     /**
@@ -91,11 +99,9 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
-                Logger.getRootLogger().setLevel(Level.INFO);
                 break;
             case "shouldCloseSessionOnClientClose":
                 clearNeo4j(settings);
-                Logger.getRootLogger().setLevel(Level.INFO);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;

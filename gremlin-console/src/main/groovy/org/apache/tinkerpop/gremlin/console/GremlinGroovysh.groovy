@@ -22,12 +22,12 @@ import groovy.transform.ThreadInterrupt
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
-import org.codehaus.groovy.tools.shell.Command
-import org.codehaus.groovy.tools.shell.Groovysh
+import org.apache.groovy.groovysh.Command
+import org.apache.groovy.groovysh.Groovysh
 import org.codehaus.groovy.tools.shell.IO
-import org.codehaus.groovy.tools.shell.ParseCode
-import org.codehaus.groovy.tools.shell.Parser
-import org.codehaus.groovy.tools.shell.util.CommandArgumentParser
+import org.apache.groovy.groovysh.ParseCode
+import org.apache.groovy.groovysh.Parser
+import org.apache.groovy.groovysh.util.CommandArgumentParser
 
 /**
  * Overrides the posix style parsing of Groovysh allowing for commands to parse prior to Groovy 2.4.x.

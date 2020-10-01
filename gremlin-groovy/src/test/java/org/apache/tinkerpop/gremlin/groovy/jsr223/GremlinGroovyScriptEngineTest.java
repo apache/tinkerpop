@@ -23,6 +23,7 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -413,4 +414,16 @@ public class GremlinGroovyScriptEngineTest {
         final Lambda l = (Lambda) engine.eval(" org.apache.tinkerpop.gremlin.util.function.Lambda.function(\"{ it.get() }\")");
         assertEquals("{ it.get() }", l.getLambdaScript());
     }
+
+    /**
+     * Test for TINKERPOP-2394 Unable to use __ class of a custom DSL when passing a script even if this class is imported
+     */
+	@Test
+	public void customizerShouldOverrideCoreImports() throws Exception {
+		DefaultImportCustomizer customizer = DefaultImportCustomizer.build()
+				.addClassImports(org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.__.class)
+				.create();
+		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customizer);
+		engine.eval("__.users();[]");
+	}
 }

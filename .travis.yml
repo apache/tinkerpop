@@ -2,9 +2,9 @@ language: java
 os:
   - linux
 jdk:
-  - openjdk8
+  - openjdk11
 sudo: required
-dist: xenial
+dist: bionic
 services:
   - docker
 cache:
@@ -36,29 +36,39 @@ before_install:
   - sudo apt install python3.6
   - sudo rm /usr/bin/python3
   - sudo ln -s python3.6 /usr/bin/python3
+  - sudo apt install gcc python3.6-dev libkrb5-dev
 
 jobs:
   include:
     - stage: "tests"
       script: "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-      name: "mvn clean install"
-    - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet"
+      name: "mvn clean install - jdk11"
+    - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests -Dci && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet"
       name: ".net"
-    - script: "touch gremlin-python/.glv && mvn clean install -q -DskipTests && mvn verify -pl gremlin-python"
+    - script: "touch gremlin-python/.glv && mvn clean install -q -DskipTests -Dci && mvn verify -pl gremlin-python"
       name: "python"
-    - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-javascript"
+    - script: "mvn clean install -q -DskipTests -Dci && mvn verify -pl :gremlin-javascript"
       name: "javascript"
     - script:
-      - "mvn clean install -q -DskipTests"
-      - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false"
+        - "mvn -version"
+        - "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      jdk: openjdk8
+      name: "mvn clean install - jdk8"
+    - script:
+        - "mvn clean install -q -DskipTests -Dci"
+        - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j"
       name: "gremlin server"
     - script:
-        - "mvn clean install -q -DskipTests"
-        - "mvn verify -pl :gremlin-console -DskipIntegrationTests=false"
+        - "mvn clean install -q -DskipTests -Dci"
+        - "mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false"
       name: "gremlin console"
     - script:
-      - "mvn clean install -q -DskipTests"
-      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipIntegrationTests=false"
-      name: "spark"
+      - "mvn clean install -q -DskipTests -Dci"
+      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'"
+      name: "spark - core"
+    - script:
+      - "mvn clean install -q -DskipTests -Dci"
+      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest"
+      name: "spark - gryo"
     - script: "docker/build.sh"
       name: "docker"

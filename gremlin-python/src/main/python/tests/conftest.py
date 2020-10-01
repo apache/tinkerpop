@@ -16,8 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
 import concurrent.futures
 import pytest
+import socket
 
 from six.moves import queue
 
@@ -32,9 +34,11 @@ from gremlin_python.driver.serializer import (
     GraphBinarySerializersV1)
 from gremlin_python.driver.tornado.transport import TornadoTransport
 
-# docker Gremlin Server = 172.17.0.2
-gremlin_server_host = "localhost"
-gremlin_server_url = 'ws://' + gremlin_server_host + ':45940/gremlin'
+gremlin_server_url = 'ws://localhost:{}/gremlin'
+anonymous_url = gremlin_server_url.format(45940)
+basic_url = gremlin_server_url.format(45941)
+kerberos_url = gremlin_server_url.format(45942)
+kerberized_service = 'test-service@{}'.format(socket.gethostname())
 
 
 @pytest.fixture
@@ -45,7 +49,7 @@ def connection(request):
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
-        conn = Connection(gremlin_server_url, 'gmodern', protocol,
+        conn = Connection(anonymous_url, 'gmodern', protocol,
                           lambda: TornadoTransport(), executor, pool)
     except OSError:
         executor.shutdown()
@@ -61,7 +65,7 @@ def connection(request):
 @pytest.fixture
 def client(request):
     try:
-        client = Client(gremlin_server_url, 'gmodern')
+        client = Client(anonymous_url, 'gmodern')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -71,11 +75,15 @@ def client(request):
         return client
 
 
-@pytest.fixture
-def secure_client(request):
+@pytest.fixture(params=['basic', 'kerberos'])
+def authenticated_client(request):
     try:
-        client = Client('ws://' + gremlin_server_host + ':45941/gremlin', 'gmodern',
-                        username='stephen', password='password')
+        if request.param == 'basic':
+            client = Client(basic_url, 'gmodern', username='stephen', password='password')
+        elif request.param == 'kerberos':
+            client = Client(kerberos_url, 'gmodern', kerberized_service=kerberized_service)
+        else:
+            raise ValueError("Invalid authentication option - " + request.param)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -89,13 +97,13 @@ def secure_client(request):
 def remote_connection(request):
     try:
         if request.param == 'graphbinaryv1':
-            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
                                                  message_serializer=serializer.GraphBinarySerializersV1())
         elif request.param == 'graphsonv2':
-            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
                                                  message_serializer=serializer.GraphSONSerializersV2d0())
         elif request.param == 'graphsonv3':
-            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
                                                  message_serializer=serializer.GraphSONSerializersV3d0())
         else:
             raise ValueError("Invalid serializer option - " + request.param)
@@ -108,10 +116,31 @@ def remote_connection(request):
         return remote_conn
 
 
-@pytest.fixture
-def remote_connection_v2(request):
+@pytest.fixture(params=['basic', 'kerberos'])
+def remote_connection_authenticated(request):
     try:
-        remote_conn = DriverRemoteConnection(gremlin_server_url, 'g',
+        if request.param == 'basic':
+            remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
+                                                 username='stephen', password='password',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'kerberos':
+            remote_conn = DriverRemoteConnection(kerberos_url, 'gmodern', kerberized_service=kerberized_service,
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        else:
+            raise ValueError("Invalid authentication option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+@pytest.fixture
+def remote_connection_graphsonV2(request):
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'g',
                                              message_serializer=serializer.GraphSONSerializersV2d0())
     except OSError:
         pytest.skip('Gremlin Server is not running')

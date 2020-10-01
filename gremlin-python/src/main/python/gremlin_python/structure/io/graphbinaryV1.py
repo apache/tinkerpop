@@ -38,6 +38,7 @@ from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardina
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
+from gremlin_python.structure.io.util import HashableDict
 
 log = logging.getLogger(__name__)
 
@@ -485,7 +486,7 @@ class MapIO(_GraphBinaryTypeIO):
         size = cls.read_int(b)
         the_dict = {}
         while size > 0:
-            k = r.readObject(b)
+            k = HashableDict.of(r.readObject(b))
             v = r.readObject(b)
             the_dict[k] = v
             size = size - 1

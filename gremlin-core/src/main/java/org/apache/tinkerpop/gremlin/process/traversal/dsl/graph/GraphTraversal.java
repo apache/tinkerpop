@@ -1431,7 +1431,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their properties.
+     * Filters vertices, edges and vertex properties based on their value of {@link T} where only {@link T#id} and
+     * {@link T#label} are supported.
      *
      * @param accessor          the {@link T} accessor of the property to filter on
      * @param propertyTraversal the traversal to filter the accessor value by
@@ -1441,13 +1442,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, propertyTraversal);
-        return this.asAdmin().addStep(
-                new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                        new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, accessor.getAccessor()))));
+        switch (accessor) {
+            case id:
+                return this.asAdmin().addStep(
+                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
+                                new IdStep<>(propertyTraversal.asAdmin()))));
+            case label:
+                return this.asAdmin().addStep(
+                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
+                                new LabelStep<>(propertyTraversal.asAdmin()))));
+            default:
+                throw new IllegalArgumentException("has(T,Traversal) can only take id or label as its argument");
+        }
+
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their properties.
+     * Filters vertices, edges and vertex properties based on the value of the specified property key.
      *
      * @param propertyKey       the key of the property to filter on
      * @param propertyTraversal the traversal to filter the property value by
@@ -2633,13 +2644,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Indexes all items of the current collection. The indexing format can be configured using the {@link GraphTraversal#with(String, Object)}
      * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions#indexer}.
      *
-     * Indexed as list: ["a","b","c"] => [["a",0],["b",1],["c",2]]
-     * Indexed as map:  ["a","b","c"] => {0:"a",1:"b",2:"c"}
+     * Indexed as list: ["a","b","c"] =&gt; [["a",0],["b",1],["c",2]]
+     * Indexed as map:  ["a","b","c"] =&gt; {0:"a",1:"b",2:"c"}
      *
      * If the current object is not a collection, this step will map the object to a single item collection/map:
      *
-     * Indexed as list: "a" => ["a",0]
-     * Indexed as map:  "a" => {0:"a"}
+     * Indexed as list: "a" =&gt; ["a",0]
+     * Indexed as map:  "a" =&gt; {0:"a"}
      *
      * @return the traversal with an appended {@link IndexStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#index-step" target="_blank">Reference Documentation - Index Step</a>
