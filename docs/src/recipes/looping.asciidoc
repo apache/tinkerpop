@@ -1,0 +1,88 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[looping]]
+== Looping
+One common use case when working with Gremlin is to perform complex looping statements using the `repeat()` step.  While many of the common patterns for looping within traversals are discussed in the documentation there are several more complex patterns that include additional steps which are also commonly used.  This section attempts to demonstrate how to use some of these more complex measurements.
+
+image:tree-lca.png[width=230,float=right] The following examples will use this graph depicted here:
+
+[gremlin-groovy]
+----
+g.addV().property(id, 'A').as('a').
+  addV().property(id, 'B').as('b').
+  addV().property(id, 'C').as('c').
+  addV().property(id, 'D').as('d').
+  addV().property(id, 'E').as('e').
+  addV().property(id, 'F').as('f').
+  addV().property(id, 'G').as('g').
+  addE('hasParent').from('a').to('b').
+  addE('hasParent').from('b').to('c').
+  addE('hasParent').from('d').to('c').
+  addE('hasParent').from('c').to('e').
+  addE('hasParent').from('e').to('f').
+  addE('hasParent').from('g').to('f').iterate()
+----
+
+=== Conditional Looping with Max Depth
+
+One common situation encountered when writing `repeat()` loop is the need to exit the loop when either a specific condition is met or a maximum depth is reached.  Given that graph above the following traversal demonstrates how to accomplish this type of complex exit condition.  In this example the traversal will start at vertex A and loop through all outgoing edges until it reaches vertex C or it until it has completed 3 loops.
+
+[gremlin-groovy,existing]
+----
+g.V('A').
+  repeat(out().simplePath()).
+    until(hasId('C').or().loops().is(3))
+----
+
+In the above case the traversal processes the `out().simplePath()` step once to move from vertex A to vertex B, a second time to move from vertex B to vertex C, and then exits the traversal because it satisfies the `hasId('C')` condition since it's reached vertex C.  If we however change that exit condition to be vertex G, we will see that this traversal now will continue to process thorough vertex X and will exit based on reaching the maximum number of loops (3).
+
+[gremlin-groovy,existing]
+----
+g.V('A').
+  repeat(out().simplePath()).
+    until(hasId('G').or().loops().is(3))
+----
+
+The key portion of the above traversal is the `until()` step.  This step is capable of accepting a `Traversal` object will keep the `repeat()` loop traversing until the evaluated output of the traversal is true, which causes the traverser to exit the `repeat()` loop.  Using the methodology allows complex logical conditions to be used as the exit criteria.
+
+=== Emitting Loop Depth
+
+Another common situation encountered when using `repeat()` loops is the desire to emit not only the value of the traverser at each step, but also to emit the depth of that element in the repeat loop.  Below are several different recipes for accomplishing this task based on what the desired output:
+
+If the desired output is to get each vertex and its associated depth this can be accomplished using this traversal.
+
+[gremlin-groovy,existing]
+----
+g.withSack(1).V('A').
+  repeat(both().simplePath().
+    sack(assign).by(loops())
+  ).emit().
+  project('vertex', 'depth').
+    by().
+    by(sack())
+----
+
+However, if the desired output is to get a single result per level containing all the vertices at that level this can be accomplished with this traversal.
+
+[gremlin-groovy,existing]
+----
+g.V('A').
+  repeat(both().simplePath().group('x').
+    by(loops())
+  ).emit().times(3).
+  cap('x')
+----
