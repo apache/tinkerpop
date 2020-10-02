@@ -24,6 +24,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver;
+using Gremlin.Net.Driver.Exceptions;
+using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;
@@ -201,8 +204,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldUseOptionsInTraversal()
         {
-            // smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
-            // test perspective because there's no way to access the internals of the strategy via bytecode
             var connection = _connectionFactory.CreateRemoteConnection();
             var options = new Dictionary<string,object>
             {
@@ -210,13 +211,14 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
                 {"y", true}
             };
             var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
-
-            var b = new Bindings();
+            
             var countWithStrategy = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();
             Assert.Equal(6, countWithStrategy);
+            
+            Assert.Equal(ResponseStatusCode.ServerTimeout, Assert.Throws<ResponseException>(() => 
+                g.With("y").With("x", "test").With(Tokens.ArgsEvalTimeout, 10).Inject(1)
+                    .SideEffect(Lambda.Groovy("Thread.sleep(10000)")).Iterate()).StatusCode);
 
-            var countWith = g.With("x", "test").With("y", true).V().Count().Next();
-            Assert.Equal(6, countWith);
         }
 
         [Fact]

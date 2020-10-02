@@ -32,6 +32,11 @@ namespace Gremlin.Net.Driver
     public class Tokens
     {
         /// <summary>
+        ///     The key for the unique identifier of the request. 
+        /// </summary>
+        public static string RequestId = "requestId";
+        
+        /// <summary>
         ///     Operation used by the client to authenticate itself.
         /// </summary>
         public static string OpsAuthentication = "authentication";
@@ -74,24 +79,25 @@ namespace Gremlin.Net.Driver
         public static string ProcessorSession = "session";
 
         /// <summary>
-        ///     Argument name that allows to defines the number of iterations each ResponseMessage should contain - overrides the
-        ///     resultIterationBatchSize server setting.
+        ///     Argument name that allows to definition of the number of iterations each ResponseMessage should
+        ///     contain - overrides the resultIterationBatchSize server setting.
         /// </summary>
         public static string ArgsBatchSize = "batchSize";
 
         /// <summary>
-        ///     Argument name that allows to provide a map of key/value pairs to apply as variables in the context of the Gremlin
-        ///     script.
+        ///     Argument name that allows definition of a map of key/value pairs to apply as variables in the
+        ///     context of the Gremlin request sent to the server.
         /// </summary>
         public static string ArgsBindings = "bindings";
 
         /// <summary>
-        ///     Argument name that allows to define aliases that represent globally bound Graph and TraversalSource objects.
+        ///     Argument name that allows definition of alias names for Graph and TraversalSource objects on the
+        ///     remote system.
         /// </summary>
         public static string ArgsAliases = "aliases";
 
         /// <summary>
-        ///     Argument name that corresponds to the Traversal to evaluate.
+        ///     Argument name that corresponds to the Gremlin to evaluate.
         /// </summary>
         public static string ArgsGremlin = "gremlin";
 
@@ -99,6 +105,12 @@ namespace Gremlin.Net.Driver
         ///     Argument name that allows to define the id of session.
         /// </summary>
         public static string ArgsSession = "session";
+
+        /// <summary>
+        ///     Argument name that allows a value that is a custom string that the user can pass to a server that
+        ///     might accept it for purpose of identifying the kind of client it came from.
+        /// </summary>
+        public static string ArgsUserAgent = "userAgent";
 
         /// <summary>
         ///     Argument name that allows to specify the unique identifier for the request.
@@ -119,12 +131,12 @@ namespace Gremlin.Net.Driver
         public static string ArgsAggregateTo = "aggregateTo";
 
         /// <summary>
-        ///     Argument name that allows to change the flavor of Gremlin used (e.g. gremlin-groovy).
+        ///     Argument name that allows definition of the flavor of Gremlin used (e.g. gremlin-groovy) to process the request.
         /// </summary>
         public static string ArgsLanguage = "language";
 
         /// <summary>
-        ///     Argument name that allows to override the server setting that determines the maximum time to wait for a
+        ///     Argument name that allows the override of the server setting that determines the maximum time to wait for a
         ///     request to execute on the server.
         /// </summary>
         public static string ArgsEvalTimeout = "evaluationTimeout";

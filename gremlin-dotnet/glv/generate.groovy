@@ -256,6 +256,7 @@ def binding = ["pmethods": P.class.getMethods().
                         findAll { GraphTraversalSource.class.equals(it.returnType) }.
                         findAll {
                             !it.name.equals("clone") &&
+                                    !it.name.equals(TraversalSource.Symbols.with) &&
                                     !it.name.equals(TraversalSource.Symbols.withRemote) &&
                                     !it.name.equals(TraversalSource.Symbols.withComputer)
                         }.
