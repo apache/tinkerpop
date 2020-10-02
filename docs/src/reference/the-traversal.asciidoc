@@ -376,7 +376,7 @@ g.E().store('x').by('weight').cap('x')
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-java.lang.String-++[`aggregate(String)`],
-++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String-++[`aggregate(Scope,String)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String-++[`aggregate(Scope,String)`]
 
 [[and-step]]
 === And Step
