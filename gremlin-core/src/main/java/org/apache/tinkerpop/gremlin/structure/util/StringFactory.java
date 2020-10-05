@@ -34,6 +34,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -243,7 +245,14 @@ public final class StringFactory {
     }
 
     public static String traversalString(final Traversal.Admin<?, ?> traversal) {
-        return traversal.getSteps().toString();
+        // generally speaking the need to show the profile steps in a toString() is limited to TinkerPop developers.
+        // most users would be confused by the output to profile as these steps are proliferated about the traversal
+        // and are internal collectors of data not the actual steps the user specified. the traversal profile output
+        // looks cleaner without this cruft and hopefully the lack of it's existence should not confuse TinkerPop
+        // developers trying to debug things. when You, yes, you future Stephen, find this comment....sorry?
+        return traversal.getSteps().stream().filter(
+                    s -> !(s instanceof ProfileStep) && !(s instanceof ProfileSideEffectStep)).
+                collect(Collectors.toList()).toString();
     }
 
     public static String storageString(final String internalString) {
