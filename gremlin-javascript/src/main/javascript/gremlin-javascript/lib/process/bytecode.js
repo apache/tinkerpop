@@ -81,10 +81,39 @@ class Bytecode {
       const val = values[i - 1];
       if (val instanceof Traversal && val.graph != null)
         throw new Error("The child traversal of ${val} was not spawned anonymously - use " +
-            "the __ class rather than a TraversalSource to construct the child traversal");
+          "the __ class rather than a TraversalSource to construct the child traversal");
       instruction[i] = val;
     }
     return instruction;
+  }
+
+  getBytecodeAsList() {
+    function generate(instructions, step) {
+      const list = [];
+      if (!instructions) return list;
+      // build the list from the glv instructions.
+      for (let i = 0; i < instructions.length; i++) {
+        const params = instructions[i].slice(1);
+        const subList = [instructions[i][0]];
+        list.push(subList);
+        if (params.length) {
+          for (let k = 0; k < params.length; k++) {
+            if (Object(params[k]) === params[k]) {
+              if (params[k] instanceof Traversal) {
+                subList.push(generate(step ? params[k].getBytecode().stepInstructions : params[k].getBytecode().sourceInstructions, step));
+              } else if (params[k].toString() === "[object Object]") {
+                subList.push(params[k]);
+              }
+            } else {
+              subList.push([params[k]]);
+            }
+          }
+        }
+      }
+      return list;
+    }
+    const byteCodeAsList = [generate(this.sourceInstructions, false), generate(this.stepInstructions, true)]
+    return byteCodeAsList;
   }
 
   /**
@@ -92,10 +121,7 @@ class Bytecode {
    * @returns {String}
    */
   toString() {
-    return (
-      (this.sourceInstructions.length > 0 ? JSON.stringify(this.sourceInstructions) : '') +
-      (this.stepInstructions.length   > 0 ? JSON.stringify(this.stepInstructions) : '')
-    );
+    return JSON.stringify(this.getBytecodeAsList());
   }
 }
 
