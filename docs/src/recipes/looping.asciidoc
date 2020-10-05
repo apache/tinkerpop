@@ -39,7 +39,11 @@ g.addV().property(id, 'A').as('a').
 
 === Conditional Looping with Max Depth
 
-One common situation encountered when writing `repeat()` loop is the need to exit the loop when either a specific condition is met or a maximum depth is reached.  Given that graph above the following traversal demonstrates how to accomplish this type of complex exit condition.  In this example the traversal will start at vertex A and loop through all outgoing edges until it reaches vertex C or it until it has completed 3 loops.
+One common situation encountered when writing `repeat()` loop is the need to exit the loop when either a 
+specific condition is met or a maximum depth is reached.  Given that graph above the following traversal 
+demonstrates how to accomplish this type of complex exit condition.  In this example the traversal will 
+start at vertex A and loop through all outgoing edges until it reaches vertex C or until it has 
+completed 3 loops.
 
 [gremlin-groovy,existing]
 ----
@@ -48,7 +52,11 @@ g.V('A').
     until(hasId('C').or().loops().is(3))
 ----
 
-In the above case the traversal processes the `out().simplePath()` step once to move from vertex A to vertex B, a second time to move from vertex B to vertex C, and then exits the traversal because it satisfies the `hasId('C')` condition since it's reached vertex C.  If we however change that exit condition to be vertex G, we will see that this traversal now will continue to process thorough vertex X and will exit based on reaching the maximum number of loops (3).
+In the above case the traversal processes the `out().simplePath()` step once to move from vertex A to 
+vertex B, a second time to move from vertex B to vertex C, and then exits the traversal because it 
+satisfies the `hasId('C')` condition since it's reached vertex C.  If we however change that exit condition 
+to be vertex G, we will see that this traversal now will continue to process thorough vertex X and will 
+exit based on reaching the maximum number of loops (3).
 
 [gremlin-groovy,existing]
 ----
@@ -57,11 +65,16 @@ g.V('A').
     until(hasId('G').or().loops().is(3))
 ----
 
-The key portion of the above traversal is the `until()` step.  This step is capable of accepting a `Traversal` object will keep the `repeat()` loop traversing until the evaluated output of the traversal is true, which causes the traverser to exit the `repeat()` loop.  Using the methodology allows complex logical conditions to be used as the exit criteria.
+The key portion of the above traversal is the `until()` step.  This step is capable of accepting a `Traversal` 
+object which continues the `repeat()` loop traversing until the evaluated output of the traversal is true, when
+the traverser exits the `repeat()` loop.  This methodology allows complex logical conditions 
+to be used as the exit criteria.
 
 === Emitting Loop Depth
 
-Another common situation encountered when using `repeat()` loops is the desire to emit not only the value of the traverser at each step, but also to emit the depth of that element in the repeat loop.  Below are several different recipes for accomplishing this task based on what the desired output:
+Another common situation encountered when using `repeat()` loops is the desire to emit not only the value 
+of the traverser at each step, but also to emit the depth of that element in the repeat loop.  Below are 
+several different recipes for accomplishing this task based on what the desired output:
 
 If the desired output is to get each vertex and its associated depth this can be accomplished using this traversal.
 
@@ -76,7 +89,8 @@ g.withSack(1).V('A').
     by(sack())
 ----
 
-However, if the desired output is to get a single result per level containing all the vertices at that level this can be accomplished with this traversal.
+However, if the desired output is to get a single result per level containing all the vertices at that level 
+this can be accomplished with this traversal.
 
 [gremlin-groovy,existing]
 ----

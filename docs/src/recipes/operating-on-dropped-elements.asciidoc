@@ -17,11 +17,23 @@ limitations under the License.
 [[operating-on-dropped-elements]]
 == Operating on Dropped Elements
 
-One common scenario that happens when dropping elements using a traversal is the desire to perform some sort of operation on the elements being removed.  This simplest form of this scenario is returning the number of elements being dropped from the traversal, which is shown in the example below from the "modern" graph.
+One common scenario that happens when dropping elements using a traversal is the desire to perform 
+some sort of operation on the elements being removed.  This simplest is returning 
+the number of elements being dropped from the traversal, which is shown in the example below from the 
+"modern" graph.
 
 [gremlin-groovy,modern]
 ----
 g.V().has('lang', 'java').sideEffect(drop()).count()
 ----
 
-While this may seem a bit counterintuitive, what is occurring in this recipe is that the `sideEffect()` step is performing the `drop()` while each of the input traverser is still passed along to the remainder of the traversal, which in this case is a `count()` operation.  This pattern can be extended beyond a simple count to perform a variety of more complex traversals based on the dropped traversal such as removing child nodes in the case of a tree or setting properties on adjacent vertices.
+While this may seem a bit counterintuitive, what is occurring in this recipe is that the `sideEffect()` 
+step is performing the `drop()` while each of the input traverser is still passed along to the remainder 
+of the traversal, which in this case is a `count()` operation.  This pattern can be extended beyond a 
+simple count to perform a variety of more complex traversals based on the dropped traversal such as 
+removing child nodes in the case of a tree or setting properties on adjacent vertices.
+
+WARNING: Some graph implementations may not behave in the same manner as TinkerGraph when using
+side effects, such as the `sideEffect(drop())`.  While the specified pattern works for TinkerGraph, we 
+recommend that this pattern be tested on your chosen implementation to ensure that it functions in the 
+same manner.
