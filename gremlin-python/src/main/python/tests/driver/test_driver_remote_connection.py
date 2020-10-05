@@ -214,10 +214,10 @@ class TestDriverRemoteConnection(object):
 
     def test_clone(self, remote_connection):
         g = traversal().withRemote(remote_connection)
-        t = g.V().count()
-        assert 6 == t.next()
-        assert 6 == t.clone().next()
-        assert 6 == t.clone().next()
+        t = g.V().both()
+        assert 12 == len(t.toList())
+        assert 5 == t.clone().limit(5).count().next()
+        assert 10 == t.clone().limit(10).count().next()
 
     def test_authenticated(self, remote_connection_authenticated):
         statics.load_statics(globals())
