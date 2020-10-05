@@ -646,7 +646,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Traverser} to a {@link Map} of bindings as specified by the provided match traversals.
      *
      * @param matchTraversals the traversal that maintain variables which must hold for the life of the traverser
-     * @param <E2>            the type of the obejcts bound in the variables
+     * @param <E2>            the type of the objects bound in the variables
      * @return the traversal with an appended {@link MatchStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#match-step" target="_blank">Reference Documentation - Match Step</a>
      * @since 3.0.0-incubating
