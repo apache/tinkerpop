@@ -70,6 +70,38 @@ const sg = g.withStrategies(
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2054[TINKERPOP-2054]
 
+==== Per Request Options
+
+With Java it has been possible to pass per-request settings for both scripts and bytecode. While Javascript, Python,
+and .NET allowed this in various ways, it wasn't quite as convenient as Java, nor was it well documented. In this
+release, the approach for making this sort of per-request configurations is now much more consistent across languages.
+We see this most evident in bytecode based requests:
+
+[source,java,tab]
+----
+g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows");
+----
+[source,csharp]
+----
+g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count();
+----
+[source,javascript]
+----
+g.with_('evaluationTimeout', 500).V().out('knows');
+----
+[source,python]
+----
+g.with_('evaluationTimeout', 500).V().out('knows')
+----
+
+Please see the new "Per Request Settings" sections for each language in the
+<<gremlin-drivers-variants, Gremlin Drivers and Variants>> section for information on how to send scripts with specific
+request configurations.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2296[TINKERPOP-2296],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2420[TINKERPOP-2420],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2421[TINKERPOP-2421]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

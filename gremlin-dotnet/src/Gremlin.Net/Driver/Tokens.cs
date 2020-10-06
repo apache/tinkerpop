@@ -79,8 +79,8 @@ namespace Gremlin.Net.Driver
         public static string ProcessorSession = "session";
 
         /// <summary>
-        ///     Argument name that allows to definition of the number of iterations each ResponseMessage should
-        ///     contain - overrides the resultIterationBatchSize server setting.
+        ///     Argument name that allows the definition of the number of items each ResponseMessage should
+        ///     contain from a particular result - overrides the resultIterationBatchSize server setting.
         /// </summary>
         public static string ArgsBatchSize = "batchSize";
 

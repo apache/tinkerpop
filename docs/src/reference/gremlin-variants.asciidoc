@@ -216,7 +216,7 @@ List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated). Use of `Tokens`
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). Use of `Tokens`
 to reference these options is preferred.
 
 anchor:java-imports[]
@@ -685,11 +685,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,python]
 ----
-vertices = g.with_('evaluationTimeout', 500L).V().out('knows').toList()
+vertices = g.with_('evaluationTimeout', 500).V().out('knows').toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 anchor:python-imports[]
 [[gremlin-python-imports]]
@@ -966,7 +966,7 @@ result_set = client.submit('g.V().repeat(both()).times(100)', result_options={'e
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 [[gremlin-python-dsl]]
 === Domain Specific Languages
@@ -1122,6 +1122,18 @@ the remote end.
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=connecting]
 ----
 
+Some connection options can also be set on individual requests using the `With()` step on the `TraversalSource`.
+For instance to set request timeout to 500 milliseconds:
+
+[source,csharp]
+----
+var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
+available as constants on the `Gremlin.Net.Driver.Tokens` class.
+
 [[gremlin-dotnet-imports]]
 === Common Imports
 
@@ -1246,6 +1258,20 @@ It is also possible to initialize the `Client` to use <<sessions,sessions>>:
 var gremlinServer = new GremlinServer("localhost", 8182);
 var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
 ----
+
+==== Per Request Settings
+
+The `GremlinClient.Submit()` functions accept an option to build a raw `RequestMessage`. A good use-case for this
+feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current request.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
+available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
 anchor:gremlin-net-dsl[]
 [[gremlin-dotnet-dsl]]
@@ -1419,11 +1445,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,javascript]
 ----
-const vertices = await g.with_('evaluationTimeout', 500L).V().out('knows').toList()
+const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 [[gremlin-javascript-imports]]
 === Common Imports
@@ -1505,7 +1531,7 @@ const result = await client.submit("g.V().repeat(both()).times(100)", null, { ev
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages

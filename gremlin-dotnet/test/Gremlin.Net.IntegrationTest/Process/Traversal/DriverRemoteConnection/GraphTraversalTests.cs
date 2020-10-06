@@ -215,9 +215,10 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var countWithStrategy = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();
             Assert.Equal(6, countWithStrategy);
             
-            Assert.Equal(ResponseStatusCode.ServerTimeout, Assert.Throws<ResponseException>(() => 
-                g.With("y").With("x", "test").With(Tokens.ArgsEvalTimeout, 10).Inject(1)
-                    .SideEffect(Lambda.Groovy("Thread.sleep(10000)")).Iterate()).StatusCode);
+            var responseException = Assert.Throws<ResponseException>(() =>
+                                 g.With("y").With("x", "test").With(Tokens.ArgsEvalTimeout, 10).Inject(1)
+                                  .SideEffect(Lambda.Groovy("Thread.sleep(10000)")).Iterate());
+            Assert.Equal(ResponseStatusCode.ServerTimeout, responseException.StatusCode);
 
         }
 
