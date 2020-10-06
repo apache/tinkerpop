@@ -20,6 +20,7 @@ ext/
 *$py.class
 __pycache__/
 *.py[cdo]
+**/venv/
 __version__.py
 .glv
 settings.xml
