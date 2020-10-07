@@ -87,41 +87,12 @@ class Bytecode {
     return instruction;
   }
 
-  getBytecodeAsList() {
-    function generate(instructions, step) {
-      const list = [];
-      if (!instructions) return list;
-      // build the list from the glv instructions.
-      for (let i = 0; i < instructions.length; i++) {
-        const params = instructions[i].slice(1);
-        const subList = [instructions[i][0]];
-        list.push(subList);
-        if (params.length) {
-          for (let k = 0; k < params.length; k++) {
-            if (Object(params[k]) === params[k]) {
-              if (params[k] instanceof Traversal) {
-                subList.push(generate(step ? params[k].getBytecode().stepInstructions : params[k].getBytecode().sourceInstructions, step));
-              } else if (params[k].toString() === "[object Object]") {
-                subList.push(params[k]);
-              }
-            } else {
-              subList.push([params[k]]);
-            }
-          }
-        }
-      }
-      return list;
-    }
-    const byteCodeAsList = [generate(this.sourceInstructions, false), generate(this.stepInstructions, true)]
-    return byteCodeAsList;
-  }
-
   /**
    * Returns the JSON representation of the source and step instructions
    * @returns {String}
    */
   toString() {
-    return JSON.stringify(this.getBytecodeAsList());
+    return JSON.stringify([this.sourceInstructions, this.stepInstructions]);
   }
 }
 

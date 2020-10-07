@@ -26,15 +26,34 @@ const assert = require('assert');
 const graph = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const __ = graphTraversalModule.statics;
+const { ReadOnlyStrategy } = require('../../lib/process/traversal-strategy');
 
 describe('Bytecode', () => {
 
     describe('#toString()', () => {
-        it('should produce valid string representation', () => {
+        it('should produce valid string representation of bytecode', () => {
+            const g = new graph.Graph().traversal();
+            const bytecode = g.V().hasLabel("person").has("name", "peter");
+            assert.ok(bytecode);
+            assert.strictEqual(bytecode.toString(), '[[],[["V"],["hasLabel","person"],["has","name","peter"]]]');
+        });
+        it('should produce valid string representation of bytecode with reference to inner steps', () => {
             const g = new graph.Graph().traversal();
             const bytecode = g.V().hasLabel("airport").where(__.outE("route").hasId(7753));
             assert.ok(bytecode);
-            assert.strictEqual(bytecode.toString(), '[[],[["V"],["hasLabel",["airport"]],["where",[["outE",["route"]],["hasId",[7753]]]]]]');
+            assert.strictEqual(bytecode.toString(), '[[],[["V"],["hasLabel","airport"],["where",[["outE","route"],["hasId",7753]]]]]');
+        });
+        it('should produce valid string representation of bytecode with multiple parameters', () => {
+            const g = new graph.Graph().traversal();
+            const bytecode = g.V().has('person','name','marko');
+            assert.ok(bytecode);
+            assert.strictEqual(bytecode.toString(), '[[],[["V"],["has","person","name","marko"]]]');
+        });
+        it('should produce valid string representation of bytecode with strategies', () => {
+            const g = new graph.Graph().traversal();
+            const bytecode = g.with_('enabled').withStrategies(new ReadOnlyStrategy()).V();
+            assert.ok(bytecode);
+            assert.strictEqual(bytecode.toString(), '[[["withStrategies",{"fqcn":"org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy","configuration":{"enabled":true}}],["withStrategies",{"fqcn":"org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy","configuration":{}}]],[["V"]]]');
         });
     });
 });
