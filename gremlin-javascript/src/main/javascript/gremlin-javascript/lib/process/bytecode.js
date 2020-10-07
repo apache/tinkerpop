@@ -86,10 +86,7 @@ class Bytecode {
    * @returns {String}
    */
   toString() {
-    return (
-      (this.sourceInstructions.length > 0 ? JSON.stringify(this.sourceInstructions) : '') +
-      (this.stepInstructions.length   > 0 ? JSON.stringify(this.stepInstructions) : '')
-    );
+    return JSON.stringify([this.sourceInstructions, this.stepInstructions]);
   }
 }
 
