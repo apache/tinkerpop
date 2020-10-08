@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.driver;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
@@ -39,6 +37,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.Math.toIntExact;
 
 /**
  * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
@@ -177,7 +178,8 @@ public interface Channelizer extends ChannelHandler {
 
         @Override
         public Object createKeepAliveMessage() {
-            return new PingWebSocketFrame();
+            throw new UnsupportedOperationException(
+                    "WebSocketChannelizer uses Netty's IdleStateHandler to send keep alive ping frames to the server.");
         }
 
         /**
@@ -214,10 +216,13 @@ public interface Channelizer extends ChannelHandler {
                             connection.getUri(), WebSocketVersion.V13, null, /*allow extensions*/ true,
                             EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getWsHandshakeTimeout());
 
+            final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
+
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
             pipeline.addLast(WebSocketClientCompressionHandler.INSTANCE);
+            pipeline.addLast("idle-state-Handler", new IdleStateHandler(0, keepAliveInterval, 0));
             pipeline.addLast("ws-handler", handler);
             pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
