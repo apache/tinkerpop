@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,8 +45,8 @@ import java.util.function.Function;
  * the configuration file. The {@link TraversalSource} instances are rebound to the {@code GraphManager} once
  * initialization scripts construct them.
  */
-public final class DefaultGraphManager implements GraphManager {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
+public class DefaultGraphManager implements GraphManager {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultGraphManager.class);
 
     private final Map<String, Graph> graphs = new ConcurrentHashMap<>();
     private final Map<String, TraversalSource> traversalSources = new ConcurrentHashMap<>();
@@ -52,17 +55,19 @@ public final class DefaultGraphManager implements GraphManager {
      * Create a new instance using the {@link Settings} from Gremlin Server.
      */
     public DefaultGraphManager(final Settings settings) {
-        settings.graphs.entrySet().forEach(e -> {
-            try {
-                final Graph newGraph = GraphFactory.open(e.getValue());
-                graphs.put(e.getKey(), newGraph);
-                logger.info("Graph [{}] was successfully configured via [{}].", e.getKey(), e.getValue());
-            } catch (RuntimeException re) {
-                logger.warn(String.format("Graph [%s] configured at [%s] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: %s",
-                        e.getKey(), e.getValue(), re.getMessage()), re);
-                if (re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
-            }
-        });
+        settings.graphs.forEach(this::addGraph);
+    }
+    
+    protected void addGraph(String name, String configurationFile) {
+        try {
+            final Graph newGraph = GraphFactory.open(configurationFile);
+            putGraph(name, newGraph);
+            logger.info("Graph [{}] was successfully configured via [{}].", name, configurationFile);
+        } catch (RuntimeException re) {
+            logger.warn(String.format("Graph [%s] configured at [%s] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: %s",
+                    name, configurationFile, re.getMessage()), re);
+            if (re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
+        }
     }
 
     public final Set<String> getGraphNames() {
