@@ -64,6 +64,13 @@ describe('Translator', function () {
       assert.strictEqual(script, 'g.V().hasLabel(\'person\').has(\'age\', gt(30))');
     });
 
+    it('should produce valid script representation from bytecode glv steps containing a string predicate', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V().hasLabel('person').has('name', t.TextP.containing("foo")).getBytecode());
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V().hasLabel(\'person\').has(\'name\', containing(\'foo\'))');
+    });
+
     it('should produce valid script representation from bytecode glv steps with child', function () {
       const g = new graph.Graph().traversal();
       const script = new Translator('g').translate(g.V().filter(__.outE('created')).getBytecode());
