@@ -271,8 +271,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 final Throwable t = ExceptionUtils.getRootCause(ex);
                 if (t instanceof TooLongFrameException) {
                     sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
-                } else {
+                } else if (t != null){
                     sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
+                } else {
+                    sendError(ctx, INTERNAL_SERVER_ERROR, ex.getMessage(), keepAlive);
                 }
             }
         }
