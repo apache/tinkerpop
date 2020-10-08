@@ -265,7 +265,6 @@ public class GremlinExecutor implements AutoCloseable {
 
                 logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
-                // do this weirdo check until the now deprecated ScriptEngines is gutted
                 final Object o = gremlinScriptEngineManager.getEngineByName(lang).eval(script, bindings);
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
