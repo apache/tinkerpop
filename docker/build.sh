@@ -50,7 +50,7 @@ CMD ["sh", "-c", "docker/scripts/build.sh $@"]
 EOF
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run ${TINKERPOP_DOCKER_OPTS} ${REMOVE_CONTAINER} -e "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" -ti tinkerpop:${BUILD_TAG}
+docker run -p 80:80 ${TINKERPOP_DOCKER_OPTS} ${REMOVE_CONTAINER} -e "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" -ti tinkerpop:${BUILD_TAG}
 
 status=$?
 popd > /dev/null

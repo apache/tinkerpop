@@ -54,6 +54,10 @@ include::element-existence.asciidoc[]
 
 include::if-then-based-grouping.asciidoc[]
 
+include::looping.asciidoc[]
+
+include::operating-on-dropped-elements.asciidoc[]
+
 include::pagination.asciidoc[]
 
 include::recommendation.asciidoc[]
