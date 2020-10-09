@@ -211,8 +211,8 @@ public interface Channelizer extends ChannelHandler {
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength),
-                    cluster.getWsHandshakeTimeout());
+                            connection.getUri(), WebSocketVersion.V13, null, /*allow extensions*/ true,
+                            EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getWsHandshakeTimeout());
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
