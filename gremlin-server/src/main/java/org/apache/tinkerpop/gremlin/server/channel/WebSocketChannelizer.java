@@ -102,7 +102,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         // setting closeOnProtocolViolation to false prevents causing all the other requests using the same channel
         // to fail when a single request causes a protocol violation.
         final WebSocketDecoderConfig wsDecoderConfig = WebSocketDecoderConfig.newBuilder().
-                closeOnProtocolViolation(false).allowExtensions(false).maxFramePayloadLength(settings.maxContentLength).build();
+                closeOnProtocolViolation(false).allowExtensions(true).maxFramePayloadLength(settings.maxContentLength).build();
         pipeline.addLast(PIPELINE_REQUEST_HANDLER, new WebSocketServerProtocolHandler(GREMLIN_ENDPOINT,
                 null, false, false, 10000L, wsDecoderConfig));
 

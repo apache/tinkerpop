@@ -290,7 +290,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldEventuallySucceedAfterChannelLevelError() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
-                .maxContentLength(1024).create();
+                .maxContentLength(64).create();
         final Client client = cluster.connect();
 
         try {
@@ -299,7 +299,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 fail("Request should have failed because it exceeded the max content length allowed");
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Max frame length of 1024 has been exceeded."));
+                assertThat(root.getMessage(), containsString("Max frame length of 64 has been exceeded."));
             }
 
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());

@@ -78,7 +78,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
 
         try {
             // Add the test data so that the g.V() response could exceed maxContentLength
-            client.submit("g.inject(1).repeat(__.addV()).times(10).count()").all().get();
+            client.submit("g.inject(1).repeat(__.addV()).times(20).count()").all().get();
             try {
                 client.submit("g.V().fold()").all().get();
 
