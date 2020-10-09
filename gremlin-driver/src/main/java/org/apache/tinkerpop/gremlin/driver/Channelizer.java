@@ -22,6 +22,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
@@ -207,7 +208,8 @@ public interface Channelizer extends ChannelHandler {
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength));
+                            connection.getUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength),
+                    cluster.getWsHandshakeTimeout());
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
@@ -219,10 +221,12 @@ public interface Channelizer extends ChannelHandler {
         @Override
         public void connected() {
             try {
-                // block for a few seconds - if the handshake takes longer than there's gotta be issues with that
-                // server. more than likely, SSL is enabled on the server, but the client forgot to enable it or
-                // perhaps the server is not configured for websockets.
-                handler.handshakeFuture().get(15000, TimeUnit.MILLISECONDS);
+                // Block until the handshake is complete either successfully or with an error. The handshake future
+                // will complete with a timeout exception after some time so it is guaranteed that this future will
+                // complete.
+                // If future completed with an exception more than likely, SSL is enabled on the server, but the client
+                // forgot to enable it or perhaps the server is not configured for websockets.
+                handler.handshakeFuture().sync();
             } catch (Exception ex) {
                 throw new RuntimeException(new ConnectionException(connection.getUri(),
                         "Could not complete websocket handshake - ensure that client protocol matches server", ex));

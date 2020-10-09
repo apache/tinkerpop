@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
@@ -64,10 +63,8 @@ public class WebSocketClient extends AbstractClient {
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
         try {
-            final WebSocketClientHandler wsHandler =
-                    new WebSocketClientHandler(
-                            WebSocketClientHandshakerFactory.newHandshaker(
-                                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536));
+            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
+                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536), 10000);
             final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -85,7 +82,7 @@ public class WebSocketClient extends AbstractClient {
                     });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-            wsHandler.handshakeFuture().get(10000, TimeUnit.MILLISECONDS);
+            wsHandler.handshakeFuture().get();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

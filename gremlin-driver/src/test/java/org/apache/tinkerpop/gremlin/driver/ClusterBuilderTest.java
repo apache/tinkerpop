@@ -62,6 +62,7 @@ public class ClusterBuilderTest {
                 {"resultIterationBatchSizeNeg1", Cluster.build().resultIterationBatchSize(-1), "resultIterationBatchSize must be greater than zero"},
                 {"nioPoolSize0", Cluster.build().nioPoolSize(0), "nioPoolSize must be greater than zero"},
                 {"nioPoolSizeNeg1", Cluster.build().nioPoolSize(-1), "nioPoolSize must be greater than zero"},
+                {"wsHandshakeTimeoutMillis0", Cluster.build().wsHandshakeTimeoutMillis(0), "wsHandshakeTimeoutMillis must be greater than zero"},
                 {"workerPoolSize0", Cluster.build().workerPoolSize(0), "workerPoolSize must be greater than zero"},
                 {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"},
                 {"channelizer", Cluster.build().channelizer("MissingChannelizer"), "The channelizer specified [MissingChannelizer] could not be instantiated - it should be the fully qualified classname of a Channelizer implementation available on the classpath"}});
