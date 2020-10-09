@@ -125,7 +125,7 @@ class Traversal {
 
   /**
    * Returns step instructions during JSON serialization
-   * @returns {String}
+   * @returns {Array}
    */
   toJSON(){
     return this.bytecode.stepInstructions;

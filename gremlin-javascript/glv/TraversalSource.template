@@ -124,6 +124,14 @@ class Traversal {
   }
 
   /**
+   * Returns step instructions during JSON serialization
+   * @returns {Array}
+   */
+  toJSON(){
+    return this.bytecode.stepInstructions;
+  }
+
+  /**
    * Returns the Bytecode JSON representation of the traversal
    * @returns {String}
    */
