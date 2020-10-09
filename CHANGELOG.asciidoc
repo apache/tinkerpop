@@ -39,6 +39,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added support for `TraversalStrategy` usage in Javascript.
 * Added `Traversal.getTraverserSetSupplier()` to allow providers to supply their own `TraverserSet` instances.
 * Release server threads waiting on connection if the connection is dead.
+* Fixed bug where server closes HTTP connection on request error even if keep alive is set to true.
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
