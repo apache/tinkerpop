@@ -40,6 +40,6 @@ public class GryoRemoteGraphGroovyTranslatorProvider extends GryoRemoteGraphProv
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         final GraphTraversalSource g = super.traversal(graph);
-        return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g"), true));
+        return g.withStrategies(new TranslationStrategy(g, org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.of("g"), true));
     }
 }

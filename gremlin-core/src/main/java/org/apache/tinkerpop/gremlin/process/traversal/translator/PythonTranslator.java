@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.python.jsr223;
+package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -47,6 +47,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -56,14 +57,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * @deprecated As of release 3.3.10, moved to gremlin-core at
- * {@link org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator}
+ * Translates Gremlin {@link Bytecode} into a Python string representation.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@Deprecated
-public class PythonTranslator implements Translator.ScriptTranslator {
+public final class PythonTranslator implements Translator.ScriptTranslator {
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
@@ -131,7 +130,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
 
                 // jython has trouble with java varargs...wrapping in collection seems to solve the problem
                 final boolean varargsBeware = instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)
-                            || instruction.getOperator().equals(TraversalSource.Symbols.withoutStrategies);
+                        || instruction.getOperator().equals(TraversalSource.Symbols.withoutStrategies);
                 if (varargsBeware) temp = temp + "[";
 
                 for (final Object object : arguments) {
@@ -160,7 +159,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Traversal)
             return convertToString(((Traversal) object).asAdmin().getBytecode());
         else if (object instanceof String)
-            return ((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"";
+            return ((String) object).contains("'") || ((String) object).contains(System.lineSeparator()) ?
+                    "\"\"\"" + object + "\"\"\"" : "'" + object + "'";
         else if (object instanceof Set) {
             final Set<String> set = new LinkedHashSet<>(((Set) object).size());
             for (final Object item : (Set) object) {
@@ -259,8 +259,44 @@ public class PythonTranslator implements Translator.ScriptTranslator {
 
     protected String resolveTraversalStrategyProxy(final TraversalStrategyProxy proxy) {
         if (proxy.getConfiguration().isEmpty())
-            return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\")";
+            return "TraversalStrategy('" + proxy.getStrategyClass().getSimpleName() + "')";
         else
-            return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+            return "TraversalStrategy('" + proxy.getStrategyClass().getSimpleName() + "'," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+    }
+
+    static final class SymbolHelper {
+
+        private final static Map<String, String> TO_PYTHON_MAP = new HashMap<>();
+        private final static Map<String, String> FROM_PYTHON_MAP = new HashMap<>();
+
+        static {
+            TO_PYTHON_MAP.put("global", "global_");
+            TO_PYTHON_MAP.put("as", "as_");
+            TO_PYTHON_MAP.put("in", "in_");
+            TO_PYTHON_MAP.put("and", "and_");
+            TO_PYTHON_MAP.put("or", "or_");
+            TO_PYTHON_MAP.put("is", "is_");
+            TO_PYTHON_MAP.put("not", "not_");
+            TO_PYTHON_MAP.put("from", "from_");
+            TO_PYTHON_MAP.put("list", "list_");
+            TO_PYTHON_MAP.put("set", "set_");
+            TO_PYTHON_MAP.put("all", "all_");
+            TO_PYTHON_MAP.put("with", "with_");
+            //
+            TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
+        }
+
+        private SymbolHelper() {
+            // static methods only, do not instantiate
+        }
+
+        public static String toPython(final String symbol) {
+            return TO_PYTHON_MAP.getOrDefault(symbol, symbol);
+        }
+
+        public static String toJava(final String symbol) {
+            return FROM_PYTHON_MAP.getOrDefault(symbol, symbol);
+        }
+
     }
 }
