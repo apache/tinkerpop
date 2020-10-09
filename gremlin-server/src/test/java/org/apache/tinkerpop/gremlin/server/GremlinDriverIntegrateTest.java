@@ -279,38 +279,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldKeepAliveForWebSockets() throws Exception {
-        // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
-        // complicate the assertion logic
-        final Cluster cluster = TestClientFactory.build().
-                minConnectionPoolSize(1).
-                maxConnectionPoolSize(1).
-                keepAliveInterval(1000).create();
-        final Client client = cluster.connect();
-        try {
-
-            // fire up lots of requests so as to schedule/deschedule lots of ping jobs
-            for (int ix = 0; ix < 500; ix++) {
-                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            }
-
-            // don't send any messages for a bit so that the driver pings in the background
-            Thread.sleep(3000);
-
-            // make sure no bonus messages sorta fire off once we get back to sending requests
-            for (int ix = 0; ix < 500; ix++) {
-                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            }
-
-            // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Received response from keep-alive request")).count();
-            assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldEventuallySucceedAfterChannelLevelError() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
