@@ -289,8 +289,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-<<<<<<< HEAD
-=======
     public void shouldKeepAliveForWebSockets() throws Exception {
         // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
         // complicate the assertion logic
@@ -315,7 +313,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             }
 
             // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            // this assertion is based on number of pongs received
             final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
             assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
         } finally {
@@ -347,7 +344,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             }
 
             // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            // this assertion is based on number of pongs received
             final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
             assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
         } finally {
@@ -356,7 +352,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
->>>>>>> Simplify driver by delegating keepAlive logic to Netty
     public void shouldEventuallySucceedAfterChannelLevelError() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
