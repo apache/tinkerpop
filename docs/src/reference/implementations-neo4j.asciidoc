@@ -25,6 +25,7 @@ limitations under the License.
    <version>x.y.z</version>
 </dependency>
 <!-- neo4j-tinkerpop-api-impl is NOT Apache 2 licensed - more information below -->
+<!-- supports Neo4j 3.2.3 -->
 <dependency>
   <groupId>org.neo4j</groupId>
   <artifactId>neo4j-tinkerpop-api-impl</artifactId>
@@ -40,6 +41,9 @@ because it only references the Apache2-licensed Neo4j API (not its implementatio
 <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j implementation
 binaries. To access the binaries, use the `:install` command to download binaries from
 link:http://search.maven.org/[Maven Central Repository].
+
+IMPORTANT: When connecting to existing Neo4j databases, ensure that this database is compatible with the version of
+Neo4j that TinkerPop currently supports in the `neo4j-tinkerpop-api-impl`.
 
 TIP: For configuring Grape, the dependency resolver of Groovy, please refer to the <<gremlin-applications,Gremlin Applications>> section.
 
