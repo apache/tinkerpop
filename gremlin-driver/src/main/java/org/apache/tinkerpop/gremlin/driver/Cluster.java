@@ -272,7 +272,7 @@ public final class Cluster {
     }
 
     public CompletableFuture<Void> closeAsync() {
-        return manager.close();
+        return manager.close().thenRun(() -> logger.info("Closed Cluster for hosts [{}]", this));
     }
 
     /**
