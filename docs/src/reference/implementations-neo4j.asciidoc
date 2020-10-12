@@ -25,7 +25,7 @@ limitations under the License.
    <version>x.y.z</version>
 </dependency>
 <!-- neo4j-tinkerpop-api-impl is NOT Apache 2 licensed - more information below -->
-<!-- supports Neo4j 3.2.3 -->
+<!-- supports Neo4j 3.4.11 -->
 <dependency>
   <groupId>org.neo4j</groupId>
   <artifactId>neo4j-tinkerpop-api-impl</artifactId>
