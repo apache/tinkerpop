@@ -74,6 +74,8 @@ and an overview of Gremlin. (*external*)
 A series of blog posts that examine the Gremlin language in the context of various graph traversal patterns. (*external*)
 ^|image:practical-gremlin.png[width=200] |link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html[Practical Gremlin: An Apache TinkerPop Tutorial] +
 A getting started guide for users of graph databases and the Gremlin query language featuring hints, tips and sample queries. (*external*)
+^|image:gremlin-snippets.png[width=200] |link:http://stephen.genoprime.com[Gremlin Snippets] +
+Advanced Gremlin query samples and topics with detailed explanation. (*external*)
 |=========================================================
 
 [[publications]]
