@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
+using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Traversal;
@@ -104,6 +105,23 @@ using (var gremlinClient = new GremlinClient(gremlinServer))
         await gremlinClient.SubmitWithSingleResultAsync<string>("g.V().has('person','name','marko')");
 }
 // end::submittingScripts[]
+        }
+        
+        [Fact(Skip="No Server under localhost")]
+        public async Task SubmittingScriptsWithTimeoutTest()
+        {
+// tag::submittingScriptsWithTimeout[]
+var gremlinServer = new GremlinServer("localhost", 8182);
+using (var gremlinClient = new GremlinClient(gremlinServer))
+{
+    var response =
+        await gremlinClient.SubmitWithSingleResultAsync<string>(
+            RequestMessage.Build(Tokens.OpsEval).
+                AddArgument(Tokens.ArgsGremlin, "g.V().count()").
+                AddArgument(Tokens.ArgsEvalTimeout, 500).
+                Create());
+}
+// end::submittingScriptsWithTimeout[]
         }
 
         [Fact(Skip = "No Server under localhost")]

@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 /**
  * String constants used in gremlin-driver and gremlin-server.
  *
@@ -32,20 +36,55 @@ public final class Tokens {
     public static final String OPS_INVALID = "invalid";
     public static final String OPS_CLOSE = "close";
 
+    /**
+     * The key for the unique identifier of the request.
+     */
     public static final String REQUEST_ID = "requestId";
 
+    /**
+     * Argument name that allows definition of the number of iterations each {@link ResponseMessage} should contain -
+     * overrides the @{code resultIterationBatchSize} server setting.
+     */
     public static final String ARGS_BATCH_SIZE = "batchSize";
+
+    /**
+     * Argument name that allows to provide a map of key/value pairs to apply as variables in the context of
+     * the Gremlin request sent to the server.
+     */
     public static final String ARGS_BINDINGS = "bindings";
+
+    /**
+     * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on
+     * the remote system.
+     */
     public static final String ARGS_ALIASES = "aliases";
     public static final String ARGS_FORCE = "force";
+
+    /**
+     * Argument name that corresponds to the Gremlin to evaluate.
+     */
     public static final String ARGS_GREMLIN = "gremlin";
+
+    /**
+     * Argument name that allows definition of the flavor of Gremlin used (e.g. gremlin-groovy) to process the request.
+     */
     public static final String ARGS_LANGUAGE = "language";
+
+    /**
+     * Argument name that allows the override of the server setting that determines the maximum time to wait for a
+     * request to execute on the server.
+     */
     public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
     public static final String ARGS_HOST = "host";
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
     public static final String ARGS_SASL_MECHANISM = "saslMechanism";
+
+    /**
+     * A value that is a custom string that the user can pass to a server that might accept it for purpose of
+     * identifying the kind of client it came from.
+     */
     public static final String ARGS_USER_AGENT = "userAgent";
 
     public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";

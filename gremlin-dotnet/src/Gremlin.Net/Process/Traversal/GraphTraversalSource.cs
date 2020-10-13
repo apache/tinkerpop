@@ -71,22 +71,30 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode = bytecode;
         }
 
-
         public GraphTraversalSource With(string key)
         {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("with", key);
-            return source;
+            return With(key, true);
         }
 
         public GraphTraversalSource With(string key, object value)
         {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("with", key, value);
-            return source;
+            var optionsStrategyInst = Bytecode.SourceInstructions.Find(
+                inst => inst.OperatorName == "withStrategies" && inst.Arguments[0] is OptionsStrategy);
+            OptionsStrategy optionsStrategy;
+
+            if (optionsStrategyInst == null)
+            {
+                optionsStrategy = new OptionsStrategy();
+                optionsStrategy.Configuration[key] = value;
+                return WithStrategies(optionsStrategy);
+            }
+
+            optionsStrategy = optionsStrategyInst.Arguments[0];
+            optionsStrategy.Configuration[key] = value;
+            return new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                new Bytecode(Bytecode));
         }
+
 
         public GraphTraversalSource WithBulk(bool useBulk)
         {
