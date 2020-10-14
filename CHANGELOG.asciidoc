@@ -40,7 +40,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `Traversal.getTraverserSetSupplier()` to allow providers to supply their own `TraverserSet` instances.
 * Release server threads waiting on connection if the connection is dead.
 * Fixed bug where server closes HTTP connection on request error even if keep alive is set to true.
-* Java driver now delegates handling of WebSocket handshake to Netty instead of custom code. 
+* Java driver now delegates handling of WebSocket handshake to Netty instead of custom code.
+* Fixed bug with Bytecode serialization when `Bytecode.toString()` is used in Javascript.
+* Fixed "toString" for P and TextP to produce valid script representation from bytecode glv steps containing a string predicate in Javascript.
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
