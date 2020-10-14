@@ -253,7 +253,7 @@ class P {
    * @returns {string}
    */
   toString() {
-    function formatValue(value){      
+    function formatValue(value){
       if (value && typeof value === "string"){
         return "'" + value + "'";
       }
@@ -369,7 +369,7 @@ class TextP {
    * @returns {string}
    */
   toString() {
-    function formatValue(value){      
+    function formatValue(value){
       if (value && typeof value === "string"){
         return "'" + value + "'";
       }
