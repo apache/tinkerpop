@@ -124,6 +124,14 @@ class Traversal {
   }
 
   /**
+   * Returns step instructions during JSON serialization
+   * @returns {Array}
+   */
+  toJSON(){
+    return this.bytecode.stepInstructions;
+  }
+
+  /**
    * Returns the Bytecode JSON representation of the traversal
    * @returns {String}
    */
@@ -245,10 +253,17 @@ class P {
    * @returns {string}
    */
   toString() {
-    if (this.other === undefined) {
-      return this.operator + '(' + this.value + ')';
+    function formatValue(value){
+      if (value && typeof value === "string"){
+        return "'" + value + "'";
+      }
+      return value;
     }
-    return this.operator + '(' + this.value + ', ' + this.other + ')';
+
+    if (this.other === undefined) {
+      return this.operator + '(' + formatValue(this.value) + ')';
+    }
+    return this.operator + '(' + formatValue(this.value) + ', ' + formatValue(this.other) + ')';
   }
 
   and(arg) {
@@ -354,10 +369,17 @@ class TextP {
    * @returns {string}
    */
   toString() {
-    if (this.other === undefined) {
-      return this.operator + '(' + this.value + ')';
+    function formatValue(value){
+      if (value && typeof value === "string"){
+        return "'" + value + "'";
+      }
+      return value;
     }
-    return this.operator + '(' + this.value + ', ' + this.other + ')';
+
+    if (this.other === undefined) {
+      return this.operator + '(' + formatValue(this.value) + ')';
+    }
+    return this.operator + '(' + formatValue(this.value) + ', ' + formatValue(this.other) + ')';
   }
 
   and(arg) {
