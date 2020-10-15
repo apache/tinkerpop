@@ -100,3 +100,37 @@ g.V('A').
   ).emit().times(3).
   cap('x')
 ----
+
+=== Optional Loop Depth
+
+A third common use of `repeat()` loops is to loop through a series of steps a certain number of times or
+until there are no additional edges to traverse.  The examples below demonstrate how this loop termination can
+be accomplished.
+
+The first method, is an extension of our "Conditional Looping with Max Depth" pattern above where the condition
+in the `until()` checking for a vertex with a degree of zero.
+
+[gremlin-groovy,existing]
+----
+g.V('A').
+  repeat(out().simplePath()).
+    until(outE().count().is(0).or().loops().is(5))
+----
+
+Another way to accomplish this requirement is to use the `optional()` step.  Here use the `optional()` step
+within a `repeat().times()` loop.  In the example below we start at vertex A and traverse all `out()` edges
+up to a maximum of 5 times.
+
+[gremlin-groovy,existing]
+----
+g.V('A').repeat(optional(out())).times(5)
+----
+
+Each of these patterns can be combined with any variety of other steps to satisfy more complex traversal requirements.  
+For example, we can first use a more traditional `repeat()` loop to start at vertex A, traverse all `both()`
+edges two times, and then traverse `out()` edges up to five times.
+
+[gremlin-groovy,existing]
+----
+g.V('A').repeat(both()).times(2).repeat(optional(out())).times(5)
+----
