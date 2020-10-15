@@ -19,6 +19,8 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+from pytest import fail
+
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import P
@@ -103,5 +105,21 @@ class TestTraversal(object):
         assert 3 == len(original.bytecode.step_instructions)
         assert 5 == len(clone.bytecode.step_instructions)
         assert 4 == len(cloneClone.bytecode.step_instructions)
+
+    def test_no_sugar_for_magic_methods(self):
+        g = traversal().withGraph(Graph())
+
+        t = g.V().age
+        assert 2 == len(t.bytecode.step_instructions)
+
+        try:
+            t = g.V().__len__
+            fail("can't do sugar with magic")
+        except AttributeError as err:
+            assert str(err) == 'Python magic methods or keys starting with double underscore cannot be used for Gremlin sugar - prefer values(__len__)'
+
+
+
+
 
 
