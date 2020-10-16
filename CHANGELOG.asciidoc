@@ -102,7 +102,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
 * Implemented `AutoCloseable` on `MultiIterator`.
 * Fixed an iterator leak in `HasContainer`.
-* Avoid creating unnecessary detached objects in JVM.
+* Added `GremlinASTChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
+* Avoided creating unnecessary detached objects in JVM.
 * Added support for `TraversalStrategy` usage in Javascript.
 * Added `Traversal.getTraverserSetSupplier()` to allow providers to supply their own `TraverserSet` instances.
 * Release server threads waiting on connection if the connection is dead.

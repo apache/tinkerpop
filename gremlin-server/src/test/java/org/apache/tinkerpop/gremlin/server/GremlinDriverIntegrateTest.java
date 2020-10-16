@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -120,6 +121,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(Level.DEBUG);
+        } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
+            final org.apache.log4j.Logger opExecutorHandlerLogger = org.apache.log4j.Logger.getLogger(OpExecutorHandler.class);
+            previousLogLevel = opExecutorHandlerLogger.getLevel();
+            opExecutorHandlerLogger.setLevel(Level.ERROR);
         }
 
         rootLogger.addAppender(recordingAppender);
@@ -132,6 +137,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
+        } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
+            final org.apache.log4j.Logger opExecutorHandlerLogger = org.apache.log4j.Logger.getLogger(OpExecutorHandler.class);
+            opExecutorHandlerLogger.setLevel(previousLogLevel);
         }
 
         rootLogger.removeAppender(recordingAppender);
@@ -1412,7 +1420,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldAliasTraversalSourceVariables() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
         final Client client = cluster.connect();
-        try {    
+        try {
             try {
                 client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
                 fail("Should have tossed an exception because \"g\" is readonly in this context");

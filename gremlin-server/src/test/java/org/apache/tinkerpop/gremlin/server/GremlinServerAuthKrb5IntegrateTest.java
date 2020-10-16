@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
@@ -52,9 +53,17 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     static final String TESTCONSOLE_NOT_LOGGED_IN = "UserNotLoggedIn";
 
     private KdcFixture kdcServer;
+    private Level previousLogLevel;
 
     @Override
     public void setUp() throws Exception {
+        // this logger is noisy for travis and we don't assert anything and the error is already tracked on
+        // the server so we can trim the logs a bit with this.
+        final org.apache.log4j.Logger handlerLogger = org.apache.log4j.Logger.getLogger(
+                "org.apache.tinkerpop.gremlin.driver.Handler$GremlinResponseHandler");
+        previousLogLevel = handlerLogger.getLevel();
+        handlerLogger.setLevel(Level.OFF);
+
         try {
             final String projectBaseDir = System.getProperty("basedir");
             final String authConfigName = projectBaseDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf";
@@ -69,6 +78,10 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Override
     public void tearDown() throws Exception {
+        final org.apache.log4j.Logger handlerLogger = org.apache.log4j.Logger.getLogger(
+                "org.apache.tinkerpop.gremlin.driver.Handler$GremlinResponseHandler");
+        handlerLogger.setLevel(previousLogLevel);
+
         kdcServer.close();
         System.clearProperty("java.security.auth.login.config");
         super.tearDown();

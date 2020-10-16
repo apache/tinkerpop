@@ -23,23 +23,55 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinExecutorOverGraphTest {
     private final BasicThreadFactory testingThreadFactory = new BasicThreadFactory.Builder().namingPattern("test-gremlin-executor-%d").build();
+
+    @Test
+    public void shouldOverrideTimeoutWithinScript() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .evaluationTimeout(60000)
+                .afterSuccess(b -> {
+                    final GraphTraversalSource ig = (GraphTraversalSource) b.get("g");
+                    if (ig.getGraph().features().graph().supportsTransactions())
+                        ig.tx().commit();
+                })
+                .executorService(evalExecutor).create();
+
+        final Map<String,Object> bindings = new HashMap<>();
+        bindings.put("g", g);
+
+        try {
+            gremlinExecutor.eval("g.with('evaluationTimeout',100).V().repeat(both()).toList()", bindings).get();
+            fail("Should have timed out");
+        } catch (ExecutionException ex) {
+            // should die in 100ms not 60000
+            assertThat(ex.getCause().getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 100 ms"));
+        }
+    }
 
     @Test
     public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithAutoCommit() throws Exception {
