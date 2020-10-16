@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.ietf.jgss.GSSException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -53,10 +55,18 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     static final String TESTCONSOLE_NOT_LOGGED_IN = "UserNotLoggedIn";
 
     private KdcFixture kdcServer;
+    private Level previousLogLevel;
 
     @Before
     @Override
     public void setUp() throws Exception {
+        // this logger is noisy for travis and we don't assert anything and the error is already tracked on
+        // the server so we can trim the logs a bit with this.
+        final org.apache.log4j.Logger handlerLogger = org.apache.log4j.Logger.getLogger(
+                "org.apache.tinkerpop.gremlin.driver.Handler$GremlinResponseHandler");
+        previousLogLevel = handlerLogger.getLevel();
+        handlerLogger.setLevel(Level.OFF);
+
         try {
             final String buildDir = System.getProperty("build.dir");
             kdcServer = new KdcFixture(buildDir +
@@ -66,6 +76,13 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             logger.warn(e.getMessage());
         }
         super.setUp();
+    }
+
+    @After
+    public void teardownForEachTest() {
+        final org.apache.log4j.Logger handlerLogger = org.apache.log4j.Logger.getLogger(
+                "org.apache.tinkerpop.gremlin.driver.Handler$GremlinResponseHandler");
+        handlerLogger.setLevel(previousLogLevel);
     }
 
     /**

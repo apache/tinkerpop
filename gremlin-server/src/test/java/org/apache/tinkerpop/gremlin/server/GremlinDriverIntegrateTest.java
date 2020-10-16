@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -121,6 +122,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(Level.DEBUG);
+        } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
+            final org.apache.log4j.Logger opExecutorHandlerLogger = org.apache.log4j.Logger.getLogger(OpExecutorHandler.class);
+            previousLogLevel = opExecutorHandlerLogger.getLevel();
+            opExecutorHandlerLogger.setLevel(Level.ERROR);
         }
 
         rootLogger.addAppender(recordingAppender);
@@ -133,6 +138,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
+        } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
+            final org.apache.log4j.Logger opExecutorHandlerLogger = org.apache.log4j.Logger.getLogger(OpExecutorHandler.class);
+            opExecutorHandlerLogger.setLevel(previousLogLevel);
         }
 
         rootLogger.removeAppender(recordingAppender);

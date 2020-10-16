@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -38,11 +40,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -162,5 +166,16 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
         assertEquals("2", ((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).iterator().next().getString());
         assertEquals("4", ((Iterator) acceptor.submit(Collections.singletonList("x+2"))).next());
         assertEquals("4", ((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).iterator().next().getString());
+    }
+
+    @Test
+    public void shouldConnectAndSubmitWithTimeout() throws Exception {
+        assertThat(acceptor.connect(Collections.singletonList(Storage.toPath(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp")))).toString(), startsWith("Configured "));
+        try {
+            acceptor.submit(Collections.singletonList(String.format("g.with(%s, 10).inject(0).sideEffect{Thread.sleep(10000)}", Tokens.ARGS_EVAL_TIMEOUT)));
+            fail("Request should have timed out");
+        } catch (RemoteException re) {
+            assertThat(re.getMessage(), containsString("evaluationTimeout"));
+        }
     }
 }
