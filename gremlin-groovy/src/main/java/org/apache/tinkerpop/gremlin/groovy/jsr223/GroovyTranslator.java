@@ -59,7 +59,9 @@ import java.util.function.UnaryOperator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Stark Arya (sandszhou.zj@alibaba-inc.com)
+ * @deprecated As of release 3.4.9, moved to  {@link org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator}.
  */
+@Deprecated
 public final class GroovyTranslator implements Translator.ScriptTranslator {
 
     private final String traversalSource;
