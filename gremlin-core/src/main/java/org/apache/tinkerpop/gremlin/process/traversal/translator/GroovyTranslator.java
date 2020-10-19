@@ -139,35 +139,36 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
          *  For each operator argument, if withParameters set true, try parametrization as follows:
          *
          *  -----------------------------------------------
-         *  if unpack, why ?     ObjectType
+         *  if unpack, why ?      ObjectType
          *  -----------------------------------------------
-         * （Yes）                Bytecode.Binding
-         * （Recursion, No）      Bytecode
-         *  (Recursion, No）      Traversal
-         * （Yes）                String
-         * （Recursion, No）      Set
-         * （Recursion, No）      List
-         * （Recursion, No）      Map
-         * （Yes）                Long
-         * （Yes）                Double
-         * （Yes）                Float
-         * （Yes）                Integer
-         * （Yes）                Timestamp
-         * （Yes）                Date
-         * （Yes）                Uuid
-         * （Recursion, No）      P
-         * （Enumeration, No）    SackFunctions.Barrier
-         * （Enumeration, No）    VertexProperty.Cardinality
-         * （Enumeration, No）    TraversalOptionParent.Pick
-         * （Enumeration, No）    Enum
-         * （Recursion, No）      Vertex
-         * （Recursion, No）      Edge
-         * （Recursion, No）      VertexProperty
-         * （Yes）                Lambda
-         * （Recursion, No）      TraversalStrategyProxy
-         * （Enumeration, No）    TraversalStrategy
+         *  (Yes)                 Bytecode.Binding
+         *  (Recursion, No)       Bytecode
+         *  (Recursion, No)       Traversal
+         *  (Yes)                 String
+         *  (Recursion, No)       Set
+         *  (Recursion, No)       List
+         *  (Recursion, No)       Map
+         *  (Yes)                 Long
+         *  (Yes)                 Double
+         *  (Yes)                 Float
+         *  (Yes)                 Integer
+         *  (Yes)                 Timestamp
+         *  (Yes)                 Date
+         *  (Yes)                 Uuid
+         *  (Recursion, No)       P
+         *  (Enumeration, No)     SackFunctions.Barrier
+         *  (Enumeration, No)     VertexProperty.Cardinality
+         *  (Enumeration, No)     TraversalOptionParent.Pick
+         *  (Enumeration, No)     Enum
+         *  (Recursion, No)       Vertex
+         *  (Recursion, No)       Edge
+         *  (Recursion, No)       VertexProperty
+         *  (Yes)                 Lambda
+         *  (Recursion, No)       TraversalStrategyProxy
+         *  (Enumeration, No)     TraversalStrategy
          *  (Yes)                 Other
          *  -------------------------------------------------
+         *
          * @param object
          * @return String Repres
          */
@@ -354,12 +355,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                         script.append(p instanceof OrP ? ".or(" : ".and(");
                     }
                 }
-                script.append(")");
             } else {
                 script.append("P.").append(p.getBiPredicate().toString()).append("(");
                 convertToScript(p.getValue());
-                script.append(")");
             }
+            script.append(")");
             return script;
         }
 

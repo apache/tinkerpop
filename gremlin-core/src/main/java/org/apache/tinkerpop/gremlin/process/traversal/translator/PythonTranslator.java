@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -131,34 +130,34 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
          * For each operator argument, if withParameters set true, try parametrization as follows:
          * <p>
          * -----------------------------------------------
-         * if unpack, why ?     ObjectType
+         * if unpack, why?      ObjectType
          * -----------------------------------------------
-         * （Yes）                Bytecode.Binding
-         * （Recursion, No）      Bytecode
-         * (Recursion, No）      Traversal
-         * （Yes）                String
-         * （Recursion, No）      Set
-         * （Recursion, No）      List
-         * （Recursion, No）      Map
-         * （Yes）                Long
-         * （Yes）                Double
-         * （Yes）                Float
-         * （Yes）                Integer
-         * （Yes）                Timestamp
-         * （Yes）                Date
-         * （Yes）                Uuid
-         * （Recursion, No）      P
-         * （Enumeration, No）    SackFunctions.Barrier
-         * （Enumeration, No）    VertexProperty.Cardinality
-         * （Enumeration, No）    TraversalOptionParent.Pick
-         * （Enumeration, No）    Enum
-         * （Recursion, No）      Vertex
-         * （Recursion, No）      Edge
-         * （Recursion, No）      VertexProperty
-         * （Yes）                Lambda
-         * （Recursion, No）      TraversalStrategyProxy
-         * （Enumeration, No）    TraversalStrategy
-         * (Yes)                 Other
+         * (Yes)                Bytecode.Binding
+         * (Recursion, No)      Bytecode
+         * (Recursion, No)      Traversal
+         * (Yes)                String
+         * (Recursion, No)      Set
+         * (Recursion, No)      List
+         * (Recursion, No)      Map
+         * (Yes)                Long
+         * (Yes)                Double
+         * (Yes)                Float
+         * (Yes)                Integer
+         * (Yes)                Timestamp
+         * (Yes)                Date
+         * (Yes)                Uuid
+         * (Recursion, No)      P
+         * (Enumeration, No)    SackFunctions.Barrier
+         * (Enumeration, No)    VertexProperty.Cardinality
+         * (Enumeration, No)    TraversalOptionParent.Pick
+         * (Enumeration, No)    Enum
+         * (Recursion, No)      Vertex
+         * (Recursion, No)      Edge
+         * (Recursion, No)      VertexProperty
+         * (Yes)                Lambda
+         * (Recursion, No)      TraversalStrategyProxy
+         * (Enumeration, No)    TraversalStrategy
+         * (Yes)                Other
          * -------------------------------------------------
          *
          * @param object
@@ -302,12 +301,11 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                         script.append(p instanceof OrP ? ".or_(" : ".and_(");
                     }
                 }
-                script.append(")");
             } else {
                 script.append("P.").append(p.getBiPredicate().toString()).append("(");
                 convertToScript(p.getValue());
-                script.append(")");
             }
+            script.append(")");
             return script;
         }
 

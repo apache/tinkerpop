@@ -168,7 +168,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
 
         final Script script = GroovyTranslator.of("g", true).translate(t.getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(9, bindings.size());
         assertEquals("lengthSum", bindings.get("_args_0"));
@@ -203,7 +203,7 @@ public class ParameterizedGroovyTranslatorTest {
             add(4);
             add(5);
         }})).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(5, bindings.size());
         assertEquals(Integer.valueOf(1), bindings.get("_args_0"));
@@ -235,7 +235,7 @@ public class ParameterizedGroovyTranslatorTest {
             add(3);
             add("3");
         }}).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(5, bindings.size());
         assertEquals(Integer.valueOf(3), bindings.get("_args_0"));
@@ -263,7 +263,7 @@ public class ParameterizedGroovyTranslatorTest {
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
         }}).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(6, bindings.size());
         assertEquals(Integer.valueOf(3), bindings.get("_args_0"));
@@ -287,7 +287,7 @@ public class ParameterizedGroovyTranslatorTest {
         final GraphTraversalSource g = graph.traversal();
         final Function identity = new Lambda.OneArgLambda("it.get()", "gremlin-groovy");
         final Script script = GroovyTranslator.of("g", true).translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
         assertEquals(identity, bindings.get("_args_0"));
@@ -306,7 +306,7 @@ public class ParameterizedGroovyTranslatorTest {
 
     @Test
     public void shouldHandlePredicate() {
-        P p = new P(Compare.eq, 10);
+        final P p = new P(Compare.eq, 10);
         assertParameterizedTranslation(String.format("new java.util.Date(%s)", p.toString()), 10);
     }
 
@@ -326,25 +326,25 @@ public class ParameterizedGroovyTranslatorTest {
 
     @Test
     public void shouldHandleClass() {
-        Class cls = Vertex.class;
+        final Class cls = Vertex.class;
         assertParameterizedTranslation(String.format("%s", cls), cls.getCanonicalName());
     }
 
     @Test
     public void shouldHandleBarrier() {
-        SackFunctions.Barrier barrier = SackFunctions.Barrier.normSack;
+        final SackFunctions.Barrier barrier = SackFunctions.Barrier.normSack;
         assertNonParameterizedTranslation(String.format("SackFunctions.Barrier.%s", barrier), barrier);
     }
 
     @Test
     public void shouldHandleCardinality() {
-        VertexProperty.Cardinality cardinality = VertexProperty.Cardinality.set;
+        final VertexProperty.Cardinality cardinality = VertexProperty.Cardinality.set;
         assertNonParameterizedTranslation(String.format("VertexProperty.Cardinality.%s", cardinality), cardinality);
     }
 
     @Test
     public void shouldHandlePick() {
-        TraversalOptionParent.Pick pick = TraversalOptionParent.Pick.any;
+        final TraversalOptionParent.Pick pick = TraversalOptionParent.Pick.any;
         assertNonParameterizedTranslation(String.format("TraversalOptionParent.Pick.%s", pick), pick);
     }
 
@@ -423,7 +423,7 @@ public class ParameterizedGroovyTranslatorTest {
                 .property("age", 25)
                 .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
                 .asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(9, bindings.size());
         assertEquals("customer", bindings.get("_args_0"));
@@ -458,7 +458,7 @@ public class ParameterizedGroovyTranslatorTest {
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
         final Script script1 = GroovyTranslator.of("g", true).translate(g.inject(vertex1).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script1.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
         assertEquals(id1, bindings.get("_args_0"));
@@ -542,7 +542,7 @@ public class ParameterizedGroovyTranslatorTest {
 
     private void assertParameterizedTranslation(final String expectedTranslation, final Object... objs) {
         final Script script = GroovyTranslator.of("g", true).translate(g.inject(objs).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
         assertEquals(objs[0], bindings.get("_args_0"));
@@ -555,7 +555,7 @@ public class ParameterizedGroovyTranslatorTest {
 
     private void assertNonParameterizedTranslation(final String expectedTranslation, final Object... objs) {
         final Script script = GroovyTranslator.of("g", true).translate(g.inject(objs).asAdmin().getBytecode());
-        Bindings bindings = new SimpleBindings();
+        final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(0, bindings.size());
         assertEquals(String.format("g.inject(%s)", expectedTranslation),  script.getScript());
