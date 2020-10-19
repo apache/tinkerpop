@@ -258,7 +258,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 filter(p -> p instanceof TranslatorCustomizer).
                 map(p -> (TranslatorCustomizer) p).findFirst();
         typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator).
-                orElseGet(GroovyTranslator.DefaultTypeTranslator::new);
+                orElseGet(org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.DefaultTypeTranslator::new);
 
         createClassLoader();
     }
@@ -293,7 +293,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
 
-        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode), inner);
+        return (Traversal.Admin) this.eval(org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode), inner);
     }
 
     /**

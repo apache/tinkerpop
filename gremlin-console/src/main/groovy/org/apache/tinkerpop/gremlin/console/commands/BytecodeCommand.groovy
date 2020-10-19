@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper
