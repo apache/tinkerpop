@@ -93,6 +93,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified the text of `profile()` output to hide step instances injected for purpose of collecting metrics.
 * Bumped to Jackson 2.11.x.
 * Bumped Netty 4.1.52.
+* Moved `Translator` instances to `gremlin-core`.
 * Established a default read and write timeout for the `TornadoTransport` in Python, allowing it to be configurable.
 * Delegated handling of erroneous response to the worker thread pool instead of event loop thread pool in Java Driver.
 * Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.

@@ -220,7 +220,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         // always need this plugin for a scriptengine to be "Gremlin-enabled"
         CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
         listOfCustomizers.addAll(Arrays.asList(customizers));
-        
+
         GremlinLoader.load();
 
         final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()
@@ -259,7 +259,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 filter(p -> p instanceof TranslatorCustomizer).
                 map(p -> (TranslatorCustomizer) p).findFirst();
         typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator).
-                orElseGet(() -> new GroovyTranslator.DefaultTypeTranslator(false));
+                orElseGet(() -> new org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.DefaultTypeTranslator(false));
 
         createClassLoader();
     }
@@ -293,7 +293,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         inner.putAll(bindings);
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
-        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode);
+        org.apache.tinkerpop.gremlin.process.traversal.Script script = org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode);
         script.getParameters().ifPresent(inner::putAll);
         return (Traversal.Admin) this.eval(script.getScript(), inner);
     }
