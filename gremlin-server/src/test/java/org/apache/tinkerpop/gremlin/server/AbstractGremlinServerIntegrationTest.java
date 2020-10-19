@@ -107,7 +107,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
             }
             this.server = new GremlinServer(overridenSettings);
             server.start().join();
-
         }
     }
 
