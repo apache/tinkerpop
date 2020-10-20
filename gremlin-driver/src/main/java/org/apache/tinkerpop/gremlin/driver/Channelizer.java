@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -205,11 +206,13 @@ public interface Channelizer extends ChannelHandler {
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength),
-                    cluster.getWsHandshakeTimeout());
+                            connection.getUri(), WebSocketVersion.V13, null, /*allow extensions*/ true,
+                            EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getWsHandshakeTimeout());
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
+            // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
+            pipeline.addLast(WebSocketClientCompressionHandler.INSTANCE);
             pipeline.addLast("ws-handler", handler);
             pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
