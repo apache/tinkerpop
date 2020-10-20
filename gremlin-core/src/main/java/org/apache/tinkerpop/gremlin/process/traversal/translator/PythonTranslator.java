@@ -28,25 +28,27 @@ import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,19 +67,31 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
 
-    PythonTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
+    private PythonTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
         this.typeTranslator = typeTranslator;
     }
 
-    public static PythonTranslator of(final String traversalSource, final boolean withParameters) {
-        return of(traversalSource, new DefaultTypeTranslator(withParameters));
-    }
-
+    /**
+     * Creates the translator with a {@code false} argument to {@code withParameters} using
+     * {@link #of(String, boolean)}.
+     */
     public static PythonTranslator of(final String traversalSource) {
         return of(traversalSource, false);
     }
 
+    /**
+     * Creates the translator with the {@link DefaultTypeTranslator} passing the {@code withParameters} option to it
+     * which will handle type translation in a fashion that should typically increase cache hits and reduce
+     * compilation times if enabled at the sacrifice to rewriting of the script that could reduce readability.
+     */
+    public static PythonTranslator of(final String traversalSource, final boolean withParameters) {
+        return of(traversalSource, new DefaultTypeTranslator(withParameters));
+    }
+
+    /**
+     * Creates the translator with a custom {@link TypeTranslator} instance.
+     */
     public static PythonTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
         return new PythonTranslator(traversalSource, typeTranslator);
     }
@@ -107,153 +121,163 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     /**
      * Performs standard type translation for the TinkerPop types to Python.
      */
-    public static class DefaultTypeTranslator implements TypeTranslator {
-        protected final boolean withParameters;
-        protected final Script script;
+    public static class DefaultTypeTranslator extends AbstractTypeTranslator {
 
         public DefaultTypeTranslator(final boolean withParameters) {
-            this.withParameters = withParameters;
-            this.script = new Script();
+            super(withParameters);
         }
 
         @Override
-        public Script apply(final String traversalSource, final Object o) {
-            this.script.init();
-            if (o instanceof Bytecode) {
-                return internalTranslate(traversalSource, (Bytecode) o);
-            } else {
-                return convertToScript(o);
+        protected String getNullSyntax() {
+            return "None";
+        }
+
+        @Override
+        protected String getSyntax(final String o) {
+            return o.contains("'") || o.contains(System.lineSeparator()) ?
+                    "\"\"\"" + o + "\"\"\"" : "'" + o + "'";
+        }
+
+        @Override
+        protected String getSyntax(final Boolean o) {
+            return o ? "True" : "False";
+        }
+
+        @Override
+        protected String getSyntax(final Date o) {
+            return "datetime.datetime.utcfromtimestamp(" + o.getTime() + " / 1000.0)";
+        }
+
+        @Override
+        protected String getSyntax(final Timestamp o) {
+            return "timestamp(" + o.getTime() + " / 1000.0)";
+        }
+
+        @Override
+        protected String getSyntax(final UUID o) {
+            return "UUID('" + o.toString() +"')";
+        }
+
+        @Override
+        protected String getSyntax(final Lambda o) {
+            final String lambdaString = o.getLambdaScript().trim();
+            return lambdaString.startsWith("lambda") ? lambdaString : "lambda " + lambdaString;
+        }
+
+        @Override
+        protected String getSyntax(final Number o) {
+            // todo: nan/inf
+            // all int/short/BigInteger/long are just python int/bignum
+            if (o instanceof Double || o instanceof Float || o instanceof BigDecimal)
+                return "float(" + o + ")";
+            else if (o instanceof Byte)
+                return "SingleByte(" + o + ")";
+            else
+                return o.toString();
+        }
+
+        @Override
+        protected String getSyntax(final SackFunctions.Barrier o) {
+            return "Barrier." + resolveSymbol(o.toString());
+        }
+
+        @Override
+        protected String getSyntax(final VertexProperty.Cardinality o) {
+            return "Cardinality." + resolveSymbol(o.toString());
+        }
+
+        @Override
+        protected String getSyntax(final TraversalOptionParent.Pick o) {
+            return "Pick." + resolveSymbol(o.toString());
+        }
+
+        @Override
+        protected Script produceScript(final Set<?> o) {
+            final Iterator<?> iterator = o.iterator();
+            script.append("set(");
+            while(iterator.hasNext()) {
+                convertToScript(iterator.next());
+                if (iterator.hasNext())
+                    script.append(",");
+            }
+            return script.append(")");
+        }
+
+        @Override
+        protected Script produceScript(final List<?> o) {
+            final Iterator<?> iterator = o.iterator();
+            script.append("[");
+            while(iterator.hasNext()) {
+                convertToScript(iterator.next());
+                if (iterator.hasNext())
+                    script.append(",");
+            }
+            return script.append("]");
+        }
+
+        @Override
+        protected Script produceScript(final Map<?, ?> o) {
+            script.append("{");
+            final Iterator<? extends Map.Entry<?, ?>> itty = o.entrySet().iterator();
+            while (itty.hasNext()) {
+                final Map.Entry<?,?> entry = itty.next();
+                convertToScript(entry.getKey()).append(":");
+                convertToScript(entry.getValue());
+                if (itty.hasNext())
+                    script.append(",");
+            }
+            return script.append("}");
+        }
+
+        @Override
+        protected Script produceScript(final Class<?> o) {
+            return script.append("GremlinType(" + o.getCanonicalName() + ")");
+        }
+
+        @Override
+        protected Script produceScript(final Enum<?> o) {
+            return script.append(o.getDeclaringClass().getSimpleName() + "." + resolveSymbol(o.toString()));
+        }
+
+        @Override
+        protected Script produceScript(final Vertex o) {
+            script.append("Vertex(");
+            convertToScript(o.id()).append(",");
+            return convertToScript(o.label()).append(")");
+        }
+
+        @Override
+        protected Script produceScript(final Edge o) {
+            script.append("Edge(");
+            convertToScript(o.id()).append(",");
+            convertToScript(o.outVertex()).append(",");
+            convertToScript(o.label()).append(",");
+            return convertToScript(o.inVertex()).append(")");
+        }
+
+        @Override
+        protected Script produceScript(final VertexProperty<?> o) {
+            script.append("VertexProperty(");
+            convertToScript(o.id()).append(",");
+            convertToScript(o.label()).append(",");
+            return convertToScript(o.value()).append(")");
+        }
+
+        @Override
+        protected Script produceScript(final TraversalStrategyProxy<?> o) {
+            if (o.getConfiguration().isEmpty())
+                return script.append("TraversalStrategy('" + o.getStrategyClass().getSimpleName() + "')");
+            else {
+                script.append("TraversalStrategy('").append(o.getStrategyClass().getSimpleName()).append("',");
+                convertToScript(ConfigurationConverter.getMap(o.getConfiguration()));
+                return script.append(")");
             }
         }
 
-        /**
-         * For each operator argument, if withParameters set true, try parametrization as follows:
-         * <p>
-         * -----------------------------------------------
-         * if unpack, why?      ObjectType
-         * -----------------------------------------------
-         * (Yes)                Bytecode.Binding
-         * (Recursion, No)      Bytecode
-         * (Recursion, No)      Traversal
-         * (Yes)                String
-         * (Recursion, No)      Set
-         * (Recursion, No)      List
-         * (Recursion, No)      Map
-         * (Yes)                Long
-         * (Yes)                Double
-         * (Yes)                Float
-         * (Yes)                Integer
-         * (Yes)                Timestamp
-         * (Yes)                Date
-         * (Yes)                Uuid
-         * (Recursion, No)      P
-         * (Enumeration, No)    SackFunctions.Barrier
-         * (Enumeration, No)    VertexProperty.Cardinality
-         * (Enumeration, No)    TraversalOptionParent.Pick
-         * (Enumeration, No)    Enum
-         * (Recursion, No)      Vertex
-         * (Recursion, No)      Edge
-         * (Recursion, No)      VertexProperty
-         * (Yes)                Lambda
-         * (Recursion, No)      TraversalStrategyProxy
-         * (Enumeration, No)    TraversalStrategy
-         * (Yes)                Other
-         * -------------------------------------------------
-         *
-         * @param object
-         * @return String Repres
-         */
-        protected Script convertToScript(final Object object) {
-            if (object instanceof Bytecode.Binding)
-                return script.getBoundKeyOrAssign(withParameters, ((Bytecode.Binding) object).variable());
-            else if (object instanceof Bytecode)
-                return this.internalTranslate("__", (Bytecode) object);
-            else if (object instanceof Traversal)
-                return convertToScript(((Traversal) object).asAdmin().getBytecode());
-            else if (object instanceof String) {
-                final String wrapper = ((String) object).contains("'") || ((String) object).contains(System.lineSeparator()) ?
-                        "\"\"\"" + object + "\"\"\"" : "'" + object + "'";
-                return script.getBoundKeyOrAssign(withParameters, withParameters ? object : wrapper);
-            } else if (object instanceof Set) {
-                final Iterator<?> iterator = ((Set) object).iterator();
-                script.append("set(");
-                while(iterator.hasNext()) {
-                    convertToScript(iterator.next());
-                    if (iterator.hasNext())
-                        script.append(",");
-                }
-                return script.append(")");
-            } else if (object instanceof List) {
-                final Iterator<?> iterator = ((List) object).iterator();
-                script.append("[");
-                while(iterator.hasNext()) {
-                    convertToScript(iterator.next());
-                    if (iterator.hasNext())
-                        script.append(",");
-                }
-                return script.append("]");
-            } else if (object instanceof Map) {
-                script.append("{");
-                final Iterator<? extends Map.Entry<?, ?>> itty = ((Map<?, ?>) object).entrySet().iterator();
-                while (itty.hasNext()) {
-                    final Map.Entry<?,?> entry = itty.next();
-                    convertToScript(entry.getKey()).append(":");
-                    convertToScript(entry.getValue());
-                    if (itty.hasNext())
-                        script.append(",");
-                }
-                return script.append("}");
-            } else if (object instanceof Long)
-                return script.getBoundKeyOrAssign(withParameters, withParameters ? object : "long(" + object + ")");
-            else if (object instanceof TraversalStrategyProxy) {
-                return resolveTraversalStrategyProxy((TraversalStrategyProxy) object);
-            } else if (object instanceof TraversalStrategy) {
-                return convertToScript(new TraversalStrategyProxy((TraversalStrategy) object));
-            } else if (object instanceof Boolean)
-                return script.getBoundKeyOrAssign(withParameters, withParameters ? object : object.equals(Boolean.TRUE) ? "True" : "False");
-            else if (object instanceof Class)
-                return script.append(((Class) object).getCanonicalName());
-            else if (object instanceof VertexProperty.Cardinality)
-                return script.append("Cardinality." + resolveSymbol(object.toString()));
-            else if (object instanceof SackFunctions.Barrier)
-                return script.append("Barrier." + resolveSymbol(object.toString()));
-            else if (object instanceof TraversalOptionParent.Pick)
-                return script.append("Pick." + resolveSymbol(object.toString()));
-            else if (object instanceof Enum)
-                return script.append(((Enum) object).getDeclaringClass().getSimpleName() + "." + resolveSymbol(object.toString()));
-            else if (object instanceof P)
-                return convertPToScript((P) object);
-            else if (object instanceof Element) {
-                if (object instanceof Vertex) {
-                    final Vertex vertex = (Vertex) object;
-                    script.append("Vertex(");
-                    convertToScript(vertex.id()).append(",");
-                    return convertToScript(vertex.label()).append(")");
-                } else if (object instanceof Edge) {
-                    final Edge edge = (Edge) object;
-                    script.append("Edge(");
-                    convertToScript(edge.id()).append(",");
-                    convertToScript(edge.outVertex()).append(",");
-                    convertToScript(edge.label()).append(",");
-                    return convertToScript(edge.inVertex()).append(")");
-                } else {
-                    final VertexProperty vertexProperty = (VertexProperty) object;
-                    script.append("VertexProperty(");
-                    convertToScript(vertexProperty.id()).append(",");
-                    convertToScript(vertexProperty.label()).append(",");
-                    return convertToScript(vertexProperty.value()).append(")");
-                }
-            } else if (object instanceof Lambda) {
-                final String lambdaString = ((Lambda) object).getLambdaScript().trim();
-                final String wrapper = lambdaString.startsWith("lambda") ? lambdaString : "lambda " + lambdaString;;
-                return script.getBoundKeyOrAssign(withParameters, withParameters ? object : wrapper);
-            } else
-                return null == object ? script.append("None") : script.getBoundKeyOrAssign(withParameters, object);
-        }
-
-        private Script internalTranslate(final String start, final Bytecode bytecode) {
-            script.append(start);
-            for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
+        @Override
+        protected Script produceScript(final String traversalSource, final Bytecode o) {
+            script.append(traversalSource);
+            for (final Bytecode.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 final Object[] arguments = instruction.getArguments();
                 if (0 == arguments.length)
@@ -289,45 +313,29 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             return script;
         }
 
-        protected Script convertPToScript(final P p) {
+        @Override
+        protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                return convertTextPToScript((TextP) p);
-            }
-            if (p instanceof ConnectiveP) {
+                script.append("TextP.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
+                convertToScript(p.getValue());
+            } else if (p instanceof ConnectiveP) {
                 final List<P<?>> list = ((ConnectiveP) p).getPredicates();
                 for (int i = 0; i < list.size(); i++) {
-                    convertPToScript(list.get(i));
+                    produceScript(list.get(i));
                     if (i < list.size() - 1) {
                         script.append(p instanceof OrP ? ".or_(" : ".and_(");
                     }
                 }
             } else {
-                script.append("P.").append(p.getBiPredicate().toString()).append("(");
+                script.append("P.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");
             return script;
         }
 
-        protected Script convertTextPToScript(final TextP p) {
-            script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
-            convertToScript(p.getValue());
-            script.append(")");
-            return script;
-        }
-
         protected String resolveSymbol(final String methodName) {
             return SymbolHelper.toPython(methodName);
-        }
-
-        protected Script resolveTraversalStrategyProxy(final TraversalStrategyProxy proxy) {
-            if (proxy.getConfiguration().isEmpty())
-                return script.append("TraversalStrategy('" + proxy.getStrategyClass().getSimpleName() + "')");
-            else {
-                script.append("TraversalStrategy('").append(proxy.getStrategyClass().getSimpleName()).append("',");
-                convertToScript(ConfigurationConverter.getMap(proxy.getConfiguration()));
-                return script.append(")");
-            }
         }
     }
 
