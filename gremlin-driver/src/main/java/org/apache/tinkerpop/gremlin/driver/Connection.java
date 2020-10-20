@@ -143,7 +143,10 @@ final class Connection {
 
             logger.info("Created new connection for {}", uri);
 
-            scheduleKeepAlive();
+            // Default WebSocketChannelizer uses Netty's IdleStateHandler
+            if (!(channelizer instanceof Channelizer.WebSocketChannelizer)) {
+                scheduleKeepAlive();
+            }
         } catch (Exception ie) {
             logger.debug("Error opening connection on {}", uri);
             throw new ConnectionException(uri, "Could not open connection", ie);
@@ -270,11 +273,18 @@ final class Connection {
                 });
         channel.writeAndFlush(requestMessage, requestPromise);
 
-        scheduleKeepAlive();
+        // Default WebSocketChannelizer uses Netty's IdleStateHandler
+        if (!(channelizer instanceof Channelizer.WebSocketChannelizer)) {
+            scheduleKeepAlive();
+        }
 
         return requestPromise;
     }
 
+    /**
+     * @deprecated As of release 3.5.0, not directly replaced. The keep-alive functionality is delegated to Netty
+     * {@link io.netty.handler.timeout.IdleStateHandler} which is added to the pipeline in {@link Channelizer}.
+     */
     private void scheduleKeepAlive() {
         final Connection thisConnection = this;
         // try to keep the connection alive if the channel allows such things - websockets will

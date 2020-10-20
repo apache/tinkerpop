@@ -21,16 +21,22 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
-
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import java.util.concurrent.TimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper over {@link WebSocketClientProtocolHandler}. This wrapper provides a future which represents the termination
  * of a WS handshake (both success and failure).
  */
 public final class WebSocketClientHandler extends WebSocketClientProtocolHandler {
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
+
     private final long handshakeTimeoutMillis;
     private ChannelPromise handshakeFuture;
 
@@ -47,23 +53,6 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
     public void handlerAdded(final ChannelHandlerContext ctx) {
         super.handlerAdded(ctx);
         handshakeFuture = ctx.newPromise();
-    }
-
-    @Override
-    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) throws Exception {
-        if (ClientHandshakeStateEvent.HANDSHAKE_COMPLETE.equals(evt)) {
-            if (!handshakeFuture.isDone()) {
-                handshakeFuture.setSuccess();
-            }
-        } else if (ClientHandshakeStateEvent.HANDSHAKE_TIMEOUT.equals(evt)) {
-            if (!handshakeFuture.isDone()) {
-                handshakeFuture.setFailure(
-                        new TimeoutException(String.format("handshake not completed in stipulated time=[%s]ms",
-                                handshakeTimeoutMillis)));
-            }
-        } else {
-            super.userEventTriggered(ctx, evt);
-        }
     }
 
     @Override
@@ -86,5 +75,30 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
         }
 
         super.channelInactive(ctx);
+    }
+
+    @Override
+    public void userEventTriggered(final ChannelHandlerContext ctx, final Object event) throws Exception {
+        if (event instanceof IdleStateEvent) {
+            IdleStateEvent e = (IdleStateEvent) event;
+            if (e.state() == IdleState.READER_IDLE) {
+                logger.warn("WebSocket connection " + ctx.channel() + " has been idle for too long.");
+            } else if (e.state() == IdleState.WRITER_IDLE) {
+                logger.debug("Sending ping frame to the server");
+                ctx.writeAndFlush(new PingWebSocketFrame());
+            }
+        } else if (ClientHandshakeStateEvent.HANDSHAKE_COMPLETE.equals(event)) {
+            if (!handshakeFuture.isDone()) {
+                handshakeFuture.setSuccess();
+            }
+        } else if (ClientHandshakeStateEvent.HANDSHAKE_TIMEOUT.equals(event)) {
+            if (!handshakeFuture.isDone()) {
+                handshakeFuture.setFailure(
+                        new TimeoutException(String.format("handshake not completed in stipulated time=[%s]ms",
+                                handshakeTimeoutMillis)));
+            }
+        } else {
+            super.userEventTriggered(ctx, event);
+        }
     }
 }
