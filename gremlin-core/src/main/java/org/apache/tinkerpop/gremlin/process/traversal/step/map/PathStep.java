@@ -140,4 +140,12 @@ public final class PathStep<S> extends ScalarMapStep<S, Path> implements Travers
     public void addTo(final String toLabel) {
         this.toLabel = toLabel;
     }
+
+    public String getFromLabel() {
+        return fromLabel;
+    }
+
+    public String getToLabel() {
+        return toLabel;
+    }
 }

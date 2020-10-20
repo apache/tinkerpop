@@ -144,4 +144,16 @@ public final class PathFilterStep<S> extends FilterStep<S> implements FromToModu
     public Set<String> getKeepLabels() {
         return this.keepLabels;
     }
+
+    public String getFromLabel() {
+        return fromLabel;
+    }
+
+    public String getToLabel() {
+        return toLabel;
+    }
+
+    public boolean isSimple() {
+        return isSimple;
+    }
 }

@@ -42,8 +42,8 @@ import java.util.stream.Stream;
  */
 public class TraversalExplanation extends AbstractExplanation implements Serializable {
 
-    private Traversal.Admin<?, ?> traversal;
-    private List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = new ArrayList<>();
+    protected Traversal.Admin<?, ?> traversal;
+    protected List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = new ArrayList<>();
 
     protected TraversalExplanation() {
         // no arg constructor for serialization
