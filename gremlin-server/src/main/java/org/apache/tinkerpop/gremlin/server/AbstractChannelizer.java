@@ -103,6 +103,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public static final String PIPELINE_AUTHENTICATOR = "authenticator";
     public static final String PIPELINE_REQUEST_HANDLER = "request-handler";
     public static final String PIPELINE_HTTP_RESPONSE_ENCODER = "http-response-encoder";
+    public static final String PIPELINE_WEBSOCKET_SERVER_COMPRESSION = "web-socket-server-compression-handler";
 
     protected static final String PIPELINE_SSL = "ssl";
     protected static final String PIPELINE_OP_SELECTOR = "op-selector";

@@ -36,6 +36,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
@@ -95,11 +96,13 @@ public class WebSocketChannelizer extends AbstractChannelizer {
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
         pipeline.addLast(PIPELINE_HTTP_RESPONSE_ENCODER, new HttpResponseEncoder());
+        // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
+        pipeline.addLast(PIPELINE_WEBSOCKET_SERVER_COMPRESSION, new WebSocketServerCompressionHandler());
 
         // setting closeOnProtocolViolation to false prevents causing all the other requests using the same channel
         // to fail when a single request causes a protocol violation.
         final WebSocketDecoderConfig wsDecoderConfig = WebSocketDecoderConfig.newBuilder().
-                closeOnProtocolViolation(false).allowExtensions(false).maxFramePayloadLength(settings.maxContentLength).build();
+                closeOnProtocolViolation(false).allowExtensions(true).maxFramePayloadLength(settings.maxContentLength).build();
         pipeline.addLast(PIPELINE_REQUEST_HANDLER, new WebSocketServerProtocolHandler(GREMLIN_ENDPOINT,
                 null, false, false, 10000L, wsDecoderConfig));
 
