@@ -133,4 +133,12 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     public void addTo(final String toLabel) {
         this.toLabel = toLabel;
     }
+
+    public String getFromLabel() {
+        return fromLabel;
+    }
+
+    public String getToLabel() {
+        return toLabel;
+    }
 }

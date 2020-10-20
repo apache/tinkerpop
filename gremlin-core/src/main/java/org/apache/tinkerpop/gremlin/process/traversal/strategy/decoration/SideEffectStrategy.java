@@ -62,4 +62,17 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
         }
         strategy.sideEffects.add(new Triplet<>(key, null == value ? null : value instanceof Supplier ? (Supplier) value : new ConstantSupplier<>(value), reducer));
     }
+
+    public boolean contains(final String sideEffectKey) {
+        return sideEffects.stream().anyMatch(triplet -> triplet.getValue0().equals(sideEffectKey));
+    }
+
+    public Object initialValue(final String sideEffectKey) {
+        for (Triplet<String, Supplier, BinaryOperator> triplet : sideEffects) {
+            if (triplet.getValue0().equals(sideEffectKey)) {
+                return triplet.getValue1().get();
+            }
+        }
+        return null;
+    }
 }
