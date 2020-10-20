@@ -281,6 +281,10 @@ final class Connection {
         return requestPromise;
     }
 
+    /**
+     * @deprecated As of release 3.5.0, not directly replaced. The keep-alive functionality is delegated to Netty
+     * {@link io.netty.handler.timeout.IdleStateHandler} which is added to the pipeline in {@link Channelizer}.
+     */
     private void scheduleKeepAlive() {
         final Connection thisConnection = this;
         // try to keep the connection alive if the channel allows such things - websockets will

@@ -176,6 +176,10 @@ public interface Channelizer extends ChannelHandler {
             return true;
         }
 
+        /**
+         * @deprecated As of release 3.5.0, not directly replaced. The keep-alive functionality is delegated to Netty
+         * {@link io.netty.handler.timeout.IdleStateHandler} which is added to the pipeline in {@link Channelizer}.
+         */
         @Override
         public Object createKeepAliveMessage() {
             throw new UnsupportedOperationException(
