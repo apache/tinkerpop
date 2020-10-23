@@ -101,6 +101,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `withGraph()` in favor of `withEmbedded()` on `AnonymousTraversalSource`.
 * Added support for per-request level configurations, like timeouts, in .NET, Python and Javascript.
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
+* Prevented Gremlin Python sugar from being confused by Python magic methods.
 * Implemented `AutoCloseable` on `MultiIterator`.
 * Fixed an iterator leak in `HasContainer`.
 * Added `GremlinASTChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
