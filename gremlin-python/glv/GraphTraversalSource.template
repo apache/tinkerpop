@@ -99,6 +99,9 @@ class GraphTraversal(Traversal):
             raise TypeError("Index must be int or slice")
 
     def __getattr__(self, key):
+        if key.startswith('__'):
+            raise AttributeError(
+                'Python magic methods or keys starting with double underscore cannot be used for Gremlin sugar - prefer values(' + key + ')')
         return self.values(key)
 
     def clone(self):
