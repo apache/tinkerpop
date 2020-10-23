@@ -64,7 +64,7 @@ Feature: Step - math()
     And using the parameter x defined as "d[100].i"
     And the traversal of
       """
-      g.withSideEffect("x", 100).V().values("age").math("_ + x")
+      g.withSideEffect("x", x).V().values("age").math("_ + x")
       """
     When iterated to list
     Then the result should be unordered

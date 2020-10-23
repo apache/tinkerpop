@@ -591,6 +591,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("sum", *args)
         return self
 
+
 class MagicType(type):
 
     def __getattr__(cls, k):
@@ -599,8 +600,8 @@ class MagicType(type):
                 'Python magic methods or keys starting with double underscore cannot be used for Gremlin sugar - prefer values(' + k + ')')
         return __.values(k)
 
-class __(object):
-    __metaclass__ = MagicType
+
+class __(object, metaclass=MagicType):
     graph_traversal = GraphTraversal
 
     @classmethod

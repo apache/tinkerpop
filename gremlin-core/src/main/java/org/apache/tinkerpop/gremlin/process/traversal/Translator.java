@@ -41,6 +41,7 @@ import java.util.function.BiFunction;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stark Arya (sandszhou.zj@alibaba-inc.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Translator<S, T> {
 

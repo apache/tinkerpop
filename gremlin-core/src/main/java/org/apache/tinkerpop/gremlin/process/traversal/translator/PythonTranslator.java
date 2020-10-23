@@ -266,11 +266,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final TraversalStrategyProxy<?> o) {
             if (o.getConfiguration().isEmpty())
-                return script.append("TraversalStrategy('" + o.getStrategyClass().getSimpleName() + "')");
+                return script.append("TraversalStrategy('" + o.getStrategyClass().getSimpleName() + "', None, '" + o.getStrategyClass().getName() + "')");
             else {
                 script.append("TraversalStrategy('").append(o.getStrategyClass().getSimpleName()).append("',");
                 convertToScript(ConfigurationConverter.getMap(o.getConfiguration()));
-                return script.append(")");
+                script.append(", '");
+                script.append(o.getStrategyClass().getName());
+                return script.append("')");
             }
         }
 
@@ -297,7 +299,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                     // python has trouble with java varargs...wrapping in collection seems to solve the problem
                     final boolean varargsBeware = instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)
                             || instruction.getOperator().equals(TraversalSource.Symbols.withoutStrategies);
-                    if (varargsBeware) script.append("[");
+                    if (varargsBeware) script.append("*[");
 
                     final Iterator<?> itty = Stream.of(arguments).iterator();
                     while (itty.hasNext()) {

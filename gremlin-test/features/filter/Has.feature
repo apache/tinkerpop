@@ -164,10 +164,9 @@ Feature: Step - has()
   Scenario: g_VXv4X_hasXage_gt_30X
     Given the modern graph
     And using the parameter v4 defined as "v[josh]"
-    And using the parameter d30 defined as "d[30].i"
     And the traversal of
       """
-      g.V(v4).has("age", P.gt(d30))
+      g.V(v4).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be unordered
@@ -182,10 +181,6 @@ Feature: Step - has()
       """
       g.V(v1Id).out().has(T.id, ltXv3IdX)
       """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
 
   Scenario: g_VX1AsStringX_out_hasXid_2AsStringX
     Given the modern graph
@@ -337,11 +332,9 @@ Feature: Step - has()
   Scenario: g_VX1X_outE_hasXweight_inside_0_06X_inV
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter lower defined as "d[0.0].d"
-    And using the parameter upper defined as "d[0.6].d"
     And the traversal of
     """
-    g.V(v1Id).outE().has("weight", P.inside(lower, upper)).inV()
+    g.V(v1Id).outE().has("weight", P.inside(0.0, 0.6)).inV()
     """
     When iterated to list
     Then the result should be unordered
@@ -391,14 +384,9 @@ Feature: Step - has()
 
   Scenario: g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name
     Given the modern graph
-    And using the parameter d10 defined as "d[10].i"
-    And using the parameter d11 defined as "d[11].i"
-    And using the parameter d20 defined as "d[20].i"
-    And using the parameter d29 defined as "d[29].i"
-    And using the parameter d35 defined as "d[35].i"
     And the traversal of
     """
-    g.V().hasLabel("person").has("age", P.not(P.lte(d10).and(P.not(P.between(d11, d20)))).and(P.lt(d29).or(P.eq(d35)))).values("name")
+    g.V().hasLabel("person").has("age", P.not(P.lte(10).and(P.not(P.between(11, 20)))).and(P.lt(29).or(P.eq(35)))).values("name")
     """
     When iterated to list
     Then the result should be unordered
@@ -480,10 +468,9 @@ Feature: Step - has()
 
   Scenario: g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value
     Given the modern graph
-    And using the parameter d30 defined as "d[30].i"
     And the traversal of
     """
-    g.V().both().properties().dedup().hasKey("age").hasValue(P.gt(d30)).value()
+    g.V().both().properties().dedup().hasKey("age").hasValue(P.gt(30)).value()
     """
     When iterated to list
     Then the result should be unordered
@@ -507,7 +494,6 @@ Feature: Step - has()
 
   Scenario: g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value
     Given the modern graph
-    And using the parameter d0d3 defined as "d[0.3].d"
     And the traversal of
     """
     g.V().bothE().properties().dedup().hasKey("weight").hasValue(P.lt(0.3)).value()

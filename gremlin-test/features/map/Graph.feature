@@ -36,7 +36,6 @@ Feature: Step - V()
 
   Scenario: g_V_outXknowsX_V_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V().out("knows").V().values("name")

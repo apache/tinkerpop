@@ -60,7 +60,6 @@ Feature: Step - simplePath()
 
   Scenario: g_V_asXaX_out_asXbX_out_asXcX_simplePath_byXlabelX_fromXbX_toXcX_path_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V().as("a").out().as("b").out().as("c").simplePath().by(T.label).from("b").to("c").path().by("name")

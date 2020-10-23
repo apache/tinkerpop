@@ -65,10 +65,9 @@ Feature: Step - coin()
 
   Scenario: g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX
     Given the modern graph
-    And using the parameter two defined as "d[2].l"
     And the traversal of
       """
-      g.V().where(__.in("created").count().is(P.gte(two))).values("name")
+      g.V().where(__.in("created").count().is(P.gte(2))).values("name")
       """
     When iterated to list
     Then the result should be unordered
