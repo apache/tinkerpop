@@ -57,7 +57,10 @@ public final class Bindings {
 
     protected static <V> String getBoundVariable(final V value) {
         final Map<Object, String> map = MAP.get();
-        return null == map ? null : map.get(value);
+
+        // once retrieved by bytecode, the binding should be removed. all this should occur during the addStep()
+        // and related bytecode construction. using remove() solves the problem of TINKERPOP-2458
+        return null == map ? null : map.remove(value);
     }
 
     protected static void clear() {
