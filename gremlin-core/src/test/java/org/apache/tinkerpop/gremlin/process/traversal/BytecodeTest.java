@@ -103,27 +103,46 @@ public class BytecodeTest {
 
     @Test
     public void shouldIncludeBindingsInNestedTraversals() {
+        // adding the choose() step as part of TINKERPOP-2458
         final Bindings b = Bindings.instance();
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        final Bytecode bytecode = g.V().in(b.of("a","created")).where(__.out(b.of("b","knows")).has("age",b.of("c",P.gt(32))).map(__.values(b.of("d","name")))).asAdmin().getBytecode();
-        assertEquals(4, bytecode.getBindings().size());
+        final Bytecode bytecode = g.V().in(b.of("a","created")).
+                choose(__.out().count()).
+                option(b.of("two", 2), __.values("name")).
+                option(b.of("three",3), __.values("age")).
+                where(__.out(b.of("b","knows")).
+                        has("age",b.of("c",P.gt(32))).
+                        map(__.values(b.of("d","name")))).
+                in(b.of("a", "created")).asAdmin().getBytecode();
+        assertEquals(6, bytecode.getBindings().size());
         assertEquals("created", bytecode.getBindings().get("a"));
         assertEquals("knows", bytecode.getBindings().get("b"));
         assertEquals(P.gt(32), bytecode.getBindings().get("c"));
         assertEquals("name", bytecode.getBindings().get("d"));
-        //
-        Bytecode.Binding binding = (Bytecode.Binding)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(1).getArguments()[0];
+        assertEquals(2, bytecode.getBindings().get("two"));
+        assertEquals(3, bytecode.getBindings().get("three"));
+
+        Bytecode.Binding binding = (Bytecode.Binding) bytecode.getStepInstructions().get(1).getArguments()[0];
         assertEquals("a", binding.variable());
         assertEquals("created", binding.value());
-        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        binding = (Bytecode.Binding) bytecode.getStepInstructions().get(3).getArguments()[0];
+        assertEquals("two", binding.variable());
+        assertEquals(2, binding.value());
+        binding = (Bytecode.Binding) bytecode.getStepInstructions().get(4).getArguments()[0];
+        assertEquals("three", binding.variable());
+        assertEquals(3, binding.value());
+        binding = (Bytecode.Binding) ((Bytecode) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(0).getArguments()[0];
         assertEquals("b", binding.variable());
         assertEquals("knows", binding.value());
-        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(1).getArguments()[1];
+        binding = (Bytecode.Binding) ((Bytecode) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(1).getArguments()[1];
         assertEquals("c", binding.variable());
         assertEquals(P.gt(32), binding.value());
-        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        binding = (Bytecode.Binding) ((Bytecode) ((Bytecode) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(2).getArguments()[0]).getStepInstructions().get(0).getArguments()[0];
         assertEquals("d", binding.variable());
         assertEquals("name", binding.value());
+        binding = (Bytecode.Binding) bytecode.getStepInstructions().get(6).getArguments()[0];
+        assertEquals("a", binding.variable());
+        assertEquals("created", binding.value());
     }
 
     @Test

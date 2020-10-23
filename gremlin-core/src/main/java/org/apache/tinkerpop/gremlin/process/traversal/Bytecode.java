@@ -86,7 +86,6 @@ public final class Bytecode implements Cloneable, Serializable {
      */
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
-        Bindings.clear();
     }
 
     /**
