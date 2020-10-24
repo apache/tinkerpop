@@ -34,6 +34,7 @@ const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
+const P = traversalModule.P;
 const direction = traversalModule.direction;
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
@@ -91,6 +92,10 @@ Given('an unsupported test', () => {});
 
 Given('the traversal of', function (traversalText) {
   this.traversal = vm.runInNewContext(translate(traversalText), getSandbox(this.g, this.parameters));
+});
+
+Given(/^using the parameter (.+) of P\.(.+)\("(.+)"\)$/, function (paramName, pval, stringValue) {
+  this.parameters[paramName] =  new P(pval, parseValue.call(this, stringValue))
 });
 
 Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, stringValue) {

@@ -76,6 +76,14 @@ def unsupported_scenario(step):
     return
 
 
+@given("using the parameter {param_name:w} of P.{p_val:w}({param:QuotedString})")
+def add_p_parameter(step, param_name, p_val, param):
+    if not hasattr(step.context, "traversal_params"):
+        step.context.traversal_params = {}
+
+    step.context.traversal_params[param_name] = getattr(P, p_val)(_convert(param.replace('\\"', '"'), step.context))
+
+
 @given("using the parameter {param_name:w} defined as {param:QuotedString}")
 def add_parameter(step, param_name, param):
     if not hasattr(step.context, "traversal_params"):

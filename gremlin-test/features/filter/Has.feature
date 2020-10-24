@@ -177,10 +177,10 @@ Feature: Step - has()
   Scenario: g_VX1X_out_hasXid_lt_3X
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v3Id defined as "v[lop].id"
+    And using the parameter ltXv3IdX of P.lt("v[lop].id")
     And the traversal of
       """
-      g.V(v1Id).out().has(T.id, P.lt(v3Id))
+      g.V(v1Id).out().has(T.id, ltXv3IdX)
       """
     When iterated to list
     Then the result should be unordered
@@ -408,10 +408,10 @@ Feature: Step - has()
 
   Scenario: g_V_in_hasIdXneqX1XX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter neqXv1IdX of P.neq("v[marko].id")
     And the traversal of
     """
-    g.V().in().hasId(P.neq(v1Id))
+    g.V().in().hasId(neqXv1IdX)
     """
     When iterated to list
     Then the result should be unordered
@@ -563,10 +563,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasIdXwithinXemptyXX_count
     Given the modern graph
-    And using the parameter l defined as "l[]"
+    And using the parameter withinXlX of P.within("l[]")
     And the traversal of
     """
-    g.V().hasId(P.within(l)).count()
+    g.V().hasId(withinXlX).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -575,10 +575,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasIdXwithoutXemptyXX_count
     Given the modern graph
-    And using the parameter l defined as "l[]"
+    And using the parameter withoutXlX of P.without("l[]")
     And the traversal of
     """
-    g.V().hasId(P.without(l)).count()
+    g.V().hasId(withoutXlX).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -587,10 +587,10 @@ Feature: Step - has()
 
   Scenario: g_V_notXhasIdXwithinXemptyXXX_count
     Given the modern graph
-    And using the parameter l defined as "l[]"
+    And using the parameter withinXlX of P.within("l[]")
     And the traversal of
     """
-    g.V().not(__.hasId(P.within(l))).count()
+    g.V().not(__.hasId(withinXlX)).count()
     """
     When iterated to list
     Then the result should be unordered
