@@ -23,7 +23,7 @@ from gremlin_python.structure.graph import Path
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO, WithOptions
-from radish import given, when, then
+from radish import given, when, then, world
 from hamcrest import *
 
 regex_all = re.compile(r"Pop\.all")
@@ -189,7 +189,7 @@ def _convert(val, ctx):
 
 def __find_cached_element(ctx, graph_name, identifier, element_type):
     if graph_name == "empty":
-        cache = __create_lookup_v(ctx.remote_conn["empty"]) if element_type == "v" else __create_lookup_e(ctx.remote_conn["empty"])
+        cache = world.create_lookup_v(ctx.remote_conn["empty"]) if element_type == "v" else world.create_lookup_e(ctx.remote_conn["empty"])
     else:
         cache = ctx.lookup_v[graph_name] if element_type == "v" else ctx.lookup_e[graph_name]
 
@@ -273,20 +273,3 @@ def _make_traversal(g, traversal_string, params):
     b.update(params)
 
     return eval(_translate(traversal_string), b)
-
-
-def __create_lookup_v(remote):
-    g = traversal().withRemote(remote)
-
-    # hold a map of name/vertex for use in asserting results
-    return g.V().group().by('name').by(tail()).next()
-
-
-def __create_lookup_e(remote):
-    g = traversal().withRemote(remote)
-
-    # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
-    # outgoingV-label->incomingV
-    return g.E().group(). \
-        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
-        by(tail()).next()
