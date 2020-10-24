@@ -39,8 +39,8 @@ def prepare_static_traversal_source(features, marker):
         cache[graph_name[0]] = {}
         remote = __create_remote(graph_name[1])
         cache[graph_name[0]]["remote_conn"] = __create_remote(graph_name[1])
-        cache[graph_name[0]]["lookup_v"] = __create_lookup_v(remote)
-        cache[graph_name[0]]["lookup_e"] = __create_lookup_e(remote)
+        cache[graph_name[0]]["lookup_v"] = world.create_lookup_v(remote)
+        cache[graph_name[0]]["lookup_e"] = world.create_lookup_e(remote)
 
     # store the cache on the global context so that remotes can be shutdown cleanly at the end of the tests
     world.cache = cache
@@ -95,20 +95,3 @@ def __create_remote(server_graph_name):
         raise ValueError('serializer not found - ' + world.config.user_data["serializer"])
 
     return DriverRemoteConnection('ws://localhost:45940/gremlin', server_graph_name, message_serializer=s)
-
-
-def __create_lookup_v(remote):
-    g = traversal().withRemote(remote)
-
-    # hold a map of name/vertex for use in asserting results
-    return g.V().group().by('name').by(tail()).next()
-
-
-def __create_lookup_e(remote):
-    g = traversal().withRemote(remote)
-
-    # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
-    # outgoingV-label->incomingV
-    return g.E().group(). \
-        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
-        by(tail()).next()
