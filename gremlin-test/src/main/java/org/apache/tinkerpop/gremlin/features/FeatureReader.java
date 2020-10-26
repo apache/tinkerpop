@@ -40,6 +40,7 @@ public class FeatureReader {
         Files.find(Paths.get(projectRoot, "gremlin-test", "features"),
                    Integer.MAX_VALUE,
                 (filePath, fileAttr) -> fileAttr.isRegularFile() && filePath.toString().endsWith(".feature")).
+                sorted().
                 forEach(f -> {
                     String currentGremlin = "";
                     boolean openTriples = false;

@@ -81,7 +81,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     gremlins.each { k,v ->
         writer.write("    '")
         writer.write(k)
-        writer.write("':[")
+        writer.write("': [")
         def collected = v.collect{
             def t = gremlinGroovyScriptEngine.eval(it, bindings)
             [t, t.bytecode.bindings.keySet()]
