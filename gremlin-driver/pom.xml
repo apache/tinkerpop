@@ -41,6 +41,7 @@ limitations under the License.
             <artifactId>groovy</artifactId>
             <version>${groovy.version}</version>
             <classifier>indy</classifier>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -54,6 +55,7 @@ limitations under the License.
                     <artifactId>groovy</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
