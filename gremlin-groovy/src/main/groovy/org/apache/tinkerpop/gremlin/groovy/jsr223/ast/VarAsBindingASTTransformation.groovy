@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.ast
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.Translator
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings
@@ -54,6 +54,8 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
  * This AST Transformation is meant to work with a single lines of Gremlin and only Gremlin. Inclusion of Groovy code
  * might produce odd behavior as all variables found are basically treated as bindings which is not desirable for
  * scripts in general.
+ * <p/>
+ * This class is meant for internal use only at this time as it has incomplete coverage over from the gherkin tests.
  */
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 class VarAsBindingASTTransformation implements ASTTransformation {
@@ -92,7 +94,13 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                     expression.eachWithIndex{ Expression entry, int i ->
                         if (entry instanceof VariableExpression) {
                             // need a default binding value - any nonsense that satisfies the step argument should
-                            // work typically but this is getting hacky
+                            // work typically. the string default works for a great many cases, but sometimes we
+                            // need to get more specific. as it sits this list is incomplete and certain bindings
+                            // in certain position may generate errors still, but the entire set of gherkin files
+                            // passes with what is specified here currently. more tests will come as we build out
+                            // wider Gremlin coverage after the test suite is unified. as this body of code is
+                            // meant for testing only and it is documented as such it seems ok to leave this as-is
+                            // until we build out more Gherkin tests to expose any shortcomings.
                             def bindingValue = new ConstantExpression(UUID.randomUUID().toString())
                             switch (currentMethod) {
                                 case GraphTraversal.Symbols.map:
