@@ -19,19 +19,31 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
  * Tests to validate shutdown mechanics.
  */
 public class GremlinServerShutdownIntegrationTest {
+
+    private GremlinServer server;
+
+    @After
+    public void after() {
+        if (server != null) {
+            server.stop();
+        }
+    }
 
     public InputStream getSettingsInputStream() {
         return AbstractGremlinServerIntegrationTest.class.getResourceAsStream("gremlin-server-integration.yaml");
@@ -44,7 +56,7 @@ public class GremlinServerShutdownIntegrationTest {
 
     public CompletableFuture<ServerGremlinExecutor> startServer(final Settings settings) throws Exception {
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
-        final GremlinServer server = new GremlinServer(settings);
+        server = new GremlinServer(settings);
         return server.start();
     }
 
@@ -60,5 +72,33 @@ public class GremlinServerShutdownIntegrationTest {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(ClassNotFoundException.class, root.getClass());
         }
+    }
+
+    /**
+     * TINKERPOP-2436 The gremlin server starts even if all graphs instantiation has
+     * failed
+     */
+    @Test
+    public void failOnInvalidGraphWithCheckedGraphManager() {
+        final Settings settings = getBaseSettings();
+        settings.graphs.clear();
+        settings.graphManager = CheckedGraphManager.class.getName();
+        settings.graphs.put("invalid", "conf/invalidPath");
+
+        try {
+            startServer(settings).join();
+            fail("Server should not have started");
+        } catch (Exception ex) {
+            assertTrue(ExceptionUtils.getThrowableList(ex).stream().filter(e -> e instanceof IllegalStateException)
+                    .anyMatch(e -> e.getMessage().contains("Graph [invalid] configured at")));
+        }
+    }
+
+    @Test
+    public void startOnInvalidGraphWithDefaultGraphManager() throws Exception {
+        final Settings settings = getBaseSettings();
+        settings.graphs.clear();
+        settings.graphs.put("invalid", "conf/invalidPath");
+        startServer(settings);
     }
 }
