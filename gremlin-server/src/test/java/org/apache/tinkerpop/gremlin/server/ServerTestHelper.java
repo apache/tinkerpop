@@ -83,7 +83,7 @@ public class ServerTestHelper {
       String result;
 
       result = System.getProperty("build.dir");
-      assertNotNull("Expected base.dir system property is set to the project's target directory", result);
+      assertNotNull("Expected build.dir system property is set to the project's target directory", result);
 
       return new File(result);
     }

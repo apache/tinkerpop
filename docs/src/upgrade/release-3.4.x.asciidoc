@@ -37,6 +37,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== GraphManager Extension
+
+The `org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager` can be used instead of 
+`org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager` (in gremlin-server.yml  to ensures that Gremlin Server
+fails to start if all graphs fails. This configuration option can be useful for a number of different situations (e.g.
+use `CheckedGraphManager` on a Kubernetes cluster to ensure that a pod will be restarted when it cannot properly handle
+requests.) As a final note, `DefaultGraphManager` is no longer `final` and thus can be extended.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2436[TINKERPOP-2436]
+
 === withEmbedded()
 
 The `AnonymousTraversalSource` was introduced in 3.3.5 and is most typically used for constructing remote
