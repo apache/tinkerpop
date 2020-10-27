@@ -58,7 +58,7 @@ public class DefaultGraphManager implements GraphManager {
         settings.graphs.forEach(this::addGraph);
     }
     
-    protected void addGraph(String name, String configurationFile) {
+    protected void addGraph(final String name, final String configurationFile) {
         try {
             final Graph newGraph = GraphFactory.open(configurationFile);
             putGraph(name, newGraph);

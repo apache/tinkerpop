@@ -28,15 +28,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
-=== Graph manager extension
+=== GraphManager Extension
 
 The `org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager` can be used instead of 
-`org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager` (in gremlin-server.yml  to ensures that gremlin server 
-fails to start if all graphs fails. This can be usefull for instance on a kubernetes cluster
-to ensure that pop wil be restarted as it cannot handle properly requests. 
-DefaultGraphManager is no more final and thus can be extended.
+`org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager` (in gremlin-server.yml  to ensures that Gremlin Server
+fails to start if all graphs fails. This configuration option can be useful for a number of different situations (e.g.
+use `CheckedGraphManager` on a Kubernetes cluster to ensure that a pod will be restarted when it cannot properly handle
+requests.) As a final note, `DefaultGraphManager` is no longer `final` and thus can be extended.
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2436[TINKERPOP-2436]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2436[TINKERPOP-2436]
 
 === withEmbedded()
 

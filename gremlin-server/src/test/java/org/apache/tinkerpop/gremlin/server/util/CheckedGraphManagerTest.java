@@ -65,7 +65,7 @@ public class CheckedGraphManagerTest {
     @Test
     public void justAGraphFails() {
         settings.graphs.put("invalid", "conf/invalidPath");
-        GraphManager manager = new CheckedGraphManager(settings);
+        final GraphManager manager = new CheckedGraphManager(settings);
         assertThat(manager.getGraphNames(), hasSize(6));
     }
 
