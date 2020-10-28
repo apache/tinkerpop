@@ -51,6 +51,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Configured GraphBinary as the default binary serialization format for the Java Driver.
 * Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
 * Configured GraphSON 3.0 as the default setting for the `GraphSONMapper`.
+* Added `JavascriptTranslator` for Java.
 * Fixed bug in `PythonTranslator` for processing `TraversalStrategy` instances in GraphBinary.
 * Fixed bug in bytecode `Bindings` where calling `of()` prior to calling a child traversal in the same parent would cause the initial binding to be lost.
 * Bumped to tornado 6.1 for gremlinpython.

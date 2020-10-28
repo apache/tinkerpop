@@ -23,9 +23,9 @@
 'use strict';
 
 const {Given, Then, When} = require('cucumber');
-const vm = require('vm');
 const expect = require('chai').expect;
 const util = require('util');
+const gremlin = require('./gremlin').gremlin;
 const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
@@ -86,14 +86,18 @@ Given(/^the (.+) graph$/, function (graphName) {
 });
 
 Given('the graph initializer of', function (traversalText) {
-  const traversal = vm.runInNewContext(translate(traversalText), getSandbox(this.g, this.parameters));
+  const p = Object.assign({}, this.parameters);
+  p.g = this.g;
+  const traversal = gremlin[this.scenario].shift()(p);
   return traversal.toList();
 });
 
 Given('an unsupported test', () => {});
 
 Given('the traversal of', function (traversalText) {
-  this.traversal = vm.runInNewContext(translate(traversalText), getSandbox(this.g, this.parameters));
+  const p = Object.assign({}, this.parameters);
+  p.g = this.g;
+  this.traversal = gremlin[this.scenario].shift()(p);
 });
 
 Given(/^using the parameter (.+) of P\.(.+)\("(.+)"\)$/, function (paramName, pval, stringValue) {
@@ -155,7 +159,9 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
 });
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {
-  const traversal = vm.runInNewContext(translate(traversalText), getSandbox(this.g, this.parameters));
+  const p = Object.assign({}, this.parameters);
+  p.g = this.g;
+  const traversal = gremlin[this.scenario].shift()(p);
   return traversal.toList().then(list => {
     expect(list).to.have.lengthOf(parseInt(stringCount, 10));
   });
@@ -209,20 +215,6 @@ function getSandbox(g, parameters) {
   // Pass the parameter to the sandbox
   Object.keys(parameters).forEach(paramName => sandbox[paramName] = parameters[paramName]);
   return sandbox;
-}
-
-function translate(traversalText) {
-  // clean up trailing period/spaces so that it's easier to match newline with() to convert to with_() below
-  traversalText = traversalText.replace(/\)\.\s*/g, ').');
-  // Remove escaped chars
-  traversalText = traversalText.replace(/\\"/g, '"');
-  // Replace long suffix with Long instance
-  traversalText = traversalText.replace(/\b(\d+)l\b/gi, 'toLong($1)');
-  // Change according to naming convention
-  traversalText = traversalText.replace(/\.in\(/g, '.in_(');
-  traversalText = traversalText.replace(/\.from\(/g, '.from_(');
-  traversalText = traversalText.replace(/\.with\(/g, '.with_(');
-  return traversalText;
 }
 
 function parseRow(row) {

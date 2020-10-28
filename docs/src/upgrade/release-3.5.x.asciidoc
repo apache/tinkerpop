@@ -98,6 +98,29 @@ link:https://github.com/apache/tinkerpop/blob/3.4.8/pom.xml[pom.xml].
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460]
 
+==== JavascriptTranslator
+
+Introduced a `JavascriptTranslator` for Java, which is in `gremlin-core` with the other language translators. It
+generates a Javascript representation of Gremlin from bytecode.
+
+[source,java]
+----
+// gremlin-core module
+import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
+
+GraphTraversalSource g = ...;
+Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
+                                where(in("knows")).
+                                values("age").
+                                map(Lambda.Function("it.get() + 1");
+
+Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
+System.out.println(javascriptTranslator.translate(t).getScript());
+// OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2451[TINKERPOP-2451]
+
 ==== Gryo Usage
 
 Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and
