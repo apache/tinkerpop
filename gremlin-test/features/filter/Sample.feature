@@ -28,7 +28,6 @@ Feature: Step - sample()
 
   Scenario: g_E_sampleX2X_byXweightX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.E().sample(2).by("weight")

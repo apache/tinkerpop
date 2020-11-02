@@ -200,7 +200,6 @@ Feature: Step - repeat()
 
   Scenario: g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And using the parameter l defined as "c[t -> t.get().value('name').equals('lop') || t.loops() > 1]"
     And the traversal of
       """

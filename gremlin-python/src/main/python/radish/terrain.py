@@ -68,6 +68,7 @@ def prepare_traversal_source(scenario):
     # some tests create data - create a fresh remote to the empty graph and clear that graph prior to each test
     remote = __create_remote("ggraph")
     scenario.context.remote_conn["empty"] = remote
+    scenario.context.traversals = world.gremlins.get(scenario.sentence, None)
     g = traversal().withRemote(remote)
     g.V().drop().iterate()
 

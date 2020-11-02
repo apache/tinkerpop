@@ -373,7 +373,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         try {
             registerBindingTypes(context);
-            final Class clazz = getScriptClass(script);
+            final Class<?> clazz = getScriptClass(script);
             if (null == clazz) throw new ScriptException("Script class is null");
             return eval(clazz, context);
         } catch (Exception e) {

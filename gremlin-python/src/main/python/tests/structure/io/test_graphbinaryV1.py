@@ -18,20 +18,13 @@ under the License.
 """
 
 import datetime
-import calendar
-import time
 import uuid
 import math
-from decimal import *
-
-from mock import Mock
 
 from gremlin_python.statics import timestamp, long, SingleByte, SingleChar, ByteBufferType
-from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
-from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader, DataType
-from gremlin_python.process.traversal import P, Barrier, Binding, Bytecode
-from gremlin_python.process.strategies import SubgraphStrategy
-from gremlin_python.process.graph_traversal import __
+from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
+from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode
 
 
 class TestGraphBinaryReader(object):
@@ -218,4 +211,3 @@ class TestGraphSONWriter(object):
         x = datetime.timedelta(seconds=1000, microseconds=1000)
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
-        

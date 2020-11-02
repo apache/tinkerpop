@@ -46,7 +46,7 @@ public class PythonTranslatorTest {
     }
 
     @Test
-    public void shouldTranslate() {
+    public void shouldTranslateOption() {
         final String gremlinAsPython = translator.translate(
                 g.V().has("person", "name", "marko").asAdmin().getBytecode()).getScript();
         assertEquals("g.V().has('person','name','marko')", gremlinAsPython);
@@ -84,7 +84,7 @@ public class PythonTranslatorTest {
 
     @Test
     public void shouldTranslateStrategies() {
-        assertEquals("g.withStrategies([TraversalStrategy('ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.hasLabel('person')})]).V().has('name')",
+        assertEquals("g.withStrategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.hasLabel('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy')]).V().has('name')",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());

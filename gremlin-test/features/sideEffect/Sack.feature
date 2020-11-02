@@ -70,7 +70,6 @@ Feature: Step - sack()
 
   Scenario: g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.withBulk(false).withSack(1, Operator.sum).V().out().barrier().sack()

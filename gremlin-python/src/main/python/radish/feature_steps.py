@@ -27,21 +27,6 @@ from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop
 from radish import given, when, then, world
 from hamcrest import *
 
-regex_all = re.compile(r"Pop\.all")
-regex_and = re.compile(r"([(.,\s])and\(")
-regex_as = re.compile(r"([(.,\s])as\(")
-regex_from = re.compile(r"([(.,\s])from\(")
-regex_global = re.compile(r"([(.,\s])global")
-regex_cardlist = re.compile(r"Cardinality\.list")
-regex_in = re.compile(r"([(.,\s])in\(")
-regex_is = re.compile(r"([(.,\s])is\(")
-regex_not = re.compile(r"([(.,\s])not\(")
-regex_or = re.compile(r"([(.,\s])or\(")
-regex_with = re.compile(r"([(.,\s])with\(")
-regex_true = re.compile(r"(true)")
-regex_false = re.compile(r"(false)")
-regex_null = re.compile(r"(null)")
-
 outV = __.outV
 label = __.label
 inV = __.inV
@@ -59,17 +44,13 @@ def choose_graph(step, graph_name):
 
 @given("the graph initializer of")
 def initialize_graph(step):
-    t = _make_traversal(step.context.g, step.text, {})
+    t = step.context.traversals.pop(0)(g=step.context.g)
 
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
     result = t.toList()
     assert len(result) > 0
-
-    # add the first result - if a map - to the bindings. this is useful for cases when parameters for
-    # the test traversal need to come from the original graph initializer (i.e. a new graph is created
-    # and you need the id of a vertex from that graph)
 
 
 @given("an unsupported test")
@@ -96,10 +77,10 @@ def add_parameter(step, param_name, param):
 
 @given("the traversal of")
 def translate_traversal(step):
-    step.context.ignore = ignores.__contains__(step.text)
-    step.context.traversal = _make_traversal(
-        step.context.g, step.text,
-        step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
+    step.context.ignore = step.text in ignores
+    p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
+    p['g'] = step.context.g
+    step.context.traversal = step.context.traversals.pop(0)(**p)
 
 
 @when("iterated to list")
@@ -140,8 +121,10 @@ def assert_side_effects(step, count, traversal_string):
     if step.context.ignore:
         return
 
-    t = _make_traversal(step.context.g, traversal_string.replace('\\"', '"'),
-                        step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
+    p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
+    p['g'] = step.context.g
+    t = step.context.traversals.pop(0)(**p)
+
     assert_that(t.count().next(), equal_to(count))
 
 
@@ -157,7 +140,7 @@ def nothing_happening(step):
 
 def _convert(val, ctx):
     graph_name = ctx.graph_name
-    if isinstance(val, dict):                                           # convert dictionary keys/values
+    if isinstance(val, dict):                                            # convert dictionary keys/values
         n = {}
         for key, value in val.items():
             n[_convert(key, ctx)] = _convert(value, ctx)
@@ -243,44 +226,3 @@ def _table_assertion(data, result, ctx, ordered):
 
     if not ordered:
         assert_that(len(results_to_test), is_(0))
-
-
-def _translate(traversal_):
-    replaced = traversal_.replace("\n", "")
-    replaced = regex_all.sub(r"Pop.all_", replaced)
-    replaced = regex_cardlist.sub(r"Cardinality.list_", replaced)
-    replaced = regex_and.sub(r"\1and_(", replaced)
-    replaced = regex_from.sub(r"\1from_(", replaced)
-    replaced = regex_global.sub(r"\1global_", replaced)
-    replaced = regex_as.sub(r"\1as_(", replaced)
-    replaced = regex_is.sub(r"\1is_(", replaced)
-    replaced = regex_not.sub(r"\1not_(", replaced)
-    replaced = regex_or.sub(r"\1or_(", replaced)
-    replaced = regex_in.sub(r"\1in_(", replaced)
-    replaced = regex_with.sub(r"\1with_(", replaced)
-    replaced = regex_true.sub(r"True", replaced)
-    replaced = regex_false.sub(r"False", replaced)
-    return regex_null.sub(r"None", replaced)
-
-
-def _make_traversal(g, traversal_string, params):
-    b = {"g": g,
-         "__": __,
-         "Barrier": Barrier,
-         "Cardinality": Cardinality,
-         "Column": Column,
-         "Direction": Direction,
-         "Order": Order,
-         "P": P,
-         "TextP": TextP,
-         "IO": IO,
-         "Pick": Pick,
-         "Pop": Pop,
-         "Scope": Scope,
-         "Operator": Operator,
-         "T": T,
-         "WithOptions": WithOptions}
-
-    b.update(params)
-
-    return eval(_translate(traversal_string), b)
