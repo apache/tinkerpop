@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.junit.After;
 import org.junit.Before;
 
 import java.util.Collections;
@@ -32,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractResultQueueTest {
-    protected final ExecutorService pool = Executors.newCachedThreadPool();
+    protected ExecutorService pool;
     protected ResultQueue resultQueue;
     protected CompletableFuture<Void> readCompleted;
 
@@ -41,6 +42,14 @@ public abstract class AbstractResultQueueTest {
         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
         readCompleted = new CompletableFuture<>();
         resultQueue = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
+        pool =  Executors.newCachedThreadPool();
+    }
+
+    @After
+    public void closePool() {
+        if (!pool.isShutdown()) {
+            pool.shutdown();
+        }
     }
 
     protected Thread addToQueue(final int numberOfItemsToAdd, final long pauseBetweenItemsInMillis,

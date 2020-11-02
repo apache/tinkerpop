@@ -121,7 +121,7 @@ final class Handler {
                 }
                 channelHandlerContext.writeAndFlush(messageBuilder.create());
             } else {
-                // SimpleChannelInboundHandler will release the frame if we don't retain it explicitely.
+                // SimpleChannelInboundHandler will release the frame if we don't retain it explicitly.
                 ReferenceCountUtil.retain(response);
                 channelHandlerContext.fireChannelRead(response);
             }
