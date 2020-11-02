@@ -62,17 +62,51 @@ public class ResultSetTest extends AbstractResultQueueTest {
     }
 
     @Test
-    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadComplete() {
+    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadComplete() throws InterruptedException {
         final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
         assertThat(all.isDone(), is(false));
         readCompleted.complete(null);
+        // flush all tasks in pool
+        pool.awaitTermination(2, TimeUnit.SECONDS);
         assertThat(all.isDone(), is(true));
     }
 
     @Test
-    public void shouldHaveAllItemsAvailableOnReadComplete() {
+    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadCompleteExceptionally() throws InterruptedException {
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        assertThat(all.isDone(), is(false));
+        readCompleted.completeExceptionally(new RuntimeException());
+        // flush all tasks in pool
+        pool.awaitTermination(2, TimeUnit.SECONDS);
+        assertThat(all.isDone(), is(true));
+        assertThat(all.isCompletedExceptionally(), is(true));
+    }
+
+    @Test
+    public void shouldHaveStatusAttributesCompleteOnReadComplete() throws InterruptedException {
+        final CompletableFuture<Map<String,Object>> attrbFut = resultSet.statusAttributes();
+        readCompleted.complete(null);
+        // flush all tasks in pool
+        pool.awaitTermination(2, TimeUnit.SECONDS);
+        assertThat(attrbFut.isDone(), is(true));
+    }
+
+    @Test
+    public void shouldHaveStatusAttributesCompleteOnReadCompleteExceptionally() throws InterruptedException {
+        final CompletableFuture<Map<String,Object>> attrbFut = resultSet.statusAttributes();
+        readCompleted.completeExceptionally(new RuntimeException());
+        // flush all tasks in pool
+        pool.awaitTermination(2, TimeUnit.SECONDS);
+        assertThat(attrbFut.isDone(), is(true));
+        assertThat(attrbFut.isCompletedExceptionally(), is(true));
+    }
+
+    @Test
+    public void shouldHaveAllItemsAvailableOnReadComplete() throws InterruptedException {
         assertThat(resultSet.allItemsAvailable(), is(false));
         readCompleted.complete(null);
+        // flush all tasks in pool
+        pool.awaitTermination(2, TimeUnit.SECONDS);
         assertThat(resultSet.allItemsAvailable(), is(true));
     }
 

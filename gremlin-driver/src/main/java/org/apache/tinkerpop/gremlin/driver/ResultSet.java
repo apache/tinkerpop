@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -80,9 +81,15 @@ public final class ResultSet implements Iterable<Result> {
      * attributes from the response.
      */
     public CompletableFuture<Map<String,Object>> statusAttributes() {
-        final CompletableFuture<Map<String,Object>> attrs = new CompletableFuture<>();
-        readCompleted.thenRun(() -> attrs.complete(null == resultQueue.getStatusAttributes() ? Collections.emptyMap() : resultQueue.getStatusAttributes()));
-        return attrs;
+        return readCompleted.handleAsync((unusedInput, throwable) -> {
+            if (throwable != null) {
+                throw throwable instanceof CompletionException ?
+                        (CompletionException)throwable: new CompletionException(throwable);
+            } else {
+                return (null == resultQueue.getStatusAttributes() ?
+                        Collections.emptyMap() : resultQueue.getStatusAttributes());
+            }
+        }, executor);
     }
 
     /**
@@ -96,13 +103,10 @@ public final class ResultSet implements Iterable<Result> {
      * Returns a future that will complete when all items have been returned from the server.
      */
     public CompletableFuture<Void> allItemsAvailableAsync() {
-        final CompletableFuture<Void> allAvailable = new CompletableFuture<>();
-        readCompleted.thenRun(() -> allAvailable.complete(null));
-        readCompleted.exceptionally(t -> {
-            allAvailable.completeExceptionally(t);
-            return null;
-        });
-        return allAvailable;
+        // readCompleted future is always completed by Netty's event loop thread pool. To avoid blocking the event loop,
+        // create a new completion stage that is completed by executor thread loop, when returning a future outside the
+        // client (ie application code).
+        return readCompleted.whenCompleteAsync((s,t) -> {}, executor);
     }
 
     /**
@@ -139,7 +143,7 @@ public final class ResultSet implements Iterable<Result> {
      * {@link Iterator} or {@link Stream} options, as the results will be held in memory at once.
      */
     public CompletableFuture<List<Result>> all() {
-        return readCompleted.thenApplyAsync(it -> {
+        return readCompleted.thenApplyAsync(unusedInput -> {
             final List<Result> list = new ArrayList<>();
             resultQueue.drainTo(list);
             return list;
