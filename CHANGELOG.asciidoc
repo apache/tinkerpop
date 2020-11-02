@@ -47,13 +47,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Release server threads waiting on connection if the connection is dead.
 * Fixed bug where server closes HTTP connection on request error even if keep alive is set to true.
 * Deprecated driver `Channelizer` keep-alive related methods.
-* Java driver now delegates handling of WebSocket handshake to Netty instead of custom code.
-* Java driver now delegates sending keepAlive messages to Netty for `WebSocketChannelizer`.
-* Java driver now uses WebSocket compression extension ([RFC7692](https://tools.ietf.org/html/rfc7692)) for `WebSocketChannelizer`.
-* Server now supports WebSocket compression extension ([RFC7692](https://tools.ietf.org/html/rfc7692)).
+* Delegate handling of WebSocket handshake to Netty instead of custom code in Java Driver.
+* Delegate detection of idle connection to Netty instead of custom keep alive logic for `WebSocketChannelizer`.
+* Added support for WebSocket frame compression extension ( [RFC7692](https://tools.ietf.org/html/rfc7692) ) for `WebSocketChannelizer` in Java driver.
+* Added server support for WebSocket compression extension ( [RFC7692](https://tools.ietf.org/html/rfc7692) ).
 * Fixed bug with Bytecode serialization when `Bytecode.toString()` is used in Javascript.
 * Fixed "toString" for P and TextP to produce valid script representation from bytecode glv steps containing a string predicate in Javascript.
-* Fix bug which could cause Java driver to hang when using `ResultSet.statusAttributes()`
+* Fixed a bug which could cause Java driver to hang when using `ResultSet.statusAttributes()`
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
