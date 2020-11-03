@@ -61,6 +61,43 @@ modify their code if they use the unconventional syntax.
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
 
+==== GraphSON and JsonBuilder
+
+GraphSON serialization support for Groovy's `JsonBuilder` has been present since the first version of GraphSON. That
+approach to returning results has never materialized as a standardized way to use Gremlin as originally envisioned.
+While support for this serialization form is still present, the dependency on Groovy in `gremlin-driver` has been
+changed to `provided` scope, which means that users who wish to continue to return `JsonBuilder` results for some
+reason must explicitly include `groovy` and `groovy-json` dependencies in their applications. For Maven this would
+mean adding the following depenencies:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovy</artifactId>
+    <version>${groovy.version}</version>
+    <classifier>indy</classifier>
+</dependency>
+<dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovy-json</artifactId>
+    <version>${groovy.version}</version>
+    <classifier>indy</classifier>
+    <exclusions>
+        <!-- exclude non-indy type -->
+        <exclusion>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+----
+
+The `${groovy.version}` should match the version specified in TinkerPop's root
+link:https://github.com/apache/tinkerpop/blob/3.4.8/pom.xml[pom.xml].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460]
+
 ==== Gryo Usage
 
 Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and
