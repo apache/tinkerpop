@@ -17,14 +17,16 @@
  * under the License.
  */
 package org.apache.tinkerpop.gremlin.groovy.loaders
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinLoader {
 
-    public static void load() {
+    static void load() {
         ObjectLoader.load()
         StepLoader.load()
+        StrategyLoader.load()
     }
 }
