@@ -136,6 +136,10 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -166,6 +170,7 @@ public final class CoreImports {
         // CLASSES //
         /////////////
 
+        // structure
         CLASS_IMPORTS.add(Edge.class);
         CLASS_IMPORTS.add(Element.class);
         CLASS_IMPORTS.add(Graph.class);
@@ -175,6 +180,11 @@ public final class CoreImports {
         CLASS_IMPORTS.add(VertexProperty.class);
         CLASS_IMPORTS.add(GraphFactory.class);
         CLASS_IMPORTS.add(ElementHelper.class);
+        CLASS_IMPORTS.add(ReferenceEdge.class);
+        CLASS_IMPORTS.add(ReferenceProperty.class);
+        CLASS_IMPORTS.add(ReferenceVertex.class);
+        CLASS_IMPORTS.add(ReferenceVertexProperty.class);
+        
         // tokens
         CLASS_IMPORTS.add(SackFunctions.class);
         CLASS_IMPORTS.add(SackFunctions.Barrier.class);
@@ -298,6 +308,9 @@ public final class CoreImports {
         CLASS_IMPORTS.add(IteratorUtils.class);
         CLASS_IMPORTS.add(TimeUtil.class);
         CLASS_IMPORTS.add(Lambda.class);
+        CLASS_IMPORTS.add(java.util.Date.class);
+        CLASS_IMPORTS.add(java.sql.Timestamp.class);
+        CLASS_IMPORTS.add(java.util.UUID.class);
 
         /////////////
         // METHODS //

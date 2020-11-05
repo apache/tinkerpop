@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy.loaders
 
 import org.apache.commons.configuration.MapConfiguration
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy
@@ -52,11 +53,13 @@ class StrategyLoader {
         // SackStrategy.metaClass.constructor << { Map conf -> SackStrategy.create(new MapConfiguration(conf)) }
         // # SideEffectStrategy is internal
         SubgraphStrategy.metaClass.constructor << { Map conf -> SubgraphStrategy.create(new MapConfiguration(conf)) }
+        VertexProgramStrategy.metaClass.constructor << { Map conf -> VertexProgramStrategy.create(new MapConfiguration(conf)) }
 
         // finalization
         MatchAlgorithmStrategy.metaClass.constructor << { Map conf -> MatchAlgorithmStrategy.create(new MapConfiguration(conf)) }
         // # ProfileStrategy is singleton/internal
         // # ReferenceElementStrategy is singleton/internal
+        // # ComputerFinalizationStrategy is singleton/internal
 
         // optimization
         // # AdjacentToIncidentStrategy is singleton/internal
@@ -72,6 +75,8 @@ class StrategyLoader {
         // # PathProcessorStrategy is singleton/internal
         // # PathRetractionStrategy is singleton/internal
         // # RepeatUnrollStrategy is singleton/internal
+        // # GraphFilterStrategy is singleton/internal
+        // # MessagePassingReductionStrategy is singleton/internal
 
         // verification
         // # ComputerVerificationStrategy is singleton/internal

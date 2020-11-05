@@ -63,7 +63,7 @@ public class GroovyTranslatorTest {
 
     @Test
     public void shouldTranslateStrategies() throws Exception {
-        assertEquals("g.withStrategies(org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy.instance(),org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.create(new org.apache.commons.configuration.MapConfiguration([(\"checkAdjacentVertices\"):(false),(\"vertices\"):(__.hasLabel(\"person\"))]))).V().has(\"name\")",
+        assertEquals("g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(checkAdjacentVertices: false, vertices: __.hasLabel(\"person\"))).V().has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
                         V().has("name").asAdmin().getBytecode()));
@@ -133,7 +133,7 @@ public class GroovyTranslatorTest {
         final Calendar c = Calendar.getInstance();
         c.set(1975, Calendar.SEPTEMBER, 7);
         final Date d = c.getTime();
-        assertTranslation(String.format("new java.util.Date(%s)", d.getTime()), d);
+        assertTranslation(String.format("new Date(%s)", d.getTime()), d);
     }
 
     @Test
@@ -141,13 +141,13 @@ public class GroovyTranslatorTest {
         final Calendar c = Calendar.getInstance();
         c.set(1975, Calendar.SEPTEMBER, 7);
         final Timestamp t = new Timestamp(c.getTime().getTime());
-        assertTranslation(String.format("new java.sql.Timestamp(%s)", t.getTime()), t);
+        assertTranslation(String.format("new Timestamp(%s)", t.getTime()), t);
     }
 
     @Test
     public void shouldTranslateUuid() {
         final UUID uuid = UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d");
-        assertTranslation(String.format("java.util.UUID.fromString('%s')", uuid), uuid);
+        assertTranslation(String.format("UUID.fromString('%s')", uuid), uuid);
     }
 
     @Test
@@ -218,18 +218,18 @@ public class GroovyTranslatorTest {
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
         final String script1 = translator.translate(g.inject(vertex1).asAdmin().getBytecode());
-        assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
+        assertEquals("g.inject(new ReferenceVertex(" +
                         "\"customer:10:foo bar \\$100#90\"," +
-                        "\"customer\", Collections.emptyMap()))",
+                        "\"customer\"))",
                 script1);
 
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
         final String script2 = translator.translate(g.inject(vertex2).asAdmin().getBytecode());
-        assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
+        assertEquals("g.inject(new ReferenceVertex(" +
                         "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\"," +
-                        "\"user\", Collections.emptyMap()))",
+                        "\"user\"))",
                 script2);
 
         final Object id3 = "knows:30:foo\u0020bar\u0020\u0024100:\\u0020\\u0024500#70";
@@ -238,19 +238,19 @@ public class GroovyTranslatorTest {
                 .setInV((DetachedVertex) vertex2)
                 .create();
         final String script3 = translator.translate(g.inject(edge).asAdmin().getBytecode());
-        assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(" +
+        assertEquals("g.inject(new ReferenceEdge(" +
                         "\"knows:30:foo bar \\$100:\\\\u0020\\\\u0024500#70\"," +
-                        "\"knows\",Collections.emptyMap()," +
-                        "\"customer:10:foo bar \\$100#90\",\"customer\"," +
-                        "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))",
+                        "\"knows\"," +
+                        "new ReferenceVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\")," +
+                        "new ReferenceVertex(\"customer:10:foo bar \\$100#90\",\"customer\")))",
                 script3);
 
         final String script4 = translator.translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
                         .asAdmin().getBytecode());
         assertEquals("g.addE(\"knows\")" +
-                        ".from(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"customer:10:foo bar \\$100#90\",\"customer\", Collections.emptyMap()))" +
-                        ".to(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\", Collections.emptyMap()))" +
+                        ".from(new ReferenceVertex(\"customer:10:foo bar \\$100#90\",\"customer\"))" +
+                        ".to(new ReferenceVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))" +
                         ".property(\"when\",\"2018/09/21\")",
                 script4);
     }
