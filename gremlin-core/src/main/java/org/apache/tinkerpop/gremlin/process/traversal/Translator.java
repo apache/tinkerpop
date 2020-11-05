@@ -67,6 +67,13 @@ public interface Translator<S, T> {
          * representations in their target language.
          */
         public interface TypeTranslator extends BiFunction<String, Object, Object> { }
+
+        /**
+         * Translates a {@link Traversal} into a script form.
+         */
+        public default String translate(final Traversal<?,?> t) {
+            return translate(t.asAdmin().getBytecode());
+        }
     }
 
     /**
