@@ -66,25 +66,25 @@ public class GroovyTranslatorTest {
         assertEquals("g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(checkAdjacentVertices: false, vertices: __.hasLabel(\"person\"))).V().has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
-                        V().has("name").asAdmin().getBytecode()));
+                        V().has("name")));
     }
 
     @Test
     public void shouldTranslateConfusingSacks() {
         final Traversal<Vertex,Double> tConstantUnary = g.withSack(1.0, Lambda.unaryOperator("it + 1")).V().sack();
-        final String scriptConstantUnary = translator.translate(tConstantUnary.asAdmin().getBytecode());
+        final String scriptConstantUnary = translator.translate(tConstantUnary);
         assertEquals("g.withSack(1.0d, (java.util.function.UnaryOperator) {it + 1}).V().sack()", scriptConstantUnary);
 
         final Traversal<Vertex,Double> tSupplierUnary = g.withSack(Lambda.supplier("1.0d"), Lambda.<Double>unaryOperator("it + 1")).V().sack();
-        final String scriptSupplierUnary = translator.translate(tSupplierUnary.asAdmin().getBytecode());
+        final String scriptSupplierUnary = translator.translate(tSupplierUnary);
         assertEquals("g.withSack((java.util.function.Supplier) {1.0d}, (java.util.function.UnaryOperator) {it + 1}).V().sack()", scriptSupplierUnary);
 
         final Traversal<Vertex,Double> tConstantBinary = g.withSack(1.0, Lambda.binaryOperator("x,y -> x + y + 1")).V().sack();
-        final String scriptConstantBinary = translator.translate(tConstantBinary.asAdmin().getBytecode());
+        final String scriptConstantBinary = translator.translate(tConstantBinary);
         assertEquals("g.withSack(1.0d, (java.util.function.BinaryOperator) {x,y -> x + y + 1}).V().sack()", scriptConstantBinary);
 
         final Traversal<Vertex,Double> tSupplierBinary = g.withSack(Lambda.supplier("1.0d"), Lambda.<Double>binaryOperator("x,y -> x + y + 1")).V().sack();
-        final String scriptSupplierBinary = translator.translate(tSupplierBinary.asAdmin().getBytecode());
+        final String scriptSupplierBinary = translator.translate(tSupplierBinary);
         assertEquals("g.withSack((java.util.function.Supplier) {1.0d}, (java.util.function.BinaryOperator) {x,y -> x + y + 1}).V().sack()", scriptSupplierBinary);
     }
 
@@ -117,14 +117,14 @@ public class GroovyTranslatorTest {
         final String script = translator.translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
-        }}).asAdmin().getBytecode());
+        }}));
         assertEquals("g.V().id().is([((int) 3):(\"32\"),([(int) 1, (int) 2, 3.1d]):((int) 4)])", script);
     }
 
     @Test
     public void shouldTranslateEmptyMaps() {
         final Function identity = new Lambda.OneArgLambda("it.get()", "gremlin-groovy");
-        final String script = translator.translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
+        final String script = translator.translate(g.inject(Collections.emptyMap()).map(identity));
         assertEquals("g.inject([]).map({it.get()})", script);
     }
 
@@ -181,12 +181,12 @@ public class GroovyTranslatorTest {
 
         // without type translation we get uglinesss
         final String scriptBad = translator.
-                translate(g.inject(notSillyEnough).asAdmin().getBytecode());
+                translate(g.inject(notSillyEnough));
         assertEquals(String.format("g.inject(%s)", "not silly enough:100"), scriptBad);
 
         // with type translation we get valid gremlin
         final String scriptGood = GroovyTranslator.of("g", new SillyClassTranslator()).
-                translate(g.inject(notSillyEnough).asAdmin().getBytecode());
+                translate(g.inject(notSillyEnough));
         assertEquals(String.format("g.inject(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s))", notSillyEnough.getX(), notSillyEnough.getY()), scriptGood);
     }
 
@@ -202,7 +202,7 @@ public class GroovyTranslatorTest {
                 .property("name", "Foo\u0020Bar")
                 .property("age", 25)
                 .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
-                .asAdmin().getBytecode());
+                );
 
         assertEquals("g.addV(\"customer\")" +
                         ".property(\"customer_id\",501L)" +
@@ -217,7 +217,7 @@ public class GroovyTranslatorTest {
         final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
-        final String script1 = translator.translate(g.inject(vertex1).asAdmin().getBytecode());
+        final String script1 = translator.translate(g.inject(vertex1));
         assertEquals("g.inject(new ReferenceVertex(" +
                         "\"customer:10:foo bar \\$100#90\"," +
                         "\"customer\"))",
@@ -226,7 +226,7 @@ public class GroovyTranslatorTest {
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
-        final String script2 = translator.translate(g.inject(vertex2).asAdmin().getBytecode());
+        final String script2 = translator.translate(g.inject(vertex2));
         assertEquals("g.inject(new ReferenceVertex(" +
                         "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\"," +
                         "\"user\"))",
@@ -237,7 +237,7 @@ public class GroovyTranslatorTest {
                 .setOutV((DetachedVertex) vertex1)
                 .setInV((DetachedVertex) vertex2)
                 .create();
-        final String script3 = translator.translate(g.inject(edge).asAdmin().getBytecode());
+        final String script3 = translator.translate(g.inject(edge));
         assertEquals("g.inject(new ReferenceEdge(" +
                         "\"knows:30:foo bar \\$100:\\\\u0020\\\\u0024500#70\"," +
                         "\"knows\"," +
@@ -247,7 +247,7 @@ public class GroovyTranslatorTest {
 
         final String script4 = translator.translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
-                        .asAdmin().getBytecode());
+                        );
         assertEquals("g.addE(\"knows\")" +
                         ".from(new ReferenceVertex(\"customer:10:foo bar \\$100#90\",\"customer\"))" +
                         ".to(new ReferenceVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))" +
@@ -256,7 +256,7 @@ public class GroovyTranslatorTest {
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
-        final String script = translator.translate(g.inject(objs).asAdmin().getBytecode());
+        final String script = translator.translate(g.inject(objs));
         assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
     }
 
