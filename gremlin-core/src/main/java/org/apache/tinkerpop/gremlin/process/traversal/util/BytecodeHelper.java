@@ -20,22 +20,38 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
+ * Utility class for parsing {@link Bytecode}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class BytecodeHelper {
 
     private BytecodeHelper() {
         // public static methods only
+    }
+
+    /**
+     * Parses {@link Bytecode} to find {@link TraversalStrategy} objects in the source instructions.
+     */
+    public static <A extends TraversalStrategy> Iterator<A> findStrategies(final Bytecode bytecode, final Class<A> clazz) {
+        return IteratorUtils.map(
+                IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),
+                        s -> s.getOperator().equals(TraversalSource.Symbols.withStrategies) && clazz.isAssignableFrom(s.getArguments()[0].getClass())),
+                os -> (A) os.getArguments()[0]);
     }
 
     public static Bytecode filterInstructions(final Bytecode bytecode, final Predicate<Bytecode.Instruction> predicate) {
@@ -87,7 +103,7 @@ public final class BytecodeHelper {
                 else if(arguments[i] instanceof List) {
                     final List<Object> list = new ArrayList<>();
                     for(final Object object : (List)arguments[i]) {
-                        list.add( DetachedFactory.detach(object, false));
+                        list.add(DetachedFactory.detach(object, false));
                     }
                     arguments[i] = list;
                 }

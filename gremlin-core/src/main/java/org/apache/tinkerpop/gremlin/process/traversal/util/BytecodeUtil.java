@@ -29,6 +29,7 @@ import java.util.Iterator;
  * Utility class for parsing {@link Bytecode}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.4.9, replaced by {@link BytecodeHelper}.
  */
 public final class BytecodeUtil {
 
@@ -36,7 +37,9 @@ public final class BytecodeUtil {
 
     /**
      * Parses {@link Bytecode} to find {@link TraversalStrategy} objects in the source instructions.
+     * @deprecated As of release 3.4.9, replaced by {@link BytecodeHelper#findStrategies(Bytecode, Class)}.
      */
+    @Deprecated
     public static <A extends TraversalStrategy> Iterator<A> findStrategies(final Bytecode bytecode, final Class<A> clazz) {
         return IteratorUtils.map(
                 IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),

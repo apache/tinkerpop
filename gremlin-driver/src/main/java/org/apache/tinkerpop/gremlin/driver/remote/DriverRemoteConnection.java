@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
@@ -229,7 +229,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     protected static RequestOptions getRequestOptions(final Bytecode bytecode) {
-        final Iterator<OptionsStrategy> itty = BytecodeUtil.findStrategies(bytecode, OptionsStrategy.class);
+        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(bytecode, OptionsStrategy.class);
         final RequestOptions.Builder builder = RequestOptions.build();
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
