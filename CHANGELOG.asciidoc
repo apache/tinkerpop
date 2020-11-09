@@ -124,6 +124,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug with Bytecode serialization when `Bytecode.toString()` is used in Javascript.
 * Fixed "toString" for P and TextP to produce valid script representation from bytecode glv steps containing a string predicate in Javascript.
 * Fixed a bug which could cause Java driver to hang when using `ResultSet.statusAttributes()`
+* Deprecated `BytecodeUtil` and merged its functionality to the existing `BytecodeHelper`.
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
