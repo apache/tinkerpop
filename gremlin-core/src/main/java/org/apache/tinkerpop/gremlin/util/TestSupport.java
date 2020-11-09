@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +40,8 @@ public class TestSupport {
 
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
-    protected TestSupport() {}
+    protected TestSupport() {
+    }
 
     /**
      * Creates a {@link File} reference that points to a directory relative to the supplied class in the
@@ -48,12 +50,12 @@ public class TestSupport {
      * {@code childPath} arguments would yield a relative directory like: {@code test-case-data/clazz/a/b/c}. It is
      * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
      * necessary after test execution.
-     *
+     * <p>
      * Avoid using makeTestDataPath(...).getAbsolutePath() and makeTestDataPath(...).toString() that produces
      * platform-dependent paths, that are incompatible with regular expressions and escape characters.
      * Instead use {@link Storage#toPath(File)}
      */
-    public static File makeTestDataPath(final Class clazz, final String... childPath) {
+    public static File makeTestDataPath(final Class<?> clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
         final List<String> cleanedPaths = Stream.of(childPath).map(TestSupport::cleanPathSegment).collect(Collectors.toList());
 
@@ -61,7 +63,8 @@ public class TestSupport {
         cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
 
         final File f = new File(new File(root, TEST_DATA_RELATIVE_DIR), String.join(Storage.FILE_SEPARATOR, cleanedPaths));
-        if (!f.exists()) f.mkdirs();
+        if (!f.exists())
+            f.mkdirs();
         return f;
     }
 
@@ -75,7 +78,7 @@ public class TestSupport {
      * supplied class in the {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory
      * and all are placed below the {@link #TEST_DATA_RELATIVE_DIR}
      */
-    public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
+    public static String makeTestDataDirectory(final Class<?> clazz, final String... childPath) {
         return Storage.toPath(makeTestDataPath(clazz, childPath));
     }
 
@@ -85,8 +88,8 @@ public class TestSupport {
      * @return UNIX-formatted path to a fileName in the underlying {@link Storage}. The file is relative to the
      * supplied class in the {@code /target} directory.
      */
-    public static String makeTestDataFile(final Class clazz, final String fileName) {
-      return Storage.toPath(new File(makeTestDataPath(clazz), fileName));
+    public static String makeTestDataFile(final Class<?> clazz, final String fileName) {
+        return Storage.toPath(new File(makeTestDataPath(clazz), fileName));
     }
 
     /**
@@ -96,8 +99,8 @@ public class TestSupport {
      * @return UNIX-formatted path to a subdir/fileName in the underlying {@link Storage}. The file is relative to the
      * supplied class in the {@code /target} directory.
      */
-    public static String makeTestDataFile(final Class clazz, final String subdir, final String fileName) {
-      return Storage.toPath(new File(makeTestDataPath(clazz, subdir), fileName));
+    public static String makeTestDataFile(final Class<?> clazz, final String subdir, final String fileName) {
+        return Storage.toPath(new File(makeTestDataPath(clazz, subdir), fileName));
     }
 
 
@@ -105,7 +108,7 @@ public class TestSupport {
      * Gets and/or creates the root of the test data directory.  This  method is here as a convenience and should not
      * be used to store test data.  Use {@link #makeTestDataPath(Class, String...)} instead.
      */
-    public static File getRootOfBuildDirectory(final Class clazz) {
+    public static File getRootOfBuildDirectory(final Class<?> clazz) {
         final File root;
 
         // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
@@ -115,7 +118,7 @@ public class TestSupport {
         // as it likes to find that path in the .m2 directory and other weird places......
         final String buildDirectory = System.getProperty("build.dir");
 
-        if ( null == buildDirectory ) {
+        if (null == buildDirectory) {
             final String clsUri = clazz.getName().replace(".", "/") + ".class";
             final URL url = clazz.getClassLoader().getResource(clsUri);
             final String clsPath = url.getPath();
@@ -125,7 +128,8 @@ public class TestSupport {
         } else {
             root = new File(buildDirectory);
         }
-        if (!root.exists()) root.mkdirs();
+        if (!root.exists())
+            root.mkdirs();
         return root;
     }
 
@@ -133,9 +137,10 @@ public class TestSupport {
      * Creates a {@link File} reference in the path returned from {@link #makeTestDataPath} in a subdirectory
      * called {@code temp}.
      */
-    public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
+    public static File generateTempFile(final Class<?> clazz, final String fileName, final String fileNameSuffix) throws IOException {
         final File path = makeTestDataPath(clazz, "temp");
-        if (!path.exists()) path.mkdirs();
+        if (!path.exists())
+            path.mkdirs();
         return File.createTempFile(fileName, fileNameSuffix, path);
     }
 
@@ -143,7 +148,7 @@ public class TestSupport {
      * Copies a file stored as part of a resource to the file system in the path returned from
      * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
-    public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
+    public static File generateTempFileFromResource(final Class<?> resourceClass, final String resourceName, final String extension) throws IOException {
         return generateTempFileFromResource(resourceClass, resourceClass, resourceName, extension);
     }
 
@@ -151,25 +156,39 @@ public class TestSupport {
      * Copies a file stored as part of a resource to the file system in the path returned from
      * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
-    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
+    public static File generateTempFileFromResource(final Class<?> graphClass, final Class<?> resourceClass, final String resourceName, final String extension) throws IOException {
         return generateTempFileFromResource(graphClass, resourceClass, resourceName, extension, true);
     }
 
     /**
      * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestSupport#makeTestDataPath} in a subdirectory called {@code temp/resources}.
+     * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
-    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass,
+    public static File generateTempFileFromResource(final Class<?> graphClass, final Class<?> resourceClass,
                                                     final String resourceName, final String extension, final boolean overwrite) throws IOException {
         final File temp = makeTestDataPath(graphClass, "resources");
         final File tempFile = new File(temp, resourceName + extension);
-        if (!tempFile.exists() || overwrite) {
-            try (final FileOutputStream outputStream = new FileOutputStream(tempFile)) {
-                int data;
-                try (final InputStream inputStream = resourceClass.getResourceAsStream(resourceName)) {
-                    while ((data = inputStream.read()) != -1) {
-                        outputStream.write(data);
-                    }
+
+        // these checks are present mostly for windows compatibility where an outputstream created on a non-existent
+        // file will cause an error.
+        if(tempFile.exists() && !overwrite){
+            // overwrite is disabled and file already exists -> reuse as-is
+            return tempFile;
+        }
+        if(!tempFile.getParentFile().exists()){
+            Files.createDirectories(tempFile.getParentFile().toPath());
+        }
+        // either the file does not exist or needs to be overwritten, drop it
+        Files.deleteIfExists(tempFile.toPath());
+        // create the new file
+        Files.createFile(tempFile.toPath());
+
+        // fill it with the desired contents
+        try (final FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+            int data;
+            try (final InputStream inputStream = resourceClass.getResourceAsStream(resourceName)) {
+                while ((data = inputStream.read()) != -1) {
+                    outputStream.write(data);
                 }
             }
         }

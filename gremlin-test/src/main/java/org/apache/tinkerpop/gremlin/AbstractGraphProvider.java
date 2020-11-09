@@ -92,7 +92,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
             // created in an ad-hoc manner for the tests - just don't try to read any data into it.
             if (loadGraphWith != null) readIntoGraph(graph, loadGraphWith.value().location());
         } catch (IOException ioe) {
-            throw new RuntimeException("Graph could not be loaded with data for test: " + ioe.getMessage());
+            throw new RuntimeException("Graph could not be loaded with data for test: " + ioe.getMessage(), ioe);
         }
     }
 
