@@ -58,7 +58,7 @@ public class TestSupport {
      * platform-dependent paths, that are incompatible with regular expressions and escape characters.
      * Instead use {@link Storage#toPath(File)}
      */
-    public static File makeTestDataPath(final Class clazz, final String... childPath) {
+    public static File makeTestDataPath(final Class<?> clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
         final List<String> cleanedPaths = Stream.of(childPath).map(TestSupport::cleanPathSegment).collect(Collectors.toList());
 
@@ -81,7 +81,7 @@ public class TestSupport {
      * supplied class in the {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory
      * and all are placed below the {@link #TEST_DATA_RELATIVE_DIR}
      */
-    public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
+    public static String makeTestDataDirectory(final Class<?> clazz, final String... childPath) {
         return Storage.toPath(makeTestDataPath(clazz, childPath));
     }
 
@@ -91,7 +91,7 @@ public class TestSupport {
      * @return UNIX-formatted path to a fileName in the underlying {@link Storage}. The file is relative to the
      * supplied class in the {@code /target} directory.
      */
-    public static String makeTestDataFile(final Class clazz, final String fileName) {
+    public static String makeTestDataFile(final Class<?> clazz, final String fileName) {
         return Storage.toPath(new File(makeTestDataPath(clazz), fileName));
     }
 
@@ -102,7 +102,7 @@ public class TestSupport {
      * @return UNIX-formatted path to a subdir/fileName in the underlying {@link Storage}. The file is relative to the
      * supplied class in the {@code /target} directory.
      */
-    public static String makeTestDataFile(final Class clazz, final String subdir, final String fileName) {
+    public static String makeTestDataFile(final Class<?> clazz, final String subdir, final String fileName) {
         return Storage.toPath(new File(makeTestDataPath(clazz, subdir), fileName));
     }
 
@@ -111,7 +111,7 @@ public class TestSupport {
      * Gets and/or creates the root of the test data directory.  This  method is here as a convenience and should not
      * be used to store test data.  Use {@link #makeTestDataPath(Class, String...)} instead.
      */
-    public static File getRootOfBuildDirectory(final Class clazz) {
+    public static File getRootOfBuildDirectory(final Class<?> clazz) {
         final File root;
 
         // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
@@ -140,7 +140,7 @@ public class TestSupport {
      * Creates a {@link File} reference in the path returned from {@link #makeTestDataPath} in a subdirectory
      * called {@code temp}.
      */
-    public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
+    public static File generateTempFile(final Class<?> clazz, final String fileName, final String fileNameSuffix) throws IOException {
         final File path = makeTestDataPath(clazz, "temp");
         if (!path.exists())
             path.mkdirs();
@@ -151,7 +151,7 @@ public class TestSupport {
      * Copies a file stored as part of a resource to the file system in the path returned from
      * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
-    public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
+    public static File generateTempFileFromResource(final Class<?> resourceClass, final String resourceName, final String extension) throws IOException {
         return generateTempFileFromResource(resourceClass, resourceClass, resourceName, extension);
     }
 
@@ -159,18 +159,21 @@ public class TestSupport {
      * Copies a file stored as part of a resource to the file system in the path returned from
      * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
-    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
+    public static File generateTempFileFromResource(final Class<?> graphClass, final Class<?> resourceClass, final String resourceName, final String extension) throws IOException {
         return generateTempFileFromResource(graphClass, resourceClass, resourceName, extension, true);
     }
 
     /**
      * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
+     * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
-    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass,
+    public static File generateTempFileFromResource(final Class<?> graphClass, final Class<?> resourceClass,
                                                     final String resourceName, final String extension, final boolean overwrite) throws IOException {
         final File temp = makeTestDataPath(graphClass, "resources");
         final File tempFile = new File(temp, resourceName + extension);
+
+        // these checks are present mostly for windows compatibility where an outputstream created on a non-existent
+        // file will cause an error. 
         if(tempFile.exists() && !overwrite){
             // overwrite is disabled and file already exists -> reuse as-is
             return tempFile;
@@ -182,6 +185,7 @@ public class TestSupport {
         Files.deleteIfExists(tempFile.toPath());
         // create the new file
         Files.createFile(tempFile.toPath());
+
         // fill it with the desired contents
         try (final FileOutputStream outputStream = new FileOutputStream(tempFile)) {
             int data;
