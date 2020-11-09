@@ -423,6 +423,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withRemote(*)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep(Traversal.Admin, boolean, PropertyType, String...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep#isIncludeTokens()`
+** `org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeUtil`
 ** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph#builder()`
 ** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.Builder#create()`
 * `gremlin-driver`
