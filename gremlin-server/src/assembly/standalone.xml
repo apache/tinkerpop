@@ -57,6 +57,9 @@ limitations under the License.
         <fileSet>
             <directory>data</directory>
             <outputDirectory>/data</outputDirectory>
+            <excludes>
+                <exclude>README.asciidoc</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
             <directory>../data</directory>

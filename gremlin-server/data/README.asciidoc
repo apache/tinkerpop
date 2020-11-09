@@ -1,0 +1,26 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+This directory contains data files that are packaged with Gremlin Server:
+
+* `credentials.kryo` - This data file contains a sample graph built from the
+link:https://tinkerpop.apache.org/docs/current/reference/#credentials-dsl[Credentials DSL] which contains a single
+user: `stephen/password`. This file is meant to be used by the `gremlin-server-secure.yaml` and
+`gremlin-server-rest-secure.yaml` configuration files to demonstrate basic authentication functions.
+* `sample.kryo` - This data file contains a random sample graph generated from the `DistributionGenerator` in
+`IoDataGenerateTest.shouldWriteSampleForGremlinServer()`. It can be configured for use in Gremlin Server by using the
+`load-sample.groovy` server initialization script file packaged with Gremlin Server. This graph has 10,000 vertices
+and approximately 100,000 edges (using a "knows" label).
