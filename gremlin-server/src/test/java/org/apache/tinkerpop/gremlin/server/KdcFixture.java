@@ -98,7 +98,7 @@ public class KdcFixture {
         return testDir;
     }
 
-    private class TestKdcServer extends SimpleKdcServer {
+    private static class TestKdcServer extends SimpleKdcServer {
         public static final String KDC_REALM = "TEST.COM";
         public static final String HOSTNAME = "localhost";
 
@@ -142,21 +142,41 @@ public class KdcFixture {
         kdcServer.getKrbClient().storeTicket(tgt2, ticketCacheFile2);
     }
 
-    public void close() throws Exception {
+    public void close() {
         deletePrincipals();
-        kdcServer.stop();
+
+        try {
+            kdcServer.stop();
+        } catch (KrbException krbex) {
+            logger.warn("Tried to stop KdcServer but encountered an exception", krbex);
+        }
+
         ticketCacheFile.delete();
         ticketCacheFile2.delete();
         serviceKeytabFile.delete();
         testDir.delete();
+
         System.clearProperty("java.security.auth.login.config");
     }
 
-    private void deletePrincipals() throws KrbException {
-        kdcServer.getKadmin().deleteBuiltinPrincipals();
-        kdcServer.deletePrincipals(serverPrincipal);
-        kdcServer.deletePrincipal(clientPrincipal);
-        kdcServer.deletePrincipal(clientPrincipal2);
+    void deletePrincipals() {
+        try {
+            kdcServer.getKadmin().deleteBuiltinPrincipals();
+        } catch (KrbException krbex) {
+            logger.warn("Tried to delete builtin Principals on teardown but failed", krbex);
+        }
+
+        deletePrincipal(serverPrincipal);
+        deletePrincipal(clientPrincipal);
+        deletePrincipal(clientPrincipal2);
+    }
+
+    private void deletePrincipal(final String principalToDelete) {
+        try {
+            kdcServer.deletePrincipal(principalToDelete);
+        } catch (KrbException krbex) {
+            logger.warn(String.format("Tried to delete %s Principals on teardown but failed", principalToDelete), krbex);
+        }
     }
 
     public void createPrincipal(final String principal) throws KrbException {
