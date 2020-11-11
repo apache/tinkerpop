@@ -115,6 +115,15 @@ describe('Traversal', function () {
         });
     });
   });
+  describe('lambdas', function() {
+    it('should handle 1-arg lambdas', function() {
+      const g = traversal().withRemote(connection);
+      return g.V().has('person','name','marko').values('name').map(() => "it.get()[1]").toList().then(function (s) {
+        assert.ok(s);
+        assert.strictEqual(s[0], 'a');
+      })
+    });
+  });
   describe('dsl', function() {
     it('should expose DSL methods', function() {
       const g = traversal(SocialTraversalSource).withRemote(connection);

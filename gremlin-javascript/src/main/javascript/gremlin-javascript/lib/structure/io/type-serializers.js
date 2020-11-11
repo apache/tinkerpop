@@ -202,12 +202,24 @@ class TextPSerializer extends TypeSerializer {
 class LambdaSerializer extends TypeSerializer {
   /** @param {Function} item */
   serialize(item) {
+    const lambdaDef = item();
+
+    // check if the language is specified otherwise assume gremlin-groovy.
+    const returnIsString = typeof(lambdaDef) === 'string';
+    const script = returnIsString ? lambdaDef : lambdaDef[0];
+    const lang = returnIsString ? "gremlin-groovy" : lambdaDef[1];
+
+    // detect argument count
+    const argCount = lang === "gremlin-groovy" && script.includes("->") ?
+        (script.substring(0, script.indexOf("->")).includes(",") ? 2 : 1) :
+        -1;
+
     return {
       [typeKey]: 'g:Lambda',
       [valueKey]: {
-        'arguments': item.length,
-        'language': 'gremlin-javascript',
-        'script': item.toString()
+        'arguments': argCount,
+        'language': lang,
+        'script': script
       }
     };
   }
