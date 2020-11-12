@@ -80,6 +80,17 @@ const sg = g.withStrategies(
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2054[TINKERPOP-2054]
 
+==== WebSocket Compression
+
+Gremlin Server now supports standard WebSocket compression (per link:https://tools.ietf.org/html/rfc7692[RFC 7692]).
+Both the Java and Python drivers support this functionality from the client's perspective. Compression is enabled by
+default and should be backward compatible, thus allowing older versions of the driver to connect to newer versions of
+the server and vice versa. Using the compression-enabled drivers with a server that also supports that functionality
+will greatly reduce network IO requirements.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2441[TINKERPOP-2441],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2453[TINKERPOP-2453]
+
 ==== Per Request Options
 
 With Java it has been possible to pass per-request settings for both scripts and bytecode. While Javascript, Python,
