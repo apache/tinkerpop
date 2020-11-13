@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.tinkerpop.gremlin.jsr223.CoreImports;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -33,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -51,6 +51,7 @@ import java.util.UUID;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Converts bytecode to a Groovy string of Gremlin.
@@ -68,11 +69,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         this.typeTranslator = typeTranslator;
     }
 
-    public static final GroovyTranslator of(final String traversalSource) {
+    public static GroovyTranslator of(final String traversalSource) {
         return of(traversalSource, null);
     }
 
-    public static final GroovyTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
+    public static GroovyTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
         return new GroovyTranslator(traversalSource,
                 Optional.ofNullable(typeTranslator).orElseGet(DefaultTypeTranslator::new));
     }
@@ -158,13 +159,13 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             else if (object instanceof Integer)
                 return "(int) " + object;
             else if (object instanceof Class)
-                return ((Class) object).getCanonicalName();
+                return convertClassToString((Class<?>) object);
             else if (object instanceof Timestamp)
-                return "new java.sql.Timestamp(" + ((Timestamp) object).getTime() + ")";
+                return "new Timestamp(" + ((Timestamp) object).getTime() + ")";
             else if (object instanceof Date)
-                return "new java.util.Date(" + ((Date) object).getTime() + ")";
+                return "new Date(" + ((Date) object).getTime() + ")";
             else if (object instanceof UUID)
-                return "java.util.UUID.fromString('" + object.toString() + "')";
+                return "UUID.fromString('" + object.toString() + "')";
             else if (object instanceof P)
                 return convertPToString((P) object, new StringBuilder()).toString();
             else if (object instanceof SackFunctions.Barrier)
@@ -175,40 +176,36 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                 return "TraversalOptionParent.Pick." + object.toString();
             else if (object instanceof Enum)
                 return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
-            else if (object instanceof Element) {
-                if (object instanceof Vertex) {
-                    final Vertex vertex = (Vertex) object;
-                    return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
-                            convertToString(vertex.id()) + "," +
-                            convertToString(vertex.label()) + ", Collections.emptyMap())";
-                } else if (object instanceof Edge) {
+            else if (object instanceof Vertex) {
+                final Vertex vertex = (Vertex) object;
+                return "new ReferenceVertex(" +
+                        convertToString(vertex.id()) + "," +
+                        convertToString(vertex.label()) + ")";
+            } else if (object instanceof Edge) {
                     final Edge edge = (Edge) object;
-                    return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(" +
+                    return "new ReferenceEdge(" +
                             convertToString(edge.id()) + "," +
                             convertToString(edge.label()) + "," +
-                            "Collections.emptyMap()," +
-                            convertToString(edge.outVertex().id()) + "," +
-                            convertToString(edge.outVertex().label()) + "," +
-                            convertToString(edge.inVertex().id()) + "," +
-                            convertToString(edge.inVertex().label()) + ")";
-                } else {// VertexProperty
-                    final VertexProperty vertexProperty = (VertexProperty) object;
-                    return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty(" +
+                            "new ReferenceVertex(" + convertToString(edge.inVertex().id()) + "," +
+                            convertToString(edge.inVertex().label()) + ")," +
+                            "new ReferenceVertex(" + convertToString(edge.outVertex().id()) + "," +
+                            convertToString(edge.outVertex().label()) + "))";
+            } else if (object instanceof VertexProperty) {
+                    final VertexProperty<?> vertexProperty = (VertexProperty<?>) object;
+                    return "new ReferenceVertexProperty(" +
                             convertToString(vertexProperty.id()) + "," +
                             convertToString(vertexProperty.label()) + "," +
-                            convertToString(vertexProperty.value()) + "," +
-                            "Collections.emptyMap()," +
-                            convertToString(vertexProperty.element()) + ")";
-                }
+                            convertToString(vertexProperty.value()) + ")";
             } else if (object instanceof Lambda) {
                 final String lambdaString = ((Lambda) object).getLambdaScript().trim();
                 return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
             } else if (object instanceof TraversalStrategyProxy) {
                 final TraversalStrategyProxy proxy = (TraversalStrategyProxy) object;
+                final String className = convertClassToString(proxy.getStrategyClass());
                 if (proxy.getConfiguration().isEmpty())
-                    return proxy.getStrategyClass().getCanonicalName() + ".instance()";
+                    return className;
                 else
-                    return proxy.getStrategyClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
+                    return String.format("new %s(%s)", className, convertMapToArguments(ConfigurationConverter.getMap(proxy.getConfiguration())));
             } else if (object instanceof TraversalStrategy) {
                 return convertToString(new TraversalStrategyProxy(((TraversalStrategy) object)));
             } else
@@ -274,6 +271,24 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         protected StringBuilder convertTextPToString(final TextP p, final StringBuilder current) {
             current.append("TextP.").append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
             return current;
+        }
+
+        /**
+         * Gets the string representation of a class with the default implementation simply checking to see if the
+         * {@code Class} is in {@link CoreImports} or not. If it is present that means it can be referenced using the
+         * simple name otherwise it uses the canonical name.
+         * <p/>
+         * Those building custom {@link ScriptTranslator} instances might override this if they have other classes
+         * that are not in {@link CoreImports} by default.
+         */
+        protected String convertClassToString(final Class<?> clazz) {
+            return CoreImports.getClassImports().contains(clazz) ? clazz.getSimpleName() : clazz.getCanonicalName();
+        }
+
+        private String convertMapToArguments(final Map<Object,Object> map) {
+            return map.entrySet().stream().map(entry ->
+                String.format("%s: %s", entry.getKey().toString(), convertToString(entry.getValue()))).
+                    collect(Collectors.joining(", "));
         }
     }
 }

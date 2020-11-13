@@ -626,8 +626,8 @@ Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy se
 
 [source,groovy]
 ----
-compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.3.4'
-compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.3.4'
+compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: 'x.y.z'
+compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: 'x.y.z'
 ----
 
 [[gremlin-groovy-differences]]

@@ -28,15 +28,68 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
-=== GraphManager Extension
+=== Translator Implementations
 
-The `org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager` can be used instead of 
-`org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager` (in gremlin-server.yml  to ensures that Gremlin Server
-fails to start if all graphs fails. This configuration option can be useful for a number of different situations (e.g.
-use `CheckedGraphManager` on a Kubernetes cluster to ensure that a pod will be restarted when it cannot properly handle
-requests.) As a final note, `DefaultGraphManager` is no longer `final` and thus can be extended.
+One of the silent features of Gremlin is the `ScriptTranslator`. More specifically, the implementation of this
+interface which will convert a `Traversal` object (or Gremlin `Bytecode`) into a proper `String` representation that
+is syntactically correct for the implementation language.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2436[TINKERPOP-2436]
+[source,text]
+----
+gremlin> import org.apache.tinkerpop.gremlin.process.traversal.translator.*
+==>org.apache.tinkerpop.gremlin.structure.*, org.apache.tinkerpop.gremlin.structure.util.*, ...
+gremlin> translator = GroovyTranslator.of('g')
+==>translator[g:gremlin-groovy]
+gremlin> translator.translate(g.V().has("person","name","marko").has("age",gt(20)).where(outE("knows")))
+==>g.V().has("person","name","marko").has("age",P.gt((int) 20)).where(__.outE("knows"))
+gremlin> translator = PythonTranslator.of('g')
+==>translator[g:gremlin-python]
+gremlin> translator.translate(g.V().has("person","name","marko").has("age",gt(20)).where(outE("knows")))
+==>g.V().has('person','name','marko').has('age',P.gt(20)).where(__.outE('knows'))
+----
+
+Some Gremlin users may already be aware of the implementations for Groovy and Python from previous versions. These
+classes have largely been used for testing purposes, but users have found helpful use cases for them and they have
+now been promoted to `gremlin-core` from their original locations. The old versions in `gremlin-groovy` and
+`gremlin-python` have been deprecated. There have been some improvements to the `GroovyTranslator` such that the
+Gremlin generated will not match character for character with the deprecated version. There may also be some potential
+for the newer version in 3.4.9 to generate scripts that will not work in earlier versions. It is therefore best to
+use 3.4.9 translators within environments where 3.4.9 is uniformly supported. If older versions are in place, it may
+be better to continue use of the deprecated versions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2461[TINKERPOP-2461]
+
+=== withStrategies() Groovy Syntax
+
+The `withStrategies()` configuration step accepts a variable number of `TraversalStrategy` instances. In Java, those
+instances are typically constructed with `instance()` if it is a singleton or by way of a builder pattern which
+provides a fluent, type safe method to create the object. For Groovy, which is highly applicable to those who use
+Gremlin scripts in their applications or work a lot within tools similar to the Gremlin Cosnole, the builder syntax
+can work but doesn't really match the nature of the Groovy language. Using a strategy in this script context would
+look something like:
+
+[source,groovy]
+----
+g.withStrategies(ReadOnlyStrategy.instance(),
+                 SubgraphStrategy.build().vertexProperties(hasNot('endTime')).create())
+----
+
+While this method will still work, it is now possible to use a more succinct syntax for Groovy scripts:
+
+[source,groovy]
+----
+g.withStrategies(ReadOnlyStrategy,
+                 new SubgraphStrategy(vertexProperties: __.hasNot('endTime')))
+----
+
+The rules are straightforward. If a strategy can be instantiated with `instance()` as a singleton then use just the
+class name as a shortcut. Interestingly, many users try this syntax when they first get started and obviously fail.
+With the syntax present, they will have one less error to contend with in their early days of Gremlin. For strategies
+that take configurations, these strategies will use named arguments in the constructor where the names match the
+expected builder methods. This named argument syntax is common to Groovy and not something special to Gremlin - it is
+just now exposed for this purpose.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2466[TINKERPOP-2466]
 
 === withEmbedded()
 
@@ -111,6 +164,16 @@ request configurations.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2296[TINKERPOP-2296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2420[TINKERPOP-2420],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2421[TINKERPOP-2421]
+
+=== GraphManager Extension
+
+The `org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager` can be used instead of
+`org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager` (in gremlin-server.yml  to ensures that Gremlin Server
+fails to start if all graphs fails. This configuration option can be useful for a number of different situations (e.g.
+use `CheckedGraphManager` on a Kubernetes cluster to ensure that a pod will be restarted when it cannot properly handle
+requests.) As a final note, `DefaultGraphManager` is no longer `final` and thus can be extended.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2436[TINKERPOP-2436]
 
 === Upgrading for Providers
 

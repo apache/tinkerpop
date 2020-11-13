@@ -23,7 +23,7 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 
 class ObjectLoader {
 
-    public static void load() {
+    static void load() {
 
         Map.metaClass.getAt = { final IntRange range ->
             final int size = delegate.size();

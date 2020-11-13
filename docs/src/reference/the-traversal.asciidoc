@@ -4176,3 +4176,66 @@ social.persons("marko").youngestFriendsAge()
 
 Learn more about how to implement these DSLs in the <<gremlin-drivers-variants,Gremlin Language Variants>> section
 specific to the programming language of interest.
+
+[[translators]]
+== Translators
+
+image::gremlin-translator.png[width=1024]
+
+There are times when is helpful to translate Gremlin from one programming language to another. Perhaps a large Gremlin
+example is found on StackOverflow written in Java, but the programming language the developer has chosen is Python.
+Fortunately, TinkerPop has developed `Translator` infrastructure that will convert Gremlin from one programming
+language syntax to another.
+
+The functionality relevant to most users is actually a sub-function of `Translator` infrastructure and is more
+specifically a `ScriptTranslator` which takes Gremlin `Bytecode` of a traversal and generates a `String` representation
+of that `Bytecode` in the programming language syntax that the `ScriptTranslator` instance supports. The translation
+therefore allows Gremlin to be converted from the host programming language of the `Translator` to another.
+
+The following translators are available:
+
+[width="100%",cols="<,^,^,^,^,^",options="header"]
+|=========================================================
+| |Java |Groovy |Javascript |.NET |Python
+|*Java* |- |X | | |X
+|*Groovy* | |- | | |X
+|*Javascript* | |X |- | |
+|*.NET* | | | |- |
+|*Python*  | | | | |-
+|=========================================================
+
+Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
+
+WARN: While `Translator` implementations have been around for some time, they are still in their early stages from
+an interface perspective. API changes may occur in the near future.
+
+[source,java,tab]
+----
+// gremlin-core module
+import org.apache.tinkerpop.gremlin.process.traversal.translator.*;
+GraphTraversalSource g = ...;
+Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
+                                where(in("knows")).
+                                values("age").
+                                map(Lambda.Function("it.get() + 1");
+
+Translator.ScriptTranslator groovyTranslator = GroovyTranslator.of("g");
+System.out.println(groovyTranslator.translate(t);
+// OUTPUT: g.V().has("person","name","marko").where(__.in("knows")).values("age").map({it.get() + 1})
+
+Translator.ScriptTranslator pythonTranslator = PythonTranslator.of("g");
+// OUTPUT: g.V().has('person','name','marko').where(__.in_('knows')).age.map(lambda it.get() + 1)
+----
+[source,javascript]
+----
+const g = ...;
+const t = g.V().has("person","name","marko").
+            where(in_("knows")).
+            values("age");
+
+// groovy
+const translator = new gremlin.process.Translator('g');
+console.log(translator.translate(t));
+// OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+----
+

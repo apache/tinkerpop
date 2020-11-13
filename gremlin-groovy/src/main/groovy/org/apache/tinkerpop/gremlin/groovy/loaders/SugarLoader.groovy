@@ -33,7 +33,7 @@ class SugarLoader {
 
     private static final String NAME = "name";
 
-    public static void load() {
+    static void load() {
 
         GremlinLoader.load();
 
