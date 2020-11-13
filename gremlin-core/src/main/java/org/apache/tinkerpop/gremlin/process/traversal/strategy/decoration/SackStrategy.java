@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -29,6 +30,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
+ * The {@code SackStrategy} is used internal to the {@code withSack()} steps of {@link TraversalSource} and is not
+ * typically constructed directly.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SackStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {

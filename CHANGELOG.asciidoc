@@ -98,6 +98,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified the text of `profile()` output to hide step instances injected for purpose of collecting metrics.
 * Bumped to Jackson 2.11.x.
 * Bumped Netty 4.1.52.
+* Provided a more concise syntax for constructing strategies in Groovy.
+* Aligned `CoreImports` with `GroovyTranslator` to generate more succinct syntax.
 * Moved `Translator` instances to `gremlin-core`.
 * Added `CheckedGraphManager` to prevent Gremlin Server from starting if there are no graphs configured.
 * Fixed bug in bytecode `Bindings` where calling `of()` prior to calling a child traversal in the same parent would cause the initial binding to be lost.

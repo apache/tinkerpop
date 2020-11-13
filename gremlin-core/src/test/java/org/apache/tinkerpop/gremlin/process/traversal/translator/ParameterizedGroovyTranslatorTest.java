@@ -71,7 +71,7 @@ public class ParameterizedGroovyTranslatorTest {
 
     @Test
     public void shouldHandleStrategies() throws Exception {
-        assertEquals("g.withStrategies(org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy.instance(),org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.create(new org.apache.commons.configuration2.MapConfiguration([(_args_0):(_args_1),(_args_2):(__.hasLabel(_args_3))]))).V().has(_args_4)",
+        assertEquals("g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(checkAdjacentVertices: _args_0, vertices: __.hasLabel(_args_1))).V().has(_args_2)",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());
@@ -243,7 +243,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals(2, bindings.size());
         assertEquals(id1, bindings.get("_args_0"));
         assertEquals("customer", bindings.get("_args_1"));
-        assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(_args_0,_args_1, Collections.emptyMap()))", script1.getScript());
+        assertEquals("g.inject(new ReferenceVertex(_args_0,_args_1))", script1.getScript());
         bindings.clear();
 
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
@@ -254,7 +254,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals(2, bindings.size());
         assertEquals(id2, bindings.get("_args_0"));
         assertEquals("user", bindings.get("_args_1"));
-        assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(_args_0,_args_1, Collections.emptyMap()))", script2.getScript());
+        assertEquals("g.inject(new ReferenceVertex(_args_0,_args_1))", script2.getScript());
         bindings.clear();
 
         final Object id3 = "knows:30:foo\u0020bar\u0020\u0024100:\\u0020\\u0024500#70";
@@ -267,11 +267,11 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals(6, bindings.size());
         assertEquals(id3, bindings.get("_args_0"));
         assertEquals("knows", bindings.get("_args_1"));
-        assertEquals(id1, bindings.get("_args_2"));
-        assertEquals("customer", bindings.get("_args_3"));
-        assertEquals(id2, bindings.get("_args_4"));
-        assertEquals("user", bindings.get("_args_5"));
-        assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(_args_0,_args_1,Collections.emptyMap(),_args_2,_args_3,_args_4,_args_5))", script3.getScript());
+        assertEquals(id2, bindings.get("_args_2"));
+        assertEquals("user", bindings.get("_args_3"));
+        assertEquals(id1, bindings.get("_args_4"));
+        assertEquals("customer", bindings.get("_args_5"));
+        assertEquals("g.inject(new ReferenceEdge(_args_0,_args_1,new ReferenceVertex(_args_2,_args_3),new ReferenceVertex(_args_4,_args_5)))", script3.getScript());
         bindings.clear();
 
         final Script script4 = translator.translate(
@@ -286,7 +286,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals("user", bindings.get("_args_4"));
         assertEquals("when", bindings.get("_args_5"));
         assertEquals("2018/09/21", bindings.get("_args_6"));
-        assertEquals("g.addE(_args_0).from(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(_args_1,_args_2, Collections.emptyMap())).to(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(_args_3,_args_4, Collections.emptyMap())).property(_args_5,_args_6)", script4.getScript());
+        assertEquals("g.addE(_args_0).from(new ReferenceVertex(_args_1,_args_2)).to(new ReferenceVertex(_args_3,_args_4)).property(_args_5,_args_6)", script4.getScript());
         bindings.clear();
 
         final Script script5 = translator.translate(g.V().has("age").asAdmin().getBytecode());

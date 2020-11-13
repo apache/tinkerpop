@@ -26,19 +26,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallb
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -51,7 +42,8 @@ import java.util.List;
  * A strategy that raises events when {@link Mutating} steps are encountered and successfully executed.
  * <p/>
  * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance.  If that is not present
- * an {@code IllegalStateException} will be thrown.
+ * an {@code IllegalStateException} will be thrown. Finally, this strategy is meant for use on the JVM only and has
+ * no analogous implementation in other Gremlin Language Variants.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -48,20 +48,28 @@ public interface Translator<S, T> {
     /**
      * Get the {@link TraversalSource} representation rooting this translator.
      * For string-based translators ({@link ScriptTranslator}), this is typically a "g".
-     * For java-based translators ({@link StepTranslator}), this is typically the {@link TraversalSource} instance which the {@link Traversal} will be built from.
+     * For java-based translators ({@link StepTranslator}), this is typically the {@link TraversalSource} instance
+     * which the {@link Traversal} will be built from.
      *
      * @return the traversal source representation
      */
     public S getTraversalSource();
 
     /**
-     * Translate {@link Bytecode} into a new representation.
-     * Typically, for language translations, the translation is to a string represenging the traversal in the respective scripting language.
+     * Translate {@link Bytecode} into a new representation. Typically, for language translations, the translation is
+     * to a string representing the traversal in the respective scripting language.
      *
-     * @param bytecode the byte code representing traversal source and traversal manipulations.
+     * @param bytecode the bytecode representing traversal source and traversal manipulations.
      * @return the translated object
      */
     public T translate(final Bytecode bytecode);
+
+    /**
+     * Translates a {@link Traversal} into the specified form
+     */
+    public default T translate(final Traversal<?,?> t) {
+        return translate(t.asAdmin().getBytecode());
+    }
 
     /**
      * Get the language that the translator is converting the traversal byte code to.

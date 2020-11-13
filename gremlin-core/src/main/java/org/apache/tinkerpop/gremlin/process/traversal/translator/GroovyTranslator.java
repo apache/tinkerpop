@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.tinkerpop.gremlin.jsr223.CoreImports;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -51,6 +52,7 @@ import java.util.UUID;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Converts bytecode to a Groovy string of Gremlin.
@@ -140,17 +142,17 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Date o) {
-            return "new java.util.Date(" + o.getTime() + ")";
+            return "new Date(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final Timestamp o) {
-            return "new java.sql.Timestamp(" + o.getTime() + ")";
+            return "new Timestamp(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final UUID o) {
-            return "java.util.UUID.fromString('" + o.toString() + "')";
+            return "UUID.fromString('" + o.toString() + "')";
         }
 
         @Override
@@ -189,9 +191,9 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             if (o instanceof Short)
                 return "(short) " + o;
             else if (o instanceof BigInteger)
-                return "new java.math.BigInteger('" + o.toString() + "')";
+                return "new BigInteger('" + o.toString() + "')";
             else if (o instanceof BigDecimal)
-                return "new java.math.BigDecimal('" + o.toString() + "')";
+                return "new BigDecimal('" + o.toString() + "')";
             else
                 return o.toString();
         }
@@ -233,9 +235,17 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return script.append("]");
         }
 
+        /**
+         * Gets the string representation of a class with the default implementation simply checking to see if the
+         * {@code Class} is in {@link CoreImports} or not. If it is present that means it can be referenced using the
+         * simple name otherwise it uses the canonical name.
+         * <p/>
+         * Those building custom {@link ScriptTranslator} instances might override this if they have other classes
+         * that are not in {@link CoreImports} by default.
+         */
         @Override
         protected Script produceScript(final Class<?> o) {
-            return script.append(o.getCanonicalName());
+            return script.append(CoreImports.getClassImports().contains(o) ? o.getSimpleName() : o.getCanonicalName());
         }
 
         @Override
@@ -245,53 +255,61 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Vertex o) {
-            script.append("new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(");
+            script.append("new ReferenceVertex(");
             convertToScript(o.id());
             script.append(",");
             convertToScript(o.label());
-            return script.append(", Collections.emptyMap())");
-        }
-
-        @Override
-        protected Script produceScript(final Edge o) {
-            script.append("new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(");
-            convertToScript(o.id());
-            script.append(",");
-            convertToScript(o.label());
-            script.append(",");
-            script.append("Collections.emptyMap(),");
-            convertToScript(o.outVertex().id());
-            script.append(",");
-            convertToScript(o.outVertex().label());
-            script.append(",");
-            convertToScript(o.inVertex().id());
-            script.append(",");
-            convertToScript(o.inVertex().label());
             return script.append(")");
         }
 
         @Override
+        protected Script produceScript(final Edge o) {
+            script.append("new ReferenceEdge(");
+            convertToScript(o.id());
+            script.append(",");
+            convertToScript(o.label());
+            script.append(",new ReferenceVertex(");
+            convertToScript(o.inVertex().id());
+            script.append(",");
+            convertToScript(o.inVertex().label());
+            script.append("),new ReferenceVertex(");
+            convertToScript(o.outVertex().id());
+            script.append(",");
+            convertToScript(o.outVertex().label());
+            return script.append("))");
+        }
+
+        @Override
         protected Script produceScript(final VertexProperty<?> o) {
-            script.append("new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty(");
+            script.append("new ReferenceVertexProperty(");
             convertToScript(o.id());
             script.append(",");
             convertToScript(o.label());
             script.append(",");
             convertToScript(o.value());
-            script.append(",");
-            script.append("Collections.emptyMap(),");
-            convertToScript(o.element());
             return script.append(")");
         }
 
         @Override
         protected Script produceScript(final TraversalStrategyProxy<?> o) {
             if (o.getConfiguration().isEmpty()) {
-                return script.append(o.getStrategyClass().getCanonicalName() + ".instance()");
+                return produceScript(o.getStrategyClass());
             } else {
-                script.append(o.getStrategyClass().getCanonicalName() + ".create(new org.apache.commons.configuration2.MapConfiguration(");
-                convertToScript(ConfigurationConverter.getMap(o.getConfiguration()));
-                return script.append("))");
+                script.append("new ");
+                produceScript(o.getStrategyClass());
+                script.append("(");
+
+                final Iterator<Map.Entry<Object,Object>> itty = ConfigurationConverter.getMap(
+                        o.getConfiguration()).entrySet().iterator();
+                while (itty.hasNext()) {
+                    final Map.Entry<Object,Object> entry = itty.next();
+                    script.append(entry.getKey().toString());
+                    script.append(": ");
+                    convertToScript(entry.getValue());
+                    if (itty.hasNext()) script.append(", ");
+                }
+
+                return script.append(")");
             }
         }
 
@@ -357,6 +375,12 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             }
             script.append(")");
             return script;
+        }
+
+        private String convertMapToArguments(final Map<Object,Object> map) {
+            return map.entrySet().stream().map(entry ->
+                String.format("%s: %s", entry.getKey().toString(), convertToScript(entry.getValue()))).
+                    collect(Collectors.joining(", "));
         }
     }
 }

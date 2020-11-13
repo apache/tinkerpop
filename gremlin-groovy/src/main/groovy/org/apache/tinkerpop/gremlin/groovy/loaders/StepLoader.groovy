@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy.loaders
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 
 import java.util.function.BinaryOperator
@@ -31,7 +32,7 @@ import java.util.function.UnaryOperator
  */
 class StepLoader {
 
-    public static void load() {
+    static void load() {
 
         GraphTraversal.metaClass.by = { final Closure closure ->
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? closure as Function : closure as Comparator);
@@ -62,6 +63,25 @@ class StepLoader {
         TraversalSource.metaClass.withSack = {
             final Closure closure, final Closure splitOperator, final Closure mergeOperator ->
                 return ((TraversalSource) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
+        }
+
+        /**
+         * Allows for a mix of arguments which may be either {@code TraversalStrategy} object or a
+         * {@code Class<TraversalStrategy>}. If the latter, then the class must be able to be instantiated by the
+         * common convention of {@code instance()}.
+         */
+        TraversalSource.metaClass.withStrategies = { Object... traversalStrategyClassOrInstances ->
+            def instances = traversalStrategyClassOrInstances.collect {
+                if (it instanceof TraversalStrategy) {
+                    return it
+                } else if (it instanceof Class<?>) {
+                    def inst = it.metaClass.respondsTo(it, "instance") ? it."instance"() : null
+                    if (null == inst) throw new IllegalArgumentException("${it.name} missing a static 'instance()' method")
+                    return inst
+                }
+            } as TraversalStrategy[]
+
+            return ((TraversalSource) delegate).withStrategies(instances)
         }
     }
 }

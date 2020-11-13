@@ -29,6 +29,9 @@ import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -48,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -423,6 +427,33 @@ public class GremlinGroovyScriptEngineTest {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Lambda l = (Lambda) engine.eval(" org.apache.tinkerpop.gremlin.util.function.Lambda.function(\"{ it.get() }\")");
         assertEquals("{ it.get() }", l.getLambdaScript());
+    }
+
+    @Test
+    public void shouldAllowGroovySyntaxForStrategies() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+
+        final Bindings b = new SimpleBindings();
+        b.put("g", g);
+
+        Traversal t = (Traversal) engine.eval("g.withStrategies(ReadOnlyStrategy).V()", b);
+        Optional<ReadOnlyStrategy> ro = t.asAdmin().getStrategies().getStrategy(ReadOnlyStrategy.class);
+        assertThat(ro.isPresent(), is(true));
+        assertEquals(ReadOnlyStrategy.instance(), ro.get());
+
+        t = (Traversal) engine.eval("g.withStrategies(new SubgraphStrategy(vertices: __.hasLabel(\"person\"))).V()", b);
+        Optional<SubgraphStrategy> ss = t.asAdmin().getStrategies().getStrategy(SubgraphStrategy.class);
+        assertThat(ss.isPresent(), is(true));
+        assertEquals(HasStep.class, ss.get().getVertexCriterion().asAdmin().getStartStep().getClass());
+
+        t = (Traversal) engine.eval("g.withStrategies(ReadOnlyStrategy, new SubgraphStrategy(vertices: __.hasLabel(\"person\"))).V()", b);
+        ro = t.asAdmin().getStrategies().getStrategy(ReadOnlyStrategy.class);
+        assertThat(ro.isPresent(), is(true));
+        assertEquals(ReadOnlyStrategy.instance(), ro.get());
+        ss = t.asAdmin().getStrategies().getStrategy(SubgraphStrategy.class);
+        assertThat(ss.isPresent(), is(true));
+        assertEquals(HasStep.class, ss.get().getVertexCriterion().asAdmin().getStartStep().getClass());
     }
 
     /**
