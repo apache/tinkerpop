@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeUtil;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 
 
@@ -92,6 +91,6 @@ public abstract class AbstractAuthorizer implements Authorizer{
      * @return a boolean with the inpection result.
      */
     protected boolean runsVertexProgram(final Bytecode bytecode) {
-        return BytecodeUtil.findStrategies(bytecode, VertexProgramStrategy.class).hasNext();
+        return BytecodeHelper.findStrategies(bytecode, VertexProgramStrategy.class).hasNext();
     }
 }

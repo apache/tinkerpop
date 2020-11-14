@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
@@ -191,6 +192,15 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage(ex.getMessage())
                             .statusAttributeException(ex).create());
+        }
+        if (settings.enableAuditLog) {
+            AuthenticatedUser user = context.getChannelHandlerContext().channel().attr(StateKey.AUTHENTICATED_USER).get();
+            if (null == user) {    // This is expected when using the AllowAllAuthenticator
+                user = AuthenticatedUser.ANONYMOUS_USER;
+            }
+            String address = context.getChannelHandlerContext().channel().remoteAddress().toString();
+            if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+            auditLogger.info("User {} with address {} requested: {}", user.getName(), address, bytecode);
         }
         if (settings.authentication.enableAuditLog) {
             String address = context.getChannelHandlerContext().channel().remoteAddress().toString();

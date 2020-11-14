@@ -166,11 +166,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         // WebSocketChannelizer does not add SaslAuthenticationHandler for AllowAllAuthenticator,
         // so no authenticated user log line available
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, String.format(
-                "User %s with address .*? requested: 1\\+1", AuthenticatedUser.ANONYMOUS_USERNAME)));
+                "User %s with address .+? requested: 1\\+1", AuthenticatedUser.ANONYMOUS_USERNAME)));
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, String.format(
-                "User %s with address .*? requested: 1\\+2", AuthenticatedUser.ANONYMOUS_USERNAME)));
+                "User %s with address .+? requested: 1\\+2", AuthenticatedUser.ANONYMOUS_USERNAME)));
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, String.format(
-                "User %s with address .*? requested: 1\\+3", AuthenticatedUser.ANONYMOUS_USERNAME)));
+                "User %s with address .+? requested: 1\\+3", AuthenticatedUser.ANONYMOUS_USERNAME)));
     }
 
     @Test
@@ -203,13 +203,13 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 .filter(event -> event.getMessage().toString().contains(simpleAuthenticatorName)).iterator().next();
         final String authMsg = authEvent.getMessage().toString();
         assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .*? authenticated by %s", username, simpleAuthenticatorName)));
+                authMsg.matches(String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .*? requested: 1\\+1")));
+                item.getMessage().toString().matches("User stephen with address .+? requested: 1\\+1")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .*? requested: 1\\+2")));
+                item.getMessage().toString().matches("User stephen with address .+? requested: 1\\+2")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .*? requested: 1\\+3")));
+                item.getMessage().toString().matches("User stephen with address .+? requested: 1\\+3")));
     }
 
     @Test
@@ -235,13 +235,13 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 .filter(event -> event.getMessage().toString().contains("Krb5Authenticator")).iterator().next();
         final String authMsg = authEvent.getMessage().toString();
         assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .*? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
+                authMsg.matches(String.format("User %s with address .+? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+1")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+1")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+2")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+2")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+3")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+3")));
     }
 
     @Test
@@ -263,13 +263,13 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
         assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? authenticated by Krb5Authenticator")));
+                item.getMessage().toString().matches("User drankye with address .+? authenticated by Krb5Authenticator")));
         assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+1")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+1")));
         assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+2")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+2")));
         assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-            item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+3")));
+            item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+3")));
     }
 
     @Test
@@ -298,9 +298,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 .filter(event -> event.getMessage().toString().contains(simpleAuthenticatorName)).iterator().next();
         final String authMsg = authEvent.getMessage().toString();
         assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User stephen with address .*? authenticated by %s", simpleAuthenticatorName)));
+                authMsg.matches(String.format("User stephen with address .+? authenticated by %s", simpleAuthenticatorName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .*? requested: 1-1")));
+                item.getMessage().toString().matches("User stephen with address .+? requested: 1-1")));
     }
 
     @Test
@@ -332,9 +332,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 .filter(event -> event.getMessage().toString().contains(simpleAuthenticatorName)).iterator().next();
         final String authMsg = authEvent.getMessage().toString();
         assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .*? authenticated by %s", username, simpleAuthenticatorName)));
+                authMsg.matches(String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User with address .*? requested: \\[\\[], \\[V\\(\\), count\\(\\)]]")));
+                item.getMessage().toString().matches("User .+? with address .+? requested: \\[\\[], \\[V\\(\\), count\\(\\)]]")));
     }
 
     @Test
@@ -367,21 +367,21 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 .filter(event -> event.getMessage().toString().contains("Krb5Authenticator")).iterator().next();
         final String authMsg = authEvent.getMessage().toString();
         assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .*? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
+                authMsg.matches(String.format("User %s with address .+? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+1")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+1")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+2")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+2")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .*? requested: 1\\+3")));
+                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+3")));
 
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches(String.format("User %s with address .*? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName2))));
+                item.getMessage().toString().matches(String.format("User %s with address .+? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName2))));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye2 with address .*? requested: 11\\+11")));
+                item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+11")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye2 with address .*? requested: 11\\+12")));
+                item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+12")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye2 with address .*? requested: 11\\+13")));
+                item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+13")));
     }
 }
