@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
+import io.netty.handler.codec.http.FullHttpMessage;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
@@ -33,23 +34,34 @@ import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
  */
 public abstract class AbstractAuthorizer implements Authorizer{
     /**
-     * Authorizes a user for a request. The method may return the {@link RequestMessage} unchanged, modify it or throw
+     * Authorizes a user for a request. The method may return the request unchanged, modify it or throw
      * an {@link AuthorizationException} if the user cannot be authorized for the request.
      *
      * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param msg RequestMessage to authorize the user for
+     * @param msg {@link RequestMessage} to authorize the user for
      */
     public RequestMessage authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException {
         switch (msg.getOp()) {
-            case Tokens.OPS_EVAL:
-                final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
-                return authorizeString(user, script, msg);
             case Tokens.OPS_BYTECODE:
                 final Bytecode bytecode = (Bytecode) msg.getArgs().get(Tokens.ARGS_GREMLIN);
                 return authorizeBytecode(user, bytecode, msg);
+            case Tokens.OPS_EVAL:
+                final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
+                return authorizeString(user, script, msg);
             default:
                 throw new AuthorizationException("This Authorizer only handles requests with OPS_BYTECODE or OPS_EVAL.");
         }
+    }
+
+    /**
+     * Authorizes a user for a gremlin bytecode request.
+     *
+     * @param user {@link AuthenticatedUser} to be used for the authorization
+     * @param bytecode {@link Bytecode} request extracted from the msg parameter
+     * @param msg {@link RequestMessage} to authorize the user for
+     */
+    protected RequestMessage authorizeBytecode(final AuthenticatedUser user, Bytecode bytecode, final RequestMessage msg) throws AuthorizationException {
+        throw new AuthorizationException("Configured authorizer does not support gremlin bytecode requests.");
     }
 
     /**
@@ -64,14 +76,13 @@ public abstract class AbstractAuthorizer implements Authorizer{
     }
 
     /**
-     * Authorizes a user for a gremlin bytecode request.
+     * Authorizes a user for a http evaluation request.
      *
      * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param bytecode {@link Bytecode} request extracted from the msg parameter
-     * @param msg RequestMessage to authorize the user for
+     * @param msg {@link FullHttpMessage} to authorize the user for
      */
-    protected RequestMessage authorizeBytecode(final AuthenticatedUser user, Bytecode bytecode, final RequestMessage msg) throws AuthorizationException {
-        throw new AuthorizationException("Configured authorizer does not support gremlin bytecode requests.");
+    public FullHttpMessage authorize(final AuthenticatedUser user, final FullHttpMessage msg) throws AuthorizationException {
+        throw new AuthorizationException("Configured authorizer does not support http requests.");
     }
 
     /**

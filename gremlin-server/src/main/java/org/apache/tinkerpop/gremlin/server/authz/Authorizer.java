@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
+import io.netty.handler.codec.http.FullHttpMessage;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 
@@ -36,11 +37,20 @@ public interface Authorizer {
     public void setup(final Map<String,Object> config) throws AuthorizationException;
 
     /**
-     * Checks whether a user is authorized to have a request from a gremlin client answered and raises an
+     * Checks whether a user is authorized to have a websockets request from a gremlin client answered and raises an
      * {@link AuthorizationException} if this is not the case.
      *
      * @param user {@link AuthenticatedUser} Result from the {@link org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser}, to be used for the authorization.
-     * @param msg RequestMessage to authorize the user for.
+     * @param msg {@link RequestMessage} to authorize the user for.
      */
     public RequestMessage authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException;
+
+    /**
+     * Checks whether a user is authorized to have a http request from a gremlin client answered and raises an
+     * {@link AuthorizationException} if this is not the case.
+     *
+     * @param user {@link AuthenticatedUser} Result from the {@link org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser}, to be used for the authorization.
+     * @param msg {@link FullHttpMessage} to authorize the user for.
+     */
+    public FullHttpMessage authorize(final AuthenticatedUser user, final FullHttpMessage msg) throws AuthorizationException;
 }

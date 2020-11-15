@@ -18,6 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -26,15 +32,25 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
+import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Objects;
 
+import static org.apache.log4j.Level.INFO;
+import static org.apache.tinkerpop.gremlin.server.GremlinServer.AUDIT_LOGGER_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -45,31 +61,62 @@ import static org.junit.Assert.fail;
  */
 public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
+    private Log4jRecordingAppender recordingAppender;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Base64.Encoder encoder = Base64.getUrlEncoder();
+
+    @Override
+    public void setUp() throws Exception {
+        recordingAppender = new Log4jRecordingAppender();
+        final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.addAppender(recordingAppender);
+        super.setUp();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.removeAppender(recordingAppender);
+        super.tearDown();
+    }
+
     /**
      * Configure Gremlin Server settings per test.
      */
     @Override
     public Settings overrideSettings(final Settings settings) {
+        final Settings.SslSettings sslConfig = new Settings.SslSettings();
+        sslConfig.enabled = false;
+
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         authSettings.config = new HashMap<>();
+        authSettings.authenticator = SimpleAuthenticator.class.getName();
+        authSettings.config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
+
         final Settings.AuthorizationSettings authzSettings = new Settings.AuthorizationSettings();
         authzSettings.authorizer = AllowListAuthorizer.class.getName();
-
-        if (name.getMethodName().contains("AllowAllAuthenticator")) {
-            authSettings.authenticator = AllowAllAuthenticator.class.getName();
-        } else {
-            authSettings.authenticator = SimpleAuthenticator.class.getName();
-            // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
-            authSettings.config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
-        }
-
         authzSettings.config = new HashMap<>();
         final String yamlName = "org/apache/tinkerpop/gremlin/server/allow-list.yaml";
         String file = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlName)).getFile();
         authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, file);
 
+        settings.ssl = sslConfig;
         settings.authentication = authSettings;
         settings.authorization = authzSettings;
+        settings.enableAuditLog = true;
+
+        final String nameOfTest = name.getMethodName();
+        switch (nameOfTest) {
+            case "shouldFailBytecodeRequestWithAllowAllAuthenticator":
+            case "shouldFailStringRequestWithAllowAllAuthenticator":
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                break;
+            case "shouldAuthorizeWithHttpTransport":
+            case "shouldFailAuthorizeWithHttpTransport":
+                settings.channelizer = HttpChannelizer.class.getName();
+                break;
+        }
         return settings;
     }
 
@@ -95,7 +142,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     }
 
     @Test
-    public void shouldFailBytecodeRequestWithLambda() {
+    public void shouldFailBytecodeRequestWithLambda() throws Exception{
         final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
         try {
             final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
@@ -106,6 +153,14 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(ResponseStatusCode.UNAUTHORIZED, re.getResponseStatusCode());
             assertEquals("Failed to authorize: User not authorized for bytecode requests with lambdas on [gmodern].", re.getMessage());
+
+            // wait for logger to flush - (don't think there is a way to detect this)
+            stopServer();
+            Thread.sleep(1000);
+
+            assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
+                    "User stephen with address .+? attempted an unauthorized request for bytecode operation: " +
+                            "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]"));
         } finally {
             cluster.close();
         }
@@ -126,7 +181,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     }
 
     @Test
-    public void shouldFailStringRequestWithGroovyScript() {
+    public void shouldFailStringRequestWithGroovyScript() throws Exception {
         final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
@@ -137,6 +192,13 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(ResponseStatusCode.UNAUTHORIZED, re.getResponseStatusCode());
             assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
+
+            // wait for logger to flush - (don't think there is a way to detect this)
+            stopServer();
+            Thread.sleep(1000);
+
+            assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
+                    "User stephen with address .+? attempted an unauthorized request for eval operation: 1\\+1"));
         } finally {
             cluster.close();
         }
@@ -190,6 +252,32 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
         } finally {
             cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldAuthorizeWithHttpTransport() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).intValue());
+        }
+    }
+
+    @Test
+    public void shouldFailAuthorizeWithHttpTransport() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-2"));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
         }
     }
 }

@@ -35,19 +35,19 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- *  A generic authorization handler that allows the {@link Authorizer} to be plugged into it.
+ *  An authorization handler for the websockets channel that allows the {@link Authorizer} to be plugged into it.
  *
  * @author Marc de Lignie
  */
 @ChannelHandler.Sharable
-public class AuthorizationHandler extends ChannelInboundHandlerAdapter {
-    private static final Logger logger = LoggerFactory.getLogger(AuthorizationHandler.class);
+public class WebSocketAuthorizationHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketAuthorizationHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
     private AuthenticatedUser user;
     private final Authorizer authorizer;
 
-    public AuthorizationHandler(Authorizer authorizer) {
+    public WebSocketAuthorizationHandler(Authorizer authorizer) {
         this.authorizer = authorizer;
     }
 

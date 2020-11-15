@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.handler.AuthorizationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.WebSocketAuthorizationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinCloseRequestDecoder;
@@ -75,7 +75,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
             null : instantiateAuthenticationHandler(settings);
         if (authorizer != null) {
-            authorizationHandler = new AuthorizationHandler(authorizer);
+            authorizationHandler = new WebSocketAuthorizationHandler(authorizer);
         }
     }
 

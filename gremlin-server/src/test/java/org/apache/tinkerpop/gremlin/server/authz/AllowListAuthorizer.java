@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
+import io.netty.handler.codec.http.FullHttpMessage;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -80,21 +81,6 @@ public class AllowListAuthorizer extends AbstractAuthorizer {
     }
 
     /**
-     * Authorizes a user for a string-based evaluation request. The request is rejected if the user does not have the "sandbox" grant.
-     *
-     * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param script String with an arbitratry succession of groovy and gremlin-groovy statements
-     * @param msg {@link RequestMessage} to authorize the user for
-     */
-    @Override
-    protected RequestMessage authorizeString(final AuthenticatedUser user, final String script, final RequestMessage msg) throws AuthorizationException {
-        if (!usernamesSandbox.contains(user.getName())) {
-            throw new AuthorizationException(REJECT_STRING);
-        }
-        return msg;
-    }
-
-    /**
      * Authorizes a user for a gremlin bytecode request. The request is rejected if it contains aliases for {@link TraversalSource}
      * names for which the user has no permission. In addition the request is rejected if it contains
      * lambdas and the user has no "sandbox" permission.
@@ -124,6 +110,34 @@ public class AllowListAuthorizer extends AbstractAuthorizer {
         }
         if ((!userHasTraversalSourceGrant || runsLambda(bytecode) || runsVertexProgram(bytecode)) && !userHasSandboxGrant) {
             throw new AuthorizationException(String.format(rejectMessage, aliases.values()));
+        }
+        return msg;
+    }
+
+    /**
+     * Authorizes a user for a string-based evaluation request. The request is rejected if the user does not have the "sandbox" grant.
+     *
+     * @param user {@link AuthenticatedUser} to be used for the authorization
+     * @param script String with an arbitratry succession of groovy and gremlin-groovy statements
+     * @param msg {@link RequestMessage} to authorize the user for
+     */
+    @Override
+    protected RequestMessage authorizeString(final AuthenticatedUser user, final String script, final RequestMessage msg) throws AuthorizationException {
+        if (!usernamesSandbox.contains(user.getName())) {
+            throw new AuthorizationException(REJECT_STRING);
+        }
+        return msg;
+    }
+
+    /**
+     * Authorizes a user for a http evaluation request.
+     *
+     * @param user {@link AuthenticatedUser} to be used for the authorization
+     * @param msg {@link RequestMessage} to authorize the user for
+     */
+    public FullHttpMessage authorize(final AuthenticatedUser user, final FullHttpMessage msg) throws AuthorizationException {
+        if (!usernamesSandbox.contains(user.getName())) {
+            throw new AuthorizationException(REJECT_STRING);
         }
         return msg;
     }

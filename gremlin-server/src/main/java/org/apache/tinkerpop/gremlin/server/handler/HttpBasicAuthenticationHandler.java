@@ -22,7 +22,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpMessage;
-import io.netty.util.AttributeMap;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -106,7 +105,6 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
                 final AuthenticatedUser user = authenticator.authenticate(credentials);
                 ctx.channel().attr(StateKey.AUTHENTICATED_USER).set(user);
                 ctx.fireChannelRead(request);
-
                 // User name logged with the remote socket address and authenticator classname for audit logging
                 if (settings.enableAuditLog || settings.authentication.enableAuditLog) {
                     final String[] authClassParts = authenticator.getClass().toString().split("[.]");

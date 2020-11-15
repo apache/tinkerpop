@@ -310,7 +310,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
         final Cluster cluster = TestClientFactory.build().credentials(username, password)
                 .addContactPoint(kdcServer.gremlinHostname).create();
-        final Client client = cluster.connect();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().
                 withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
 

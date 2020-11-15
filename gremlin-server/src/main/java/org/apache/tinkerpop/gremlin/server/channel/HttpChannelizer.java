@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.handler.AuthorizationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthorizationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -74,8 +74,9 @@ public class HttpChannelizer extends AbstractChannelizer {
             if (authenticationHandler != null)
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
         }
+
         if (authorizer != null) {
-            final ChannelInboundHandlerAdapter authorizationHandler = new AuthorizationHandler(authorizer);
+            final ChannelInboundHandlerAdapter authorizationHandler = new HttpBasicAuthorizationHandler(authorizer);
             pipeline.addLast(PIPELINE_AUTHORIZER, authorizationHandler);
         }
 
