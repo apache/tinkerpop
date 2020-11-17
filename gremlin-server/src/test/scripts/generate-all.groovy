@@ -59,11 +59,18 @@ globals << [hook : [
   }
 ] as LifeCycleHook]
 
+// discovered that unless the GraphTraversalSource.metaclass gets a method added to it
+// directly in this script then all the metaprogramming done in GremlinLoader will
+// simply be ignored and the following lines will fail. however, this situation only
+// applies when this init script for Gremlin Server is executed by way of the
+// gmavenplus-plugin. normal starts of Gremlin Server do not see this problem. spooky!
+GraphTraversalSource.metaClass.hack << { return null }
+
 // add default TraversalSource instances for each graph instance
-globals << [gclassic : classic.traversal().withStrategies(ReferenceElementStrategy.instance())]
-globals << [gmodern : modern.traversal().withStrategies(ReferenceElementStrategy.instance())]
-globals << [g : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]
-globals << [gcrew : crew.traversal().withStrategies(ReferenceElementStrategy.instance())]
-globals << [ggraph : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]
-globals << [ggrateful : grateful.traversal().withStrategies(ReferenceElementStrategy.instance())]
-globals << [gsink : sink.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [gclassic : traversal().withEmbedded(classic).withStrategies(ReferenceElementStrategy)]
+globals << [gmodern : traversal().withEmbedded(modern).withStrategies(ReferenceElementStrategy)]
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
+globals << [gcrew : traversal().withEmbedded(crew).withStrategies(ReferenceElementStrategy)]
+globals << [ggraph : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
+globals << [ggrateful : traversal().withEmbedded(grateful).withStrategies(ReferenceElementStrategy)]
+globals << [gsink : traversal().withEmbedded(sink).withStrategies(ReferenceElementStrategy)]

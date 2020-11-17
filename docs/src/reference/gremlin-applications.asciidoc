@@ -1849,7 +1849,7 @@ like this:
 
 [source,groovy]
 ----
-globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy.instance())]
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
 ----
 
 This configuration is global to Gremlin Server and therefore all methods of connection will always return elements
