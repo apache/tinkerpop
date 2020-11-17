@@ -62,7 +62,7 @@ public class GroovyTranslatorTest {
     private static final Translator.ScriptTranslator translator = GroovyTranslator.of("g");
 
     @Test
-    public void shouldTranslateStrategies() throws Exception {
+    public void shouldTranslateStrategies() {
         assertEquals("g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(checkAdjacentVertices: false, vertices: __.hasLabel(\"person\"))).V().has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
@@ -73,19 +73,19 @@ public class GroovyTranslatorTest {
     public void shouldTranslateConfusingSacks() {
         final Traversal<Vertex,Double> tConstantUnary = g.withSack(1.0, Lambda.unaryOperator("it + 1")).V().sack();
         final String scriptConstantUnary = translator.translate(tConstantUnary);
-        assertEquals("g.withSack(1.0d, (java.util.function.UnaryOperator) {it + 1}).V().sack()", scriptConstantUnary);
+        assertEquals("g.withSack(1.0d,{it + 1}).V().sack()", scriptConstantUnary);
 
         final Traversal<Vertex,Double> tSupplierUnary = g.withSack(Lambda.supplier("1.0d"), Lambda.<Double>unaryOperator("it + 1")).V().sack();
         final String scriptSupplierUnary = translator.translate(tSupplierUnary);
-        assertEquals("g.withSack((java.util.function.Supplier) {1.0d}, (java.util.function.UnaryOperator) {it + 1}).V().sack()", scriptSupplierUnary);
+        assertEquals("g.withSack({1.0d},{it + 1}).V().sack()", scriptSupplierUnary);
 
         final Traversal<Vertex,Double> tConstantBinary = g.withSack(1.0, Lambda.binaryOperator("x,y -> x + y + 1")).V().sack();
         final String scriptConstantBinary = translator.translate(tConstantBinary);
-        assertEquals("g.withSack(1.0d, (java.util.function.BinaryOperator) {x,y -> x + y + 1}).V().sack()", scriptConstantBinary);
+        assertEquals("g.withSack(1.0d,{x,y -> x + y + 1}).V().sack()", scriptConstantBinary);
 
         final Traversal<Vertex,Double> tSupplierBinary = g.withSack(Lambda.supplier("1.0d"), Lambda.<Double>binaryOperator("x,y -> x + y + 1")).V().sack();
         final String scriptSupplierBinary = translator.translate(tSupplierBinary);
-        assertEquals("g.withSack((java.util.function.Supplier) {1.0d}, (java.util.function.BinaryOperator) {x,y -> x + y + 1}).V().sack()", scriptSupplierBinary);
+        assertEquals("g.withSack({1.0d},{x,y -> x + y + 1}).V().sack()", scriptSupplierBinary);
     }
 
     @Test

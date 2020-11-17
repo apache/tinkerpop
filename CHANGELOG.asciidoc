@@ -28,6 +28,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped Netty 4.1.52.
 * Provided a more concise syntax for constructing strategies in Groovy.
 * Aligned `CoreImports` with `GroovyTranslator` to generate more succinct syntax.
+* Improved `gremlin-groovy` understanding of `withSack()` overloads to avoid forced casts.
 * Moved `Translator` instances to `gremlin-core`.
 * Added `CheckedGraphManager` to prevent Gremlin Server from starting if there are no graphs configured.
 * Fixed bug in bytecode `Bindings` where calling `of()` prior to calling a child traversal in the same parent would cause the initial binding to be lost.
