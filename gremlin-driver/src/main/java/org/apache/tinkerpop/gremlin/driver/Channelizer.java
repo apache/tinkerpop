@@ -258,7 +258,8 @@ public interface Channelizer extends ChannelHandler {
             } catch (Exception ex) {
                 String errMsg = "";
                 if (ex instanceof TimeoutException) {
-                    errMsg = "Timed out while waiting to complete the connection setup";
+                    errMsg = "Timed out while waiting to complete the connection setup. Consider increasing the " +
+                            "WebSocket handshake timeout duration.";
                 } else {
                     errMsg = "Could not complete connection setup to the server. Ensure that SSL is correctly " +
                             "configured at both the client and the server. Ensure that client WebSocket handshake " +

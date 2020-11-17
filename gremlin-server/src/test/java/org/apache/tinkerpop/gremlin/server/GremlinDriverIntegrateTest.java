@@ -478,11 +478,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final Client client = cluster.connect();
-            try {
-                client.init();
-            } catch (Exception ex) {
-                //
-            }
+            client.init();
 
             // the first host is dead on init.  request should succeed on localhost
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
