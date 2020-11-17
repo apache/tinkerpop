@@ -347,6 +347,22 @@ public class GremlinGroovyScriptEngineOverGraphTest {
         assertEquals(utf8Name, eval.next());
     }
 
+    @Test
+    public void shouldHandleSacksConfusingToGroovy() throws Exception {
+        final Graph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
+        engine.put("g", g);
+        List<Object> list = (List<Object>) engine.eval("g.withSack(1.0d,{it + 1}).V().sack().toList()");
+        assertEquals(6, list.size());
+        list = (List<Object>) engine.eval("g.withSack({1.0d},{it + 1}).V().sack().toList()");
+        assertEquals(6, list.size());
+        list = (List<Object>) engine.eval("g.withSack(1.0d,{x,y -> x + y + 1}).V().sack().toList()");
+        assertEquals(6, list.size());
+        list = (List<Object>) engine.eval("g.withSack({1.0d},{x,y -> x + y + 1}).V().sack().toList()");
+        assertEquals(6, list.size());
+    }
+
     private Object convertToVertexId(final Graph graph, final String vertexName) {
         return convertToVertex(graph, vertexName).id();
     }

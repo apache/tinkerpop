@@ -56,8 +56,11 @@ class StepLoader {
             return ((TraversalSource) delegate).withSack(closure as Supplier);
         }
 
-        TraversalSource.metaClass.withSack = { final Closure closure, final Closure splitOrMergeOperator ->
-            return ((TraversalSource) delegate).withSack(closure as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
+        TraversalSource.metaClass.withSack = { final Object closureOrConstant, final Closure splitOrMergeOperator ->
+            if (closureOrConstant instanceof Closure)
+                return ((TraversalSource) delegate).withSack(closureOrConstant as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
+            else
+                return ((TraversalSource) delegate).withSack((Object) closureOrConstant, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
         }
 
         TraversalSource.metaClass.withSack = {

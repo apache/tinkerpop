@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -43,15 +45,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -323,34 +323,13 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                 } else {
                     script.append(".").append(methodName).append("(");
 
-                    // have to special case withSack() for Groovy because UnaryOperator and BinaryOperator signatures
-                    // make it impossible for the interpreter to figure out which function to call. specifically we need
-                    // to discern between:
-                    //     withSack(A initialValue, UnaryOperator<A> splitOperator)
-                    //     withSack(A initialValue, BinaryOperator<A> splitOperator)
-                    // and:
-                    //     withSack(Supplier<A> initialValue, UnaryOperator<A> mergeOperator)
-                    //     withSack(Supplier<A> initialValue, BinaryOperator<A> mergeOperator)
-                    if (methodName.equals(TraversalSource.Symbols.withSack) &&
-                            instruction.getArguments().length == 2 && instruction.getArguments()[1] instanceof Lambda) {
-                        final String castFirstArgTo = instruction.getArguments()[0] instanceof Lambda ?
-                                Supplier.class.getName() : "";
-                        final Lambda secondArg = (Lambda) instruction.getArguments()[1];
-                        final String castSecondArgTo = secondArg.getLambdaArguments() == 1 ? UnaryOperator.class.getName() :
-                                BinaryOperator.class.getName();
-                        if (!castFirstArgTo.isEmpty())
-                            script.append(String.format("(%s) ", castFirstArgTo));
-                        convertToScript(instruction.getArguments()[0]);
-                        script.append(", (").append(castSecondArgTo).append(") ");
-                        convertToScript(instruction.getArguments()[1]);
-                        script.append(",");
-                    } else {
-                        for (final Object object : instruction.getArguments()) {
-                            convertToScript(object);
-                            script.append(",");
-                        }
+                    final Iterator<Object> itty = Arrays.stream(instruction.getArguments()).iterator();
+                    while(itty.hasNext()) {
+                        convertToScript(itty.next());
+                        if (itty.hasNext()) script.append(",");
                     }
-                    script.setCharAtEnd(')');
+
+                    script.append(")");
                 }
             }
             return script;
