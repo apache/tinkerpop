@@ -18,5 +18,5 @@
  */
 
 def globals = [:]
-globals << [g : graph.traversal().withStrategies(ReadOnlyStrategy.instance())]
-globals << [g1 : graph.traversal()]
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReadOnlyStrategy)]
+globals << [g1 : traversal().withEmbedded(graph)]

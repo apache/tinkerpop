@@ -50,4 +50,4 @@ globals << [hook : [
 // in 3.4.0 to make all Gremlin Server results consistent across all protocols and
 // serialization formats aligning it with TinkerPop recommended practices for writing
 // Gremlin.
-globals << [g : graph.traversal().withComputer(SparkGraphComputer).withStrategies(ReferenceElementStrategy.instance())]
+globals << [g : traversal().withEmbedded(graph).withComputer(SparkGraphComputer).withStrategies(ReferenceElementStrategy)]
