@@ -64,7 +64,7 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
 
     @Override
     public void processAllStarts() {
-        while (this.starts.hasNext() && (this.maxBarrierSize == Integer.MAX_VALUE || this.barrier.size() < this.maxBarrierSize)) {
+        while ((this.maxBarrierSize == Integer.MAX_VALUE || this.barrier.size() < this.maxBarrierSize) && this.starts.hasNext()) {
             final Traverser.Admin<S> traverser = this.starts.next();
             traverser.setStepId(this.getNextStep().getId()); // when barrier is reloaded, the traversers should be at the next step
             this.barrier.add(traverser);
