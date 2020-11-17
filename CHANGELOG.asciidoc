@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Aligned `CoreImports` with `GroovyTranslator` to generate more succinct syntax.
 * Improved `gremlin-groovy` understanding of `withSack()` overloads to avoid forced casts.
 * Moved `Translator` instances to `gremlin-core`.
+* Prevented barriers from over-reaching their limits by one.
 * Added `CheckedGraphManager` to prevent Gremlin Server from starting if there are no graphs configured.
 * Fixed bug in bytecode `Bindings` where calling `of()` prior to calling a child traversal in the same parent would cause the initial binding to be lost.
 * Established a default read and write timeout for the `TornadoTransport` in Python, allowing it to be configurable.
