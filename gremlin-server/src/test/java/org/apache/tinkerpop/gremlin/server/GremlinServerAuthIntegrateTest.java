@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.ietf.jgss.GSSException;
@@ -88,8 +89,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             fail("This should not succeed as the client did not enable SSL");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(TimeoutException.class, root.getClass());
-            assertThat(root.getMessage(), startsWith("Timed out while waiting for an available host"));
+            assertEquals(NoHostAvailableException.class, root.getClass());
         } finally {
             cluster.close();
         }

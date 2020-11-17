@@ -58,6 +58,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -265,19 +266,19 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},
                 new Object[] {"EmptyMetrics", new MutableMetrics("idEmpty", "nameEmpty"), (Consumer<Metrics>) m -> {
-                    assertThat(m, new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
+                    Assert.assertTrue(new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")).matches(m));
                 }},
                 new Object[] {"Metrics", metrics, (Consumer<Metrics>) m -> {
-                    assertThat(m, new ReflectionEquals(metrics, "nested", "counts"));
+                    Assert.assertTrue(new ReflectionEquals(metrics, "nested", "counts").matches(m));
                     assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
-                    assertThat(m.getNested(), new ReflectionEquals(metrics.getNested()));
+                    Assert.assertTrue(new ReflectionEquals(metrics.getNested()).matches(m.getNested()));
                 }},
                 new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<TraversalMetrics>) m -> {
-                    assertThat(m, new ReflectionEquals(emptyTraversalMetrics));
+                    Assert.assertTrue(new ReflectionEquals(emptyTraversalMetrics).matches(m));
                 }},
                 new Object[] {"TraversalMetrics", traversalMetrics, (Consumer<TraversalMetrics>) m -> {
                     assertEquals(m.toString(), traversalMetrics.toString());
-                    assertThat(m, new ReflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics"));
+                    Assert.assertTrue(new ReflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics").matches(m));
                 }},
 
                 // collections

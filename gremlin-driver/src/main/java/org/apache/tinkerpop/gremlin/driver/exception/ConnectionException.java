@@ -23,9 +23,11 @@ import java.net.URI;
 import java.util.Optional;
 
 /**
+ * This exception signifies network connection failure.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ConnectionException extends Exception {
+public class ConnectionException extends RuntimeException {
     private URI uri;
     private InetSocketAddress address;
 
@@ -33,6 +35,12 @@ public class ConnectionException extends Exception {
         super(message);
         this.address = addy;
         this.uri = uri;
+    }
+
+    public ConnectionException(final URI uri, final Throwable cause) {
+        super(cause);
+        this.uri = uri;
+        this.address = null;
     }
 
     public ConnectionException(final URI uri, final String message, final Throwable cause) {

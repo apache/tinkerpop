@@ -18,25 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -85,7 +83,7 @@ final class ConnectionPool {
         this.host = host;
         this.client = client;
         this.cluster = client.cluster;
-        poolLabel = String.format("Connection Pool {host=%s}", host);
+        poolLabel = "Connection Pool {host=" + host + "}";
 
         final Settings.ConnectionPoolSettings settings = settings();
         this.minPoolSize = overrideMinPoolSize.orElse(settings.minSize);
@@ -97,15 +95,38 @@ final class ConnectionPool {
         this.connections = new CopyOnWriteArrayList<>();
 
         try {
+            final List<CompletableFuture<Void>> connCreationFutures = new ArrayList<>();
             for (int i = 0; i < minPoolSize; i++) {
-                this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+                connCreationFutures.add(CompletableFuture.runAsync(() -> {
+                    try {
+                        this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+                    } catch (ConnectionException e) {
+                        throw new CompletionException(e);
+                    }
+                }, cluster.executor()));
             }
 
-        } catch (ConnectionException ce) {
-            // ok if we don't get it initialized here - when a request is attempted in a connection from the
-            // pool it will try to create new connections as needed.
-            logger.info("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size(), ce);
-            considerHostUnavailable();
+            CompletableFuture.allOf(connCreationFutures.toArray(new CompletableFuture[0])).join();
+        } catch (CancellationException ce) {
+            logger.warn("Initialization of connections cancelled for {}", getPoolInfo(), ce);
+            throw ce;
+        } catch (CompletionException ce) {
+            // Some connections might have been initialized. Close the connection pool gracefully to close them.
+            this.closeAsync();
+
+            final String errMsg = "Could not initialize " + minPoolSize + " (minPoolSize) connections in pool." +
+                    " Successful connections=" + this.connections.size() +
+                    ". Closing the connection pool.";
+
+
+            Throwable cause = null;
+            Throwable result = ce;
+
+            if (null != (cause = result.getCause())) {
+                result = cause;
+            }
+
+            throw new CompletionException(errMsg, result);
         }
 
         this.open = new AtomicInteger(connections.size());
@@ -316,7 +337,7 @@ final class ConnectionPool {
         try {
             connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
         } catch (ConnectionException ce) {
-            logger.debug("Connections were under max, but there was an error creating the connection.", ce);
+            logger.error("Connections were under max, but there was an error creating the connection.", ce);
             open.decrementAndGet();
             considerHostUnavailable();
             return false;
@@ -350,7 +371,7 @@ final class ConnectionPool {
 
         // only close the connection for good once it is done being borrowed or when it is dead
         if (connection.isDead() || connection.borrowed.get() == 0) {
-            if(bin.remove(connection)) {
+            if (bin.remove(connection)) {
                 connection.closeAsync();
                 // TODO: Log the following message on completion of the future returned by closeAsync.
                 logger.debug("{} destroyed", connection.getConnectionInfo());
@@ -396,7 +417,7 @@ final class ConnectionPool {
             logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
-        logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
+        logger.error("Timed-out ({} {}) waiting for connection on {} - possibly unavailable", timeout, unit, host);
 
         // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
         // either way supply a function to reconnect
