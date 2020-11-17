@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 
 import java.util.Collections;
 import java.util.Optional;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -68,7 +67,7 @@ public class ClientTest {
     public void shouldThrowErrorWhenConnPoolInitFailsForClusteredClient() throws Exception {
         Client.ClusteredClient client = new Client.ClusteredClient(cluster, settings);
         whenNew(ConnectionPool.class).withAnyArguments().thenThrow(new RuntimeException("cannot initialize client"));
-        client.initializeImplementation();
+        client.init();
     }
 
     @Test(expected = NoHostAvailableException.class)
@@ -77,7 +76,7 @@ public class ClientTest {
         when(settings.getSession()).thenReturn(Optional.of(sessionSettings));
         Client.SessionedClient client = new Client.SessionedClient(cluster, settings);
         whenNew(ConnectionPool.class).withAnyArguments().thenThrow(new RuntimeException("cannot initialize client"));
-        client.initializeImplementation();
+        client.init();
     }
 
 }
