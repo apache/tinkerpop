@@ -332,8 +332,8 @@ function parseMapValue(value) {
   return map;
 }
 
-function toLambda() {
-  throw new IgnoreError(ignoreReason.lambdaNotSupported);
+function toLambda(stringLambda) {
+  return () => [stringLambda, "gremlin-groovy"];
 }
 
 /**

@@ -98,6 +98,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified the text of `profile()` output to hide step instances injected for purpose of collecting metrics.
 * Bumped to Jackson 2.11.x.
 * Bumped Netty 4.1.52.
+* Added lambda support for `gremlin-javascript`.
 * Provided a more concise syntax for constructing strategies in Groovy.
 * Aligned `CoreImports` with `GroovyTranslator` to generate more succinct syntax.
 * Improved `gremlin-groovy` understanding of `withSack()` overloads to avoid forced casts.
