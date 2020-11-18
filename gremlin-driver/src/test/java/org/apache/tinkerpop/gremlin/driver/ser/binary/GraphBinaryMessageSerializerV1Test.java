@@ -55,7 +55,7 @@ public class GraphBinaryMessageSerializerV1Test {
         final int mimeLen = buffer.readByte();
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
-        Assert.assertTrue(new ReflectionEquals(deserialized).matches(request));
+        assertThat(request, new ReflectionEquals(deserialized));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class GraphBinaryMessageSerializerV1Test {
         final int mimeLen = buffer.readByte();
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
-        Assert.assertTrue(new ReflectionEquals(deserialized).matches(request));
+        assertThat(request, new ReflectionEquals(deserialized));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class GraphBinaryMessageSerializerV1Test {
         final int mimeLen = buffer.readByte();
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
-        Assert.assertTrue(new ReflectionEquals(deserialized).matches(request));
+        assertThat(request, new ReflectionEquals(deserialized));
     }
 
     @Test

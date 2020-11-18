@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
@@ -44,6 +43,7 @@ import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.driver.ser.AbstractMessageSerializer.TOKEN_IO_REGISTRIES;
 import static org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1.TOKEN_CUSTOM;
+import static org.junit.Assert.assertThat;
 
 public class SamplePersonSerializerTest {
 
@@ -93,7 +93,7 @@ public class SamplePersonSerializerTest {
             writer.writeValue(person, buffer, nullable);
             final SamplePerson actual = reader.readValue(buffer, SamplePerson.class, nullable);
 
-            Assert.assertTrue(new ReflectionEquals(person).matches(actual));
+            assertThat(actual, new ReflectionEquals(person));
             buffer.release();
         }
     }
@@ -109,7 +109,7 @@ public class SamplePersonSerializerTest {
 
         final SamplePerson actual = (SamplePerson) deserialized.getResult().getData();
 
-        Assert.assertTrue(new ReflectionEquals(person).matches(actual));
+        assertThat(actual, new ReflectionEquals(person));
     }
 
     public static class CustomIoRegistry extends AbstractIoRegistry {
