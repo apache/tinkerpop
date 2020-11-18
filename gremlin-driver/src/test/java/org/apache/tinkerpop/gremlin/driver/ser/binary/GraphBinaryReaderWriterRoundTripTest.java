@@ -58,7 +58,6 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -269,9 +268,9 @@ public class GraphBinaryReaderWriterRoundTripTest {
                     assertThat(m, new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
                 }},
                 new Object[] {"Metrics", metrics, (Consumer<Metrics>) m -> {
-                    Assert.assertTrue(new ReflectionEquals(metrics, "nested", "counts").matches(m));
+                    assertThat(m, new ReflectionEquals(metrics, "nested", "counts"));
                     assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
-                    assertThat(m, new ReflectionEquals(metrics.getNested()));
+                    assertThat(m.getNested(), new ReflectionEquals(metrics.getNested()));
                 }},
                 new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<TraversalMetrics>) m -> {
                     assertThat(m, new ReflectionEquals(emptyTraversalMetrics));
