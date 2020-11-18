@@ -882,6 +882,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             try {
                 client1.submit("1+1").all().join();
+                fail("Expecting an exception because the server is shut down.");
             } catch (Exception ex) {
                 // ignore the exception
             }
