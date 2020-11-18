@@ -266,19 +266,19 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},
                 new Object[] {"EmptyMetrics", new MutableMetrics("idEmpty", "nameEmpty"), (Consumer<Metrics>) m -> {
-                    Assert.assertTrue(new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")).matches(m));
+                    assertThat(m, new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
                 }},
                 new Object[] {"Metrics", metrics, (Consumer<Metrics>) m -> {
                     Assert.assertTrue(new ReflectionEquals(metrics, "nested", "counts").matches(m));
                     assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
-                    Assert.assertTrue(new ReflectionEquals(metrics.getNested()).matches(m.getNested()));
+                    assertThat(m, new ReflectionEquals(metrics.getNested()));
                 }},
                 new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<TraversalMetrics>) m -> {
-                    Assert.assertTrue(new ReflectionEquals(emptyTraversalMetrics).matches(m));
+                    assertThat(m, new ReflectionEquals(emptyTraversalMetrics));
                 }},
                 new Object[] {"TraversalMetrics", traversalMetrics, (Consumer<TraversalMetrics>) m -> {
                     assertEquals(m.toString(), traversalMetrics.toString());
-                    Assert.assertTrue(new ReflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics").matches(m));
+                    assertThat(m, new ReflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics"));
                 }},
 
                 // collections
