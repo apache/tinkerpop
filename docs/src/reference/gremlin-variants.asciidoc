@@ -805,11 +805,11 @@ re-construction machine-side.
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python,
-a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg
-callable that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be
-changed via `gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language
-is encoded such that the remote connection host can infer which translator and ultimate execution engine to use.
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python, a Gremlin lambda should
+be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
+traversal. The default lambda language is `gremlin-python` and can be changed via
+`gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator and ultimate execution engine to use.
 
 [gremlin-python,modern]
 ----
@@ -1483,6 +1483,30 @@ const { P: { gt } } = gremlin.process;
 const { order: { desc } } = gremlin.process;
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
+
+[[gremlin-javascript-lambda]]
+=== The Lambda Solution
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Javascript, a Gremlin lambda
+should be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
+traversal. The returned lambda should be written as a Gremlin-Groovy string. When the lambda is represented in
+`Bytecode` its language is encoded such that the remote connection host can infer which translator and ultimate
+execution engine to use.
+
+[source,javascript]
+----
+g.V().out().
+  map(() => "it.get().value('name').length()").
+  sum().
+  toList().then(total => console.log(total))
+----
+
+TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
+instance created, it will help to fully define the closure in the lambda expression - so rather than
+`() => "it.get().value('name')"`, prefer `() => "x -> x.get().value('name')"`.
+
+WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
 
 [[gremlin-javascript-scripts]]
 === Submitting Scripts

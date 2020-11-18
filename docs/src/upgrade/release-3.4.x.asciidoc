@@ -175,6 +175,18 @@ requests.) As a final note, `DefaultGraphManager` is no longer `final` and thus 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2436[TINKERPOP-2436]
 
+==== Lambdas in gremlin-javascript
+
+Lambda scripts can now be utilized in `gremlin-javascript` and follows roughly the same pattern as Python does:
+
+[source,javascript]
+----
+g.V().has('person','name','marko').
+  values('name').map(() => "it.get()[1]")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2001[TINKERPOP-2001]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

@@ -240,4 +240,16 @@ describe('GraphSONWriter', function () {
     assert.strictEqual(writer.write(P.within(["marko","josh"])), expected);
     assert.strictEqual(writer.write(P.within("marko","josh")), expected);
   });
+  it('should write 1-arg lambda values', function () {
+    const writer = new GraphSONWriter();
+    assert.strictEqual(writer.write(() => 'it.get()'),
+        '{"@type":"g:Lambda","@value":{"arguments":-1,"language":"gremlin-groovy","script":"it.get()"}}');
+    assert.strictEqual(writer.write(() => 'x -> x.get()'),
+        '{"@type":"g:Lambda","@value":{"arguments":1,"language":"gremlin-groovy","script":"x -> x.get()"}}');
+  });
+  it('should write 2-arg lambda values', function () {
+    const writer = new GraphSONWriter();
+    assert.strictEqual(writer.write(() => '(x,y) -> x.get() + y'),
+        '{"@type":"g:Lambda","@value":{"arguments":2,"language":"gremlin-groovy","script":"(x,y) -> x.get() + y"}}');
+  });
 });
