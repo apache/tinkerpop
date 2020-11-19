@@ -52,6 +52,9 @@ class DriverRemoteConnection extends RemoteConnection {
   constructor(url, options) {
     super(url);
     this._client = new Client(url, options);
+    this.addListener('socketError',  (err) => {
+        throw err;
+    });
   }
 
   /** @override */
