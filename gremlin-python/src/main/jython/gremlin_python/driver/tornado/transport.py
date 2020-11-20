@@ -26,16 +26,19 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 class TornadoTransport(AbstractBaseTransport):
 
-    def __init__(self, read_timeout=30, write_timeout=30):
+    def __init__(self, read_timeout=30, write_timeout=30,
+                 compression_options={'compression_level': 5, 'mem_level': 5}):
         self._loop = ioloop.IOLoop(make_current=False)
+        self._ws = None
         self._read_timeout = read_timeout
         self._write_timeout = write_timeout
+        self._compression_options = compression_options
 
     def connect(self, url, headers=None):
         if headers:
             url = httpclient.HTTPRequest(url, headers=headers)
         self._ws = self._loop.run_sync(
-            lambda: websocket.websocket_connect(url))
+            lambda: websocket.websocket_connect(url, compression_options=self._compression_options))
 
     def write(self, message):
         self._loop.run_sync(
