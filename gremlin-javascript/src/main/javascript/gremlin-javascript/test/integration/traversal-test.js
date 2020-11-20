@@ -22,8 +22,11 @@
  */
 'use strict';
 
+const Mocha = require('mocha');
 const assert = require('assert');
+const { AssertionError } = require('assert');
 const expect = require('chai').expect;
+const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
@@ -71,6 +74,17 @@ describe('Traversal', function () {
   after(function () {
     return connection.close();
   });
+  describe("#construct", function () {
+    it('should not hang if server not present', function() {
+      const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:9998/gremlin', {traversalSource: 'g'}));
+      return g.V().toList().then(function() {
+        assert.fail("there is no server so an error should have occurred");
+      }).catch(function(err) {
+        if (err instanceof AssertionError) throw err;
+        assert.strictEqual(err, "hopefully a nice socketError message of some sort");
+      });
+    });
+  });
   describe('#toList()', function () {
     it('should submit the traversal and return a list', function () {
       var g = traversal().withRemote(connection);
@@ -86,12 +100,12 @@ describe('Traversal', function () {
       var g = traversal().withRemote(connection);
       var t = g.V().count();
       return t.next().then(function (item1) {
-            assert.ok(item1);
-            assert.strictEqual(item1.value, 6);
-            t.clone().next().then(function (item2) {
-              assert.ok(item2);
-              assert.strictEqual(item2.value, 6);
-            });
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 6);
+        t.clone().next().then(function (item2) {
+          assert.ok(item2);
+          assert.strictEqual(item2.value, 6);
+        });
       });
     });
   });
