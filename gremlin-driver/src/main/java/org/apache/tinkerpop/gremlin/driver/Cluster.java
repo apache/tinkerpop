@@ -64,6 +64,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -1081,7 +1082,7 @@ public final class Cluster {
     }
 
     static class Factory {
-        private final EventLoopGroup group;
+        private final NioEventLoopGroup group;
 
         public Factory(final int nioPoolSize) {
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-loop-%d").build();
@@ -1095,7 +1096,9 @@ public final class Cluster {
         }
 
         void shutdown() {
-            group.shutdownGracefully().awaitUninterruptibly();
+            // Do not provide a quiet period (default is 2s) to accept more requests. Once we have decided to shutdown,
+            // no new requests should be accepted.
+            group.shutdownGracefully(/*quiet period*/0, /*timeout*/2, TimeUnit.SECONDS).awaitUninterruptibly();
         }
     }
 
