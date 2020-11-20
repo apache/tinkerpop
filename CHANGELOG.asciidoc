@@ -67,6 +67,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Connections to the server in a connection pool are created in parallel instead of serially in Java Driver.
 * Connection pools for multiple endpoints are created in parallel instead of serially in Java Driver.
 * Introduced new HostNotAvailable exception to represent cases when no server with active connection is available. 
+* Don't wait for new requests during shutdown of event loop group in Java Driver.
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
