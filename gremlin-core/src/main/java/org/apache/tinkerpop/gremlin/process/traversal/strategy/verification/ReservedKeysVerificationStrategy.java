@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
@@ -31,7 +32,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,7 +50,7 @@ import java.util.stream.Collectors;
  */
 public class ReservedKeysVerificationStrategy extends AbstractWarningVerificationStrategy {
 
-    private static final String KEYS = "keys";
+    public static final String KEYS = "keys";
     private static final Set<String> DEFAULT_RESERVED_KEYS = new HashSet<>(Arrays.asList("id", "label"));
     private final Set<String> reservedKeys;
 
@@ -82,6 +85,13 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
                         stream().map(Object::toString).collect(Collectors.toSet()))
                 .throwException(configuration.getBoolean(THROW_EXCEPTION, false))
                 .logWarning(configuration.getBoolean(LOG_WARNING, false)).create();
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        final Configuration c = super.getConfiguration();
+        c.setProperty(KEYS, this.reservedKeys);
+        return c;
     }
 
     public static ReservedKeysVerificationStrategy.Builder build() {
