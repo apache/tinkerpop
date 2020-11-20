@@ -40,8 +40,8 @@ public abstract class AbstractWarningVerificationStrategy
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWarningVerificationStrategy.class);
 
-    protected static final String THROW_EXCEPTION = "throwException";
-    protected static final String LOG_WARNING = "logWarning";
+    public static final String THROW_EXCEPTION = "throwException";
+    public static final String LOG_WARNING = "logWarning";
 
     protected final boolean throwException;
     protected final boolean logWarning;
