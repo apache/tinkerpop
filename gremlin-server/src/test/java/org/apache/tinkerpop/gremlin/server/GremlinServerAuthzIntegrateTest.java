@@ -279,5 +279,11 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(401, response.getStatusLine().getStatusCode());
         }
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
+        assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
+                "User stephen with address .+? attempted an unauthorized http request: 1-2"));
     }
 }

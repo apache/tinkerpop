@@ -24,6 +24,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpMessage;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
@@ -32,6 +34,8 @@ import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -56,24 +60,30 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof FullHttpMessage){
-            final FullHttpMessage requestMessage = (FullHttpMessage) msg;
+            final FullHttpMessage request = (FullHttpMessage) msg;
             try {
                 user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
                 if (null == user) {    // This is expected when using the AllowAllAuthenticator
                     user = AuthenticatedUser.ANONYMOUS_USER;
                 }
-                final FullHttpMessage restrictedMsg = authorizer.authorize(user, requestMessage);
+                final FullHttpMessage restrictedMsg = authorizer.authorize(user, request);
                 ctx.fireChannelRead(restrictedMsg);
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
                 String address = ctx.channel().remoteAddress().toString();
                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                final String script;
+                try {
+                    script = HttpGremlinEndpointHandler.getRequestArguments((FullHttpRequest) request).getValue0();
+                } catch (IllegalArgumentException iae) {
+                    sendError(ctx, BAD_REQUEST, request);
+                    return;
+                }
                 auditLogger.info("User {} with address {} attempted an unauthorized http request: {}",
-                        user.getName(), address, requestMessage.content());
-                sendError(ctx, requestMessage);
+                    user.getName(), address, script);
+                sendError(ctx, UNAUTHORIZED, request);
             } catch (Exception ex) {
-                logger.error("{} is not ready to handle requests - unknown error",
-                    authorizer.getClass().getSimpleName());
-                sendError(ctx, requestMessage);
+                logger.error("{} is not ready to handle requests - unknown error", authorizer.getClass().getSimpleName());
+                sendError(ctx, INTERNAL_SERVER_ERROR, request);
             }
         } else {
             logger.warn("{} only processes FullHttpMessage instances - received {} - channel closing",
@@ -82,9 +92,9 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
         }
     }
 
-    private void sendError(final ChannelHandlerContext ctx, final Object msg) {
+    private void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final Object msg) {
         // Close the connection as soon as the error message is sent.
-        ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED)).addListener(ChannelFutureListener.CLOSE);
+        ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, status)).addListener(ChannelFutureListener.CLOSE);
         ReferenceCountUtil.release(msg);
     }
 }

@@ -350,7 +350,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         return null;
     }
 
-    private static Quartet<String, Map<String, Object>, String, Map<String, String>> getRequestArguments(final FullHttpRequest request) {
+    protected static Quartet<String, Map<String, Object>, String, Map<String, String>> getRequestArguments(final FullHttpRequest request) {
         if (request.method() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
