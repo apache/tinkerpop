@@ -126,7 +126,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated driver `Channelizer` keep-alive related methods.
 * Delegate handling of WebSocket handshake to Netty instead of custom code in Java Driver.
 * Delegate detection of idle connection to Netty instead of custom keep alive logic for `WebSocketChannelizer`.
-* Added support for WebSocket frame compression extension ( [RFC7692](https://tools.ietf.org/html/rfc7692) ) for `WebSocketChannelizer` in Java driver.
+* Added support for WebSocket frame compression extension ( [RFC7692](https://tools.ietf.org/html/rfc7692) ) for `WebSocketChannelizer` in Java/Python driver.
 * Added server support for WebSocket compression extension ( [RFC7692](https://tools.ietf.org/html/rfc7692) ).
 * Fixed bug with Bytecode serialization when `Bytecode.toString()` is used in Javascript.
 * Fixed "toString" for P and TextP to produce valid script representation from bytecode glv steps containing a string predicate in Javascript.

@@ -803,13 +803,21 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `TornadoTransport`, which exposes
-options to manage `ioloop` timeouts:
+options to manage `ioloop` timeouts and compression settings:
 
-```python
+[source,python]
+----
 g = traversal().withRemote(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
-                         transport_factory=lambda: TornadoTransport(read_timeout=10, write_timeout=10)))
-```
+                         transport_factory=lambda: TornadoTransport(read_timeout=10,
+                                                                    write_timeout=10,
+                                                                    compression_options={'compression_level':5,'mem_level':5})))
+----
+
+Compression configuration options are described in the
+link:https://docs.python.org/3.6/library/zlib.html#zlib.compressobj[zlib documentation]. By default, compression
+settings are configured as shown in the above example.
+
 [[gremlin-python-strategies]]
 === Traversal Strategies
 
