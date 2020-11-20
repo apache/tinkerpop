@@ -612,40 +612,42 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    /**
+     * This test validates that the session requests are processed in-order on the server. The order of results
+     * returned to the client might be different though since each result is handled by a different executor thread.
+     */
     @Test
     public void shouldProcessSessionRequestsInOrder() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         try {
             final Client client = cluster.connect(name.getMethodName());
 
-            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-            final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet first = client.submit("Thread.sleep(5000);g.V().fold().coalesce(unfold(), g.addV('person'))");
+            final ResultSet second = client.submit("g.V().count()");
 
-            final CompletableFuture<List<Result>> futureFive = rsFive.all();
-            final CompletableFuture<List<Result>> futureZero = rsZero.all();
+            final CompletableFuture<List<Result>> futureFirst = first.all();
+            final CompletableFuture<List<Result>> futureSecond = second.all();
 
             final CountDownLatch latch = new CountDownLatch(2);
-            final List<String> order = new ArrayList<>();
+            final List<Object> results = new ArrayList<>();
             final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-            futureFive.thenAcceptAsync(r -> {
-                order.add(r.get(0).getString());
+            futureFirst.thenAcceptAsync(r -> {
+                results.add(r.get(0).getVertex().label());
                 latch.countDown();
             }, executor);
 
-            futureZero.thenAcceptAsync(r -> {
-                order.add(r.get(0).getString());
+            futureSecond.thenAcceptAsync(r -> {
+                results.add(r.get(0).getLong());
                 latch.countDown();
             }, executor);
 
             // wait for both results
             latch.await(30000, TimeUnit.MILLISECONDS);
 
-            // should be two results
-            assertEquals(2, order.size());
-
-            // ensure that "five" is first then "zero"
-            assertThat(order, contains("five", "zero"));
+            assertThat("Should contain 2 results", results.size() == 2);
+            assertThat("The numeric result should be 1", results.contains(1L));
+            assertThat("The string result contain label person", results.contains("person"));
         } finally {
             cluster.close();
         }
