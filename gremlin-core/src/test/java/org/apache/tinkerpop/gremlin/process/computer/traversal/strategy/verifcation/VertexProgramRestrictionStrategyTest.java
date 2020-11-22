@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifcation;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramDenyStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
@@ -33,22 +33,22 @@ import static org.junit.Assert.fail;
  * @author Marc de Lignie
  */
 @RunWith(Parameterized.class)
-public class VertexProgramDenyStrategyTest {
+public class VertexProgramRestrictionStrategyTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 // illegal
-                {"withComputer().withStrategies(VertexProgramDenyStrategy.instance()).V()",
-                        EmptyGraph.instance().traversal().withComputer().withStrategies(VertexProgramDenyStrategy.instance()).V(), false},
-                {"withStrategies(VertexProgramDenyStrategy.instance()).withComputer().V()",
-                        EmptyGraph.instance().traversal().withStrategies(VertexProgramDenyStrategy.instance()).withComputer().V(), false},
-                {"withStrategies(VertexProgramDenyStrategy.instance()).withComputer().V().connectedComponent()",
-                        EmptyGraph.instance().traversal().withStrategies(VertexProgramDenyStrategy.instance()).withComputer().V().connectedComponent(), false},
-                {"withStrategies(VertexProgramDenyStrategy.instance()).withComputer().V().pageRank()",
-                        EmptyGraph.instance().traversal().withStrategies(VertexProgramDenyStrategy.instance()).withComputer().V().pageRank(), false},
+                {"withComputer().withStrategies(VertexProgramRestrictionStrategy.instance()).V()",
+                        EmptyGraph.instance().traversal().withComputer().withStrategies(VertexProgramRestrictionStrategy.instance()).V(), false},
+                {"withStrategies(VertexProgramRestrictionStrategy.instance()).withComputer().V()",
+                        EmptyGraph.instance().traversal().withStrategies(VertexProgramRestrictionStrategy.instance()).withComputer().V(), false},
+                {"withStrategies(VertexProgramRestrictionStrategy.instance()).withComputer().V().connectedComponent()",
+                        EmptyGraph.instance().traversal().withStrategies(VertexProgramRestrictionStrategy.instance()).withComputer().V().connectedComponent(), false},
+                {"withStrategies(VertexProgramRestrictionStrategy.instance()).withComputer().V().pageRank()",
+                        EmptyGraph.instance().traversal().withStrategies(VertexProgramRestrictionStrategy.instance()).withComputer().V().pageRank(), false},
                 // legal
-                {"withStrategies(VertexProgramDenyStrategy.instance()).V()", EmptyGraph.instance().traversal().withStrategies(VertexProgramDenyStrategy.instance()).V(), true},
+                {"withStrategies(VertexProgramRestrictionStrategy.instance()).V()", EmptyGraph.instance().traversal().withStrategies(VertexProgramRestrictionStrategy.instance()).V(), true},
         });
     }
 

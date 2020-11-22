@@ -33,11 +33,11 @@ import java.util.Set;
  *
  * @author Marc de Lignie
  */
-public final class VertexProgramDenyStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
+public final class VertexProgramRestrictionStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
-    private static final VertexProgramDenyStrategy INSTANCE = new VertexProgramDenyStrategy();
+    private static final VertexProgramRestrictionStrategy INSTANCE = new VertexProgramRestrictionStrategy();
 
-    private VertexProgramDenyStrategy() {
+    private VertexProgramRestrictionStrategy() {
     }
 
     @Override
@@ -52,7 +52,7 @@ public final class VertexProgramDenyStrategy extends AbstractTraversalStrategy<T
         return Collections.singleton(ComputerVerificationStrategy.class);
     }
 
-    public static VertexProgramDenyStrategy instance() {
+    public static VertexProgramRestrictionStrategy instance() {
         return INSTANCE;
     }
 }

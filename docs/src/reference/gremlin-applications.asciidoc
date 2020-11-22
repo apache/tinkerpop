@@ -1514,13 +1514,10 @@ presence of operations such as:
 
 * reading from a GraphTraversalSource
 * writing to a GraphTraversalSource
-* `VertexProgram` execution (OLAP)
-* script execution
 * presence of lambdas in bytecode
-* illegal removal of `Strategies`
-
-During execution of a request, gremlin can prevent returning vertices or edges with specific labels or values of a
-property, based on predicates specified in a `SubgraphStrategy'.
+* script execution
+* `VertexProgram` execution (OLAP)
+* removal or modification of `TraversalStrategy` instances
 
 ===== Mechanisms
 Gremlin Server supports
@@ -1528,11 +1525,12 @@ three mechanisms to configure authorization:
 
 . With the `ScriptFileGremlinPlugin` a groovy script is configured that instantiates the `GraphTraversalSources` that
 can be accessed by client requests. Using the `withStrategies()` gremlin
-link:https://tinkerpop.apache.org/docs/current/reference/#start-steps[start step],
-one can apply so-called `Strategies` to these `GraphTraversalSources`, some of
-which can serve for authorization purposes (`ReadOnlyStrategy`, `SubgraphStrategy`, `LambdaRestrictionStrategy`,
-`EdgeLabelVerificationStrategy`), provided that users are not allowed to remove these `Strategies` afterwards. The
-`ScriptFileGremlinPlugin` is found in the yaml configuration file for Gremlin Server:
+link:https://tinkerpop.apache.org/docs/current/reference/#start-steps[start step], one can apply so-called
+link:https://tinkerpop.apache.org/docs/current/reference/#traversalstrategy[TraversalStrategy instances] to these
+`GraphTraversalSource` instances, some of which can serve for authorization purposes (`ReadOnlyStrategy`,
+`LambdaRestrictionStrategy`, `VertexProgramRestrictionStrategy`, `SubgraphStrategy`, `PartitionStrategy`,
+`EdgeLabelVerificationStrategy`), provided that users are not allowed to remove or modify these `TraversalStrategy`
+instances afterwards. The `ScriptFileGremlinPlugin` is found in the yaml configuration file for Gremlin Server:
 +
 [source,yaml]
 ----
@@ -1545,7 +1543,7 @@ scriptEngines: {
 a request before it is executed and it can decide to pass or deny the request, based on the information it has available
 on the requesting user or can seek externally.
 . Apart from passing or denying requests, an `Authorizer` implementation can actively modify the request, in particular
-add the `Strategies` mentioned in item 1.
+add the `TraversalStrategy` instances mentioned in item 1.
 
 IMPORTANT: This section is written with gremlin bytecode requests in mind. Realizing authorization for script requests
 is hardly feasible, because such requests get full access to Gremlin Server's execution environment. Although the section
@@ -1564,10 +1562,10 @@ gives an overview.
 |Active (inject) |selected access |many |hybrid
 |=========================================================
 
-With implicit authorization (only adding restricting `Strategies` in the initialization script of Gremlin Server) all
-authenticated users can access all hosted `GraphTraversalSources` and all face the same restrictions. One would need
-separate Gremlin Server instances for each authorization policy and apply an authenticator that restricts access to a g
-roup of users (that is, supports in authorization).
+With implicit authorization (only adding restricting `TraversalStrategy` instances in the initialization script of
+Gremlin Server) all authenticated users can access all hosted `GraphTraversalSources` and all face the same
+restrictions. One would need separate Gremlin Server instances for each authorization policy and apply an authenticator
+that restricts access to a group of users (that is, supports in authorization).
 
 The other extreme is the active authorization solution that injects the restricting `Strategies` into the user request,
 following a policy that takes into account both the authenticated user and the original request. While this solution is

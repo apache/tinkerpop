@@ -24,14 +24,11 @@ import org.apache.commons.configuration2.CombinedConfiguration;
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ConfigurationUtils;
-import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
-import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
@@ -54,7 +51,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPres
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramDenyStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
@@ -256,7 +253,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ReferenceElementStrategy.class);
         CLASS_IMPORTS.add(StandardVerificationStrategy.class);
         CLASS_IMPORTS.add(EdgeLabelVerificationStrategy.class);
-        CLASS_IMPORTS.add(VertexProgramDenyStrategy.class);
+        CLASS_IMPORTS.add(VertexProgramRestrictionStrategy.class);
         // graph traversal
         CLASS_IMPORTS.add(AnonymousTraversalSource.class);
         CLASS_IMPORTS.add(__.class);
