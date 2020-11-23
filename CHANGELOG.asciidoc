@@ -62,6 +62,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug with `ReservedVerificationStrategy.getConfiguration()` which was omitting the reserved `keys` value.
 * Changed all configuration keys on `AbstractWarningVerificationStrategy` implementations to `public`.
 * Deprecated `BytecodeUtil` and merged its functionality to the existing `BytecodeHelper`.
+* Added configuring implementation in HasStep
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
