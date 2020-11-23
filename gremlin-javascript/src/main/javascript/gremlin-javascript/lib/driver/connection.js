@@ -152,8 +152,7 @@ class Connection extends EventEmitter {
         resolve();
       });
       this._ws.on('error', (err) => {
-        this.emit('log', `ws error ${err}`);
-        this._cleanupWebsocket();
+        this._handleError(err);
         reject(err);
       });
     });
