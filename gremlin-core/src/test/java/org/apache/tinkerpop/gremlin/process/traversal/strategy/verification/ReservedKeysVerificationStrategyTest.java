@@ -34,6 +34,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -81,6 +82,7 @@ public class ReservedKeysVerificationStrategyTest {
                 {"__.addE('knows').property('label','xyz')", __.addE("knows").property("id", "xyz"), false},
                 {"__.addV().property('x','xyz', 'label', 'xxx')", __.addV().property("x", "xyz", "label", "xxx"), false},
                 {"__.addV().property('x','xyz', 'not-Label', 'xxx')", __.addV().property("x", "xyz", "not-label", "xxx"), true},
+                {"__.addV().property('x','xyz', 'not-allowed', 'xxx')", __.addV().property("x", "xyz", "not-allowed", "xxx"), false},
         });
     }
 
@@ -106,7 +108,10 @@ public class ReservedKeysVerificationStrategyTest {
     @Test
     public void shouldOnlyThrow() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(ReservedKeysVerificationStrategy.build().throwException().create());
+        final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().throwException();
+        if (name.equals("__.addV().property('x','xyz', 'not-allowed', 'xxx')"))
+            builder.reservedKeys(new HashSet<>(Arrays.asList("id", "label", "not-allowed")));
+        strategies.addStrategies(builder.create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {
@@ -125,7 +130,10 @@ public class ReservedKeysVerificationStrategyTest {
     @Test
     public void shouldOnlyLog() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(ReservedKeysVerificationStrategy.build().logWarning().create());
+        final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().logWarning();
+        if (name.equals("__.addV().property('x','xyz', 'not-allowed', 'xxx')"))
+            builder.reservedKeys(new HashSet<>(Arrays.asList("id", "label", "not-allowed")));
+        strategies.addStrategies(builder.create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
@@ -138,7 +146,11 @@ public class ReservedKeysVerificationStrategyTest {
     @Test
     public void shouldThrowAndLog() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(ReservedKeysVerificationStrategy.build().throwException().logWarning().create());
+        final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().
+                throwException().logWarning();
+        if (name.equals("__.addV().property('x','xyz', 'not-allowed', 'xxx')"))
+            builder.reservedKeys(new HashSet<>(Arrays.asList("id", "label", "not-allowed")));
+        strategies.addStrategies(builder.create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {

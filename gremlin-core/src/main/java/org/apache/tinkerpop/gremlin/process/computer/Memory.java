@@ -65,8 +65,10 @@ public interface Memory {
     public void set(final String key, final Object value) throws IllegalArgumentException, IllegalStateException;
 
     /**
-     * Set the value of the provided key. This is typically called in setup() and/or terminate() of the {@link VertexProgram}.
-     * If this is called during execute(), there is no guarantee as to the ultimately stored value as call order is indeterminate.
+     * Set the value of the provided key. This is typically called in setup() and/or terminate() of the
+     * {@link VertexProgram}. If this is called during execute(), there is no guarantee as to the ultimately stored
+     * value as call order is indeterminate. It is up to the implementation to determine the states in which this
+     * method can be called.
      *
      * @param key   they key to set a value for
      * @param value the value to set for the key

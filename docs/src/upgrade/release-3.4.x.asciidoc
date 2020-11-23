@@ -28,7 +28,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
-=== Translator Implementations
+=== Upgrading for Users
+
+==== Translator Implementations
 
 One of the silent features of Gremlin is the `ScriptTranslator`. More specifically, the implementation of this
 interface which will convert a `Traversal` object (or Gremlin `Bytecode`) into a proper `String` representation that
@@ -59,7 +61,7 @@ be better to continue use of the deprecated versions.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2461[TINKERPOP-2461]
 
-=== withStrategies() Groovy Syntax
+==== withStrategies() Groovy Syntax
 
 The `withStrategies()` configuration step accepts a variable number of `TraversalStrategy` instances. In Java, those
 instances are typically constructed with `instance()` if it is a singleton or by way of a builder pattern which
@@ -91,7 +93,7 @@ just now exposed for this purpose.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2466[TINKERPOP-2466]
 
-=== withEmbedded()
+==== withEmbedded()
 
 The `AnonymousTraversalSource` was introduced in 3.3.5 and is most typically used for constructing remote
 `TraversalSource` instances, but it also provides a way to construct a `TraversalSource` from an embedded `Graph`
@@ -133,6 +135,17 @@ const sg = g.withStrategies(
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2054[TINKERPOP-2054]
 
+==== WebSocket Compression
+
+Gremlin Server now supports standard WebSocket compression (per link:https://tools.ietf.org/html/rfc7692[RFC 7692]).
+Both the Java and Python drivers support this functionality from the client's perspective. Compression is enabled by
+default and should be backward compatible, thus allowing older versions of the driver to connect to newer versions of
+the server and vice versa. Using the compression-enabled drivers with a server that also supports that functionality
+will greatly reduce network IO requirements.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2441[TINKERPOP-2441],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2453[TINKERPOP-2453]
+
 ==== Per Request Options
 
 With Java it has been possible to pass per-request settings for both scripts and bytecode. While Javascript, Python,
@@ -165,7 +178,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2296[TINKERPOP-2296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2420[TINKERPOP-2420],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2421[TINKERPOP-2421]
 
-=== GraphManager Extension
+==== GraphManager Extension
 
 The `org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager` can be used instead of
 `org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager` (in gremlin-server.yml  to ensures that Gremlin Server
