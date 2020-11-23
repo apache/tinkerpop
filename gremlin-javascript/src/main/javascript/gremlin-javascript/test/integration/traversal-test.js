@@ -81,7 +81,7 @@ describe('Traversal', function () {
         assert.fail("there is no server so an error should have occurred");
       }).catch(function(err) {
         if (err instanceof AssertionError) throw err;
-        assert.strictEqual(err, "hopefully a nice socketError message of some sort");
+        assert.strictEqual(err.message, "connect ECONNREFUSED 127.0.0.1:9998");
       });
     });
   });
