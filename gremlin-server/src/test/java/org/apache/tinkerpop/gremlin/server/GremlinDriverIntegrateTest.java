@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -64,6 +65,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.io.File;
+import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -411,7 +413,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 fail("Should not have gone through because the server is not running");
             } catch (Exception i) {
                 final Throwable root = ExceptionUtils.getRootCause(i);
-                assertThat(root, instanceOf(TimeoutException.class));
+                assertThat(root, instanceOf(NoHostAvailableException.class));
             }
 
             startServer();
@@ -447,7 +449,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         }
 
         startServer();
@@ -476,6 +478,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final Client client = cluster.connect();
+            client.init();
 
             // the first host is dead on init.  request should succeed on localhost
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -861,12 +864,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         try {
             assertEquals(0, cluster.availableHosts().size());
-            cluster.connect().init();
+            final Client client1 = cluster.connect().init();
             assertEquals(1, cluster.availableHosts().size());
 
             stopServer();
 
+            // We create a new client here which will fail to initialize but the original client still has
+            // host marked as connected. Since the second client failed during initialization, it has no way to
+            // test if a host is indeed unreachable because it doesn't have any established connections. It will not add
+            // the host to load balancer but it will also not remove it if it already exists there. Leave that
+            // responsibility to a client that added it. In this case, let the second client perform it's own mechanism
+            // to mark host as unavailable. The first client will discover that the host has failed either with next
+            // keepAlive message or the next request, whichever is earlier. In this case, we will simulate the second
+            // scenario by sending a new request on first client. The request would fail (since server is down) and
+            // client should mark the host unavailable.
             cluster.connect().init();
+
+            try {
+                client1.submit("1+1").all().join();
+                fail("Expecting an exception because the server is shut down.");
+            } catch (Exception ex) {
+                // ignore the exception
+            }
+
             assertEquals(0, cluster.availableHosts().size());
         } finally {
             cluster.close();

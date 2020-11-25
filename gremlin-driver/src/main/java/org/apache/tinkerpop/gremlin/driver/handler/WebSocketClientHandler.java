@@ -70,8 +70,10 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
         if (!handshakeFuture.isDone()) {
             // channel was closed before the handshake could be completed.
             handshakeFuture.setFailure(
-                    new RuntimeException(String.format("Channel=[%s] closed before the handshake could complete",
-                            ctx.channel().toString())));
+                    new RuntimeException(String.format("WebSocket channel=[%s] closed before the handshake could complete." +
+                                    " Server logs could contain the reason for abrupt connection disconnect or the " +
+                                    "server might not be reachable from the client anymore.",
+                            ctx.channel().id().asShortText())));
         }
 
         super.channelInactive(ctx);
@@ -82,7 +84,7 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
         if (event instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) event;
             if (e.state() == IdleState.READER_IDLE) {
-                logger.warn("WebSocket connection " + ctx.channel() + " has been idle for too long.");
+                logger.warn("WebSocket connection {} has been idle for too long.", ctx.channel());
             } else if (e.state() == IdleState.WRITER_IDLE) {
                 logger.debug("Sending ping frame to the server");
                 ctx.writeAndFlush(new PingWebSocketFrame());

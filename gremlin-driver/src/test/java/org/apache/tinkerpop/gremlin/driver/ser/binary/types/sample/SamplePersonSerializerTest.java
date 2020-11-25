@@ -108,6 +108,7 @@ public class SamplePersonSerializerTest {
         final ResponseMessage deserialized = serializer.deserializeResponse(serialized);
 
         final SamplePerson actual = (SamplePerson) deserialized.getResult().getData();
+
         assertThat(actual, new ReflectionEquals(person));
     }
 

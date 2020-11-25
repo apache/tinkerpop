@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -26,8 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,11 +38,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -105,7 +108,7 @@ public abstract class Client {
      * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
      * the created {@code Client}.
      */
-    public Client alias(final Map<String,String> aliases) {
+    public Client alias(final Map<String, String> aliases) {
         return new AliasClusteredClient(this, aliases, settings);
     }
 
@@ -154,8 +157,7 @@ public abstract class Client {
      * A version of {@link #submit(Bytecode)} which provides the ability to set per-request options.
      *
      * @param bytecode request in the form of gremlin {@link Bytecode}
-     * @param options for the request
-     *
+     * @param options  for the request
      * @see #submit(Bytecode)
      */
     public ResultSet submit(final Bytecode bytecode, final RequestOptions options) {
@@ -181,8 +183,7 @@ public abstract class Client {
      * A version of {@link #submit(Bytecode)} which provides the ability to set per-request options.
      *
      * @param bytecode request in the form of gremlin {@link Bytecode}
-     * @param options for the request
-     *
+     * @param options  for the request
      * @see #submitAsync(Bytecode)
      */
     public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode, final RequestOptions options) {
@@ -201,7 +202,13 @@ public abstract class Client {
         logger.debug("Initializing client on cluster [{}]", cluster);
 
         cluster.init();
+
         initializeImplementation();
+
+        // throw an error if no host is available even after initialization is complete.
+        if (cluster.availableHosts().isEmpty()) {
+            throw new NoHostAvailableException();
+        }
 
         initialized = true;
         return this;
@@ -223,7 +230,7 @@ public abstract class Client {
      * this method to concatenating a Gremlin script from dynamically produced strings and sending it to
      * {@link #submit(String)}.  Parameterized scripts will perform better.
      *
-     * @param gremlin the gremlin script to execute
+     * @param gremlin    the gremlin script to execute
      * @param parameters a map of parameters that will be bound to the script on execution
      */
     public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
@@ -263,7 +270,7 @@ public abstract class Client {
      * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
      * write of the request completes.
      *
-     * @param gremlin the gremlin script to execute
+     * @param gremlin    the gremlin script to execute
      * @param parameters a map of parameters that will be bound to the script on execution
      */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
@@ -279,15 +286,15 @@ public abstract class Client {
      * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
      * write of the request completes.
      *
-     * @param gremlin the gremlin script to execute
-     * @param parameters a map of parameters that will be bound to the script on execution
+     * @param gremlin                the gremlin script to execute
+     * @param parameters             a map of parameters that will be bound to the script on execution
      * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
      * @deprecated As of release 3.4.0, replaced by {@link #submitAsync(String, RequestOptions)}.
      */
     @Deprecated
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
                                                     final Map<String, Object> parameters) {
-        Map<String,String> aliases = null;
+        Map<String, String> aliases = null;
         if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty()) {
             aliases = makeDefaultAliasMap(graphOrTraversalSource);
         }
@@ -299,15 +306,15 @@ public abstract class Client {
      * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
      * write of the request completes.
      *
-     * @param gremlin the gremlin script to execute
+     * @param gremlin    the gremlin script to execute
      * @param parameters a map of parameters that will be bound to the script on execution
-     * @param aliases aliases the specified global Gremlin Server variable some other name that then be used in the
-     *                script where the key is the alias name and the value represents the global variable on the
-     *                server
+     * @param aliases    aliases the specified global Gremlin Server variable some other name that then be used in the
+     *                   script where the key is the alias name and the value represents the global variable on the
+     *                   server
      * @deprecated As of release 3.4.0, replaced by {@link #submitAsync(String, RequestOptions)}.
      */
     @Deprecated
-    public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String,String> aliases,
+    public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, String> aliases,
                                                     final Map<String, Object> parameters) {
         final RequestOptions.Builder options = RequestOptions.build();
         if (aliases != null && !aliases.isEmpty()) {
@@ -402,8 +409,8 @@ public abstract class Client {
         return cluster;
     }
 
-    protected Map<String,String> makeDefaultAliasMap(final String graphOrTraversalSource) {
-        final Map<String,String> aliases = new HashMap<>();
+    protected Map<String, String> makeDefaultAliasMap(final String graphOrTraversalSource) {
+        final Map<String, String> aliases = new HashMap<>();
         aliases.put("g", graphOrTraversalSource);
         return aliases;
     }
@@ -443,8 +450,8 @@ public abstract class Client {
          * this method to concatenating a Gremlin script from dynamically produced strings and sending it to
          * {@link #submit(String)}.  Parameterized scripts will perform better.
          *
-         * @param gremlin the gremlin script to execute
-         * @param parameters a map of parameters that will be bound to the script on execution
+         * @param gremlin                the gremlin script to execute
+         * @param parameters             a map of parameters that will be bound to the script on execution
          * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
          */
         public ResultSet submit(final String gremlin, final String graphOrTraversalSource, final Map<String, Object> parameters) {
@@ -460,7 +467,7 @@ public abstract class Client {
          */
         @Override
         public Client alias(final String graphOrTraversalSource) {
-            final Map<String,String> aliases = new HashMap<>();
+            final Map<String, String> aliases = new HashMap<>();
             aliases.put("g", graphOrTraversalSource);
             return alias(aliases);
         }
@@ -469,7 +476,7 @@ public abstract class Client {
          * {@inheritDoc}
          */
         @Override
-        public Client alias(final Map<String,String> aliases) {
+        public Client alias(final Map<String, String> aliases) {
             return new AliasClusteredClient(this, aliases, settings);
         }
 
@@ -492,7 +499,7 @@ public abstract class Client {
             // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
             // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
             if (!possibleHosts.hasNext())
-                throw new TimeoutException("Timed out while waiting for an available host - check the client configuration and connectivity to the server if this message persists");
+                throw new NoHostAvailableException();
 
             final Host bestHost = possibleHosts.next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
@@ -504,18 +511,20 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
-            cluster.allHosts().forEach(host -> {
-                try {
-                    // hosts that don't initialize connection pools will come up as a dead host
-                    hostConnectionPools.put(host, new ConnectionPool(host, this));
-
-                    // added a new host to the cluster so let the load-balancer know
-                    this.cluster.loadBalancingStrategy().onNew(host);
-                } catch (Exception ex) {
-                    // catch connection errors and prevent them from failing the creation
-                    logger.warn("Could not initialize connection pool for {} - will try later", host);
+            try {
+                CompletableFuture.allOf(cluster.allHosts().stream()
+                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), cluster.executor()))
+                        .toArray(CompletableFuture[]::new))
+                        .join();
+            } catch (CompletionException ex) {
+                Throwable cause = null;
+                Throwable result = ex;
+                if (null != (cause = ex.getCause())) {
+                    result = cause;
                 }
-            });
+
+                logger.error("", result);
+            }
         }
 
         /**
@@ -526,11 +535,27 @@ public abstract class Client {
             if (closing.get() != null)
                 return closing.get();
 
-            final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
-            hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
-            closing.set(CompletableFuture.allOf(poolCloseFutures));
+            final CompletableFuture<Void> allPoolsClosedFuture =
+                    CompletableFuture.allOf(hostConnectionPools.values().stream()
+                            .map(ConnectionPool::closeAsync)
+                            .toArray(CompletableFuture[]::new));
+
+            closing.set(allPoolsClosedFuture);
             return closing.get();
         }
+
+        private Consumer<Host> initializeConnectionSetupForHost = host -> {
+            try {
+                // hosts that don't initialize connection pools will come up as a dead host
+                hostConnectionPools.put(host, new ConnectionPool(host, ClusteredClient.this));
+
+                // added a new host to the cluster so let the load-balancer know
+                ClusteredClient.this.cluster.loadBalancingStrategy().onNew(host);
+            } catch (RuntimeException ex) {
+                final String errMsg = "Could not initialize client for " + host;
+                throw new RuntimeException(errMsg, ex);
+            }
+        };
     }
 
     /**
@@ -539,10 +564,10 @@ public abstract class Client {
      */
     public static class AliasClusteredClient extends Client {
         private final Client client;
-        private final Map<String,String> aliases = new HashMap<>();
+        private final Map<String, String> aliases = new HashMap<>();
         final CompletableFuture<Void> close = new CompletableFuture<>();
 
-        AliasClusteredClient(final Client client, final Map<String,String> aliases, final Client.Settings settings) {
+        AliasClusteredClient(final Client client, final Map<String, String> aliases, final Client.Settings settings) {
             super(client.cluster, settings);
             this.client = client;
             this.aliases.putAll(aliases);
@@ -559,8 +584,8 @@ public abstract class Client {
                 // need to call buildMessage() right away to get client specific configurations, that way request specific
                 // ones can override as needed
                 final RequestMessage.Builder request = buildMessage(RequestMessage.build(Tokens.OPS_BYTECODE)
-                                                                                  .processor("traversal")
-                                                                                  .addArg(Tokens.ARGS_GREMLIN, bytecode));
+                        .processor("traversal")
+                        .addArg(Tokens.ARGS_GREMLIN, bytecode));
 
                 // apply settings if they were made available
                 options.getBatchSize().ifPresent(batchSize -> request.add(Tokens.ARGS_BATCH_SIZE, batchSize));
@@ -582,7 +607,7 @@ public abstract class Client {
             // overrides which should be mucked with
             if (!aliases.isEmpty()) {
                 final Map original = (Map) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
-                aliases.forEach((k,v) -> {
+                aliases.forEach((k, v) -> {
                     if (!original.containsKey(k))
                         builder.addArg(Tokens.ARGS_ALIASES, aliases);
                 });
@@ -708,7 +733,12 @@ public abstract class Client {
             if (hosts.isEmpty()) throw new IllegalStateException("No available host in the cluster");
             Collections.shuffle(hosts);
             final Host host = hosts.get(0);
-            connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
+
+            try {
+                connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
+            } catch (RuntimeException ex) {
+                logger.error("Could not initialize client for {}", host, ex);
+            }
         }
 
         @Override
@@ -758,7 +788,8 @@ public abstract class Client {
         public static class Builder {
             private Optional<SessionSettings> session = Optional.empty();
 
-            private Builder() {}
+            private Builder() {
+            }
 
             /**
              * Enables a session. By default this will create a random session name and configure transactions to be
@@ -842,7 +873,8 @@ public abstract class Client {
             private String sessionId = UUID.randomUUID().toString();
             private boolean forceClosed = false;
 
-            private Builder() {}
+            private Builder() {
+            }
 
             /**
              * If enabled, transactions will be "managed" such that each request will represent a complete transaction.
