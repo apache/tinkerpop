@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static java.lang.Math.toIntExact;
 
@@ -252,8 +253,16 @@ public interface Channelizer extends ChannelHandler {
                 // forgot to enable it or perhaps the server is not configured for websockets.
                 handler.handshakeFuture().sync();
             } catch (Exception ex) {
-                throw new RuntimeException(new ConnectionException(connection.getUri(),
-                        "Could not complete websocket handshake - ensure that client protocol matches server", ex));
+                String errMsg = "";
+                if (ex instanceof TimeoutException) {
+                    errMsg = "Timed out while waiting to complete the connection setup. Consider increasing the " +
+                            "WebSocket handshake timeout duration.";
+                } else {
+                    errMsg = "Could not complete connection setup to the server. Ensure that SSL is correctly " +
+                            "configured at both the client and the server. Ensure that client WebSocket handshake " +
+                            "protocol matches the server. Ensure that the server is still reachable.";
+                }
+                throw new ConnectionException(connection.getUri(), errMsg, ex);
             }
         }
     }

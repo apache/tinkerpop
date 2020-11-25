@@ -99,7 +99,7 @@ final class Connection {
         this.maxInProcess = maxInProcess;
         this.keepAliveInterval = pool.settings().keepAliveInterval;
 
-        connectionLabel = String.format("Connection{host=%s}", pool.host);
+        connectionLabel = "Connection{host=" + pool.host + "}";
 
         if (cluster.isClosing())
             throw new IllegalStateException("Cannot open a connection with the cluster after close() is called");
@@ -126,9 +126,8 @@ final class Connection {
             channel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
-                    if(logger.isDebugEnabled()) {
-                        logger.debug("OnChannelClose callback called for channel {}", channel.id().asShortText());
-                    }
+                    logger.debug("OnChannelClose callback called for channel {}", channel);
+
                     // Replace the channel if it was not intentionally closed using CloseAsync method.
                     if (thisConnection.closeFuture.get() == null) {
                         // delegate the task to worker thread and free up the event loop
@@ -141,11 +140,11 @@ final class Connection {
 
             // Default WebSocketChannelizer uses Netty's IdleStateHandler
             if (!(channelizer instanceof Channelizer.WebSocketChannelizer)) {
+                logger.debug("Using custom keep alive handler.");
                 scheduleKeepAlive();
             }
-        } catch (Exception ie) {
-            logger.debug("Error opening connection on {}", uri);
-            throw new ConnectionException(uri, "Could not open connection", ie);
+        } catch (Exception ex) {
+            throw new ConnectionException(uri, "Could not open " + this.toString(), ex);
         }
     }
 
@@ -271,6 +270,7 @@ final class Connection {
 
         // Default WebSocketChannelizer uses Netty's IdleStateHandler
         if (!(channelizer instanceof Channelizer.WebSocketChannelizer)) {
+            logger.debug("Using custom keep alive handler.");
             scheduleKeepAlive();
         }
 
@@ -373,10 +373,10 @@ final class Connection {
     /**
      * Returns the short ID for the underlying channel for this connection.
      * <p>
-     * Currently only used for testing.
+     * Visible for testing.
      */
     String getChannelId() {
-        return (channel != null) ? channel.id().asShortText() : "";
+        return (channel != null) ? channel.id().asShortText() : "null";
     }
 
     @Override
