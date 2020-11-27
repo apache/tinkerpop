@@ -70,6 +70,16 @@ be better to continue use of the deprecated versions.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2461[TINKERPOP-2461]
 
+==== Bytecode Command Improvements
+
+The `:bytecode` command in the Gremlin console includes two new options: `reset` and `config`. Both options provide
+ways to better control the `GraphSONMapper` used internally by the command. The `reset` option will replace the current
+`GraphSONMapper` with a new one with some basic defaults: GraphSON 3.0 with extension and `TinkerIoRegistry` if
+present. The `config` option provides a way to specify a custom `GraphSONMapper` or additional configurations to the
+default one previously described.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2479[TINKERPOP-2479]
+
 ==== withStrategies() Groovy Syntax
 
 The `withStrategies()` configuration step accepts a variable number of `TraversalStrategy` instances. In Java, those
