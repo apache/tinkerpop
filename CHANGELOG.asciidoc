@@ -62,6 +62,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug with Bytecode serialization when `Bytecode.toString()` is used in Javascript.
 * Fixed "toString" for P and TextP to produce valid script representation from bytecode glv steps containing a string predicate in Javascript.
 * Fixed a bug which could cause Java driver to hang when using `ResultSet.statusAttributes()`
+* Added a listener to javascript's `DriverRemoteConnection` to find note errors from websocket connection setup.
 * Fixed bug with `ReservedVerificationStrategy.getConfiguration()` which was omitting the reserved `keys` value.
 * Changed all configuration keys on `AbstractWarningVerificationStrategy` implementations to `public`.
 * Deprecated `BytecodeUtil` and merged its functionality to the existing `BytecodeHelper`.
