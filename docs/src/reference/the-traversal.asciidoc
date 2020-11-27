@@ -3797,15 +3797,19 @@ of the Gremlin traversal machine's compiler. There are 5 categories of strategie
 
 NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
 
-TinkerPop ships with a generous number of `TraversalStrategy` definitions, some of which are applied under the hood
-and some of which can be applied explicitly by the user. Users can add `TraversalStrategy` definitions for particular
-needs. The following sections detail how traversal strategies are applied and defined and describe a collection of
-traversal strategies that are generally useful to end-users.
+TinkerPop ships with a generous number of `TraversalStrategy` definitions, most of which are applied implicitly when
+executing a gremlin traversal. Users and providers can add `TraversalStrategy` definitions for particular needs. The
+following sections detail how traversal strategies are applied and defined and describe a collection of traversal
+strategies that are generally useful to end-users.
 
 === Application
-A traversal can add or remove `TraversalStrategy` strategies with the `withStrategies()` and `withoutStrategies()`
-<<start-steps, start steps>>, see the <<readonlystrategy, ReadOnlyStrategy>> and the <<barrier-step, barrier() step>>
-as examples. One should keep the following in mind when modifiying a traversal's list of `TraversalStrategy` strategies:
+One can explicitly add or remove `TraversalStrategy` strategies on the `GraphTraversalSource` with the `withStrategies()`
+and `withoutStrategies()` <<start-steps, start steps>>, see the <<readonlystrategy, ReadOnlyStrategy>> and the
+<<barrier-step, barrier() step>> for examples. End users typically do this as part of issuing a gremlin traversal, either
+on a locally opened graph or a remotely accessed graph. However, when configuring Gremlin Server, traversal strategies
+can also be applied on exposed `GraphTraversalSource` instances and as part of an `Authorizer` implementation, see
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#authorization[Gremlin Server Authorization].
+Therefore, one should keep the following in mind when modifiying the list of `TraversalStrategy` strategies:
 
 * A `TraversalStrategy` added to the traversal can be removed again later on. An example is the
 `conf/gremlin-server-modern-readonly.yaml` file from the Gremlin Server distribution, which applies the `ReadOnlyStrategy`
@@ -3813,11 +3817,11 @@ to the `GraphTraversalSource` that remote clients can connect to. However, a rem
 by applying the `withoutStrategies()` step with the `ReadOnlyStrategy`.
 
 * The traversal strategies assume that they are only applied once: no exception is raised or warning is logged when you
-try it nevertheless. As a result, the behavior in case of multiple application is unspecified. For some, like the
-<<partitionstrategy, PartitionStrategy>> the first instance (currently) prevails. For others, like the
-<<subgraphstrategy, SubgraphStrategy>>, the last instance (currently) prevails. The `OptionStrategy`
-that is applied as a result of the `with()` steps is an exception in that it actually merges the parameters of
-multiple `with()` steps.
+try it nevertheless. As a result, the behavior in case of multiple application of the same traversal strategy is
+unspecified. For some, like the <<partitionstrategy, PartitionStrategy>> the first instance prevails. For others, like
+the <<subgraphstrategy, SubgraphStrategy>>, the last instance prevails. The `OptionStrategy`, which is applied
+implicitly as a result of a `with()` step, is an exception in that it actually merges the parameters of multiple
+`with()` steps.
 
 === Definition
 A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.

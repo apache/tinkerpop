@@ -27,12 +27,17 @@ import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.javatuples.Quartet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -66,8 +71,19 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 if (null == user) {    // This is expected when using the AllowAllAuthenticator
                     user = AuthenticatedUser.ANONYMOUS_USER;
                 }
-                final FullHttpMessage restrictedMsg = authorizer.authorize(user, request);
-                ctx.fireChannelRead(restrictedMsg);
+                // ToDo: move getRequestArguments to a new preceding pipeline step in the Channelizer, but @Stephen,
+                //       how about the sendAndCleanupConnection logic in HttpGremlinEndpointHandler?
+                final Quartet<String, Map<String, Object>, String, Map<String, String>> requestArguments =
+                        HttpGremlinEndpointHandler.getRequestArguments((FullHttpRequest) request);
+                final RequestMessage requestMessage = RequestMessage.build(Tokens.OPS_EVAL).
+                        processor("").
+                        addArg(Tokens.ARGS_GREMLIN, requestArguments.getValue0()).
+                        addArg(Tokens.ARGS_BINDINGS, requestArguments.getValue1()).
+                        addArg(Tokens.ARGS_LANGUAGE, requestArguments.getValue2()).
+                        addArg(Tokens.ARGS_ALIASES, requestArguments.getValue3()).
+                        create();
+                authorizer.authorize(user, requestMessage);
+                ctx.fireChannelRead(request);
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
                 String address = ctx.channel().remoteAddress().toString();
                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);

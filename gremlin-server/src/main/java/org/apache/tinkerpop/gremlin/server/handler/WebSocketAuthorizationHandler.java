@@ -26,12 +26,15 @@ import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 
 /**
@@ -60,8 +63,25 @@ public class WebSocketAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 if (null == user) {    // This is expected when using the AllowAllAuthenticator
                     user = AuthenticatedUser.ANONYMOUS_USER;
                 }
-                final RequestMessage restrictedMsg = authorizer.authorize(user, requestMessage);
-                ctx.fireChannelRead(restrictedMsg);
+                switch (requestMessage.getOp()) {
+                    case Tokens.OPS_BYTECODE:
+                        final Bytecode bytecode = (Bytecode) requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
+                        final Map<String, String> aliases = (Map<String, String>) requestMessage.getArgs().get(Tokens.ARGS_ALIASES);
+                        final Bytecode restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
+                        final RequestMessage restrictedMsg = RequestMessage.build(Tokens.OPS_BYTECODE).
+                                overrideRequestId(requestMessage.getRequestId()).
+                                processor("traversal").
+                                addArg(Tokens.ARGS_GREMLIN, restrictedBytecode).
+                                addArg(Tokens.ARGS_ALIASES, aliases).create();
+                        ctx.fireChannelRead(restrictedMsg);
+                        break;
+                    case Tokens.OPS_EVAL:
+                        authorizer.authorize(user, requestMessage);
+                        ctx.fireChannelRead(requestMessage);
+                        break;
+                    default:
+                        throw new AuthorizationException("This AuthorizationHandler only handles requests with OPS_BYTECODE or OPS_EVAL.");
+                }
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
                 String address = ctx.channel().remoteAddress().toString();
                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);

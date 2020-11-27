@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
-import io.netty.handler.codec.http.FullHttpMessage;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.server.Settings.AuthorizationSettings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 
@@ -30,15 +30,15 @@ import java.util.*;
 
 
 /**
- * Authorizes a user per request, based on a whitelist that grants access to {@link TraversalSource} instances for
+ * Authorizes a user per request, based on a list that grants access to {@link TraversalSource} instances for
  * bytecode requests and to gremlin server's sandbox for string requests and lambdas. The {@link
- * AuthorizationSettings}.config must have an authorizationAllowList entry that contains the filename of the whitelist.
+ * AuthorizationSettings}.config must have an authorizationAllowList entry that contains the name of a YAML file.
  * This authorizer is for demonstration purposes only. It does not scale well in the number of users regarding
  * memory usage and administrative burden.
  *
  * @author Marc de Lignie
  */
-public class AllowListAuthorizer extends AbstractAuthorizer {
+public class AllowListAuthorizer implements Authorizer {
 
     // Collections derived from the list with allowed users for fast lookups
     private final Map<String, List<String>> usernamesByTraversalSource = new HashMap<>();
@@ -51,7 +51,6 @@ public class AllowListAuthorizer extends AbstractAuthorizer {
     public static final String REJECT_OLAP = "User not authorized for bytecode OLAP requests on %s.";
     public static final String REJECT_STRING = "User not authorized for string-based requests.";
     public static final String KEY_AUTHORIZATION_ALLOWLIST = "authorizationAllowList";
-
 
     @Override
     public void setup(final Map<String,Object> config) {
@@ -81,17 +80,17 @@ public class AllowListAuthorizer extends AbstractAuthorizer {
     }
 
     /**
-     * Authorizes a user for a gremlin bytecode request. The request is rejected if it contains aliases for {@link TraversalSource}
-     * names for which the user has no permission. In addition the request is rejected if it contains
-     * lambdas and the user has no "sandbox" permission.
+     * Checks whether a user is authorized to have a gremlin bytecode request from a client answered and raises an
+     * {@link AuthorizationException} if this is not the case. For a request to be authorized the user must either
+     * have a grant for the requested {@link TraversalSource}, without using lambdas or OLAP, or have a sandbox grant.
      *
-     * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param bytecode {@link Bytecode} request extracted from the msg parameter
-     * @param msg RequestMessage to authorize the user for
+     * @param user {@link AuthenticatedUser} Result from the {@link org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser}, to be used for the authorization.
+     * @param bytecode The gremlin {@link Bytecode} request to authorize the user for.
+     * @param aliases {@link Map} with a single key/value pair that maps the name of the {@link TraversalSource} in the
+     *                    {@link Bytecode} request to name of one configured in Gremlin Server.
      */
     @Override
-    protected RequestMessage authorizeBytecode(final AuthenticatedUser user, final Bytecode bytecode, final RequestMessage msg) throws AuthorizationException {
-        final Map<String, String> aliases = (Map<String, String>) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
+    public Bytecode authorize(final AuthenticatedUser user, final Bytecode bytecode, final Map<String, String> aliases) throws AuthorizationException {
         final Set<String> usernames = new HashSet<>();
 
         for (final String resource: aliases.values()) {
@@ -99,46 +98,33 @@ public class AllowListAuthorizer extends AbstractAuthorizer {
         }
         final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(WILDCARD);
         final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(WILDCARD);
+        final boolean runsLambda = BytecodeHelper.getLambdaLanguage(bytecode).isPresent();
+        final boolean runsVertexProgram = BytecodeHelper.findStrategies(bytecode, VertexProgramStrategy.class).hasNext();
 
         final String rejectMessage;
-        if (runsLambda(bytecode)) {
+        if (runsLambda) {
             rejectMessage = REJECT_LAMBDA;
-        } else if (runsVertexProgram(bytecode)){
+        } else if (runsVertexProgram){
             rejectMessage = REJECT_OLAP;
         } else {
             rejectMessage = REJECT_BYTECODE;
         }
-        if ((!userHasTraversalSourceGrant || runsLambda(bytecode) || runsVertexProgram(bytecode)) && !userHasSandboxGrant) {
+        if ( (!userHasTraversalSourceGrant || runsLambda || runsVertexProgram) && !userHasSandboxGrant) {
             throw new AuthorizationException(String.format(rejectMessage, aliases.values()));
         }
-        return msg;
+        return bytecode;
     }
 
     /**
-     * Authorizes a user for a string-based evaluation request. The request is rejected if the user does not have the "sandbox" grant.
+     * Checks whether a user is authorized to have a script request from a gremlin client answered and raises an
+     * {@link AuthorizationException} if this is not the case.
      *
      * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param script String with an arbitratry succession of groovy and gremlin-groovy statements
-     * @param msg {@link RequestMessage} to authorize the user for
+     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitratry succession of script statements.
      */
-    @Override
-    protected RequestMessage authorizeString(final AuthenticatedUser user, final String script, final RequestMessage msg) throws AuthorizationException {
+    public void authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException {
         if (!usernamesSandbox.contains(user.getName())) {
             throw new AuthorizationException(REJECT_STRING);
         }
-        return msg;
-    }
-
-    /**
-     * Authorizes a user for a http evaluation request.
-     *
-     * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param msg {@link RequestMessage} to authorize the user for
-     */
-    public FullHttpMessage authorize(final AuthenticatedUser user, final FullHttpMessage msg) throws AuthorizationException {
-        if (!usernamesSandbox.contains(user.getName())) {
-            throw new AuthorizationException(REJECT_STRING);
-        }
-        return msg;
     }
 }

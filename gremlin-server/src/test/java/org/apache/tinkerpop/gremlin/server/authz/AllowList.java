@@ -52,20 +52,19 @@ public class AllowList {
     /**
      * Read configuration from a YAML file into a new {@link AllowList} object.
      *
-     * @param file the location of a Whitelist YAML configuration file
+     * @param file the location of a AllowList YAML configuration file
      * @return a new {@link Optional} object wrapping the created {@link AllowList}
      */
     public static AllowList read(final String file) throws Exception {
         final InputStream stream = new FileInputStream(new File(file));
 
         final Constructor constructor = new Constructor(AllowList.class);
-        final TypeDescription whitelistDescription = new TypeDescription(AllowList.class);
-        whitelistDescription.putMapPropertyType("grants", String.class, Object.class);
-        whitelistDescription.putMapPropertyType("groups", String.class, Object.class);
-        constructor.addTypeDescription(whitelistDescription);
+        final TypeDescription allowListDescription = new TypeDescription(AllowList.class);
+        allowListDescription.putMapPropertyType("grants", String.class, Object.class);
+        allowListDescription.putMapPropertyType("groups", String.class, Object.class);
+        constructor.addTypeDescription(allowListDescription);
 
         final Yaml yaml = new Yaml(constructor);
         return yaml.loadAs(stream, AllowList.class);
     }
 }
-
