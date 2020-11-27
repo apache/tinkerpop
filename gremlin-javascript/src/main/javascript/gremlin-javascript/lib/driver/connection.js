@@ -129,7 +129,6 @@ class Connection extends EventEmitter {
     });
 
     this._ws.on('message', (data) => this._handleMessage(data));
-    this._ws.on('error', (err) => this._handleError(err));
     this._ws.on('close', (code, message) => this._handleClose(code, message));
 
     this._ws.on('pong', () => {
@@ -151,6 +150,10 @@ class Connection extends EventEmitter {
           this._pingHeartbeat();
         }
         resolve();
+      });
+      this._ws.on('error', (err) => {
+        this._handleError(err);
+        reject(err);
       });
     });
   }
