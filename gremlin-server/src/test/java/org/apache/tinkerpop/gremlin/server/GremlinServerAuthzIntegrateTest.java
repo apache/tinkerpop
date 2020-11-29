@@ -125,8 +125,11 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
                 DriverRemoteConnection.using(cluster, "gmodern"));
 
-        assertEquals(6, (long) g.V().count().next());
-        cluster.close();
+        try {
+            assertEquals(6, (long) g.V().count().next());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -135,17 +138,21 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
                 DriverRemoteConnection.using(cluster, "gclassic"));
 
-        assertEquals(6, (long) g.V().count().next());
-        assertEquals(6, (long) g.V().map(Lambda.function("it.get().value('name')")).count().next());
-        cluster.close();
+        try {
+            assertEquals(6, (long) g.V().count().next());
+            assertEquals(6, (long) g.V().map(Lambda.function("it.get().value('name')")).count().next());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldFailBytecodeRequestWithLambda() throws Exception{
         final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+                DriverRemoteConnection.using(cluster, "gmodern"));
+
         try {
-            final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
-                    DriverRemoteConnection.using(cluster, "gmodern"));
             g.V().map(Lambda.function("it.get().value('name')")).count().next();
             fail("Authorization for bytecode request with lambda should fail");
         } catch (Exception ex) {
@@ -160,6 +167,28 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
                     "User stephen with address .+? attempted an unauthorized request for bytecode operation: " +
                             "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldKeepAuthorizingBytecodeRequests() {
+        final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+                DriverRemoteConnection.using(cluster, "gmodern"));
+
+        try {
+            assertEquals(6, (long) g.V().count().next());
+            try {
+                g.V().map(Lambda.function("it.get().value('name')")).count().next();
+                fail("Authorization for bytecode request with lambda should fail");
+            } catch (Exception ex) {
+                final ResponseException re = (ResponseException) ex.getCause();
+                assertEquals(ResponseStatusCode.UNAUTHORIZED, re.getResponseStatusCode());
+                assertEquals("Failed to authorize: User not authorized for bytecode requests with lambdas on [gmodern].", re.getMessage());
+            }
+            assertEquals(6, (long) g.V().count().next());
         } finally {
             cluster.close();
         }
