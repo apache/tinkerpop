@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223.ast
 
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
 import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
@@ -32,10 +34,11 @@ import org.codehaus.groovy.control.CompilePhase
  * Processes Gremlin strings as an AST so as to try to detect certain properties from the script without actual
  * having to execute a {@code eval()} on it.
  */
+@CompileStatic
 final class GremlinASTChecker {
 
-    private static final astBuilder = new AstBuilder()
-    public static final EMPTY_RESULT = new Result(0);
+    private static final AstBuilder astBuilder = new AstBuilder()
+    public static final Result EMPTY_RESULT = new Result(0);
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.
@@ -43,8 +46,8 @@ final class GremlinASTChecker {
     static Result parse(String gremlin) {
         if (gremlin.empty) return EMPTY_RESULT
 
-        def ast = astBuilder.buildFromString(CompilePhase.CONVERSION, false, gremlin)
-        def tocheck = new TimeoutCheck()
+        List<ASTNode> ast = astBuilder.buildFromString(CompilePhase.CONVERSION, true, gremlin)
+        TimeoutCheck tocheck = new TimeoutCheck()
         ast[0].visit(tocheck)
         return new Result(tocheck.total)
     }
@@ -67,11 +70,11 @@ final class GremlinASTChecker {
 
     static class TimeoutCheck extends CodeVisitorSupport {
 
-        def total = 0L
+        private long total = 0L
 
         @Override
         void visitMethodCallExpression(MethodCallExpression call) {
-            if (call.methodAsString == "with")
+            if (call.getMethodAsString() == "with")
                 call.getArguments().visit(this)
 
             call.getObjectExpression().visit(this);
@@ -85,7 +88,7 @@ final class GremlinASTChecker {
                 def value = getArgument(argumentExpressions[1])
 
                 if (isTimeoutKey(key) && value instanceof Number) {
-                    total += value
+                    total += (Number) value
                 }
             }
         }
@@ -104,11 +107,11 @@ final class GremlinASTChecker {
             // PropertyExpression for Token.*
             // VariableExpression for static import of the Token field
             if (expr instanceof ConstantExpression)
-                return ((ConstantExpression) expr).value
+                return ((ConstantExpression) expr).getValue()
             else if (expr instanceof PropertyExpression)
-                return ((PropertyExpression) expr).propertyAsString
+                return ((PropertyExpression) expr).getPropertyAsString()
             else if (expr instanceof VariableExpression)
-                return ((VariableExpression) expr).text
+                return ((VariableExpression) expr).getText()
         }
     }
 }
