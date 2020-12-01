@@ -625,7 +625,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect(name.getMethodName());
 
-            final ResultSet first = client.submit("Thread.sleep(5000);g.V().fold().coalesce(unfold(), g.addV('person'))");
+            final ResultSet first = client.submit("Thread.sleep(5000);g.V().fold().coalesce(unfold(), __.addV('person'))");
             final ResultSet second = client.submit("g.V().count()");
 
             final CompletableFuture<List<Result>> futureFirst = first.all();
