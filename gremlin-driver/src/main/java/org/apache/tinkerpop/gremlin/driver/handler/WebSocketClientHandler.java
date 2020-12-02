@@ -37,12 +37,12 @@ import org.slf4j.LoggerFactory;
 public final class WebSocketClientHandler extends WebSocketClientProtocolHandler {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
 
-    private final long handshakeTimeoutMillis;
+    private final long connectionSetupTimeoutMillis;
     private ChannelPromise handshakeFuture;
 
     public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final long timeoutMillis) {
         super(handshaker, /*handleCloseFrames*/true, /*dropPongFrames*/true, timeoutMillis);
-        this.handshakeTimeoutMillis = timeoutMillis;
+        this.connectionSetupTimeoutMillis = timeoutMillis;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -97,7 +97,7 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
             if (!handshakeFuture.isDone()) {
                 handshakeFuture.setFailure(
                         new TimeoutException(String.format("handshake not completed in stipulated time=[%s]ms",
-                                handshakeTimeoutMillis)));
+                                connectionSetupTimeoutMillis)));
             }
         } else {
             super.userEventTriggered(ctx, event);

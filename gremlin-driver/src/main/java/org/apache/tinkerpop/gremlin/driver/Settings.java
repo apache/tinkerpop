@@ -257,8 +257,8 @@ final class Settings {
             if (connectionPoolConf.containsKey("validationRequest"))
                 cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
 
-            if (connectionPoolConf.containsKey("wsHandshakeTimeoutMillis"))
-                cpSettings.wsHandshakeTimeoutMillis = connectionPoolConf.getLong("wsHandshakeTimeoutMillis");
+            if (connectionPoolConf.containsKey("connectionSetupTimeoutMillis"))
+                cpSettings.connectionSetupTimeoutMillis = connectionPoolConf.getLong("connectionSetupTimeoutMillis");
 
             settings.connectionPool = cpSettings;
         }
@@ -451,13 +451,15 @@ final class Settings {
         public String validationRequest = "''";
 
         /**
-         * Duration of time in milliseconds provided for WebSocket protocol to complete it's handshake. Beyond this
-         * duration an exception would be thrown if the handshake is not complete by then.
+         *
+         * Duration of time in milliseconds provided for connection setup to complete which includes WebSocket
+         * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not
+         * complete by then.
          *
          * Note that this value should be greater that SSL handshake timeout defined in
          * {@link io.netty.handler.ssl.SslHandler} since WebSocket handshake include SSL handshake.
          */
-        public long wsHandshakeTimeoutMillis = Connection.WS_HANDSHAKE_TIMEOUT_MILLIS;
+        public long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
     }
 
     public static class SerializerSettings {
