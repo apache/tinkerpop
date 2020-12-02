@@ -67,7 +67,7 @@ final class Connection {
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
     public static final long KEEP_ALIVE_INTERVAL = 180000;
-    public final static long WS_HANDSHAKE_TIMEOUT_MILLIS = 15000;
+    public final static long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
 
     /**
      * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of

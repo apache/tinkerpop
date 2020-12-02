@@ -205,7 +205,7 @@ public final class Cluster {
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize)
-                .wsHandshakeTimeoutMillis(settings.connectionPool.wsHandshakeTimeoutMillis)
+                .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
@@ -432,11 +432,12 @@ public final class Cluster {
     }
 
     /**
-     * Gets time duration of time in milliseconds provided for WebSocket protocol to complete it's handshake. Beyond this
-     * duration an exception would be thrown if the handshake is not complete by then.
+     * Gets time duration of time in milliseconds provided for connection setup to complete which includes WebSocket
+     * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not complete
+     * by then.
      */
-    public long getWsHandshakeTimeout() {
-        return manager.connectionPoolSettings.wsHandshakeTimeoutMillis;
+    public long getConnectionSetupTimeout() {
+        return manager.connectionPoolSettings.connectionSetupTimeoutMillis;
     }
 
     /**
@@ -587,7 +588,7 @@ public final class Cluster {
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
-        private long wsHandshakeTimeoutMillis = Connection.WS_HANDSHAKE_TIMEOUT_MILLIS;
+        private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -964,14 +965,14 @@ public final class Cluster {
         }
 
         /**
-         * Sets the duration of time in milliseconds provided for WebSocket protocol to complete it's handshake. Beyond this
-         * duration an exception would be thrown.
+         * Sets the duration of time in milliseconds provided for connection setup to complete which includes WebSocket
+         * handshake and SSL handshake. Beyond this duration an exception would be thrown.
          *
          * Note that this value should be greater that SSL handshake timeout defined in
          * {@link io.netty.handler.ssl.SslHandler} since WebSocket handshake include SSL handshake.
          */
-        public Builder wsHandshakeTimeoutMillis(final long wsHandshakeTimeoutMillis) {
-            this.wsHandshakeTimeoutMillis = wsHandshakeTimeoutMillis;
+        public Builder connectionSetupTimeoutMillis(final long connectionSetupTimeoutMillis) {
+            this.connectionSetupTimeoutMillis = connectionSetupTimeoutMillis;
             return this;
         }
 
@@ -1062,7 +1063,7 @@ public final class Cluster {
             connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
             connectionPoolSettings.validationRequest = builder.validationRequest;
-            connectionPoolSettings.wsHandshakeTimeoutMillis = builder.wsHandshakeTimeoutMillis;
+            connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
 
@@ -1130,8 +1131,8 @@ public final class Cluster {
             if (builder.workerPoolSize < 1)
                 throw new IllegalArgumentException("workerPoolSize must be greater than zero");
 
-            if (builder.wsHandshakeTimeoutMillis < 1)
-                throw new IllegalArgumentException("wsHandshakeTimeoutMillis must be greater than zero");
+            if (builder.connectionSetupTimeoutMillis < 1)
+                throw new IllegalArgumentException("connectionSetupTimeoutMillis must be greater than zero");
 
             try {
                 Class.forName(builder.channelizer);

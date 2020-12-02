@@ -229,7 +229,7 @@ public interface Channelizer extends ChannelHandler {
             handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
                             connection.getUri(), WebSocketVersion.V13, null, /*allow extensions*/ true,
-                            EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getWsHandshakeTimeout());
+                            EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getConnectionSetupTimeout());
 
             final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
 
