@@ -156,6 +156,28 @@ will greatly reduce network IO requirements.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2441[TINKERPOP-2441],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2453[TINKERPOP-2453]
 
+==== Connection Management Improvements
+
+The Java Driver was designed with the idea that a `Cluster` instance would be created once and then used for the life
+of the application. As a result, the cost of setup and termination of that instance was typically sunk into the general
+startup and shutdown of the application itself. In some environments, where applications were short-lived, this cost
+was quite apparent and undesirable given that it might take several seconds to initialize and then a similar amount of
+time for proper shutdown.
+
+In 3.4.9, the initialization and shutdown of the `Cluster` object has been improved dramatically, which should be
+especially helpful to those aforementioned ephemeral environments. The following micro-benchmark results demonstrate
+the difference in performance between 3.4.8 and 3.4.9:
+
+[width="100%",options="header"]
+|=========================================================
+|Benchmark |3.4.8 |3.4.9
+|setup and close 100 connections |2116 ms |35 ms
+|setup and close 32 connections |2081 ms |13 ms
+|setup and close 1 connection |2046 ms |2 ms
+|=========================================================
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2445[TINKERPOP-2445]
+
 ==== Per Request Options
 
 With Java it has been possible to pass per-request settings for both scripts and bytecode. While Javascript, Python,
@@ -163,18 +185,29 @@ and .NET allowed this in various ways, it wasn't quite as convenient as Java, no
 release, the approach for making this sort of per-request configurations is now much more consistent across languages.
 We see this most evident in bytecode based requests:
 
-[source,java,tab]
+*Java*
+
+[source,java]
 ----
 g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows");
 ----
+
+*C#*
+
 [source,csharp]
 ----
 g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count();
 ----
+
+*Javascript*
+
 [source,javascript]
 ----
 g.with_('evaluationTimeout', 500).V().out('knows');
 ----
+
+*Python*
+
 [source,python]
 ----
 g.with_('evaluationTimeout', 500).V().out('knows')
