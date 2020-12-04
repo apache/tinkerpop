@@ -189,6 +189,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
                 if (settings.enableAuditLog) {
                     AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
+                    if (null == user) {    // This is expected when using the AllowAllAuthenticator
+                        user = AuthenticatedUser.ANONYMOUS_USER;
+                    }
                     String address = ctx.channel().remoteAddress().toString();
                     if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                     auditLogger.info("User {} with address {} requested: {}", user.getName(), address, requestArguments.getValue0());

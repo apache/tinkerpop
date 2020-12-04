@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.server.Settings.AuthorizationSettings;
+import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 
 import java.util.*;
@@ -44,7 +45,6 @@ public class AllowListAuthorizer implements Authorizer {
     private final Map<String, List<String>> usernamesByTraversalSource = new HashMap<>();
     private final Set<String> usernamesSandbox = new HashSet<>();
 
-    public static final String WILDCARD = "*";
     public static final String SANDBOX = "sandbox";
     public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s.";
     public static final String REJECT_LAMBDA = "User not authorized for bytecode requests with lambdas on %s.";
@@ -96,8 +96,8 @@ public class AllowListAuthorizer implements Authorizer {
         for (final String resource: aliases.values()) {
             usernames.addAll(usernamesByTraversalSource.get(resource));
         }
-        final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(WILDCARD);
-        final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(WILDCARD);
+        final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
+        final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
         final boolean runsLambda = BytecodeHelper.getLambdaLanguage(bytecode).isPresent();
         final boolean runsVertexProgram = BytecodeHelper.findStrategies(bytecode, VertexProgramStrategy.class).hasNext();
 

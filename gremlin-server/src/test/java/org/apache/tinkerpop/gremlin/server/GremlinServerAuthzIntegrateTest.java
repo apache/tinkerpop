@@ -97,7 +97,8 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         authzSettings.authorizer = AllowListAuthorizer.class.getName();
         authzSettings.config = new HashMap<>();
         final String yamlName = "org/apache/tinkerpop/gremlin/server/allow-list.yaml";
-        String file = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlName)).getFile();
+        final String yamlHttpName = "org/apache/tinkerpop/gremlin/server/allow-list-http-anonymous.yaml";
+        final String file = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlName)).getFile();
         authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, file);
 
         settings.ssl = sslConfig;
@@ -114,6 +115,13 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             case "shouldAuthorizeWithHttpTransport":
             case "shouldFailAuthorizeWithHttpTransport":
                 settings.channelizer = HttpChannelizer.class.getName();
+                break;
+            case "shouldAuthorizeWithAllowAllAuthenticatorAndHttpTransport":
+                settings.channelizer = HttpChannelizer.class.getName();
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                authSettings.config = null;
+                final String fileHttp = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlHttpName)).getFile();
+                authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, fileHttp);
                 break;
         }
         return settings;
@@ -286,7 +294,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     @Test
     public void shouldAuthorizeWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -294,14 +302,14 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).intValue());
+            assertEquals(1, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
     }
 
     @Test
     public void shouldFailAuthorizeWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-2"));
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -312,6 +320,20 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         Thread.sleep(1000);
 
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
-                "User stephen with address .+? attempted an unauthorized http request: 1-2"));
+                "User stephen with address .+? attempted an unauthorized http request: 2-1"));
+    }
+
+    @Test
+    public void shouldAuthorizeWithAllowAllAuthenticatorAndHttpTransport() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(1, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
     }
 }

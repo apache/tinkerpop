@@ -16,17 +16,9 @@
 # under the License.
 
 grants: {
-  gclassic: [groupclassic],
-  gmodern: [groupmodern],
-  gcrew: [groupclassic, groupmodern],
-  ggrateful: [groupgrateful],
   sandbox: [groupsandbox]
 }
 
 groups: {
-  groupclassic: [userclassic],
-  groupmodern: [usermodern, stephen],
-  groupsink: [usersink],
-  groupgrateful: [anonymous],
-  groupsandbox: [usersandbox, marko]
+  groupsandbox: [anonymous]
 }
