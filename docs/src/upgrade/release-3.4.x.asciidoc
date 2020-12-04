@@ -214,8 +214,8 @@ g.with_('evaluationTimeout', 500).V().out('knows')
 ----
 
 Please see the new "Per Request Settings" sections for each language in the
-<<gremlin-drivers-variants, Gremlin Drivers and Variants>> section for information on how to send scripts with specific
-request configurations.
+link:https://tinkerpop.apache.org/docs/3.4.9/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+section for information on how to send scripts with specific request configurations.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2296[TINKERPOP-2296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2420[TINKERPOP-2420],
