@@ -21,25 +21,23 @@
 
 #endregion
 
-using System.Collections.Generic;
-
-namespace Gremlin.Net.Driver.Messages
+namespace Gremlin.Net.Structure.IO.GraphSON
 {
     /// <summary>
-    ///     Represents the result as a response to a <see cref="RequestMessage"/> sent as part of a
-    ///     <see cref="ResponseMessage{T}"/> by the server.
+    ///     Serializes data to and from Gremlin Server in GraphSON3 format.
     /// </summary>
-    /// <typeparam name="T">The type of the <see cref="Data"/>.</typeparam>
-    public class ResponseResult<T>
+    public class GraphSON3MessageSerializer : GraphSONMessageSerializer
     {
+        private const string MimeType = SerializationTokens.GraphSON3MimeType;
+        
         /// <summary>
-        ///     Gets or sets the data of this result.
+        ///     Initializes a new instance of the <see cref="GraphSON3MessageSerializer" /> class with custom serializers.
         /// </summary>
-        public T Data { get; set; }
-
-        /// <summary>
-        ///     Gets or sets meta data of this result.
-        /// </summary>
-        public Dictionary<string, object> Meta { get; set; }
+        /// <param name="graphSONReader">The <see cref="GraphSON3Reader"/> used to deserialize from GraphSON.</param>
+        /// <param name="graphSONWriter">The <see cref="GraphSON3Writer"/> used to serialize to GraphSON.</param>
+        public GraphSON3MessageSerializer(GraphSON3Reader graphSONReader = null, GraphSON3Writer graphSONWriter = null)
+            : base(MimeType, graphSONReader ?? new GraphSON3Reader(), graphSONWriter ?? new GraphSON3Writer())
+        {
+        }
     }
 }

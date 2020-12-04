@@ -30,22 +30,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
-using Gremlin.Net.Structure.IO.GraphSON;
 
 namespace Gremlin.Net.Driver
 {
     internal interface IResponseHandlerForSingleRequestMessage
     {
-        void HandleReceived(ResponseMessage received);
+        void HandleReceived(ResponseMessage<List<object>> received);
         void Finalize(Dictionary<string, object> statusAttributes);
         void HandleFailure(Exception objException);
     }
 
     internal class Connection : IConnection
     {
-        private readonly GraphSONReader _graphSONReader;
-        private readonly GraphSONWriter _graphSONWriter;
-        private readonly JsonMessageSerializer _messageSerializer;
+        private readonly IMessageSerializer _messageSerializer;
         private readonly Uri _uri;
         private readonly WebSocketConnection _webSocketConnection;
         private readonly string _username;
@@ -60,8 +57,7 @@ namespace Gremlin.Net.Driver
         private int _writeInProgress = 0;
         private const int Closed = 1;
 
-        public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter, string mimeType,
+        public Connection(Uri uri, string username, string password, IMessageSerializer messageSerializer,
             Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
         {
             _uri = uri;
@@ -72,9 +68,7 @@ namespace Gremlin.Net.Driver
             {
                 _sessionEnabled = true;
             }
-            _graphSONReader = graphSONReader;
-            _graphSONWriter = graphSONWriter;
-            _messageSerializer = new JsonMessageSerializer(mimeType);
+            _messageSerializer = messageSerializer;
             _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
         }
 
@@ -90,7 +84,7 @@ namespace Gremlin.Net.Driver
 
         public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
-            var receiver = new ResponseHandlerForSingleRequestMessage<T>(_graphSONReader);
+            var receiver = new ResponseHandlerForSingleRequestMessage<T>();
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
             _writeQueue.Enqueue(requestMessage);
             BeginSendingMessages();
@@ -111,7 +105,7 @@ namespace Gremlin.Net.Driver
                 try
                 {
                     var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
-                    Parse(received);
+                    HandleReceived(received);
                 }
                 catch (Exception e)
                 {
@@ -121,9 +115,9 @@ namespace Gremlin.Net.Driver
             }
         }
 
-        private void Parse(byte[] received)
+        private void HandleReceived(byte[] received)
         {
-            var receivedMsg = _messageSerializer.DeserializeMessage<ResponseMessage>(received);
+            var receivedMsg = _messageSerializer.DeserializeMessage(received);
             if (receivedMsg == null)
             {
                 ThrowMessageDeserializedNull();
@@ -131,7 +125,7 @@ namespace Gremlin.Net.Driver
 
             try
             {
-                TryParseResponseMessage(receivedMsg);
+                HandleReceivedMessage(receivedMsg);
             }
             catch (Exception e)
             {
@@ -145,7 +139,7 @@ namespace Gremlin.Net.Driver
         private static void ThrowMessageDeserializedNull() =>
             throw new InvalidOperationException("Received data deserialized into null object message. Cannot operate on it.");
 
-        private void TryParseResponseMessage(ResponseMessage receivedMsg)
+        private void HandleReceivedMessage(ResponseMessage<List<object>> receivedMsg)
         {
             var status = receivedMsg.Status;
             status.ThrowIfStatusIndicatesError();
@@ -246,8 +240,7 @@ namespace Gremlin.Net.Driver
             {
                 message = RebuildSessionMessage(message);
             }
-            var graphsonMsg = _graphSONWriter.WriteObject(message);
-            var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
+            var serializedMsg = _messageSerializer.SerializeMessage(message);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
 

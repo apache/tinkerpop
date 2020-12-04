@@ -21,48 +21,52 @@
 
 #endregion
 
-using Gremlin.Net.Driver;
-using Gremlin.Net.Driver.Messages;
 using System;
 using System.Text;
+using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
 {
-    public class JsonMessageSerializerTests
+    public class GraphSONMessageSerializerTests
     {
         [Fact]
         public void DeserializingNullThrows()
         {
-            var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
+            var sut = CreateMessageSerializer();
 
-            Assert.Throws<ArgumentNullException>(()=> sut.DeserializeMessage<ResponseMessage>(null));
+            Assert.Throws<ArgumentNullException>(()=> sut.DeserializeMessage(null));
         }
 
         [Fact]
         public void EmptyArrayDeserializedIntoNull()
         {
-            var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
+            var sut = CreateMessageSerializer();
 
-            Assert.Null(sut.DeserializeMessage<ResponseMessage>(new byte[0]));            
+            Assert.Null(sut.DeserializeMessage(new byte[0]));            
         }
 
         [Fact]
         public void EmptyStringDeserializedIntoNull()
         {
-            var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
+            var sut = CreateMessageSerializer();
             var ofEmpty = Encoding.UTF8.GetBytes("");
 
-            Assert.Null(sut.DeserializeMessage<ResponseMessage>(ofEmpty));
+            Assert.Null(sut.DeserializeMessage(ofEmpty));
         }
 
         [Fact]
         public void JsonNullDeserializedIntoNull()
         {
-            var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
+            var sut = CreateMessageSerializer();
             var ofNull = Encoding.UTF8.GetBytes("null");
 
-            Assert.Null(sut.DeserializeMessage<ResponseMessage>(ofNull));
+            Assert.Null(sut.DeserializeMessage(ofNull));
+        }
+
+        private static GraphSONMessageSerializer CreateMessageSerializer()
+        {
+            return new GraphSON3MessageSerializer(new GraphSON3Reader(), new GraphSON3Writer());
         }
     }
 }

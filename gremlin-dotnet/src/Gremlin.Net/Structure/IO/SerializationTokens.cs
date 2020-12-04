@@ -21,25 +21,21 @@
 
 #endregion
 
-using System.Collections.Generic;
-
-namespace Gremlin.Net.Driver.Messages
+namespace Gremlin.Net.Structure.IO
 {
     /// <summary>
-    ///     Represents the result as a response to a <see cref="RequestMessage"/> sent as part of a
-    ///     <see cref="ResponseMessage{T}"/> by the server.
+    ///     String constants used for serialization.
     /// </summary>
-    /// <typeparam name="T">The type of the <see cref="Data"/>.</typeparam>
-    public class ResponseResult<T>
+    public class SerializationTokens
     {
         /// <summary>
-        ///     Gets or sets the data of this result.
+        ///     The MIME type for GraphSON 2.
         /// </summary>
-        public T Data { get; set; }
-
+        public const string GraphSON2MimeType = "application/vnd.gremlin-v2.0+json";
+        
         /// <summary>
-        ///     Gets or sets meta data of this result.
+        ///     The MIME type for GraphSON 3.
         /// </summary>
-        public Dictionary<string, object> Meta { get; set; }
+        public const string GraphSON3MimeType = "application/vnd.gremlin-v3.0+json";
     }
 }

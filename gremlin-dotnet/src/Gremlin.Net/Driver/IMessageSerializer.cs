@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,24 +22,27 @@
 #endregion
 
 using System.Collections.Generic;
+using Gremlin.Net.Driver.Messages;
 
-namespace Gremlin.Net.Driver.Messages
+namespace Gremlin.Net.Driver
 {
     /// <summary>
-    ///     Represents the result as a response to a <see cref="RequestMessage"/> sent as part of a
-    ///     <see cref="ResponseMessage{T}"/> by the server.
+    ///     Serializes data to and from Gremlin Server.
     /// </summary>
-    /// <typeparam name="T">The type of the <see cref="Data"/>.</typeparam>
-    public class ResponseResult<T>
+    public interface IMessageSerializer
     {
         /// <summary>
-        ///     Gets or sets the data of this result.
+        ///     Serializes a <see cref="RequestMessage"/>.
         /// </summary>
-        public T Data { get; set; }
-
+        /// <param name="requestMessage">The <see cref="RequestMessage"/> to serialize.</param>
+        /// <returns>The serialized message.</returns>
+        byte[] SerializeMessage(RequestMessage requestMessage);
+        
         /// <summary>
-        ///     Gets or sets meta data of this result.
+        ///     Deserializes a <see cref="ResponseMessage{T}"/> from a byte array.
         /// </summary>
-        public Dictionary<string, object> Meta { get; set; }
+        /// <param name="message">The serialized message to deserialize.</param>
+        /// <returns>The deserialized <see cref="ResponseMessage{T}"/>.</returns>
+        ResponseMessage<List<object>> DeserializeMessage(byte[] message);
     }
 }
