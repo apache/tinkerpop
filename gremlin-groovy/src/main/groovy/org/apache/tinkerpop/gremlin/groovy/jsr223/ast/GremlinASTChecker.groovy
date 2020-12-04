@@ -38,13 +38,20 @@ import org.codehaus.groovy.control.CompilePhase
 final class GremlinASTChecker {
 
     private static final AstBuilder astBuilder = new AstBuilder()
-    public static final Result EMPTY_RESULT = new Result(0);
+    public static final Result EMPTY_RESULT = new Result(0)
+
+    private static final List<String> tokens = ["evaluationTimeout", "scriptEvaluationTimeout",
+                                                "ARGS_EVAL_TIMEOUT", "ARGS_SCRIPT_EVAL_TIMEOUT"]
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.
      */
     static Result parse(String gremlin) {
         if (gremlin.empty) return EMPTY_RESULT
+
+        // do a cheap check for tokens we care about - no need to parse unless one of these tokens is present in
+        // the string.
+        if (!tokens.any{ gremlin.contains(it) }) return EMPTY_RESULT
 
         List<ASTNode> ast = astBuilder.buildFromString(CompilePhase.CONVERSION, true, gremlin)
         TimeoutCheck tocheck = new TimeoutCheck()
@@ -96,10 +103,7 @@ final class GremlinASTChecker {
         private static isTimeoutKey(def k) {
             // can't use Tokens object from here as it's in gremlin-driver. would rather not put a
             // groovy build in gremlin-driver so we're just stuck with strings for now.
-            return k == "evaluationTimeout" ||
-                    k == "scriptEvaluationTimeout" ||
-                    k == "ARGS_EVAL_TIMEOUT" ||
-                    k == "ARGS_SCRIPT_EVAL_TIMEOUT"
+            return tokens.contains(k)
         }
 
         private static getArgument(Expression expr) {

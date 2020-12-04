@@ -48,6 +48,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `:bytecode` command preventing translations with whitespace from working properly.
 * Added `reset` and `config` options to the `:bytecode` command to allow for greater customization options.
 * Added GraphSON extension module and the `TinkerIoRegistry` to the default `GraphSONMapper` configuration used by the `:bytecode` command.
+* Added `GremlinASTChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
 * Avoided creating unnecessary detached objects in JVM.
 * Added support for `TraversalStrategy` usage in Javascript.
 * Added `Traversal.getTraverserSetSupplier()` to allow providers to supply their own `TraverserSet` instances.
