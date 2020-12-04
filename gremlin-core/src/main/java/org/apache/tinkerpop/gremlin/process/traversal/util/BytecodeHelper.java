@@ -45,7 +45,7 @@ public final class BytecodeHelper {
     }
 
     /**
-     * Parses {@link Bytecode} to find {@link TraversalStrategy} objects in the source instructions.
+     * Parses {@link Bytecode} to find {@link TraversalStrategy} objects added in the source instructions.
      */
     public static <A extends TraversalStrategy> Iterator<A> findStrategies(final Bytecode bytecode, final Class<A> clazz) {
         return IteratorUtils.map(

@@ -20,8 +20,12 @@ package org.apache.tinkerpop.gremlin.server.authz;
 
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -30,13 +34,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer.REJECT_BYTECODE;
 import static org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer.REJECT_LAMBDA;
+import static org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer.REJECT_MUTATE;
 import static org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer.REJECT_OLAP;
+import static org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer.REJECT_SUBGRAPH;
 import static org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer.REJECT_STRING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -52,9 +61,12 @@ public class AuthorizerTest {
 
     final String BYTECODE = "bytecode";
     final String BYTECODE_LAMBDA = "bytecode-lambda";
+    final String BYTECODE_MUTATE = "bytecode-mutate";
     final String BYTECODE_OLAP = "bytecode-OLAP";
+    final String BYTECODE_SUBGRAPH = "bytecode-subgraph";
 
-    public AllowListAuthorizer authorizer;
+    AllowListAuthorizer authorizer;
+    SubgraphTraversals subgraphTraversals;
 
     @Rule
     public TestName name = new TestName();
@@ -86,50 +98,90 @@ public class AuthorizerTest {
 
     @Test
     public void shouldNotAuthorizeBytecodeRequest() {
-        negativeBytecode("usersink", "gclassic", BYTECODE, String.format(REJECT_BYTECODE, "[gclassic]"));
-        negativeBytecode("usersink", "gmodern", BYTECODE, String.format(REJECT_BYTECODE, "[gmodern]"));
-        negativeBytecode("usersink", "gcrew", BYTECODE, String.format(REJECT_BYTECODE, "[gcrew]"));
-        negativeBytecode("anyuser", "gclassic", BYTECODE, String.format(REJECT_BYTECODE, "[gclassic]"));
-        negativeBytecode("anyuser", "gmodern", BYTECODE, String.format(REJECT_BYTECODE, "[gmodern]"));
-        negativeBytecode("anyuser", "gcrew", BYTECODE, String.format(REJECT_BYTECODE, "[gcrew]"));
+        negativeBytecode("usersink", "gclassic", BYTECODE);
+        negativeBytecode("usersink", "gmodern", BYTECODE);
+        negativeBytecode("usersink", "gcrew", BYTECODE);
+        negativeBytecode("anyuser", "gclassic", BYTECODE);
+        negativeBytecode("anyuser", "gmodern", BYTECODE);
+        negativeBytecode("anyuser", "gcrew", BYTECODE);
     }
 
     @Test
-    public void shouldAuthorizeBytecodeLambdaRequest() throws AuthorizationException {
+    public void shouldAuthorizeLambdaBytecodeRequest() throws AuthorizationException {
         positiveBytecode("usersandbox", "gclassic", BYTECODE_LAMBDA);
         positiveBytecode("marko", "gcrew", BYTECODE_LAMBDA);
     }
 
     @Test
-    public void shouldNotAuthorizeBytecodeLambdaRequest() {
-        negativeBytecode("userclassic", "gclassic", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[gclassic]"));
-        negativeBytecode("usermodern", "gmodern", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[gmodern]"));
-        negativeBytecode("stephen", "gmodern", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[gmodern]"));
-        negativeBytecode("userclassic", "gcrew", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[gcrew]"));
-        negativeBytecode("usermodern", "gcrew", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[gcrew]"));
-        negativeBytecode("stephen", "gcrew", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[gcrew]"));
-        negativeBytecode("userclassic", "ggrateful", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[ggrateful]"));
-        negativeBytecode("usersink", "ggrateful", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[ggrateful]"));
-        negativeBytecode("anyuser", "ggrateful", BYTECODE_LAMBDA, String.format(REJECT_LAMBDA, "[ggrateful]"));
+    public void shouldNotAuthorizeLambdaBytecodeRequest() {
+        negativeBytecode("userclassic", "gclassic", BYTECODE_LAMBDA);
+        negativeBytecode("usermodern", "gmodern", BYTECODE_LAMBDA);
+        negativeBytecode("stephen", "gmodern", BYTECODE_LAMBDA);
+        negativeBytecode("userclassic", "gcrew", BYTECODE_LAMBDA);
+        negativeBytecode("usermodern", "gcrew", BYTECODE_LAMBDA);
+        negativeBytecode("stephen", "gcrew", BYTECODE_LAMBDA);
+        negativeBytecode("userclassic", "ggrateful", BYTECODE_LAMBDA);
+        negativeBytecode("usersink", "ggrateful", BYTECODE_LAMBDA);
+        negativeBytecode("anyuser", "ggrateful", BYTECODE_LAMBDA);
     }
 
     @Test
-    public void shouldAuthorizeBytecodeOLAPRequest() throws AuthorizationException {
+    public void shouldAuthorizeMutatingBytecodeRequest() throws AuthorizationException {
+        positiveBytecode("usersandbox", "gclassic", BYTECODE_MUTATE);
+        positiveBytecode("marko", "gcrew", BYTECODE_MUTATE);
+    }
+
+    @Test
+    public void shouldNotAuthorizeMutatingBytecodeRequest() {
+        negativeBytecode("userclassic", "gclassic", BYTECODE_MUTATE);
+        negativeBytecode("usermodern", "gmodern", BYTECODE_MUTATE);
+        negativeBytecode("stephen", "gmodern", BYTECODE_MUTATE);
+        negativeBytecode("userclassic", "gcrew", BYTECODE_MUTATE);
+        negativeBytecode("usermodern", "gcrew", BYTECODE_MUTATE);
+        negativeBytecode("stephen", "gcrew", BYTECODE_MUTATE);
+        negativeBytecode("userclassic", "ggrateful", BYTECODE_MUTATE);
+        negativeBytecode("usersink", "ggrateful", BYTECODE_MUTATE);
+        negativeBytecode("anyuser", "ggrateful", BYTECODE_MUTATE);
+    }
+
+    @Test
+    public void shouldAuthorizeOLAPBytecodeRequest() throws AuthorizationException {
         positiveBytecode("usersandbox", "gclassic", BYTECODE_OLAP);
         positiveBytecode("marko", "gcrew", BYTECODE_OLAP);
     }
 
     @Test
-    public void shouldNotAuthorizeBytecodeOLAPRequest() {
-        negativeBytecode("userclassic", "gclassic", BYTECODE_OLAP, String.format(REJECT_OLAP, "[gclassic]"));
-        negativeBytecode("usermodern", "gmodern", BYTECODE_OLAP, String.format(REJECT_OLAP, "[gmodern]"));
-        negativeBytecode("stephen", "gmodern", BYTECODE_OLAP, String.format(REJECT_OLAP, "[gmodern]"));
-        negativeBytecode("userclassic", "gcrew", BYTECODE_OLAP, String.format(REJECT_OLAP, "[gcrew]"));
-        negativeBytecode("usermodern", "gcrew", BYTECODE_OLAP, String.format(REJECT_OLAP, "[gcrew]"));
-        negativeBytecode("stephen", "gcrew", BYTECODE_OLAP, String.format(REJECT_OLAP, "[gcrew]"));
-        negativeBytecode("userclassic", "ggrateful", BYTECODE_OLAP, String.format(REJECT_OLAP, "[ggrateful]"));
-        negativeBytecode("usersink", "ggrateful", BYTECODE_OLAP, String.format(REJECT_OLAP, "[ggrateful]"));
-        negativeBytecode("anyuser", "ggrateful", BYTECODE_OLAP, String.format(REJECT_OLAP, "[ggrateful]"));
+    public void shouldNotAuthorizeOLAPBytecodeRequest() {
+        negativeBytecode("userclassic", "gclassic", BYTECODE_OLAP);
+        negativeBytecode("usermodern", "gmodern", BYTECODE_OLAP);
+        negativeBytecode("stephen", "gmodern", BYTECODE_OLAP);
+        negativeBytecode("userclassic", "gcrew", BYTECODE_OLAP);
+        negativeBytecode("usermodern", "gcrew", BYTECODE_OLAP);
+        negativeBytecode("stephen", "gcrew", BYTECODE_OLAP);
+        negativeBytecode("userclassic", "ggrateful", BYTECODE_OLAP);
+        negativeBytecode("usersink", "ggrateful", BYTECODE_OLAP);
+        negativeBytecode("anyuser", "ggrateful", BYTECODE_OLAP);
+    }
+
+    @Test
+    public void shouldAuthorizeSubgraphStrategyBytecodeRequest() throws AuthorizationException {
+        subgraphTraversals = new SubgraphTraversals();
+        positiveBytecode("usersandbox", "gclassic", BYTECODE_SUBGRAPH);
+        positiveBytecode("marko", "gcrew", BYTECODE_SUBGRAPH);
+    }
+
+    @Test
+    public void shouldNotAuthorizeSubgraphStrategyBytecodeRequest() {
+        subgraphTraversals = new SubgraphTraversals();
+        negativeBytecode("userclassic", "gclassic", BYTECODE_SUBGRAPH);
+        negativeBytecode("usermodern", "gmodern", BYTECODE_SUBGRAPH);
+        negativeBytecode("stephen", "gmodern", BYTECODE_SUBGRAPH);
+        negativeBytecode("userclassic", "gcrew", BYTECODE_SUBGRAPH);
+        negativeBytecode("usermodern", "gcrew", BYTECODE_SUBGRAPH);
+        negativeBytecode("stephen", "gcrew", BYTECODE_SUBGRAPH);
+        negativeBytecode("userclassic", "ggrateful", BYTECODE_SUBGRAPH);
+        negativeBytecode("usersink", "ggrateful", BYTECODE_SUBGRAPH);
+        negativeBytecode("anyuser", "ggrateful", BYTECODE_SUBGRAPH);
     }
 
     @Test
@@ -153,9 +205,18 @@ public class AuthorizerTest {
         authorizer.authorize(new AuthenticatedUser(username), bytecodeRequest(requestType), aliases);
     }
 
-    private void negativeBytecode(final String username, final String traversalSource, final String requestType, final String message) {
+    private void negativeBytecode(final String username, final String traversalSource, final String requestType) {
         final Map<String, String> aliases = new HashMap<>();
         aliases.put("g", traversalSource);
+        final String message;
+        switch (requestType) {
+            case BYTECODE:           message = String.format(REJECT_BYTECODE + ".", "[" + traversalSource + "]"); break;
+            case BYTECODE_LAMBDA:    message = String.format(REJECT_BYTECODE + " using " + REJECT_LAMBDA + ".", "[" + traversalSource + "]"); break;
+            case BYTECODE_MUTATE:    message = String.format(REJECT_BYTECODE + " using " + REJECT_MUTATE + ".", "[" + traversalSource + "]"); break;
+            case BYTECODE_OLAP:      message = String.format(REJECT_BYTECODE + " using " + REJECT_OLAP + ".", "[" + traversalSource + "]"); break;
+            case BYTECODE_SUBGRAPH:  message = String.format(REJECT_BYTECODE + " using " + REJECT_SUBGRAPH + ".", "[" + traversalSource + "]"); break;
+            default: throw new IllegalArgumentException();
+        }
         try {
             authorizer.authorize(new AuthenticatedUser(username), bytecodeRequest(requestType), aliases);
             fail("Test code did not fail while it should have failed!");
@@ -169,9 +230,11 @@ public class AuthorizerTest {
         final Bytecode bytecode;
 
         switch (requestType) {
-            case BYTECODE:        bytecode = g.V().asAdmin().getBytecode(); break;
-            case BYTECODE_LAMBDA: bytecode = g.V().map(Lambda.function("it.get()")).asAdmin().getBytecode(); break;
-            case BYTECODE_OLAP:   bytecode = g.withComputer().V().asAdmin().getBytecode(); break;
+            case BYTECODE:           bytecode = g.V().asAdmin().getBytecode(); break;
+            case BYTECODE_LAMBDA:    bytecode = g.V().map(Lambda.function("it.get()")).asAdmin().getBytecode(); break;
+            case BYTECODE_MUTATE:    bytecode = g.withoutStrategies(ReadOnlyStrategy.class).V().addV().asAdmin().getBytecode(); break;
+            case BYTECODE_OLAP:      bytecode = g.withoutStrategies(VertexProgramRestrictionStrategy.class).withComputer().V().asAdmin().getBytecode(); break;
+            case BYTECODE_SUBGRAPH:  bytecode = subgraphTraversals.get(); break;
             default: throw new IllegalArgumentException();
         }
         return bytecode;
@@ -189,5 +252,27 @@ public class AuthorizerTest {
     private RequestMessage buildRequestMessage(final String traversalSource) {
         final String script = String.format("1+1; %s.V().map{it.get()}", traversalSource);
         return RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, script).create();
+    }
+
+    private static class SubgraphTraversals implements Supplier<Bytecode> {
+        final GraphTraversalSource g = TinkerGraph.open().traversal();
+        final Iterator<Bytecode> mutatingBytecodes = Arrays.asList(
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getBytecode(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getBytecode(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getBytecode(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getBytecode(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getBytecode(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getBytecode(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getBytecode(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getBytecode(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getBytecode(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getBytecode(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getBytecode(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getBytecode()
+        ).iterator();
+
+        public Bytecode get() {
+            return mutatingBytecodes.next();
+        }
     }
 }

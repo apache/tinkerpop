@@ -19,12 +19,13 @@
 package org.apache.tinkerpop.gremlin.server.authz;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.server.Settings.AuthorizationSettings;
-import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 
 import java.util.*;
@@ -41,16 +42,18 @@ import java.util.*;
  */
 public class AllowListAuthorizer implements Authorizer {
 
+    public static final String SANDBOX = "sandbox";
+    public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s";
+    public static final String REJECT_LAMBDA = "lambdas";
+    public static final String REJECT_MUTATE = "the ReadOnlyStrategy";
+    public static final String REJECT_OLAP = "the VertexProgramRestrictionStrategy";
+    public static final String REJECT_SUBGRAPH = "the SubgraphStrategy";
+    public static final String REJECT_STRING = "User not authorized for string-based requests.";
+    public static final String KEY_AUTHORIZATION_ALLOWLIST = "authorizationAllowList";
+
     // Collections derived from the list with allowed users for fast lookups
     private final Map<String, List<String>> usernamesByTraversalSource = new HashMap<>();
     private final Set<String> usernamesSandbox = new HashSet<>();
-
-    public static final String SANDBOX = "sandbox";
-    public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s.";
-    public static final String REJECT_LAMBDA = "User not authorized for bytecode requests with lambdas on %s.";
-    public static final String REJECT_OLAP = "User not authorized for bytecode OLAP requests on %s.";
-    public static final String REJECT_STRING = "User not authorized for string-based requests.";
-    public static final String KEY_AUTHORIZATION_ALLOWLIST = "authorizationAllowList";
 
     @Override
     public void setup(final Map<String,Object> config) {
@@ -99,17 +102,31 @@ public class AllowListAuthorizer implements Authorizer {
         final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
         final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
         final boolean runsLambda = BytecodeHelper.getLambdaLanguage(bytecode).isPresent();
-        final boolean runsVertexProgram = BytecodeHelper.findStrategies(bytecode, VertexProgramStrategy.class).hasNext();
+        final boolean touchesReadOnlyStrategy = bytecode.toString().contains(ReadOnlyStrategy.class.getSimpleName());
+        final boolean touchesOLAPRestriction = bytecode.toString().contains(VertexProgramRestrictionStrategy.class.getSimpleName());
+        // This element becomes obsolete after resolving TINKERPOP-2473 for allowing only a single instance of each traversal strategy
+        final boolean touchesSubgraphStrategy = bytecode.toString().contains(SubgraphStrategy.class.getSimpleName());
 
-        final String rejectMessage;
+        final List<String> rejections = new ArrayList<>();
         if (runsLambda) {
-            rejectMessage = REJECT_LAMBDA;
-        } else if (runsVertexProgram){
-            rejectMessage = REJECT_OLAP;
-        } else {
-            rejectMessage = REJECT_BYTECODE;
+            rejections.add(REJECT_LAMBDA);
         }
-        if ( (!userHasTraversalSourceGrant || runsLambda || runsVertexProgram) && !userHasSandboxGrant) {
+        if (touchesReadOnlyStrategy) {
+            rejections.add(REJECT_MUTATE);
+        }
+        if (touchesOLAPRestriction) {
+            rejections.add(REJECT_OLAP);
+        }
+        if (touchesSubgraphStrategy) {
+            rejections.add(REJECT_SUBGRAPH);
+        }
+        String rejectMessage = REJECT_BYTECODE;
+        if (rejections.size() > 0) {
+            rejectMessage += " using " + String.join(", ", rejections);
+        }
+        rejectMessage += ".";
+
+        if ( (!userHasTraversalSourceGrant || runsLambda || touchesOLAPRestriction || touchesReadOnlyStrategy || touchesSubgraphStrategy) && !userHasSandboxGrant) {
             throw new AuthorizationException(String.format(rejectMessage, aliases.values()));
         }
         return bytecode;

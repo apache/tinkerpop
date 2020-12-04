@@ -166,7 +166,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(ResponseStatusCode.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for bytecode requests with lambdas on [gmodern].", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
 
             // wait for logger to flush - (don't think there is a way to detect this)
             stopServer();
@@ -194,7 +194,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             } catch (Exception ex) {
                 final ResponseException re = (ResponseException) ex.getCause();
                 assertEquals(ResponseStatusCode.UNAUTHORIZED, re.getResponseStatusCode());
-                assertEquals("Failed to authorize: User not authorized for bytecode requests with lambdas on [gmodern].", re.getMessage());
+                assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
             }
             assertEquals(6, (long) g.V().count().next());
         } finally {
