@@ -1611,23 +1611,29 @@ authorization: {
 
 The `AllowListAuthorizer` supports granting groups of users access to statically configured `GraphTraversalSource`
 instances and to the "sandbox", where sandbox means that the group is allowed anything unless restricted by Gremlin
-Server's <<script-execution,sandbox>>. The `AllowListAuthorizer` denies the use of lambdas and OLAP operations in
-bytecode requests and uses methods from the `BytecodeHelper` to detect these.
+Server's <<script-execution,sandbox>>. For denying mutating steps and OLAP operations in bytecode requests, the
+`AllowListAuthorizer` relies on the `ReadOnlyStrategy` and `VertexProgramRestrictionStrategy` being present in the
+`GraphTraversalSource`. However, it always denies the use of lambdas in bytecode requests unless the user has the
+"sandbox" grant. It uses the `BytecodeHelper.getLambdaLanguage()` method to detect these.
+
+The grants to groups of users can be configured in a simple yaml file. In addition to the special value "sandbox" for
+a grant for string based requests and lambdas, the special value "anonymous" can be used to denote any user.
 
 [source,java]
 ----
 package org.yourpackage;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.server.Settings.AuthorizationSettings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 
 import java.util.*;
-
 
 /**
  * Authorizes a user per request, based on a list that grants access to {@link TraversalSource} instances for
@@ -1638,18 +1644,22 @@ import java.util.*;
  */
 public class AllowListAuthorizer implements Authorizer {
 
+    public static final String SANDBOX = "sandbox";
+    public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s";
+    public static final String REJECT_LAMBDA = "lambdas";
+    public static final String REJECT_MUTATE = "the ReadOnlyStrategy";
+    public static final String REJECT_OLAP = "the VertexProgramRestrictionStrategy";
+    public static final String REJECT_SUBGRAPH = "the SubgraphStrategy";
+    public static final String REJECT_STRING = "User not authorized for string-based requests.";
+    public static final String KEY_AUTHORIZATION_ALLOWLIST = "authorizationAllowList";
+
     // Collections derived from the list with allowed users for fast lookups
     private final Map<String, List<String>> usernamesByTraversalSource = new HashMap<>();
     private final Set<String> usernamesSandbox = new HashSet<>();
 
-    public static final String WILDCARD = "*";
-    public static final String SANDBOX = "sandbox";
-    public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s.";
-    public static final String REJECT_LAMBDA = "User not authorized for bytecode requests with lambdas on %s.";
-    public static final String REJECT_OLAP = "User not authorized for bytecode OLAP requests on %s.";
-    public static final String REJECT_STRING = "User not authorized for string-based requests.";
-    public static final String KEY_AUTHORIZATION_ALLOWLIST = "authorizationAllowList";
-
+    /**
+     * This method is called once upon system startup to initialize the {@code AllowListAuthorizer}.
+     */
     @Override
     public void setup(final Map<String,Object> config) {
         AllowList allowList;
@@ -1679,13 +1689,15 @@ public class AllowListAuthorizer implements Authorizer {
 
     /**
      * Checks whether a user is authorized to have a gremlin bytecode request from a client answered and raises an
-     * {@link AuthorizationException} if this is not the case. For a request to be authorized the user must either
-     * have a grant for the requested {@link TraversalSource}, without using lambdas or OLAP, or have a sandbox grant.
+     * {@link AuthorizationException} if this is not the case. For a request to be authorized, the user must either
+     * have a grant for the requested {@link TraversalSource}, without using lambdas, mutating steps or OLAP, or have a
+     * sandbox grant.
      *
-     * @param user {@link AuthenticatedUser} Result from the {@link org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser}, to be used for the authorization.
+     * @param user {@link AuthenticatedUser} that needs authorization.
      * @param bytecode The gremlin {@link Bytecode} request to authorize the user for.
-     * @param aliases {@link Map} with a single key/value pair that maps the name of the {@link TraversalSource} in the
-     *                    {@link Bytecode} request to name of one configured in Gremlin Server.
+     * @param aliases A {@link Map} with a single key/value pair that maps the name of the {@link TraversalSource} in the
+     *                {@link Bytecode} request to name of one configured in Gremlin Server.
+     * @return The original or modified {@link Bytecode} to be used for further processing.
      */
     @Override
     public Bytecode authorize(final AuthenticatedUser user, final Bytecode bytecode, final Map<String, String> aliases) throws AuthorizationException {
@@ -1694,20 +1706,34 @@ public class AllowListAuthorizer implements Authorizer {
         for (final String resource: aliases.values()) {
             usernames.addAll(usernamesByTraversalSource.get(resource));
         }
-        final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(WILDCARD);
-        final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(WILDCARD);
+        final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
+        final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
         final boolean runsLambda = BytecodeHelper.getLambdaLanguage(bytecode).isPresent();
-        final boolean runsVertexProgram = BytecodeHelper.findStrategies(bytecode, VertexProgramStrategy.class).hasNext();
+        final boolean touchesReadOnlyStrategy = bytecode.toString().contains(ReadOnlyStrategy.class.getSimpleName());
+        final boolean touchesOLAPRestriction = bytecode.toString().contains(VertexProgramRestrictionStrategy.class.getSimpleName());
+        // This element becomes obsolete after resolving TINKERPOP-2473 for allowing only a single instance of each traversal strategy.
+        final boolean touchesSubgraphStrategy = bytecode.toString().contains(SubgraphStrategy.class.getSimpleName());
 
-        final String rejectMessage;
+        final List<String> rejections = new ArrayList<>();
         if (runsLambda) {
-            rejectMessage = REJECT_LAMBDA;
-        } else if (runsVertexProgram){
-            rejectMessage = REJECT_OLAP;
-        } else {
-            rejectMessage = REJECT_BYTECODE;
+            rejections.add(REJECT_LAMBDA);
         }
-        if ( (!userHasTraversalSourceGrant || runsLambda || runsVertexProgram) && !userHasSandboxGrant) {
+        if (touchesReadOnlyStrategy) {
+            rejections.add(REJECT_MUTATE);
+        }
+        if (touchesOLAPRestriction) {
+            rejections.add(REJECT_OLAP);
+        }
+        if (touchesSubgraphStrategy) {
+            rejections.add(REJECT_SUBGRAPH);
+        }
+        String rejectMessage = REJECT_BYTECODE;
+        if (rejections.size() > 0) {
+            rejectMessage += " using " + String.join(", ", rejections);
+        }
+        rejectMessage += ".";
+
+        if ( (!userHasTraversalSourceGrant || runsLambda || touchesOLAPRestriction || touchesReadOnlyStrategy || touchesSubgraphStrategy) && !userHasSandboxGrant) {
             throw new AuthorizationException(String.format(rejectMessage, aliases.values()));
         }
         return bytecode;
@@ -1717,8 +1743,8 @@ public class AllowListAuthorizer implements Authorizer {
      * Checks whether a user is authorized to have a script request from a gremlin client answered and raises an
      * {@link AuthorizationException} if this is not the case.
      *
-     * @param user {@link AuthenticatedUser} to be used for the authorization
-     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitratry succession of script statements.
+     * @param user {@link AuthenticatedUser} that needs authorization.
+     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
      */
     public void authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException {
         if (!usernamesSandbox.contains(user.getName())) {
@@ -1743,7 +1769,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 /**
  * AllowList for the AllowListAuthorizer as configured by a YAML file.
  */
@@ -1757,15 +1782,15 @@ public class AllowList {
     public Map<String, List<String>> grants;
 
     /**
-     * Holds lists of usernames by groupname. The wildcard ['*'] can be used to denote any user.
+     * Holds lists of user names by groupname. The "anonymous" user name can be used to denote any user.
      */
     public Map<String, List<String>> groups;
 
     /**
-     * Read configuration from a YAML file into a new {@link AllowList} object.
+     * Read a configuration from a YAML file into an {@link AllowList} object.
      *
      * @param file the location of a AllowList YAML configuration file
-     * @return a new {@link Optional} object wrapping the created {@link AllowList}
+     * @return An {@link Optional} object wrapping the created {@link AllowList}
      */
     public static AllowList read(final String file) throws Exception {
         final InputStream stream = new FileInputStream(new File(file));
@@ -1798,7 +1823,7 @@ groups: {
 groupclassic: [userclassic],
 groupmodern: [usermodern, stephen],
 groupsink: [usersink],
-groupgrateful: ['*'],
+groupgrateful: [anonymous],
 groupsandbox: [usersandbox, marko]
 }
 ----

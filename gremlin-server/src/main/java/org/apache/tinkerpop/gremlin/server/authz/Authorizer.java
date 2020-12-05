@@ -42,10 +42,11 @@ public interface Authorizer {
      * {@link AuthorizationException} if this is not the case. The returned bytecde is used for further processing of
      * the request.
      *
-     * @param user {@link AuthenticatedUser} Result from the {@link org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser}, to be used for the authorization.
+     * @param user {@link AuthenticatedUser} that needs authorization.
      * @param bytecode The gremlin {@link Bytecode} request to authorize the user for.
-     * @param aliases {@link Map} with a single key/value pair that maps the name of the {@link TraversalSource} in the
-     *                           {@link Bytecode} request to name of one configured in Gremlin Server.
+     * @param aliases A {@link Map} with a single key/value pair that maps the name of the {@link TraversalSource} in the
+     *                {@link Bytecode} request to name of one configured in Gremlin Server.
+     * @return The original or modified {@link Bytecode} to be used for further processing.
      */
     public Bytecode authorize(final AuthenticatedUser user, final Bytecode bytecode, final Map<String, String> aliases) throws AuthorizationException;
 
@@ -53,8 +54,8 @@ public interface Authorizer {
      * Checks whether a user is authorized to have a script request from a gremlin client answered and raises an
      * {@link AuthorizationException} if this is not the case.
      *
-     * @param user {@link AuthenticatedUser} Result from the {@link org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser}, to be used for the authorization.
-     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitratry succession of script statements.
+     * @param user {@link AuthenticatedUser} that needs authorization.
+     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
      */
     public void authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException;
 

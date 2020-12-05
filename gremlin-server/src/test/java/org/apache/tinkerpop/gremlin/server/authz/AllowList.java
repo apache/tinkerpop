@@ -45,15 +45,15 @@ public class AllowList {
     public Map<String, List<String>> grants;
 
     /**
-     * Holds lists of usernames by groupname. The wildcard ['*'] can be used to denote any user.
+     * Holds lists of user names by groupname. The "anonymous" user name can be used to denote any user.
      */
     public Map<String, List<String>> groups;
 
     /**
-     * Read configuration from a YAML file into a new {@link AllowList} object.
+     * Read a configuration from a YAML file into an {@link AllowList} object.
      *
      * @param file the location of a AllowList YAML configuration file
-     * @return a new {@link Optional} object wrapping the created {@link AllowList}
+     * @return An {@link Optional} object wrapping the created {@link AllowList}
      */
     public static AllowList read(final String file) throws Exception {
         final InputStream stream = new FileInputStream(new File(file));
