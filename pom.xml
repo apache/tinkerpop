@@ -228,6 +228,12 @@ limitations under the License.
                                 <exclude>gremlin-dotnet/src/obj/**</exclude>
                                 <exclude>gremlin-dotnet/src/_site/**</exclude>
                                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node_modules/**</exclude>
+                                <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/.idea/**</exclude>
+                                <exclude>gremlin-python/src/main/python-reports/**</exclude>
+                                <exclude>gremlin-python/src/main/python/**</exclude>
+                                <exclude>gremlin-python/src/main/jython/venv/**</exclude>
+                                <exclude>gremlin-python/src/main/jython/.pytest_cache/**</exclude>
+                                <exclude>gremlin-python/src/main/jython/.idea/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -735,7 +741,7 @@ limitations under the License.
                 <groupId>org.objenesis</groupId>
                 <artifactId>objenesis</artifactId>
                 <version>2.4</version>
-            </dependency>                        
+            </dependency>
             <dependency>
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-module-junit4</artifactId>

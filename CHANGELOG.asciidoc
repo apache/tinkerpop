@@ -93,7 +93,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-9]]
-=== TinkerPop 3.4.9 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.9 (Release Date: December 7, 2020)
 
 * Modified the text of `profile()` output to hide step instances injected for purpose of collecting metrics.
 * Bumped to Jackson 2.11.x.
@@ -144,6 +144,63 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Connection pools for multiple endpoints are created in parallel instead of serially in Java Driver.
 * Introduced new HostNotAvailable exception to represent cases when no server with active connection is available. 
 * Don't wait for new requests during shutdown of event loop group in Java Driver.
+
+==== Bugs
+
+* TINKERPOP-2364 Injected ProfileStep should not be displayed in child traversals
+* TINKERPOP-2369 Connections in ConnectionPool are not replaced in background when underlying channel is closed
+* TINKERPOP-2403 Gremlin javascript Translator does not handle child traversals
+* TINKERPOP-2405 gremlinpython: traversal hangs when the connection is established but the servers stops responding later
+* TINKERPOP-2408 Iterator leak in HasContainer
+* TINKERPOP-2409 js: DriverRemoteConnection never times out if server uri not available.
+* TINKERPOP-2410 Free up server threads when client is closed
+* TINKERPOP-2425 Server closes HTTP connection for keepAlive as true
+* TINKERPOP-2432 Generate correct toString() representation of bytecode in Javascript
+* TINKERPOP-2433 typo in javadocs match() Type Parameters
+* TINKERPOP-2435 Gremlin Python sugar syntax for values() can lead to unexpected problems
+* TINKERPOP-2437 gremlin-driver hangs if ResultSet.statusAttributes().get() is called when the request throws
+* TINKERPOP-2439 P and TextP toString() is broken
+* TINKERPOP-2458 Bytecode Bindings lost when followed by a child traversal
+* TINKERPOP-2465 TestHelper.generateTempFileFromResource file handling is invalid on windows
+* TINKERPOP-2475 Barrier step touches one more element of next loop
+* TINKERPOP-2478 Console byte code translator has issues with "new Date()"
+
+==== Improvements
+
+* TINKERPOP-2001 Support lambdas in Javascript
+* TINKERPOP-2054 Support TraversalStrategy specification in gremlin-javascript
+* TINKERPOP-2296 Per query timeout not working from Python
+* TINKERPOP-2392 Improve module level documentation for GLVs
+* TINKERPOP-2396 TraverserSet should be extendable for GraphDB provider
+* TINKERPOP-2397 Don't create the default Gyro serializer if the caller specifies a different one
+* TINKERPOP-2401 Upgrade Jackson-databind to 2.11.x
+* TINKERPOP-2406 Delegate processing from event loop to worker threads
+* TINKERPOP-2412 Add missing query tests
+* TINKERPOP-2413 Prefer withEmbedded() to withGraph() on AnonymousTraversalSource
+* TINKERPOP-2415 Avoid unnecessary detached objects if not required
+* TINKERPOP-2416 MultiIterator should implement AutoCloseable
+* TINKERPOP-2420 Support per query request options in .NET
+* TINKERPOP-2421 Support per query options in javascript
+* TINKERPOP-2426 Use Netty's WebSocketClientProtocolHandler
+* TINKERPOP-2427 Simplify Netty reference counting
+* TINKERPOP-2430 Looping Recipies
+* TINKERPOP-2431 Operating on Dropped Elements Recipes
+* TINKERPOP-2436 The gremlin server starts even if all graphs instantiation has failed
+* TINKERPOP-2438 Provide a way for scripts to respect with() specification of timeout
+* TINKERPOP-2440 Simplify driver by delegating keepAlive logic to Netty
+* TINKERPOP-2441 Add compression to WebSocket frames sent from client
+* TINKERPOP-2442 Make Translators that work in Java part of gremlin-core
+* TINKERPOP-2445 Speed up client initialization *(breaking)*
+* TINKERPOP-2446 Add Recipe for Optional Looping
+* TINKERPOP-2453 Add WebSocket compression to gremlin-python
+* TINKERPOP-2461 Align CoreImports with GroovyTranslator
+* TINKERPOP-2462 Duplicated BytecodeUtil and BytecodeHelper classes
+* TINKERPOP-2466 Improve syntax for Groovy scripts that use withStrategies()
+* TINKERPOP-2468 Stabilize shouldProcessSessionRequestsInOrder() test
+* TINKERPOP-2469 KrbException - Principal does not exist in test
+* TINKERPOP-2474 withSack() Groovy translation output could be simplified
+* TINKERPOP-2479 Provide a way to set a custom GraphSONMapper for :bytecode command
+* TINKERPOP-2482 Rename wsConnectionTimeout to connectionSetupTimeout
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)

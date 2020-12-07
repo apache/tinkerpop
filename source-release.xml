@@ -84,7 +84,14 @@
                 <exclude>gremlin-dotnet/.vscode/**</exclude>
                 <exclude>gremlin-dotnet/test/.glv</exclude>
                 <exclude>gremlin-python/.glv</exclude>
+                <exclude>gremlin-python/src/main/python-reports/**</exclude>
+                <exclude>gremlin-python/src/main/jython/venv/**</exclude>
+                <exclude>gremlin-python/src/main/jython/.pytest_cache/**</exclude>
+                <exclude>gremlin-python/src/main/jython/.idea/**</exclude>
+                <!-- on master/3.5.0 jython->python -->
+                <exclude>gremlin-python/src/main/python/**</exclude>
                 <exclude>gremlin-javascript/.glv</exclude>
+                <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/.idea/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/doc/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/etc/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node/**</exclude>
