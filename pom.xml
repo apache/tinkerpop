@@ -225,6 +225,12 @@ limitations under the License.
                                 <exclude>gremlin-dotnet/src/obj/**</exclude>
                                 <exclude>gremlin-dotnet/src/_site/**</exclude>
                                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node_modules/**</exclude>
+                                <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/.idea/**</exclude>
+                                <exclude>gremlin-python/src/main/python-reports/**</exclude>
+                                <exclude>gremlin-python/src/main/python/**</exclude>
+                                <exclude>gremlin-python/src/main/jython/venv/**</exclude>
+                                <exclude>gremlin-python/src/main/jython/.pytest_cache/**</exclude>
+                                <exclude>gremlin-python/src/main/jython/.idea/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
