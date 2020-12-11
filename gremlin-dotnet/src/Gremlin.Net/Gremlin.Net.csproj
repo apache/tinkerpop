@@ -25,8 +25,8 @@ limitations under the License.
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>3.4.9</Version>
-    <FileVersion>3.4.9.0</FileVersion>
+    <Version>3.4.10-SNAPSHOT</Version>
+    <FileVersion>3.4.10.0</FileVersion>
     <AssemblyVersion>3.4.0.0</AssemblyVersion>
     <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
