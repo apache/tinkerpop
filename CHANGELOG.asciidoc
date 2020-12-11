@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-10]]
 === TinkerPop 3.4.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-
+* Added `GremlinScriptChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
 
 [[release-3-4-9]]
 === TinkerPop 3.4.9 (Release Date: December 7, 2020)

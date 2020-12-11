@@ -437,6 +437,23 @@ RequestOptions options = RequestOptions.build().timeout(500).create();
 List<Result> result = client.submit("g.V().repeat(both()).times(100)", options).all().get();
 ----
 
+The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar with
+bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Gremlin Server will respect timeouts set this way
+in scripts as well. With scripts of course, it is possible to send multiple traversals at once in the same script.
+In such events, the timeout for the request is interpreted as a sum of all timeouts identified in the script.
+
+[source,java]
+----
+RequestOptions options = RequestOptions.build().timeout(500).create();
+List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
+                                    "g.addV().iterate();
+                                    "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
+----
+
+In the above example, `RequestOptions` defines a timeout of 500 milliseconds, but the script has three traversals with
+two internal settings for the timeout using `with()`. The request timeout used by the server will therefore be 1000
+milliseconds (overriding the 500 which itself was an override for whatever configuration was on the server).
+
 ==== Aliases
 
 Scripts submitted to Gremlin Server automatically have the globally configured `Graph` and `TraversalSource` instances
@@ -976,6 +993,22 @@ result_set = client.submit('g.V().repeat(both()).times(100)', result_options={'e
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
+with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
+
+[source,java]
+----
+RequestOptions options = RequestOptions.build().timeout(500).create();
+List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
+                                    "g.addV().iterate();
+                                    "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
+----
+
+In the above example, `RequestOptions` defines a timeout of 500 milliseconds, but the script has three traversals with
+two internal settings for the timeout using `with()`. The request timeout used by the server will therefore be 1000
+milliseconds (overriding the 500 which itself was an override for whatever configuration was on the server).
+
 [[gremlin-python-dsl]]
 === Domain Specific Languages
 
@@ -1281,6 +1314,10 @@ The following options are allowed on a per-request basis in this fashion: `batch
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
 available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
+with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
+
 anchor:gremlin-net-dsl[]
 [[gremlin-dotnet-dsl]]
 === Domain Specific Languages
@@ -1564,6 +1601,10 @@ const result = await client.submit("g.V().repeat(both()).times(100)", null, { ev
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
+with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages
