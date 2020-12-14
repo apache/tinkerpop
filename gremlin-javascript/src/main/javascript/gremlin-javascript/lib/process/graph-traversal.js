@@ -913,6 +913,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal percentile method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  percentile(...args) {
+    this.bytecode.addStep('percentile', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal profile method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1069,6 +1079,16 @@ class GraphTraversal extends Traversal {
    */
   skip(...args) {
     this.bytecode.addStep('skip', args);
+    return this;
+  }
+  
+  /**
+   * Graph traversal stdev method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  stdev(...args) {
+    this.bytecode.addStep('stdev', args);
     return this;
   }
   
@@ -1335,6 +1355,7 @@ const statics = {
   outE: (...args) => callOnEmptyTraversal('outE', args),
   outV: (...args) => callOnEmptyTraversal('outV', args),
   path: (...args) => callOnEmptyTraversal('path', args),
+  percentile: (...args) => callOnEmptyTraversal('percentile', args),
   project: (...args) => callOnEmptyTraversal('project', args),
   properties: (...args) => callOnEmptyTraversal('properties', args),
   property: (...args) => callOnEmptyTraversal('property', args),
@@ -1347,6 +1368,7 @@ const statics = {
   sideEffect: (...args) => callOnEmptyTraversal('sideEffect', args),
   simplePath: (...args) => callOnEmptyTraversal('simplePath', args),
   skip: (...args) => callOnEmptyTraversal('skip', args),
+  stdev: (...args) => callOnEmptyTraversal('stdev', args),
   store: (...args) => callOnEmptyTraversal('store', args),
   subgraph: (...args) => callOnEmptyTraversal('subgraph', args),
   sum: (...args) => callOnEmptyTraversal('sum', args),
