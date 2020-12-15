@@ -256,21 +256,13 @@ limitations under the License.
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
                                 <type>pom</type>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.apache.tinkerpop</groupId>
-                                <artifactId>gremlin-server</artifactId>
-                                <version>${project.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.apache.tinkerpop</groupId>
-                                <artifactId>gremlin-groovy</artifactId>
-                                <version>${project.version}</version>
+                                <scope>runtime</scope>
                             </dependency>
                             <dependency>
                                 <groupId>log4j</groupId>
                                 <artifactId>log4j</artifactId>
                                 <version>${log4j.version}</version>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                         <executions>
