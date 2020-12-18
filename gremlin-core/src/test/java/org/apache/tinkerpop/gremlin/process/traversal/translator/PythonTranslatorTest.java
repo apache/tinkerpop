@@ -94,14 +94,14 @@ public class PythonTranslatorTest {
     public void shouldTranslateLambdas() {
         final Bytecode bytecode = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
-                .filter(Lambda.predicate("x : x.get().label() == 'person'"))
-                .flatMap(Lambda.function("lambda x : x.get().vertices(Direction.OUT)"))
-                .map(Lambda.<Traverser<Object>, Integer>function("lambda x : len(x.get().value('name'))"))
-                .sideEffect(Lambda.consumer(" x : x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())    "))
-                .order().by(Lambda.comparator("  lambda a,b : 0 if a == b else 1 if a > b else -1"))
-                .sack(Lambda.biFunction("lambda a,b : a + b"))
+                .filter(Lambda.predicate("x -> x.get().label() == 'person'", "gremlin-groovy"))
+                .flatMap(Lambda.function("it.get().vertices(Direction.OUT)", "gremlin-groovy"))
+                .map(Lambda.<Traverser<Object>, Integer>function("x -> x : len(x.get().value('name'))", "gremlin-groovy"))
+                .sideEffect(Lambda.consumer("x -> x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())    ", "gremlin-groovy"))
+                .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
+                .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter(lambda x : x.get().label() == 'person').flatMap(lambda x : x.get().vertices(Direction.OUT)).map(lambda x : len(x.get().value('name'))).sideEffect(lambda x : x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())).order().by(lambda a,b : 0 if a == b else 1 if a > b else -1).sack(lambda a,b : a + b)",
+        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
                 translator.translate(bytecode).getScript());
     }
 }

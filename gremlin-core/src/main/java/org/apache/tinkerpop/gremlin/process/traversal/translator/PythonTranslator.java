@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration2.ConfigurationConverter;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -161,7 +162,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Lambda o) {
             final String lambdaString = o.getLambdaScript().trim();
-            return lambdaString.startsWith("lambda") ? lambdaString : "lambda " + lambdaString;
+            return "lambda: \"" + StringEscapeUtils.escapeJava(lambdaString) + "\"";
         }
 
         @Override

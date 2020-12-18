@@ -4268,7 +4268,8 @@ System.out.println(groovyTranslator.translate(t);
 // OUTPUT: g.V().has("person","name","marko").where(__.in("knows")).values("age").map({it.get() + 1})
 
 Translator.ScriptTranslator pythonTranslator = PythonTranslator.of("g");
-// OUTPUT: g.V().has('person','name','marko').where(__.in_('knows')).age.map(lambda it.get() + 1)
+System.out.println(pythonTranslator.translate(t);
+// OUTPUT: g.V().has('person','name','marko').where(__.in_('knows')).age.map(lambda: "it.get() + 1")
 ----
 [source,javascript]
 ----
