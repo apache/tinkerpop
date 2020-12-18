@@ -20,6 +20,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -250,7 +252,12 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
     protected String convertLambdaToString(final Lambda lambda) {
         final String lambdaString = lambda.getLambdaScript().trim();
-        return lambdaString.startsWith("lambda") ? lambdaString : "lambda " + lambdaString;
+        if (lambda.getLambdaLanguage().equalsIgnoreCase("gremlin-python")) {
+            return lambdaString.startsWith("lambda") ? lambdaString : "lambda: \"" + lambdaString + "\"";
+        } else {
+            // gremlin-groovy
+            return "lambda: \"" + StringEscapeUtils.escapeJava(lambdaString) + "\"";
+        }
     }
 
     protected String resolveSymbol(final String methodName) {
