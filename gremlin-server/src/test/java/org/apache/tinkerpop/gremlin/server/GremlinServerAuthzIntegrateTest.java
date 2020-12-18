@@ -114,6 +114,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
                 break;
             case "shouldAuthorizeWithHttpTransport":
             case "shouldFailAuthorizeWithHttpTransport":
+            case "shouldKeepAuthorizingWithHttpTransport":
                 settings.channelizer = HttpChannelizer.class.getName();
                 break;
             case "shouldAuthorizeWithAllowAllAuthenticatorAndHttpTransport":
@@ -323,7 +324,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     @Test
     public void shouldFailAuthorizeWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=3-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -334,20 +335,52 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         Thread.sleep(1000);
 
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
-                "User stephen with address .+? attempted an unauthorized http request: 2-1"));
+                "User stephen with address .+? attempted an unauthorized http request: 3-1"));
+    }
+
+    @Test
+    public void shouldKeepAuthorizingWithHttpTransport() throws Exception {
+        HttpGet httpget;
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=4-1"));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(3, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
+
+        httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=5-1"));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+
+        httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=6-1"));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(5, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
     }
 
     @Test
     public void shouldAuthorizeWithAllowAllAuthenticatorAndHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=7-1"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(1, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals(6, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
     }
 }

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
@@ -26,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
@@ -40,14 +38,8 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -58,19 +50,13 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,11 +90,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private static final Charset UTF8 = StandardCharsets.UTF_8;
-    static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
-
-    private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
-
-    private static final String ARGS_ALIASES_DOT = Tokens.ARGS_ALIASES + ".";
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
@@ -116,12 +97,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
      * Serializers for the response.
      */
     private final Map<String, MessageSerializer> serializers;
-
-    /**
-     * This is just a generic mapper to interpret the JSON of a POSTed request.  It is not used for the serialization
-     * of the response.
-     */
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
@@ -146,7 +121,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final boolean keepAlive = HttpUtil.isKeepAlive(req);
 
             if ("/favicon.ico".equals(req.uri())) {
-                sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico", keepAlive);
+                HttpHandlerUtil.sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico", keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -156,16 +131,16 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (req.method() != GET && req.method() != POST) {
-                sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), keepAlive);
+                HttpHandlerUtil.sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
 
             final Quartet<String, Map<String, Object>, String, Map<String, String>> requestArguments;
             try {
-                requestArguments = getRequestArguments(req);
+                requestArguments = HttpHandlerUtil.getRequestArguments(req);
             } catch (IllegalArgumentException iae) {
-                sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -173,7 +148,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
             final Pair<String, MessageTextSerializer> serializer = chooseSerializer(acceptString);
             if (null == serializer) {
-                sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString),
+                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString),
                         keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
@@ -215,7 +190,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         // handle cors business
                         if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
 
-                        sendAndCleanupConnection(ctx, keepAlive, response);
+                        HttpHandlerUtil.sendAndCleanupConnection(ctx, keepAlive, response);
                     }
                 });
 
@@ -225,7 +200,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 try {
                     bindings = createBindings(requestArguments.getValue1(), requestArguments.getValue3());
                 } catch (IllegalStateException iae) {
-                    sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
                     ReferenceCountUtil.release(msg);
                     return;
                 }
@@ -261,9 +236,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                 evalFuture.exceptionally(t -> {
                     if (t.getMessage() != null)
-                        sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t), keepAlive);
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t), keepAlive);
                     else
-                        sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
                                 , Optional.of(t), keepAlive);
                     promise.setFailure(t);
                     return null;
@@ -280,11 +255,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 // context on whether to close the connection or not, based on keepalive.
                 final Throwable t = ExceptionUtils.getRootCause(ex);
                 if (t instanceof TooLongFrameException) {
-                    sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
+                    HttpHandlerUtil.sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
                 } else if (t != null){
-                    sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
                 } else {
-                    sendError(ctx, INTERNAL_SERVER_ERROR, ex.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, ex.getMessage(), keepAlive);
                 }
             }
         }
@@ -295,7 +270,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         logger.error("Error processing HTTP Request", cause);
 
         if (ctx.channel().isActive()) {
-            sendError(ctx, INTERNAL_SERVER_ERROR, cause.getMessage(), false);
+            HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, cause.getMessage(), false);
         }
     }
 
@@ -351,137 +326,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         }
 
         return null;
-    }
-
-    protected static Quartet<String, Map<String, Object>, String, Map<String, String>> getRequestArguments(final FullHttpRequest request) {
-        if (request.method() == GET) {
-            final QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
-            final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
-
-            if (null == gremlinParms || gremlinParms.size() == 0)
-                throw new IllegalArgumentException("no gremlin script supplied");
-            final String script = gremlinParms.get(0);
-            if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
-
-            // query string parameters - take the first instance of a key only - ignore the rest
-            final Map<String, Object> bindings = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_BINDINGS_DOT))
-                    .forEach(kv -> bindings.put(kv.getKey().substring(ARGS_BINDINGS_DOT.length()), kv.getValue().get(0)));
-
-            final Map<String, String> aliases = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_ALIASES_DOT))
-                    .forEach(kv -> aliases.put(kv.getKey().substring(ARGS_ALIASES_DOT.length()), kv.getValue().get(0)));
-
-            final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
-            final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
-
-            return Quartet.with(script, bindings, language, aliases);
-        } else {
-            final JsonNode body;
-            try {
-                body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
-            } catch (IOException ioe) {
-                throw new IllegalArgumentException("body could not be parsed", ioe);
-            }
-
-            final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
-            if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
-
-            final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-            if (bindingsNode != null && !bindingsNode.isObject())
-                throw new IllegalArgumentException("bindings must be a Map");
-
-            final Map<String, Object> bindings = new HashMap<>();
-            if (bindingsNode != null)
-                bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
-
-            final JsonNode aliasesNode = body.get(Tokens.ARGS_ALIASES);
-            if (aliasesNode != null && !aliasesNode.isObject())
-                throw new IllegalArgumentException("aliases must be a Map");
-
-            final Map<String, String> aliases = new HashMap<>();
-            if (aliasesNode != null)
-                aliasesNode.fields().forEachRemaining(kv -> aliases.put(kv.getKey(), kv.getValue().asText()));
-
-            final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-            final String language = null == languageNode ? null : languageNode.asText();
-
-            return Quartet.with(scriptNode.asText(), bindings, language, aliases);
-        }
-    }
-
-    public static Object fromJsonNode(final JsonNode node) {
-        if (node.isNull())
-            return null;
-        else if (node.isObject()) {
-            final Map<String, Object> map = new HashMap<>();
-            final ObjectNode objectNode = (ObjectNode) node;
-            final Iterator<String> iterator = objectNode.fieldNames();
-            while (iterator.hasNext()) {
-                String key = iterator.next();
-                map.put(key, fromJsonNode(objectNode.get(key)));
-            }
-            return map;
-        } else if (node.isArray()) {
-            final ArrayNode arrayNode = (ArrayNode) node;
-            final ArrayList<Object> array = new ArrayList<>();
-            for (int i = 0; i < arrayNode.size(); i++) {
-                array.add(fromJsonNode(arrayNode.get(i)));
-            }
-            return array;
-        } else if (node.isFloatingPointNumber())
-            return node.asDouble();
-        else if (node.isIntegralNumber())
-            return node.asLong();
-        else if (node.isBoolean())
-            return node.asBoolean();
-        else
-            return node.asText();
-    }
-
-    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
-                                  final String message, final boolean keepAlive) {
-        sendError(ctx, status, message, Optional.empty(), keepAlive);
-    }
-
-    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
-                                  final String message, final Optional<Throwable> t, final boolean keepAlive) {
-        if (t.isPresent())
-            logger.warn(String.format("Invalid request - responding with %s and %s", status, message), t.get());
-        else
-            logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
-
-        errorMeter.mark();
-        final ObjectNode node = mapper.createObjectNode();
-        node.put("message", message);
-        if (t.isPresent()) {
-            // "Exception-Class" needs to go away - didn't realize it was named that way during review for some reason.
-            // replaced with the same method for exception reporting as is used with websocket/nio protocol
-            node.put("Exception-Class", t.get().getClass().getName());
-            final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
-            ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
-            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(t.get()));
-        }
-
-        final FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
-        response.headers().set(CONTENT_TYPE, "application/json");
-
-        sendAndCleanupConnection(ctx, keepAlive, response);
-    }
-
-    private static void sendAndCleanupConnection(final ChannelHandlerContext ctx,
-                                                 final boolean keepAlive,
-                                                 final FullHttpResponse response) {
-        HttpUtil.setKeepAlive(response, keepAlive);
-        HttpUtil.setContentLength(response, response.content().readableBytes());
-
-        final ChannelFuture flushPromise = ctx.writeAndFlush(response);
-
-        if (!keepAlive) {
-            // Close the connection as soon as the response is sent.
-            flushPromise.addListener(ChannelFutureListener.CLOSE);
-        }
     }
 
     private static void attemptCommit(final Map<String, String> aliases, final GraphManager graphManager, final boolean strict) {
