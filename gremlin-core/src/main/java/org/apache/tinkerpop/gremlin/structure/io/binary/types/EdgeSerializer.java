@@ -18,15 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.io.Buffer;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -50,11 +54,12 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
         // minds someday????
         context.read(buffer);
 
-        // discard the properties - as we only send "references" this should always be null, but will we change our
-        // minds some day????
-        context.read(buffer);
-
-        return new ReferenceEdge(id, label, inV, outV);
+        final Map<String, Object> props = context.readValue(buffer, Map.class, true);
+        final Edge e = new DetachedEdge(id, label, props,
+                outV.id(), outV.label(),
+                inV.id(), inV.label()
+        );
+        return e;
     }
 
     @Override
@@ -71,8 +76,18 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
         // we don't serialize the parent Vertex for edges. they are "references", but we leave a place holder
         // here as an option for the future as we've waffled this soooooooooo many times now
         context.write(null, buffer);
-        // we don't serialize properties for graph vertices/edges. they are "references", but we leave a place holder
-        // here as an option for the future as we've waffled this soooooooooo many times now
-        context.write(null, buffer);
+
+        Map<String, Object> props = getPropertiesAsMap(value);
+        context.writeValue(props, buffer, true);
+    }
+
+    private Map<String, Object> getPropertiesAsMap(Edge e) {
+        Map<String, Object> ret = new TreeMap<String, Object>();
+        Iterator<? extends Property<Object>> propsIterator = e.properties();
+        while(propsIterator.hasNext()) {
+            Property<Object> prop = propsIterator.next();
+            ret.put(prop.key(), prop.value());
+        }
+        return ret;
     }
 }
