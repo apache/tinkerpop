@@ -1525,8 +1525,8 @@ three mechanisms to configure authorization:
 
 . With the `ScriptFileGremlinPlugin` a groovy script is configured that instantiates the `GraphTraversalSources` that
 can be accessed by client requests. Using the `withStrategies()` gremlin
-link:https://tinkerpop.apache.org/docs/current/reference/#start-steps[start step], one can apply so-called
-link:https://tinkerpop.apache.org/docs/current/reference/#traversalstrategy[TraversalStrategy instances] to these
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#start-steps[start step], one can apply so-called
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[TraversalStrategy instances] to these
 `GraphTraversalSource` instances, some of which can serve for authorization purposes (`ReadOnlyStrategy`,
 `LambdaRestrictionStrategy`, `VertexProgramRestrictionStrategy`, `SubgraphStrategy`, `PartitionStrategy`,
 `EdgeLabelVerificationStrategy`), provided that users are not allowed to remove or modify these `TraversalStrategy`
