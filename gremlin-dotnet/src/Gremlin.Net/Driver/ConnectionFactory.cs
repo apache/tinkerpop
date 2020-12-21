@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -23,35 +23,29 @@
 
 using System;
 using System.Net.WebSockets;
-using Gremlin.Net.Structure.IO.GraphSON;
 
 namespace Gremlin.Net.Driver
 {
     internal class ConnectionFactory : IConnectionFactory
     {
-        private readonly GraphSONReader _graphSONReader;
-        private readonly GraphSONWriter _graphSONWriter;
         private readonly Action<ClientWebSocketOptions> _webSocketConfiguration;
         private readonly GremlinServer _gremlinServer;
-        private readonly string _mimeType;
         private readonly string _sessionId;
+        private IMessageSerializer _messageSerializer;
 
-        public ConnectionFactory(GremlinServer gremlinServer, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter, string mimeType,
+        public ConnectionFactory(GremlinServer gremlinServer, IMessageSerializer messageSerializer,
             Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
         {
             _gremlinServer = gremlinServer;
-            _mimeType = mimeType;
+            _messageSerializer = messageSerializer;
             _sessionId = sessionId;
-            _graphSONReader = graphSONReader ?? throw new ArgumentNullException(nameof(graphSONReader));
-            _graphSONWriter = graphSONWriter ?? throw new ArgumentNullException(nameof(graphSONWriter));
             _webSocketConfiguration = webSocketConfiguration;
         }
 
         public IConnection CreateConnection()
         {
-            return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _graphSONReader,
-                                 _graphSONWriter, _mimeType, _webSocketConfiguration, _sessionId);
+            return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password,
+                _messageSerializer, _webSocketConfiguration, _sessionId);
         }
     }
 }

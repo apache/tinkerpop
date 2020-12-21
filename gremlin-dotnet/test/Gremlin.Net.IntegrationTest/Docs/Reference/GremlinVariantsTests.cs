@@ -65,8 +65,7 @@ var g = Traversal().WithRemote(remoteConnection);
         public void SerializationTest()
         {
 // tag::serialization[]
-var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2Reader(),
-    new GraphSON2Writer(), GremlinClient.GraphSON2MimeType);
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2MessageSerializer());
 // end::serialization[]
         }
         

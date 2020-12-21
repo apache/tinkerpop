@@ -70,32 +70,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldReturnResultWithoutDeserializingItForJsonElementType()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using var gremlinClient = new GremlinClient(gremlinServer);
-            const string gremlinScript = "'someString'";
-                
-            var response = await gremlinClient.SubmitWithSingleResultAsync<JsonElement>(gremlinScript);
-
-            //Expected:
-            /* {
-                  "@type": "g:List",
-                  "@value": [
-                    "someString"
-                  ]
-                }*/
-
-            Assert.IsType<JsonElement>(response);
-            Assert.Equal("g:List", response.GetProperty("@type").GetString());
-
-            var valueProperty = response.GetProperty("@value");
-            Assert.NotNull(valueProperty);
-            Assert.Equal(1, valueProperty.GetArrayLength());
-            Assert.Equal("someString", (valueProperty[0].GetString()));
-        }
-
-        [Fact]
         public async Task ShouldHandleResponseWithoutContent()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);

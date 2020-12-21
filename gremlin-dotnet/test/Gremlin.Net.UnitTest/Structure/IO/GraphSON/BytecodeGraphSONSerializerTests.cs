@@ -1,4 +1,4 @@
-﻿﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,7 +22,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;

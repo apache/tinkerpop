@@ -26,12 +26,24 @@ using Gremlin.Net.Driver.Exceptions;
 
 namespace Gremlin.Net.Driver.Messages
 {
-    internal class ResponseStatus
+    /// <summary>
+    ///     Represents status information of a <see cref="ResponseMessage{T}"/>.
+    /// </summary>
+    public class ResponseStatus
     {
+        /// <summary>
+        ///     Gets or sets the <see cref="ResponseStatusCode"/>.
+        /// </summary>
         public ResponseStatusCode Code { get; set; }
-        
+
+        /// <summary>
+        ///     Gets or sets the attributes <see cref="Dictionary{TKey,TValue}"/> with protocol-level information.
+        /// </summary>
         public Dictionary<string, object> Attributes { get; set; }
-        
+
+        /// <summary>
+        ///     Gets or sets the message which is just a human-readable string usually associated with errors.
+        /// </summary>
         public string Message { get; set; }
     }
 

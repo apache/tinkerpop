@@ -84,7 +84,7 @@ var graphsonReader = new GraphSON3Reader(
 var graphsonWriter = new GraphSON3Writer(
     new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
 
-var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
+var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2MessageSerializer());
 // end::supportingGremlinNetIO[]
         }
     }

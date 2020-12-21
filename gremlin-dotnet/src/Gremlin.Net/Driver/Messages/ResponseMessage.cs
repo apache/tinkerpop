@@ -25,12 +25,25 @@ using System;
 
 namespace Gremlin.Net.Driver.Messages
 {
-    internal class ResponseMessage
+    /// <summary>
+    ///     The message returned from the server.
+    /// </summary>
+    /// <typeparam name="T">The type of the data returned.</typeparam>
+    public class ResponseMessage<T>
     {
+        /// <summary>
+        ///     Gets or sets the identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.
+        /// </summary>
         public Guid RequestId { get; set; }
 
+        /// <summary>
+        ///     Gets or sets status information about this <see cref="ResponseMessage{T}"/>.
+        /// </summary>
         public ResponseStatus Status { get; set; }
 
-        public ResponseResult Result { get; set; }
+        /// <summary>
+        ///     Gets or sets the result with its data and optional meta information.
+        /// </summary>
+        public ResponseResult<T> Result { get; set; }
     }
 }

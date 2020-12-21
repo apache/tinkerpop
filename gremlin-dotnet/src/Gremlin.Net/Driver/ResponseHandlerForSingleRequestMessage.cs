@@ -23,10 +23,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
-using Gremlin.Net.Structure.IO.GraphSON;
 
 namespace Gremlin.Net.Driver
 {
@@ -36,23 +34,14 @@ namespace Gremlin.Net.Driver
 
         private readonly TaskCompletionSource<ResultSet<T>> _tcs =
             new TaskCompletionSource<ResultSet<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        private readonly GraphSONReader _graphSONReader;
+        
         private readonly List<T> _result = new List<T>();
 
-        public ResponseHandlerForSingleRequestMessage(GraphSONReader graphSonReader)
+        public void HandleReceived(ResponseMessage<List<object>> received)
         {
-            _graphSONReader = graphSonReader;
-        }
-
-        public void HandleReceived(ResponseMessage received)
-        {
-            var receivedData = typeof(T) == typeof(JsonElement)
-                ? new[] {received.Result.Data}
-                : _graphSONReader.ToObject(received.Result.Data);
-            foreach (var d in receivedData)
+            foreach (var d in received.Result.Data)
             {
-                _result.Add(d);
+                _result.Add((T) d);
             }
         }
 
