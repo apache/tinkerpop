@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.GremlinASTChecker;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
@@ -258,7 +258,7 @@ public class GremlinExecutor implements AutoCloseable {
 
         // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
         // options then allow that value to override what's provided on the lifecycle
-        final Optional<Long> timeoutDefinedInScript = GremlinASTChecker.parse(script).getTimeout();
+        final Optional<Long> timeoutDefinedInScript = GremlinScriptChecker.parse(script).getTimeout();
         final long scriptEvalTimeOut = timeoutDefinedInScript.orElse(
                 lifeCycle.getEvaluationTimeoutOverride().orElse(evaluationTimeout));
 

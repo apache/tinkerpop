@@ -96,6 +96,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-10]]
 === TinkerPop 3.4.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added `GremlinScriptChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
 * Fixed bug in `PythonTranslator` which was improperly translating `Lambda` scripts.
 * Checked high limit before retrieving next traverser in `RangeGlobalStep`.
 
