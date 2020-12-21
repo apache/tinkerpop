@@ -59,15 +59,20 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     }
 
     @Override
+    protected Traverser.Admin<S> processNextStart() {
+        // super.processNextStart() will first get next traverser before applying filtering logic.
+        // For RangeGlobalStep, if high limit is hit, there is no need to retrieve next traverser.
+        if (!this.bypass) {
+            this.filterHighRange();
+        }
+        return super.processNextStart();
+    }
+
+    @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.bypass) return true;
 
-        if (this.high != -1 && this.counter.get() >= this.high) {
-            // This is a global step and this place would be the end of the traversal.
-            // Close the traversal to free up resources.
-            CloseableIterator.closeIterator(traversal);
-            throw FastNoSuchElementException.instance();
-        }
+        this.filterHighRange();
 
         long avail = traverser.bulk();
         if (this.counter.get() + avail <= this.low) {
@@ -93,6 +98,15 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         traverser.setBulk(toEmit);
 
         return true;
+    }
+
+    private void filterHighRange() {
+        if (this.high != -1 && this.counter.get() >= this.high) {
+            // This is a global step and this place would be the end of the traversal.
+            // Close the traversal to free up resources.
+            CloseableIterator.closeIterator(traversal);
+            throw FastNoSuchElementException.instance();
+        }
     }
 
     @Override
@@ -165,7 +179,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-        if(!this.starts.hasNext())
+        if (!this.starts.hasNext())
             throw FastNoSuchElementException.instance();
         final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         while (this.starts.hasNext()) {
