@@ -57,4 +57,13 @@ public class SocialPackageTraversalSourceDsl extends GraphTraversalSource {
 
         return traversal;
     }
+
+    @Override
+    public void close() {
+        try {
+            super.close();
+        } catch (Exception ignored) {
+            // do nothing - this is just for testing TINKERPOP-2496
+        }
+    }
 }
