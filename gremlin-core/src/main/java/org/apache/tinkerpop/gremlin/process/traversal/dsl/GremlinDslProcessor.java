@@ -57,6 +57,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -239,10 +240,10 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 .addStatement("super($N)", "connection")
                 .build());
 
-        // override methods to return a the DSL TraversalSource. find GraphTraversalSource class somewhere in the hierarchy
+        // override methods to return the DSL TraversalSource. find GraphTraversalSource class somewhere in the hierarchy
         final Element tinkerPopsGraphTraversalSource = findClassAsElement(graphTraversalSourceElement, GraphTraversalSource.class);
-        final Predicate<ExecutableElement> ignore = e -> !(e.getReturnType().getKind() == TypeKind.DECLARED && ((DeclaredType) e.getReturnType()).asElement().getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName()));
-        for (ExecutableElement elementOfGraphTraversalSource : findMethodsOfElement(tinkerPopsGraphTraversalSource, ignore)) {
+        final Predicate<ExecutableElement> notGraphTraversalSourceReturnValues = e -> !(e.getReturnType().getKind() == TypeKind.DECLARED && ((DeclaredType) e.getReturnType()).asElement().getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName()));
+        for (ExecutableElement elementOfGraphTraversalSource : findMethodsOfElement(tinkerPopsGraphTraversalSource, notGraphTraversalSourceReturnValues)) {
             // first copy/override methods that return a GraphTraversalSource so that we can instead return
             // the DSL TraversalSource class.
             traversalSourceClass.addMethod(constructMethod(elementOfGraphTraversalSource, ctx.traversalSourceClassName, "",Modifier.PUBLIC));
@@ -250,7 +251,8 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
         // override methods that return GraphTraversal that come from the user defined extension of GraphTraversal
         if (!graphTraversalSourceElement.getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName())) {
-            for (ExecutableElement templateMethod : findMethodsOfElement(graphTraversalSourceElement, null)) {
+            final Predicate<ExecutableElement> notGraphTraversalReturnValues = e -> !(e.getReturnType().getKind() == TypeKind.DECLARED && ((DeclaredType) e.getReturnType()).asElement().getSimpleName().contentEquals(GraphTraversal.class.getSimpleName()));
+            for (ExecutableElement templateMethod : findMethodsOfElement(graphTraversalSourceElement, notGraphTraversalReturnValues)) {
                 final MethodSpec.Builder methodToAdd = MethodSpec.methodBuilder(templateMethod.getSimpleName().toString())
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class);
