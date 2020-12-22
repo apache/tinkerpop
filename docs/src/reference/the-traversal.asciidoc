@@ -4192,21 +4192,22 @@ specifically a `ScriptTranslator` which takes Gremlin `Bytecode` of a traversal 
 of that `Bytecode` in the programming language syntax that the `ScriptTranslator` instance supports. The translation
 therefore allows Gremlin to be converted from the host programming language of the `Translator` to another.
 
-The following translators are available:
+The following translators are available, where the first column identifies the host programming language and the
+columns represent the language that Gremlin can be generated in:
 
 [width="100%",cols="<,^,^,^,^,^",options="header"]
 |=========================================================
 | |Java |Groovy |Javascript |.NET |Python
-|*Java* |- |X | | |X
-|*Groovy* | |- | | |X
-|*Javascript* | |X |- | |
-|*.NET* | | | |- |
-|*Python*  | | | | |-
+|*Java* | |X | | |X
+|*Groovy* | |X | | |X
+|*Javascript* | |X | | |
+|*.NET* | | | | |
+|*Python*  | | | | |
 |=========================================================
 
 Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
 
-WARN: While `Translator` implementations have been around for some time, they are still in their early stages from
+WARNING: While `Translator` implementations have been around for some time, they are still in their early stages from
 an interface perspective. API changes may occur in the near future.
 
 [source,java,tab]
