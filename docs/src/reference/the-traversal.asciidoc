@@ -4285,3 +4285,22 @@ console.log(translator.translate(t));
 // OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
 ----
 
+The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to
+identify opportunities to generate an output that would replace constant values with parameters. The parameters would
+then be extracted and returned as part of the `Script` object:
+
+[source,java]
+----
+Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
+                                where(__.in("knows")).
+                                values("age");
+// specify true to attempt parameter extraction
+Translator.ScriptTranslator translator = GroovyTranslator.of("g", true);
+Script s = translator.translate(t);
+System.out.println(s.getScript());
+// OUTPUT: g.V().has(_args_0,_args_1,_args_2).where(__.in(_args_3)).values(_args_4)
+System.out.println(s.parameters);
+// OUTPUT: Optional[{_args_0=person, _args_2=marko, _args_1=name, _args_4=age, _args_3=knows}]
+---
+
+
