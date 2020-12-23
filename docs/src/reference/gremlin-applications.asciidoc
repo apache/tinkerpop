@@ -1696,6 +1696,11 @@ image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a p
 
 * Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.
 Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.conf`.
+* TinkerPop tends to discourage the use of link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#long-traversals[long traversals]
+as they can introduce performance problems in some cases and in others simply fail with a `StackOverflowError`. Aside
+from restructuring the traversal into multiple commands or stream based inserts, it may sometimes make sense to simply
+increase the stack size of the JVM for Gremlin Server by configuring an `-Xss` setting in `JAVA_OPTIONS` of
+`gremlin-server.conf`.
 * If Gremlin Server is processing scripts or lambdas in bytecode requests, consider fine tuning the JVM's handling of
 the metaspace size. Consider modifying the `-XX:MetaspaceSize`,`-XX:MaxMetaspaceSize`, and related settings given the
 expected workload. More discussion on this topic can be found in the <<parameterized-scripts,Parameterized Scripts>>

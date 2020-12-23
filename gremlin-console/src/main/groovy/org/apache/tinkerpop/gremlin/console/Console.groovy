@@ -354,6 +354,19 @@ class Console {
                     io.err.println(Colorizer.render(Preferences.errorColor,e))
                 }
 
+                // provide a hint in the case of a stackoverflow as it can be common when running large Gremlin
+                // scripts and it isn't immediately apparent what the error might mean in this context especially
+                // if the user isn't familiar with the JVM. it really can only be a hint since we can't be completely
+                // sure it arose as a result of a long Gremlin traversal.
+                if (err instanceof StackOverflowError) {
+                    io.err.println(Colorizer.render(Preferences.errorColor,
+                            "A StackOverflowError can indicate that the Gremlin traversal being executed is too long. If " +
+                                    "you have a single Gremlin statement that is \"long\", you may break it up into " +
+                                    "multiple separate commands, re-write the traversal to operate on a stream of " +
+                                    "input via inject() rather than literals, or attempt to increase the -Xss setting" +
+                                    "of the Gremlin Console by modifying gremlin.sh."));
+                }
+
                 if (interactive) {
                     io.err.println(Colorizer.render(Preferences.infoColor,"Type ':help' or ':h' for help."))
                     io.err.print(Colorizer.render(Preferences.errorColor, "Display stack trace? [yN]"))
