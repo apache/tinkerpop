@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `PythonTranslator` which was improperly translating `Lambda` scripts.
 * Fixed bug in `GremlinDslProcessor` where certain return types in `TraversalSource` definitions were not generating code that would compile.
 * Checked high limit before retrieving next traverser in `RangeGlobalStep`.
+* Bumped to Groovy 2.5.14.
 
 [[release-3-4-9]]
 === TinkerPop 3.4.9 (Release Date: December 7, 2020)

@@ -149,7 +149,7 @@ limitations under the License.
         <commons.configuration.version>1.10</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.11</commons.lang3.version>
-        <groovy.version>2.5.11</groovy.version>
+        <groovy.version>2.5.14</groovy.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
