@@ -1519,9 +1519,10 @@ presence of operations such as:
 * `VertexProgram` execution (OLAP)
 * removal or modification of `TraversalStrategy` instances
 
+During execution the applied traversal strategies influence the results and side-effects of a given query.
+
 ===== Mechanisms
-Gremlin Server supports
-three mechanisms to configure authorization:
+Gremlin Server supports three mechanisms to configure authorization:
 
 . With the `ScriptFileGremlinPlugin` a groovy script is configured that instantiates the `GraphTraversalSources` that
 can be accessed by client requests. Using the `withStrategies()` gremlin
