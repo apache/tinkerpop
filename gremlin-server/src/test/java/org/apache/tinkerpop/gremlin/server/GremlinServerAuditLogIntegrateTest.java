@@ -307,7 +307,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldAuditLogWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -315,7 +315,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).intValue());
+            assertEquals(1, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
@@ -332,7 +332,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         assertTrue(authEvent.getLevel() == INFO &&
                 authMsg.matches(String.format("User %s with address .*? authenticated by %s", "stephen", simpleAuthenticatorName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User with address .*? requested: 1-1")));
+                item.getMessage().toString().matches("User with address .*? requested: 2-1")));
     }
 
     @Test
