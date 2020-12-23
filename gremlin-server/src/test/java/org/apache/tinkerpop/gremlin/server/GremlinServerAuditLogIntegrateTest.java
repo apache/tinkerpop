@@ -296,7 +296,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         assertTrue(authEvent.getLevel() == INFO &&
                 authMsg.matches(String.format("User %s with address .*? authenticated by %s", "stephen", simpleAuthenticatorName)));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User with address .*? requested: 1-1")));
+                item.getMessage().toString().matches("User with address .*? requested: 2-1")));
     }
 
     @Test
