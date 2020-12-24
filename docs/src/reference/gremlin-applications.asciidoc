@@ -1526,6 +1526,7 @@ export JAVA_OPTIONS="${JAVA_OPTIONS} ${KRB5_OPTION} ${JAAS_OPTION}"
 
 [[authorization]]
 ==== Authorization
+
 While authentication determines which clients can connect to Gremlin Server, authorization regulates which elements
 of the exposed graphs a specific user is allowed to create, read, update or delete (CRUD). Authorization in Gremlin
 Server can take place at two instances. Before execution a user request can be allowed or denied based on the
@@ -1540,7 +1541,12 @@ presence of operations such as:
 
 During execution the applied traversal strategies influence the results and side-effects of a given query.
 
+IMPORTANT: Authorization is a feature of Gremlin Server, but is not implemented as an element of the server protocol
+and therefore Remote Graph Providers may not have this feature or may not implement it in this particular way. Please
+consult the documentation of the graph you are using to determine what authorization features it supports.
+
 ===== Mechanisms
+
 Gremlin Server supports three mechanisms to configure authorization:
 
 . With the `ScriptFileGremlinPlugin` a groovy script is configured that instantiates the `GraphTraversalSources` that
@@ -1592,7 +1598,7 @@ following a policy that takes into account both the authenticated user and the o
 the most flexible and can support an almost unlimited number of authorization policies, it is somewhat complex to
 implement. In particular, applying the `SubgraphStrategy` requires knowledge about the schema of the graph.
 
-The passive authoratization solution perhaps provides a middle ground to start implementing authorization. This
+The passive authorization solution perhaps provides a middle ground to start implementing authorization. This
 solution assumes that the `SubgraphStrategy` is applied in the Gremlin Server initialization script, because compliance
 with a subgraph restriction can only be determined during the actual execution of the gremlin traversal. Note that the
 same graph can be reused with different `SubgraphStrategies`. Now, authorization policies can be defined in terms of
@@ -1612,6 +1618,7 @@ offered as <<gremlin-plugins, gremlin plugins>>.
 
 [[authz-code-example]]
 ===== Code example
+
 The two java classes below provide an example implementation of the `Authorizer` interface; they originate from
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-server/src/test/java/org/apache/tinkerpop/gremlin/server/authz[Gremlin Server's test package].
 If you copy the files into a project, build them into a jar and add the jar to Gremlin Server's CLASSPATH, you can use

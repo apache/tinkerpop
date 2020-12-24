@@ -3803,19 +3803,19 @@ following sections detail how traversal strategies are applied and defined and d
 strategies that are generally useful to end-users.
 
 === Application
+
 One can explicitly add or remove `TraversalStrategy` strategies on the `GraphTraversalSource` with the `withStrategies()`
 and `withoutStrategies()` <<start-steps, start steps>>, see the <<readonlystrategy, ReadOnlyStrategy>> and the
 <<barrier-step, barrier() step>> for examples. End users typically do this as part of issuing a gremlin traversal, either
 on a locally opened graph or a remotely accessed graph. However, when configuring Gremlin Server, traversal strategies
 can also be applied on exposed `GraphTraversalSource` instances and as part of an `Authorizer` implementation, see
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#authorization[Gremlin Server Authorization].
-Therefore, one should keep the following in mind when modifiying the list of `TraversalStrategy` strategies:
+Therefore, one should keep the following in mind when modifying the list of `TraversalStrategy` strategies:
 
 * A `TraversalStrategy` added to the traversal can be removed again later on. An example is the
 `conf/gremlin-server-modern-readonly.yaml` file from the Gremlin Server distribution, which applies the `ReadOnlyStrategy`
 to the `GraphTraversalSource` that remote clients can connect to. However, a remote client can remove it on its turn
 by applying the `withoutStrategies()` step with the `ReadOnlyStrategy`.
-
 * The traversal strategies assume that they are only applied once: no exception is raised or warning is logged when you
 try it nevertheless. As a result, the behavior in case of multiple application of the same traversal strategy is
 unspecified. For some, like the <<partitionstrategy, PartitionStrategy>> the first instance prevails. For others, like
@@ -3824,6 +3824,7 @@ implicitly as a result of a `with()` step, is an exception in that it actually m
 `with()` steps.
 
 === Definition
+
 A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
 [source,java]

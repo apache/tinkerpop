@@ -59,7 +59,7 @@ with Gremlin so as to avoid confusion in examples, documentations and mailing li
 As of 3.5.0, attempting to use a traversal spawned from a "source" will result in an exception. Users will need to
 modify their code if they use the unconventional syntax.
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
 
 ==== GraphSON and JsonBuilder
 
@@ -343,10 +343,21 @@ return these types of results and not have to work around them:
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395]
 
-==== Gremlin Server
+==== Gremlin Server Audit Logging
+
 The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
 to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
 formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
+
+==== Gremlin Server Authorization
+
+While Gremlin Server has long had authentication options to determine if a user can connect to the server, it now also
+contains the ability to apply a level of authorization to better control what a particular authenticated user will
+have access to. Authorization is controlled by the new `Authorizer` interface, which can be implemented by users and
+graph providers to provide this custom functionality.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
+link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
 
 ==== Python 2.x Support
 
@@ -488,6 +499,17 @@ link:https://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgra
 === Upgrading for Provider
 
 ==== Graph System Providers
+
+===== Server Authorization
+
+Gremlin Server now supports an extension model that enables authorization. Graph providers are not required to
+implement this functionality in any way, but it can be helpful for those graphs that wish to provide this functionality
+through Gremlin Server. Graphs Systems may still choose to rely on their own native authorization functionality if
+they so choose.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
+link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation],
+link:https://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_authentication_and_authorization[Provider Documentation]
 
 ===== ScalarMapStep
 
