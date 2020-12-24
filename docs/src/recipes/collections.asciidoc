@@ -22,7 +22,7 @@ image:gremlin-collections.png[width=400]
 Lists and maps form the basis for much of the processing in Gremlin traversals. They are core to how side-effects
 are typically held and how results are generally produced. Being able to pick them apart and reformat them is sometimes
 required. This need to shape the data within a traversal may arise both at the
-link:https://tinkerpop.apache.org/docs/current/reference/#terminal-steps[terminal step] of the traversal (technically
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#terminal-steps[terminal step] of the traversal (technically
 just prior to the terminal step) or in the middle of a traversal. Considering the former, a transformation just prior
 to iteration will get the result into the form required by the application which would remove the need for additional
 application level manipulation. Moreover, a transformation at this stage may reduce the size of the payload being

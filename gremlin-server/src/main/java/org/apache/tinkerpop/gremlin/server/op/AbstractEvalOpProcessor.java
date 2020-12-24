@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -202,7 +204,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
  *                         {@link GremlinExecutor#eval} method.
      */
     protected void evalOpInternal(final Context ctx, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
-                                  final BindingSupplier bindingsSupplier) throws OpProcessorException {
+                                  final BindingSupplier bindingsSupplier) {
         final Timer.Context timerContext = evalOpTimer.time();
         final RequestMessage msg = ctx.getRequestMessage();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
@@ -241,6 +243,15 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     final Iterator itty = IteratorUtils.asIterator(o);
 
                     logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
+                    if (settings.enableAuditLog) {
+                        AuthenticatedUser user = ctx.getChannelHandlerContext().channel().attr(StateKey.AUTHENTICATED_USER).get();
+                        if (null == user) {    // This is expected when using the AllowAllAuthenticator
+                            user = AuthenticatedUser.ANONYMOUS_USER;
+                        }
+                        String address = ctx.getChannelHandlerContext().channel().remoteAddress().toString();
+                        if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                        auditLogger.info("User {} with address {} requested: {}", user.getName(), address, script);
+                    }
                     if (settings.authentication.enableAuditLog) {
                         String address = ctx.getChannelHandlerContext().channel().remoteAddress().toString();
                         if (address.startsWith("/") && address.length() > 1) address = address.substring(1);

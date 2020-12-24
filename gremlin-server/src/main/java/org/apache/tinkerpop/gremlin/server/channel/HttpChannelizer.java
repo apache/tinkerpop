@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthorizationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -43,7 +45,6 @@ public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
-    private AbstractAuthenticationHandler authenticationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
@@ -64,26 +65,31 @@ public class HttpChannelizer extends AbstractChannelizer {
         pipeline.addLast(new HttpObjectAggregator(settings.maxContentLength));
 
         if (authenticator != null) {
-            // Cannot add the same handler instance to multiple times unless
+            // Cannot add the same handler instance multiple times unless
             // it is marked as @Sharable, indicating a race condition will
             // not occur. It may not be a safe assumption that the handler
             // is sharable so create a new handler each time.
-            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : instantiateAuthenticationHandler(settings.authentication);
+            final AbstractAuthenticationHandler authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+                    null : instantiateAuthenticationHandler(settings);
             if (authenticationHandler != null)
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+        }
+
+        if (authorizer != null) {
+            final ChannelInboundHandlerAdapter authorizationHandler = new HttpBasicAuthorizationHandler(authorizer);
+            pipeline.addLast(PIPELINE_AUTHORIZER, authorizationHandler);
         }
 
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
     }
 
-    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings.AuthenticationSettings authSettings) {
-        final String authHandlerClass = authSettings.authenticationHandler;
+    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings settings) {
+        final String authHandlerClass = settings.authentication.authenticationHandler;
         if (authHandlerClass == null) {
             //Keep things backwards compatible
-            return new HttpBasicAuthenticationHandler(authenticator, authSettings);
+            return new HttpBasicAuthenticationHandler(authenticator, settings);
         } else {
-            return createAuthenticationHandler(authSettings);
+            return createAuthenticationHandler(settings);
         }
     }
 

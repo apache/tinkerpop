@@ -20,12 +20,12 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.slf4j.Logger;
@@ -50,14 +50,13 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.Credenti
 public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandler {
     private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthenticationHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
-    private final Settings.AuthenticationSettings authenticationSettings;
+    private final Settings settings;
 
     private final Base64.Decoder decoder = Base64.getUrlDecoder();
 
-    public HttpBasicAuthenticationHandler(final Authenticator authenticator,
-                                          final Settings.AuthenticationSettings authenticationSettings) {
+    public HttpBasicAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
         super(authenticator);
-        this.authenticationSettings = authenticationSettings;
+        this.settings = settings;
     }
 
     @Override
@@ -103,11 +102,11 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
             credentials.put(PROPERTY_ADDRESS, address);
 
             try {
-                authenticator.authenticate(credentials);
+                final AuthenticatedUser user = authenticator.authenticate(credentials);
+                ctx.channel().attr(StateKey.AUTHENTICATED_USER).set(user);
                 ctx.fireChannelRead(request);
-
                 // User name logged with the remote socket address and authenticator classname for audit logging
-                if (authenticationSettings.enableAuditLog) {
+                if (settings.enableAuditLog || settings.authentication.enableAuditLog) {
                     final String[] authClassParts = authenticator.getClass().toString().split("[.]");
                     auditLogger.info("User {} with address {} authenticated by {}",
                             credentials.get(PROPERTY_USERNAME), address, authClassParts[authClassParts.length - 1]);

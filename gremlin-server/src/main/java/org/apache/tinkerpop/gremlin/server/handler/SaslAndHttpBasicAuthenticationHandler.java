@@ -39,9 +39,8 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
 
     private final String HTTP_AUTH = "http-authentication";
 
-    public SaslAndHttpBasicAuthenticationHandler(final Authenticator authenticator, 
-                                                 final Settings.AuthenticationSettings authenticationSettings) {
-        super(authenticator, authenticationSettings);
+    public SaslAndHttpBasicAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
+        super(authenticator, settings);
     }
 
     @Override
@@ -51,7 +50,7 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
             if (null != pipeline.get(HTTP_AUTH)) {
                 pipeline.remove(HTTP_AUTH);
             }
-            pipeline.addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.authenticationSettings));
+            pipeline.addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.settings));
             ctx.fireChannelRead(obj);
         } else {
             super.channelRead(ctx, obj);

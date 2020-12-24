@@ -44,13 +44,11 @@ import org.junit.Test;
 import java.io.File;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -136,7 +134,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         authSettings.authenticator = SimpleAuthenticator.class.getName();
 
-        // use a credentials graph with one user in it: stephen/password
+        // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
         final Map<String,Object> authConfig = new HashMap<>();
         authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
 
@@ -151,7 +149,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         //Add basic auth handler to make sure the reflection code path works.
         authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
 
-        // use a credentials graph with one user in it: stephen/password
+        // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
         final Map<String,Object> authConfig = new HashMap<>();
         authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
 

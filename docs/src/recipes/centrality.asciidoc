@@ -103,7 +103,7 @@ g.V().as("v").                                                                  
 
 WARNING: Since the betweeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:https://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -141,7 +141,7 @@ g.withSack(1f).V().as("v").                                                     
 
 WARNING: Since the closeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:https://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -168,7 +168,7 @@ passes through using the vertex as the key. The `Map` of this group count is sto
 time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m".
 <2> The entries in the `Map` are then iterated and sorted with the top ten most central vertices presented as output.
 <3> The previous examples can be expanded on a little bit by including a
-link:https://tinkerpop.apache.org/docs/current/reference/#timelimit-step[time limit]. The `timeLimit()` prevents the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#timelimit-step[time limit]. The `timeLimit()` prevents the
 traversal from taking longer than one hundred milliseconds to execute (the previous example takes considerably longer
 than that). While the answer provided with the `timeLimit()` is not the absolute ranking, it does provide a relative
 ranking that closely matches the absolute one. The use of `timeLimit()` in certain algorithms (e.g. recommendations)
