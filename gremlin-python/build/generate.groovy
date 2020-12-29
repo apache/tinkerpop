@@ -41,7 +41,7 @@ gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(new GroovyCustomizer()
         return new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation())
     }
 })
-pythonTranslator = PythonTranslator.of('g')
+translator = PythonTranslator.of('g')
 g = traversal().withGraph(EmptyGraph.instance())
 bindings = new SimpleBindings()
 bindings.put('g', g)
@@ -97,7 +97,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                 writer.write("=None")
             }
             writer.write(":")
-            writer.write(pythonTranslator.translate(t.bytecode).script)
+            writer.write(translator.translate(t.bytecode).script)
             writer.write(")")
             if (gremlinItty.hasNext()) writer.write(', ')
         }

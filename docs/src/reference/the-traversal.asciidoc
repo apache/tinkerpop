@@ -4287,11 +4287,11 @@ columns represent the language that Gremlin can be generated in:
 [width="100%",cols="<,^,^,^,^,^",options="header"]
 |=========================================================
 | |Java |Groovy |Javascript |.NET |Python
-|*Java* | |X | | |X
-|*Groovy* | |X | | |X
-|*Javascript* | |X | | |
-|*.NET* | | | | |
-|*Python*  | | | | |
+|*Java* |- |X |X | |X
+|*Groovy* | |X |X | |X
+|*Javascript* | |X |- | |
+|*.NET* | | | |- |
+|*Python*  | | | | |-
 |=========================================================
 
 Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
@@ -4303,6 +4303,7 @@ an interface perspective. API changes may occur in the near future.
 ----
 // gremlin-core module
 import org.apache.tinkerpop.gremlin.process.traversal.translator.*;
+
 GraphTraversalSource g = ...;
 Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
                                 where(in("knows")).
@@ -4310,12 +4311,16 @@ Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
                                 map(Lambda.Function("it.get() + 1");
 
 Translator.ScriptTranslator groovyTranslator = GroovyTranslator.of("g");
-System.out.println(groovyTranslator.translate(t);
+System.out.println(groovyTranslator.translate(t).getScript());
 // OUTPUT: g.V().has("person","name","marko").where(__.in("knows")).values("age").map({it.get() + 1})
 
 Translator.ScriptTranslator pythonTranslator = PythonTranslator.of("g");
-System.out.println(pythonTranslator.translate(t);
+System.out.println(pythonTranslator.translate(t).getScript());
 // OUTPUT: g.V().has('person','name','marko').where(__.in_('knows')).age.map(lambda: "it.get() + 1")
+
+Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
+System.out.println(javascriptTranslator.translate(t).getScript());
+// OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
 ----
 [source,javascript]
 ----
