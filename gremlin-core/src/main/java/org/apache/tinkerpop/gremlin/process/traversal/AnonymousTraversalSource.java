@@ -94,6 +94,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      *
      * @deprecated As of release 3.4.9, replaced by {@link #withEmbedded(Graph)}
      */
+    @Deprecated
     public T withGraph(final Graph graph) {
         return withEmbedded(graph);
     }
