@@ -41,7 +41,8 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
         for (final TraversalStrategy<?> addStrategy : strategies) {
-            this.traversalStrategies.remove(addStrategy);
+            // search by class to prevent strategies from being added more than once
+            getStrategy(addStrategy.getClass()).ifPresent(s -> this.traversalStrategies.remove(s));
         }
         Collections.addAll(this.traversalStrategies, strategies);
         this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
