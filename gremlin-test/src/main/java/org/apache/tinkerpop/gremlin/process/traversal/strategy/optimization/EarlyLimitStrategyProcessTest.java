@@ -95,13 +95,17 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
             assertTrue(metrics.getMetrics(5).getName().endsWith("@[d]"));
             assertEquals("RangeGlobalStep(0,1)", metrics.getMetrics(6).getName());
             assertEquals("PathStep@[e]", metrics.getMetrics(7).getName());
-            assertTrue(metrics.getMetrics(7).getCounts().values().stream().noneMatch(x -> x != 1L));
+            assertTrue(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L));
         } else {
             assertEquals(11, metrics.getMetrics().size());
             assertEquals("RangeGlobalStep(0,5)@[d]", metrics.getMetrics(6).getName());
             assertEquals("PathStep", metrics.getMetrics(7).getName());
             assertEquals("RangeGlobalStep(0,1)@[e]", metrics.getMetrics(8).getName());
-            assertTrue(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x != 1L));
+            // the following used to get 2 for the count but after 17b35aa295f7e84f26fd75f8a82fc7e1c33f73f0 we stopped
+            // forward pulling an extra traverser, so pretty sure the correct assertion is to match what happens with
+            // EarlyLimitStrategy above. i'm not even sure there is a point to asserting this anymore as the original
+            // intent does not appear clear to me, but i will leave it for now.
+            assertTrue(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L));
         }
     }
 }
