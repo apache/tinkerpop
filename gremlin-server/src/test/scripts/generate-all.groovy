@@ -59,13 +59,6 @@ globals << [hook : [
   }
 ] as LifeCycleHook]
 
-// discovered that unless the GraphTraversalSource.metaclass gets a method added to it
-// directly in this script then all the metaprogramming done in GremlinLoader will
-// simply be ignored and the following lines will fail. however, this situation only
-// applies when this init script for Gremlin Server is executed by way of the
-// gmavenplus-plugin. normal starts of Gremlin Server do not see this problem. spooky!
-GraphTraversalSource.metaClass.hack << { return null }
-
 // add default TraversalSource instances for each graph instance
 globals << [gclassic : traversal().withEmbedded(classic).withStrategies(ReferenceElementStrategy)]
 globals << [gmodern : traversal().withEmbedded(modern).withStrategies(ReferenceElementStrategy)]
