@@ -38,6 +38,8 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Added `Grouping` step interface.
 * Added `TraversalParent.replaceTraversal()` which can replace a direct child traversal.
 * Added `ByModulatorOptimizationStrategy` which replaces certain standard traversals w/ optimized traversals (e.g. `TokenTraversal`).
+* Improved `IdentityRemovalStrategy` by accounting for `EndStep` situations.
+* Added `IdentityRemovalStrategy` to the standard list of `TraversalStrategies`.
 * Refactored `MapStep` to move its logic to `ScalarMapStep` so that the old behavior could be preserved while allow other implementations to have more flexibility.
 * Modified TinkerGraph to support `null` property values and can be configured to disable that feature.
 * Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.

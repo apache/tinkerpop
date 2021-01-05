@@ -35,8 +35,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -92,10 +93,10 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
 
         if (t.asAdmin().getStrategies().getStrategy(EarlyLimitStrategy.class).isPresent()) {
             assertEquals(10, metrics.getMetrics().size());
-            assertTrue(metrics.getMetrics(5).getName().endsWith("@[d]"));
+            assertThat(metrics.getMetrics(5).getName().endsWith("@[d]"), is(true));
             assertEquals("RangeGlobalStep(0,1)", metrics.getMetrics(6).getName());
             assertEquals("PathStep@[e]", metrics.getMetrics(7).getName());
-            assertTrue(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L));
+            assertThat(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L), is(true));
         } else {
             assertEquals(11, metrics.getMetrics().size());
             assertEquals("RangeGlobalStep(0,5)@[d]", metrics.getMetrics(6).getName());
@@ -105,7 +106,7 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
             // forward pulling an extra traverser, so pretty sure the correct assertion is to match what happens with
             // EarlyLimitStrategy above. i'm not even sure there is a point to asserting this anymore as the original
             // intent does not appear clear to me, but i will leave it for now.
-            assertTrue(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L));
+            assertThat(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L), is(true));
         }
     }
 }

@@ -98,6 +98,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
+    public boolean hasStarts() {
+        return this.starts.hasNext();
+    }
+
+    @Override
     public void setPreviousStep(final Step<?, S> step) {
         this.previousStep = step;
     }

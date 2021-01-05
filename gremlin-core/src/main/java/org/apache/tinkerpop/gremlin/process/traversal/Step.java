@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.io.Serializable;
@@ -52,6 +53,14 @@ public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, 
      * @param start The traverser to add
      */
     public void addStart(final Traverser.Admin<S> start);
+
+    /**
+     * Determines if starts objects are present without iterating forward. This function has special applicability
+     * around {@link ReducingBarrierStep} implementations where they always return {@code true} for calls to
+     * {@link #hasNext()}. Using this function gives insight to what the step itself is holding in its iterator without
+     * performing any sort of processing on the step itself.
+     */
+    public boolean hasStarts();
 
     /**
      * Set the step that is previous to the current step.

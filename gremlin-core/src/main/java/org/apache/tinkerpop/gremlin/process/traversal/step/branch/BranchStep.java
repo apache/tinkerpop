@@ -18,15 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -41,7 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,10 +78,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             }
             this.traversalOptions.add(Pair.with(pickOptionTraversal, traversalOption));
         }
-        // adding an IdentityStep acts as a placeholder when reducing barriers get in the way - see the
-        // standardAlgorithm() method for more information.
-        if (TraversalHelper.hasStepOfAssignableClass(ReducingBarrierStep.class, traversalOption))
-            traversalOption.addStep(0, new IdentityStep(traversalOption));
+
         traversalOption.addStep(new EndStep(traversalOption));
 
         if (!this.hasBarrier && !TraversalHelper.getStepsOfAssignableClassRecursively(Barrier.class, traversalOption).isEmpty())
@@ -117,13 +110,11 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 // this block is ignored on the first pass through the while(true) giving the opportunity for
                 // the traversalOptions to be prepared. Iterate all of them and simply return the ones that yield
                 // results. applyCurrentTraverser() will have only injected the current traverser into the options
-                // that met the choice requirements.  Note that in addGlobalChildOption an IdentityStep was added to
-                // be a holder for that current traverser. That allows us to check that first step for an injected
-                // traverser as part of the condition for using that traversal option in the output. This is necessary
-                // because barriers like fold(), max(), etc. will always return true for hasNext() even if a traverser
-                // was not seeded in applyCurrentTraverser().
+                // that met the choice requirements.
                 for (final Traversal.Admin<S, E> option : getGlobalChildren()) {
-                    if (option.getStartStep().hasNext() && option.hasNext())
+                    // checking hasStarts() first on the step in case there is a ReducingBarrierStep which will
+                    // always return true for hasNext()
+                    if (option.getStartStep().hasStarts() && option.hasNext())
                         return option.getEndStep();
                 }
             }
