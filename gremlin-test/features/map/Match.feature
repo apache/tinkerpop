@@ -540,3 +540,14 @@ Feature: Step - match()
       | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[THE OTHER ONE]","d":"v[Weir]"}] |
       | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[WHARF RAT]","d":"v[Hunter]"}] |
 
+  Scenario: g_V_matchXa_outXknowsX_name_bX_identity
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").out("knows").values("name").as("b")).identity()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[marko]","b":"vadas"}] |
+      | m[{"a":"v[marko]","b":"josh"}] |

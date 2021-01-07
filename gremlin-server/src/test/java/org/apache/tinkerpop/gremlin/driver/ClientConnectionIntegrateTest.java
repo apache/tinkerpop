@@ -71,7 +71,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldCloseConnectionDeadDueToUnRecoverableError() throws Exception {
         // Set a low value of maxContentLength to intentionally trigger CorruptedFrameException
         final Cluster cluster = TestClientFactory.build()
-                                                 .serializer(Serializers.GRYO_V3D0)
+                                                 .serializer(Serializers.GRAPHBINARY_V1D0)
                                                  .maxContentLength(64)
                                                  .minConnectionPoolSize(1)
                                                  .maxConnectionPoolSize(2)
@@ -88,6 +88,8 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
             } catch (Exception re) {
                 assertThat(re.getCause() instanceof CorruptedFrameException, is(true));
             }
+
+            Thread.sleep(3000);
 
             // Assert that the host has not been marked unavailable
             assertEquals(1, cluster.availableHosts().size());

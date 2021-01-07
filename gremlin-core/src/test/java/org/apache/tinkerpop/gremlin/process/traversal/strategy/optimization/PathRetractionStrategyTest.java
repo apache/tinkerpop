@@ -91,14 +91,15 @@ public class PathRetractionStrategyTest {
             final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
             currentTraversal.setStrategies(currentStrategies);
             currentTraversal.applyStrategies();
-            assertEquals(this.labels, getKeepLabels(currentTraversal).toString());
+            assertEquals("Using Strategies: " + currentStrategies.toString(),
+                    this.labels, getKeepLabels(currentTraversal).toString());
             if (null != optimized)
                 assertEquals(currentTraversal, optimized);
         }
     }
 
     private List<Object> getKeepLabels(final Traversal.Admin<?, ?> traversal) {
-        List<Object> keepLabels = new ArrayList<>();
+        final List<Object> keepLabels = new ArrayList<>();
         for (Step step : traversal.getSteps()) {
             if (step instanceof PathProcessor) {
                 final Set<String> keepers = ((PathProcessor) step).getKeepLabels();
@@ -139,11 +140,26 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").out().where(neq("a")).out().select("a"), "[[a], []]", null},
                 {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), "[[a, b], [b], []]", null},
                 {__.V().match(as("a").out().as("b")), "[[a, b]]", null},
-                {__.V().match(as("a").out().as("b")).select("a"), "[[a], []]", null},
+                {__.V().match(as("a").out().as("b")).dedup(), "[[a, b], []]", null},
+                {__.V().match(as("a").out().as("b")).identity().dedup().identity(), "[[a, b], []]", null},
+                // MatchPredicateStrategy folds the dedup("a") into the match() so the step labels don't assert
+                // cleanly here given limitations of the suite that don't let us ignore a particular run. so the
+                // following will assert with "[[a, b], []]" but also "[[a, b]]" when MatchPredicateStrategy does
+                // its thing:
+                // {__.V().match(as("a").out("knows").as("b")).dedup("a"), "[[a, b], []]", null},
+                // would be nice if we could better detect dedup("a") with some form of look-ahead. note that
+                // MatchPredicateStrategy misses this pattern because of identity()
+                {__.V().match(as("a").out().as("b")).identity().dedup("a").identity(), "[[a, b], []]", null},
+                {__.V().match(as("a").out().as("b")).identity(), "[[a, b]]", null},
+                {__.V().match(as("a").out().as("b")).unfold(), "[[a, b]]", null},
+                {__.V().match(as("a").out().as("b")).unfold().identity(), "[[a, b]]", null},
+                // would be nice if we could better detect select("a") with some form of look-ahead
+                {__.V().match(as("a").out().as("b")).select("a"), "[[a, b], []]", null},
+                // would be nice to detect and retract "a" and "c" earlier
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
-                        "[[a, c], [a], []]", null},
+                        "[[a, b, c], [a], []]", null},
                 {__.V().as("a").out().select("a").path(), PATH_RETRACTION_STRATEGY_DISABLED, null},
                 {__.V().as("a").out().select("a").map(t -> t.path().get("a")), PATH_RETRACTION_STRATEGY_DISABLED, null}, // lambda introspection is not possible
                 {__.V().as("a").out().select("a").subgraph("b"), "[[]]", null},
@@ -158,15 +174,17 @@ public class PathRetractionStrategyTest {
                         "[[[a, b]], [b], []]", null},
                 {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), "[]", null},
                 {__.V().as("a").repeat(out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
-                // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
+                // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works)
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
                 {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").select("a").count(), "[[]]", __.V().as("a").out().as("b").select("a").count()},
                 {__.V().as("a").out().as("b").select("a").barrier().count(), "[[]]", __.V().as("a").out().as("b").select("a").barrier().count()},
                 {__.V().as("a").out().as("b").dedup("a", "b").out(), "[[]]", __.V().as("a").out().as("b").dedup("a", "b").out()},
                 {__.V().as("a").out().as("b").match(as("a").out().as("b")), "[[a, b]]", __.V().as("a").out().as("b").match(as("a").out().as("b"))},
-                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a")},
-                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE).out().dedup("a")},
+                // would be nice if we could better detect select("a") with some form of look-ahead
+                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a, b], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a")},
+                // would be nice if we could better detect select("a")/dedup("a") with some form of look-ahead
+                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a, b], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE).out().dedup("a")},
                 {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
                 {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
@@ -181,9 +199,8 @@ public class PathRetractionStrategyTest {
                         local(as("c").out().as("d", "e").select("c", "e").out().select("c")).
                         out().select("c"),
                         "[[b, c, e], [c, e], [[c], [c]], []]", null},
-                // TODO: same as above but note how path() makes things react
-//                {__.V().as("a").out().as("b").select("a").select("b").path().local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
-//                        "[[[c, e], [c, e]]]", null},
+                {__.V().as("a").out().as("b").select("a").select("b").path().local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
+                        PATH_RETRACTION_STRATEGY_DISABLED, null},
                 {__.V().as("a").out().as("b").select("a").select("b").repeat(out().as("c").select("b", "c").out().select("c")).out().select("c").out().select("b"),
                         "[[b, c], [b, c], [[b, c], [b, c]], [b], []]", null},
                 {__.V().as("a").out().as("b").select("a").select("b").repeat(out().as("c").select("b")).out().select("c").out().select("b"),

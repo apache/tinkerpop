@@ -435,6 +435,68 @@ configuration options may have changed.
 * Experimental support for multi/meta-properties in Neo4j which were previously deprecated have now been permanently
 removed.
 
+==== match() Consistency
+
+The `match()` step behavior might have seemed inconsistent those first using it. While there are a number of examples
+that might demonstrate this issue, the easiest one to consume would be:
+
+[source,text]
+----
+gremlin> g.V().match(__.as("a").out("knows").as("b"))
+==>[a:v[1],b:v[2]]
+==>[a:v[1],b:v[4]]
+gremlin> g.V().match(__.as("a").out("knows").as("b")).unfold()
+gremlin> g.V().match(__.as("a").out("knows").as("b")).identity()
+==>[]
+==>[]
+----
+
+The output is unexpected if there isn't awareness of some underlying optimizations at play, where `match()` as the
+final step in the traversal implies that the user wants all of the labels as part of the output. With the addition
+of the extra steps, `unfold()` and `identity()` in the above case, the implication is that the traversal must be
+explicit in the labels to preserve from match, thus:
+
+[source,text]
+----
+gremlin> g.V().match(__.as("a").out("knows").as("b")).select('a','b').unfold()
+==>a=v[1]
+==>b=v[2]
+==>a=v[1]
+==>b=v[4]
+gremlin> g.V().match(__.as("a").out("knows").as("b")).select('a','b').identity()
+==>[a:v[1],b:v[2]]
+==>[a:v[1],b:v[4]]
+----
+
+Being explicit, as is the preference in writing Gremlin to good form, helps restrict the path history required to
+execute the traversal and therefore preserves memory. Of course, making `match()` a special form of end step is a
+confusing approach as the behavior of the step changes simply because another step is in play. Furthermore, correct
+execution of the traversal, relies on the execution of traversal strategies when the same traversal should produce
+the same results irrespective of the strategies applied to it.
+
+In 3.5.0, we look to better adhere to that guiding design principle and ensure a more consistent output for these types
+of traversals. While the preferred method is to specify the labels to preserve from `match()` with a following
+`select()` step as shown above, `match()` will now consistently return all labels when they are not specified
+explicitly.
+
+[source,text]
+----
+gremlin> g.V().match(__.as("a").out("knows").as("b"))
+==>[a:v[1],b:v[2]]
+==>[a:v[1],b:v[4]]
+gremlin> g.V().match(__.as("a").out("knows").as("b")).identity()
+==>[a:v[1],b:v[2]]
+==>[a:v[1],b:v[4]]
+gremlin> g.V().match(__.as("a").out("knows").as("b")).unfold()
+==>a=v[1]
+==>b=v[2]
+==>a=v[1]
+==>b=v[4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2481[TINKERPOP-2481],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2499[TINKERPOP-2499]
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:

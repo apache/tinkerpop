@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -76,14 +77,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // do not apply this strategy if there are lambdas as you can't introspect to know what path information the lambdas are using
-        // do not apply this strategy if a PATH requirement step is being used (in the future, we can do PATH requirement lookhead to be more intelligent about its usage)
-        // do not apply this strategy if a VertexProgramStep is present with LABELED_PATH requirements
-        if (traversal.isRoot() &&
-                TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder ||
-                        step.getRequirements().contains(TraverserRequirement.PATH) ||
-                        (step instanceof VertexProgramStep &&
-                                step.getRequirements().contains(TraverserRequirement.LABELED_PATH)), traversal)) {
+        if (traversal.isRoot() && isNotApplicable(traversal)) {
             TraversalHelper.applyTraversalRecursively(t -> t.getEndStep().addLabel(MARKER), traversal);
         }
 
@@ -113,10 +107,16 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
             // add the keep labels to the path processor
             if (currentStep instanceof PathProcessor) {
                 final PathProcessor pathProcessor = (PathProcessor) currentStep;
-                if (currentStep instanceof MatchStep &&
-                        (currentStep.getNextStep().equals(EmptyStep.instance()) ||
-                                currentStep.getNextStep() instanceof DedupGlobalStep ||
-                                currentStep.getNextStep() instanceof SelectOneStep && currentStep.getNextStep().getNextStep() instanceof FilterStep)) {
+                // in versions prior to 3.5.0 we use to only keep labels if match() was last
+                // or was followed by dedup() or select().where(), but the pattern matching
+                // wasn't too smart and thus produced inconsistent/unexpected outputs. trying
+                // to make gremlin be a bit less surprising for users and ultimately this seemed
+                // like too much magic. finally, we really shouldn't rely have strategies relying
+                // to heavily on one another for results to be consistent. a traversal should
+                // produce the same results irrespective of zero, one or more strategies being
+                // applied. so, for now this change adds back a bit of overhead in managing some
+                // labels but produces results users expect.
+                if (currentStep instanceof MatchStep) {
                     pathProcessor.setKeepLabels(((MatchStep) currentStep).getMatchStartLabels());
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep).getMatchEndLabels());
                 } else {
@@ -219,7 +219,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
             keeperTrail.addAll(levelLabels);
         }
 
-        for (final Step currentStep : traversal.getSteps()) {
+        for (final Step<?,?> currentStep : traversal.getSteps()) {
             // go back through current level and add all keepers
             // if there is one more RepeatSteps in this traversal's lineage, preserve keep labels
             if (currentStep instanceof PathProcessor) {
@@ -228,6 +228,21 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                     ((PathProcessor) currentStep).getKeepLabels().addAll(keepLabels);
             }
         }
+    }
+
+    /**
+     * Determines if the strategy should be applied or not. It returns {@code true} and is "not applicable" when the
+     * following conditions are met:
+     * <ul>
+     *     <li>If there are lambdas as you can't introspect to know what path information the lambdas are using</li>
+     *     <li>If a PATH requirement step is being used (in the future, we can do PATH requirement lookhead to be more intelligent about its usage)</li>
+     *     <li>If a VertexProgramStep is present with LABELED_PATH requirements</li>
+     * </ul>
+     */
+    private static boolean isNotApplicable(final Traversal.Admin<?, ?> traversal) {
+        return TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder ||
+                step.getRequirements().contains(TraverserRequirement.PATH) ||
+                (step instanceof VertexProgramStep && step.getRequirements().contains(TraverserRequirement.LABELED_PATH)), traversal);
     }
 
     private void applyToChildren(final Set<String> keepLabels, final List<Traversal.Admin<Object, Object>> children) {

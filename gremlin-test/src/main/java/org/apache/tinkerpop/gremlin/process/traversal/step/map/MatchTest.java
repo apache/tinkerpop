@@ -69,6 +69,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_matchXa_selectXnameX_bX();
 
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_outXknowsX_name_bX_identity();
+
     // very basic query
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX();
 
@@ -608,6 +610,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", "josh", "b", "ripple"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_outXknowsX_name_bX_identity() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_matchXa_outXknowsX_name_bX_identity();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a", convertToVertex(graph, "marko"), "b", "vadas",
+                "a", convertToVertex(graph, "marko"), "b", "josh"), traversal);
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -624,6 +636,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_matchXa_selectXnameX_bX() {
             return g.V().valueMap().match(as("a").select("name").as("b"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_outXknowsX_name_bX_identity() {
+            return g.V().match(__.as("a").out("knows").values("name").as("b")).identity();
         }
 
         @Override
