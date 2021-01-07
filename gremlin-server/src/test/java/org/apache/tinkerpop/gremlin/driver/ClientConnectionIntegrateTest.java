@@ -87,6 +87,8 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 assertThat(re.getCause() instanceof CorruptedFrameException, is(true));
             }
 
+            Thread.sleep(3000);
+
             // Assert that the host has not been marked unavailable
             assertEquals(1, cluster.availableHosts().size());
 
