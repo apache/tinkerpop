@@ -26,7 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEf
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,9 +49,20 @@ public class DefaultTraversalStrategiesTest {
             o = new TraversalStrategiesTest.StrategyO();
 
     @Test
+    public void testNoRepeatStrategies() {
+        final TraversalStrategies s = new DefaultTraversalStrategies();
+        s.addStrategies(b, a, d, b, a, a, d, d);
+        s.addStrategies(new TraversalStrategiesTest.StrategyD(), new TraversalStrategiesTest.StrategyB());
+        assertEquals(3, s.toList().size());
+        assertEquals(a, s.toList().get(0));
+        assertEquals(b, s.toList().get(1));
+        assertEquals(d, s.toList().get(2));
+    }
+
+    @Test
     public void testWellDefinedDependency() {
         //Dependency well defined
-        TraversalStrategies s = new DefaultTraversalStrategies();
+        final TraversalStrategies s = new DefaultTraversalStrategies();
         s.addStrategies(b, a);
         assertEquals(2, s.toList().size());
         assertEquals(a, s.toList().get(0));
@@ -60,7 +72,7 @@ public class DefaultTraversalStrategiesTest {
     @Test
     public void testNoDependency() {
         //No dependency
-        TraversalStrategies s = new DefaultTraversalStrategies();
+        final TraversalStrategies s = new DefaultTraversalStrategies();
         s.addStrategies(c, a);
         assertEquals(2, s.toList().size());
     }
@@ -84,7 +96,7 @@ public class DefaultTraversalStrategiesTest {
     @Test
     public void testCircularDependency() {
         //Circular dependency => throws exception
-        TraversalStrategies s = new DefaultTraversalStrategies();
+        final TraversalStrategies s = new DefaultTraversalStrategies();
         try {
             s.addStrategies(c, k, a, b);
             fail();
@@ -116,7 +128,7 @@ public class DefaultTraversalStrategiesTest {
     @Test
     public void testCircularDependency2() {
         //Circular dependency => throws exception
-        TraversalStrategies s = new DefaultTraversalStrategies();
+        final TraversalStrategies s = new DefaultTraversalStrategies();
         try {
             s.addStrategies(d, c, k, a, e, b);
             fail();
@@ -199,10 +211,10 @@ public class DefaultTraversalStrategiesTest {
         assertEquals(1, fifthTraversal.getSideEffects().keys().size());
         assertEquals(2, fifthTraversal.getSideEffects().<Integer>get("a").intValue());
 
-        assertTrue(firstTraversal.getStrategies() == secondTraversal.getStrategies());
-        assertTrue(firstTraversal.getStrategies() != thirdTraversal.getStrategies());
-        assertTrue(forthTraversal.getStrategies() == thirdTraversal.getStrategies());
-        assertTrue(fifthTraversal.getStrategies() == firstTraversal.getStrategies());
+        assertSame(firstTraversal.getStrategies(), secondTraversal.getStrategies());
+        assertNotSame(firstTraversal.getStrategies(), thirdTraversal.getStrategies());
+        assertSame(forthTraversal.getStrategies(), thirdTraversal.getStrategies());
+        assertSame(fifthTraversal.getStrategies(), firstTraversal.getStrategies());
     }
 }
 

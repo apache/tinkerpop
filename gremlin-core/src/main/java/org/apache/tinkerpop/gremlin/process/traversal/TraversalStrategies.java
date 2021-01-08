@@ -97,8 +97,9 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
     }
 
     /**
-     * Add all the provided {@link TraversalStrategy} instances to the current collection.
-     * When all the provided strategies have been added, the collection is resorted.
+     * Add all the provided {@link TraversalStrategy} instances to the current collection. When all the provided
+     * strategies have been added, the collection is resorted. If a strategy class is found to already be defined, it
+     * is removed and replaced by the newly added one.
      *
      * @param strategies the traversal strategies to add
      * @return the newly updated/sorted traversal strategies collection
@@ -135,7 +136,6 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             strategyClasses.add(s.getClass());
             MultiMap.put(strategiesByCategory, s.getTraversalCategory(), s.getClass());
         });
-
 
         //Initialize all the dependencies
         strategies.forEach(strategy -> {
@@ -191,7 +191,6 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     + seenStrategyClases + ']');
         }
 
-
         if (unprocessedStrategyClasses.contains(strategyClass)) {
             seenStrategyClases.add(strategyClass);
             for (Class<? extends TraversalStrategy> dependency : MultiMap.get(dependencyMap, strategyClass)) {
@@ -209,7 +208,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
          * Keeps track of {@link GraphComputer} and/or {@link Graph} classes that have been initialized to the
          * classloader so that they do not have to be reflected again.
          */
-        private static Set<Class> LOADED = ConcurrentHashMap.newKeySet();
+        private static final Set<Class<?>> LOADED = ConcurrentHashMap.newKeySet();
 
         private static final Map<Class<? extends Graph>, TraversalStrategies> GRAPH_CACHE = new HashMap<>();
         private static final Map<Class<? extends GraphComputer>, TraversalStrategies> GRAPH_COMPUTER_CACHE = new HashMap<>();

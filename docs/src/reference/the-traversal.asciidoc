@@ -3816,12 +3816,11 @@ Therefore, one should keep the following in mind when modifying the list of `Tra
 `conf/gremlin-server-modern-readonly.yaml` file from the Gremlin Server distribution, which applies the `ReadOnlyStrategy`
 to the `GraphTraversalSource` that remote clients can connect to. However, a remote client can remove it on its turn
 by applying the `withoutStrategies()` step with the `ReadOnlyStrategy`.
-* The traversal strategies assume that they are only applied once: no exception is raised or warning is logged when you
-try it nevertheless. As a result, the behavior in case of multiple application of the same traversal strategy is
-unspecified. For some, like the <<partitionstrategy, PartitionStrategy>> the first instance prevails. For others, like
-the <<subgraphstrategy, SubgraphStrategy>>, the last instance prevails. The `OptionStrategy`, which is applied
-implicitly as a result of a `with()` step, is an exception in that it actually merges the parameters of multiple
-`with()` steps.
+* When a `TraversalStrategy` of a particular type is added, it replaces any instances of its type that exist prior to
+it. Multiple instances of a `TraversalStrategy` can therefore not be registered and their functionality is no way
+merged automatically. Therefore, if there is a particular strategy registered whose functionality needs to be changed
+it is important to either find and modify the existing instance or construct a new one copying the options to keep
+from the old to the new instance.
 
 === Definition
 

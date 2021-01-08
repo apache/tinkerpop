@@ -75,11 +75,6 @@ public class GraphTraversalSource implements TraversalSource {
 
     ////////////////
 
-    @Override
-    public Optional<Class> getAnonymousTraversalClass() {
-        return Optional.of(__.class);
-    }
-
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
         this.strategies = traversalStrategies;
@@ -93,6 +88,11 @@ public class GraphTraversalSource implements TraversalSource {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
         this.connection = connection;
         this.strategies.addStrategies(new RemoteStrategy(connection));
+    }
+
+    @Override
+    public Optional<Class<?>> getAnonymousTraversalClass() {
+        return Optional.of(__.class);
     }
 
     @Override

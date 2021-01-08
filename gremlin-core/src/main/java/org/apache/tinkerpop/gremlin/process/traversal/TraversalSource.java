@@ -367,7 +367,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         return clone;
     }
 
-    public default Optional<Class> getAnonymousTraversalClass() {
+    public default Optional<Class<?>> getAnonymousTraversalClass() {
         return Optional.empty();
     }
 
