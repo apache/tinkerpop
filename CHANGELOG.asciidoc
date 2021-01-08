@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.4.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added `GremlinScriptChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
+* Added `none()` step for all language variants.
 * Fixed bug in `PythonTranslator` which was improperly translating `Lambda` scripts.
 * Fixed bug in `GremlinDslProcessor` where certain return types in `TraversalSource` definitions were not generating code that would compile.
 * Checked high limit before retrieving next traverser in `RangeGlobalStep`.
