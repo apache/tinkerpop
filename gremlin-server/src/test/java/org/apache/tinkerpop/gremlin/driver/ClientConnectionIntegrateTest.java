@@ -89,6 +89,8 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 assertThat(re.getCause() instanceof CorruptedFrameException, is(true));
             }
 
+            // without this wait this test is failing randomly on docker/travis with ConcurrentModificationException
+            // see TINKERPOP-2504
             Thread.sleep(3000);
 
             // Assert that the host has not been marked unavailable
