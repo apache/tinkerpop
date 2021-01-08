@@ -107,7 +107,7 @@ def getCSharpGenericTypeParam = { typeName ->
 
 def toCSharpType = { name ->
     String typeName = toCSharpTypeMap.getOrDefault(name, name)
-    if (typeName.equals(name) && (typeName.contains("? extends") || typeName.equals("Tree"))) {
+    if (typeName == name && (typeName.contains("? extends") || typeName == "Tree")) {
         typeName = "E2"
     }
     return typeName
@@ -124,10 +124,10 @@ def getJavaGenericTypeParameterTypeNames = { method ->
     return typeArguments.
             collect { (it instanceof Class) ? ((Class)it).simpleName : it.typeName }.
             collect { name ->
-                if (name.equals("A")) {
+                if (name == "A") {
                     name = "object"
                 }
-                else if (name.equals("B")) {
+                else if (name == "B") {
                     name = "E2"
                 }
                 name
@@ -253,12 +253,12 @@ def binding = ["pmethods": P.class.getMethods().
                        unique().
                        sort { a, b -> a <=> b },
                "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
-                        findAll { GraphTraversalSource.class.equals(it.returnType) }.
+                        findAll { (GraphTraversalSource.class == it.returnType) }.
                         findAll {
-                            !it.name.equals("clone") &&
-                                    !it.name.equals(TraversalSource.Symbols.with) &&
-                                    !it.name.equals(TraversalSource.Symbols.withRemote) &&
-                                    !it.name.equals(TraversalSource.Symbols.withComputer)
+                            it.name != "clone" &&
+                                    it.name != TraversalSource.Symbols.with &&
+                                    it.name != TraversalSource.Symbols.withRemote &&
+                                    it.name != TraversalSource.Symbols.withComputer
                         }.
                 // Select unique combination of C# parameter types and sort by Java parameter type combination
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
@@ -269,7 +269,7 @@ def binding = ["pmethods": P.class.getMethods().
                             return ["methodName": javaMethod.name, "parameters":parameters, "paramNames":paramNames]
                         },
                "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
-                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                        findAll { (GraphTraversal.class == it.returnType) }.
                 // Select unique combination of C# parameter types and sort by Java parameter type combination
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
@@ -284,8 +284,8 @@ def binding = ["pmethods": P.class.getMethods().
                             return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "isArgsCastNecessary":isArgsCastNecessary]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
-                        findAll { GraphTraversal.class.equals(it.returnType) }.
-                        findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
+                        findAll { (GraphTraversal.class == it.returnType) }.
+                        findAll { it.name != "clone" && it.name != "iterate" }.
                 // Select unique combination of C# parameter types and sort by Java parameter type combination
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
@@ -305,9 +305,9 @@ def binding = ["pmethods": P.class.getMethods().
                             return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "isArgsCastNecessary":isArgsCastNecessary]
                         },
                "anonStepMethods": __.class.getMethods().
-                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                        findAll { (GraphTraversal.class == it.returnType) }.
                         findAll { Modifier.isStatic(it.getModifiers()) }.
-                        findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                        findAll { it.name != "__" && it.name != "start" }.
                 // Select unique combination of C# parameter types and sort by Java parameter type combination
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.

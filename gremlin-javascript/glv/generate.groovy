@@ -82,33 +82,33 @@ def binding = ["enums": CoreImports.getClassImports()
                        unique().
                        sort { a, b -> a <=> b },
                "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
-                       findAll { GraphTraversalSource.class.equals(it.returnType) }.
+                       findAll { (GraphTraversalSource.class == it.returnType) }.
                        findAll {
                            !it.name.equals("clone") &&
                                    // Use hardcoded name to be for forward-compatibility
-                                   !it.name.equals("withBindings") &&
-                                   !it.name.equals(TraversalSource.Symbols.with) &&
-                                   !it.name.equals(TraversalSource.Symbols.withRemote) &&
-                                   !it.name.equals(TraversalSource.Symbols.withComputer)
+                                   it.name != "withBindings" &&
+                                   it.name != TraversalSource.Symbols.with &&
+                                   it.name != TraversalSource.Symbols.withRemote &&
+                                   it.name != TraversalSource.Symbols.withComputer
                        }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
                "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
-                       findAll { GraphTraversal.class.equals(it.returnType) }.
+                       findAll { (GraphTraversal.class == it.returnType) }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
                "graphStepMethods": GraphTraversal.getMethods().
-                       findAll { GraphTraversal.class.equals(it.returnType) }.
+                       findAll { (GraphTraversal.class == it.returnType) }.
                        findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
                "anonStepMethods": __.class.getMethods().
-                       findAll { GraphTraversal.class.equals(it.returnType) }.
+                       findAll { (GraphTraversal.class == it.returnType) }.
                        findAll { Modifier.isStatic(it.getModifiers()) }.
-                       findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                       findAll { !it.name.equals("__") && it.name != "start" }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },

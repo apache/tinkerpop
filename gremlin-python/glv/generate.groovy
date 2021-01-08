@@ -87,7 +87,7 @@ def binding = ["enums": CoreImports.getClassImports()
                        unique().
                        sort { a, b -> a <=> b },
                "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
-                       findAll { GraphTraversalSource.class.equals(it.returnType) }.
+                       findAll { (GraphTraversalSource.class == it.returnType) }.
                        findAll {
                            !it.name.equals("clone") &&
                                    !it.name.equals(TraversalSource.Symbols.with) &&
@@ -98,20 +98,20 @@ def binding = ["enums": CoreImports.getClassImports()
                        unique().
                        sort { a, b -> a <=> b },
                "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
-                       findAll { GraphTraversal.class.equals(it.returnType) }.
+                       findAll { (GraphTraversal.class == it.returnType) }.
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },
                "graphStepMethods": GraphTraversal.getMethods().
-                       findAll { GraphTraversal.class.equals(it.returnType) }.
-                       findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
+                       findAll { GraphTraversal.class == it.returnType }.
+                       findAll { it.name != "clone" && it.name != "iterate" }.
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },
                "anonStepMethods": __.class.getMethods().
-                       findAll { GraphTraversal.class.equals(it.returnType) }.
+                       findAll { (GraphTraversal.class == it.returnType) }.
                        findAll { Modifier.isStatic(it.getModifiers()) }.
-                       findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                       findAll { it.name != "__" && it.name != "start" }.
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },
