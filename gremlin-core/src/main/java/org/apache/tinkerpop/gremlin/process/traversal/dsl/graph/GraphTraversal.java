@@ -59,6 +59,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
@@ -2124,6 +2125,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default GraphTraversal<S, TraversalMetrics> profile() {
         return (GraphTraversal<S, TraversalMetrics>) Traversal.super.profile();
+    }
+
+    /**
+     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
+     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
+     * that a traversal should be re-written in another form.
+     *
+     * @return the updated traversal with respective {@link NoneStep}.
+     */
+    @Override
+    default GraphTraversal<S, E> none() {
+        return (GraphTraversal<S, E>) Traversal.super.none();
     }
 
     /**

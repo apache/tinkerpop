@@ -217,7 +217,9 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     }
 
     /**
-     * Filter all traversers in the traversal.
+     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
+     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
+     * that a traversal should be re-written in another form.
      *
      * @return the updated traversal with respective {@link NoneStep}.
      */
