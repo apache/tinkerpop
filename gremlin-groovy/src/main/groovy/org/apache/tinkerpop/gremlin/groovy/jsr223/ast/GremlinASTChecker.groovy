@@ -71,7 +71,7 @@ final class GremlinASTChecker {
          * commands using this step, the timeouts are summed together.
          */
         Optional<Long> getTimeout() {
-            timeout == 0 ? Optional.empty() : Optional.of(timeout)
+            timeout == 0 ? Optional.<Long>empty() : Optional.of(timeout)
         }
     }
 
