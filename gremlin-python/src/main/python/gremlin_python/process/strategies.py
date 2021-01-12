@@ -64,7 +64,7 @@ class PartitionStrategy(TraversalStrategy):
             self.configuration["partitionKey"] = partition_key
         if write_partition is not None:
             self.configuration["writePartition"] = write_partition
-        if write_partition is not None:
+        if read_partitions is not None:
             self.configuration["readPartitions"] = read_partitions
         if include_meta_properties is not None:
             self.configuration["includeMetaProperties"] = include_meta_properties
