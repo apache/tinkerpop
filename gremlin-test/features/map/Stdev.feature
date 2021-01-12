@@ -25,10 +25,10 @@ Feature: Step - stdev()
       """
     When iterated to list
     Then the result should be unordered
-      | result    |
-      | d[3.03].d |
+      | result                 |
+      | d[3.031088913245535].d |
 
-  Scenario: g_V_foo_mean
+  Scenario: g_V_foo_stdev
     Given the modern graph
     And the traversal of
       """
@@ -45,8 +45,8 @@ Feature: Step - stdev()
       """
     When iterated to list
     Then the result should be unordered
-      | result    |
-      | d[3.03].d |
+      | result                 |
+      | d[3.031088913245535].d |
 
   Scenario:  g_V_foo_fold_stdevXlocalX
     Given the modern graph
@@ -56,14 +56,3 @@ Feature: Step - stdev()
       """
     When iterated to list
     Then the result should be empty
-
-  Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_stdevX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().hasLabel("software").group().by("name").by(__.bothE().values("weight").stdev())
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result                                                  |
-      | m[{"ripple":"d[0.0].d","lop":"d[0.094280904158206].d"}] |

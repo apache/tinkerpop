@@ -49,6 +49,13 @@ public class StdevGlobalStep<S extends Number, E extends Number> extends Reducin
     }
 
     @Override
+    public void processAllStarts() {
+        if (this.starts.hasNext()) {
+            super.processAllStarts();
+        }
+    }
+
+    @Override
     public E projectTraverser(final Traverser.Admin<S> traverser) {
         return (E) new StdevNumber(traverser.get(), traverser.bulk());
     }

@@ -28,13 +28,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Junshi Guo
@@ -49,8 +46,6 @@ public abstract class StdevTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Number> get_g_V_foo_stdev();
 
     public abstract Traversal<Vertex, Number> get_g_V_foo_fold_stdevXlocalX();
-
-    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_stdevX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -70,19 +65,6 @@ public abstract class StdevTest extends AbstractGremlinProcessTest {
             printTraversalForm(traversal);
             assertFalse(traversal.hasNext());
         }
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_stdevX() {
-        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_stdevX();
-        printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
-        final Map<String, Number> map = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals(2, map.size());
-        assertEquals(0.0, map.get("ripple"));
-        assertEquals(Math.sqrt(2) / 15, (Double) map.get("lop"), 0.001);
     }
 
     public static class Traversals extends StdevTest {
@@ -105,11 +87,6 @@ public abstract class StdevTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Number> get_g_V_foo_fold_stdevXlocalX() {
             return g.V().values("foo").fold().stdev(Scope.local);
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_stdevX() {
-            return g.V().hasLabel("software").<String, Number>group().by("name").by(bothE().values("weight").stdev());
         }
     }
 

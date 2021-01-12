@@ -62,8 +62,15 @@ public class PercentileGlobalStep<S extends Number> extends ReducingBarrierStep<
     }
 
     @Override
+    public void processAllStarts() {
+        if (this.starts.hasNext()) {
+            super.processAllStarts();
+        }
+    }
+
+    @Override
     public Object projectTraverser(final Traverser.Admin<S> traverser) {
-        Stream.iterate(0, n -> n+1).limit(traverser.bulk()).forEach(n -> this.buffer.add(traverser.get()));
+        Stream.iterate(0, n -> n + 1).limit(traverser.bulk()).forEach(n -> this.buffer.add(traverser.get()));
         return Collections.emptyMap();
     }
 
