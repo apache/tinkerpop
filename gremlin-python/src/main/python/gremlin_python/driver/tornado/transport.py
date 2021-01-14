@@ -26,7 +26,7 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 class TornadoTransport(AbstractBaseTransport):
 
-    def __init__(self, read_timeout=30, write_timeout=30,
+    def __init__(self, read_timeout=None, write_timeout=None,
                  compression_options={'compression_level': 5, 'mem_level': 5}):
         self._loop = ioloop.IOLoop(make_current=False)
         self._ws = None
