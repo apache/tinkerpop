@@ -43,7 +43,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -199,8 +202,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         // without this initial check iterating an invalid methodName will lead to a null pointer and a less than
         // great error message for the user. 
         if (!methodCache.containsKey(methodName)) {
-            final String methodArgs = argumentsCopy.length > 0 ? Arrays.toString(argumentsCopy) : "";
-            throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + methodArgs + ")");
+            throw new IllegalStateException(generateMethodNotFoundMessage(
+                    "Could not locate method", delegate, methodName, argumentsCopy));
         }
 
         try {
@@ -268,12 +271,26 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 }
             }
         } catch (final Throwable e) {
-            throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(argumentsCopy) + ")", e);
+            throw new IllegalStateException(generateMethodNotFoundMessage(
+                    e.getMessage(), null, methodName, argumentsCopy), e);
         }
 
         // if it got down here then the method was in the cache but it was never called as it could not be found
         // for the supplied arguments
-        throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
+        throw new IllegalStateException(generateMethodNotFoundMessage(
+                "Could not locate method", delegate, methodName, argumentsCopy));
+    }
+
+    /**
+     * Generates the message used when a method cannot be located in the translation. Arguments are converted to
+     * classes to avoid exposing data that might be sensitive.
+     */
+    private String generateMethodNotFoundMessage(final String message, final Object delegate,
+                                                 final String methodNameNotFound, final Object[] args) {
+        final Object[] arguments = null == args ? new Object[0] : args;
+        final String delegateClassName = delegate != null ? delegate.getClass().getSimpleName() : "";
+        return message + ": " + delegateClassName + "." + methodNameNotFound + "(" +
+                Stream.of(arguments).map(Object::getClass).map(Class::getSimpleName).collect(Collectors.joining(", ")) + ")";
     }
 
     private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<ReflectedMethod>> methodCache) {
