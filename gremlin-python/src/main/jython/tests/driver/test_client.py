@@ -25,6 +25,8 @@ from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph
+from gremlin_python.driver.tornado.transport import TornadoTransport
+from tornado.util import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -76,6 +78,18 @@ def test_client_connection_pool_after_error(client):
         # expecting the pool size to be 1 again after query returned
         assert gse.status_code == 597
         assert client.available_pool_size == 1
+
+
+def test_client_side_timeout_set_for_tornado(client):
+    client = Client('ws://localhost:45940/gremlin', 'gmodern',
+                    transport_factory=lambda: TornadoTransport(read_timeout=1, write_timeout=1))
+
+    try:
+        # should fire an exception
+        client.submit('Thread.sleep(2000);1').all().result()
+        assert False
+    except TimeoutError as toerr:
+        assert str(toerr) == "Operation timed out after 1 seconds"
 
 
 def test_client_bytecode(client):
