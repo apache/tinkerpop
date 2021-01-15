@@ -156,4 +156,8 @@ public final class PathFilterStep<S> extends FilterStep<S> implements FromToModu
     public boolean isSimple() {
         return isSimple;
     }
+
+    public TraversalRing<Object, Object> getTraversalRing() {
+        return traversalRing;
+    }
 }
