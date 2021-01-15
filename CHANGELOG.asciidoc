@@ -27,7 +27,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `none()` step for all language variants.
 * Fixed bug in `PythonTranslator` which was improperly translating `Lambda` scripts.
 * Fixed bug in `GremlinDslProcessor` where certain return types in `TraversalSource` definitions were not generating code that would compile.
-* Checked high limit before retrieving next traverser in `RangeGlobalStep`.
 * Changed the default read and write timeout values for the `TornadoTransport` to `None` to disable it.
 * Bumped to Groovy 2.5.14.
 
