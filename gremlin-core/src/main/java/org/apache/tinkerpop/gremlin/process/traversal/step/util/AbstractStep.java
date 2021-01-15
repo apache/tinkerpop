@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -211,7 +210,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return traverserStepIdAndLabelsSetByChild;
     }
 
-    protected final Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
+    protected Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
         if (!this.traverserStepIdAndLabelsSetByChild) {
             traverser.setStepId(this.nextStep.getId());
             traverser.addLabels(this.labels);
