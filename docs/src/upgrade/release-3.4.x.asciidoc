@@ -30,9 +30,27 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Python Timeout Issue
 
+In version 3.4.9, it became possible to set client-side read/write timeouts. Those timeouts were defaulted to thirty
+seconds which could put the client at odds with other timeout settings which could then cause unexpected failures. The
+client-side timeouts have now been defaulted to `None` leaving it to users to set the timeout themselves if they so
+desire. In this way, 3.4.10 has the same timeout behavior as 3.4.8 without any additional workarounds.
 
+The timeouts can be configured as shown in the below example:
 
+[source,python]
+----
+from gremlin_python.driver.tornado.transport import TornadoTransport
+
+graph=Graph()
+connection = DriverRemoteConnection(endpoint,'g',
+                 transport_factory=lambda: TornadoTransport(read_timeout=60, write_timeout=60))
+
+g = graph.traversal().withRemote(connection)
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2505[TINKERPOP-2505]
 
 == TinkerPop 3.4.9
 
