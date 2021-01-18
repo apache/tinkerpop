@@ -100,7 +100,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-10]]
-=== TinkerPop 3.4.10 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.10 (Release Date: January 18, 2021)
 
 * Added `GremlinScriptChecker` to provide a way to extract properties of scripts before doing an actual `eval()`.
 * Added `none()` step for all language variants.
@@ -108,6 +108,17 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `GremlinDslProcessor` where certain return types in `TraversalSource` definitions were not generating code that would compile.
 * Changed the default read and write timeout values for the `TornadoTransport` to `None` to disable it.
 * Bumped to Groovy 2.5.14.
+
+==== Bugs
+
+* TINKERPOP-2496 GremlinDslProcessor fails when SocialTraversalSourceDsl overrides close
+* TINKERPOP-2505 Gremlin Python Client Query Times out at 30 seconds instead of the server timeout
+
+==== Improvements
+
+* TINKERPOP-2447 Improve handling of StackOverflowError for long traversals
+* TINKERPOP-2485 Invalid http tests with ?gremlin=1-1
+* TINKERPOP-2500 Add none() step for all GLVs
 
 [[release-3-4-9]]
 === TinkerPop 3.4.9 (Release Date: December 7, 2020)
