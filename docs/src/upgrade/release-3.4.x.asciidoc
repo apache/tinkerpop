@@ -59,6 +59,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2505[TINKERPOP-2505]
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
+WARNING: Python users should prefer use of 3.4.10 to avoid an issue with a default timeout setting that requires direct
+configuration described in link:https://issues.apache.org/jira/browse/TINKERPOP-2505[TINKERPOP-2505].
+
 === Upgrading for Users
 
 ==== Translator Implementations
