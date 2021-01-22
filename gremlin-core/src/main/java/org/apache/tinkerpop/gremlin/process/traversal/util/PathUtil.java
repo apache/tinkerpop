@@ -58,7 +58,6 @@ public class PathUtil {
                 }
             }
             referencedLabels.addAll(labels);
-
         }
 
         return referencedLabels;

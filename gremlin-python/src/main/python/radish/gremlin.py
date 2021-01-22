@@ -376,6 +376,7 @@ world.gremlins = {
     'g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count': [(lambda g:g.V().match(__.as_('a').out('followedBy').count().is_(P.gt(10)).as_('b'),__.as_('a').in_('followedBy').count().is_(P.gt(10)).as_('b')).count())], 
     'g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX': [(lambda g:g.V().match(__.as_('a').in_('sungBy').as_('b'),__.as_('a').in_('writtenBy').as_('c'),__.as_('b').out('writtenBy').as_('d')).where(__.as_('c').out('sungBy').as_('d')).where(__.as_('d').has('name','Garcia')))], 
     'g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX': [(lambda g:g.V().match(__.as_('a').has('name','Garcia'),__.as_('a').in_('writtenBy').as_('b'),__.as_('b').out('followedBy').as_('c'),__.as_('c').out('writtenBy').as_('d'),__.where('d',P.neq('a'))))], 
+    'g_V_matchXa_outXknowsX_name_bX_identity': [(lambda g:g.V().match(__.as_('a').out('knows').name.as_('b')).identity())], 
     'g_V_outE_mathX0_minus_itX_byXweightX': [(lambda g:g.V().outE().math('0-_').by('weight'))], 
     'g_V_hasXageX_valueMap_mathXit_plus_itXbyXselectXageX_unfoldXX': [(lambda g:g.V().has('age').valueMap().math('_+_').by(__.select('age').unfold()))], 
     'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age'))], 

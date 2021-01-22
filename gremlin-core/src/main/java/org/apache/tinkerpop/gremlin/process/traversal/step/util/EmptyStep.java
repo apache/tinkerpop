@@ -50,6 +50,11 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
+    public boolean hasStarts() {
+        return false;
+    }
+
+    @Override
     public void addStart(final Traverser.Admin<S> start) {
 
     }

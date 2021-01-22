@@ -179,6 +179,11 @@ public class TraversalTest {
         }
 
         @Override
+        public boolean hasStarts() {
+            return false;
+        }
+
+        @Override
         public void setPreviousStep(final Step step) {
 
         }

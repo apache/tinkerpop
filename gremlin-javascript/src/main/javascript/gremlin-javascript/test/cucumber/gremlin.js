@@ -391,6 +391,7 @@ const gremlins = {
     g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count: [function({g}) { return g.V().match(__.as("a").out("followedBy").count().is(P.gt(10)).as("b"),__.as("a").in_("followedBy").count().is(P.gt(10)).as("b")).count() }], 
     g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX: [function({g}) { return g.V().match(__.as("a").in_("sungBy").as("b"),__.as("a").in_("writtenBy").as("c"),__.as("b").out("writtenBy").as("d")).where(__.as("c").out("sungBy").as("d")).where(__.as("d").has("name","Garcia")) }], 
     g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX: [function({g}) { return g.V().match(__.as("a").has("name","Garcia"),__.as("a").in_("writtenBy").as("b"),__.as("b").out("followedBy").as("c"),__.as("c").out("writtenBy").as("d"),__.where("d",P.neq("a"))) }], 
+    g_V_matchXa_outXknowsX_name_bX_identity: [function({g}) { return g.V().match(__.as("a").out("knows").values("name").as("b")).identity() }], 
     g_V_outE_mathX0_minus_itX_byXweightX: [function({g}) { return g.V().outE().math("0-_").by("weight") }], 
     g_V_hasXageX_valueMap_mathXit_plus_itXbyXselectXageX_unfoldXX: [function({g}) { return g.V().has("age").valueMap().math("_+_").by(__.select("age").unfold()) }], 
     g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age") }], 

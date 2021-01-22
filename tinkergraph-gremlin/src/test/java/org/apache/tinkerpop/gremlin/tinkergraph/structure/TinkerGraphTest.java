@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -76,6 +77,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -710,6 +712,19 @@ public class TinkerGraphTest {
         } catch (IllegalStateException ve) {
             assertThat(ve.getMessage(), containsString("that is setting a property key to a reserved word"));
         }
+    }
+
+    @Test
+    public void shouldWorkWithoutIdentityStrategy() {
+        final Graph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = traversal().withEmbedded(graph).withoutStrategies(IdentityRemovalStrategy.class);
+        final List<Map<String,Object>> result = g.V().match(__.as("a").out("knows").values("name").as("b")).identity().toList();
+        assertEquals(2, result.size());
+        result.stream().forEach(m -> {
+            assertEquals(2, m.size());
+            assertThat(m.containsKey("a"), is(true));
+            assertThat(m.containsKey("b"), is(true));
+        });
     }
 
     /**

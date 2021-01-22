@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+
+import java.util.List;
 
 /**
  * {@code IdentityRemovalStrategy} looks for {@link IdentityStep} instances and removes them.
@@ -46,13 +49,27 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        // if there is just one step we would keep the step whether it was identity() or not.
         if (traversal.getSteps().size() <= 1)
             return;
 
         for (final IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
+            // with no labels on the identity() it can just be dropped. if there are labels then they should be
+            // moved to the previous step. if there is no previous step then this is a start of a labelled traversal
+            // and is kept
             if (identityStep.getLabels().isEmpty() || !(identityStep.getPreviousStep() instanceof EmptyStep)) {
-                TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
-                traversal.removeStep(identityStep);
+
+                // for branch()/union() type steps an EndStep gets added which would lead to something like:
+                // [UnionStep([[VertexStep(OUT,vertex), EndStep], [EndStep], [VertexStep(OUT,vertex), EndStep]])]
+                // if the identity() was removed. seems to make sense to account for that case so that the traversal
+                // gets to be:
+                // [UnionStep([[VertexStep(OUT,vertex), EndStep], [IdentityStep, EndStep], [VertexStep(OUT,vertex), EndStep]])]
+                // EndStep seems to just behave like a identity() in the above case, but perhaps it is more consistent
+                // to keep the identity() placeholder rather than a step that doesn't actually exist
+                if (!(identityStep.getNextStep() instanceof ComputerAwareStep.EndStep && traversal.getSteps().size() == 2)) {
+                    TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
+                    traversal.removeStep(identityStep);
+                }
             }
         }
     }

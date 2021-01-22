@@ -28,6 +28,9 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -42,13 +45,23 @@ public class IdentityRemovalStrategyTest {
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
 
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
 
-    private void applyIdentityRemovalStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(IdentityRemovalStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-
+        return Arrays.asList(new Traversal[][]{
+                {__.identity(), __.identity()},
+                {__.identity().out(), __.out()},
+                {__.identity().out().identity().identity(), __.out()},
+                {__.match(__.as("a").out("knows").identity().as("b"),__.as("b").identity()).identity(), __.match(__.as("a").out("knows").as("b"),__.as("b"))},
+                {__.union(__.out().identity(), __.identity(), __.out()), __.union(__.out(), __.identity(), __.out())},
+                {__.choose(__.out().identity(), __.identity(), __.out("knows")), __.choose(__.out(), __.identity(), __.out("knows"))},
+                {__.identity().out().identity(), __.out()},
+                {__.identity().as("a").out().identity(), __.identity().as("a").out()},
+                {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
+                {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
+                {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
+                {__.V(1, 2).local(union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum())), __.V(1, 2).local(union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()))}
+        });
     }
 
     @Test
@@ -57,17 +70,11 @@ public class IdentityRemovalStrategyTest {
         assertEquals(optimized, original);
     }
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object[]> generateTestParameters() {
+    private void applyIdentityRemovalStrategy(final Traversal traversal) {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(IdentityRemovalStrategy.instance());
+        traversal.asAdmin().setStrategies(strategies);
+        traversal.asAdmin().applyStrategies();
 
-        return Arrays.asList(new Traversal[][]{
-                {__.identity(), __.identity()},
-                {__.identity().out(), __.out()},
-                {__.identity().out().identity(), __.out()},
-                {__.identity().as("a").out().identity(), __.identity().as("a").out()},
-                {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
-                {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
-                {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
-        });
     }
 }
