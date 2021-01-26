@@ -99,14 +99,14 @@ TinkerPop has several release branches:
 * `3.0-dev` - 3.0.x (no longer maintained)
 * `3.1-dev` - 3.1.x (no longer maintained)
 * `3.2-dev` - 3.2.x (no longer maintained)
-* `3.3-dev` - 3.3.x (major bug fixes only)
-* `3.4-dev` - 3.4.x (current development)
+* `3.3-dev` - 3.3.x (no longer maintained)
+* `3.4-dev` - 3.4.x (bug fixes and minor non-breaking enhancements)
 * `master` - 3.5.x (future development)
 * `4.0-dev` - 4.0.x (future development)
 
-Changes to `3.3-dev` should merge to `3.4-dev` and then `3.4-dev` to `master`. Please read more about this process in
-the <<pull-requests, Pull Requests>> section. Note that `4.0-dev` is rebased on `master` and currently behaves as a
-fresh repository as all 3.x content was removed.
+Changes to earlier branches should merge forward toward `master` (e.g. `3.4-dev` should merge to `master`). Please read
+more about this process in the <<pull-requests, Pull Requests>> section. Note that `4.0-dev` is rebased on `master`
+and currently behaves as a fresh repository as all 3.x content was removed.
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -555,14 +555,13 @@ When submitting a pull request to one of the <<branches, release branches>>, be 
 * If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
 
 A pull request will typically be made to a target <<branches, branch>>. Assuming that branch is upstream of other
-release branches (e.g. a pull request made to for the branch containing 3.2.x must merge to the branch that releases
-3.3.x), it is important to be sure that those changes are merged to the downstream release branches. Typically,
-this process is best handled by multiple pull requests: one to each release branch.
-
-While merges can be handled manually with `git` commands, it is typically best to use the GitHub UI itself and the
-"Merge Pull Request" button instead. Branches should be merged in reverse order, starting with the latest release
-version first (e.g. if the fix is going to 3.3.x then the change should be merged in the following order `master`,
-3.4-dev`, `3.3-dev`).
+release branches (e.g. a pull request made to for the branch containing 3.3.x must merge to the branch that releases
+3.4.x), it is important to be sure that those changes are merged to the downstream release branches. If the merge from
+one release branch to another is not terribly conflicted, it is likely safe to offer a single pull request and then
+merge through the release branches after review. If there is conflict or the likelihood of test failures in downstream
+branches then this process is best handled by multiple pull requests: one to each release branch. Release branches with
+merged changes should be pushed in reverse order, starting with the latest release version first (e.g. if the fix is
+going to 3.3.x then the change should be merged in the following order: `master`, 3.4-dev`, `3.3-dev`).
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
 the `3.4-dev` branch:
