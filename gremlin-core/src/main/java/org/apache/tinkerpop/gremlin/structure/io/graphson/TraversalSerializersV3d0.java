@@ -48,12 +48,14 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -332,7 +334,7 @@ final class TraversalSerializersV3d0 {
         }
     }
 
-    final static class PJacksonDeserializer extends StdDeserializer<P> {
+    final static class PJacksonDeserializer extends AbstractReflectJacksonDeserializer<P> {
 
         public PJacksonDeserializer() {
             super(P.class);
@@ -371,12 +373,12 @@ final class TraversalSerializersV3d0 {
                         else if (predicate.equals("without"))
                             return P.without((Collection) value);
                         else
-                            return (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
+                            return (P) tryFindMethod(P.class, predicate, Collection.class).invoke(null, (Collection) value);
                     } else {
                         try {
-                            return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+                            return (P) tryFindMethod(P.class, predicate, Object.class).invoke(null, value);
                         } catch (final NoSuchMethodException e) {
-                            return (P) P.class.getMethod(predicate, Object[].class).invoke(null, (Object) new Object[]{value});
+                            return (P) tryFindMethod(P.class, predicate, Object[].class).invoke(null, (Object) new Object[]{value});
                         }
                     }
                 } catch (final Exception e) {
@@ -391,7 +393,54 @@ final class TraversalSerializersV3d0 {
         }
     }
 
-    final static class TextPJacksonDeserializer extends StdDeserializer<TextP> {
+    /**
+     * Deserializers that make reflection calls can use this class as a base and thus cache reflected methods to avoid
+     * future lookups.
+     */
+    static abstract class AbstractReflectJacksonDeserializer<T> extends StdDeserializer<T> {
+        private final Map<CacheKey, Method> CACHE = new ConcurrentHashMap<>();
+
+        public AbstractReflectJacksonDeserializer(final Class<? extends T> clazz) {
+            super(clazz);
+        }
+
+        protected Method tryFindMethod(final Class<?> base, final String methodName, final Class<?> parameterType) throws Exception {
+            return CACHE.computeIfAbsent(new CacheKey(methodName, parameterType),
+                    cacheKey -> {
+                        try {
+                            return base.getMethod(methodName, parameterType);
+                        } catch (Exception e) {
+                            throw new IllegalStateException(e.getMessage(), e);
+                        }
+                    });
+        }
+
+        private static class CacheKey {
+            private final String predicate;
+            private final Class<?> parameterType;
+
+            public CacheKey(final String predicate, final Class<?> parameterType) {
+                this.predicate = Objects.requireNonNull(predicate);
+                this.parameterType = Objects.requireNonNull(parameterType);
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                final CacheKey cacheKey = (CacheKey) o;
+                return predicate.equals(cacheKey.predicate) &&
+                        parameterType.equals(cacheKey.parameterType);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(predicate, parameterType);
+            }
+        }
+    }
+
+    final static class TextPJacksonDeserializer extends AbstractReflectJacksonDeserializer<TextP> {
 
         public TextPJacksonDeserializer() {
             super(TextP.class);
@@ -413,7 +462,7 @@ final class TraversalSerializersV3d0 {
             }
 
             try {
-                return (TextP) TextP.class.getMethod(predicate, String.class).invoke(null, value);
+                return (TextP) tryFindMethod(TextP.class, predicate, String.class).invoke(null, value);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
