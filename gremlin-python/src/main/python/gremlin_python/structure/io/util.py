@@ -32,6 +32,9 @@ class HashableDict(dict):
 
         new_o = HashableDict()
         for k, v in o.items():
-            new_o[k] = cls.of(v)
+            if isinstance(k, (set, list)):
+                new_o[tuple(k)] = cls.of(v)
+            else:
+                new_o[k] = cls.of(v)
         return new_o
 

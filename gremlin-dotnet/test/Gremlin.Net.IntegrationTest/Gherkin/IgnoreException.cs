@@ -55,6 +55,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// C# does not allow a `null` value to be used as a key.
         /// </summary>
-        NullKeysInMapNotSupported
+        NullKeysInMapNotSupported,
+        
+        /// <summary>
+        /// C# array equality is by reference not contents so the gherkin setup won't assert properly
+        /// </summary>
+        ArrayKeysInMapNotAssertingInGherkin
     }
 }

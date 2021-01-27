@@ -30,7 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -75,6 +77,8 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
 
     public abstract Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name();
+
+    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -258,6 +262,18 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX() {
+        final Traversal<Vertex, Map<Object,Long>> traversal = get_g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX();
+        printTraversalForm(traversal);
+        final Map<Object,Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(1L, map.get(Collections.singletonList("josh")).longValue());
+        assertEquals(1L, map.get(Collections.singletonList("vadas")).longValue());
+    }
+
     public static class Traversals extends GroupCountTest {
 
         @Override
@@ -325,6 +341,11 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
             return g.V().both().groupCount("a").by(T.label).as("b").barrier().where(__.select("a").select("software").is(gt(2))).select("b").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX() {
+            return g.V().has("person", "name", "marko").both("knows").groupCount().by(__.values("name").fold());
         }
     }
 }

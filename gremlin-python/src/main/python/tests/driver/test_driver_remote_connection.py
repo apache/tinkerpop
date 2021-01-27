@@ -104,6 +104,9 @@ class TestDriverRemoteConnection(object):
         if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
             results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
             assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
+        if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
+            results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
+            assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())

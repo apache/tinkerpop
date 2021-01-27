@@ -354,9 +354,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
 ==== Complex dict Deserialization
 
-In Gremlin it is common to return a `dict` as a key value in another `dict`. The problem for Python is that a `dict`
-is not hashable and will result in an error. By introducing a `HashableDict` for those keys, it is now possible to
-return these types of results and not have to work around them:
+In Gremlin it is common to return a `dict` or `list` as a key value in another `dict`. The problem for Python is that
+these values are not hashable and will result in an error. By introducing a `HashableDict` and `Tuple` for those keys
+(respectively), it is now possible to return these types of results and not have to work around them:
 
 [source,text]
 ----
@@ -364,7 +364,8 @@ return these types of results and not have to work around them:
 {{<T.id: 1>: 1, <T.label: 4>: 'person', 'name': 'marko'}: 1}
 ----
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2407[TINKERPOP-2407]
 
 ==== Gremlin Server Audit Logging
 

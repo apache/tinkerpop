@@ -191,3 +191,14 @@ Feature: Step - groupCount()
     Then the result should be unordered
       | result |
       | m[{"v[marko]":"d[6].l","v[vadas]":"d[2].l","v[lop]":"d[6].l","v[josh]":"d[6].l","v[ripple]":"d[2].l","v[peter]":"d[2].l"}] |
+
+  Scenario: g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person", "name", "marko").both("knows").groupCount().by(__.values("name").fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"l[josh]":"d[1].l","l[vadas]":"d[1].l"}] |
