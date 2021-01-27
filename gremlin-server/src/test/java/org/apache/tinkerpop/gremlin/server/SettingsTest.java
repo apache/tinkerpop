@@ -31,7 +31,7 @@ public class SettingsTest {
     private static class CustomSettings extends Settings {
         public String customValue = "localhost";
 
-        public static CustomSettings readCustom(InputStream stream) {
+        public static CustomSettings read(final InputStream stream) {
             final Constructor constructor = createDefaultYamlConstructor();
             final Yaml yaml = new Yaml(constructor);
             return yaml.loadAs(stream, CustomSettings.class);
@@ -42,7 +42,7 @@ public class SettingsTest {
     public void constructorCanBeExtendToParseCustomYamlAndSettingsValues() throws Exception {
         final InputStream stream = SettingsTest.class.getResourceAsStream("custom-gremlin-server.yaml");
 
-        final CustomSettings settings = CustomSettings.readCustom(stream);
+        final CustomSettings settings = CustomSettings.read(stream);
 
         assertEquals("hello", settings.customValue);
         assertEquals("remote", settings.host);
@@ -52,7 +52,7 @@ public class SettingsTest {
     public void defaultCustomValuesAreHandledCorrectly() throws Exception {
         final InputStream stream = SettingsTest.class.getResourceAsStream("gremlin-server-integration.yaml");
 
-        final CustomSettings settings = CustomSettings.readCustom(stream);
+        final CustomSettings settings = CustomSettings.read(stream);
 
         assertEquals("localhost", settings.customValue);
     }
