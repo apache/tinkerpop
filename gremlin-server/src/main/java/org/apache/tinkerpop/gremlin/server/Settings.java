@@ -270,21 +270,19 @@ public class Settings {
     }
 
     /**
-     * Read configuration from a file into a new {@link Settings} object.
+     * Creates {@link Constructor} which contains all configurations to parse
+     * a Gremlin Server YAML configuration file using SnakeYAML.
      *
-     * @param stream an input stream containing a Gremlin Server YAML configuration
-     * @return a new {@link Optional} object wrapping the created {@link Settings}
+     * @return a {@link Constructor} to parse a Gremlin Server YAML
      */
-    public static Settings read(final InputStream stream) {
-        Objects.requireNonNull(stream);
-
+    protected static Constructor createDefaultYamlConstructor() {
         final Constructor constructor = new Constructor(Settings.class);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
-        settingsDescription.putMapPropertyType("graphs", String.class, String.class);
-        settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
-        settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
-        settingsDescription.putListPropertyType("plugins", String.class);
-        settingsDescription.putListPropertyType("processors", ProcessorSettings.class);
+        settingsDescription.addPropertyParameters("graphs", String.class, String.class);
+        settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
+        settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
+        settingsDescription.addPropertyParameters("plugins", String.class);
+        settingsDescription.addPropertyParameters("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
@@ -292,11 +290,11 @@ public class Settings {
         constructor.addTypeDescription(serializerSettingsDescription);
 
         final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
-        scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
-        scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
-        scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
-        scriptEngineSettingsDescription.putMapPropertyType("config", String.class, Object.class);
-        scriptEngineSettingsDescription.putMapPropertyType("plugins", String.class, Object.class);
+        scriptEngineSettingsDescription.addPropertyParameters("imports", String.class);
+        scriptEngineSettingsDescription.addPropertyParameters("staticImports", String.class);
+        scriptEngineSettingsDescription.addPropertyParameters("scripts", String.class);
+        scriptEngineSettingsDescription.addPropertyParameters("config", String.class, Object.class);
+        scriptEngineSettingsDescription.addPropertyParameters("plugins", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -325,7 +323,19 @@ public class Settings {
 
         final TypeDescription graphiteReporterDescription = new TypeDescription(GraphiteReporterMetrics.class);
         constructor.addTypeDescription(graphiteReporterDescription);
+        return constructor;
+    }
 
+    /**
+     * Read configuration from a file into a new {@link Settings} object.
+     *
+     * @param stream an input stream containing a Gremlin Server YAML configuration
+     * @return a new {@link Optional} object wrapping the created {@link Settings}
+     */
+    public static Settings read(final InputStream stream) {
+        Objects.requireNonNull(stream);
+
+        final Constructor constructor = createDefaultYamlConstructor();
         final Yaml yaml = new Yaml(constructor);
         return yaml.loadAs(stream, Settings.class);
     }
