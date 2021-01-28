@@ -166,7 +166,7 @@ start() {
       exit 1
     fi
 
-    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML" >> "$LOG_FILE" 2>&1 &
+    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML" >> "$LOG_FILE" 2>&1 &
     PID=$!
     disown $PID
     echo $PID > "$PID_FILE"
@@ -184,7 +184,7 @@ start() {
       exit 1
     fi
 
-    su -c "$JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_SERVER_CMD \"$GREMLIN_YAML\" >> \"$LOG_FILE\" 2>&1 & echo \$! "  "$RUNAS" > "$PID_FILE"
+    su -c "$JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD \"$GREMLIN_YAML\" >> \"$LOG_FILE\" 2>&1 & echo \$! "  "$RUNAS" > "$PID_FILE"
     chown "$RUNAS" "$PID_FILE"
   fi
 
@@ -209,7 +209,7 @@ startForeground() {
   fi
 
   if [[ -z "$RUNAS" ]]; then
-    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML"
+    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML"
     exit 0
   else
     echo Starting in foreground not supported with RUNAS
@@ -231,9 +231,9 @@ install() {
 
   DEPS="$@"
   if [[ -z "$RUNAS" ]]; then
-    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH  $GREMLIN_INSTALL_CMD $DEPS
+    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_INSTALL_CMD $DEPS
   else
-    su -c "$JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_INSTALL_CMD $DEPS "  "$RUNAS"
+    su -c "$JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_INSTALL_CMD $DEPS "  "$RUNAS"
   fi
 
 }
