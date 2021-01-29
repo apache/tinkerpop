@@ -51,10 +51,10 @@ Feature: Step - elementMap()
 
   Scenario: g_EX11X_elementMap
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].id"
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
     """
-      g.E(e11Id).elementMap()
+      g.E(eid11).elementMap()
       """
     When iterated to list
     Then the result should be unordered

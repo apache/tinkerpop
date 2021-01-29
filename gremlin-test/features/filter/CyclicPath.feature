@@ -19,10 +19,10 @@ Feature: Step - cyclicPath()
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_cyclicPath
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("created").in("created").cyclicPath()
+      g.V(vid1).out("created").in("created").cyclicPath()
       """
     When iterated to list
     Then the result should be unordered
@@ -31,10 +31,10 @@ Feature: Step - cyclicPath()
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("created").in("created").cyclicPath().path()
+      g.V(vid1).out("created").in("created").cyclicPath().path()
       """
     When iterated to list
     Then the result should be unordered
@@ -43,10 +43,10 @@ Feature: Step - cyclicPath()
 
   Scenario: g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").as("b").in("created").as("c").cyclicPath().from("a").to("b").path()
+      g.V(vid1).as("a").out("created").as("b").in("created").as("c").cyclicPath().from("a").to("b").path()
       """
     When iterated to list
     Then the result should be empty

@@ -19,10 +19,10 @@ Feature: Step - simplePath()
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_simplePath
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("created").in("created").simplePath()
+      g.V(vid1).out("created").in("created").simplePath()
       """
     When iterated to list
     Then the result should be unordered

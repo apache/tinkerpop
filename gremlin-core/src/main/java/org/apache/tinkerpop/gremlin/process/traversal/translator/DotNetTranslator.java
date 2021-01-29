@@ -28,40 +28,44 @@ import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 /**
- * Converts bytecode to a Javascript string of Gremlin.
+ * Converts bytecode to a C# string of Gremlin.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class JavascriptTranslator implements Translator.ScriptTranslator {
+public final class DotNetTranslator implements Translator.ScriptTranslator {
 
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
 
-    private JavascriptTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
+    private static final List<String> methodsWithArgsNotNeedingGeneric = Arrays.asList(GraphTraversal.Symbols.group,
+            GraphTraversal.Symbols.groupCount, GraphTraversal.Symbols.sack);
+
+    private DotNetTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
         this.typeTranslator = typeTranslator;
     }
@@ -70,7 +74,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
      * Creates the translator with a {@code false} argument to {@code withParameters} using
      * {@link #of(String, boolean)}.
      */
-    public static JavascriptTranslator of(final String traversalSource) {
+    public static DotNetTranslator of(final String traversalSource) {
         return of(traversalSource, false);
     }
 
@@ -79,15 +83,15 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
      * which will handle type translation in a fashion that should typically increase cache hits and reduce
      * compilation times if enabled at the sacrifice to rewriting of the script that could reduce readability.
      */
-    public static JavascriptTranslator of(final String traversalSource, final boolean withParameters) {
+    public static DotNetTranslator of(final String traversalSource, final boolean withParameters) {
         return of(traversalSource, new DefaultTypeTranslator(withParameters));
     }
 
     /**
      * Creates the translator with a custom {@link TypeTranslator} instance.
      */
-    public static JavascriptTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
-        return new JavascriptTranslator(traversalSource, typeTranslator);
+    public static DotNetTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
+        return new DotNetTranslator(traversalSource, typeTranslator);
     }
 
     @Override
@@ -97,7 +101,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
     @Override
     public String getTargetLanguage() {
-        return "gremlin-javascript";
+        return "gremlin-dotnet";
     }
 
     @Override
@@ -111,7 +115,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
     }
 
     /**
-     * Performs standard type translation for the TinkerPop types to Javascript.
+     * Performs standard type translation for the TinkerPop types to C#.
      */
     public static class DefaultTypeTranslator extends AbstractTypeTranslator {
 
@@ -126,8 +130,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final String o) {
-            return (o.contains("\"") ? "\"\"\"" + StringEscapeUtils.escapeJava(o) + "\"\"\"" : "\"" + StringEscapeUtils.escapeJava(o) + "\"")
-                    .replace("$", "\\$");
+            return "\"" + StringEscapeUtils.escapeJava(o) + "\"";
         }
 
         @Override
@@ -137,17 +140,17 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Date o) {
-            return "new Date(" + o.getTime() + ")";
+            return "DateTimeOffset.FromUnixTimeMillisecond(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final Timestamp o) {
-            return "new Date(" + o.getTime() + ")";
+            return "DateTimeOffset.FromUnixTimeMillisecond(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final UUID o) {
-            return "'" + o.toString() + "'";
+            return "new Guid(\"" + o.toString() + "\")";
         }
 
         @Override
@@ -157,17 +160,17 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final SackFunctions.Barrier o) {
-            return "Barrier." + o.toString();
+            return "Barrier." + SymbolHelper.toCSharp(o.toString());
         }
 
         @Override
         protected String getSyntax(final VertexProperty.Cardinality o) {
-            return "Cardinality." + o.toString();
+            return "Cardinality." + SymbolHelper.toCSharp(o.toString());
         }
 
         @Override
         protected String getSyntax(final TraversalOptionParent.Pick o) {
-            return "Pick." + o.toString();
+            return "Pick." + SymbolHelper.toCSharp(o.toString());
         }
 
         @Override
@@ -177,13 +180,8 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Set<?> o) {
-            return produceScript(new ArrayList<>(o));
-        }
-
-        @Override
-        protected Script produceScript(final List<?> o) {
             final Iterator<?> iterator = ((List<?>) o).iterator();
-            script.append("[");
+            script.append("new HashSet<object> {");
 
             while (iterator.hasNext()) {
                 final Object nextItem = iterator.next();
@@ -192,24 +190,29 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                     script.append(",").append(" ");
             }
 
-            return script.append("]");
+            return script.append("}");
+        }
+
+        @Override
+        protected Script produceScript(final List<?> o) {
+            final Iterator<?> iterator = ((List<?>) o).iterator();
+            script.append("new List<object> {");
+
+            while (iterator.hasNext()) {
+                final Object nextItem = iterator.next();
+                convertToScript(nextItem);
+                if (iterator.hasNext())
+                    script.append(",").append(" ");
+            }
+
+            return script.append("}");
         }
 
         @Override
         protected Script produceScript(final Map<?, ?> o) {
-            script.append("new Map([");
-            final Iterator<? extends Map.Entry<?, ?>> itty = ((Map<?, ?>) o).entrySet().iterator();
-            while (itty.hasNext()) {
-                final Map.Entry<?,?> entry = itty.next();
-                script.append("[");
-                convertToScript(entry.getKey());
-                script.append(",");
-                convertToScript(entry.getValue());
-                script.append("]");
-                if (itty.hasNext())
-                    script.append(",");
-            }
-            return script.append("])");
+            script.append("new Dictionary<object,object> {");
+            produceKeyValuesForMap(o);
+            return script.append("}");
         }
 
         @Override
@@ -219,7 +222,10 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Enum<?> o) {
-            return script.append(o.getDeclaringClass().getSimpleName() + "." + o.toString());
+            final String e = o instanceof Direction || o instanceof T ?
+                    o.name().substring(0,1).toUpperCase() + o.name().substring(1).toLowerCase() :
+                    o.name().substring(0,1).toUpperCase() + o.name().substring(1);
+            return script.append(o.getDeclaringClass().getSimpleName() + "." + e);
         }
 
         @Override
@@ -228,7 +234,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
             convertToScript(o.id());
             script.append(",");
             convertToScript(o.label());
-            return script.append(", null)");
+            return script.append(")");
         }
 
         @Override
@@ -239,13 +245,13 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
             convertToScript(o.outVertex().id());
             script.append(",");
             convertToScript(o.outVertex().label());
-            script.append(", null),");
+            script.append("),");
             convertToScript(o.label());
             script.append(", new Vertex(");
             convertToScript(o.inVertex().id());
             script.append(",");
             convertToScript(o.inVertex().label());
-            return script.append(",null),null)");
+            return script.append("))");
         }
 
         @Override
@@ -265,10 +271,28 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
             if (o.getConfiguration().isEmpty()) {
                 return script.append("new " + o.getStrategyClass().getSimpleName() + "()");
             } else {
-                script.append("new " + o.getStrategyClass().getSimpleName() + "(");
-                convertToScript(ConfigurationConverter.getMap(o.getConfiguration()));
+                script.append("new " + o.getStrategyClass().getSimpleName() + "(configuration: ");
+                script.append("new Dictionary<string,dynamic> {");
+                produceKeyValuesForMap(ConfigurationConverter.getMap(o.getConfiguration()));
+                script.append("}");
+
                 return script.append(")");
             }
+        }
+
+        private Script produceKeyValuesForMap(final Map<?,?> m) {
+            final Iterator<? extends Map.Entry<?, ?>> itty = m.entrySet().iterator();
+            while (itty.hasNext()) {
+                final Map.Entry<?,?> entry = itty.next();
+                script.append("{");
+                convertToScript(entry.getKey());
+                script.append(",");
+                convertToScript(entry.getValue());
+                script.append("}");
+                if (itty.hasNext())
+                    script.append(",");
+            }
+            return script;
         }
 
         @Override
@@ -276,12 +300,21 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
             script.append(traversalSource);
             for (final Bytecode.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
+                // perhaps too many if/then conditions for specifying generics. doesnt' seem like there is a clear
+                // way to refactor this more nicely though.
                 if (0 == instruction.getArguments().length) {
-                    script.append(".").append(resolveSymbol(methodName)).append("()");
+                    if (methodName.equals(GraphTraversal.Symbols.fold) && o.getSourceInstructions().size() + o.getStepInstructions().size() > 1)
+                        script.append(".").append(resolveSymbol(methodName).replace("<object>", "")).append("()");
+                    else
+                        script.append(".").append(resolveSymbol(methodName)).append("()");
                 } else {
-                    script.append(".").append(resolveSymbol(methodName)).append("(");
+                    if (methodsWithArgsNotNeedingGeneric.contains(methodName) ||
+                            (methodName.equals(GraphTraversal.Symbols.inject) && Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull)))
+                        script.append(".").append(resolveSymbol(methodName).replace("<object>", "").replace("<object,object>", "")).append("(");
+                    else
+                        script.append(".").append(resolveSymbol(methodName)).append("(");
 
-                    // have to special case withSack() for Groovy because UnaryOperator and BinaryOperator signatures
+                    // have to special case withSack() because UnaryOperator and BinaryOperator signatures
                     // make it impossible for the interpreter to figure out which function to call. specifically we need
                     // to discern between:
                     //     withSack(A initialValue, UnaryOperator<A> splitOperator)
@@ -291,11 +324,9 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                     //     withSack(Supplier<A> initialValue, BinaryOperator<A> mergeOperator)
                     if (methodName.equals(TraversalSource.Symbols.withSack) &&
                             instruction.getArguments().length == 2 && instruction.getArguments()[1] instanceof Lambda) {
-                        final String castFirstArgTo = instruction.getArguments()[0] instanceof Lambda ?
-                                Supplier.class.getName() : "";
+                        final String castFirstArgTo = instruction.getArguments()[0] instanceof Lambda ? "ISupplier" : "";
                         final Lambda secondArg = (Lambda) instruction.getArguments()[1];
-                        final String castSecondArgTo = secondArg.getLambdaArguments() == 1 ? UnaryOperator.class.getName() :
-                                BinaryOperator.class.getName();
+                        final String castSecondArgTo = secondArg.getLambdaArguments() == 1 ? "IUnaryOperator" : "IBinaryOperator";
                         if (!castFirstArgTo.isEmpty())
                             script.append(String.format("(%s) ", castFirstArgTo));
                         convertToScript(instruction.getArguments()[0]);
@@ -304,6 +335,9 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                         script.append(",");
                     } else {
                         for (final Object object : instruction.getArguments()) {
+                            // overloads might have trouble with null. add more as we find them i guess
+                            if (null == object && methodName.equals(GraphTraversal.Symbols.addV))
+                                script.append("(string) ");
                             convertToScript(object);
                             script.append(",");
                         }
@@ -317,18 +351,18 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
+                script.append("TextP.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 final List<P<?>> list = ((ConnectiveP) p).getPredicates();
                 for (int i = 0; i < list.size(); i++) {
                     produceScript(list.get(i));
                     if (i < list.size() - 1) {
-                        script.append(p instanceof OrP ? ".or(" : ".and(");
+                        script.append(p instanceof OrP ? ".Or(" : ".And(");
                     }
                 }
             } else {
-                script.append("P.").append(p.getBiPredicate().toString()).append("(");
+                script.append("P.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");
@@ -336,33 +370,64 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         }
 
         protected String resolveSymbol(final String methodName) {
-            return SymbolHelper.toJavascript(methodName);
+            return SymbolHelper.toCSharp(methodName);
         }
     }
 
     static final class SymbolHelper {
 
-        private final static Map<String, String> TO_JS_MAP = new HashMap<>();
-        private final static Map<String, String> FROM_JS_MAP = new HashMap<>();
+        private final static Map<String, String> TO_CS_MAP = new HashMap<>();
+        private final static Map<String, String> FROM_CS_MAP = new HashMap<>();
 
         static {
-            TO_JS_MAP.put("from", "from_");
-            TO_JS_MAP.put("in", "in_");
-            TO_JS_MAP.put("with", "with_");
+            TO_CS_MAP.put(GraphTraversal.Symbols.branch, "Branch<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.cap, "Cap<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.choose, "Choose<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.coalesce, "Coalesce<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.constant, "Constant<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.elementMap, "ElementMap<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.flatMap, "FlatMap<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.fold, "Fold<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.group, "Group<object,object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.groupCount, "GroupCount<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.index, "Index<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.inject, "Inject<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.io, "Io<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.limit, "Limit<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.local, "Local<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.match, "Match<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.map, "Map<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.max, "Max<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.min, "Min<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.mean, "Mean<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.optional, "Optional<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.project, "Project<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.properties, "Properties<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.range, "Range<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.sack, "Sack<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.select, "Select<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.skip, "Skip<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.sum, "Sum<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.tail, "Tail<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.unfold, "Unfold<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.union, "Union<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.value, "Value<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.valueMap, "ValueMap<object,object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.values, "Values<object>");
             //
-            TO_JS_MAP.forEach((k, v) -> FROM_JS_MAP.put(v, k));
+            TO_CS_MAP.forEach((k, v) -> FROM_CS_MAP.put(v, k));
         }
 
         private SymbolHelper() {
             // static methods only, do not instantiate
         }
 
-        public static String toJavascript(final String symbol) {
-            return TO_JS_MAP.getOrDefault(symbol, symbol);
+        public static String toCSharp(final String symbol) {
+            return TO_CS_MAP.getOrDefault(symbol, symbol.substring(0,1).toUpperCase() + symbol.substring(1));
         }
 
         public static String toJava(final String symbol) {
-            return FROM_JS_MAP.getOrDefault(symbol, symbol);
+            return FROM_CS_MAP.getOrDefault(symbol, symbol.substring(0,1).toLowerCase() + symbol.substring(1));
         }
 
     }

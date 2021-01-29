@@ -19,10 +19,10 @@ Feature: Step - loops()
 
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX3XX_hasXname_peterX_path_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.both().simplePath()).until(__.has("name", "peter").or().loops().is(3)).has("name", "peter").path().by("name")
+      g.V(vid1).repeat(__.both().simplePath()).until(__.has("name", "peter").or().loops().is(3)).has("name", "peter").path().by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -32,10 +32,10 @@ Feature: Step - loops()
 
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX2XX_hasXname_peterX_path_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.both().simplePath()).until(__.has("name", "peter").or().loops().is(2)).has("name", "peter").path().by("name")
+      g.V(vid1).repeat(__.both().simplePath()).until(__.has("name", "peter").or().loops().is(2)).has("name", "peter").path().by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -44,10 +44,10 @@ Feature: Step - loops()
 
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_and_loops_isX3XX_hasXname_peterX_path_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.both().simplePath()).until(__.has("name", "peter").and().loops().is(3)).has("name", "peter").path().by("name")
+      g.V(vid1).repeat(__.both().simplePath()).until(__.has("name", "peter").and().loops().is(3)).has("name", "peter").path().by("name")
       """
     When iterated to list
     Then the result should be unordered

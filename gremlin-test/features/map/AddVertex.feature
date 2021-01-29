@@ -34,10 +34,10 @@ Feature: Step - addV()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").addV("animal").property("age", __.select("a").by("age")).property("name", "puppy")
+      g.V(vid1).as("a").addV("animal").property("age", __.select("a").by("age")).property("name", "puppy")
       """
     When iterated to list
     Then the result should have a count of 1

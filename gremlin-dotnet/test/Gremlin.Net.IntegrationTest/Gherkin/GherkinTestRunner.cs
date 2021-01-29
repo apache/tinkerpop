@@ -42,7 +42,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
                 { "g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported },
-                { "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX", IgnoreReason.ArrayKeysInMapNotAssertingInGherkin }
+                { "g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.NoReason },
+                { "g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack", IgnoreReason.NoReason },
+                { "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack", IgnoreReason.NoReason },
+                { "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack", IgnoreReason.NoReason },
+                { "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX", IgnoreReason.ArrayKeysInMapNotAssertingInGherkin },
             };
         
         private static class Keywords
@@ -110,6 +114,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                             throw new NotSupportedException(
                                 $"Step '{step.Text} not supported without a 'Given' step first");
                         }
+
+                        ScenarioData.CurrentScenario = scenario;
                         var result = ExecuteStep(stepDefinition, currentStep.Value, step);
                         if (result != null)
                         {

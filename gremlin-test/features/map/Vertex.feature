@@ -19,10 +19,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VXlistX1_2_3XX_name
     Given the modern graph
-    And using the parameter vx defined as "l[v[marko].id,v[vadas].id,v[lop].id]"
+    And using the parameter xx1 defined as "l[v[marko].id,v[vadas].id,v[lop].id]"
     And the traversal of
       """
-      g.V(vx).values("name")
+      g.V(xx1).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -33,10 +33,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VXlistXv1_v2_v3XX_name
     Given the modern graph
-    And using the parameter vx defined as "l[v[marko],v[vadas],v[lop]]"
+    And using the parameter xx1 defined as "l[v[marko],v[vadas],v[lop]]"
     And the traversal of
       """
-      g.V(vx).values("name")
+      g.V(xx1).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -77,10 +77,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_out
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out()
+      g.V(vid1).out()
       """
     When iterated to list
     Then the result should be unordered
@@ -91,10 +91,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX2X_in
     Given the modern graph
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v2Id).in()
+      g.V(vid2).in()
       """
     When iterated to list
     Then the result should be unordered
@@ -103,10 +103,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_both
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).both()
+      g.V(vid4).both()
       """
     When iterated to list
     Then the result should be unordered
@@ -133,10 +133,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_EX11X
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].id"
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
     """
-      g.E(e11Id)
+      g.E(eid11)
       """
     When iterated to list
     Then the result should be unordered
@@ -145,10 +145,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_EX11AsStringX
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].sid"
+    And using the parameter eid11 defined as "e[josh-created->lop].sid"
     And the traversal of
     """
-      g.E(e11Id)
+      g.E(eid11)
       """
     When iterated to list
     Then the result should be unordered
@@ -183,10 +183,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_EXlistXe7_e11XX
     Given the modern graph
-    And using the parameter l defined as "l[e[marko-knows->vadas],e[josh-created->lop]]"
+    And using the parameter xx1 defined as "l[e[marko-knows->vadas],e[josh-created->lop]]"
     And the traversal of
     """
-      g.E(l)
+      g.E(xx1)
       """
     When iterated to list
     Then the result should be unordered
@@ -196,10 +196,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outE
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
     """
-      g.V(v1Id).outE()
+      g.V(vid1).outE()
       """
     When iterated to list
     Then the result should be unordered
@@ -210,10 +210,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX2X_outE
     Given the modern graph
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
     """
-      g.V(v2Id).inE()
+      g.V(vid2).inE()
       """
     When iterated to list
     Then the result should be unordered
@@ -222,10 +222,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_bothEXcreatedX
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
     """
-      g.V(v4Id).bothE("created")
+      g.V(vid4).bothE("created")
       """
     When iterated to list
     Then the result should be unordered
@@ -235,10 +235,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_bothE
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
     """
-      g.V(v4Id).bothE()
+      g.V(vid4).bothE()
       """
     When iterated to list
     Then the result should be unordered
@@ -249,10 +249,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outE_inV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).both()
+      g.V(vid1).both()
       """
     When iterated to list
     Then the result should be unordered
@@ -263,10 +263,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX2X_inE_outV
     Given the modern graph
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v2Id).inE().outV()
+      g.V(vid2).inE().outV()
       """
     When iterated to list
     Then the result should be unordered
@@ -307,10 +307,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outEXknowsX_bothV_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").bothV().values("name")
+      g.V(vid1).outE("knows").bothV().values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -322,10 +322,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outE_otherV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE().otherV()
+      g.V(vid1).outE().otherV()
       """
     When iterated to list
     Then the result should be unordered
@@ -336,10 +336,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_bothE_otherV
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).bothE().otherV()
+      g.V(vid4).bothE().otherV()
       """
     When iterated to list
     Then the result should be unordered
@@ -350,10 +350,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_bothE_hasXweight_lt_1X_otherV
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).bothE().has("weight", P.lt(1.0)).otherV()
+      g.V(vid4).bothE().has("weight", P.lt(1.0)).otherV()
       """
     When iterated to list
     Then the result should be unordered
@@ -362,10 +362,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX2X_inE
     Given the modern graph
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
     """
-      g.V(v2Id).bothE()
+      g.V(vid2).bothE()
       """
     When iterated to list
     Then the result should be unordered
@@ -374,10 +374,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: get_g_VX1X_outE_otherV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE().otherV()
+      g.V(vid1).outE().otherV()
       """
     When iterated to list
     Then the result should be unordered
@@ -388,10 +388,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outXknowsX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("knows")
+      g.V(vid1).out("knows")
       """
     When iterated to list
     Then the result should be unordered
@@ -401,10 +401,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1AsStringX_outXknowsX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].sid"
+    And using the parameter vid1 defined as "v[marko].sid"
     And the traversal of
       """
-      g.V(v1Id).out("knows")
+      g.V(vid1).out("knows")
       """
     When iterated to list
     Then the result should be unordered
@@ -414,10 +414,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outXknows_createdX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("knows","created")
+      g.V(vid1).out("knows","created")
       """
     When iterated to list
     Then the result should be unordered
@@ -428,10 +428,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outEXknowsX_inV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").inV()
+      g.V(vid1).outE("knows").inV()
       """
     When iterated to list
     Then the result should be unordered
@@ -441,10 +441,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outEXknows_createdX_inV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows","created").inV()
+      g.V(vid1).outE("knows","created").inV()
       """
     When iterated to list
     Then the result should be unordered
@@ -467,20 +467,20 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_out_out_out
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out().out().out()
+      g.V(vid1).out().out().out()
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_VX1X_out_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out().values("name")
+      g.V(vid1).out().values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -491,10 +491,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_to_XOUT_knowsX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).to(Direction.OUT, "knows")
+      g.V(vid1).to(Direction.OUT, "knows")
       """
     When iterated to list
     Then the result should be unordered
@@ -507,13 +507,13 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
   # which is simulated by an edge identifier.
   Scenario: g_VX1_2_3_4X_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
-    And using the parameter v3Id defined as "e[marko-knows->josh].id"
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid3 defined as "e[marko-knows->josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v1Id, v2Id, v3Id, v4Id).values("name")
+      g.V(vid1, vid2, vid3, vid4).values("name")
       """
     When iterated to list
     Then the result should be unordered

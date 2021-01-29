@@ -35,10 +35,10 @@ Feature: Step - unfold()
 
   Scenario: g_V_valueMap_unfold_mapXkeyX
     Given the modern graph
-    And using the parameter l defined as "c[it.get().getKey()]"
+    And using the parameter l1 defined as "c[it.get().getKey()]"
     And the traversal of
       """
-      g.V().valueMap().unfold().map(l)
+      g.V().valueMap().unfold().map(l1)
       """
     When iterated to list
     Then the result should be unordered
@@ -58,11 +58,11 @@ Feature: Step - unfold()
 
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v6Id defined as "v[peter].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.both().simplePath()).until(__.hasId(v6Id)).path().by("name").unfold()
+      g.V(vid1).repeat(__.both().simplePath()).until(__.hasId(vid6)).path().by("name").unfold()
       """
     When iterated to list
     Then the result should be unordered

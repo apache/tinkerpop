@@ -113,10 +113,10 @@ Feature: Step - aggregate()
 
   Scenario: g_VX1X_aggregateXlocal_aX_byXnameX_out_aggregateXlocal_aX_byXnameX_name_capXaX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).aggregate(Scope.local,"a").by("name").out().aggregate(Scope.local,"a").by("name").values("name").cap("a")
+      g.V(vid1).aggregate(Scope.local,"a").by("name").out().aggregate(Scope.local,"a").by("name").values("name").cap("a")
       """
     When iterated next
     Then the result should be unordered
@@ -128,10 +128,10 @@ Feature: Step - aggregate()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX
     Given the modern graph
-    And using the parameter initial defined as "s[]"
+    And using the parameter xx1 defined as "s[]"
     And the traversal of
       """
-      g.withSideEffect("a", initial).V().both().values("name").aggregate(Scope.local,"a").cap("a")
+      g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")
       """
     When iterated next
     Then the result should be unordered

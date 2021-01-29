@@ -61,10 +61,10 @@ Feature: Step - math()
 
   Scenario: g_withSideEffectXx_100X_V_age_mathX__plus_xX
     Given the modern graph
-    And using the parameter x defined as "d[100].i"
+    And using the parameter xx1 defined as "d[100].i"
     And the traversal of
       """
-      g.withSideEffect("x", x).V().values("age").math("_ + x")
+      g.withSideEffect("x", xx1).V().values("age").math("_ + x")
       """
     When iterated to list
     Then the result should be unordered

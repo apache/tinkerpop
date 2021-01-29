@@ -35,11 +35,11 @@ Feature: Step - order()
 
   Scenario: g_V_name_order_byXa1_b1X_byXb2_a2X
     Given the modern graph
-    And using the parameter l1 defined as "c[a, b -> a.substring(1, 2).compareTo(b.substring(1, 2))]"
-    And using the parameter l2 defined as "c[a, b -> b.substring(2, 3).compareTo(a.substring(2, 3))]"
+    And using the parameter c1 defined as "c[a, b -> a.substring(1, 2).compareTo(b.substring(1, 2))]"
+    And using the parameter c2 defined as "c[a, b -> b.substring(2, 3).compareTo(a.substring(2, 3))]"
     And the traversal of
       """
-      g.V().values("name").order().by(l1).by(l2)
+      g.V().values("name").order().by(c1).by(c2)
       """
     When iterated to list
     Then the result should be ordered
@@ -101,11 +101,11 @@ Feature: Step - order()
 
   Scenario: g_V_order_byXname_a1_b1X_byXname_b2_a2X_name
     Given the modern graph
-    And using the parameter l1 defined as "c[a, b -> a.substring(1, 2).compareTo(b.substring(1, 2))]"
-    And using the parameter l2 defined as "c[a, b -> b.substring(2, 3).compareTo(a.substring(2, 3))]"
+    And using the parameter c1 defined as "c[a, b -> a.substring(1, 2).compareTo(b.substring(1, 2))]"
+    And using the parameter c2 defined as "c[a, b -> b.substring(2, 3).compareTo(a.substring(2, 3))]"
     And the traversal of
       """
-      g.V().order().by("name", l1).by("name", l2).values("name")
+      g.V().order().by("name", c1).by("name", c2).values("name")
       """
     When iterated to list
     Then the result should be ordered
@@ -338,10 +338,10 @@ Feature: Step - order()
 
   Scenario: g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).elementMap().order(Scope.local).by(Column.keys, Order.desc).unfold()
+      g.V(vid1).elementMap().order(Scope.local).by(Column.keys, Order.desc).unfold()
       """
     When iterated to list
     Then the result should be ordered

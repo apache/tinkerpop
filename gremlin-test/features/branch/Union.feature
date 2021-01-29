@@ -41,10 +41,10 @@ Feature: Step - union()
 
   Scenario: g_VX1X_unionXrepeatXoutX_timesX2X__outX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+      g.V(vid1).union(__.repeat(__.out()).times(2), __.out()).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -108,11 +108,11 @@ Feature: Step - union()
 
   Scenario: g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v1Id, v2Id).union(__.outE().count(), __.inE().count(), __.outE().values("weight").sum())
+      g.V(vid1, vid2).union(__.outE().count(), __.inE().count(), __.outE().values("weight").sum())
       """
     When iterated to list
     Then the result should be unordered
@@ -123,11 +123,11 @@ Feature: Step - union()
 
   Scenario: g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v1Id, v2Id).local(__.union(__.outE().count(), __.inE().count(), __.outE().values("weight").sum()))
+      g.V(vid1, vid2).local(__.union(__.outE().count(), __.inE().count(), __.outE().values("weight").sum()))
       """
     When iterated to list
     Then the result should be unordered
@@ -140,11 +140,11 @@ Feature: Step - union()
 
   Scenario: g_VX1_2X_localXunionXcountXX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v1Id, v2Id).local(__.union(__.count()))
+      g.V(vid1, vid2).local(__.union(__.count()))
       """
     When iterated to list
     Then the result should be unordered

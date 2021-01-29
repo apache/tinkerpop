@@ -31,10 +31,10 @@ Feature: Step - has()
 
   Scenario: g_VX1X_hasXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).has("name")
+      g.V(vid1).has("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -43,20 +43,20 @@ Feature: Step - has()
 
   Scenario: g_VX1X_hasXcircumferenceX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).has("circumference")
+      g.V(vid1).has("circumference")
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_VX1X_hasXname_markoX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).has("name", "marko")
+      g.V(vid1).has("name", "marko")
       """
     When iterated to list
     Then the result should be unordered
@@ -65,10 +65,10 @@ Feature: Step - has()
 
   Scenario: g_VX2X_hasXname_markoX
     Given the modern graph
-    And using the parameter v1Id defined as "v[vadas].id"
+    And using the parameter vid1 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v1Id).has("name", "marko")
+      g.V(vid1).has("name", "marko")
       """
     When iterated to list
     Then the result should be empty
@@ -131,20 +131,20 @@ Feature: Step - has()
 
   Scenario: g_VX1X_hasXage_gt_30X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).has("age", P.gt(30))
+      g.V(vid1).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_VX4X_hasXage_gt_30X
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).has("age", P.gt(30))
+      g.V(vid4).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be unordered
@@ -175,20 +175,20 @@ Feature: Step - has()
 
   Scenario: g_VX1X_out_hasXid_lt_3X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter ltXv3IdX of P.lt("v[lop].id")
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx1 of P.lt("v[lop].id")
     And the traversal of
       """
-      g.V(v1Id).out().has(T.id, ltXv3IdX)
+      g.V(vid1).out().has(T.id, xx1)
       """
 
   Scenario: g_VX1AsStringX_out_hasXid_2AsStringX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].sid"
-    And using the parameter v2Id defined as "v[vadas].sid"
+    And using the parameter vid1 defined as "v[marko].sid"
+    And using the parameter vid2 defined as "v[vadas].sid"
     And the traversal of
       """
-      g.V(v1Id).out().hasId(v2Id)
+      g.V(vid1).out().hasId(vid2)
       """
     When iterated to list
     Then the result should be unordered
@@ -209,11 +209,11 @@ Feature: Step - has()
 
   Scenario: g_VX1X_out_hasIdX2X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v1Id).out().hasId(v2Id)
+      g.V(vid1).out().hasId(vid2)
       """
     When iterated to list
     Then the result should be unordered
@@ -222,12 +222,12 @@ Feature: Step - has()
 
   Scenario: g_VX1X_out_hasXid_2_3X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
-    And using the parameter v3Id defined as "v[lop].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid3 defined as "v[lop].id"
     And the traversal of
       """
-      g.V(v1Id).out().hasId(v2Id, v3Id)
+      g.V(vid1).out().hasId(vid2, vid3)
       """
     When iterated to list
     Then the result should be unordered
@@ -237,12 +237,12 @@ Feature: Step - has()
 
   Scenario: g_VX1X_out_hasXid_2AsString_3AsStringX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].sid"
-    And using the parameter v2Id defined as "v[vadas].sid"
-    And using the parameter v3Id defined as "v[lop].sid"
+    And using the parameter vid1 defined as "v[marko].sid"
+    And using the parameter vid2 defined as "v[vadas].sid"
+    And using the parameter vid3 defined as "v[lop].sid"
     And the traversal of
       """
-      g.V(v1Id).out().hasId(v2Id, v3Id)
+      g.V(vid1).out().hasId(vid2, vid3)
       """
     When iterated to list
     Then the result should be unordered
@@ -261,10 +261,10 @@ Feature: Step - has()
 
   Scenario: g_EX7X_hasXlabelXknowsX
     Given the modern graph
-    And using the parameter e7Id defined as "e[marko-knows->vadas].id"
+    And using the parameter eid7 defined as "e[marko-knows->vadas].id"
     And the traversal of
       """
-      g.E(e7Id).hasLabel("knows")
+      g.E(eid7).hasLabel("knows")
       """
     When iterated to list
     Then the result should be unordered
@@ -331,10 +331,10 @@ Feature: Step - has()
 
   Scenario: g_VX1X_outE_hasXweight_inside_0_06X_inV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
     """
-    g.V(v1Id).outE().has("weight", P.inside(0.0, 0.6)).inV()
+    g.V(vid1).outE().has("weight", P.inside(0.0, 0.6)).inV()
     """
     When iterated to list
     Then the result should be unordered
@@ -344,11 +344,11 @@ Feature: Step - has()
 
   Scenario: g_EX11X_outV_outE_hasXid_10X
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].id"
-    And using the parameter e10Id defined as "e[josh-created->ripple].id"
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
+    And using the parameter eid10 defined as "e[josh-created->ripple].id"
     And the traversal of
     """
-    g.E(e11Id).outV().outE().has(T.id, e10Id)
+    g.E(eid11).outV().outE().has(T.id, eid10)
     """
     When iterated to list
     Then the result should be unordered
@@ -357,11 +357,11 @@ Feature: Step - has()
 
   Scenario: g_EX11X_outV_outE_hasXid_10AsStringX
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].sid"
-    And using the parameter e10Id defined as "e[josh-created->ripple].sid"
+    And using the parameter eid11 defined as "e[josh-created->lop].sid"
+    And using the parameter eid10 defined as "e[josh-created->ripple].sid"
     And the traversal of
     """
-    g.E(e11Id).outV().outE().has(T.id, e10Id)
+    g.E(eid11).outV().outE().has(T.id, eid10)
     """
     When iterated to list
     Then the result should be unordered
@@ -396,10 +396,10 @@ Feature: Step - has()
 
   Scenario: g_V_in_hasIdXneqX1XX
     Given the modern graph
-    And using the parameter neqXv1IdX of P.neq("v[marko].id")
+    And using the parameter xx1 of P.neq("v[marko].id")
     And the traversal of
     """
-    g.V().in().hasId(neqXv1IdX)
+    g.V().in().hasId(xx1)
     """
     When iterated to list
     Then the result should be unordered
@@ -517,11 +517,11 @@ Feature: Step - has()
 
   Scenario: g_V_hasIdX1X_hasIdX2X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
     """
-    g.V().hasId(v1Id).hasId(v2Id)
+    g.V().hasId(vid1).hasId(vid2)
     """
     When iterated to list
     Then the result should be empty
@@ -537,10 +537,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasIdXemptyX_count
     Given the modern graph
-    And using the parameter l defined as "l[]"
+    And using the parameter xx1 defined as "l[]"
     And the traversal of
     """
-    g.V().hasId(l).count()
+    g.V().hasId(xx1).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -549,10 +549,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasIdXwithinXemptyXX_count
     Given the modern graph
-    And using the parameter withinXlX of P.within("l[]")
+    And using the parameter xx1 of P.within("l[]")
     And the traversal of
     """
-    g.V().hasId(withinXlX).count()
+    g.V().hasId(xx1).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -561,10 +561,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasIdXwithoutXemptyXX_count
     Given the modern graph
-    And using the parameter withoutXlX of P.without("l[]")
+    And using the parameter xx1 of P.without("l[]")
     And the traversal of
     """
-    g.V().hasId(withoutXlX).count()
+    g.V().hasId(xx1).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -573,10 +573,10 @@ Feature: Step - has()
 
   Scenario: g_V_notXhasIdXwithinXemptyXXX_count
     Given the modern graph
-    And using the parameter withinXlX of P.within("l[]")
+    And using the parameter xx1 of P.within("l[]")
     And the traversal of
     """
-    g.V().not(__.hasId(withinXlX)).count()
+    g.V().not(__.hasId(xx1)).count()
     """
     When iterated to list
     Then the result should be unordered

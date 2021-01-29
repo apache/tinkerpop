@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Gherkin.Ast;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Remote;
@@ -48,6 +49,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new ReadOnlyDictionary<string, Edge>(new Dictionary<string, Edge>());
         
         private static readonly RemoteConnectionFactory ConnectionFactory = new RemoteConnectionFactory();
+
+        public static ScenarioDefinition CurrentScenario;
 
         public static ScenarioDataPerGraph GetByGraphName(string name)
         {

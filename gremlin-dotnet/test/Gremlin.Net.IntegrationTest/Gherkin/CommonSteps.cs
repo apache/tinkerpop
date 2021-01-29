@@ -112,13 +112,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException("g should be a traversal source");
             }
-            _traversal = TraversalParser.GetTraversal(traversalText, _g, _parameters);
+            
+            _traversal =
+                TraversalEvaluation.Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
         }
 
         [Given("the graph initializer of")]
         public void InitTraversal(string traversalText)
         {
-            var traversal = TraversalParser.GetTraversal(traversalText, _g, _parameters);
+            var traversal =
+                TraversalEvaluation.Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
             traversal.Iterate();
             
             // We may have modified the so-called `empty` graph
@@ -226,7 +229,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 traversalText = traversalText.Substring(1, traversalText.Length - 2);
             }
-            var traversal = TraversalParser.GetTraversal(traversalText, _g, _parameters);
+            
+            var traversal =
+                TraversalEvaluation.Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
+            
             var count = 0;
             while (traversal.MoveNext())
             {
