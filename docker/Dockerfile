@@ -44,7 +44,8 @@ RUN apt-get install -y python python-dev python-pip build-essential checkinstall
 RUN cd /opt && wget https://www.python.org/ftp/python/3.5.3/Python-3.5.3.tgz && tar -xvf Python-3.5.3.tgz
 RUN cd /opt/Python-3.5.3 && ./configure && make && make install
 RUN ln -sf /usr/bin/python3.5.3 /usr/bin/python3
-RUN pip install --upgrade pip
+# pip drops support of Python 2 starting from version 21.0
+RUN pip install --upgrade "pip<21.0"
 RUN pip install virtualenv virtualenvwrapper
 
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk
