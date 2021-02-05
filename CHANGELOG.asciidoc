@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added method caching for GraphSON 3.0 deserialization of `P` and `TextP` instances.
 * Modified Gremlin Server `Settings` to be more extensible allowing for custom options with the YAML parser.
 
 [[release-3-4-10]]

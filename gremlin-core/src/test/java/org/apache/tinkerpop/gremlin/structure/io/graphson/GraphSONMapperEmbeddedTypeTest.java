@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -52,6 +53,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.Matchers.either;
@@ -426,5 +428,23 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         // perhaps it can switch fully - TINKERPOP-2156
         final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
         assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+    }
+
+    @Test
+    public void shouldHandlePExt() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = PExt.mix("bah");
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    public static class PExt<V> extends P<V> {
+        public PExt(final BiPredicate<V, V> biPredicate, final V value) {
+            super(biPredicate, value);
+        }
+
+        public static <V> P<V> mix(final V value) {
+            return new P(Compare.eq, value);
+        }
     }
 }
