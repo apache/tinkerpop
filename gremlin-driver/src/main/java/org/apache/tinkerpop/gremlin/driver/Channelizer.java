@@ -70,29 +70,6 @@ public interface Channelizer extends ChannelHandler {
     public void close(final Channel channel);
 
     /**
-     * Create a message for the driver to use as a "keep-alive" for the connection. This method will only be used if
-     * {@link #supportsKeepAlive()} is {@code true}.
-     *
-     * @deprecated As of release 3.4.9, not directly replaced. Any keep-alive functionality should be implemented as
-     * a function of the configured channel and not as a component of the {@code Channelizer} itself.
-     */
-    @Deprecated
-    public default Object createKeepAliveMessage() {
-        return null;
-    }
-
-    /**
-     * Determines if the channelizer supports a method for keeping the connection to the server alive.
-     *
-     * @deprecated As of release 3.4.9, not directly replaced. Any keep-alive functionality should be implemented as
-     * a function of the configured channel and not as a component of the {@code Channelizer} itself.
-     */
-    @Deprecated
-    public default boolean supportsKeepAlive() {
-        return false;
-    }
-
-    /**
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
      */
@@ -174,30 +151,6 @@ public interface Channelizer extends ChannelHandler {
         }
 
         /**
-         * Keep-alive is supported through the ping/pong websocket protocol.
-         *
-         * @see <a href=https://tools.ietf.org/html/rfc6455#section-5.5.2>IETF RFC 6455</a>
-         * @deprecated As of release 3.4.9, not directly replaced. The keep-alive functionality is delegated to Netty
-         * {@code IdleStateHandler} which is added to the pipeline in {@link Channelizer}.
-         */
-        @Deprecated
-        @Override
-        public boolean supportsKeepAlive() {
-            return true;
-        }
-
-        /**
-         * @deprecated As of release 3.4.9, not directly replaced. The keep-alive functionality is delegated to Netty
-         * {@code IdleStateHandler} which is added to the pipeline in {@link Channelizer}.
-         */
-        @Deprecated
-        @Override
-        public Object createKeepAliveMessage() {
-            throw new UnsupportedOperationException(
-                    "WebSocketChannelizer uses Netty's IdleStateHandler to send keep alive ping frames to the server.");
-        }
-
-        /**
          * Sends a {@code CloseWebSocketFrame} to the server for the specified channel.
          */
         @Override
@@ -231,7 +184,8 @@ public interface Channelizer extends ChannelHandler {
                             connection.getUri(), WebSocketVersion.V13, null, /*allow extensions*/ true,
                             EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getConnectionSetupTimeout());
 
-            final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
+            final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(
+                    cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));

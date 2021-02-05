@@ -79,6 +79,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed `Property.Exceptions.propertyValueCanNotBeNull` exception type as `null` now has meaning in Gremlin.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.
 * Removed Gryo serialization configurations from Gremlin Server sample configurations and default configurations.
+* Removed previously deprecated custom keep-alive functionality in the Java driver.
 * Removed previously deprecated `BytecodeUtil`.
 * Removed previously deprecated `Cluster.maxWaitForSessionClose` configuration option.
 * Removed previously deprecated `TraversalStrategies.applyStrategies()`.

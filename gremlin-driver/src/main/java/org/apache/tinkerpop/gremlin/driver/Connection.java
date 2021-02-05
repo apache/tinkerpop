@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -56,7 +55,6 @@ final class Connection {
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
-    private final long keepAliveInterval;
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
@@ -89,7 +87,6 @@ final class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
-    private final AtomicReference<ScheduledFuture> keepAliveFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
@@ -97,7 +94,6 @@ final class Connection {
         this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
-        this.keepAliveInterval = pool.settings().keepAliveInterval;
 
         connectionLabel = "Connection{host=" + pool.host + "}";
 
@@ -123,26 +119,17 @@ final class Connection {
              * this closed connection.
              */
             final Connection thisConnection = this;
-            channel.closeFuture().addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    logger.debug("OnChannelClose callback called for channel {}", channel);
+            channel.closeFuture().addListener((ChannelFutureListener) future -> {
+                logger.debug("OnChannelClose callback called for channel {}", channel);
 
-                    // Replace the channel if it was not intentionally closed using CloseAsync method.
-                    if (thisConnection.closeFuture.get() == null) {
-                        // delegate the task to worker thread and free up the event loop
-                        thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
-                    }
+                // Replace the channel if it was not intentionally closed using CloseAsync method.
+                if (thisConnection.closeFuture.get() == null) {
+                    // delegate the task to worker thread and free up the event loop
+                    thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
                 }
             });
 
             logger.info("Created new connection for {}", uri);
-
-            // Default WebSocketChannelizer uses Netty's IdleStateHandler
-            if (!(channelizer instanceof Channelizer.WebSocketChannelizer)) {
-                logger.debug("Using custom keep alive handler.");
-                scheduleKeepAlive();
-            }
         } catch (Exception ex) {
             throw new ConnectionException(uri, "Could not open " + this.toString(), ex);
         }
@@ -193,10 +180,6 @@ final class Connection {
 
         final CompletableFuture<Void> future = new CompletableFuture<>();
         closeFuture.set(future);
-
-        // stop any pings being sent at the server for keep-alive
-        final ScheduledFuture keepAlive = keepAliveFuture.get();
-        if (keepAlive != null) keepAlive.cancel(true);
 
         // make sure all requests in the queue are fully processed before killing.  if they are then shutdown
         // can be immediate.  if not this method will signal the readCompleted future defined in the write()
@@ -268,40 +251,7 @@ final class Connection {
                 });
         channel.writeAndFlush(requestMessage, requestPromise);
 
-        // Default WebSocketChannelizer uses Netty's IdleStateHandler
-        if (!(channelizer instanceof Channelizer.WebSocketChannelizer)) {
-            logger.debug("Using custom keep alive handler.");
-            scheduleKeepAlive();
-        }
-
         return requestPromise;
-    }
-
-    /**
-     * @deprecated As of release 3.5.0, not directly replaced. The keep-alive functionality is delegated to Netty
-     * {@link io.netty.handler.timeout.IdleStateHandler} which is added to the pipeline in {@link Channelizer}.
-     */
-    private void scheduleKeepAlive() {
-        final Connection thisConnection = this;
-        // try to keep the connection alive if the channel allows such things - websockets will
-        if (channelizer.supportsKeepAlive() && keepAliveInterval > 0) {
-
-            final ScheduledFuture oldKeepAliveFuture = keepAliveFuture.getAndSet(cluster.executor().scheduleAtFixedRate(() -> {
-                logger.debug("Request sent to server to keep {} alive", thisConnection);
-                try {
-                    channel.writeAndFlush(channelizer.createKeepAliveMessage());
-                } catch (Exception ex) {
-                    // will just log this for now - a future real request can be responsible for the failure that
-                    // marks the host as dead. this also may not mean the host is actually dead. more robust handling
-                    // is in play for real requests, not this simple ping
-                    logger.warn(String.format("Keep-alive did not succeed on %s", thisConnection), ex);
-                }
-            }, keepAliveInterval, keepAliveInterval, TimeUnit.MILLISECONDS));
-
-            // try to cancel the old future if it's still un-executed - no need to ping since a new write has come
-            // through on the connection
-            if (oldKeepAliveFuture != null) oldKeepAliveFuture.cancel(true);
-        }
     }
 
     private void returnToPool() {
