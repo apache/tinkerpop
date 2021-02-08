@@ -63,6 +63,8 @@ class Translator {
           if (Object(params[k]) === params[k]) {
             if (params[k] instanceof Traversal) {
               script += this.translate(params[k].getBytecode(), true);
+            } else if (params[k] instanceof Binding) {
+              script += params[k].name;
             } else if (params[k].toString() === '[object Object]') {
               Object.keys(params[k]).forEach(function (key, index) {
                 if (index > 0) script += ', ';
@@ -85,7 +87,7 @@ class Translator {
             }
           } else if (params[k] === undefined) {
             script += '';
-          } else if (typeof params[k] === 'number') {
+          } else if (typeof params[k] === 'number' || typeof params[k] === "boolean") {
             script += params[k];
           } else {
             script += '\'' + params[k] + '\'';
