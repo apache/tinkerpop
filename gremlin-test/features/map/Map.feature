@@ -61,6 +61,7 @@ Feature: Step - map()
       | d[5].i |
       | d[4].i |
 
+  @RemoteOnly
   Scenario: g_VX1X_out_mapXlambdaXnameXX_mapXlambdaXlengthXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

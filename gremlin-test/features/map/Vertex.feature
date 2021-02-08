@@ -135,7 +135,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
-    """
+      """
       g.E(eid11)
       """
     When iterated to list
@@ -147,7 +147,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].sid"
     And the traversal of
-    """
+      """
       g.E(eid11)
       """
     When iterated to list
@@ -159,7 +159,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter e11 defined as "e[josh-created->lop]"
     And the traversal of
-    """
+      """
       g.E(e11)
       """
     When iterated to list
@@ -172,7 +172,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     And using the parameter e7 defined as "e[marko-knows->vadas]"
     And using the parameter e11 defined as "e[josh-created->lop]"
     And the traversal of
-    """
+      """
       g.E(e7,e11)
       """
     When iterated to list
@@ -185,7 +185,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter xx1 defined as "l[e[marko-knows->vadas],e[josh-created->lop]]"
     And the traversal of
-    """
+      """
       g.E(xx1)
       """
     When iterated to list
@@ -198,7 +198,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
-    """
+      """
       g.V(vid1).outE()
       """
     When iterated to list
@@ -212,7 +212,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
-    """
+      """
       g.V(vid2).inE()
       """
     When iterated to list
@@ -224,7 +224,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
-    """
+      """
       g.V(vid4).bothE("created")
       """
     When iterated to list
@@ -237,7 +237,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
-    """
+      """
       g.V(vid4).bothE()
       """
     When iterated to list
