@@ -143,7 +143,9 @@ def _convert(val, ctx):
     if isinstance(val, dict):                                            # convert dictionary keys/values
         n = {}
         for key, value in val.items():
-            n[_convert(key, ctx)] = _convert(value, ctx)
+            k = _convert(key, ctx)
+            # convert to tuple key if list/set as neither are hashable
+            n[tuple(k) if isinstance(k, (set, list)) else k] = _convert(value, ctx)
         return n
     elif isinstance(val, str) and re.match(r"^l\[.*\]$", val):           # parse list
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))

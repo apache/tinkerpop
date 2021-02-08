@@ -41,8 +41,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
-                { "g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported }
-                //{ "g_V_properties_propertiesXstartTimeX_drop", IgnoreReason.NoReason },
+                { "g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported },
+                { "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX", IgnoreReason.ArrayKeysInMapNotAssertingInGherkin }
             };
         
         private static class Keywords

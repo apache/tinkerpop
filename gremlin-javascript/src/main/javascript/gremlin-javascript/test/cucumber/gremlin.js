@@ -651,6 +651,7 @@ const gremlins = {
     g_V_outXcreatedX_groupCountXxX_capXxX: [function({g}) { return g.V().out("created").groupCount("x").cap("x") }], 
     g_V_groupCount_byXbothE_countX: [function({g}) { return g.V().groupCount().by(__.bothE().count()) }], 
     g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX: [function({g}) { return g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a") }], 
+    g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX: [function({g}) { return g.V().has("person","name","marko").both("knows").groupCount().by(__.values("name").fold()) }], 
     g_VX1X_out_injectXv2X_name: [function({g, v1Id, v2}) { return g.V(v1Id).out().inject(v2).values("name") }], 
     g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path: [function({g, v1Id, c}) { return g.V(v1Id).out().values("name").inject("daniel").as("a").map(c).path() }], 
     g_VX1X_injectXg_VX4XX_out_name: [function({g, v1Id, v4}) { return g.V(v1Id).inject(v4).out().values("name") }], 
