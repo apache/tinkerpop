@@ -84,5 +84,12 @@ describe('Translator', function () {
       assert.ok(script);
       assert.strictEqual(script, 'g.V().filter(__.outE(\'created\').filter(__.has(\'weight\')))');
     });
+    
+    it('should produce valid script representation from bytecode glv steps with embedded children', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V().or(__.has("name", "a"), __.has("name", "b")).getBytecode());
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V().or(__.has(\'name\', \'a\'), __.has(\'name\', \'b\')');
+    });
   });
 });
