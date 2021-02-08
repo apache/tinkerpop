@@ -29,6 +29,7 @@ const anon = require('../../lib/process/anonymous-traversal');
 const t = require('../../lib/process/traversal');
 const gt = require('../../lib/process/graph-traversal');
 const V = gt.statics.V;
+const P = t.P;
 const Bytecode = require('../../lib/process/bytecode');
 const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
 
@@ -215,6 +216,20 @@ describe('Traversal', function () {
       return traversal.iterate().then(() => {
         assert.strictEqual(applied, true);
       });
+    });
+  });
+
+  describe('P#toString()', function () {
+    it('convert to string representation with P', function () {
+      assert.strictEqual(P.gt(18).toString(), 'gt(18)');
+    });
+
+    it('convert to string representation with P.within', function () {
+      assert.strictEqual(P.within('a', 'b').toString(), 'within(\'a\',\'b\')');
+    });
+
+    it('convert to string representation with P.within array', function () {
+      assert.strictEqual(P.within(['a', 'b']).toString(), 'within(\'a\',\'b\')');
     });
   });
 

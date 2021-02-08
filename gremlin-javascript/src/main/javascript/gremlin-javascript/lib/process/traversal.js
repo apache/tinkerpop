@@ -254,13 +254,20 @@ class P {
    */
   toString() {
     function formatValue(value){
+      if (Array.isArray(value)) {
+        let acc = [];
+        for (const item of value) {
+          acc.push(formatValue(item));
+        }
+        return acc;
+      }
       if (value && typeof value === "string"){
         return "'" + value + "'";
       }
       return value;
     }
 
-    if (this.other === undefined) {
+    if (this.other === undefined || this.other === null) {
       return this.operator + '(' + formatValue(this.value) + ')';
     }
     return this.operator + '(' + formatValue(this.value) + ', ' + formatValue(this.other) + ')';
