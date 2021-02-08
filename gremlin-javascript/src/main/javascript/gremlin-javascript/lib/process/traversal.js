@@ -254,9 +254,9 @@ class P {
    */
   toString() {
     function formatValue(value){
-      if (Array.isArray(valueToFormat)) {
+      if (Array.isArray(value)) {
         let acc = [];
-        for (const item of valueToFormat) {
+        for (const item of value) {
           acc.push(formatValue(item));
         }
         return acc;
