@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
@@ -58,7 +59,7 @@ public class DotNetTranslatorTest {
     @Test
     public void shouldTranslateStrategies() throws Exception {
         assertEquals("g.WithStrategies(new ReadOnlyStrategy()," +
-                        "new SubgraphStrategy(configuration: new Dictionary<string,dynamic> {{\"checkAdjacentVertices\",false},{\"vertices\",__.HasLabel(\"person\")}})).V().Has(\"name\")",
+                        "new SubgraphStrategy(checkAdjacentVertices: false, vertices: __.HasLabel(\"person\"))).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());
@@ -70,7 +71,7 @@ public class DotNetTranslatorTest {
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
         }}).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().Id().Is(new Dictionary<object,object> {{3,\"32\"},{new List<object> {1, 2, 3.1},4}})", script);
+        assertEquals("g.V().Id().Is(new Dictionary<object,object> {{3, \"32\"}, {new List<object> {1, 2, 3.1}, 4}})", script);
     }
 
     @Test
@@ -108,13 +109,18 @@ public class DotNetTranslatorTest {
         final Calendar c = Calendar.getInstance();
         c.set(1975, Calendar.SEPTEMBER, 7);
         final Date d = c.getTime();
-        assertTranslation(String.format("DateTimeOffset.FromUnixTimeMillisecond(%s)", d.getTime()), d);
+        assertTranslation(String.format("DateTimeOffset.FromUnixTimeMilliseconds(%s)", d.getTime()), d);
     }
 
     @Test
     public void shouldTranslateUuid() {
         final UUID uuid = UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d");
         assertTranslation(String.format("new Guid(\"%s\")", uuid), uuid);
+    }
+
+    @Test
+    public void shouldTranslateP() {
+        assertTranslation("P.Gt(1).And(P.Gt(2)).And(P.Gt(3))", P.gt(1).and(P.gt(2)).and(P.gt(3)));
     }
 
     @Test
@@ -171,7 +177,7 @@ public class DotNetTranslatorTest {
                 .create();
         final String script1 = translator.translate(g.inject(vertex1).asAdmin().getBytecode()).getScript();
         assertEquals("g.Inject(new Vertex(" +
-                        "\"customer:10:foo bar $100#90\"," +
+                        "\"customer:10:foo bar $100#90\", " +
                         "\"customer\"))",
                 script1);
 
@@ -180,7 +186,7 @@ public class DotNetTranslatorTest {
                 .create();
         final String script2 = translator.translate(g.inject(vertex2).asAdmin().getBytecode()).getScript();
         assertEquals("g.Inject(new Vertex(" +
-                        "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\"," +
+                        "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\", " +
                         "\"user\"))",
                 script2);
 
@@ -192,17 +198,17 @@ public class DotNetTranslatorTest {
         final String script3 = translator.translate(g.inject(edge).asAdmin().getBytecode()).getScript();
         assertEquals("g.Inject(" +
                         "new Edge(\"knows:30:foo bar $100:\\\\u0020\\\\u0024500#70\", " +
-                        "new Vertex(\"customer:10:foo bar $100#90\",\"customer\")," +
+                        "new Vertex(\"customer:10:foo bar $100#90\", \"customer\"), " +
                         "\"knows\", " +
-                        "new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\")))",
+                        "new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\", \"user\")))",
                 script3);
 
         final String script4 = translator.translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
                         .asAdmin().getBytecode()).getScript();
         assertEquals("g.AddE(\"knows\")" +
-                        ".From(new Vertex(\"customer:10:foo bar $100#90\",\"customer\"))" +
-                        ".To(new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))" +
+                        ".From(new Vertex(\"customer:10:foo bar $100#90\", \"customer\"))" +
+                        ".To(new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\", \"user\"))" +
                         ".Property(\"when\",\"2018/09/21\")",
                 script4);
     }

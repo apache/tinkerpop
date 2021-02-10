@@ -30,7 +30,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
-using Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;

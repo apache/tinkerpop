@@ -61,6 +61,20 @@ Feature: Step - map()
       | d[5].i |
       | d[4].i |
 
+  Scenario: g_VX1X_out_mapXlambdaXnameXX_mapXlambdaXlengthXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out().map(Lambda.function("it.get().value('name')")).map(Lambda.function("it.get().toString().length()"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].i |
+      | d[5].i |
+      | d[4].i |
+
   Scenario: g_withPath_V_asXaX_out_mapXa_nameX
     Given the modern graph
     And using the parameter l1 defined as "c[it.path('a').value('name')]"

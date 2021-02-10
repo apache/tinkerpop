@@ -139,7 +139,7 @@ Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
 
 Translator.ScriptTranslator dotnetTranslator = DotNetTranslator.of("g");
 System.out.println(dotnetTranslator.translate(t).getScript());
-// OUTPUT: g.V().Has("person","name","marko").Where(__.In("knows")).Values<object>("age").Map<object>(() => "it.get() + 1")
+// OUTPUT: g.V().Has("person","name","marko").Where(__.In("knows")).Values<object>("age").Map<object>(Lambda.Groovy("it.get() + 1"))
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2452[TINKERPOP-2452]

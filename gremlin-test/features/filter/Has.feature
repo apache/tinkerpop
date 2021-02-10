@@ -691,3 +691,27 @@ Feature: Step - has()
       """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_hasXage_gtX18X_andXltX30XXorXgtx35XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.gt(18).and(P.lt(30)).or(P.gt(35)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+
+  Scenario: g_V_hasXage_gtX18X_andXltX30XXorXltx35XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.gt(18).and(P.lt(30)).and(P.lt(35)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |

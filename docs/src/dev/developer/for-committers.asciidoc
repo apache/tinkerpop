@@ -254,7 +254,7 @@ Scenario: g_VX1X_unionXrepeatXoutX_timesX2X__outX_name
   And using the parameter vId1 defined as "v[marko].id"
   And the traversal of
     """
-    g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+    g.V(vId1).union(__.repeat(__.out()).times(2), __.out()).values("name")
     """
   When iterated to list
   Then the result should be unordered
@@ -365,7 +365,7 @@ with the `id` of "1".
 * An `Edge` variable follows the pattern of vertices but with a "e" prefix.
 * The "id" of a `Vertex` or `Edge` is prefixed with "vid"`" or "eid" respectively followed by the `id`, thus, `vid1`
 would be "1" and refer to the `Vertex` with that `id`.
-* `Function` variables should use 'l1' and `l2`.
+* `Function` variables should use `l1` and `l2`.
 * `Predicate` variables should use `pred1`.
 * `Comparator` variables should use `c1` and `c2`.    
 
@@ -375,7 +375,7 @@ Finally, specify the traversal under test with the "Given" option "and the trave
 ----
 And the traversal of
   """
-  g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+  g.V(vId1).union(__.repeat(__.out()).times(2), __.out()).values("name")
   """
 ----
 

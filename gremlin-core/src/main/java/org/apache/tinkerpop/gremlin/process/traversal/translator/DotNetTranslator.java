@@ -140,12 +140,12 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Date o) {
-            return "DateTimeOffset.FromUnixTimeMillisecond(" + o.getTime() + ")";
+            return "DateTimeOffset.FromUnixTimeMilliseconds(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final Timestamp o) {
-            return "DateTimeOffset.FromUnixTimeMillisecond(" + o.getTime() + ")";
+            return "DateTimeOffset.FromUnixTimeMilliseconds(" + o.getTime() + ")";
         }
 
         @Override
@@ -155,7 +155,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Lambda o) {
-            return "() => \"" + StringEscapeUtils.escapeEcmaScript(o.getLambdaScript().trim()) + "\"";
+            return "Lambda.Groovy(\"" + StringEscapeUtils.escapeEcmaScript(o.getLambdaScript().trim()) + "\")";
         }
 
         @Override
@@ -180,14 +180,14 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Set<?> o) {
-            final Iterator<?> iterator = ((List<?>) o).iterator();
+            final Iterator<?> iterator = o.iterator();
             script.append("new HashSet<object> {");
 
             while (iterator.hasNext()) {
                 final Object nextItem = iterator.next();
                 convertToScript(nextItem);
                 if (iterator.hasNext())
-                    script.append(",").append(" ");
+                    script.append(", ");
             }
 
             return script.append("}");
@@ -202,7 +202,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                 final Object nextItem = iterator.next();
                 convertToScript(nextItem);
                 if (iterator.hasNext())
-                    script.append(",").append(" ");
+                    script.append(", ");
             }
 
             return script.append("}");
@@ -222,7 +222,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Enum<?> o) {
-            final String e = o instanceof Direction || o instanceof T ?
+            final String e = o instanceof Direction ?
                     o.name().substring(0,1).toUpperCase() + o.name().substring(1).toLowerCase() :
                     o.name().substring(0,1).toUpperCase() + o.name().substring(1);
             return script.append(o.getDeclaringClass().getSimpleName() + "." + e);
@@ -232,7 +232,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         protected Script produceScript(final Vertex o) {
             script.append("new Vertex(");
             convertToScript(o.id());
-            script.append(",");
+            script.append(", ");
             convertToScript(o.label());
             return script.append(")");
         }
@@ -243,26 +243,26 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             convertToScript(o.id());
             script.append(", new Vertex(");
             convertToScript(o.outVertex().id());
-            script.append(",");
+            script.append(", ");
             convertToScript(o.outVertex().label());
-            script.append("),");
+            script.append("), ");
             convertToScript(o.label());
             script.append(", new Vertex(");
             convertToScript(o.inVertex().id());
-            script.append(",");
+            script.append(", ");
             convertToScript(o.inVertex().label());
             return script.append("))");
         }
 
         @Override
         protected Script produceScript(final VertexProperty<?> o) {
-            script.append("new Property(");
+            script.append("new VertexProperty(");
             convertToScript(o.id());
-            script.append(",");
+            script.append(", ");
             convertToScript(o.label());
-            script.append(",");
+            script.append(", ");
             convertToScript(o.value());
-            script.append(",");
+            script.append(", ");
             return script.append("null)");
         }
 
@@ -271,10 +271,16 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             if (o.getConfiguration().isEmpty()) {
                 return script.append("new " + o.getStrategyClass().getSimpleName() + "()");
             } else {
-                script.append("new " + o.getStrategyClass().getSimpleName() + "(configuration: ");
-                script.append("new Dictionary<string,dynamic> {");
-                produceKeyValuesForMap(ConfigurationConverter.getMap(o.getConfiguration()));
-                script.append("}");
+                script.append("new " + o.getStrategyClass().getSimpleName() + "(");
+                final Iterator<String> keys = o.getConfiguration().getKeys();
+                while (keys.hasNext()) {
+                    final String k = keys.next();
+                    script.append(k);
+                    script.append(": ");
+                    convertToScript(o.getConfiguration().getProperty(k));
+                    if (keys.hasNext())
+                        script.append(", ");
+                }
 
                 return script.append(")");
             }
@@ -286,11 +292,11 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                 final Map.Entry<?,?> entry = itty.next();
                 script.append("{");
                 convertToScript(entry.getKey());
-                script.append(",");
+                script.append(", ");
                 convertToScript(entry.getValue());
                 script.append("}");
                 if (itty.hasNext())
-                    script.append(",");
+                    script.append(", ");
             }
             return script;
         }
@@ -354,11 +360,19 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                 script.append("TextP.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
+                // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
+                // generated the way it was written which was P.and(P).and(P)
                 final List<P<?>> list = ((ConnectiveP) p).getPredicates();
+                final String connector = p instanceof OrP ? "Or" : "And";
                 for (int i = 0; i < list.size(); i++) {
                     produceScript(list.get(i));
+
+                    // for the first/last P there is no parent to close
+                    if (i > 0 && i < list.size() - 1) script.append(")");
+
+                    // add teh connector for all but last P
                     if (i < list.size() - 1) {
-                        script.append(p instanceof OrP ? ".Or(" : ".And(");
+                        script.append(".").append(connector).append("(");
                     }
                 }
             } else {
