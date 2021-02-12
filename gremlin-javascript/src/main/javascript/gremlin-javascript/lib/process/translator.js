@@ -74,12 +74,18 @@ class Translator {
                 }
                 script += ')';
               });
+            } else if (Array.isArray(params[k])) {
+              const parts = [];
+              for (const param of params[k]) {
+                parts.push(translate(param.getBytecode(), true));
+              }
+              script += parts.join(",");
             } else {
               script += params[k].toString();
             }
           } else if (params[k] === undefined) {
             script += '';
-          } else if (typeof params[k] === 'number') {
+          } else if (typeof params[k] === 'number' || typeof params[k] === 'boolean') {
             script += params[k];
           } else {
             script += '\'' + params[k] + '\'';
