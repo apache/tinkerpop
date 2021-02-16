@@ -147,10 +147,10 @@ Feature: Step - valueMap()
 
   Scenario: g_VX1X_outXcreatedX_valueMap
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("created").valueMap()
+      g.V(vid1).out("created").valueMap()
       """
     When iterated to list
     Then the result should be unordered
@@ -185,10 +185,10 @@ Feature: Step - valueMap()
 
   Scenario: g_VX1X_valueMapXname_locationX_byXunfoldX_by
     Given the crew graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).valueMap("name", "location").by(__.unfold()).by()
+      g.V(vid1).valueMap("name", "location").by(__.unfold()).by()
       """
     When iterated to list
     Then the result should be unordered

@@ -35,10 +35,10 @@ Feature: Step - store()
 
   Scenario: g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).store("a").by("name").out().store("a").by("name").values("name").cap("a")
+      g.V(vid1).store("a").by("name").out().store("a").by("name").values("name").cap("a")
       """
     When iterated next
     Then the result should be unordered
@@ -50,10 +50,10 @@ Feature: Step - store()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX
     Given the modern graph
-    And using the parameter initial defined as "s[]"
+    And using the parameter xx1 defined as "s[]"
     And the traversal of
       """
-      g.withSideEffect("a", initial).V().both().values("name").store("a").cap("a")
+      g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")
       """
     When iterated next
     Then the result should be unordered

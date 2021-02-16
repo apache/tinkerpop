@@ -19,10 +19,10 @@ Feature: Step - path()
 
   Scenario: g_VX1X_name_path
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).values("name").path()
+      g.V(vid1).values("name").path()
       """
     When iterated to list
     Then the result should be unordered
@@ -31,10 +31,10 @@ Feature: Step - path()
 
   Scenario: g_VX1X_out_path_byXageX_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out().path().by("age").by("name")
+      g.V(vid1).out().path().by("age").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -80,10 +80,10 @@ Feature: Step - path()
 
   Scenario: g_VX1X_outEXcreatedX_inV_inE_outV_path
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("created").inV().inE().outV().path()
+      g.V(vid1).outE("created").inV().inE().outV().path()
       """
     When iterated to list
     Then the result should be unordered

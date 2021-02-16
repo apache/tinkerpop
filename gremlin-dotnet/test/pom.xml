@@ -128,6 +128,24 @@ limitations under the License.
                         </dependencies>
                         <executions>
                             <execution>
+                                <id>generate-radish-support</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>projectBaseDir</name>
+                                            <value>${project.basedir}/../../</value>
+                                        </property>
+                                    </properties>
+                                    <scripts>
+                                        <script>${project.basedir}/../build/generate.groovy</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>gremlin-server-start</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>

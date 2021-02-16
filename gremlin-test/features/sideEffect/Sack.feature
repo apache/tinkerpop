@@ -58,10 +58,10 @@ Feature: Step - sack()
 
   Scenario: g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withBulk(false).withSack(1.0, Operator.sum).V(v1Id).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
+      g.withBulk(false).withSack(1.0, Operator.sum).V(vid1).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
       """
     When iterated to list
     Then the result should be unordered
@@ -84,10 +84,10 @@ Feature: Step - sack()
 
   Scenario: g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withSack(1.0, Operator.sum).V(v1Id).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
+      g.withSack(1.0, Operator.sum).V(vid1).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
       """
     When iterated to list
     Then the result should be unordered

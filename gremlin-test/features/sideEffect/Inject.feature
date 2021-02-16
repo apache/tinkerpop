@@ -19,11 +19,11 @@ Feature: Step - inject()
 
   Scenario: g_VX1X_out_injectXv2X_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And using the parameter v2 defined as "v[vadas]"
     And the traversal of
       """
-      g.V(v1Id).out().inject(v2).values("name")
+      g.V(vid1).out().inject(v2).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -36,11 +36,11 @@ Feature: Step - inject()
 
   Scenario: g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter c defined as "c[it.get().length()]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter l1 defined as "c[it.get().length()]"
     And the traversal of
       """
-      g.V(v1Id).out().values("name").inject("daniel").as("a").map(c).path()
+      g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()
       """
     When iterated to list
     Then the result should be unordered
@@ -52,11 +52,11 @@ Feature: Step - inject()
 
   Scenario: g_VX1X_injectXg_VX4XX_out_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And using the parameter v4 defined as "v[josh]"
     And the traversal of
       """
-      g.V(v1Id).inject(v4).out().values("name")
+      g.V(vid1).inject(v4).out().values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -96,10 +96,10 @@ Feature: Step - inject()
 
   Scenario: g_injectXname_marko_age_nullX_selectXname_ageX
     Given the empty graph
-    And using the parameter m defined as "m[{\"name\":\"marko\", \"age\":null}]"
+    And using the parameter xx1 defined as "m[{\"name\":\"marko\", \"age\":null}]"
     And the traversal of
       """
-      g.inject(m).select("name","age")
+      g.inject(xx1).select("name","age")
       """
     When iterated to list
     Then the result should be unordered

@@ -19,20 +19,20 @@ Feature: Step - filter()
 
   Scenario: g_V_filterXfalseX
     Given the modern graph
-    And using the parameter l1 defined as "c[false]"
+    And using the parameter pred1 defined as "c[false]"
     And the traversal of
       """
-      g.V().filter(l1)
+      g.V().filter(pred1)
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_V_filterXtrueX
     Given the modern graph
-    And using the parameter l1 defined as "c[true]"
+    And using the parameter pred1 defined as "c[true]"
     And the traversal of
       """
-      g.V().filter(l1)
+      g.V().filter(pred1)
       """
     When iterated to list
     Then the result should be unordered
@@ -46,10 +46,10 @@ Feature: Step - filter()
 
   Scenario: g_V_filterXlang_eq_javaX
     Given the modern graph
-    And using the parameter l1 defined as "c[it.get().property('lang').orElse('none').equals('java')]"
+    And using the parameter pred1 defined as "c[it.get().property('lang').orElse('none').equals('java')]"
     And the traversal of
       """
-      g.V().filter(l1)
+      g.V().filter(pred1)
       """
     When iterated to list
     Then the result should be unordered
@@ -59,22 +59,22 @@ Feature: Step - filter()
 
   Scenario: g_VX1X_filterXage_gt_30X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter l1 defined as "c[it.get().property('age').orElse(0) > 30]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter pred1 defined as "c[it.get().property('age').orElse(0) > 30]"
     And the traversal of
       """
-      g.V(v1Id).filter(l1)
+      g.V(vid1).filter(pred1)
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_VX2X_filterXage_gt_30X
     Given the modern graph
-    And using the parameter v2Id defined as "v[josh].id"
-    And using the parameter l1 defined as "c[it.get().property('age').orElse(0) > 30]"
+    And using the parameter vid2 defined as "v[josh].id"
+    And using the parameter pred1 defined as "c[it.get().property('age').orElse(0) > 30]"
     And the traversal of
       """
-      g.V(v2Id).filter(l1)
+      g.V(vid2).filter(pred1)
       """
     When iterated to list
     Then the result should be unordered
@@ -83,11 +83,11 @@ Feature: Step - filter()
 
   Scenario: g_VX1X_out_filterXage_gt_30X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter l1 defined as "c[it.get().property('age').orElse(0) > 30]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter pred1 defined as "c[it.get().property('age').orElse(0) > 30]"
     And the traversal of
       """
-      g.V(v1Id).out().filter(l1)
+      g.V(vid1).out().filter(pred1)
       """
     When iterated to list
     Then the result should be unordered
@@ -96,10 +96,10 @@ Feature: Step - filter()
 
   Scenario: g_V_filterXname_startsWith_m_OR_name_startsWith_pX
     Given the modern graph
-    And using the parameter l1 defined as "c[{name = it.get().value('name'); name.startsWith('m') || name.startsWith('p')}]"
+    And using the parameter pred1 defined as "c[{name = it.get().value('name'); name.startsWith('m') || name.startsWith('p')}]"
     And the traversal of
       """
-      g.V().filter(l1)
+      g.V().filter(pred1)
       """
     When iterated to list
     Then the result should be unordered
@@ -109,20 +109,20 @@ Feature: Step - filter()
 
   Scenario: g_E_filterXfalseX
     Given the modern graph
-    And using the parameter l1 defined as "c[false]"
+    And using the parameter pred1 defined as "c[false]"
     And the traversal of
       """
-      g.E().filter(l1)
+      g.E().filter(pred1)
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_E_filterXtrueX
     Given the modern graph
-    And using the parameter l1 defined as "c[true]"
+    And using the parameter pred1 defined as "c[true]"
     And the traversal of
       """
-      g.E().filter(l1)
+      g.E().filter(pred1)
       """
     When iterated to list
     Then the result should be unordered

@@ -28,9 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -341,11 +338,19 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                 script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
+                // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
+                // generated the way it was written which was P.and(P).and(P)
                 final List<P<?>> list = ((ConnectiveP) p).getPredicates();
+                final String connector = p instanceof OrP ? "or" : "and";
                 for (int i = 0; i < list.size(); i++) {
                     produceScript(list.get(i));
+
+                    // for the first/last P there is no parent to close
+                    if (i > 0 && i < list.size() - 1) script.append(")");
+
+                    // add teh connector for all but last P
                     if (i < list.size() - 1) {
-                        script.append(p instanceof OrP ? ".or(" : ".and(");
+                        script.append(".").append(connector).append("(");
                     }
                 }
             } else {

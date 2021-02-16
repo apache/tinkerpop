@@ -19,10 +19,10 @@ Feature: Step - V()
 
   Scenario: g_VX1X_V_valuesXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).V().values("name")
+      g.V(vid1).V().values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -86,23 +86,23 @@ Feature: Step - V()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter software defined as "l[v[lop],v[ripple]]"
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
-    And using the parameter v3Id defined as "v[lop].id"
-    And using the parameter v4Id defined as "v[josh].id"
-    And using the parameter v5Id defined as "v[ripple].id"
-    And using the parameter v6Id defined as "v[peter].id"
+    And using the parameter xx1 defined as "l[v[lop],v[ripple]]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid3 defined as "v[lop].id"
+    And using the parameter vid4 defined as "v[josh].id"
+    And using the parameter vid5 defined as "v[ripple].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And the traversal of
       """
-      g.V().hasLabel("person").as("p").V(software).addE("uses").from("p")
+      g.V().hasLabel("person").as("p").V(xx1).addE("uses").from("p")
       """
     When iterated to list
     Then the result should have a count of 8
     And the graph should return 8 for count of "g.E().hasLabel(\"uses\")"
-    And the graph should return 2 for count of "g.V(v1Id).outE(\"uses\")"
-    And the graph should return 2 for count of "g.V(v2Id).outE(\"uses\")"
-    And the graph should return 4 for count of "g.V(v3Id).inE(\"uses\")"
-    And the graph should return 2 for count of "g.V(v4Id).outE(\"uses\")"
-    And the graph should return 4 for count of "g.V(v5Id).inE(\"uses\")"
-    And the graph should return 2 for count of "g.V(v6Id).outE(\"uses\")"
+    And the graph should return 2 for count of "g.V(vid1).outE(\"uses\")"
+    And the graph should return 2 for count of "g.V(vid2).outE(\"uses\")"
+    And the graph should return 4 for count of "g.V(vid3).inE(\"uses\")"
+    And the graph should return 2 for count of "g.V(vid4).outE(\"uses\")"
+    And the graph should return 4 for count of "g.V(vid5).inE(\"uses\")"
+    And the graph should return 2 for count of "g.V(vid6).outE(\"uses\")"

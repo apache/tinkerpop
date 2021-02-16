@@ -91,11 +91,11 @@ Feature: Step - where()
 
   Scenario: g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX
     Given the modern graph
-    And using the parameter l defined as "l[josh,peter]"
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter xx1 defined as "l[josh,peter]"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withSideEffect("a", l).V(v1Id).out("created").in("created").values("name").where(P.within("a"))
+      g.withSideEffect("a", xx1).V(vid1).out("created").in("created").values("name").where(P.within("a"))
       """
     When iterated to list
     Then the result should be unordered
@@ -105,10 +105,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").in("created").as("b").where("a", P.neq("b")).values("name")
+      g.V(vid1).as("a").out("created").in("created").as("b").where("a", P.neq("b")).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -118,10 +118,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").in("created").as("b").where(__.as("b").out("created").has("name", "ripple")).values("age", "name")
+      g.V(vid1).as("a").out("created").in("created").as("b").where(__.as("b").out("created").has("name", "ripple")).values("age", "name")
       """
     When iterated to list
     Then the result should be unordered
@@ -131,10 +131,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").in("created").where(P.eq("a")).values("name")
+      g.V(vid1).as("a").out("created").in("created").where(P.eq("a")).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -143,10 +143,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").in("created").where(P.neq("a")).values("name")
+      g.V(vid1).as("a").out("created").in("created").where(P.neq("a")).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -156,10 +156,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out().aggregate("x").out().where(P.not(P.within("x")))
+      g.V(vid1).out().aggregate("x").out().where(P.not(P.within("x")))
       """
     When iterated to list
     Then the result should be unordered
@@ -168,11 +168,11 @@ Feature: Step - where()
 
   Scenario: g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And using the parameter v2 defined as "v[vadas]"
     And the traversal of
       """
-      g.withSideEffect("a", v2).V(v1Id).out().where(P.neq("a"))
+      g.withSideEffect("a", v2).V(vid1).out().where(P.neq("a"))
       """
     When iterated to list
     Then the result should be unordered
@@ -182,10 +182,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.bothE("created").where(P.without("e")).aggregate("e").otherV()).emit().path()
+      g.V(vid1).repeat(__.bothE("created").where(P.without("e")).aggregate("e").otherV()).emit().path()
       """
     When iterated to list
     Then the result should be unordered
@@ -314,10 +314,10 @@ Feature: Step - where()
 
   Scenario: g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out().has("age").where(P.gt("a")).by("age").values("name")
+      g.V(vid1).as("a").out().has("age").where(P.gt("a")).by("age").values("name")
       """
     When iterated to list
     Then the result should be unordered

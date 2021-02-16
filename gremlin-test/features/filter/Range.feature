@@ -19,10 +19,10 @@ Feature: Step - range()
 
   Scenario: g_VX1X_out_limitX2X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out().limit(2)
+      g.V(vid1).out().limit(2)
       """
     When iterated to list
     Then the result should be of
@@ -49,10 +49,10 @@ Feature: Step - range()
 
   Scenario: g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("knows").outE("created").range(0, 1).inV()
+      g.V(vid1).out("knows").outE("created").range(0, 1).inV()
       """
     When iterated to list
     Then the result should be of
@@ -63,10 +63,10 @@ Feature: Step - range()
 
   Scenario: g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("knows").out("created").range(0, 1)
+      g.V(vid1).out("knows").out("created").range(0, 1)
       """
     When iterated to list
     Then the result should be of
@@ -77,10 +77,10 @@ Feature: Step - range()
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("created").in("created").range(1, 3)
+      g.V(vid1).out("created").in("created").range(1, 3)
       """
     When iterated to list
     Then the result should be of
@@ -92,10 +92,10 @@ Feature: Step - range()
 
   Scenario: g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).out("created").inE("created").range(1, 3).outV()
+      g.V(vid1).out("created").inE("created").range(1, 3).outV()
       """
     When iterated to list
     Then the result should be of

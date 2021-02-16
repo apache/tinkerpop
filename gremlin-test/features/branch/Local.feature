@@ -67,10 +67,10 @@ Feature: Step - local()
 
   Scenario: g_VX1X_localXoutEXknowsX_limitX1XX_inV_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).local(__.outE("knows").limit(1)).inV().values("name")
+      g.V(vid1).local(__.outE("knows").limit(1)).inV().values("name")
       """
     When iterated to list
     Then the result should be of
@@ -97,10 +97,10 @@ Feature: Step - local()
 
   Scenario: g_VX4X_localXbothEX1_createdX_limitX1XX
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).local(__.bothE("created").limit(1))
+      g.V(vid4).local(__.bothE("created").limit(1))
       """
     When iterated to list
     Then the result should be of
@@ -111,10 +111,10 @@ Feature: Step - local()
 
   Scenario: g_VX4X_localXbothEXknows_createdX_limitX1XX
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).local(__.bothE("knows", "created").limit(1))
+      g.V(vid4).local(__.bothE("knows", "created").limit(1))
       """
     When iterated to list
     Then the result should be of
@@ -126,10 +126,10 @@ Feature: Step - local()
 
   Scenario: g_VX4X_localXbothE_limitX1XX_otherV_name
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).local(__.bothE().limit(1)).otherV().values("name")
+      g.V(vid4).local(__.bothE().limit(1)).otherV().values("name")
       """
     When iterated to list
     Then the result should be of
@@ -141,10 +141,10 @@ Feature: Step - local()
 
   Scenario: g_VX4X_localXbothE_limitX2XX_otherV_name
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).local(__.bothE().limit(2)).otherV().values("name")
+      g.V(vid4).local(__.bothE().limit(2)).otherV().values("name")
       """
     When iterated to list
     Then the result should be of

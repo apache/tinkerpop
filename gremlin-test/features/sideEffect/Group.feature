@@ -241,10 +241,10 @@ Feature: Step - group()
 
   Scenario: g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX
     Given the modern graph
-    And using the parameter m defined as "m[{\"marko\":[666], \"noone\":[\"blah\"]}]"
+    And using the parameter xx1 defined as "m[{\"marko\":[666], \"noone\":[\"blah\"]}]"
     And the traversal of
       """
-      g.withSideEffect("a", m).V().group("a").by("name").by(__.outE().label().fold()).cap("a")
+      g.withSideEffect("a", xx1).V().group("a").by("name").by(__.outE().label().fold()).cap("a")
       """
     When iterated to list
     Then the result should be unordered

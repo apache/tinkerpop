@@ -19,11 +19,11 @@ Feature: Step - map()
 
   Scenario: g_VX1X_mapXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter l defined as "c[it.get().value('name')]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter l1 defined as "c[it.get().value('name')]"
     And the traversal of
       """
-      g.V(v1Id).map(l)
+      g.V(vid1).map(l1)
       """
     When iterated to list
     Then the result should be unordered
@@ -32,11 +32,11 @@ Feature: Step - map()
 
   Scenario: g_VX1X_outE_label_mapXlengthX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter l defined as "c[it.get().length()]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter l1 defined as "c[it.get().length()]"
     And the traversal of
       """
-      g.V(v1Id).outE().label().map(l)
+      g.V(vid1).outE().label().map(l1)
       """
     When iterated to list
     Then the result should be unordered
@@ -47,12 +47,26 @@ Feature: Step - map()
 
   Scenario: g_VX1X_out_mapXnameX_mapXlengthX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And using the parameter l1 defined as "c[it.get().value('name')]"
     And using the parameter l2 defined as "c[it.get().toString().length()]"
     And the traversal of
       """
-      g.V(v1Id).out().map(l1).map(l2)
+      g.V(vid1).out().map(l1).map(l2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].i |
+      | d[5].i |
+      | d[4].i |
+
+  Scenario: g_VX1X_out_mapXlambdaXnameXX_mapXlambdaXlengthXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out().map(Lambda.function("it.get().value('name')")).map(Lambda.function("it.get().toString().length()"))
       """
     When iterated to list
     Then the result should be unordered
@@ -63,10 +77,10 @@ Feature: Step - map()
 
   Scenario: g_withPath_V_asXaX_out_mapXa_nameX
     Given the modern graph
-    And using the parameter l defined as "c[it.path('a').value('name')]"
+    And using the parameter l1 defined as "c[it.path('a').value('name')]"
     And the traversal of
       """
-      g.withPath().V().as("a").out().map(l)
+      g.withPath().V().as("a").out().map(l1)
       """
     When iterated to list
     Then the result should be unordered
@@ -80,10 +94,10 @@ Feature: Step - map()
 
   Scenario: g_withPath_V_asXaX_out_out_mapXa_name_it_nameX
     Given the modern graph
-    And using the parameter l defined as "c[it.path('a').value('name')  + it.get().value('name')]"
+    And using the parameter l1 defined as "c[it.path('a').value('name')  + it.get().value('name')]"
     And the traversal of
       """
-      g.withPath().V().as("a").out().out().map(l)
+      g.withPath().V().as("a").out().out().map(l1)
       """
     When iterated to list
     Then the result should be unordered

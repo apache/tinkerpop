@@ -19,10 +19,10 @@ Feature: Step - choose()
 
   Scenario: g_VX2X_optionalXoutXknowsXX
     Given the modern graph
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v2Id).optional(__.out("knows"))
+      g.V(vid2).optional(__.out("knows"))
       """
     When iterated to list
     Then the result should be unordered
@@ -31,10 +31,10 @@ Feature: Step - choose()
 
   Scenario: g_VX2X_optionalXinXknowsXX
     Given the modern graph
-    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v2Id).optional(__.in("knows"))
+      g.V(vid2).optional(__.in("knows"))
       """
     When iterated to list
     Then the result should be unordered
@@ -97,10 +97,10 @@ Feature: Step - choose()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).optional(__.addV("dog")).label()
+      g.V(vid1).optional(__.addV("dog")).label()
       """
     When iterated to list
     Then the result should be unordered

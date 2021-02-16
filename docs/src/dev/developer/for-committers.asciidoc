@@ -251,10 +251,10 @@ The basic syntax of a Gherkin test is as follows:
 ----
 Scenario: g_VX1X_unionXrepeatXoutX_timesX2X__outX_name
   Given the modern graph
-  And using the parameter v1Id defined as "v[marko].id"
+  And using the parameter vId1 defined as "v[marko].id"
   And the traversal of
     """
-    g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+    g.V(vId1).union(__.repeat(__.out()).times(2), __.out()).values("name")
     """
   When iterated to list
   Then the result should be unordered
@@ -317,10 +317,10 @@ specific type, should be defined as parameters. The structure for parameter defi
 [source,gherkin]
 ----
 Given the modern graph
-And using the parameter v1Id defined as "v[marko].id"
+And using the parameter vId1 defined as "v[marko].id"
 ----
 
-In the above example, "v1Id" is the name of the parameter that will be used in the traversal. The end of that line in
+In the above example, "vId1" is the name of the parameter that will be used in the traversal. The end of that line in
 quotes is the value of that parameter and should use the type system notation that has been developed for the TinkerPop
 Gherkin tests. The type system notation ensures that different language variants have the ability to construct the
 appropriate types expected by the tests.
@@ -356,13 +356,26 @@ edges, maps, and any other available type.
 include the `.id` suffix which would indicate getting the vertex identifier or the `.sid` suffix which gets a string
 representation of the edge identifier.
 
+In addition, parameter names should adhere to a common form as they hold some meaning to certain language variant
+implementations:
+
+* General variables of no particular type should use `xx1`, `xx2` and `xx3`.
+* A `Vertex` variable should be prefixed with "v" and be followed by the `id`, therefore, `v1` would signify a `Vertex`
+with the `id` of "1".
+* An `Edge` variable follows the pattern of vertices but with a "e" prefix.
+* The "id" of a `Vertex` or `Edge` is prefixed with "vid"`" or "eid" respectively followed by the `id`, thus, `vid1`
+would be "1" and refer to the `Vertex` with that `id`.
+* `Function` variables should use `l1` and `l2`.
+* `Predicate` variables should use `pred1`.
+* `Comparator` variables should use `c1` and `c2`.    
+
 Finally, specify the traversal under test with the "Given" option "and the traversal":
 
 [source,gherkin]
 ----
 And the traversal of
   """
-  g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+  g.V(vId1).union(__.repeat(__.out()).times(2), __.out()).values("name")
   """
 ----
 

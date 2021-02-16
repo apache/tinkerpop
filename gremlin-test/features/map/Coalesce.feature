@@ -28,10 +28,10 @@ Feature: Step - coalesce()
 
   Scenario: g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).coalesce(__.out("knows"), __.out("created")).values("name")
+      g.V(vid1).coalesce(__.out("knows"), __.out("created")).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -41,10 +41,10 @@ Feature: Step - coalesce()
 
   Scenario: g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).coalesce(__.out("created"), __.out("knows")).values("name")
+      g.V(vid1).coalesce(__.out("created"), __.out("knows")).values("name")
       """
     When iterated to list
     Then the result should be unordered

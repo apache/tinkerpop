@@ -19,13 +19,13 @@ Feature: Step - choose()
 
   Scenario: g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX
     Given the modern graph
-    And using the parameter two defined as "d[2].l"
-    And using the parameter three defined as "d[3].l"
+    And using the parameter xx1 defined as "d[2].l"
+    And using the parameter xx2 defined as "d[3].l"
     And the traversal of
       """
       g.V().choose(__.out().count()).
-        option(two, __.values("name")).
-        option(three, __.values("age"))
+        option(xx1, __.values("name")).
+        option(xx2, __.values("age"))
       """
     When iterated to list
     Then the result should be unordered
@@ -35,10 +35,10 @@ Feature: Step - choose()
 
   Scenario: g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name
     Given the modern graph
-    And using the parameter l1 defined as "c[it.label() == 'person']"
+    And using the parameter pred1 defined as "c[it.label() == 'person']"
     And the traversal of
       """
-      g.V().choose(l1, __.out("knows"), __.in("created")).values("name")
+      g.V().choose(pred1, __.out("knows"), __.in("created")).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -127,11 +127,11 @@ Feature: Step - choose()
 
   Scenario: g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount
     Given the modern graph
-    And using the parameter d27 defined as "d[27].l"
+    And using the parameter xx1 defined as "d[27].l"
     And the traversal of
       """
       g.V().hasLabel("person").choose(__.values("age")).
-          option(d27, __.constant("young")).
+          option(xx1, __.constant("young")).
           option(Pick.none, __.constant("old")).
         groupCount()
       """
@@ -142,11 +142,11 @@ Feature: Step - choose()
 
   Scenario: g_injectX1X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
-    And using the parameter d10 defined as "d[10].i"
-    And using the parameter d1 defined as "d[1].i"
+    And using the parameter xx1 defined as "d[10].i"
+    And using the parameter xx2 defined as "d[1].i"
     And the traversal of
       """
-      g.inject(d1).choose(__.is(d1), __.constant(d10).fold(), __.fold())
+      g.inject(xx2).choose(__.is(xx2), __.constant(xx1).fold(), __.fold())
       """
     When iterated to list
     Then the result should be unordered
@@ -155,12 +155,12 @@ Feature: Step - choose()
 
   Scenario: g_injectX2X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
-    And using the parameter d10 defined as "d[10].i"
-    And using the parameter d1 defined as "d[1].i"
-    And using the parameter d2 defined as "d[2].i"
+    And using the parameter xx1 defined as "d[10].i"
+    And using the parameter xx2 defined as "d[1].i"
+    And using the parameter xx3 defined as "d[2].i"
     And the traversal of
       """
-      g.inject(d2).choose(__.is(d1), __.constant(d10).fold(), __.fold())
+      g.inject(xx3).choose(__.is(xx2), __.constant(xx1).fold(), __.fold())
       """
     When iterated to list
     Then the result should be unordered

@@ -76,10 +76,10 @@ Feature: Step - repeat()
 
   Scenario: g_VX1X_timesX2X_repeatXoutX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).times(2).repeat(__.out()).values("name")
+      g.V(vid1).times(2).repeat(__.out()).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -137,10 +137,10 @@ Feature: Step - repeat()
 
   Scenario: g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).emit(__.has(T.label, "person")).repeat(__.out()).values("name")
+      g.V(vid1).emit(__.has(T.label, "person")).repeat(__.out()).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -162,10 +162,10 @@ Feature: Step - repeat()
 
   Scenario: g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.groupCount("m").by(__.loops()).out()).times(3).cap("m")
+      g.V(vid1).repeat(__.groupCount("m").by(__.loops()).out()).times(3).cap("m")
       """
     When iterated to list
     Then the result should be unordered
@@ -185,10 +185,10 @@ Feature: Step - repeat()
 
   Scenario: g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.out()).until(__.outE().count().is(0)).values("name")
+      g.V(vid1).repeat(__.out()).until(__.outE().count().is(0)).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -200,10 +200,10 @@ Feature: Step - repeat()
 
   Scenario: g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX
     Given the modern graph
-    And using the parameter l defined as "c[t -> t.get().value('name').equals('lop') || t.loops() > 1]"
+    And using the parameter pred1 defined as "c[t -> t.get().value('name').equals('lop') || t.loops() > 1]"
     And the traversal of
       """
-      g.V().repeat(__.both()).until(l).groupCount().by("name")
+      g.V().repeat(__.both()).until(pred1).groupCount().by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -303,10 +303,10 @@ Scenario: g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang
 
 Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values
     Given the modern graph
-    And using the parameter v3Id defined as "v[lop].id"
+    And using the parameter vid3 defined as "v[lop].id"
     And the traversal of
       """
-      g.V(v3Id).repeat(__.both("created")).until(__.loops().is(40)).emit(__.repeat(__.in("knows")).emit(__.loops().is(1))).dedup().values("name")
+      g.V(vid3).repeat(__.both("created")).until(__.loops().is(40)).emit(__.repeat(__.in("knows")).emit(__.loops().is(1))).dedup().values("name")
       """
     When iterated to list
       Then the result should be unordered
@@ -317,10 +317,10 @@ Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsX
 
 Scenario: g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name
     Given the crew graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).repeat(__.repeat(__.union(__.out("uses"), __.out("traverses")).where(__.loops().is(0))).times(1)).times(2).values("name")
+      g.V(vid1).repeat(__.repeat(__.union(__.out("uses"), __.out("traverses")).where(__.loops().is(0))).times(1)).times(2).values("name")
       """
     When iterated to list
       Then the result should be unordered
@@ -341,10 +341,10 @@ Scenario: g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_
 
 Scenario: g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name
   Given the modern graph
-  And using the parameter v6Id defined as "v[peter].id"
+  And using the parameter vid6 defined as "v[peter].id"
   And the traversal of
     """
-    g.V(v6Id).repeat("a", __.both("created").simplePath()).emit(__.repeat("b", __.both("knows")).until(__.loops("b").as("b").where(__.loops("a").as("b"))).has("name", "vadas")).dedup().values("name")
+    g.V(vid6).repeat("a", __.both("created").simplePath()).emit(__.repeat("b", __.both("knows")).until(__.loops("b").as("b").where(__.loops("a").as("b"))).has("name", "vadas")).dedup().values("name")
     """
   When iterated to list
   Then the result should be unordered

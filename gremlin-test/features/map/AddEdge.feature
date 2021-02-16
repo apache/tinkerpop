@@ -34,15 +34,15 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").addE("createdBy").to("a")
+      g.V(vid1).as("a").out("created").addE("createdBy").to("a")
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 1 for count of "g.V(v1Id).inE()"
+    And the graph should return 1 for count of "g.V(vid1).inE()"
 
   Scenario: g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X
     Given the empty graph
@@ -61,16 +61,16 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", 2.0)
+      g.V(vid1).as("a").out("created").addE("createdBy").to("a").property("weight", 2.0)
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 4 for count of "g.V(v1Id).bothE()"
-    And the graph should return 1 for count of "g.V(v1Id).inE().has(\"weight\", 2.0)"
+    And the graph should return 4 for count of "g.V(vid1).bothE()"
+    And the graph should return 1 for count of "g.V(vid1).inE().has(\"weight\", 2.0)"
 
   Scenario: g_V_outE_propertyXweight_nullX
     Given the empty graph
@@ -114,12 +114,12 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
-    And using the parameter v3Id defined as "v[lop].id"
-    And using the parameter v4Id defined as "v[josh].id"
-    And using the parameter v5Id defined as "v[ripple].id"
-    And using the parameter v6Id defined as "v[peter].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid3 defined as "v[lop].id"
+    And using the parameter vid4 defined as "v[josh].id"
+    And using the parameter vid5 defined as "v[ripple].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And the traversal of
       """
       g.V().aggregate("x").as("a").select("x").unfold().addE("existsWith").to("a").property("time", "now")
@@ -127,30 +127,30 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 36
     And the graph should return 42 for count of "g.E()"
-    And the graph should return 15 for count of "g.V(v1Id).bothE()"
-    And the graph should return 6 for count of "g.V(v1Id).inE(\"existsWith\")"
-    And the graph should return 6 for count of "g.V(v1Id).outE(\"existsWith\")"
-    And the graph should return 12 for count of "g.V(v1Id).bothE(\"existsWith\").has(\"time\",\"now\")"
-    And the graph should return 13 for count of "g.V(v2Id).bothE()"
-    And the graph should return 6 for count of "g.V(v2Id).inE(\"existsWith\")"
-    And the graph should return 6 for count of "g.V(v2Id).outE(\"existsWith\")"
-    And the graph should return 12 for count of "g.V(v2Id).bothE(\"existsWith\").has(\"time\",\"now\")"
-    And the graph should return 15 for count of "g.V(v3Id).bothE()"
-    And the graph should return 6 for count of "g.V(v3Id).inE(\"existsWith\")"
-    And the graph should return 6 for count of "g.V(v3Id).outE(\"existsWith\")"
-    And the graph should return 12 for count of "g.V(v3Id).bothE(\"existsWith\").has(\"time\",\"now\")"
-    And the graph should return 15 for count of "g.V(v4Id).bothE()"
-    And the graph should return 6 for count of "g.V(v4Id).inE(\"existsWith\")"
-    And the graph should return 6 for count of "g.V(v4Id).outE(\"existsWith\")"
-    And the graph should return 12 for count of "g.V(v4Id).bothE(\"existsWith\").has(\"time\",\"now\")"
-    And the graph should return 13 for count of "g.V(v5Id).bothE()"
-    And the graph should return 6 for count of "g.V(v5Id).inE(\"existsWith\")"
-    And the graph should return 6 for count of "g.V(v5Id).outE(\"existsWith\")"
-    And the graph should return 12 for count of "g.V(v5Id).bothE(\"existsWith\").has(\"time\",\"now\")"
-    And the graph should return 13 for count of "g.V(v6Id).bothE()"
-    And the graph should return 6 for count of "g.V(v6Id).inE(\"existsWith\")"
-    And the graph should return 6 for count of "g.V(v6Id).outE(\"existsWith\")"
-    And the graph should return 12 for count of "g.V(v6Id).bothE(\"existsWith\").has(\"time\",\"now\")"
+    And the graph should return 15 for count of "g.V(vid1).bothE()"
+    And the graph should return 6 for count of "g.V(vid1).inE(\"existsWith\")"
+    And the graph should return 6 for count of "g.V(vid1).outE(\"existsWith\")"
+    And the graph should return 12 for count of "g.V(vid1).bothE(\"existsWith\").has(\"time\",\"now\")"
+    And the graph should return 13 for count of "g.V(vid2).bothE()"
+    And the graph should return 6 for count of "g.V(vid2).inE(\"existsWith\")"
+    And the graph should return 6 for count of "g.V(vid2).outE(\"existsWith\")"
+    And the graph should return 12 for count of "g.V(vid2).bothE(\"existsWith\").has(\"time\",\"now\")"
+    And the graph should return 15 for count of "g.V(vid3).bothE()"
+    And the graph should return 6 for count of "g.V(vid3).inE(\"existsWith\")"
+    And the graph should return 6 for count of "g.V(vid3).outE(\"existsWith\")"
+    And the graph should return 12 for count of "g.V(vid3).bothE(\"existsWith\").has(\"time\",\"now\")"
+    And the graph should return 15 for count of "g.V(vid4).bothE()"
+    And the graph should return 6 for count of "g.V(vid4).inE(\"existsWith\")"
+    And the graph should return 6 for count of "g.V(vid4).outE(\"existsWith\")"
+    And the graph should return 12 for count of "g.V(vid4).bothE(\"existsWith\").has(\"time\",\"now\")"
+    And the graph should return 13 for count of "g.V(vid5).bothE()"
+    And the graph should return 6 for count of "g.V(vid5).inE(\"existsWith\")"
+    And the graph should return 6 for count of "g.V(vid5).outE(\"existsWith\")"
+    And the graph should return 12 for count of "g.V(vid5).bothE(\"existsWith\").has(\"time\",\"now\")"
+    And the graph should return 13 for count of "g.V(vid6).bothE()"
+    And the graph should return 6 for count of "g.V(vid6).inE(\"existsWith\")"
+    And the graph should return 6 for count of "g.V(vid6).outE(\"existsWith\")"
+    And the graph should return 12 for count of "g.V(vid6).bothE(\"existsWith\").has(\"time\",\"now\")"
 
   Scenario: g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X
     Given the empty graph
@@ -169,10 +169,10 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
-    And using the parameter v4Id defined as "v[josh].id"
-    And using the parameter v6Id defined as "v[peter].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid4 defined as "v[josh].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And the traversal of
       """
       g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").addE("codeveloper").from("a").to("b").property("year", 2009)
@@ -180,19 +180,19 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 6
     And the graph should return 12 for count of "g.E()"
-    And the graph should return 7 for count of "g.V(v1Id).bothE()"
-    And the graph should return 2 for count of "g.V(v1Id).inE(\"codeveloper\")"
-    And the graph should return 2 for count of "g.V(v1Id).outE(\"codeveloper\")"
-    And the graph should return 4 for count of "g.V(v1Id).bothE(\"codeveloper\").has(\"year\",2009)"
-    And the graph should return 1 for count of "g.V(v2Id).bothE()"
-    And the graph should return 7 for count of "g.V(v4Id).bothE()"
-    And the graph should return 2 for count of "g.V(v4Id).inE(\"codeveloper\")"
-    And the graph should return 2 for count of "g.V(v4Id).outE(\"codeveloper\")"
-    And the graph should return 4 for count of "g.V(v4Id).bothE(\"codeveloper\").has(\"year\",2009)"
-    And the graph should return 5 for count of "g.V(v6Id).bothE()"
-    And the graph should return 2 for count of "g.V(v6Id).inE(\"codeveloper\")"
-    And the graph should return 2 for count of "g.V(v6Id).outE(\"codeveloper\")"
-    And the graph should return 4 for count of "g.V(v6Id).bothE(\"codeveloper\").has(\"year\",2009)"
+    And the graph should return 7 for count of "g.V(vid1).bothE()"
+    And the graph should return 2 for count of "g.V(vid1).inE(\"codeveloper\")"
+    And the graph should return 2 for count of "g.V(vid1).outE(\"codeveloper\")"
+    And the graph should return 4 for count of "g.V(vid1).bothE(\"codeveloper\").has(\"year\",2009)"
+    And the graph should return 1 for count of "g.V(vid2).bothE()"
+    And the graph should return 7 for count of "g.V(vid4).bothE()"
+    And the graph should return 2 for count of "g.V(vid4).inE(\"codeveloper\")"
+    And the graph should return 2 for count of "g.V(vid4).outE(\"codeveloper\")"
+    And the graph should return 4 for count of "g.V(vid4).bothE(\"codeveloper\").has(\"year\",2009)"
+    And the graph should return 5 for count of "g.V(vid6).bothE()"
+    And the graph should return 2 for count of "g.V(vid6).inE(\"codeveloper\")"
+    And the graph should return 2 for count of "g.V(vid6).outE(\"codeveloper\")"
+    And the graph should return 4 for count of "g.V(vid6).bothE(\"codeveloper\").has(\"year\",2009)"
 
   Scenario: g_V_asXaX_inXcreatedX_addEXcreatedByX_fromXaX_propertyXyear_2009X_propertyXacl_publicX
     Given the empty graph
@@ -211,12 +211,12 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
-    And using the parameter v2Id defined as "v[vadas].id"
-    And using the parameter v3Id defined as "v[lop].id"
-    And using the parameter v4Id defined as "v[josh].id"
-    And using the parameter v5Id defined as "v[ripple].id"
-    And using the parameter v6Id defined as "v[peter].id"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid3 defined as "v[lop].id"
+    And using the parameter vid4 defined as "v[josh].id"
+    And using the parameter vid5 defined as "v[ripple].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And the traversal of
       """
       g.V().as("a").in("created").addE("createdBy").from("a").property("year", 2009).property("acl", "public")
@@ -224,27 +224,27 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 4
     And the graph should return 10 for count of "g.E()"
-    And the graph should return 4 for count of "g.V(v1Id).bothE()"
-    And the graph should return 1 for count of "g.V(v1Id).inE(\"createdBy\")"
-    And the graph should return 0 for count of "g.V(v1Id).outE(\"createdBy\")"
-    And the graph should return 1 for count of "g.V(v1Id).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
-    And the graph should return 1 for count of "g.V(v2Id).bothE()"
-    And the graph should return 6 for count of "g.V(v3Id).bothE()"
-    And the graph should return 0 for count of "g.V(v3Id).inE(\"createdBy\")"
-    And the graph should return 3 for count of "g.V(v3Id).outE(\"createdBy\")"
-    And the graph should return 3 for count of "g.V(v3Id).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
-    And the graph should return 5 for count of "g.V(v4Id).bothE()"
-    And the graph should return 2 for count of "g.V(v4Id).inE(\"createdBy\")"
-    And the graph should return 0 for count of "g.V(v4Id).outE(\"createdBy\")"
-    And the graph should return 2 for count of "g.V(v4Id).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
-    And the graph should return 2 for count of "g.V(v5Id).bothE()"
-    And the graph should return 0 for count of "g.V(v5Id).inE(\"createdBy\")"
-    And the graph should return 1 for count of "g.V(v5Id).outE(\"createdBy\")"
-    And the graph should return 1 for count of "g.V(v5Id).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
-    And the graph should return 2 for count of "g.V(v6Id).bothE()"
-    And the graph should return 1 for count of "g.V(v6Id).inE(\"createdBy\")"
-    And the graph should return 0 for count of "g.V(v6Id).outE(\"createdBy\")"
-    And the graph should return 1 for count of "g.V(v6Id).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
+    And the graph should return 4 for count of "g.V(vid1).bothE()"
+    And the graph should return 1 for count of "g.V(vid1).inE(\"createdBy\")"
+    And the graph should return 0 for count of "g.V(vid1).outE(\"createdBy\")"
+    And the graph should return 1 for count of "g.V(vid1).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
+    And the graph should return 1 for count of "g.V(vid2).bothE()"
+    And the graph should return 6 for count of "g.V(vid3).bothE()"
+    And the graph should return 0 for count of "g.V(vid3).inE(\"createdBy\")"
+    And the graph should return 3 for count of "g.V(vid3).outE(\"createdBy\")"
+    And the graph should return 3 for count of "g.V(vid3).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
+    And the graph should return 5 for count of "g.V(vid4).bothE()"
+    And the graph should return 2 for count of "g.V(vid4).inE(\"createdBy\")"
+    And the graph should return 0 for count of "g.V(vid4).outE(\"createdBy\")"
+    And the graph should return 2 for count of "g.V(vid4).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
+    And the graph should return 2 for count of "g.V(vid5).bothE()"
+    And the graph should return 0 for count of "g.V(vid5).inE(\"createdBy\")"
+    And the graph should return 1 for count of "g.V(vid5).outE(\"createdBy\")"
+    And the graph should return 1 for count of "g.V(vid5).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
+    And the graph should return 2 for count of "g.V(vid6).bothE()"
+    And the graph should return 1 for count of "g.V(vid6).inE(\"createdBy\")"
+    And the graph should return 0 for count of "g.V(vid6).outE(\"createdBy\")"
+    And the graph should return 1 for count of "g.V(vid6).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
 
   Scenario: g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X
     Given the empty graph
@@ -375,10 +375,10 @@ Feature: Step - addE()
       """
     And using the parameter v1 defined as "v[marko]"
     And using the parameter v6 defined as "v[peter]"
-    And using the parameter dotOne defined as "d[0.1].d"
+    And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE("knows").from(v1).to(v6).property("weight", dotOne)
+      g.addE("knows").from(v1).to(v6).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -405,10 +405,10 @@ Feature: Step - addE()
       """
     And using the parameter v1 defined as "v[marko]"
     And using the parameter v6 defined as "v[peter]"
-    And using the parameter dotOne defined as "d[0.1].d"
+    And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.V(v1).addE("knows").to(v6).property("weight", dotOne)
+      g.V(v1).addE("knows").to(v6).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1

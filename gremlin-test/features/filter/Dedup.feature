@@ -75,10 +75,10 @@ Feature: Step - dedup()
 
   Scenario: g_V_both_name_order_byXa_bX_dedup_value
     Given the modern graph
-    And using the parameter l defined as "c[a,b -> a.value().compareTo(b.value())]"
+    And using the parameter c1 defined as "c[a,b -> a.value().compareTo(b.value())]"
     And the traversal of
       """
-      g.V().both().properties("name").order().by(l).dedup().value()
+      g.V().both().properties("name").order().by(c1).dedup().value()
       """
     When iterated to list
     Then the result should be unordered

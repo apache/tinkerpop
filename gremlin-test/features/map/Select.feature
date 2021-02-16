@@ -19,10 +19,10 @@ Feature: Step - select()
 
   Scenario: get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").select("a", "b")
+      g.V(vid1).as("a").out("knows").as("b").select("a", "b")
       """
     When iterated to list
     Then the result should be unordered
@@ -32,10 +32,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").
+      g.V(vid1).as("a").out("knows").as("b").
         select("a", "b").by("name")
       """
     When iterated to list
@@ -46,10 +46,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").select("a")
+      g.V(vid1).as("a").out("knows").as("b").select("a")
       """
     When iterated to list
     Then the result should be unordered
@@ -59,10 +59,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").
+      g.V(vid1).as("a").out("knows").as("b").
         select("a").by("name")
       """
     When iterated to list
@@ -185,10 +185,10 @@ Feature: Step - select()
 
   Scenario: g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX
     Given the modern graph
-    And using the parameter zero defined as "d[0].l"
+    And using the parameter xx1 defined as "d[0].l"
     And the traversal of
       """
-      g.V().choose(__.outE().count().is(zero),
+      g.V().choose(__.outE().count().is(xx1),
                    __.as("a"),
                    __.as("b")).
             choose(__.select("a"),
@@ -207,10 +207,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).group("a").
+      g.V(vid1).group("a").
                   by(__.constant("a")).
                   by(__.values("name")).
         barrier().
@@ -223,10 +223,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXhereX_out_selectXhereX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("here").out().select("here")
+      g.V(vid1).as("here").out().select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -237,10 +237,10 @@ Feature: Step - select()
 
   Scenario: g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).as("here").out().select("here")
+      g.V(vid4).as("here").out().select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -250,10 +250,10 @@ Feature: Step - select()
 
   Scenario: g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).out().as("here").
+      g.V(vid4).out().as("here").
         has("lang", "java").
         select("here").values("name")
       """
@@ -265,10 +265,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE().as("here").
+      g.V(vid1).outE().as("here").
         inV().has("name", "vadas").
         select("here")
       """
@@ -279,10 +279,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").
+      g.V(vid1).outE("knows").
         has("weight", 1.0).as("here").
         inV().has("name", "josh").
         select("here")
@@ -294,10 +294,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").as("here").
+      g.V(vid1).outE("knows").as("here").
         has("weight", 1.0).as("fake").
         inV().has("name", "josh").
         select("here")
@@ -438,10 +438,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").select("a", "b")
+      g.V(vid1).as("a").out("knows").as("b").select("a", "b")
       """
     When iterated to list
     Then the result should be unordered
@@ -462,10 +462,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.first, "a")
+      g.V(vid1).as("a").repeat(__.out().as("a")).times(2).select(Pop.first, "a")
       """
     When iterated to list
     Then the result should be unordered
@@ -487,10 +487,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.last, "a")
+      g.V(vid1).as("a").repeat(__.out().as("a")).times(2).select(Pop.last, "a")
       """
     When iterated to list
     Then the result should be unordered
@@ -500,10 +500,10 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").as("here").has("weight", 1.0).inV().has("name", "josh").select("here")
+      g.V(vid1).outE("knows").as("here").has("weight", 1.0).inV().has("name", "josh").select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -794,10 +794,10 @@ Feature: Step - select()
       | v[marko] |
   Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].id"
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
       """
-      g.E(e11Id).properties("weight").as("a").select("a").by(T.key)
+      g.E(eid11).properties("weight").as("a").select("a").by(T.key)
       """
     When iterated to list
     Then the result should be unordered
@@ -806,10 +806,10 @@ Feature: Step - select()
 
   Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX
     Given the modern graph
-    And using the parameter e11Id defined as "e[josh-created->lop].id"
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
       """
-      g.E(e11Id).properties("weight").as("a").select("a").by(T.value)
+      g.E(eid11).properties("weight").as("a").select("a").by(T.value)
       """
     When iterated to list
     Then the result should be unordered
