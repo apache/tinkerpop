@@ -715,6 +715,40 @@ public class TinkerGraphTest {
     }
 
     @Test
+    public void shouldProvideClearErrorWhenTryingToMutateT() {
+        final GraphTraversalSource g = TinkerGraph.open().traversal();
+        g.addV("person").property(T.id, 100).iterate();
+
+        try {
+            g.V(100).property(T.label, "software").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.label is immutable on existing elements", ise.getMessage());
+        }
+
+        try {
+            g.V(100).property(T.id, 101).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.id is immutable on existing elements", ise.getMessage());
+        }
+
+        try {
+            g.V(100).property("name", "marko").property(T.label, "software").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.label is immutable on existing elements", ise.getMessage());
+        }
+
+        try {
+            g.V(100).property(T.id, 101).property("name", "marko").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.id is immutable on existing elements", ise.getMessage());
+        }
+    }
+
+    @Test
     public void shouldWorkWithoutIdentityStrategy() {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = traversal().withEmbedded(graph).withoutStrategies(IdentityRemovalStrategy.class);
