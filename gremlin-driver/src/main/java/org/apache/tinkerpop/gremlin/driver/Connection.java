@@ -220,6 +220,10 @@ final class Connection {
     }
 
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
+        // dont allow the same request id to be used as one that is already in the queue
+        if (pending.containsKey(requestMessage.getRequestId()))
+            throw new IllegalStateException(String.format("There is already a request pending with an id of: %s", requestMessage.getRequestId()));
+
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
