@@ -757,12 +757,25 @@ With statics loaded its possible to represent the above traversal as below.
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
-Finally, statics includes all the `+__+`-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
+Statics includes all the `+__+`-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
 That is, without the `+__+`-prefix.
 
 [gremlin-python,modern]
 ----
 g.V().repeat(out()).times(2).name.fold().toList()
+----
+
+There may be situations where certain graphs may want a more exact data type than what Python will allow as a language.
+To support these situations `gremlin-python` has a few special type classes that can be imported from `statics`. They
+include:
+
+[source,python]
+----
+from gremlin_python.statics import long         # Java long
+from gremlin_python.statics import timestamp    # Java timestamp
+from gremlin_python.statics import SingleByte   # Java byte type
+from gremlin_python.statics import SingleChar   # Java char type
+from gremlin_python.statics import GremlinType  # Java Class
 ----
 
 anchor:python-configuration[]
