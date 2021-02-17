@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -710,6 +709,40 @@ public class TinkerGraphTest {
             fail("Verification exception expected");
         } catch (IllegalStateException ve) {
             assertThat(ve.getMessage(), containsString("that is setting a property key to a reserved word"));
+        }
+    }
+
+    @Test
+    public void shouldProvideClearErrorWhenTryingToMutateT() {
+        final GraphTraversalSource g = TinkerGraph.open().traversal();
+        g.addV("person").property(T.id, 100).iterate();
+
+        try {
+            g.V(100).property(T.label, "software").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.label is immutable on existing elements", ise.getMessage());
+        }
+
+        try {
+            g.V(100).property(T.id, 101).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.id is immutable on existing elements", ise.getMessage());
+        }
+
+        try {
+            g.V(100).property("name", "marko").property(T.label, "software").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.label is immutable on existing elements", ise.getMessage());
+        }
+
+        try {
+            g.V(100).property(T.id, 101).property("name", "marko").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("T.id is immutable on existing elements", ise.getMessage());
         }
     }
 

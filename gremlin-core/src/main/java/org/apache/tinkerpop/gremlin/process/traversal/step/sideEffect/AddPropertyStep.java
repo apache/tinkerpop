@@ -82,9 +82,15 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final String key = (String) this.parameters.get(traverser, T.key, () -> {
+        final Object k = this.parameters.get(traverser, T.key, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided key: " + this);
         }).get(0);
+
+        // T identifies immutable components of elements. only property keys can be modified.
+        if (k instanceof T)
+            throw new IllegalStateException(String.format("T.%s is immutable on existing elements", ((T) k).name()));
+
+        final String key = (String) k;
         final Object value = this.parameters.get(traverser, T.value, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided value: " + this);
         }).get(0);
