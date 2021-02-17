@@ -639,6 +639,7 @@ world.gremlins = {
     'g_V_outXcreatedX_groupCountXxX_capXxX': [(lambda g:g.V().out('created').groupCount('x').cap('x'))], 
     'g_V_groupCount_byXbothE_countX': [(lambda g:g.V().groupCount().by(__.bothE().count()))], 
     'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': [(lambda g:g.V().both().groupCount('a').out().cap('a').select(Column.keys).unfold().both().groupCount('a').cap('a'))], 
+    'g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX': [(lambda g:g.V().has('person','name','marko').both('knows').groupCount().by(__.name.fold()))], 
     'g_VX1X_out_injectXv2X_name': [(lambda g, vid1=None,v2=None:g.V(vid1).out().inject(v2).name)], 
     'g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path': [(lambda g, l1=None,vid1=None:g.V(vid1).out().name.inject('daniel').as_('a').map(l1).path())], 
     'g_VX1X_injectXg_VX4XX_out_name': [(lambda g, vid1=None,v4=None:g.V(vid1).inject(v4).out().name)], 
