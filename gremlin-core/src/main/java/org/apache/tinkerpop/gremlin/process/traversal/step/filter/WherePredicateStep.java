@@ -69,7 +69,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         if (predicate instanceof ConnectiveP)
             ((ConnectiveP<Object>) predicate).getPredicates().forEach(this::configurePredicates);
         else {
-            final String selectKey = (String) (predicate.getValue() instanceof Collection ? ((Collection) predicate.getValue()).iterator().next() : predicate.getValue()); // hack for within("x"))
+            final String selectKey = getSelectKey();
             this.selectKeys.add(selectKey);
             this.scopeKeys.add(selectKey);
         }
@@ -88,6 +88,11 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     public Optional<String> getStartKey() {
         return Optional.ofNullable(this.startKey);
+    }
+
+    public String getSelectKey() {
+        return (String) (predicate.getValue() instanceof Collection ? ((Collection) predicate.getValue()).iterator().next()
+                : predicate.getValue()); // hack for within("x"))
     }
 
     public void removeStartKey() {
