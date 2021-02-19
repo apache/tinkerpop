@@ -749,6 +749,101 @@ public class TinkerGraphTest {
     }
 
     @Test
+    public void shouldProvideClearErrorWhenTryingToMutateEdgeWithCardinality() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        try {
+            g.E().property(VertexProperty.Cardinality.single, "k", 100).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("Property cardinality can only be set for a Vertex but the traversal encountered TinkerEdge for key: k", ise.getMessage());
+        }
+
+        try {
+            g.E().property(VertexProperty.Cardinality.list, "k", 100).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("Property cardinality can only be set for a Vertex but the traversal encountered TinkerEdge for key: k", ise.getMessage());
+        }
+
+        try {
+            g.addE("link").to(__.V(1)).from(__.V(1)).
+                    property(VertexProperty.Cardinality.list, "k", 100).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("Multi-property cardinality of [list] can only be set for a Vertex but is being used for addE() with key: k", ise.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldProvideClearErrorWhenPuttingFromToInWrongSpot() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        try {
+            g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).out().
+                    to(__.V(1)).from(__.V(1)).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalArgumentException ise) {
+            assertEquals("The to() step cannot follow VertexStep", ise.getMessage());
+        }
+
+        try {
+            g.addE("link").property("k", 100).out().
+                    from(__.V(1)).to(__.V(1)).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalArgumentException ise) {
+            assertEquals("The from() step cannot follow VertexStep", ise.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldProvideClearErrorWhenFromOrToDoesNotResolveToVertex() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        try {
+            g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).to(__.V(1)).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("addE(link) could not find a Vertex for from() - encountered: null", ise.getMessage());
+        }
+
+        try {
+            g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).from(__.V(1)).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("addE(link) could not find a Vertex for to() - encountered: null", ise.getMessage());
+        }
+
+        try {
+            g.addE("link").property("k", 100).from(__.V(1)).iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("addE(link) could not find a Vertex for to() - encountered: null", ise.getMessage());
+        }
+
+        try {
+            g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).from("a").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("addE(link) could not find a Vertex for to() - encountered: String", ise.getMessage());
+        }
+
+        try {
+            g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("a").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("addE(link) could not find a Vertex for to() - encountered: String", ise.getMessage());
+        }
+
+        try {
+            g.V(1).as("v").values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("v").from("a").iterate();
+            fail("Should have thrown an error");
+        } catch (IllegalStateException ise) {
+            assertEquals("addE(link) could not find a Vertex for from() - encountered: String", ise.getMessage());
+        }
+    }
+
+    @Test
     public void shouldWorkWithoutIdentityStrategy() {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = traversal().withEmbedded(graph).withoutStrategies(IdentityRemovalStrategy.class);

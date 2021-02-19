@@ -96,15 +96,28 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
-        Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
+        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        final Object theTo = this.parameters.get(traverser, TO, traverser::get).get(0);
+        if (!(theTo instanceof Vertex))
+            throw new IllegalStateException(String.format(
+                    "addE(%s) could not find a Vertex for to() - encountered: %s", edgeLabel,
+                    null == theTo ? "null" : theTo.getClass().getSimpleName()));
+
+        final Object theFrom = this.parameters.get(traverser, FROM, traverser::get).get(0);
+        if (!(theFrom instanceof Vertex))
+            throw new IllegalStateException(String.format(
+                    "addE(%s) could not find a Vertex for from() - encountered: %s", edgeLabel,
+                    null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
+
+        Vertex toVertex = (Vertex) theTo;
+        Vertex fromVertex = (Vertex) theFrom;
+
         if (toVertex instanceof Attachable)
             toVertex = ((Attachable<Vertex>) toVertex)
                     .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
         if (fromVertex instanceof Attachable)
             fromVertex = ((Attachable<Vertex>) fromVertex)
                     .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
         if (callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {

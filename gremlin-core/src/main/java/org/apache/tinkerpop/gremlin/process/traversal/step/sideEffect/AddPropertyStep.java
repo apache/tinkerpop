@@ -98,6 +98,14 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
         final Element element = traverser.get();
 
+        // can't set cardinality if the element is something other than a vertex as only vertices can have
+        // a cardinality of properties. if we don't throw an error here we end up with a confusing cast exception
+        // which doesn't explain what went wrong
+        if (this.cardinality != null && !(element instanceof Vertex))
+            throw new IllegalStateException(String.format(
+                    "Property cardinality can only be set for a Vertex but the traversal encountered %s for key: %s",
+                    element.getClass().getSimpleName(), key));
+
         if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
             getTraversal().getStrategies().getStrategy(EventStrategy.class)
                     .ifPresent(eventStrategy -> {
