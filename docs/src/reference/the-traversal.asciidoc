@@ -2161,7 +2161,7 @@ g.V().out().out().values('name')
 g.V().out().out().values('name').path()
 ----
 
-If edges are required in the path, then be sure to traverser those edges explicitly.
+If edges are required in the path, then be sure to traverse those edges explicitly.
 
 [gremlin-groovy,modern]
 ----
