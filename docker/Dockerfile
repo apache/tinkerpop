@@ -35,15 +35,14 @@ RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-serve
 RUN apt-get install -y --force-yes dotnet-sdk-3.1 mono-devel
 
 # python3 on xenial install 3.5.2 which is insufficient for newer versions of python/typing#259 so
-# custom build and install 3.5.3 and upgrade pip along the way. this could be resolved by using bionic
-# but trying to keep all of our release branches on the same docker image and the older versions sorta
-# suit 3.3.x and 3.4.x
+# custom build and install 3.6.9 and upgrade pip along the way. this could be resolved by using bionic
+# but trying to keep all of our release branches on the same docker image and the older versions suit 3.4.x+
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y python python-dev python-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev \
     libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libkrb5-dev krb5-user
-RUN cd /opt && wget https://www.python.org/ftp/python/3.5.3/Python-3.5.3.tgz && tar -xvf Python-3.5.3.tgz
-RUN cd /opt/Python-3.5.3 && ./configure && make && make install
-RUN ln -sf /usr/bin/python3.5.3 /usr/bin/python3
+RUN cd /opt && wget https://www.python.org/ftp/python/3.6.9/Python-3.6.9.tgz && tar -xvf Python-3.6.9.tgz
+RUN cd /opt/Python-3.6.9 && ./configure && make && make install
+RUN ln -sf /usr/bin/python3.6.9 /usr/bin/python3
 # pip drops support of Python 2 starting from version 21.0
 RUN pip install --upgrade "pip<21.0"
 RUN pip install virtualenv virtualenvwrapper
