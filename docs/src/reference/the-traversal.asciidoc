@@ -3594,7 +3594,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gre
 == A Note on Predicates
 
 A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
-the relase of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
+the release of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
 text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
 The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
 <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
