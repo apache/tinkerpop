@@ -25,8 +25,8 @@ from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import *
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from Translator import Translator
 from gremlin_python.process.strategies import *
+from gremlin_python.process.translator import *
 from datetime import datetime
 
 
