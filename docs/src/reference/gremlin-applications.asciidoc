@@ -2473,6 +2473,14 @@ $ curl -X POST -d "{\"gremlin\":\"divideIt(8, 2)\"}" "http://localhost:8182"
 In the above HTTP-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
 immediately forget the script after execution. In this way, the function does not end up being globally available.
 
+[[request-retry]]
+==== Request Retry
+
+The server has the ability to instruct the client that an error condition is transient and that the client should
+simply retry the request later. In the event a client detects a `ResponseStatusCode` of `SERVER_ERROR_TEMPORARY`,
+which is error code `596`, the client may choose to retry that request. Note that drivers do not have the ability to
+automatically retry and that it is up to the application to provide such logic.
+
 [[gremlin-server-docker-image]]
 === Docker Image
 

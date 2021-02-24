@@ -406,6 +406,24 @@ graph providers to provide this custom functionality.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
 link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
 
+==== Retry Conditions
+
+Some error conditions are temporary in nature and therefore an operation that ends in such a situation may be tried
+again as-is to potential success. In embedded use cases, an exception that implements the `TemporaryException`
+interface implies that the failing operation can be retried. For remote use cases, a `ResponseStatusCode` of `596`
+which equates to `SERVER_ERROR_TEMPORARY` is an indicator that a request may be retried.
+
+With this more concrete and generalized approach to determining when retries should happen, the need to trap provider
+specific exceptions or to examine the text of error messages are removed. Before replacing existing code that might
+do these things currently, it may be best to include this sort of retry checking in addition to current methods as
+it may take time for providers to support these new options. Alternatively, if you can confirm that a provider does
+support this functionality then feel free to proceed wholly with this generalized TinkerPop approach.
+
+Finally, it is important to note that TinkerPop drivers do not automatically retry when these conditions are met. It
+is up to the application to determine if retry is desired and how best to do so.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
+
 ==== Python 2.x Support
 
 The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from
@@ -906,6 +924,18 @@ not explicitly rolled-back by Gremlin Server. Such transactions would be handled
 manner that they provide.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2336[TINKERPOP-2336]
+
+===== TemporaryException and SERVER_ERROR_TEMPORARY
+
+The `gremlin-core` module now has a `TemporaryException` interface. This interface allows providers to throw an
+exception that will be considered by users to be generally retryable. In addition, the Gremlin Server protocol now
+also has a `ResponseStatusCode.SERVER_ERROR_TEMPORARY` status which indicates the same situation. Throwing an exception
+that implements `TemporaryException` will be recognized by Gremlin Server to return this error code. This notion of
+"temporary failure" is helpful to providers as it allows them to let users know that a failure is transient and related
+to the system state at the time of the request. Without this indicator, users are left to parse exception messages to
+determine when it is considered acceptable to retry an operation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
 
 ==== Graph Driver Providers
 

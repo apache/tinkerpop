@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.server.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +44,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * A base {@link OpProcessor} implementation that processes an {@code Iterator} of results in a generalized way while
@@ -60,6 +64,15 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
     protected AbstractOpProcessor(final boolean manageTransactions) {
         this.manageTransactions = manageTransactions;
+    }
+
+    /**
+     * Check if any exception in the chain is TemporaryException then we should respond with the right error code so
+     * that the client knows to retry.
+     */
+    protected static Optional<Throwable> determineIfTemporaryException(final Throwable ex) {
+        return Stream.of(ExceptionUtils.getThrowables(ex)).
+                filter(i -> i instanceof TemporaryException).findFirst();
     }
 
     /**

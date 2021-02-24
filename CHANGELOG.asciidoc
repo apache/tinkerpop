@@ -28,6 +28,8 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Allowed the possibility for the propagation of `null` as a `Traverser` in Gremlin.
 * Fixed a bug where spark-gremlin was not re-attaching properties when using `dedup()`.
 * Ensured better consistency of the use of `null` as arguments to mutation steps.
+* Added a `ResponseStatusCode` to indicate that a client should retry its request.
+* Added `TemporaryException` interface to indicate that a transaction can be retried.
 * Prevented `TraversalStrategy` instances from being added more than once, where the new instance replaces the old.
 * Allowed `property(T.label,Object)` to be used if no value was supplied to `addV(String)`.
 * Allowed additional arguments to `Client.submit()` in Javascript driver to enable setting of parameters like `scriptEvaluationTimeout`.
