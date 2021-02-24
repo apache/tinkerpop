@@ -1,3 +1,22 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
 '''
 Class that can turn traversals back into Gremlin Groovy format text queries.
 Those queries can then be run in the Gremlin console or using the GLV submit(<String>) API or
@@ -18,6 +37,8 @@ class Translator:
     """
     Turn a bytecode object back into a textual query (Gremlin Groovy script).
     """
+
+    # Dictionary used to reverse-map token IDs to strings
     options = {
       WithOptions.tokens: 'tokens',
       WithOptions.none: 'none',
@@ -44,6 +65,8 @@ class Translator:
         self.traversal_source = traversal_source
         return self
 
+    # Do any needed special processing for the representation
+    # of strings and dates.
     def fixup(self,v):
         if type(v) == str:
             return f'\'{v}\''
@@ -51,7 +74,8 @@ class Translator:
             return self.process_date(v)
         else:
             return str(v)
-
+    
+    # Turn a Python datetime into the equivalent new Date(...)
     def process_date(selfself,date):
         y = date.year - 1900
         mo = date.month
@@ -61,6 +85,8 @@ class Translator:
         s = date.second
         return f'new Date({y},{mo},{d},{h},{mi},{s})'
 
+    # Do special processing needed to format predicates that come in
+    # such as "gt(a)" correctly.
     def process_predicate(self,p):
         res = str(p).split('(')[0] + '('
 
@@ -76,6 +102,7 @@ class Translator:
         res += ')'
         return res
 
+    # Special processing to handle strategies
     def process_strategy(self,s):
         c = 0
         res = f'new {str(s)}('
@@ -92,6 +119,8 @@ class Translator:
         return res
         pass
 
+    # Main driver of the translation. Different parts of
+    # a Traversal are handled appropriately.
     def do_translation(self,step):
         script = ''
         params = step[1:]
@@ -126,15 +155,18 @@ class Translator:
         script += ')'
         return script
 
+    # Translation starts here. There are two main parts to a 
+    # traversal. Source instructions such as "withSideffect" 
+    # and "withStrategies", and step instructions such as 
+    # "addV" and "repeat". If child is True we will generate
+    # anonymous traversal style syntax.
     def translate(self,bytecode,child=False):
         script = '__' if child else self.traversal_source
         
         for step in bytecode.source_instructions:
-            #print(f'Source {step}')
             script += self.do_translation(step)
 
         for step in bytecode.step_instructions:
-            #print(f'Step {step}')
             script += self.do_translation(step)
        
         return script
