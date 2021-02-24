@@ -273,62 +273,79 @@ tests.append([g.addV('Person').as_('a').addV('Person').as_('b').addE('knows').fr
 tests.append([g.V('3').project('Out','In').by(__.out().count()).by(__.in_().count()),
              "g.V('3').project('Out','In').by(__.out().count()).by(__.in().count())"])
 #77
-tests.append([g.withStrategies(ReadOnlyStrategy()).addV('test'),
-             "g.withStrategies(new ReadOnlyStrategy()).addV('test')"])
-#78
 tests.append([g.V('44').out().aggregate('a').out().where(within('a')).path(),
              "g.V('44').out().aggregate('a').out().where(within(['a'])).path()"])
-#79
+#78
 tests.append([g.V().has('date',datetime(2021,2,22)),
              "g.V().has('date',new Date(121,2,22,0,0,0))"])
-#80
+#79
 tests.append([g.V().has('date',within(datetime(2021,2,22),datetime(2021,1,1))),
               "g.V().has('date',within([new Date(121,2,22,0,0,0),new Date(121,1,1,0,0,0)]))"])
-#81
+#80
 tests.append([g.V().has('date',between(datetime(2021,1,1),datetime(2021,2,22))),
                         "g.V().has('date',between(new Date(121,1,1,0,0,0),new Date(121,2,22,0,0,0)))"])
-#82
+#81
 tests.append([g.V().has('date',inside(datetime(2021,1,1),datetime(2021,2,22))),
                         "g.V().has('date',inside(new Date(121,1,1,0,0,0),new Date(121,2,22,0,0,0)))"])
-#83
+#82
 tests.append([g.V().has('date',P.gt(datetime(2021,1,1,9,30))),
              "g.V().has('date',gt(new Date(121,1,1,9,30,0)))"])
-#84
+#83
 tests.append([g.V().has('runways',between(3,5)),
              "g.V().has('runways',between(3,5))"])
-#85
+#84
 tests.append([g.V().has('runways',inside(3,5)),
              "g.V().has('runways',inside(3,5))"])
-#86
+#85
 tests.append([g.V('44').outE().elementMap(),
              "g.V('44').outE().elementMap()"])
-#87
+#86
 tests.append([g.V('44').valueMap().by(__.unfold()),
              "g.V('44').valueMap().by(__.unfold())"])
-#88
+#87
 tests.append([g.V('44').valueMap().with_(WithOptions.tokens,WithOptions.labels),
              "g.V('44').valueMap().with(WithOptions.tokens,WithOptions.labels)"])
-#89
+#88
 tests.append([g.V('44').valueMap().with_(WithOptions.tokens),
              "g.V('44').valueMap().with(WithOptions.tokens)"])
+#89
+tests.append([g.withStrategies(ReadOnlyStrategy()).addV('test'),
+              "g.withStrategies(new ReadOnlyStrategy()).addV('test')"])
 #90
 strategy = SubgraphStrategy(vertices=__.has('region','US-TX'), edges=__.hasLabel('route'))
 tests.append([g.withStrategies(strategy).V().count(),
             "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
 #91
-strategy = SubgraphStrategy(SubgraphStrategy(vertex_properties= __.hasNot('runways')))
+strategy = SubgraphStrategy(vertex_properties= __.hasNot('runways'))
 tests.append([g.withStrategies(strategy).V().count(),
-              "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
+              "g.withStrategies(new SubgraphStrategy(vertexProperties:__.hasNot('runways'))).V().count()"])
 #92
-strategy = SubgraphStrategy(SubgraphStrategy(vertices=__.has('region','US-TX'),vertex_properties= __.hasNot('runways')))
+strategy = SubgraphStrategy(vertices=__.has('region','US-TX'),vertex_properties= __.hasNot('runways'))
 tests.append([g.withStrategies(strategy).V().count(),
-              "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
+              "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),vertexProperties:__.hasNot('runways'))).V().count()"])
 #93
+strategy = SubgraphStrategy(vertices=__.has('region','US-TX'), edges=__.hasLabel('route'))
+tests.append([g.withStrategies(ReadOnlyStrategy(),strategy).V().count(),
+              "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
+#94
+strategy = SubgraphStrategy(vertices=__.has('region','US-TX'))
+tests.append([g.withStrategies(ReadOnlyStrategy(),strategy).V().count(),
+              "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"])
+#95
+tests.append([g.with_('evaluationTimeout', 500).V().count(),
+              "g.with('evaluationTimeout',500).V().count()"])
+#96
+tests.append([g.withStrategies(OptionsStrategy({'evaluationTimeout':500})).V().count(),
+             "g.withStrategies(new OptionsStrategy(evaluationTimeout:500)).V().count()"])
+#97
+tests.append([g.withStrategies(PartitionStrategy(partition_key="partition",write_partition="a",read_partitions=["a"])).addV('test'),
+             "g.withStrategies(new PartitionStrategy(partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')"])
+#98
 tests.append([g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name','peter')),
-             "g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name','peter'))"])
+             "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
 
 tlr = Translator().of('g')
-tlr.translate(tests[90][0].bytecode)
+#tlr.translate(tests[95][0].bytecode)
 print('B=Bytecode, E=Expected, A=Actual')
 total = 0
 failed = 0
