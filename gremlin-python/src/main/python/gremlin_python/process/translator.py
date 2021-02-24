@@ -82,7 +82,11 @@ class Translator:
         for key in s.configuration:
             res += ',' if c > 0 else ''
             res += key + ':'
-            res += self.translate((s.configuration[key]).bytecode,child=True)
+            val = s.configuration[key]
+            if isinstance(val,Traversal):
+                res += self.translate(val.bytecode,child=True)
+            else:
+                res += self.fixup(val)
             c += 1
         res += ')'
         return res
@@ -106,7 +110,8 @@ class Translator:
                 elif type(p) in [Cardinality,Pop]:
                     tmp = str(p)
                     script += tmp[0:-1] if tmp.endswith('_') else tmp 
-                elif type(p) in [ReadOnlyStrategy,SubgraphStrategy]:
+                elif type(p) in [ReadOnlyStrategy, SubgraphStrategy, VertexProgramStrategy,
+                                 OptionsStrategy, PartitionStrategy]:
                     script += self.process_strategy(p)
                 elif type(p) == datetime:
                     script += self.process_date(p)
