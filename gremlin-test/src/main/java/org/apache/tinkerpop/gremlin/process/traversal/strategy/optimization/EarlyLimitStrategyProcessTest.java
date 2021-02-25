@@ -106,7 +106,6 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
             // forward pulling an extra traverser, so pretty sure the correct assertion is to match what happens with
             // EarlyLimitStrategy above. i'm not even sure there is a point to asserting this anymore as the original
             // intent does not appear clear to me, but i will leave it for now.
-            // https://issues.apache.org/jira/browse/TINKERPOP-2511
             // assertThat(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x == 1L), is(true));
         }
     }
