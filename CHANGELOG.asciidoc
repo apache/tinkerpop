@@ -107,6 +107,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Prevented Java driver from sending multiple request messages with the same identifier.
 * Improved error message for `property(T,Object)` when mutating graph elements.
 * Added method caching for GraphSON 3.0 deserialization of `P` and `TextP` instances.
 * Fixed bug with Javascript Groovy `Translator` when generating Gremlin with multiple embedded traversals.

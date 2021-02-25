@@ -64,7 +64,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.io.File;
-import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,8 +78,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -90,7 +89,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
@@ -1801,5 +1799,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);
         assertTrue(cluster != null);
         cluster.close();
+    }
+
+    @Test
+    public void shouldNotHangWhenSameRequestIdIsUsed() throws Exception {
+        final Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(1).minConnectionPoolSize(1).create();
+        final Client client = cluster.connect();
+        final UUID requestId = UUID.randomUUID();
+
+        final Future<ResultSet> result1 = client.submitAsync("Thread.sleep(2000);100",
+                RequestOptions.build().overrideRequestId(requestId).create());
+
+        // wait for some business to happen on the server
+        Thread.sleep(100);
+        try {
+            // re-use the id and fail
+            client.submit("1+1+97", RequestOptions.build().overrideRequestId(requestId).create());
+            fail("Request should not have been sent due to duplicate id");
+        } catch(Exception ex) {
+            // should get a rejection here
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("There is already a request pending with an id of:"));
+        }
+
+        assertEquals(100, result1.get().one().getInt());
     }
 }
