@@ -17,13 +17,11 @@
 # under the License.
 #
 
-'''
+"""
 Class that can turn traversals back into Gremlin Groovy format text queries.
 Those queries can then be run in the Gremlin console or using the GLV submit(<String>) API or
 sent to any TinkerPop compliant HTTP endpoint.
-
-
-'''
+"""
 __author__ = 'Kelvin R. Lawrence (gfxman)'
 
 from gremlin_python.process.graph_traversal import __
@@ -32,6 +30,7 @@ from gremlin_python.process.traversal import *
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.strategies import *
 from datetime import datetime
+
 
 class Translator:
     """
@@ -52,7 +51,7 @@ class Translator:
       WithOptions.map: 'map'                           
     }
 
-    def __init__(self,traversal_source=None):
+    def __init__(self, traversal_source=None):
         self.traversal_source = traversal_source
 
     def get_traversal_source(self):
@@ -67,7 +66,7 @@ class Translator:
 
     # Do any needed special processing for the representation
     # of strings and dates.
-    def fixup(self,v):
+    def fixup(self, v):
         if type(v) == str:
             return f'\'{v}\''
         elif type(v) == datetime:
@@ -76,7 +75,7 @@ class Translator:
             return str(v)
     
     # Turn a Python datetime into the equivalent new Date(...)
-    def process_date(selfself,date):
+    def process_date(self, date):
         y = date.year - 1900
         mo = date.month
         d = date.day
@@ -87,7 +86,7 @@ class Translator:
 
     # Do special processing needed to format predicates that come in
     # such as "gt(a)" correctly.
-    def process_predicate(self,p):
+    def process_predicate(self, p):
         res = str(p).split('(')[0] + '('
 
         if type(p.value) == list:
@@ -103,14 +102,14 @@ class Translator:
         return res
 
     # Special processing to handle strategies
-    def process_strategy(self,s):
+    def process_strategy(self, s):
         c = 0
         res = f'new {str(s)}('
         for key in s.configuration:
             res += ',' if c > 0 else ''
             res += key + ':'
             val = s.configuration[key]
-            if isinstance(val,Traversal):
+            if isinstance(val, Traversal):
                 res += self.translate(val.bytecode,child=True)
             else:
                 res += self.fixup(val)
@@ -121,7 +120,7 @@ class Translator:
 
     # Main driver of the translation. Different parts of
     # a Traversal are handled appropriately.
-    def do_translation(self,step):
+    def do_translation(self, step):
         script = ''
         params = step[1:]
         script += '.' + step[0] + '('
@@ -136,7 +135,7 @@ class Translator:
                     script += self.translate(p, True)
                 elif type(p) == P:
                     script += self.process_predicate(p)
-                elif type(p) in [Cardinality,Pop]:
+                elif type(p) in [Cardinality, Pop]:
                     tmp = str(p)
                     script += tmp[0:-1] if tmp.endswith('_') else tmp 
                 elif type(p) in [ReadOnlyStrategy, SubgraphStrategy, VertexProgramStrategy,
@@ -156,11 +155,11 @@ class Translator:
         return script
 
     # Translation starts here. There are two main parts to a 
-    # traversal. Source instructions such as "withSideffect" 
+    # traversal. Source instructions such as "withSideEffect"
     # and "withStrategies", and step instructions such as 
     # "addV" and "repeat". If child is True we will generate
     # anonymous traversal style syntax.
-    def translate(self,bytecode,child=False):
+    def translate(self, bytecode, child=False):
         script = '__' if child else self.traversal_source
         
         for step in bytecode.source_instructions:
@@ -170,4 +169,3 @@ class Translator:
             script += self.do_translation(step)
        
         return script
-       
