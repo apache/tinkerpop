@@ -43,7 +43,7 @@ import java.util.UUID;
 import static org.apache.tinkerpop.gremlin.driver.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.apache.tinkerpop.gremlin.driver.ser.AbstractMessageSerializer.TOKEN_IO_REGISTRIES;
 import static org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1.TOKEN_CUSTOM;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SamplePersonSerializerTest {
 

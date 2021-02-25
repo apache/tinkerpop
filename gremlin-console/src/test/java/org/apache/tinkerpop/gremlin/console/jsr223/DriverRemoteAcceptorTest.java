@@ -32,7 +32,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

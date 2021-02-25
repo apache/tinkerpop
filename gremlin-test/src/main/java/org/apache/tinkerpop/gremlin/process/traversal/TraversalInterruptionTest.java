@@ -38,7 +38,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

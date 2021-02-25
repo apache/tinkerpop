@@ -42,7 +42,6 @@ import java.util.Spliterator;
 public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements Set<Traverser.Admin<S>>, Queue<Traverser.Admin<S>>, Serializable {
 
     private final Map<Traverser.Admin<S>, Traverser.Admin<S>> map = Collections.synchronizedMap(new LinkedHashMap<>());
-    private static final Random RAND = new Random();
 
     public TraverserSet() {
 

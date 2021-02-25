@@ -242,7 +242,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
-    public void setKeepLabels(Set<String> keepLabels) {
+    public void setKeepLabels(final Set<String> keepLabels) {
         this.keepLabels = new HashSet<>(keepLabels);
     }
 

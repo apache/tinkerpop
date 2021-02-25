@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
 
 import java.util.Map;
 import java.util.Objects;
