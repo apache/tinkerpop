@@ -213,10 +213,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
                 // thought as to what might be major changes. To work around the problem we will detach properties as
                 // references so that the parent element goes with it. Also, given TINKERPOP-2318 property comparisons
                 // have changed in such a way that allows this to work properly
-                if (traverser.get() instanceof Property)
-                    traverser.set(ReferenceFactory.detach(traverser.get()));
-                else
-                    traverser.set(DetachedFactory.detach(traverser.get(), true));
+                if (this.onGraphComputer) {
+                    if (traverser.get() instanceof Property)
+                        traverser.set(ReferenceFactory.detach(traverser.get()));
+                    else
+                        traverser.set(DetachedFactory.detach(traverser.get(), true));
+                } else {
+                    traverser.set(traverser.get());
+                }
                 map.put(object, traverser);
             }
         }

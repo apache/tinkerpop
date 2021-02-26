@@ -21,11 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -92,6 +95,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_repeatXdedupX_timesX2X_count();
 
+    public abstract Traversal<Vertex, String> get_g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX();
+
     public abstract Traversal<Vertex, Long> get_g_V_bothE_properties_dedup_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_both_properties_dedup_count();
@@ -144,6 +149,21 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         final List<String> names = traversal.toList();
         assertEquals(1, names.size());
         assertTrue(names.contains("lop") || names.contains("ripple"));
+        assertFalse(traversal.hasNext());
+    }
+
+    /**
+     * https://issues.apache.org/jira/browse/TINKERPOP-2529
+     */
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX();
+        printTraversalForm(traversal);
+        final List<String> names = traversal.toList();
+        assertEquals(1, names.size());
+        assertEquals("lop", names.get(0));
         assertFalse(traversal.hasNext());
     }
 
@@ -426,6 +446,16 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXdedupX_timesX2X_count() {
             return g.V().repeat(dedup()).times(2).count();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX() {
+            return g.V().both().
+                    group().by().by(__.out().dedup().fold()).
+                    unfold().
+                    select(Column.values).
+                    unfold().
+                    out().order().by("name").limit(1).values("name");
         }
 
         @Override

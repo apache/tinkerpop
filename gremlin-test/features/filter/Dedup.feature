@@ -235,6 +235,23 @@ Feature: Step - dedup()
       | result |
       | d[0].l |
 
+  # https://issues.apache.org/jira/browse/TINKERPOP-2529
+  Scenario: g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().
+        group().by().by(__.out().dedup().fold()).
+        unfold().
+        select(Column.values).
+        unfold().
+        out().order().by("name").limit(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+
   Scenario: g_V_bothE_properties_dedup_count
     Given the modern graph
     And the traversal of

@@ -270,11 +270,11 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
+    @Ignore
     public void testBugs() {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal();
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
         Object o1 = g.V().map(__.V(1));
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").explain());
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").toList());
-
     }
 }
