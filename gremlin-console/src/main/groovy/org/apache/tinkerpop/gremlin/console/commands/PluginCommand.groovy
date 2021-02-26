@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.apache.groovy.groovysh.ComplexCommandSupport
-import org.apache.groovy.groovysh.Groovysh
+import org.codehaus.groovy.tools.shell.ComplexCommandSupport
+import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
  * Activate and manage a plugin.

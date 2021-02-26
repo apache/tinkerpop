@@ -25,8 +25,8 @@ import groovy.grape.Grape
 import org.apache.tinkerpop.gremlin.groovy.util.Artifact
 import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
-import org.apache.groovy.groovysh.CommandSupport
-import org.apache.groovy.groovysh.Groovysh
+import org.codehaus.groovy.tools.shell.CommandSupport
+import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
  * Install a dependency into the console.

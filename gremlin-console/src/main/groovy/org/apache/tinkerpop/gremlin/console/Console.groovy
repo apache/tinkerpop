@@ -42,11 +42,11 @@ import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
-import org.apache.groovy.groovysh.ExitNotification
-import org.apache.groovy.groovysh.Groovysh
+import org.codehaus.groovy.tools.shell.ExitNotification
+import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
-import org.apache.groovy.groovysh.InteractiveShellRunner
-import org.apache.groovy.groovysh.commands.SetCommand
+import org.codehaus.groovy.tools.shell.InteractiveShellRunner
+import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.fusesource.jansi.Ansi
 import sun.misc.Signal
 import sun.misc.SignalHandler

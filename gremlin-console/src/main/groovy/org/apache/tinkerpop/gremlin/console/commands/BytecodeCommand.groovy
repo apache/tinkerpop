@@ -28,8 +28,8 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule
-import org.apache.groovy.groovysh.ComplexCommandSupport
-import org.apache.groovy.groovysh.Groovysh
+import org.codehaus.groovy.tools.shell.ComplexCommandSupport
+import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
  * Commands that help work with Gremlin bytecode.

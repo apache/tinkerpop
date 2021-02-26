@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import org.apache.tinkerpop.gremlin.console.Preferences;
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
@@ -25,7 +26,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
-import org.apache.groovy.groovysh.Groovysh
+import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
 /**
