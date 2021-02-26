@@ -196,8 +196,10 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             }
             if (!map.containsKey(object)) {
                 traverser.setBulk(1L);
-                // traverser.detach();
-                traverser.set(DetachedFactory.detach(traverser.get(), true)); // TODO: detect required detachment accordingly
+                if (this.onGraphComputer)
+                    traverser.set(DetachedFactory.detach(traverser.get(), true));
+                else
+                    traverser.set(traverser.get());
                 map.put(object, traverser);
             }
         }
