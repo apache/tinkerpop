@@ -36,7 +36,7 @@ import static org.junit.Assert.fail;
  */
 public class DependencyGrabberIntegrateTest {
     private static final String GROUP_ID = "org.apache.tinkerpop";
-    private static final String VERSION = "3.3.9";
+    private static final String VERSION = "3.3.8";
 
     private static final GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
     private static final File extTestDir = TestHelper.makeTestDataPath(DependencyGrabberIntegrateTest.class);

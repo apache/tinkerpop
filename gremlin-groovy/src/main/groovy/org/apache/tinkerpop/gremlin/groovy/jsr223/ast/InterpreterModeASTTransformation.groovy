@@ -61,7 +61,7 @@ class InterpreterModeASTTransformation implements ASTTransformation {
         ClassNode scriptNode = (ClassNode) astNodes[1]
 
         // need to check that object is a Script to call run(). this scriptNode may be a user defined class via
-        // "class" in which case it can be ignored as there are no variables to promote to global status there
+        // "def class" in which case it can be ignored as there are no variables to promote to global status there
         if (scriptNode.isDerivedFrom(ClassHelper.make(Script))) {
             def runMethodOfScript = scriptNode.declaredMethodsMap["java.lang.Object run()"]
             runMethodOfScript.code = wrap(runMethodOfScript)

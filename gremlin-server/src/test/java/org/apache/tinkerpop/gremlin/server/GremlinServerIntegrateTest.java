@@ -772,7 +772,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("class C { def C getC(){return this}}; new C()").all().join();
+            client.submit("def class C { def C getC(){return this}}; new C()").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
