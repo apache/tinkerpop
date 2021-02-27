@@ -120,6 +120,7 @@ world.gremlins = {
     'g_V_groupCount_selectXvaluesX_unfold_dedup': [(lambda g:g.V().groupCount().select(Column.values).unfold().dedup())], 
     'g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup': [(lambda g:g.V().as_('a').repeat(__.both()).times(3).emit().name.as_('b').group().by(__.select('a')).by(__.select('b').dedup().order().fold()).select(Column.values).unfold().dedup())], 
     'g_V_repeatXdedupX_timesX2X_count': [(lambda g:g.V().repeat(__.dedup()).times(2).count())], 
+    'g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX': [(lambda g:g.V().both().group().by().by(__.out().dedup().fold()).unfold().select(Column.values).unfold().out().order().by('name')[0:1].name)], 
     'g_V_bothE_properties_dedup_count': [(lambda g:g.V().bothE().properties().dedup().count())], 
     'g_V_both_properties_dedup_count': [(lambda g:g.V().both().properties().dedup().count())], 
     'g_V_both_properties_properties_dedup_count': [(lambda g:g.V().both().properties().properties().dedup().count())], 

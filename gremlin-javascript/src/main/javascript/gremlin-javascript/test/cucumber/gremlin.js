@@ -135,6 +135,7 @@ const gremlins = {
     g_V_groupCount_selectXvaluesX_unfold_dedup: [function({g}) { return g.V().groupCount().select(Column.values).unfold().dedup() }], 
     g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup: [function({g}) { return g.V().as("a").repeat(__.both()).times(3).emit().values("name").as("b").group().by(__.select("a")).by(__.select("b").dedup().order().fold()).select(Column.values).unfold().dedup() }], 
     g_V_repeatXdedupX_timesX2X_count: [function({g}) { return g.V().repeat(__.dedup()).times(2).count() }], 
+    g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX: [function({g}) { return g.V().both().group().by().by(__.out().dedup().fold()).unfold().select(Column.values).unfold().out().order().by("name").limit(1).values("name") }], 
     g_V_bothE_properties_dedup_count: [function({g}) { return g.V().bothE().properties().dedup().count() }], 
     g_V_both_properties_dedup_count: [function({g}) { return g.V().both().properties().dedup().count() }], 
     g_V_both_properties_properties_dedup_count: [function({g}) { return g.V().both().properties().properties().dedup().count() }], 
