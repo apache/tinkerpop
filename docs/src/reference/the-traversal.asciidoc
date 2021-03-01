@@ -4286,11 +4286,11 @@ columns represent the language that Gremlin can be generated in:
 [width="100%",cols="<,^,^,^,^,^",options="header"]
 |=========================================================
 | |Java |Groovy |Javascript |.NET |Python
-|*Java* |- |X |X | |X
+|*Java* |- |X |X |X |X
 |*Groovy* | |X |X | |X
 |*Javascript* | |X |- | |
 |*.NET* | | | |- |
-|*Python*  | | | | |-
+|*Python*  | |X | | |-
 |=========================================================
 
 Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
