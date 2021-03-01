@@ -4350,6 +4350,6 @@ System.out.println(s.getScript());
 // OUTPUT: g.V().has(_args_0,_args_1,_args_2).where(__.in(_args_3)).values(_args_4)
 System.out.println(s.parameters);
 // OUTPUT: Optional[{_args_0=person, _args_2=marko, _args_1=name, _args_4=age, _args_3=knows}]
----
+----
 
 
