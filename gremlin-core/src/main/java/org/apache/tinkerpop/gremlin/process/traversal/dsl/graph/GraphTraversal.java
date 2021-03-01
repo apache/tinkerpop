@@ -172,6 +172,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.single;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -1096,8 +1098,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> to(final String toStepLabel) {
+        final Step<?,?> prev = this.asAdmin().getEndStep();
+        if (!(prev instanceof FromToModulating))
+            throw new IllegalArgumentException(String.format(
+                    "The to() step cannot follow %s", prev.getClass().getSimpleName()));
+
         this.asAdmin().getBytecode().addStep(Symbols.to, toStepLabel);
-        ((FromToModulating) this.asAdmin().getEndStep()).addTo(toStepLabel);
+        ((FromToModulating) prev).addTo(toStepLabel);
         return this;
     }
 
@@ -1110,8 +1117,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> from(final String fromStepLabel) {
+        final Step<?,?> prev = this.asAdmin().getEndStep();
+        if (!(prev instanceof FromToModulating))
+            throw new IllegalArgumentException(String.format(
+                    "The from() step cannot follow %s", prev.getClass().getSimpleName()));
+
         this.asAdmin().getBytecode().addStep(Symbols.from, fromStepLabel);
-        ((FromToModulating) this.asAdmin().getEndStep()).addFrom(fromStepLabel);
+        ((FromToModulating) prev).addFrom(fromStepLabel);
         return this;
     }
 
@@ -1125,8 +1137,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> to(final Traversal<?, Vertex> toVertex) {
+        final Step<?,?> prev = this.asAdmin().getEndStep();
+        if (!(prev instanceof FromToModulating))
+            throw new IllegalArgumentException(String.format(
+                    "The to() step cannot follow %s", prev.getClass().getSimpleName()));
+
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
-        ((FromToModulating) this.asAdmin().getEndStep()).addTo(toVertex.asAdmin());
+        ((FromToModulating) prev).addTo(toVertex.asAdmin());
         return this;
     }
 
@@ -1140,8 +1157,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> from(final Traversal<?, Vertex> fromVertex) {
+        final Step<?,?> prev = this.asAdmin().getEndStep();
+        if (!(prev instanceof FromToModulating))
+            throw new IllegalArgumentException(String.format(
+                    "The from() step cannot follow %s", prev.getClass().getSimpleName()));
+
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
-        ((FromToModulating) this.asAdmin().getEndStep()).addFrom(fromVertex.asAdmin());
+        ((FromToModulating) prev).addFrom(fromVertex.asAdmin());
         return this;
     }
 
@@ -1155,8 +1177,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.0
      */
     public default GraphTraversal<S, E> to(final Vertex toVertex) {
+        final Step<?,?> prev = this.asAdmin().getEndStep();
+        if (!(prev instanceof FromToModulating))
+            throw new IllegalArgumentException(String.format(
+                    "The to() step cannot follow %s", prev.getClass().getSimpleName()));
+
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
-        ((FromToModulating) this.asAdmin().getEndStep()).addTo(__.constant(toVertex).asAdmin());
+        ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
         return this;
     }
 
@@ -1170,8 +1197,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.0
      */
     public default GraphTraversal<S, E> from(final Vertex fromVertex) {
+        final Step<?,?> prev = this.asAdmin().getEndStep();
+        if (!(prev instanceof FromToModulating))
+            throw new IllegalArgumentException(String.format(
+                    "The from() step cannot follow %s", prev.getClass().getSimpleName()));
+
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
-        ((FromToModulating) this.asAdmin().getEndStep()).addFrom(__.constant(fromVertex).asAdmin());
+        ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
         return this;
     }
 
@@ -2177,12 +2209,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             endStep = endStep.getPreviousStep();
         }
 
-        // edge properties can always be folded as there is no cardinality/metaproperties. for a vertex mutation,
-        // it's possible to fold the property() into the Mutating step if there are no metaproperties (i.e. keyValues)
-        // and if (1) the key is an instance of T OR OR (3) the key is a string and the cardinality is not specifiied.
-        // Note that checking for single cardinality of the argument doesn't work well because once folded we lose
-        // the cardinality argument associated to the key/value pair and then it relies on the graph. that
-        // means that if you do:
+        // edge properties can always be folded as there are no cardinality/metaproperties. of course, if the
+        // cardinality is specified as something other than single or null it would be confusing to simply allow it to
+        // execute and not throw an error.
+        if ((endStep instanceof AddEdgeStep || endStep instanceof AddEdgeStartStep) && (null != cardinality && cardinality != single))
+            throw new IllegalStateException(String.format(
+                    "Multi-property cardinality of [%s] can only be set for a Vertex but is being used for addE() with key: %s",
+                    cardinality.name(), key));
+
+        // for a vertex mutation, it's possible to fold the property() into the Mutating step if there are no
+        // metaproperties (i.e. keyValues) and if (1) the key is an instance of T OR OR (3) the key is a string and the
+        // cardinality is not specified. Note that checking for single cardinality of the argument doesn't work well
+        // because once folded we lose the cardinality argument associated to the key/value pair and then it relies on
+        // the graph. that means that if you do:
         //
         // g.addV().property(single, 'k',1).property(single,'k',2)
         //
