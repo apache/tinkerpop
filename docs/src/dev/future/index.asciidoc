@@ -22,6 +22,10 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 = TinkerPop 4.x Design Ideas
 
+NOTE: This document has not been updated in a significant way since 2018. The ideas presented here do not necessarily
+reflect the project direction going forward currently. We will revisit this document when there is greater focus on
+TinkerPop 4.x design discussions.
+
 Apache TinkerPop™ 4.x is not a version considered on the immediate horizon, but there are often points in the day to
 day development of TinkerPop 3.x where there are changes of importance, novelty and usefulness that are so big that
 they could only be implemented under a major new version. This document is meant to track these concepts as they
