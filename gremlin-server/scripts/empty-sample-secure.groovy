@@ -52,4 +52,7 @@ globals << [hook : [
 // in 3.4.0 to make all Gremlin Server results consistent across all protocols and
 // serialization formats aligning it with TinkerPop recommended practices for writing
 // Gremlin.
-globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
+//
+// must use an instance of ReferenceElementStrategy as Groovy shorthands won't work with
+// secure script execution.
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy.instance())]
