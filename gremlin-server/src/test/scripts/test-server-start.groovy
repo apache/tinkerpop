@@ -73,6 +73,11 @@ settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gre
 settingsSecure.port = 45941
 settingsSecure.authentication.authenticator = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
 settingsSecure.authentication.config = [credentialsDb: projectBaseDir + "/target/tinkergraph-credentials.properties"]
+settingsSecure.ssl = new Settings.SslSettings()
+settingsSecure.ssl.enabled = true
+settingsSecure.ssl.sslEnabledProtocols = ["TLSv1.2"]
+settingsSecure.ssl.keyStore = gremlinServerDir + "/src/test/resources/server-key.jks"
+settingsSecure.ssl.keyStorePassword = "changeit"
 
 def serverSecure = new GremlinServer(settingsSecure)
 serverSecure.start().join()

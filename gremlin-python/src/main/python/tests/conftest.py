@@ -18,7 +18,9 @@
 #
 
 import concurrent.futures
+import ssl
 import pytest
+import sys
 import socket
 
 from six.moves import queue
@@ -36,7 +38,7 @@ from gremlin_python.driver.tornado.transport import TornadoTransport
 
 gremlin_server_url = 'ws://localhost:{}/gremlin'
 anonymous_url = gremlin_server_url.format(45940)
-basic_url = gremlin_server_url.format(45941)
+basic_url = 'wss://localhost:{}/gremlin'.format(45941)
 kerberos_url = gremlin_server_url.format(45942)
 kerberized_service = 'test-service@{}'.format(socket.gethostname())
 
@@ -79,7 +81,11 @@ def client(request):
 def authenticated_client(request):
     try:
         if request.param == 'basic':
-            client = Client(basic_url, 'gmodern', username='stephen', password='password')
+            # turn off certificate verification for testing purposes only
+            ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ssl_opts.verify_mode = ssl.CERT_NONE
+            client = Client(basic_url, 'gmodern', username='stephen', password='password',
+                            transport_factory=lambda: TornadoTransport(ssl_options=ssl_opts))
         elif request.param == 'kerberos':
             client = Client(kerberos_url, 'gmodern', kerberized_service=kerberized_service)
         else:
@@ -120,9 +126,13 @@ def remote_connection(request):
 def remote_connection_authenticated(request):
     try:
         if request.param == 'basic':
+            # turn off certificate verification for testing purposes only
+            ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ssl_opts.verify_mode = ssl.CERT_NONE
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
                                                  username='stephen', password='password',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+                                                 message_serializer=serializer.GraphSONSerializersV2d0(),
+                                                 transport_factory=lambda: TornadoTransport(ssl_options=ssl_opts))
         elif request.param == 'kerberos':
             remote_conn = DriverRemoteConnection(kerberos_url, 'gmodern', kerberized_service=kerberized_service,
                                                  message_serializer=serializer.GraphSONSerializersV2d0())

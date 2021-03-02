@@ -111,6 +111,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Prevented Java driver from sending multiple request messages with the same identifier.
 * Improved error message for `property(T,Object)` when mutating graph elements.
 * Added method caching for GraphSON 3.0 deserialization of `P` and `TextP` instances.
+* Allowed setting `ssl_options` for gremlin-python.  
 * Fixed bug with global `dedup()` when used in reducing `by()` of `group()`.
 * Fixed bug with Javascript Groovy `Translator` when generating Gremlin with multiple embedded traversals.
 * Modified Gremlin Server `Settings` to be more extensible allowing for custom options with the YAML parser.
