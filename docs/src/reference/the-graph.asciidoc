@@ -422,9 +422,6 @@ server until the user closes it manually. There is an option to have automatic t
 More information on this topic can be found in the <<considering-transactions,Considering Transactions>> Section and
 the <<sessions,Considering Sessions>> Section.
 
-While those sections provide some additional details, the short advice is to avoid scripts when possible and prefer
-bytecode based requests.
-
 [[tx-rgp]]
 === Remote Gremlin Providers
 
