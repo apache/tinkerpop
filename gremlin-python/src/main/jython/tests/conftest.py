@@ -17,7 +17,9 @@
 # under the License.
 #
 import concurrent.futures
+import ssl
 import pytest
+import sys
 
 from six.moves import queue
 
@@ -74,8 +76,13 @@ def client(request):
 @pytest.fixture
 def secure_client(request):
     try:
-        client = Client('ws://' + gremlin_server_host + ':45941/gremlin', 'gmodern',
-                        username='stephen', password='password')
+        # turn off certificate verification for testing purposes only
+        ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        ssl_opts.verify_mode = ssl.CERT_NONE
+
+        client = Client('wss://' + gremlin_server_host + ':45941/gremlin', 'gmodern',
+                        username='stephen', password='password',
+                        transport_factory=lambda: TornadoTransport(ssl_options=ssl_opts))
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
