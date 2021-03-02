@@ -837,11 +837,14 @@ options to manage `ioloop` timeouts and compression settings:
 
 [source,python]
 ----
+import ssl
+...
 g = traversal().withRemote(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
                          transport_factory=lambda: TornadoTransport(read_timeout=10,
                                                                     write_timeout=10,
-                                                                    compression_options={'compression_level':5,'mem_level':5})))
+                                                                    compression_options={'compression_level':5,'mem_level':5},
+                                                                    ssl_options=ssl.create_default_context(Purpose.CLIENT_AUTH))))
 ----
 
 Compression configuration options are described in the
