@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class RangeByIsCountStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(RangeByIsCountStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="RangeByIsCountStrategy" /> class.
+        /// </summary>
+        public RangeByIsCountStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

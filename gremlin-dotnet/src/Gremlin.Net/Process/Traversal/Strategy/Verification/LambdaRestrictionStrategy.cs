@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
     /// </summary>
     public class LambdaRestrictionStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = VerificationNamespace + nameof(LambdaRestrictionStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="LambdaRestrictionStrategy" /> class.
+        /// </summary>
+        public LambdaRestrictionStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

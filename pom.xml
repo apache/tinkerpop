@@ -414,6 +414,7 @@ limitations under the License.
                         <exclude>**/.vs/**</exclude>
                         <exclude>**/NuGet.Config</exclude>
                         <exclude>**/*.nuspec</exclude>
+                        <exclude>**/BenchmarkDotNet.Artifacts/**</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
                         <exclude>**/gremlin-javascript/doc/**</exclude>
                         <exclude>**/node/**</exclude>

@@ -29,13 +29,16 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
 #pragma warning disable 1591
     public class VertexProgramStrategy : AbstractTraversalStrategy
     {
-        public VertexProgramStrategy()
+        private const string JavaFqcn = ComputerDecorationNamespace + nameof(VertexProgramStrategy);
+        
+        public VertexProgramStrategy() : base(JavaFqcn)
         {
         }
 
         public VertexProgramStrategy(string graphComputer = null, int? workers = null, string persist = null,
             string result = null, ITraversal vertices = null, ITraversal edges = null,
             Dictionary<string, dynamic> configuration = null)
+            : this()
         {
             if (graphComputer != null)
                 Configuration["graphComputer"] = graphComputer;

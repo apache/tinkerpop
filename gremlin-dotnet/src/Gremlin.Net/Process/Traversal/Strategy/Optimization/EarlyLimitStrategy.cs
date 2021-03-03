@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class EarlyLimitStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(EarlyLimitStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="EarlyLimitStrategy" /> class.
+        /// </summary>
+        public EarlyLimitStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

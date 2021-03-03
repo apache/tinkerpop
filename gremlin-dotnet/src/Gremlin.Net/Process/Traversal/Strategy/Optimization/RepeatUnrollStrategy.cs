@@ -26,6 +26,11 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
 #pragma warning disable 1591
     public class RepeatUnrollStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(RepeatUnrollStrategy);
+        
+        public RepeatUnrollStrategy() : base(JavaFqcn)
+        {
+        }
     }
 #pragma warning restore 1591
 }

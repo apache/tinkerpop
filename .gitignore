@@ -36,4 +36,5 @@ tools/
 *nupkg
 NuGet.Config
 nuget*.exe
+BenchmarkDotNet.Artifacts/
 /Dockerfile

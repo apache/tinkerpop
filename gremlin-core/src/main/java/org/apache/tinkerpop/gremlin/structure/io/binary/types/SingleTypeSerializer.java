@@ -28,7 +28,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * Represents a serializer for types that be represented as a single value and that can be read and write
+ * Represents a serializer for types that can be represented as a single value and that can be read and write
  * in a single operation.
  */
 public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {

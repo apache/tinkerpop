@@ -105,7 +105,7 @@ namespace Gremlin.Net.Driver
                 try
                 {
                     var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
-                    HandleReceived(received);
+                    await HandleReceivedAsync(received).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -115,9 +115,9 @@ namespace Gremlin.Net.Driver
             }
         }
 
-        private void HandleReceived(byte[] received)
+        private async Task HandleReceivedAsync(byte[] received)
         {
-            var receivedMsg = _messageSerializer.DeserializeMessage(received);
+            var receivedMsg = await _messageSerializer.DeserializeMessageAsync(received).ConfigureAwait(false);
             if (receivedMsg == null)
             {
                 ThrowMessageDeserializedNull();
@@ -129,7 +129,8 @@ namespace Gremlin.Net.Driver
             }
             catch (Exception e)
             {
-                if (_callbackByRequestId.TryRemove(receivedMsg.RequestId, out var responseHandler))
+                if (receivedMsg.RequestId != null &&
+                    _callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out var responseHandler))
                 {
                     responseHandler?.HandleFailure(e);
                 }
@@ -150,13 +151,15 @@ namespace Gremlin.Net.Driver
                 return;
             }
 
+            if (receivedMsg.RequestId == null) return;
+
             if (status.Code != ResponseStatusCode.NoContent)
-                _callbackByRequestId[receivedMsg.RequestId].HandleReceived(receivedMsg);
+                _callbackByRequestId[receivedMsg.RequestId.Value].HandleReceived(receivedMsg);
 
             if (status.Code == ResponseStatusCode.Success || status.Code == ResponseStatusCode.NoContent)
             {
-                _callbackByRequestId[receivedMsg.RequestId].Finalize(status.Attributes);
-                _callbackByRequestId.TryRemove(receivedMsg.RequestId, out _);
+                _callbackByRequestId[receivedMsg.RequestId.Value].Finalize(status.Attributes);
+                _callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out _);
             }
         }
 
@@ -240,7 +243,7 @@ namespace Gremlin.Net.Driver
             {
                 message = RebuildSessionMessage(message);
             }
-            var serializedMsg = _messageSerializer.SerializeMessage(message);
+            var serializedMsg = await _messageSerializer.SerializeMessageAsync(message).ConfigureAwait(false);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
 

@@ -35,8 +35,8 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="key">The key of the property.</param>
         /// <param name="value">The value of the property.</param>
-        /// <param name="element">The element that the property is associated with.</param>
-        public Property(string key, dynamic value, Element element)
+        /// <param name="element">The (optional) element that the property is associated with.</param>
+        public Property(string key, dynamic value, Element element = null)
         {
             Key = key;
             Value = value;

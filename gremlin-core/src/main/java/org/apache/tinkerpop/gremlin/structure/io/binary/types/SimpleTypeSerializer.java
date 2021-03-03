@@ -62,7 +62,7 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     /**
      * Reads a non-nullable value according to the type format.
      * @param buffer A buffer which reader index has been set to the beginning of the {value}.
-     * @param context The binary writer.
+     * @param context The binary reader.
      * @return
      * @throws IOException
      */

@@ -33,11 +33,53 @@ namespace Gremlin.Net.Process.Traversal.Strategy
     /// </summary>
     public abstract class AbstractTraversalStrategy : ITraversalStrategy, IEquatable<AbstractTraversalStrategy>
     {
+        private const string BaseNamespace = "org.apache.tinkerpop.gremlin.process.traversal.strategy.";
+
+        /// <summary>
+        /// Java namespace for decoration strategies.
+        /// </summary>
+        protected const string DecorationNamespace = BaseNamespace + "decoration.";
+
+        /// <summary>
+        /// Java namespace for finalization strategies.
+        /// </summary>
+        protected const string FinalizationNamespace = BaseNamespace + "finalization.";
+
+        /// <summary>
+        /// Java namespace for optimization strategies.
+        /// </summary>
+        protected const string OptimizationNamespace = BaseNamespace + "optimization.";
+
+        /// <summary>
+        /// Java namespace for verification strategies.
+        /// </summary>
+        protected const string VerificationNamespace = BaseNamespace + "verification.";
+
+        /// <summary>
+        /// Java namespace for computer decoration strategies.
+        /// </summary>
+        protected const string ComputerDecorationNamespace =
+            "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.";
+        
+        /// <summary>
+        ///     Creates a new <see cref="AbstractTraversalStrategy"/> instance.
+        /// </summary>
+        /// <param name="fqcn">The fully qualified class name (FQCN) from the equivalent Java strategy.</param>
+        protected AbstractTraversalStrategy(string fqcn)
+        {
+            Fqcn = fqcn;
+        }
+
         /// <summary>
         ///     Gets the name of the strategy.
         /// </summary>
         public string StrategyName => GetType().Name;
 
+        /// <summary>
+        ///     Gets the fully qualified class name (FQCN) from the equivalent Java strategy.
+        /// </summary>
+        public string Fqcn { get; }
+        
         /// <summary>
         ///     Gets the configuration of the strategy.
         /// </summary>

@@ -29,5 +29,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class IncidentToAdjacentStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(IncidentToAdjacentStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="IncidentToAdjacentStrategy" /> class.
+        /// </summary>
+        public IncidentToAdjacentStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

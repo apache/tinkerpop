@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class PathProcessorStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(PathProcessorStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PathProcessorStrategy" /> class.
+        /// </summary>
+        public PathProcessorStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

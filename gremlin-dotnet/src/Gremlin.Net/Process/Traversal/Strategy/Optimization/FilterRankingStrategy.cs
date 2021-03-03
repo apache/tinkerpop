@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class FilterRankingStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(FilterRankingStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="FilterRankingStrategy" /> class.
+        /// </summary>
+        public FilterRankingStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }
