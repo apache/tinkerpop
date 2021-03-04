@@ -110,8 +110,7 @@ public class SubgraphStrategyTest {
             strategy.apply(traversal);
 
             final List<TraversalFilterStep> steps = TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal);
-            System.out.println(repr + "+" + steps.stream().map(s -> s.getFilterTraversal().toString()).collect(Collectors.joining()));
-            assertEquals(repr + ":" + traversal.toString(), expectedInsertedSteps, steps.size());
+            assertEquals(repr, expectedInsertedSteps, steps.size());
         }
     }
 

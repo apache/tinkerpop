@@ -21,6 +21,79 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
+== TinkerPop 3.4.11
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.11/CHANGELOG.asciidoc#release-3-4-11[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== barrier() Control
+
+Various `TraversalStrategy` implementations inject `barrier()` instances to improve traversal performance. It is often
+helpful in debugging situations or in tweaking traversal performance activities that it may be necessary to prevent
+automated `barrier()` injection. Formerly, that involved removing `LazyBarrierStrategy`, `RepeatUnrollStrategy`, and
+`PathRetractionStrategy` as all three of those strategies had the potential to add a `barrier()`. While this approach
+would work, it may be hard to recall those three strategies easily and you may be removing optimizations that might
+have been useful in addition to the `barrier()`.
+
+In 3.4.11, it is only necessary to remove `LazyBarrierStrategy`. Doing so will disable `barrier()` additions in other
+strategies and as this is the new model of execution, it can be expected to work as the approach in the future even
+if other strategies attempt to add `barrier()` steps for some reason. Note of course that this rule only applies to
+TinkerPop-enabled strategies. It is possible that provider-specific strategies could add `barrier()`-steps and thus
+still require direct removal.
+
+[source,text]
+----
+gremlin> g.V().repeat(out()).times(2).in().explain()
+==>Traversal Explanation
+====================================================================================================================================================================================
+Original Traversal                 [GraphStep(vertex,[]), RepeatStep([VertexStep(OUT,vertex), RepeatEndStep],until(loops(2)),emit(false)), VertexStep(IN,vertex)]
+
+ConnectiveStrategy           [D]   [GraphStep(vertex,[]), RepeatStep([VertexStep(OUT,vertex), RepeatEndStep],until(loops(2)),emit(false)), VertexStep(IN,vertex)]
+RepeatUnrollStrategy         [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+IncidentToAdjacentStrategy   [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+MatchPredicateStrategy       [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+PathRetractionStrategy       [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+FilterRankingStrategy        [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+InlineFilterStrategy         [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+AdjacentToIncidentStrategy   [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+CountStrategy                [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+EarlyLimitStrategy           [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+LazyBarrierStrategy          [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(IN,vertex)]
+TinkerGraphCountStrategy     [P]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(IN,vertex)]
+TinkerGraphStepStrategy      [P]   [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(IN,vertex)]
+ProfileStrategy              [F]   [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(IN,vertex)]
+StandardVerificationStrategy [V]   [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(IN,vertex)]
+
+Final Traversal                    [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(OUT,vertex), NoOpBarrierStep(2500), VertexStep(IN,vertex)]
+gremlin> g.withoutStrategies(LazyBarrierStrategy).V().repeat(out()).times(2).in().explain()
+==>Traversal Explanation
+=================================================================================================================================================================
+Original Traversal                 [GraphStep(vertex,[]), RepeatStep([VertexStep(OUT,vertex), RepeatEndStep],until(loops(2)),emit(false)), VertexStep(IN,vertex)]
+
+ConnectiveStrategy           [D]   [GraphStep(vertex,[]), RepeatStep([VertexStep(OUT,vertex), RepeatEndStep],until(loops(2)),emit(false)), VertexStep(IN,vertex)]
+RepeatUnrollStrategy         [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+CountStrategy                [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+EarlyLimitStrategy           [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+MatchPredicateStrategy       [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+FilterRankingStrategy        [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+IncidentToAdjacentStrategy   [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+PathRetractionStrategy       [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+InlineFilterStrategy         [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+AdjacentToIncidentStrategy   [O]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+TinkerGraphCountStrategy     [P]   [GraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+TinkerGraphStepStrategy      [P]   [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+ProfileStrategy              [F]   [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+StandardVerificationStrategy [V]   [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+
+Final Traversal                    [TinkerGraphStep(vertex,[]), VertexStep(OUT,vertex), VertexStep(OUT,vertex), VertexStep(IN,vertex)]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1994[TINKERPOP-1994]
+
 == TinkerPop 3.4.10
 
 *Release Date: January 18, 2021*

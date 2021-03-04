@@ -92,6 +92,8 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
             return;
         }
 
+        final boolean lazyBarrierStrategyInstalled = traversal.getStrategies().getStrategy(LazyBarrierStrategy.class).isPresent();
+
         final boolean onGraphComputer = TraversalHelper.onGraphComputer(traversal);
         final Set<String> foundLabels = new HashSet<>();
         final Set<String> keepLabels = new HashSet<>();
@@ -131,8 +133,9 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep.getTraversal().getParent().asStep()).getMatchEndLabels());
                 }
 
-                // OLTP barrier optimization that will try and bulk traversers after a path processor step to thin the stream
-                if (!onGraphComputer &&
+                // LazyBarrierStrategy should control all barrier() additions. OLTP barrier optimization that will try
+                // and bulk traversers after a path processor step to thin the stream
+                if (lazyBarrierStrategyInstalled && !onGraphComputer &&
                         !(currentStep instanceof MatchStep) &&
                         !(currentStep instanceof Barrier) &&
                         !(currentStep.getNextStep() instanceof Barrier) &&
