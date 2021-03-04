@@ -20,11 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.junit.Test;
@@ -45,33 +45,32 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Parameterized.class)
 public class ComputerVerificationStrategyTest {
+    private static final Translator<String,String> translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 // illegal
-                {"__.where(__.out().values(\"name\"))", __.where(__.out().values("name")), false},
-                {"__.local(out().out())", __.local(out().out()), false},
+                {__.where(__.out().values("name")), false},
+                {__.local(out().out()), false},
                 // legal
-                {"__.values(\"age\").union(max(), min(), sum())", __.values("age").union(max(), min(), sum()), true},
-                {"__.count().sum()", __.count().sum(), true},
-                {"__.where(\"a\",eq(\"b\")).out()", __.where("a", P.eq("b")).out(), true},
-                {"__.where(and(outE(\"knows\"),outE(\"created\"))).values(\"name\")", __.where(__.and(outE("knows"), outE("created"))).values("name"), true},
+                {__.values("age").union(max(), min(), sum()), true},
+                {__.count().sum(), true},
+                {__.where("a", P.eq("b")).out(), true},
+                {__.where(__.and(outE("knows"), outE("created"))).values("name"), true},
 
         });
     }
 
     @Parameterized.Parameter(value = 0)
-    public String name;
+    public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
-    public Traversal traversal;
-
-    @Parameterized.Parameter(value = 2)
     public boolean legal;
 
     @Test
     public void shouldBeVerifiedIllegal() {
+        final String repr = translator.translate(traversal.getBytecode());
 
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(ComputerVerificationStrategy.instance());
@@ -80,10 +79,10 @@ public class ComputerVerificationStrategyTest {
         try {
             this.traversal.asAdmin().applyStrategies();
             if (!this.legal)
-                fail("The traversal should not be allowed: " + this.traversal);
+                fail("The traversal should not be allowed: " + repr);
         } catch (final VerificationException ise) {
             if (this.legal)
-                fail("The traversal should be allowed: " + this.traversal);
+                fail("The traversal should be allowed: " + repr);
         }
     }
 

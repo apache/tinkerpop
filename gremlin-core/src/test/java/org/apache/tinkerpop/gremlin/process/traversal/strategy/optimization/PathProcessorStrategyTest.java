@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
@@ -47,9 +49,10 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class PathProcessorStrategyTest {
+    private static final Translator<String,String> translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
-    public Traversal original;
+    public Traversal.Admin original;
 
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
@@ -59,6 +62,7 @@ public class PathProcessorStrategyTest {
 
     @Test
     public void doTest() {
+        final String repr = translator.translate(original.getBytecode());
         final Traversal.Admin<?, ?> rootTraversal = new DefaultGraphTraversal<>();
         final TraversalParent parent = new TraversalVertexProgramStep(rootTraversal, this.original.asAdmin());
         rootTraversal.addStep(parent.asStep());
@@ -70,7 +74,7 @@ public class PathProcessorStrategyTest {
         }
         this.original.asAdmin().setStrategies(strategies);
         this.original.asAdmin().applyStrategies();
-        assertEquals(this.optimized, this.original);
+        assertEquals(repr, this.optimized, this.original);
     }
 
 

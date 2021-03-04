@@ -21,9 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.After;
@@ -40,6 +42,8 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,6 +52,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Parameterized.class)
 public class ReservedKeysVerificationStrategyTest {
+    private static final Translator<String,String> translator = GroovyTranslator.of("__");
 
     private final static Predicate<String> MSG_PREDICATE = Pattern.compile(
             ".*that is setting a property key to a reserved word.*")
@@ -74,42 +79,41 @@ public class ReservedKeysVerificationStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"__.addV().property('id',123)", __.addV().property("id", 123), false},
-                {"__.addE('knows').property('id',123)", __.addE("knows").property("id", 123), false},
-                {"__.addV().property(T.id,123)", __.addV().property(T.id, 123), true},
-                {"__.addE('knows').property(T.label,123)", __.addE("knows").property(T.label, "blah"), true},
-                {"__.addV().property('label','xyz')", __.addV().property("label", "xyz"), false},
-                {"__.addE('knows').property('label','xyz')", __.addE("knows").property("id", "xyz"), false},
-                {"__.addV().property('x','xyz', 'label', 'xxx')", __.addV().property("x", "xyz", "label", "xxx"), false},
-                {"__.addV().property('x','xyz', 'not-Label', 'xxx')", __.addV().property("x", "xyz", "not-label", "xxx"), true},
-                {"__.addV().property('x','xyz', 'not-allowed', 'xxx')", __.addV().property("x", "xyz", "not-allowed", "xxx"), false},
+                {__.addV().property("id", 123), false},
+                {__.addE("knows").property("id", 123), false},
+                {__.addV().property(T.id, 123), true},
+                {__.addE("knows").property(T.label, "blah"), true},
+                {__.addV().property("label", "xyz"), false},
+                {__.addE("knows").property("id", "xyz"), false},
+                {__.addV().property("x", "xyz", "label", "xxx"), false},
+                {__.addV().property("x", "xyz", "not-label", "xxx"), true},
+                {__.addV().property("x", "xyz", "not-allowed", "xxx"), false},
         });
     }
 
     @Parameterized.Parameter(value = 0)
-    public String name;
+    public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
-    public Traversal traversal;
-
-    @Parameterized.Parameter(value = 2)
     public boolean allow;
 
     @Test
     public void shouldIgnore() {
+        final String repr = translator.translate(traversal.getBytecode());
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(ReservedKeysVerificationStrategy.build().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
-        assertTrue(logAppender.isEmpty());
+        assertThat(repr, logAppender.isEmpty(), is(true));
     }
 
     @Test
     public void shouldOnlyThrow() {
+        final String repr = translator.translate(traversal.getBytecode());
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().throwException();
-        if (name.equals("__.addV().property('x','xyz', 'not-allowed', 'xxx')"))
+        if (repr.equals("__.addV().property(\"x\",\"xyz\",\"not-allowed\",\"xxx\")"))
             builder.reservedKeys(new HashSet<>(Arrays.asList("id", "label", "not-allowed")));
         strategies.addStrategies(builder.create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -119,51 +123,53 @@ public class ReservedKeysVerificationStrategyTest {
         } else {
             try {
                 traversal.asAdmin().applyStrategies();
-                fail("The strategy should not allow vertex steps with unspecified edge labels: " + this.traversal);
+                fail("The strategy should not allow vertex steps with unspecified edge labels: " + repr);
             } catch (VerificationException ise) {
-                assertTrue(MSG_PREDICATE.test(ise.getMessage()));
+                assertThat(repr, MSG_PREDICATE.test(ise.getMessage()));
             }
         }
-        assertTrue(logAppender.isEmpty());
+        assertThat(repr, logAppender.isEmpty());
     }
 
     @Test
     public void shouldOnlyLog() {
+        final String repr = translator.translate(traversal.getBytecode());
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().logWarning();
-        if (name.equals("__.addV().property('x','xyz', 'not-allowed', 'xxx')"))
+        if (repr.equals("__.addV().property(\"x\",\"xyz\",\"not-allowed\",\"xxx\")"))
             builder.reservedKeys(new HashSet<>(Arrays.asList("id", "label", "not-allowed")));
         strategies.addStrategies(builder.create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
         if (!allow) {
-            assertTrue(String.format("Expected log entry not found in %s", logAppender.messages),
+            assertThat(String.format("Expected log entry not found in %s for %s", logAppender.messages, repr),
                     logAppender.messages().anyMatch(MSG_PREDICATE));
         }
     }
 
     @Test
     public void shouldThrowAndLog() {
+        final String repr = translator.translate(traversal.getBytecode());
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().
                 throwException().logWarning();
-        if (name.equals("__.addV().property('x','xyz', 'not-allowed', 'xxx')"))
+        if (repr.equals("__.addV().property(\"x\",\"xyz\",\"not-allowed\",\"xxx\")"))
             builder.reservedKeys(new HashSet<>(Arrays.asList("id", "label", "not-allowed")));
         strategies.addStrategies(builder.create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {
             traversal.asAdmin().applyStrategies();
-            assertTrue(logAppender.isEmpty());
+            assertThat(repr, logAppender.isEmpty());
         } else {
             try {
                 traversal.asAdmin().applyStrategies();
-                fail("The strategy should not allow vertex steps with unspecified edge labels: " + this.traversal);
+                fail("The strategy should not allow vertex steps with unspecified edge labels: " + repr);
             } catch (VerificationException ise) {
-                assertTrue(MSG_PREDICATE.test(ise.getMessage()));
+                assertThat(repr, MSG_PREDICATE.test(ise.getMessage()));
             }
-            assertTrue(String.format("Expected log entry not found in %s", logAppender.messages),
+            assertTrue(String.format("Expected log entry not found in %s for %s", logAppender.messages, repr),
                     logAppender.messages().anyMatch(MSG_PREDICATE));
         }
     }

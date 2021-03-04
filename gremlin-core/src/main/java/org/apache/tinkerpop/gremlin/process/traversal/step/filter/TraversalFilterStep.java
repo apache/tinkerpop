@@ -44,6 +44,10 @@ public final class TraversalFilterStep<S> extends FilterStep<S> implements Trave
         this.filterTraversal = this.integrateChild(filterTraversal.asAdmin());
     }
 
+    public Traversal.Admin<S, ?> getFilterTraversal() {
+        return filterTraversal;
+    }
+
     @Override
     public Parameters getParameters() {
         return this.parameters;

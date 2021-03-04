@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,9 +37,10 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class AdjacentToIncidentStrategyTest {
+    private static final Translator<String,String> translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
-    public Traversal original;
+    public Traversal.Admin original;
 
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
@@ -52,8 +55,9 @@ public class AdjacentToIncidentStrategyTest {
 
     @Test
     public void doTest() {
+        final String repr = translator.translate(original.getBytecode());
         applyAdjacentToIncidentStrategy(original);
-        assertEquals(optimized, original);
+        assertEquals(repr, optimized, original);
     }
 
     @Parameterized.Parameters(name = "{0}")

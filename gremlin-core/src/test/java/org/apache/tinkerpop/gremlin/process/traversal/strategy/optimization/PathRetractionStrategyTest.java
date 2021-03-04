@@ -56,7 +56,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.store;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
-import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,6 +66,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(Parameterized.class)
 public class PathRetractionStrategyTest {
+    private static final Translator<String,String> translator = GroovyTranslator.of("__");
 
     private final List<TraversalStrategies> strategies = Arrays.asList(
             new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance()),
@@ -75,7 +75,7 @@ public class PathRetractionStrategyTest {
             new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()));
 
     @Parameterized.Parameter(value = 0)
-    public Traversal.Admin traversal;
+    public Traversal.Admin original;
 
     @Parameterized.Parameter(value = 1)
     public String labels;
@@ -87,13 +87,14 @@ public class PathRetractionStrategyTest {
 
     @Test
     public void doTest() {
+        final String repr = translator.translate(original.getBytecode());
         for (final TraversalStrategies currentStrategies : this.strategies) {
-            final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
+            final Traversal.Admin<?, ?> currentTraversal = this.original.clone();
             currentTraversal.setStrategies(currentStrategies);
             currentTraversal.applyStrategies();
-            assertEquals(this.labels, getKeepLabels(currentTraversal).toString());
+            assertEquals(repr, this.labels, getKeepLabels(currentTraversal).toString());
             if (null != optimized)
-                assertEquals(currentTraversal, optimized);
+                assertEquals(repr, currentTraversal, optimized);
         }
     }
 

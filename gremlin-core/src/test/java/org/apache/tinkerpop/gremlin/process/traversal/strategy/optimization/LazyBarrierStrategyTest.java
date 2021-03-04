@@ -39,6 +39,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class LazyBarrierStrategyTest {
+    private static final Translator<String,String> translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -56,6 +57,7 @@ public class LazyBarrierStrategyTest {
 
     @Test
     public void doTest() {
+        final String repr = translator.translate(original.getBytecode());
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(LazyBarrierStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {
@@ -63,7 +65,7 @@ public class LazyBarrierStrategyTest {
         }
         this.original.asAdmin().setStrategies(strategies);
         this.original.asAdmin().applyStrategies();
-        assertEquals(this.optimized, this.original);
+        assertEquals(repr, this.optimized, this.original);
     }
 
     @Parameterized.Parameters(name = "{0}")
