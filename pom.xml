@@ -422,6 +422,13 @@ limitations under the License.
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
+                        <exclude>**/gremlint/gremlint/lib/**</exclude>
+                        <exclude>**/gremlint/gremlint/node_modules/**</exclude>
+                        <exclude>**/gremlint/gremlint/.prettierrc</exclude>
+                        <exclude>**/gremlint/gremlint.com/build/**</exclude>
+                        <exclude>**/gremlint/gremlint.com/node_modules/**</exclude>
+                        <exclude>**/gremlint/gremlint.com/public/CNAME</exclude>
+                        <exclude>**/gremlint/gremlint.com/.prettierrc</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
