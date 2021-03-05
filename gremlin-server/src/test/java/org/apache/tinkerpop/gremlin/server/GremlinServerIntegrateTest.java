@@ -973,4 +973,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM"));
         }
     }
+
+    @Test
+    public void shouldGenerateTemporaryErrorResponseStatusCode() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("g.addV('person').sideEffect{throw new org.apache.tinkerpop.gremlin.server.util.DefaultTemporaryException('try again!')}").all().get();
+            fail("Should have tanked since we threw an exception out manually");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals("try again!", t.getMessage());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TEMPORARY, ((ResponseException) t).getResponseStatusCode());
+        }
+    }
 }

@@ -224,26 +224,39 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     if (ex instanceof UndeclaredThrowableException)
                         t = t.getCause();
 
-                    if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
+                    // if any exception in the chain is TemporaryException then we should respond with the right error
+                    // code so that the client knows to retry
+                    final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(ex);
+                    if (possibleTemporaryException.isPresent()) {
+                        context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
+                                .statusMessage(possibleTemporaryException.get().getMessage())
+                                .statusAttributeException(possibleTemporaryException.get()).create());
+                    } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                                                              .statusMessage(errorMessage)
                                                              .statusAttributeException(ex).create());
-                        onError(graph, context);
                     } else {
                         logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                                                              .statusMessage(ex.getMessage())
                                                              .statusAttributeException(ex).create());
-                        onError(graph, context);
                     }
+                    onError(graph, context);
                 }
             } catch (Exception ex) {
-                logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
-                context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                                     .statusMessage(ex.getMessage())
-                                                     .statusAttributeException(ex).create());
+                final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(ex);
+                if (possibleTemporaryException.isPresent()) {
+                    context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
+                            .statusMessage(possibleTemporaryException.get().getMessage())
+                            .statusAttributeException(possibleTemporaryException.get()).create());
+                } else {
+                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
+                }
                 onError(graph, context);
             } finally {
                 timerContext.stop();

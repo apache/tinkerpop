@@ -932,14 +932,16 @@ Gremlin Server will send:
 |204 |NO CONTENT |The server processed the request but there is no result to return (e.g. an `Iterator` with no elements) - there are no messages remaining in this stream.
 |206 |PARTIAL CONTENT |The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
 |401 |UNAUTHORIZED |The request attempted to access resources that the requesting user did not have access to.
+|403 |FORBIDDEN |The server could authenticate the request, but will not fulfill it.
 |407 |AUTHENTICATE |A challenge from the server for the client to authenticate its request.
-|497 |CLIENT SERIALIZATION ERROR |The request message contained an object that was not serializable.
-|498 |MALFORMED REQUEST |The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
-|499 |INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
+|497 |REQUEST ERROR SERIALIZATION |The request message contained an object that was not serializable.
+|498 |REQUEST ERROR MALFORMED REQUEST |The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
+|499 |REQUEST ERROR INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
 |500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
-|597 |SCRIPT EVALUATION ERROR |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
-|598 |SERVER TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
-|599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
+|596 |SERVER ERROR TEMPORARY |A server error occurred, but it was temporary in nature and therefore the client is free to retry it's request as-is with the potential for success.
+|597 |SERVER ERROR EVALUATION |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
+|598 |SERVER ERROR TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
+|599 |SERVER ERROR SERIALIZATION |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
 NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more

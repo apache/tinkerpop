@@ -275,7 +275,14 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
             timerContext.stop();
 
             if (t != null) {
-                if (t instanceof OpProcessorException) {
+                // if any exception in the chain is TemporaryException then we should respond with the right error
+                // code so that the client knows to retry
+                final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
+                if (possibleTemporaryException.isPresent()) {
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
+                            .statusMessage(possibleTemporaryException.get().getMessage())
+                            .statusAttributeException(possibleTemporaryException.get()).create());
+                } else if (t instanceof OpProcessorException) {
                     ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
                 } else if (t instanceof TimedInterruptTimeoutException) {
                     // occurs when the TimedInterruptCustomizerProvider is in play
