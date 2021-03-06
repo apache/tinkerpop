@@ -43,6 +43,14 @@ class RemoteConnection {
   }
 
   /**
+   * Returns true if connection is open
+   * @returns {Boolean}
+   */
+  get isOpen() {
+    throw new Error('isOpen() must be implemented');
+  }
+
+  /**
    * Submits the <code>Bytecode</code> provided and returns a <code>RemoteTraversal</code>.
    * @abstract
    * @param {Bytecode} bytecode
