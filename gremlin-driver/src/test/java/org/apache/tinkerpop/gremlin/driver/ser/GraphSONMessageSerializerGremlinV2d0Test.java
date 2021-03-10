@@ -32,13 +32,16 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.ResponseMessageDeserializer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -339,7 +343,27 @@ public class GraphSONMessageSerializerGremlinV2d0Test {
         assertEquals("bytecode", m.getOp());
         assertNotNull(m.getArgs());
     }
-    
+
+    @Test
+    public void responseMessageDeserializerShouldNotFailOnCreateObjectWithNullMessage() {
+        final Map<String, Object> result = new HashMap<>();
+        result.put(SerTokens.TOKEN_DATA, null);
+        result.put(SerTokens.TOKEN_META, Collections.emptyMap());
+
+        final Map<String, Object> status = new HashMap<>();
+        status.put(SerTokens.TOKEN_MESSAGE, null);
+        status.put(SerTokens.TOKEN_CODE, 500);
+        status.put(SerTokens.TOKEN_ATTRIBUTES, Collections.emptyMap());
+
+        final Map<String, Object> data = new HashMap<>();
+        data.put(SerTokens.TOKEN_REQUEST, UUID.randomUUID().toString());
+        data.put(SerTokens.TOKEN_RESULT, result);
+        data.put(SerTokens.TOKEN_STATUS, status);
+
+        final AbstractObjectDeserializer<ResponseMessage> deserializer = new ResponseMessageDeserializer();
+        Assert.assertNotNull(deserializer.createObject(data));
+    }
+
     private void assertCommon(final ResponseMessage response) {
         assertEquals(requestId, response.getRequestId());
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());

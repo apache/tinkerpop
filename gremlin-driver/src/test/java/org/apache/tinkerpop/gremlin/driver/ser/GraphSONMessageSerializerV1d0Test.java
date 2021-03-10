@@ -43,12 +43,14 @@ import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 import org.apache.tinkerpop.shaded.jackson.databind.node.NullNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -403,7 +405,30 @@ public class GraphSONMessageSerializerV1d0Test {
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
     }
-    
+
+    @Test
+    public void shouldDeserializeResponseMessageWithNullMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final Map<String, Object> metaData = new HashMap<>();
+        metaData.put("test", UUID.randomUUID().toString());
+        final Map<String, Object> attributes = Collections.emptyMap();
+
+        final ResponseMessage response = ResponseMessage.build(id)
+                .responseMetaData(metaData)
+                .code(ResponseStatusCode.SERVER_ERROR)
+                .result("some-result")
+                .statusAttributes(attributes)
+                // explicitly pass the null value
+                .statusMessage(null)
+                .create();
+
+        final String results = SERIALIZER.serializeResponseAsString(response);
+        final ResponseMessage deserialized = SERIALIZER.deserializeResponse(results);
+        Assert.assertNotNull(SERIALIZER.getClass().getSimpleName() + " should be able to deserialize ResponseMessage "
+                        + "with null message field", deserialized);
+    }
+
     @Test
     public void shouldSerializeToJsonTree() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
