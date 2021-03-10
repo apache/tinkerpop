@@ -294,7 +294,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             final Map<String, Object> result = (Map<String, Object>) data.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
-                    .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
+                    .statusMessage(String.valueOf(status.get(SerTokens.TOKEN_MESSAGE)))
                     .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                     .result(result.get(SerTokens.TOKEN_DATA))
                     .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))

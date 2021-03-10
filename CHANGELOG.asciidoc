@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug with Javascript Groovy `Translator` when generating Gremlin with multiple embedded traversals.
 * Modified Gremlin Server `Settings` to be more extensible allowing for custom options with the YAML parser.
 * Fixed `toString()` representation of `P` when string values are present in Javascript.
+* Fixed NullPointerException in ResponseMessage deserialization for GraphSON.
 
 [[release-3-4-10]]
 === TinkerPop 3.4.10 (Release Date: January 18, 2021)
