@@ -153,6 +153,104 @@ limitations under the License.
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>all</shadedClassifierName>
+                            <artifactSet>
+                                <!-- exclude logging stuff from uberjar - shading prevents proper logger initialization -->
+                                <excludes>
+                                    <exclude>log4j:log4j</exclude>
+                                    <exclude>org.slf4j:slf4j-log4j12</exclude>
+                                    <exclude>org.slf4j:slf4j-api</exclude>
+                                    <exclude>org.slf4j:jcl-over-slf4j</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.carrotsearch</pattern>
+                                    <shadedPattern>com.shaded.carrotsearch</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.jcabi</pattern>
+                                    <shadedPattern>com.shaded.jcabi</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.squareup</pattern>
+                                    <shadedPattern>com.shaded.squareup</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.netty</pattern>
+                                    <shadedPattern>io.shaded.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.objecthunter</pattern>
+                                    <shadedPattern>net.shaded.carrotsearch</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>org.shaded.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.javatuples</pattern>
+                                    <shadedPattern>org.shaded.javatuples</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.yaml</pattern>
+                                    <shadedPattern>org.shaded.yaml</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resources>
+                                        <resource>LICENSE.txt</resource>
+                                        <resource>LICENSE</resource>
+                                        <resource>NOTICE.txt</resource>
+                                        <resource>NOTICE</resource>
+                                        <resource>licenses</resource>
+                                    </resources>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/LICENSE</resource>
+                                    <file>src/main/static/LICENSE</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/NOTICE</resource>
+                                    <file>src/main/static/NOTICE</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/jcabi-log</resource>
+                                    <file>src/main/static/licenses/jcabi-log</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/jcabi-manifests</resource>
+                                    <file>src/main/static/licenses/jcabi-manifests</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/kryo</resource>
+                                    <file>src/main/static/licenses/kryo</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/minlog</resource>
+                                    <file>src/main/static/licenses/minlog</file>
+                                </transformer>
+                            </transformers>>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
             <plugin>

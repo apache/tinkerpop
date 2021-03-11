@@ -35,6 +35,26 @@ TinkerPop now builds and is compatible with Java 11.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2076[TINKERPOP-2076]
 
+==== Shaded Java Driver
+
+The `gremlin-driver` has an additional packaging which may make it easier to upgrade for some users who may have
+extensive dependency chains.
+
+[source,xml}
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>x.y.z</version>
+   <classifier>all</classifier>
+</dependency>
+----
+
+The above dependency with the `all` classifier shades all the dependencies of `gremlin-driver` and includes
+`gremlin-core` and `tinkergraph-gremlin` in an unshaded form.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]
+
 ==== Anonymous Child Traversals
 
 TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:

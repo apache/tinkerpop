@@ -1,0 +1,28 @@
+Apache TinkerPop
+Copyright 2015-2021 The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+------------------------------------------------------------------------
+HPPC 0.7.1
+------------------------------------------------------------------------
+HPPC borrowed code, ideas or both from:
+
+ * Apache Lucene, http://lucene.apache.org/
+   (Apache license)
+ * Fastutil, http://fastutil.di.unimi.it/
+   (Apache license)
+ * Koloboke, https://github.com/OpenHFT/Koloboke
+   (Apache license)
+
+------------------------------------------------------------------------
+JavaTuples 1.2
+------------------------------------------------------------------------
+Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
+
+------------------------------------------------------------------------
+Netty 4.1.52
+------------------------------------------------------------------------
+Copyright 2014 The Netty Project
+

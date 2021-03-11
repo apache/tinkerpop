@@ -223,8 +223,6 @@ limitations under the License.
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation>
-                                    <pattern>com.google.guava</pattern>
-                                    <shadedPattern>com.shaded.google.guava</shadedPattern>
                                     <pattern>io.netty</pattern>
                                     <shadedPattern>io.shaded.netty</shadedPattern>
                                 </relocation>
