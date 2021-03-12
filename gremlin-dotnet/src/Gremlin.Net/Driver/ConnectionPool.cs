@@ -153,11 +153,11 @@ namespace Gremlin.Net.Driver
         private IConnection GetConnectionFromPool()
         {
             var connections = _connections.Snapshot;
-            if (connections.Length == 0)
+            if (connections.Length < _settings.PoolSize)
             {
                 TriggerReplacementOfDeadConnections();
-                throw new ServerUnavailableException();
             }
+            if (connections.Length == 0) throw new ServerUnavailableException();
             return TryGetAvailableConnection(connections);
         }
         

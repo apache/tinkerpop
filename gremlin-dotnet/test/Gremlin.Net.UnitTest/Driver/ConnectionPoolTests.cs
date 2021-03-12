@@ -72,7 +72,7 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
         }
-        
+
         [Fact]
         public void GetAvailableConnectionShouldEmptyPoolIfServerUnavailable()
         {
@@ -88,7 +88,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
         
         [Fact]
-        public void GetAvailableConnectionShouldTryToRefillPoolIfEmpty()
+        public void GetAvailableConnectionShouldEventuallyRefillPoolIfEmpty()
         {
             var fakeConnectionFactory = new Mock<IConnectionFactory>();
             fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
@@ -96,7 +96,8 @@ namespace Gremlin.Net.UnitTest.Driver
             var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
             fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
-            Assert.Equal(0, pool.NrConnections); // Pool is now Empty
+            // Pool is now empty
+            Assert.Equal(0, pool.NrConnections); 
             fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
             
             pool.GetAvailableConnection();
@@ -104,6 +105,27 @@ namespace Gremlin.Net.UnitTest.Driver
             AssertNrOpenConnections(pool, 3);
         }
 
+        [Fact]
+        public void GetAvailableConnectionsShouldEventuallyFillUpPoolIfNotFull()
+        {
+            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            fakeConnectionFactory.SetupSequence(m => m.CreateConnection())
+                .Returns(ClosedConnection)
+                .Returns(ClosedConnection)
+                .Returns(OpenConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
+            pool.GetAvailableConnection();
+            pool.GetAvailableConnection();
+            // Pool is now just partially filled
+            Assert.Equal(1, pool.NrConnections); 
+            
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            pool.GetAvailableConnection();
+            
+            AssertNrOpenConnections(pool, 3);
+        }
+        
         [Fact]
         public void GetAvailableConnectionShouldReplaceClosedConnections()
         {
