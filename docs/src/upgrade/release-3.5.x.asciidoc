@@ -608,6 +608,17 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2273[TINKERPOP-2273],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2455[TINKERPOP-2455],
 link:https://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrade Documentation for SSL]
 
+==== Introducing Gremlint to TinkerPop
+
+Gremlint, the JavaScript library powering gremlint.com, is now included in TinkerPop. It provides utils for formatting
+Gremlin queries, taking parameters such as indentation, max line length and dot placement into account.
+
+Until recently Gremlint has been an independent project maintained by Øyvind Sæbø, a developer at Ardoq. Ardoq has
+since donated Gremlint, as well as gremlint.com, to TinkerPop so that it can serve as TinkerPop's canonical Gremlin
+code formatter.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2530[TINKERPOP-2530]
+
 === Upgrading for Provider
 
 ==== Graph System Providers
