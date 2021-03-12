@@ -74,6 +74,37 @@ namespace Gremlin.Net.UnitTest.Driver
         }
         
         [Fact]
+        public void GetAvailableConnectionShouldEmptyPoolIfServerUnavailable()
+        {
+            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
+                .Returns(ClosedConnection).Returns(ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
+
+            Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
+                
+            Assert.Equal(0, pool.NrConnections);
+        }
+        
+        [Fact]
+        public void GetAvailableConnectionShouldTryToRefillPoolIfEmpty()
+        {
+            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
+                .Returns(ClosedConnection).Returns(ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
+            Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
+            Assert.Equal(0, pool.NrConnections); // Pool is now Empty
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            
+            pool.GetAvailableConnection();
+            
+            AssertNrOpenConnections(pool, 3);
+        }
+
+        [Fact]
         public void GetAvailableConnectionShouldReplaceClosedConnections()
         {
             var fakeConnectionFactory = new Mock<IConnectionFactory>();
@@ -198,6 +229,17 @@ namespace Gremlin.Net.UnitTest.Driver
             {
                 var fakedConnection = new Mock<IConnection>();
                 fakedConnection.Setup(f => f.IsOpen).Returns(false);
+                return fakedConnection.Object;
+            }
+        }
+        
+        private static IConnection CannotConnectConnection
+        {
+            get
+            {
+                var fakedConnection = new Mock<IConnection>();
+                fakedConnection.Setup(f => f.IsOpen).Returns(false);
+                fakedConnection.Setup(f => f.ConnectAsync()).Throws(new Exception("Cannot connect to server."));
                 return fakedConnection.Object;
             }
         }
