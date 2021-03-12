@@ -214,8 +214,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuditLogWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = retryClusterBuilder(TESTCONSOLE, 10);
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -246,8 +245,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldNotAuditLogWhenDisabled() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = retryClusterBuilder(TESTCONSOLE, 10);
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -338,11 +336,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuditLogTwoClientsWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = retryClusterBuilder(TESTCONSOLE, 10);
         final Client client = cluster.connect();
-        final Cluster cluster2 = TestClientFactory.build().jaasEntry(TESTCONSOLE2)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster2 = retryClusterBuilder(TESTCONSOLE2, 10);
         final Client client2 = cluster2.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -382,5 +378,30 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+12")));
         assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
                 item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+13")));
+    }
+
+    private Cluster retryClusterBuilder(final String jaasEntry, final int retries) throws Exception {
+        int tries = 0;
+        while (tries < retries) {
+            try {
+                return TestClientFactory.build().jaasEntry(jaasEntry).
+                        protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+            } catch (Exception ex) {
+                if (!ex.getMessage().equals("Authenticator is not ready to handle requests")) {
+                    // got an error that may not mean retry so throw
+                    throw ex;
+                }
+
+                // make the test wait a bit for the server to get kerberos settled
+                Thread.sleep(tries * 3000);
+
+                tries++;
+                logger.warn("Gremlin Server authenticator is not ready - retrying Cluster creation: {} of {} tries",
+                        tries, retries);
+            }
+        }
+
+        throw new IllegalStateException(String.format(
+                "After %s retries the Gremlin Server authenticator never became ready", retries));
     }
 }
