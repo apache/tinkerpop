@@ -1,11 +1,11 @@
 Apache TinkerPop
-Copyright 2015-2019 The Apache Software Foundation.
+Copyright 2015-2021 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ------------------------------------------------------------------------
-Apache Commons Codec 1.12 (AL ASF)
+Apache Commons Codec 1.15 (AL ASF)
 ------------------------------------------------------------------------
 src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
 contains test data from http://aspell.net/test/orig/batch0.tab.
@@ -18,7 +18,7 @@ Original source copyright:
 Copyright (c) 2008 Alexander Beider & Stephen P. Morse.
 
 ------------------------------------------------------------------------
-Apache Groovy 2.5.7 (AL ASF)
+Apache Groovy 2.5.14 (AL ASF)
 ------------------------------------------------------------------------
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
@@ -60,7 +60,7 @@ HPPC borrowed code, ideas or both from:
    (Apache license)
 
 ------------------------------------------------------------------------
-Netty 4.1.42
+Netty 4.1.52
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
