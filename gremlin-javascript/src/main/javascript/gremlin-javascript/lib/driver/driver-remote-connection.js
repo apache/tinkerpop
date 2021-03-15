@@ -59,6 +59,10 @@ class DriverRemoteConnection extends RemoteConnection {
     return this._client.open();
   }
 
+  get isOpen() {
+    return this._client.isOpen;
+  }
+
   /** @override */
   submit(bytecode) {
     let optionsStrategy = bytecode.sourceInstructions.find(

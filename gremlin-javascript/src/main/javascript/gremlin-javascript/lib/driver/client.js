@@ -66,6 +66,14 @@ class Client {
   }
 
   /**
+   * Returns true if the underlying connection is open
+   * @returns {Boolean}
+   */
+  get isOpen() {
+    return this._connection.isOpen;
+  }
+
+  /**
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
