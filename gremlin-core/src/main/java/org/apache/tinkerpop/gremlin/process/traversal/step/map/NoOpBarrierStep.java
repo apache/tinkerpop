@@ -116,4 +116,8 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
         super.reset();
         this.barrier.clear();
     }
+
+    public int getMaxBarrierSize() {
+        return maxBarrierSize;
+    }
 }
