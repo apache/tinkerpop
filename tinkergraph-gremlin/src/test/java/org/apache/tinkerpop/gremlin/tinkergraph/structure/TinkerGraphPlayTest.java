@@ -276,5 +276,10 @@ public class TinkerGraphPlayTest {
         Object o1 = g.V().map(__.V(1));
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").explain());
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").toList());
+
+        Traversal<?,?> t =
+                g.V("3").
+                        union(__.repeat(out().simplePath()).times(2).count(),
+                                __.repeat(in().simplePath()).times(2).count());
     }
 }

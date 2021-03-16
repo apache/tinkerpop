@@ -122,6 +122,7 @@ limitations under the License.
         </contributor>
     </contributors>
     <modules>
+        <module>gremlin-language</module>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
@@ -149,6 +150,7 @@ limitations under the License.
         <commons.configuration.version>2.6</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.11</commons.lang3.version>
+        <commons.text.version>1.9</commons.text.version>
         <groovy.version>2.5.14</groovy.version>
         <hadoop.version>2.7.7</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
@@ -391,6 +393,7 @@ limitations under the License.
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/incorrect-traversals.txt</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/groovy/plugin/script-customizer-*.groovy</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/jsr223/script-customizer-*.groovy</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/jsr223/script-customizer-*.groovy</exclude>

@@ -240,10 +240,10 @@ g.V().match(
       addE('friendlyCollaborator').from('a').to('b').
         property(id,23).property('project',select('c').values('name')) <5>
 g.E(23).valueMap()
-marko = g.V().has('name','marko').next()
-peter = g.V().has('name','peter').next()
-g.V(marko).addE('knows').to(peter) <6>
-g.addE('knows').from(marko).to(peter) <7>
+vMarko = g.V().has('name','marko').next()
+vPeter = g.V().has('name','peter').next()
+g.V(vMarko).addE('knows').to(vPeter) <6>
+g.addE('knows').from(vMarko).to(vPeter) <7>
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
@@ -2723,15 +2723,17 @@ the traverser never splits and continues down a single path in the graph.
 
 [gremlin-groovy,modern]
 ----
-g.V(1).repeat(local(
-         bothE().sample(1).by('weight').otherV()
-       )).times(5)
-g.V(1).repeat(local(
-         bothE().sample(1).by('weight').otherV()
-       )).times(5).path()
-g.V(1).repeat(local(
-         bothE().sample(1).by('weight').otherV()
-       )).times(10).path()
+g.V(1).
+  repeat(local(bothE().sample(1).by('weight').otherV())).
+    times(5)
+g.V(1).
+  repeat(local(bothE().sample(1).by('weight').otherV())).
+    times(5).
+  path()
+g.V(1).
+  repeat(local(bothE().sample(1).by('weight').otherV())).
+    times(10).
+  path()
 ----
 
 As a clarification, note that in the above example `local()` is not strictly required as it only does the random walk

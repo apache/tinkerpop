@@ -33,8 +33,8 @@ obvious to any programmer - use a variable:
 
 [gremlin-groovy,modern]
 ----
-marko = g.V().has('name','marko').next()
-g.V(marko).out('knows').has('age', gt(marko.value('age'))).values('name')
+vMarko = g.V().has('name','marko').next()
+g.V(vMarko).out('knows').has('age', gt(marko.value('age'))).values('name')
 ----
 
 The downside to this approach is that it takes two separate traversals to answer the question. Ideally, there should
@@ -137,9 +137,9 @@ g.addV('tank').property('name', 'a').property('amount', 100.0).as('a').
   addV('tank').property('name', 'c').property('amount', 0.0).as('c').
   addE('drain').property('factor', 0.5).from('a').to('b').
   addE('drain').property('factor', 0.1).from('b').to('c').iterate()
-a = g.V().has('name','a').next()
-g.withSack(a.value('amount')).
-  V(a).repeat(outE('drain').sack(mult).by('factor').
+vA = g.V().has('name','a').next()
+g.withSack(vA.value('amount')).
+  V(vA).repeat(outE('drain').sack(mult).by('factor').
               inV().property('amount', sack())).
        until(__.outE('drain').count().is(0)).iterate()
 g.V().elementMap()

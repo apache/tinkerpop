@@ -937,6 +937,27 @@ determine when it is considered acceptable to retry an operation.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
 
+===== gremlin-language
+
+The new `gremlin-language` module contains an ANTLR4 grammar for the Gremlin language along with the generated parser
+code. The grammar is still under development but covers most of the Gremlin language, with the idea that it will
+eventually drive the ongoing design of the language, as opposed to driving it from Java.
+
+The grammar is currently tested against the Gremlin traversals in the entire Gherkin test suite, as well as a major
+portion of the Gremlin used for examples in the Reference Documentation. The grammar has the following limitations:
+
+* It does not support lambdas or Groovy syntax
+* The following steps are not yet fully supported:
+** `withComputer()`
+** `io()`
+** `withoutStrategies()`
+** `program()`
+** `connectedComponent()`
+** `fill()` terminator step
+* `Vertex` and `Edge` instance definitions
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2533[https://issues.apache.org/jira/browse/TINKERPOP-2533]
+
 ==== Graph Driver Providers
 
 ===== TraversalOpProcessor Side-effects

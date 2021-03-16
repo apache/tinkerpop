@@ -33,7 +33,7 @@ g.addV("person").property("name","alice").
   addV("person").property("name","bob").
   addV("person").property("name","jon").
   addV("person").property("name","jack").
-  addV("person").property("name","jill")iterate()
+  addV("person").property("name","jill").iterate()
 (1..10).each {
   g.addV("product").property("name","product #${it}").iterate()
 }; []

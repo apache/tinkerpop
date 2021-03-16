@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
+* Added `gremlin-language` module.
 * Allowed the possibility for the propagation of `null` as a `Traverser` in Gremlin.
 * Exposed websocket connection status in JavaScript driver.
 * Fixed a bug where spark-gremlin was not re-attaching properties when using `dedup()`.
