@@ -66,10 +66,10 @@ namespace Gremlin.Net.Driver
                                             _client.State == WebSocketState.Aborted ||
                                             _client.State == WebSocketState.CloseSent;
 
-        public async Task SendMessageAsync(byte[] message)
+        public async Task SendMessageAsync(byte[] message, CancellationToken cancellationToken = default)
         {
             await
-                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, CancellationToken.None)
+                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, cancellationToken)
                     .ConfigureAwait(false);
         }
 

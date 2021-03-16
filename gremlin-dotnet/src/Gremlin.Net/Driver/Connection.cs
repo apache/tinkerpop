@@ -82,12 +82,12 @@ namespace Gremlin.Net.Driver
 
         public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
 
-        public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken = default)
         {
             var receiver = new ResponseHandlerForSingleRequestMessage<T>();
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
             _writeQueue.Enqueue(requestMessage);
-            BeginSendingMessages();
+            BeginSendingMessages(cancellationToken);
             return receiver.Result;
         }
 
@@ -180,20 +180,20 @@ namespace Gremlin.Net.Driver
             return Convert.ToBase64String(authBytes);
         }
 
-        private void BeginSendingMessages()
+        private void BeginSendingMessages(CancellationToken cancellationToken = default)
         {
             if (Interlocked.CompareExchange(ref _writeInProgress, 1, 0) != 0)
                 return;
-            SendMessagesFromQueueAsync().Forget();
+            SendMessagesFromQueueAsync(cancellationToken).Forget();
         }
 
-        private async Task SendMessagesFromQueueAsync()
+        private async Task SendMessagesFromQueueAsync(CancellationToken cancellationToken = default)
         {
             while (_writeQueue.TryDequeue(out var msg))
             {
                 try
                 {
-                    await SendMessageAsync(msg).ConfigureAwait(false);
+                    await SendMessageAsync(msg, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -234,14 +234,14 @@ namespace Gremlin.Net.Driver
             _callbackByRequestId.Clear();
         }
 
-        private async Task SendMessageAsync(RequestMessage message)
+        private async Task SendMessageAsync(RequestMessage message, CancellationToken cancellationToken = default)
         {
             if (_sessionEnabled)
             {
                 message = RebuildSessionMessage(message);
             }
             var serializedMsg = _messageSerializer.SerializeMessage(message);
-            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+            await _webSocketConnection.SendMessageAsync(serializedMsg, cancellationToken).ConfigureAwait(false);
         }
 
         private RequestMessage RebuildSessionMessage(RequestMessage message)

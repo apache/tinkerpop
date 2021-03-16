@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
@@ -31,7 +32,7 @@ namespace Gremlin.Net.Driver
     internal interface IConnection : IDisposable
     {
         Task ConnectAsync();
-        Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage);
+        Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken = default);
         int NrRequestsInFlight { get; }
         bool IsOpen { get; }
         Task CloseAsync();

@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
@@ -38,11 +39,12 @@ namespace Gremlin.Net.Driver
         /// </summary>
         /// <typeparam name="T">The type of the expected results.</typeparam>
         /// <param name="requestMessage">The <see cref="RequestMessage" /> to send.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>A <see cref="ResultSet{T}"/> containing the data and status attributes returned from the server.</returns>
         /// <exception cref="Exceptions.ResponseException">
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage);
+        Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken = default);
     }
 }
