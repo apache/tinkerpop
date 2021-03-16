@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
@@ -66,6 +67,9 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
+        final boolean lazyBarrierStrategyInstalled = TraversalHelper.getRootTraversal(traversal).
+                getStrategies().getStrategy(LazyBarrierStrategy.class).isPresent();
+
         for (int i = 0; i < traversal.getSteps().size(); i++) {
             if (traversal.getSteps().get(i) instanceof RepeatStep) {
                 final RepeatStep<?> repeatStep = (RepeatStep) traversal.getSteps().get(i);
@@ -82,16 +86,24 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                     for (int j = 0; j < loops; j++) {
                         TraversalHelper.insertTraversal(insertIndex, repeatTraversal.clone(), traversal);
                         insertIndex = insertIndex + repeatLength;
-                        if ((j != (loops - 1) || !(traversal.getSteps().get(insertIndex).getNextStep() instanceof Barrier)) // only add a final NoOpBarrier is subsequent step is not a barrier
-                            && !(traversal.getSteps().get(insertIndex) instanceof NoOpBarrierStep) // Don't add a barrier if this step is a barrier (prevents nested repeat adding the barrier multiple times)
-                           ) {
-                            traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE));
+
+                        // the addition of barriers is determined by the existence of LazyBarrierStrategy
+                        if (lazyBarrierStrategyInstalled) {
+                            // only add a final NoOpBarrier is subsequent step is not a barrier
+                            // Don't add a barrier if this step is a barrier (prevents nested repeat adding the barrier multiple times)
+                            Step step = traversal.getSteps().get(insertIndex);
+                            if ((j != (loops - 1) || !(step.getNextStep() instanceof Barrier)) && !(step instanceof NoOpBarrierStep)) {
+                                traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE));
+                            }
                         }
                     }
+
                     // label last step if repeat() was labeled
                     if (!repeatStep.getLabels().isEmpty())
                         TraversalHelper.copyLabels(repeatStep, traversal.getSteps().get(insertIndex), false);
-                    traversal.removeStep(i); // remove the RepeatStep
+
+                    // remove the RepeatStep
+                    traversal.removeStep(i);
                 }
             }
         }

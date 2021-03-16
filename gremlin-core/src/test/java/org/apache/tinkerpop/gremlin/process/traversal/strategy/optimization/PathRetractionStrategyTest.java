@@ -23,11 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 
@@ -56,7 +58,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.store;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
-import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,15 +68,19 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(Parameterized.class)
 public class PathRetractionStrategyTest {
+    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
+    /**
+     * Always need LazyBarrierStrategy because it will trigger barrier() additions in PathRetractionStrategy.
+     */
     private final List<TraversalStrategies> strategies = Arrays.asList(
-            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()));
+            new DefaultTraversalStrategies().addStrategies(LazyBarrierStrategy.instance(), PathRetractionStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(LazyBarrierStrategy.instance(), PathRetractionStrategy.instance(), PathProcessorStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(LazyBarrierStrategy.instance(), PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(LazyBarrierStrategy.instance(), PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()));
 
     @Parameterized.Parameter(value = 0)
-    public Traversal.Admin traversal;
+    public Traversal.Admin original;
 
     @Parameterized.Parameter(value = 1)
     public String labels;
@@ -87,14 +92,14 @@ public class PathRetractionStrategyTest {
 
     @Test
     public void doTest() {
+        final String repr = translator.translate(original.getBytecode()).getScript();
         for (final TraversalStrategies currentStrategies : this.strategies) {
-            final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
+            final Traversal.Admin<?, ?> currentTraversal = this.original.clone();
             currentTraversal.setStrategies(currentStrategies);
             currentTraversal.applyStrategies();
-            assertEquals("Using Strategies: " + currentStrategies.toString(),
-                    this.labels, getKeepLabels(currentTraversal).toString());
+            assertEquals(repr, this.labels, getKeepLabels(currentTraversal).toString());
             if (null != optimized)
-                assertEquals(currentTraversal, optimized);
+                assertEquals(repr, currentTraversal, optimized);
         }
     }
 
@@ -176,7 +181,7 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").repeat(out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
                 // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works)
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
-                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(PathRetractionStrategy.MAX_BARRIER_SIZE).out().barrier(LazyBarrierStrategy.MAX_BARRIER_SIZE).out()},
                 {__.V().as("a").out().as("b").select("a").count(), "[[]]", __.V().as("a").out().as("b").select("a").count()},
                 {__.V().as("a").out().as("b").select("a").barrier().count(), "[[]]", __.V().as("a").out().as("b").select("a").barrier().count()},
                 {__.V().as("a").out().as("b").dedup("a", "b").out(), "[[]]", __.V().as("a").out().as("b").dedup("a", "b").out()},
@@ -184,10 +189,10 @@ public class PathRetractionStrategyTest {
                 // would be nice if we could better detect select("a") with some form of look-ahead
                 {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a, b], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a")},
                 // would be nice if we could better detect select("a")/dedup("a") with some form of look-ahead
-                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a, b], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE).out().dedup("a")},
-                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a, b], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(PathRetractionStrategy.MAX_BARRIER_SIZE).out().dedup("a")},
+                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(PathRetractionStrategy.MAX_BARRIER_SIZE).out().barrier(LazyBarrierStrategy.MAX_BARRIER_SIZE).out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
-                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
+                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(PathRetractionStrategy.MAX_BARRIER_SIZE).where(P.gt("b")).barrier(PathRetractionStrategy.MAX_BARRIER_SIZE).out()},
                 {__.V().select("c").map(select("c").map(select("c"))).select("c"), "[[c], [[c], [[c]]], []]", null},
                 {__.V().select("c").map(select("c").map(select("c"))).select("b"), "[[b, c], [[b, c], [[b]]], []]", null},
                 {__.V().as("a").out().as("b").select("a").select("b").union(

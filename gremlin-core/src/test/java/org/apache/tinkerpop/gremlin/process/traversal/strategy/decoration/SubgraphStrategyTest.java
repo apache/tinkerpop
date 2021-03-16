@@ -20,21 +20,29 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -42,6 +50,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
@@ -53,24 +63,69 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
 public class SubgraphStrategyTest {
+    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @RunWith(Parameterized.class)
-    public static class ParameterizedTests {
+    public static class TraverseTest {
+        private static final GraphTraversalSource g = EmptyGraph.instance().traversal();
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {__.bothV(), 1},
+                    {__.inV(), 1},
+                    {__.outV(), 1},
+                    {__.in(), 2},
+                    {__.in("test"), 2},
+                    {__.both(), 2},
+                    {__.both("test"), 2},
+                    {__.out(), 2},
+                    {__.out("test"), 2},
+                    {__.out().inE().otherV(), 4},
+                    {g.addV(), 1},
+                    {g.V(1).addE("test"), 2},
+                    {__.in().out(), 4},
+                    {__.out().out().out(), 6},
+                    {__.in().out().in(), 6},
+                    {__.inE().outV().inE().outV(), 4}});
+        }
 
         @Parameterized.Parameter(value = 0)
-        public Traversal original;
+        public Traversal.Admin traversal;
+
+        @Parameterized.Parameter(value = 1)
+        public int expectedInsertedSteps;
+
+        @Test
+        public void shouldSubgraph() {
+            final String repr = translator.translate(traversal.getBytecode()).getScript();
+            final SubgraphStrategy strategy = SubgraphStrategy.build().edges(__.has("edge")).vertices(__.has("vertex")).create();
+            strategy.apply(traversal);
+
+            final List<TraversalFilterStep> steps = TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal);
+            assertEquals(repr, expectedInsertedSteps, steps.size());
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class MixedStrategiesTests {
+
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin original;
 
         @Parameterized.Parameter(value = 1)
         public Traversal optimized;
 
         @Test
         public void doTest() {
+            final String repr = translator.translate(original.getBytecode()).getScript();
             final TraversalStrategies originalStrategies = new DefaultTraversalStrategies();
             originalStrategies.addStrategies(SubgraphStrategy.build().
                     vertices(__.and(has("name", "marko"), has("age", 29))).
@@ -84,7 +139,7 @@ public class SubgraphStrategyTest {
             optimizedStrategies.addStrategies(InlineFilterStrategy.instance());
             this.optimized.asAdmin().setStrategies(optimizedStrategies);
             this.optimized.asAdmin().applyStrategies();
-            assertEquals(this.optimized, this.original);
+            assertEquals(repr, this.optimized, this.original);
         }
 
         @Parameterized.Parameters(name = "{0}")

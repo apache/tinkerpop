@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ReferenceElementStrategyTest {
 
-    private static final GraphTraversalSource g = traversal().withGraph(EmptyGraph.instance()).
+    private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance()).
             withStrategies(ReferenceElementStrategy.instance());
 
     @Test

@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
@@ -34,8 +36,9 @@ import java.util.Arrays;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,6 +46,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Parameterized.class)
 public class StandardVerificationStrategyTest {
+    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() throws Exception {
@@ -51,27 +55,23 @@ public class StandardVerificationStrategyTest {
 
         return Arrays.asList(new Object[][]{
                 // traversals that should fail verification
-                {"__.repeat(out().fold().unfold()).times(2)", repeat(out().fold().unfold()).times(2), false},
-                {"__.repeat(sum()).times(2)", repeat(sum()).times(2), false},
-                {"__.repeat(out().count())", repeat(out().count()), false},
-                {"__.V().profile()",
-                        __.V().profile(), true},
-                {"__.V().profile('metrics').cap('metrics')",
-                        __.V().profile("metrics").cap("metrics"), true}
+                {repeat(out().fold().unfold()).times(2), false},
+                {repeat(sum()).times(2), false},
+                {repeat(out().count()), false},
+                {__.V().profile(), true},
+                {__.V().profile("metrics").cap("metrics"), true}
         });
     }
 
     @Parameterized.Parameter(value = 0)
-    public String name;
+    public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
-    public Traversal traversal;
-
-    @Parameterized.Parameter(value = 2)
     public Boolean legalTraversal;
 
     @Test
     public void shouldBeVerified() {
+        final String repr = translator.translate(traversal.getBytecode()).getScript();
         final Traversal copy = copyAndConfigureTraversal(traversal);
 
         if (legalTraversal) {
@@ -84,9 +84,9 @@ public class StandardVerificationStrategyTest {
         } else {
             try {
                 copy.asAdmin().applyStrategies();
-                fail("The strategy should not allow traversal: " + this.traversal);
-            } catch (IllegalStateException ise) {
-                assertTrue(true);
+                fail("The strategy should not allow traversal: " + repr);
+            } catch (Exception ise) {
+                assertThat(ise, instanceOf(VerificationException.class));
             }
         }
     }

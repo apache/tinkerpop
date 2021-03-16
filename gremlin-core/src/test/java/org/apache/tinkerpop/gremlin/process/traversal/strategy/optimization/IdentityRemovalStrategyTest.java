@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,9 +40,10 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class IdentityRemovalStrategyTest {
+    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
-    public Traversal original;
+    public Traversal.Admin original;
 
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
@@ -66,8 +69,9 @@ public class IdentityRemovalStrategyTest {
 
     @Test
     public void doTest() {
+        final String repr = translator.translate(original.getBytecode()).getScript();
         applyIdentityRemovalStrategy(original);
-        assertEquals(optimized, original);
+        assertEquals(repr, optimized, original);
     }
 
     private void applyIdentityRemovalStrategy(final Traversal traversal) {

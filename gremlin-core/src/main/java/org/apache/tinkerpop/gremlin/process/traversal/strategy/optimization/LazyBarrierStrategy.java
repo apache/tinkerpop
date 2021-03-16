@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -55,7 +56,8 @@ import java.util.Set;
  */
 public final class LazyBarrierStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
+    public static final String BARRIER_PLACEHOLDER = Graph.Hidden.hide("gremlin.lazyBarrier.position");
+    public static final String BARRIER_COPY_LABELS = Graph.Hidden.hide("gremlin.lazyBarrier.copyLabels");
     private static final LazyBarrierStrategy INSTANCE = new LazyBarrierStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             CountStrategy.class,
@@ -65,7 +67,8 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             FilterRankingStrategy.class,
             InlineFilterStrategy.class,
             MatchPredicateStrategy.class,
-            EarlyLimitStrategy.class));
+            EarlyLimitStrategy.class,
+            RepeatUnrollStrategy.class));
 
     private static final int BIG_START_SIZE = 5;
     protected static final int MAX_BARRIER_SIZE = 2500;
@@ -88,11 +91,21 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
         for (int i = 0; i < traversal.getSteps().size(); i++) {
             final Step<?, ?> step = traversal.getSteps().get(i);
 
+            if (step.getLabels().contains(BARRIER_PLACEHOLDER)) {
+                TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), step, traversal);
+                step.removeLabel(BARRIER_PLACEHOLDER);
+                if (step.getLabels().contains(BARRIER_COPY_LABELS)) {
+                    step.removeLabel(BARRIER_COPY_LABELS);
+                    TraversalHelper.copyLabels(step, step.getNextStep(), true);
+                }
+            }
+
             if (step instanceof PathProcessor) {
                 final Set<String> keepLabels = ((PathProcessor) step).getKeepLabels();
                 if (null != keepLabels && keepLabels.isEmpty()) // if no more path data, then start barrier'ing again
                     labeledPath = false;
             }
+
             if (step instanceof FlatMapStep &&
                     !(step instanceof VertexStep && ((VertexStep) step).returnsEdge()) ||
                     (step instanceof GraphStep &&
@@ -115,6 +128,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                 } else
                     foundFlatMap = true;
             }
+
             if (!step.getLabels().isEmpty())
                 labeledPath = true;
 

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -36,9 +38,9 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -47,6 +49,7 @@ import static org.mockito.Mockito.mock;
 @RunWith(Parameterized.class)
 public class ElementIdStrategyTraverseTest {
     private static Traversal traversalWithAddV;
+    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     static {
         final Graph mockedGraph = mock(Graph.class);
@@ -58,45 +61,43 @@ public class ElementIdStrategyTraverseTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addV()", traversalWithAddV, 1},
-                {"addE(test).from(x)", __.addE("test").from("x"), 0},
-                {"addE(test).to(x)", __.addE("test").to("x"), 0},
-                {"addE(test).from(x).property(key,value)", __.addE("test").from("x").property("key", "value"), 0},
-                {"addE(test).to(x).property(key,value)", __.addE("test").to("x").property("key", "value"), 0},
-                {"out().id()", __.out().id(), 1},
-                {"in().id()", __.in().id(), 1},
-                {"outE().id()", __.outE().id(), 1},
-                {"inE().id()", __.inE().id(), 1},
-                {"bothE().id()", __.bothE().id(), 1},
-                {"bothE().otherV().id()", __.bothE().otherV().id(), 2},
-                {"in().out().addE(test).from(x)", __.in().out().addE("test").from("x"), 2},
-                {"in().out().addE(test).to(x)", __.in().out().addE("test").to("x"), 2},
+                {traversalWithAddV, 1},
+                {__.addE("test").from("x"), 0},
+                {__.addE("test").to("x"), 0},
+                {__.addE("test").from("x").property("key", "value"), 0},
+                {__.addE("test").to("x").property("key", "value"), 0},
+                {__.out().id(), 1},
+                {__.in().id(), 1},
+                {__.outE().id(), 1},
+                {__.inE().id(), 1},
+                {__.bothE().id(), 1},
+                {__.bothE().otherV().id(), 2},
+                {__.in().out().addE("test").from("x"), 2},
+                {__.in().out().addE("test").to("x"), 2},
         });
     }
 
     @Parameterized.Parameter(value = 0)
-    public String name;
+    public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
-    public Traversal traversal;
-
-    @Parameterized.Parameter(value = 2)
     public int expectedInsertedSteps;
 
     @Test
     public void shouldAlterTraversalToIncludeIdWhereNecessary() {
+        final String repr = translator.translate(traversal.getBytecode()).getScript();
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         strategy.apply(traversal.asAdmin());
 
         final Step step = (Step) traversal.asAdmin().getSteps().get(expectedInsertedSteps);
         if (step instanceof AddVertexStep)
-            assertTrue(((AddVertexStep) step).getParameters().contains(strategy.getIdPropertyKey()));
+            assertThat(repr, ((AddVertexStep) step).getParameters().contains(strategy.getIdPropertyKey()));
         else if (step instanceof AddVertexStartStep)
-            assertTrue(((AddVertexStartStep) step).getParameters().contains(strategy.getIdPropertyKey()));
+            assertThat(repr, ((AddVertexStartStep) step).getParameters().contains(strategy.getIdPropertyKey()));
         else if (step instanceof AddEdgeStep)
-            assertTrue(((AddEdgeStep) step).getParameters().contains(strategy.getIdPropertyKey()));
+            assertThat(repr, ((AddEdgeStep) step).getParameters().contains(strategy.getIdPropertyKey()));
         else if (step instanceof PropertiesStep)
-            assertEquals(strategy.getIdPropertyKey(), ((PropertiesStep) step).getPropertyKeys()[0]);
+            assertEquals(repr, strategy.getIdPropertyKey(), ((PropertiesStep) step).getPropertyKeys()[0]);
         else
             fail("Check test definition - the expectedInsertedSteps should be the index of the step to trigger the ID substitution");
     }

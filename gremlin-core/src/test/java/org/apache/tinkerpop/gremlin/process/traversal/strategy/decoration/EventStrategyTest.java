@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,35 +41,35 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class EventStrategyTest {
+    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
+
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addE(test).from(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x"), 1},
-                {"addE(test).from(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x").property("this", "that"), 1},
-                {"addE(test).to(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x"), 1},
-                {"addE(test).to(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x").property("this", "that"), 1},
-                {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV(), 1},
-                {"addV().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV().property("test", "that"), 1},
-                {"properties().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties().drop(), 1},
-                {"properties(k).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties("test").drop(), 1},
-                {"out().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().drop(), 1},
-                {"out(args).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).out("test").drop(), 1},
-                {"outE().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().drop(), 1},
-                {"outE().properties().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().properties().drop(), 1},
-                {"outE(args).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1}});
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x"), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x").property("this", "that"), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x"), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x").property("this", "that"), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).addV(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).addV().property("test", "that"), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).properties().drop(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).properties("test").drop(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).out().drop(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).out("test").drop(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().drop(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().properties().drop(), 1},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1}});
     }
 
     @Parameterized.Parameter(value = 0)
-    public String name;
+    public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
-    public Traversal traversal;
-
-    @Parameterized.Parameter(value = 2)
     public int expectedMutatingStepsFound;
 
     @Test
     public void shouldEventOnMutatingSteps() {
+        final String repr = translator.translate(traversal.getBytecode()).getScript();
         final MutationListener listener1 = new ConsoleMutationListener(EmptyGraph.instance());
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1).create();
@@ -79,10 +81,10 @@ public class EventStrategyTest {
                 .filter(s -> s instanceof Mutating)
                 .forEach(s -> {
                     final Mutating mutating = (Mutating) s;
-                    assertEquals(1, mutating.getMutatingCallbackRegistry().getCallbacks().size());
+                    assertEquals(repr, 1, mutating.getMutatingCallbackRegistry().getCallbacks().size());
                     mutatingStepsFound.incrementAndGet();
                 });
 
-        assertEquals(expectedMutatingStepsFound, mutatingStepsFound.get());
+        assertEquals(repr, expectedMutatingStepsFound, mutatingStepsFound.get());
     }
 }
