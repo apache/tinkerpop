@@ -1166,8 +1166,6 @@ GraphBinary is a binary serialization format suitable for object trees, designed
 both the client and the server, as well as limiting the size of the payload that is transmitted over the wire. The
 format itself is described in the link:https://tinkerpop.apache.org/docs/current/dev/io/#graphbinary[IO Documentation].
 
-IMPORTANT: GraphBinary is currently only supported on the JVM.
-
 [source,yaml]
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1 }
 

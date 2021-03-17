@@ -436,6 +436,21 @@ Gremlin.NET no longer targets .NET Standard 1.3, but only .NET Standard 2.0. Sin
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
 
+==== Gremlin.NET: GraphBinary
+
+Gremlin.NET now also supports GraphBinary. GraphSON 3 however still remains the default serialization format as
+GraphBinary should be considered experimental for this version.
+
+GraphBinary needs of course to be also enabled on the server side before it can be used in the driver. It can then be
+used like this:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Upgrade/Release35Tests.cs[tags=graphBinary]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2472[TINKERPOP-2472]
+
 ==== Gremlin.NET: New JSON Library
 
 Gremlin.NET now uses `System.Text.Json` instead of Newtonsoft.Json as `System.Text.Json` is already included in .NET
