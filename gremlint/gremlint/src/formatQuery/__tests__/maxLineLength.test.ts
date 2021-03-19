@@ -43,7 +43,7 @@ test('No line in the query should exceed the maximum line length', () => {
 
   // When wrapping occurs, the parentheses, punctuations or commas after the wrapped tokens should be included when
   // considering whether to further wrap the query. This doesn't currently work, as the following test shows
-  // https://github.com/OyvindSabo/gremlint/issues/44
+  // https://issues.apache.org/jira/browse/TINKERPOP-2539
   /*expect(
     formatQuery("g.V().hasLabel('person').where(outE('created').count().is(P.gte(2))).count()", {
       indentation: 0,
