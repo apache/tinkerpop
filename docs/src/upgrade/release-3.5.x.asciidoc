@@ -46,11 +46,11 @@ extensive dependency chains.
    <groupId>org.apache.tinkerpop</groupId>
    <artifactId>gremlin-driver</artifactId>
    <version>x.y.z</version>
-   <classifier>all</classifier>
+   <classifier>shaded</classifier>
 </dependency>
 ----
 
-The above dependency with the `all` classifier shades all the dependencies of `gremlin-driver` and includes
+The above dependency with the `shaded` classifier shades all the dependencies of `gremlin-driver` and includes
 `gremlin-core` and `tinkergraph-gremlin` in an unshaded form.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]

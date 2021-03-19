@@ -106,7 +106,7 @@ tinkergraph-gremlin which are not shaded.
    <groupId>org.apache.tinkerpop</groupId>
    <artifactId>gremlin-driver</artifactId>
    <version>x.y.z</version>
-   <classifier>all</classifier>
+   <classifier>shaded</classifier>
    <!-- The shaded JAR uses the original POM, therefore conflicts may still need resolution -->
    <exclusions>
       <exclusion>

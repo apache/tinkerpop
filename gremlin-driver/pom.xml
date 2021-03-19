@@ -164,7 +164,7 @@ limitations under the License.
                             <shadeSourcesContent>true</shadeSourcesContent>
                             <createSourcesJar>true</createSourcesJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>all</shadedClassifierName>
+                            <shadedClassifierName>shaded</shadedClassifierName>
                             <artifactSet>
                                 <!-- exclude logging stuff from uberjar - shading prevents proper logger initialization -->
                                 <excludes>
