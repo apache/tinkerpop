@@ -77,6 +77,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
 * Changed the Groovy dependency in `gremlin-driver` to a `provided` scope.
 * Added support for configuring an `Authorizer` implementation to Gremlin Server, allowing for authorization of individual gremlin requests.
+* Added `gremlint` module to house the Gremlin query formatting JavaScript library powering gremlint.com.
 * Removed internal functionality for the session close message in Gremlin Server - the message is accepted but ignored if sent.
 * Removed `Property.Exceptions.propertyValueCanNotBeNull` exception type as `null` now has meaning in Gremlin.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.
