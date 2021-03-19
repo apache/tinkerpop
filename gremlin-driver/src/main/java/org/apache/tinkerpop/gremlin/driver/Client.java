@@ -699,7 +699,10 @@ public abstract class Client {
             this.manageTransactions = settings.getSession().get().manageTransactions;
         }
 
-        String getSessionId() {
+        /**
+         * Returns the session identifier bound to this {@code Client}.
+         */
+        public String getSessionId() {
             return sessionId;
         }
 

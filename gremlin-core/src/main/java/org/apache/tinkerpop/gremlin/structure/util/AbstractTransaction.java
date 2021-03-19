@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * A simple base class for {@link Transaction} that provides some common functionality and default behavior.
@@ -34,10 +34,10 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractTransaction implements Transaction {
-    private Graph g;
+    private Graph graph;
 
-    public AbstractTransaction(final Graph g) {
-        this.g = g;
+    public AbstractTransaction(final Graph graph) {
+        this.graph = graph;
     }
 
     /**
@@ -121,6 +121,11 @@ public abstract class AbstractTransaction implements Transaction {
     @Override
     public <G extends Graph> G createThreadedTx() {
         throw Transaction.Exceptions.threadedTransactionsNotSupported();
+    }
+
+    @Override
+    public <T extends TraversalSource> T begin(final Class<T> traversalSourceClass) {
+        return graph.traversal(traversalSourceClass);
     }
 
     /**

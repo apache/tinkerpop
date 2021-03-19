@@ -97,11 +97,11 @@ public final class Tokens {
      * Implementations that set this key should consider using one of
      * these two recommended value types:
      * <ul>
-     *     <li>A {@link java.util.List} implementation containing
-     *     references for which {@link String#valueOf(Object)} produces
+     *     <li>A {@code List} implementation containing
+     *     references for which {@code String#valueOf(Object)} produces
      *     a meaningful return value.  For example, a list of strings.</li>
      *     <li>Otherwise, any single non-list object for which
-     *     {@link String#valueOf(Object)} produces a meaningful return value.
+     *     {@code String#valueOf(Object)} produces a meaningful return value.
      *     For example, a string.</li>
      * </ul>
      */
