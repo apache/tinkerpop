@@ -21,19 +21,12 @@
 
 #endregion
 
-using System;
-using System.Dynamic;
-using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
-
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
-    public abstract class StepDefinition : IDisposable
+    /// <summary>
+    /// This is the base class for all steps which we use for reflection to identify step types.
+    /// </summary>
+    public abstract class StepDefinition
     {
-        internal RemoteConnectionFactory ConnectionFactory = new RemoteConnectionFactory();
-
-        public virtual void Dispose()
-        {
-            ConnectionFactory.Dispose();
-        }
     }
 }
