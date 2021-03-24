@@ -64,19 +64,21 @@ namespace Gremlin.Net.Driver
 
             return ProxiedConnection(connection);
         }
+        
+        private bool IsHealthy => _deadConnections.IsEmpty && _connections.Count == _settings.PoolSize;
 
         private TimeSpan ComputeRetrySleepDuration(int retryAttemptNr)
         {
             return TimeSpan.FromTicks(_settings.ReconnectionBaseDelay.Ticks * (long) Math.Pow(2, retryAttemptNr));
         }
-
+        
         /// <summary>
         ///     Replaces dead connections.
         /// </summary>
         /// <returns>True if the pool was repaired, false if repairing was not necessary.</returns>
         private async Task<bool> EnsurePoolIsHealthyAsync()
         {
-            if (_deadConnections.IsEmpty) return false;
+            if (IsHealthy) return false;
             var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
             if (poolState == PoolPopulationInProgress) return false;
             try
@@ -91,7 +93,7 @@ namespace Gremlin.Net.Driver
 
             return true;
         }
-        
+
         private async Task ReplaceDeadConnectionsAsync()
         {
             RemoveDeadConnections();
@@ -151,6 +153,10 @@ namespace Gremlin.Net.Driver
         private IConnection GetConnectionFromPool()
         {
             var connections = _connections.Snapshot;
+            if (connections.Length < _settings.PoolSize)
+            {
+                TriggerReplacementOfDeadConnections();
+            }
             if (connections.Length == 0) throw new ServerUnavailableException();
             return TryGetAvailableConnection(connections);
         }
