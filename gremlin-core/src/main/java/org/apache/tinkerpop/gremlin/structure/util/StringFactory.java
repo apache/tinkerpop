@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -177,6 +178,10 @@ public final class StringFactory {
 
     public static String traversalStrategyString(final TraversalStrategy traversalStrategy) {
         return traversalStrategy.getClass().getSimpleName();
+    }
+
+    public static String traversalStrategyProxyString(final TraversalStrategyProxy traversalStrategyProxy) {
+        return traversalStrategyProxy.getStrategyClass().getSimpleName();
     }
 
     public static String translatorString(final Translator translator) {
