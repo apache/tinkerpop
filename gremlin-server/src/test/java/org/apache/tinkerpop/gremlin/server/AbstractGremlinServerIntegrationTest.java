@@ -18,7 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizerIntegrateTest;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.op.OpLoader;
+import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -96,16 +103,28 @@ public abstract class AbstractGremlinServerIntegrationTest {
         startServer(settings);
     }
 
+    private boolean shouldTestUnified() {
+        // ignore all tests in the UnifiedChannelizerIntegrateTest package as they are already rigged to test
+        // over the various channelizer implementations
+        return Boolean.parseBoolean(System.getProperty("testUnified", "false")) &&
+                !this.getClass().getPackage().equals(UnifiedChannelizerIntegrateTest.class.getPackage());
+    }
+
     public void startServer(final Settings settings) throws Exception {
         if (null == settings) {
             startServer();
         } else {
-            final Settings overridenSettings = overrideSettings(settings);
-            ServerTestHelper.rewritePathsInGremlinServerSettings(overridenSettings);
-            if (GREMLIN_SERVER_EPOLL) {
-                overridenSettings.useEpollEventLoop = true;
+            final Settings oSettings = overrideSettings(settings);
+
+            if (shouldTestUnified()) {
+                oSettings.channelizer = UnifiedChannelizer.class.getName();
             }
-            this.server = new GremlinServer(overridenSettings);
+
+            ServerTestHelper.rewritePathsInGremlinServerSettings(oSettings);
+            if (GREMLIN_SERVER_EPOLL) {
+                oSettings.useEpollEventLoop = true;
+            }
+            this.server = new GremlinServer(oSettings);
             server.start().join();
         }
     }
@@ -117,6 +136,10 @@ public abstract class AbstractGremlinServerIntegrationTest {
         ServerTestHelper.rewritePathsInGremlinServerSettings(overriddenSettings);
         if (GREMLIN_SERVER_EPOLL) {
             overriddenSettings.useEpollEventLoop = true;
+        }
+
+        if (shouldTestUnified()) {
+            overriddenSettings.channelizer = UnifiedChannelizer.class.getName();
         }
 
         this.server = new GremlinServer(overriddenSettings);

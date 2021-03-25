@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +60,16 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
 
     protected final Settings settings;
 
+    /**
+     * @deprecated As of release 3.5.0, replaced by {@link #SaslAuthenticationHandler(Authenticator, Authorizer, Settings)}.
+     */
+    @Deprecated
     public SaslAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
-        super(authenticator);
+        this(authenticator, null, settings);
+    }
+
+    public SaslAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer, final Settings settings) {
+        super(authenticator, authorizer);
         this.settings = settings;
     }
 

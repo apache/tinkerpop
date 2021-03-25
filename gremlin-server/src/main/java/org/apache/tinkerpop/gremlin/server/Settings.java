@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
@@ -195,6 +196,37 @@ public class Settings {
      * The full class name of the {@link GraphManager} to use in Gremlin Server.
      */
     public String graphManager = DefaultGraphManager.class.getName();
+
+    /**
+     * Maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts.
+     * The default is 16 and this setting only applies to the {@link UnifiedChannelizer}.
+     */
+    public int maxParameters = 16;
+
+    /**
+     * The time in milliseconds that a {@link UnifiedChannelizer} session can exist. This value cannot be extended
+     * beyond this value irrespective of the number of requests and their individual timeouts. Requests must complete
+     * within this time frame. The default is 10 minutes.
+     */
+    public long sessionLifetimeTimeout = 600000;
+
+    /**
+     * Enable the global function cache for sessions when using the {@link UnifiedChannelizer}. This setting is only
+     * relevant when {@link #useGlobalFunctionCacheForSessions} is {@code false}. When {@link true} it means that
+     * functions created in one request to a session remain available on the next request to that session.
+     */
+    public boolean useGlobalFunctionCacheForSessions = true;
+
+    /**
+     * When {@code true} and using the {@link UnifiedChannelizer} the same engine that will be used to server
+     * sessionless requests will also be use to serve sessions. The default value of {@code true} is recommended as
+     * it reduces the amount of object creation required for each session and should generally lead to better
+     * performance especially if the expectation is that there will be many sessions being created and destroyed
+     * rapidly. Setting this value to {@code false} is mostly present to support specific use cases that may require
+     * each session having its own engine or to match previous functionality provided by the older channelizers
+     * produced prior to 3.5.0.
+     */
+    public boolean useCommonEngineForSessions = true;
 
     /**
      * Configured metrics for Gremlin Server.

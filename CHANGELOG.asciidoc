@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Added a fully shaded version of `gremlin-driver`.
 * Exposed websocket connection status in JavaScript driver.
 * Fixed a bug where spark-gremlin was not re-attaching properties when using `dedup()`.
+* Fixed a bug in `WsAndHttpChannelizer` pipeline configuration where failed object aggregation could not write back HTTP responses.
 * Ensured better consistency of the use of `null` as arguments to mutation steps.
 * Added a `ResponseStatusCode` to indicate that a client should retry its request.
 * Added `TemporaryException` interface to indicate that a transaction can be retried.

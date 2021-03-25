@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +55,16 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
 
     private final Base64.Decoder decoder = Base64.getUrlDecoder();
 
+    /**
+     * @deprecated As of release 3.5.0, replaced by {@link #HttpBasicAuthenticationHandler(Authenticator, Authorizer, Settings)}.
+     */
+    @Deprecated
     public HttpBasicAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
-        super(authenticator);
+        this(authenticator, null, settings);
+    }
+
+    public HttpBasicAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer, final Settings settings) {
+        super(authenticator, authorizer);
         this.settings = settings;
     }
 

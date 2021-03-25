@@ -47,7 +47,8 @@ public class ContextTest {
 
     private final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
     private final RequestMessage request = RequestMessage.build("test").create();
-    private final Context context = new Context(request, ctx, null, null, null, null);
+    private final Settings settings = new Settings();
+    private final Context context = new Context(request, ctx, settings, null, null, null);
     private final Log4jRecordingAppender recordingAppender = new Log4jRecordingAppender();
 
     private Level originalLogLevel;

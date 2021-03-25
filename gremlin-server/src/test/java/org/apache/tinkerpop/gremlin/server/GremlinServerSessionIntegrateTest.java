@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
@@ -94,11 +95,16 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldHaveTheSessionTimeout":
             case "shouldCloseSessionOnceOnRequest":
                 settings.processors.clear();
+
+                // OpProcessor setting
                 final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
                 processorSettings.className = SessionOpProcessor.class.getCanonicalName();
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
+
+                // Unified setting
+                settings.sessionLifetimeTimeout = 3000L;
                 break;
             case "shouldCloseSessionOnClientClose":
                 clearNeo4j(settings);
@@ -106,13 +112,27 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
                 break;
+            case "shouldUseGlobalFunctionCache":
+                // OpProcessor settings are good by default
+                // UnifiedHandler settings
+                settings.useCommonEngineForSessions = false;
+                settings.useGlobalFunctionCacheForSessions = true;
+
+                break;
             case "shouldNotUseGlobalFunctionCache":
                 settings.processors.clear();
+
+                // OpProcessor settings
                 final Settings.ProcessorSettings processorSettingsForDisableFunctionCache = new Settings.ProcessorSettings();
                 processorSettingsForDisableFunctionCache.className = SessionOpProcessor.class.getCanonicalName();
                 processorSettingsForDisableFunctionCache.config = new HashMap<>();
                 processorSettingsForDisableFunctionCache.config.put(SessionOpProcessor.CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, false);
                 settings.processors.add(processorSettingsForDisableFunctionCache);
+
+                // UnifiedHandler settings
+                settings.useCommonEngineForSessions = false;
+                settings.useGlobalFunctionCacheForSessions = false;
+
                 break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
@@ -122,6 +142,11 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         }
 
         return settings;
+    }
+
+    private boolean isUsingUnifiedChannelizer() {
+        return server.getServerGremlinExecutor().
+                getSettings().channelizer.equals(UnifiedChannelizer.class.getName());
     }
 
     private static void clearNeo4j(Settings settings) {
@@ -140,8 +165,13 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         client1.close();
         cluster1.close();
 
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced\n"));
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Session shouldCloseSessionOnClientClose closed\n"));
+        // the following session close log message is no longer relevant as
+        if (isUsingUnifiedChannelizer()) {
+            assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
+        } else {
+            assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced\n"));
+            assertThat(recordingAppender.getMessages(), hasItem("INFO - Session shouldCloseSessionOnClientClose closed\n"));
+        }
 
         // try to reconnect to that session and make sure no state is there
         final Cluster clusterReconnect = TestClientFactory.open();
@@ -159,16 +189,27 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         // the commit from client1 should not have gone through so there should be no data present.
         assertEquals(0, clientReconnect.submit("graph.traversal().V().count()").all().join().get(0).getInt());
         clusterReconnect.close();
+
+        if (isUsingUnifiedChannelizer()) {
+            assertEquals(0, ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().getActiveSessionCount());
+        }
     }
 
     @Test
     public void shouldUseGlobalFunctionCache() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
+        final Client session = cluster.connect(name.getMethodName());
+        final Client client = cluster.connect();
+
+        assertEquals(3, session.submit("def sumItUp(x,y){x+y};sumItUp(1,2)").all().get().get(0).getInt());
+        assertEquals(3, session.submit("sumItUp(1,2)").all().get().get(0).getInt());
 
         try {
-            assertEquals(3, client.submit("def addItUp(x,y){x+y};addItUp(1,2)").all().get().get(0).getInt());
-            assertEquals(3, client.submit("addItUp(1,2)").all().get().get(0).getInt());
+            client.submit("sumItUp(1,2)").all().get().get(0).getInt();
+            fail("Global functions should not be cached so the call to sumItUp() should fail");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("No signature of method"));
         } finally {
             cluster.close();
         }
@@ -180,14 +221,14 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         final Client client = cluster.connect(name.getMethodName());
 
         try {
-            assertEquals(3, client.submit("def addItUp(x,y){x+y};addItUp(1,2)").all().get().get(0).getInt());
+            assertEquals(3, client.submit("def sumItUp(x,y){x+y};sumItUp(1,2)").all().get().get(0).getInt());
         } catch (Exception ex) {
             cluster.close();
             throw ex;
         }
 
         try {
-            client.submit("addItUp(1,2)").all().get().get(0).getInt();
+            client.submit("sumItUp(1,2)").all().get().get(0).getInt();
             fail("Global functions should not be cached so the call to addItUp() should fail");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
@@ -273,8 +314,12 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             cluster.close();
         }
 
-        assertEquals(1, recordingAppender.getMessages().stream()
-                .filter(msg -> msg.equals("INFO - Session shouldCloseSessionOnceOnRequest closed\n")).count());
+        if (isUsingUnifiedChannelizer()) {
+            assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
+        } else {
+            assertEquals(1, recordingAppender.getMessages().stream()
+                    .filter(msg -> msg.equals("INFO - Session shouldCloseSessionOnceOnRequest closed\n")).count());
+        }
     }
 
     @Test
@@ -308,9 +353,13 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             cluster.close();
         }
 
-        // there will be one for the timeout and a second for closing the cluster
-        assertEquals(2, recordingAppender.getMessages().stream()
-                .filter(msg -> msg.equals("INFO - Session shouldHaveTheSessionTimeout closed\n")).count());
+        if (isUsingUnifiedChannelizer()) {
+            assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
+        } else {
+            // there will be one for the timeout and a second for closing the cluster
+            assertEquals(2, recordingAppender.getMessages().stream()
+                    .filter(msg -> msg.equals("INFO - Session shouldHaveTheSessionTimeout closed\n")).count());
+        }
     }
 
     @Test

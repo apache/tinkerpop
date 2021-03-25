@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
@@ -99,6 +100,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -1645,13 +1647,57 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final CompletableFuture<List<Result>> futureThird = third.get().all();
                 final CompletableFuture<List<Result>> futureFourth = fourth.get().all();
 
-                assertFutureTimeout(futureFirst);
-                assertFutureTimeout(futureSecond);
-                assertFutureTimeout(futureThird);
-                assertFutureTimeout(futureFourth);
+                // there is slightly different assertion logic with UnifiedChannelizer given differences in session
+                // behavior where UnfiedChannelizer sessions won't continue processing in the face of a timeout and
+                // a new session will need to be created
+                if (server.getServerGremlinExecutor().getSettings().channelizer.equals(UnifiedChannelizer.class.getName())) {
+                    // first timesout and the rest get SERVER_ERROR
+                    try {
+                        futureFirst.get();
+                        fail("Should have timed out");
+                    } catch (Exception ex) {
+                        final Throwable root = ExceptionUtils.getRootCause(ex);
+                        assertThat(root, instanceOf(ResponseException.class));
+                        assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) root).getResponseStatusCode());
+                        assertThat(root.getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("250 ms")));
+                    }
+
+                    assertFutureTimeoutUnderUnified(futureSecond);
+                    assertFutureTimeoutUnderUnified(futureThird);
+                    assertFutureTimeoutUnderUnified(futureFourth);
+                } else {
+                    assertFutureTimeout(futureFirst);
+                    assertFutureTimeout(futureSecond);
+                    assertFutureTimeout(futureThird);
+                    assertFutureTimeout(futureFourth);
+                }
             }
         } finally {
             cluster.close();
+        }
+    }
+
+    private void assertFutureTimeoutUnderUnified(final CompletableFuture<List<Result>> f) {
+        try {
+            f.get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) root).getResponseStatusCode());
+            assertThat(root.getMessage(), allOf(startsWith("An earlier request"), endsWith("failed prior to this one having a chance to execute")));
+        }
+    }
+
+    private void assertFutureTimeout(final CompletableFuture<List<Result>> f) {
+        try {
+            f.get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) root).getResponseStatusCode());
+            assertThat(root.getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("250 ms")));
         }
     }
 
@@ -1778,20 +1824,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             RequestMessage requestMessage = requestMessageCaptor.getValue();
             assertEquals(overrideRequestId, requestMessage.getRequestId());
 
-    }
-
-    private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
-        try
-        {
-            futureFirst.get();
-            fail("Should have timed out");
-        }
-        catch (Exception ex)
-        {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 250 ms"));
-        }
     }
 
     @Test

@@ -36,6 +36,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -133,6 +134,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     private void configureForAuthentication(final Settings settings) {
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         authSettings.authenticator = SimpleAuthenticator.class.getName();
+        authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
 
         // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
         final Map<String,Object> authConfig = new HashMap<>();
@@ -147,7 +149,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         authSettings.authenticator = SimpleAuthenticator.class.getName();
 
         //Add basic auth handler to make sure the reflection code path works.
-        authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
+        authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
 
         // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
         final Map<String,Object> authConfig = new HashMap<>();

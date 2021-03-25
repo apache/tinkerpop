@@ -1,0 +1,283 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.server.handler;
+
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.Rexster.RexsterException;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Handler for websockets to be used with the {@link UnifiedChannelizer}.
+ */
+@ChannelHandler.Sharable
+public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> {
+    private static final Logger logger = LoggerFactory.getLogger(UnifiedHandler.class);
+
+    protected final Settings settings;
+    protected final GraphManager graphManager;
+    protected final GremlinExecutor gremlinExecutor;
+    protected final ScheduledExecutorService scheduledExecutorService;
+    protected final ExecutorService executorService;
+    protected final Channelizer channelizer;
+
+    protected final ConcurrentMap<String, Rexster> sessions = new ConcurrentHashMap<>();
+
+    /**
+     * This may or may not be the full set of invalid binding keys.  It is dependent on the static imports made to
+     * Gremlin Server.  This should get rid of the worst offenders though and provide a good message back to the
+     * calling client.
+     * <p/>
+     * Use of {@code toUpperCase()} on the accessor values of {@link T} solves an issue where the {@code ScriptEngine}
+     * ignores private scope on {@link T} and imports static fields.
+     */
+    protected static final Set<String> INVALID_BINDINGS_KEYS = new HashSet<>();
+
+    static {
+        INVALID_BINDINGS_KEYS.addAll(Arrays.asList(
+                T.id.name(), T.key.name(),
+                T.label.name(), T.value.name(),
+                T.id.getAccessor(), T.key.getAccessor(),
+                T.label.getAccessor(), T.value.getAccessor(),
+                T.id.getAccessor().toUpperCase(), T.key.getAccessor().toUpperCase(),
+                T.label.getAccessor().toUpperCase(), T.value.getAccessor().toUpperCase()));
+
+        for (Column enumItem : Column.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Order enumItem : Order.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Operator enumItem : Operator.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Scope enumItem : Scope.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Pop enumItem : Pop.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+    }
+
+    public UnifiedHandler(final Settings settings, final GraphManager graphManager,
+                          final GremlinExecutor gremlinExecutor,
+                          final ScheduledExecutorService scheduledExecutorService,
+                          final Channelizer channelizer) {
+        this.settings = settings;
+        this.graphManager = graphManager;
+        this.gremlinExecutor = gremlinExecutor;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.executorService = gremlinExecutor.getExecutorService();
+        this.channelizer = channelizer;
+    }
+
+    @Override
+    protected void channelRead0(final ChannelHandlerContext ctx, final RequestMessage msg) throws Exception {
+        try {
+            try {
+                validateRequest(msg, graphManager);
+            } catch (RexsterException we) {
+                ctx.writeAndFlush(we.getResponseMessage());
+                return;
+            }
+
+            final Optional<String> optSession = msg.optionalArgs(Tokens.ARGS_SESSION);
+            final String sessionId = optSession.orElse(UUID.randomUUID().toString());
+
+            // still using GremlinExecutor here in the Context so that this object doesn't need to immediately
+            // change, but also because GremlinExecutor/ScriptEngine config is all rigged up into the server nicely
+            // right now. when the UnifiedChannelizer is "ready" we can factor out the GremlinExecutor
+            final Context gremlinContext = new Context(msg, ctx, settings, graphManager,
+                    gremlinExecutor, scheduledExecutorService);
+
+            if (sessions.containsKey(sessionId)) {
+                final Rexster rexster = sessions.get(sessionId);
+
+                // check if the session is still accepting requests - if not block further requests
+                if (!rexster.acceptingTasks()) {
+                    final String sessionClosedMessage = String.format(
+                            "Session %s is no longer accepting requests as it has been closed", sessionId);
+                    final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(sessionClosedMessage).create();
+                    ctx.writeAndFlush(response);
+                    return;
+                }
+
+                // check if the session is bound to this channel, thus one client per session
+                if (!rexster.isBoundTo(gremlinContext.getChannelHandlerContext().channel())) {
+                    final String sessionClosedMessage = String.format("Session %s is not bound to the connecting client", sessionId);
+                    final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(sessionClosedMessage).create();
+                    ctx.writeAndFlush(response);
+                    return;
+                }
+
+                rexster.addTask(gremlinContext);
+            } else {
+                final Rexster rexster = optSession.isPresent() ?
+                        createMulti(gremlinContext, sessionId) : createSingle(gremlinContext, sessionId);
+                final Future<?> sessionFuture = executorService.submit(rexster);
+                rexster.setSessionFuture(sessionFuture);
+                sessions.put(sessionId, rexster);
+
+                // determine the max session life. for multi that's going to be "session life" and for single that
+                // will be the span of the request timeout
+                final long seto = gremlinContext.getRequestTimeout();
+                final long sessionLife = optSession.isPresent() ? settings.sessionLifetimeTimeout : seto;
+
+                // if timeout is enabled when greater than zero
+                if (seto > 0) {
+                    final ScheduledFuture<?> sessionCancelFuture =
+                            scheduledExecutorService.schedule(
+                                    () -> rexster.triggerTimeout(sessionLife, optSession.isPresent()),
+                                    sessionLife, TimeUnit.MILLISECONDS);
+                    rexster.setSessionCancelFuture(sessionCancelFuture);
+                }
+            }
+        } finally {
+            ReferenceCountUtil.release(msg);
+        }
+    }
+
+    protected void validateRequest(final RequestMessage message, final GraphManager graphManager) throws RexsterException {
+        if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
+            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", message.getOp(), Tokens.ARGS_GREMLIN);
+            throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+        }
+
+        if (message.optionalArgs(Tokens.ARGS_BINDINGS).isPresent()) {
+            final Map bindings = (Map) message.getArgs().get(Tokens.ARGS_BINDINGS);
+            if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
+                final String msg = String.format("The [%s] message is using one or more invalid binding keys - they must be of type String and cannot be null", Tokens.OPS_EVAL);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(bindings.keySet().iterator(), INVALID_BINDINGS_KEYS::contains));
+            if (!badBindings.isEmpty()) {
+                final String msg = String.format("The [%s] message supplies one or more invalid parameters key of [%s] - these are reserved names.", Tokens.OPS_EVAL, badBindings);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            // ignore control bindings that get passed in with the "#jsr223" prefix - those aren't used in compilation
+            if (IteratorUtils.count(IteratorUtils.filter(bindings.keySet().iterator(), k -> !k.toString().startsWith("#jsr223"))) > settings.maxParameters) {
+                final String msg = String.format("The [%s] message contains %s bindings which is more than is allowed by the server %s configuration",
+                        Tokens.OPS_EVAL, bindings.size(), settings.maxParameters);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+        }
+
+        // bytecode must have an alias defined
+        if (message.getOp().equals(Tokens.OPS_BYTECODE)) {
+            final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
+            if (!aliases.isPresent()) {
+                final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            if (aliases.get().size() != 1 || !aliases.get().containsKey(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS)) {
+                final String msg = String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment named '%s'.",
+                        Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            final String traversalSourceBindingForAlias = aliases.get().values().iterator().next();
+            if (!graphManager.getTraversalSourceNames().contains(traversalSourceBindingForAlias)) {
+                final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", traversalSourceBindingForAlias, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+        }
+    }
+
+    @Override
+    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) throws Exception {
+        // only need to handle this event if the idle monitor is on
+        if (!channelizer.supportsIdleMonitor()) return;
+
+        if (evt instanceof IdleStateEvent) {
+            final IdleStateEvent e = (IdleStateEvent) evt;
+
+            // if no requests (reader) then close, if no writes from server to client then ping. clients should
+            // periodically ping the server, but coming from this direction allows the server to kill channels that
+            // have dead clients on the other end
+            if (e.state() == IdleState.READER_IDLE) {
+                logger.info("Closing channel - client is disconnected after idle period of " + settings.idleConnectionTimeout + " " + ctx.channel().id().asShortText());
+                ctx.close();
+            } else if (e.state() == IdleState.WRITER_IDLE && settings.keepAliveInterval > 0) {
+                logger.info("Checking channel - sending ping to client after idle period of " + settings.keepAliveInterval + " " + ctx.channel().id().asShortText());
+                ctx.writeAndFlush(channelizer.createIdleDetectionMessage());
+            }
+        }
+    }
+
+    protected Rexster createSingle(final Context gremlinContext, final String sessionId) {
+        return new SingleRexster(gremlinContext, sessionId, sessions);
+    }
+
+    protected Rexster createMulti(final Context gremlinContext, final String sessionId) {
+        return new MultiRexster(gremlinContext, sessionId, sessions);
+    }
+
+    public boolean isActiveSession(final String sessionId) {
+        return sessions.containsKey(sessionId);
+    }
+
+    public int getActiveSessionCount() {
+        return sessions.size();
+    }
+}

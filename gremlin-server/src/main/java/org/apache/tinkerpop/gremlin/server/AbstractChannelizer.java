@@ -50,6 +50,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -98,6 +99,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public static final String PIPELINE_AUTHORIZER = "authorizer";
     public static final String PIPELINE_REQUEST_HANDLER = "request-handler";
     public static final String PIPELINE_HTTP_RESPONSE_ENCODER = "http-response-encoder";
+    public static final String PIPELINE_HTTP_AGGREGATOR = "http-aggregator";
     public static final String PIPELINE_WEBSOCKET_SERVER_COMPRESSION = "web-socket-server-compression-handler";
 
     protected static final String PIPELINE_SSL = "ssl";
@@ -182,10 +184,29 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings settings) {
         try {
             final Class<?> clazz = Class.forName(settings.authentication.authenticationHandler);
-            final Class[] constructorArgs = new Class[2];
-            constructorArgs[0] = Authenticator.class;
-            constructorArgs[1] = Settings.class;
-            return (AbstractAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator, settings);
+            AbstractAuthenticationHandler aah;
+            try {
+                // the three arg constructor is the new form as a handler may need the authorizer in some cases
+                final Class<?>[] threeArgForm = new Class[]{Authenticator.class, Authorizer.class, Settings.class};
+                final Constructor<?> twoArgConstructor = clazz.getDeclaredConstructor(threeArgForm);
+                return (AbstractAuthenticationHandler) twoArgConstructor.newInstance(authenticator, authorizer, settings);
+            } catch (Exception threeArgEx) {
+                try {
+                    // the two arg constructor is the "old form" that existed prior to Authorizers. should probably
+                    // deprecate this form
+                    final Class<?>[] twoArgForm = new Class[]{Authenticator.class, Settings.class};
+                    final Constructor<?> twoArgConstructor = clazz.getDeclaredConstructor(twoArgForm);
+
+                    if (authorizer != null) {
+                        logger.warn("There is an authorizer configured but the {} does not have a constructor of ({}, {}, {}) so it cannot be added",
+                                clazz.getName(), Authenticator.class.getSimpleName(), Authorizer.class.getSimpleName(), Settings.class.getSimpleName());
+                    }
+
+                    return (AbstractAuthenticationHandler) twoArgConstructor.newInstance(authenticator, settings);
+                } catch (Exception twoArgEx) {
+                    throw twoArgEx;
+                }
+            }
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
             throw new IllegalStateException(String.format("Could not create/configure AuthenticationHandler %s", settings.authentication.authenticationHandler), ex);

@@ -31,10 +31,10 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -81,7 +81,7 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
         rootLogger.addAppender(recordingAppender);
 
         try {
-            final String moduleBaseDir = System.getProperty("basedir");
+            final String moduleBaseDir = System.getProperty("basedir", ".");
             final String authConfigName = moduleBaseDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf";
             System.setProperty("java.security.auth.login.config", authConfigName);
             kdcServer = new KdcFixture(moduleBaseDir);
@@ -139,6 +139,7 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
                 settings.host = "localhost";
                 settings.channelizer = HttpChannelizer.class.getName();
                 authSettings.authenticator = SimpleAuthenticator.class.getName();
+                authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
                 authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
                 break;
         }
