@@ -405,6 +405,10 @@ limitations under the License.
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/site/home/gremlint/build/**</exclude>
+                        <exclude>docs/site/home/gremlint/node_modules/**</exclude>
+                        <exclude>docs/site/home/gremlint/public/CNAME</exclude>
+                        <exclude>docs/site/home/gremlint/.prettierrc</exclude>
                         <exclude>**/Debug/**</exclude>
                         <exclude>**/Release/**</exclude>
                         <exclude>**/obj/**</exclude>
@@ -422,13 +426,9 @@ limitations under the License.
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
-                        <exclude>**/gremlint/gremlint/lib/**</exclude>
-                        <exclude>**/gremlint/gremlint/node_modules/**</exclude>
-                        <exclude>**/gremlint/gremlint/.prettierrc</exclude>
-                        <exclude>**/gremlint/gremlint.com/build/**</exclude>
-                        <exclude>**/gremlint/gremlint.com/node_modules/**</exclude>
-                        <exclude>**/gremlint/gremlint.com/public/CNAME</exclude>
-                        <exclude>**/gremlint/gremlint.com/.prettierrc</exclude>
+                        <exclude>**/gremlint/lib/**</exclude>
+                        <exclude>**/gremlint/node_modules/**</exclude>
+                        <exclude>**/gremlint/.prettierrc</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
