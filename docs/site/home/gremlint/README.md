@@ -21,7 +21,7 @@
 
 ### What is [gremlint.com](https://gremlint.com)?
 
-[Gremlint](https://github.com/OyvindSabo/gremlint) is a code formatting library which parses Gremlin queries and rewrites them to adhere to certain styling rules.
+[Gremlint](https://github.com/apache/tinkerpop/tree/master/gremlint) is a code formatting library which parses Gremlin queries and rewrites them to adhere to certain styling rules.
 
 [Gremlint.com](https://gremlint.com) is a website which utilizes the Gremlint library to give users an online "living" style guide for Gremlin queries. It also serves as a platform for showcasing the features of Gremlint.
 

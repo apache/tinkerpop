@@ -111,7 +111,7 @@ console.log(formattedQuery);
 
 ### Just looking for an online Gremlin query formatter?
 
-https://gremlint.com is a website which utilizes the Gremlint library to give users an online "living" style guide for Gremlin queries. It also serves as a platform for showcasing the features of Gremlint. Its source code is available [here](https://github.com/OyvindSabo/gremlint.com).
+https://gremlint.com is a website which utilizes the Gremlint library to give users an online "living" style guide for Gremlin queries. It also serves as a platform for showcasing the features of Gremlint. Its source code is available [here](https://github.com/apache/tinkerpop/tree/master/docs/site/home/gremlint).
 ![Gremlint V2 Screenshot](https://user-images.githubusercontent.com/25663729/88488518-f078ac00-cf8d-11ea-9e1c-01edec285751.png)
 
 ### For contributors
