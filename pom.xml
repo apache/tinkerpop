@@ -525,7 +525,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>1.5.5</version>
+                    <version>1.5.8</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
