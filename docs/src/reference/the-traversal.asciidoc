@@ -3080,6 +3080,14 @@ sg.E()
 
 <1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
 
+The above example is purposely brief so as to focus on `subgraph()` usage, however, it may not be the most optimal
+method for constructing the subgraph. For instance, if the graph had cycles, it would attempt to reconstruct parts
+of the subgraph which are already present. The duplicates would not be created, but it would involve some unnecessary
+processing. If the only interest of the traversal was to populate the subgraph, it would be better to include
+`simplePath()` to filter out those cycles, as in `__.inE().subgraph('subGraph').outV().simplePath()`. From another
+perspective, it might also make some sense to use `dedup()` to avoid traversing the same vertices repeatedly where
+two vertices shared the multiple edges between them, as in `__.inE().dedup().subgraph('subGraph').outV().dedup()`.
+
 There can be multiple `subgraph()` calls within the same traversal. Each operating against either the same graph
 (i.e. same side-effect key) or different graphs (i.e. different side-effect keys).
 
