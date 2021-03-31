@@ -23,6 +23,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -54,6 +55,7 @@ import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -107,6 +109,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 settings.sessionLifetimeTimeout = 3000L;
                 break;
             case "shouldCloseSessionOnClientClose":
+            case "shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions":
                 clearNeo4j(settings);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
@@ -144,11 +147,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         return settings;
     }
 
-    private boolean isUsingUnifiedChannelizer() {
-        return server.getServerGremlinExecutor().
-                getSettings().channelizer.equals(UnifiedChannelizer.class.getName());
-    }
-
     private static void clearNeo4j(Settings settings) {
         deleteDirectory(new File("/tmp/neo4j"));
         settings.graphs.put("graph", "conf/neo4j-empty.properties");
@@ -179,6 +177,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
         // should get an error because "x" is not defined as this is a new session
         try {
+            clientReconnect.submit("y=100").all().join();
             clientReconnect.submit("x").all().join();
             fail("Should not have been successful as 'x' was only defined in the old session");
         } catch(Exception ex) {
@@ -188,11 +187,60 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
         // the commit from client1 should not have gone through so there should be no data present.
         assertEquals(0, clientReconnect.submit("graph.traversal().V().count()").all().join().get(0).getInt());
+
+        // must turn on maintainStateAfterException for unified channelizer
+        if (!isUsingUnifiedChannelizer()) {
+            assertEquals(100, clientReconnect.submit("y").all().join().get(0).getInt());
+        }
+
         clusterReconnect.close();
 
         if (isUsingUnifiedChannelizer()) {
             assertEquals(0, ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().getActiveSessionCount());
         }
+    }
+
+    @Test
+    public void shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions() throws Exception {
+        assumeNeo4jIsPresent();
+        assumeThat("Must use UnifiedChannelizer", isUsingUnifiedChannelizer(), is(true));
+
+        final Cluster cluster1 = TestClientFactory.open();
+        final Client client1 = cluster1.connect(name.getMethodName());
+        client1.submit("x = 1").all().join();
+        client1.submit("graph.addVertex()").all().join();
+        client1.close();
+        cluster1.close();
+
+        assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
+
+        // try to reconnect to that session and make sure no state is there
+        final Cluster clusterReconnect = TestClientFactory.open();
+
+        // this configures the client to behave like OpProcessor for UnifiedChannelizer
+        final Client.SessionSettings settings = Client.SessionSettings.build().
+                sessionId(name.getMethodName()).maintainStateAfterException(true).create();
+        final Client clientReconnect = clusterReconnect.connect(Client.Settings.build().useSession(settings).create());
+
+        // should get an error because "x" is not defined as this is a new session
+        try {
+            clientReconnect.submit("y=100").all().join();
+            clientReconnect.submit("x").all().join();
+            fail("Should not have been successful as 'x' was only defined in the old session");
+        } catch(Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("No such property"));
+        }
+
+        // the commit from client1 should not have gone through so there should be no data present.
+        assertEquals(0, clientReconnect.submit("graph.traversal().V().count()").all().join().get(0).getInt());
+
+        // since maintainStateAfterException is enabled the UnifiedChannelizer works like OpProcessor
+        assertEquals(100, clientReconnect.submit("y").all().join().get(0).getInt());
+
+        clusterReconnect.close();
+
+        assertEquals(0, ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().getActiveSessionCount());
     }
 
     @Test
@@ -280,8 +328,11 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             client.submit("graph.addVertex(); graph.tx().commit()").all().get();
         }
 
+
         // the transaction is managed so a rollback should have executed
         assertEquals(1, client.submit("g.V().count()").all().get().get(0).getInt());
+
+        cluster.close();
     }
 
     @Test

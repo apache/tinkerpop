@@ -50,6 +50,11 @@ public interface Rexster extends Runnable {
     void setSessionFuture(final Future<?> f);
 
     /**
+     * Sets a reference to the all powerful thread that is running this Rexster.
+     */
+    void setSessionThread(final Thread t);
+
+    /**
      * Provides a general way to tell Rexster that it has exceeded some timeout condition.
      */
     void triggerTimeout(final long timeout, boolean causedBySession);

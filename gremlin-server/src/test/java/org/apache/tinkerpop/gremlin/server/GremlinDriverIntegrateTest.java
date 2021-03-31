@@ -42,7 +42,6 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
@@ -100,7 +99,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -1615,7 +1613,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
 
         try {
-            final Client client = cluster.connect(name.getMethodName());
+            // this configures the client to behave like OpProcessor for UnifiedChannelizer
+            final Client.SessionSettings settings = Client.SessionSettings.build().
+                    sessionId(name.getMethodName()).maintainStateAfterException(true).create();
+            final Client client = cluster.connect(Client.Settings.build().useSession(settings).create());
 
             for (int index = 0; index < 50; index++) {
                 final CompletableFuture<ResultSet> first = client.submitAsync(
@@ -1647,45 +1648,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final CompletableFuture<List<Result>> futureThird = third.get().all();
                 final CompletableFuture<List<Result>> futureFourth = fourth.get().all();
 
-                // there is slightly different assertion logic with UnifiedChannelizer given differences in session
-                // behavior where UnfiedChannelizer sessions won't continue processing in the face of a timeout and
-                // a new session will need to be created
-                if (server.getServerGremlinExecutor().getSettings().channelizer.equals(UnifiedChannelizer.class.getName())) {
-                    // first timesout and the rest get SERVER_ERROR
-                    try {
-                        futureFirst.get();
-                        fail("Should have timed out");
-                    } catch (Exception ex) {
-                        final Throwable root = ExceptionUtils.getRootCause(ex);
-                        assertThat(root, instanceOf(ResponseException.class));
-                        assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) root).getResponseStatusCode());
-                        assertThat(root.getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("250 ms")));
-                    }
-
-                    assertFutureTimeoutUnderUnified(futureSecond);
-                    assertFutureTimeoutUnderUnified(futureThird);
-                    assertFutureTimeoutUnderUnified(futureFourth);
-                } else {
-                    assertFutureTimeout(futureFirst);
-                    assertFutureTimeout(futureSecond);
-                    assertFutureTimeout(futureThird);
-                    assertFutureTimeout(futureFourth);
-                }
+                assertFutureTimeout(futureFirst);
+                assertFutureTimeout(futureSecond);
+                assertFutureTimeout(futureThird);
+                assertFutureTimeout(futureFourth);
             }
         } finally {
             cluster.close();
-        }
-    }
-
-    private void assertFutureTimeoutUnderUnified(final CompletableFuture<List<Result>> f) {
-        try {
-            f.get();
-            fail("Should have timed out");
-        } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) root).getResponseStatusCode());
-            assertThat(root.getMessage(), allOf(startsWith("An earlier request"), endsWith("failed prior to this one having a chance to execute")));
         }
     }
 

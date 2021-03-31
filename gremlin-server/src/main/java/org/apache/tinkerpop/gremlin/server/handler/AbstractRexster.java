@@ -67,6 +67,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -84,34 +85,50 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(AbstractRexster.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
+    private final boolean sessionIdOnRequest;
     private final Channel initialChannel;
     private final boolean transactionManaged;
     private final String sessionId;
     private final AtomicReference<ScheduledFuture<?>> sessionCancelFuture = new AtomicReference<>();
     private final AtomicReference<Future<?>> sessionFuture = new AtomicReference<>();
-    private long actualTimeoutLength = 0;
-    private boolean actualTimeoutCausedBySession = false;
+    private long actualTimeoutLengthWhenClosed = 0;
+    private Thread sessionThread;
+    protected final boolean maintainStateAfterException;
+    protected final AtomicReference<CloseReason> closeReason = new AtomicReference<>();
     protected final GraphManager graphManager;
     protected final ConcurrentMap<String, Rexster> sessions;
     protected final Set<String> aliasesUsedByRexster = new HashSet<>();
 
+    protected enum CloseReason { UNDETERMINED, CHANNEL_CLOSED, SESSION_TIMEOUT, REQUEST_TIMEOUT, NORMAL }
+
     AbstractRexster(final Context gremlinContext, final String sessionId,
-                    final boolean transactionManaged, final ConcurrentMap<String, Rexster> sessions) {
+                    final boolean transactionManaged,
+                    final ConcurrentMap<String, Rexster> sessions) {
+        // this only applies to sessions
+        this.maintainStateAfterException = (boolean) gremlinContext.getRequestMessage().
+                optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION).orElse(false);
+        this.sessionIdOnRequest = gremlinContext.getRequestMessage().optionalArgs(Tokens.ARGS_SESSION).isPresent();
         this.transactionManaged = transactionManaged;
         this.sessionId = sessionId;
         this.initialChannel = gremlinContext.getChannelHandlerContext().channel();
 
         // close Rexster if the channel closes to cleanup and close transactions
         this.initialChannel.closeFuture().addListener(f -> {
-            // cancel session worker or it will keep waiting for items to appear in the session queue
-            final Future<?> sf = sessionFuture.get();
-            if (sf != null && !sf.isDone()) {
-                sf.cancel(true);
+            if (closeReason.compareAndSet(null, CloseReason.CHANNEL_CLOSED)) {
+                // cancel session worker or it will keep waiting for items to appear in the session queue
+                cancel(true);
+                close();
             }
-            close();
         });
         this.sessions = sessions;
         this.graphManager = gremlinContext.getGraphManager();
+    }
+
+    protected synchronized void cancel(final boolean mayInterruptIfRunning) {
+        final FutureTask<?> sf = (FutureTask) sessionFuture.get();
+        if (sf != null && !sf.isDone()) {
+            sf.cancel(mayInterruptIfRunning);
+        }
     }
 
     public boolean isTransactionManaged() {
@@ -126,16 +143,20 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         return channel == initialChannel;
     }
 
-    public long getActualTimeoutLength() {
-        return actualTimeoutLength;
+    public long getActualTimeoutLengthWhenClosed() {
+        return actualTimeoutLengthWhenClosed;
     }
 
-    public boolean isActualTimeoutCausedBySession() {
-        return actualTimeoutCausedBySession;
+    public Optional<CloseReason> getCloseReason() {
+        return Optional.ofNullable(closeReason.get());
     }
 
     public GremlinScriptEngine getScriptEngine(final Context context, final String language) {
         return context.getGremlinExecutor().getScriptEngineManager().getEngineByName(language);
+    }
+
+    public void setSessionThread(final Thread runner) {
+        this.sessionThread = runner;
     }
 
     @Override
@@ -156,9 +177,16 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         // for final cleanup
         final Future<?> f = sessionFuture.get();
         if (f != null && !f.isDone()) {
-            actualTimeoutCausedBySession = causedBySession;
-            actualTimeoutLength = timeout;
-            sessionFuture.get().cancel(true);
+            if (closeReason.compareAndSet(null, causedBySession ? CloseReason.SESSION_TIMEOUT : CloseReason.REQUEST_TIMEOUT)) {
+                actualTimeoutLengthWhenClosed = timeout;
+
+                // if caused by a session timeout for a session OR if it is a request timeout for a sessionless
+                // request then we can just straight cancel() the Rexster instance
+                if (causedBySession || !sessionIdOnRequest)
+                    cancel(true);
+                else
+                    sessionThread.interrupt();
+            }
         }
     }
 
@@ -224,11 +252,22 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         if (root instanceof InterruptedException ||
                 root instanceof TraversalInterruptedException ||
                 root instanceof InterruptedIOException) {
-            final String msg = actualTimeoutCausedBySession ?
-                    String.format("Session closed - %s - sessionLifetimeTimeout of %s ms exceeded", sessionId, actualTimeoutLength) :
-                    String.format("Evaluation exceeded timeout threshold of %s ms", actualTimeoutLength);
+            String msg = "Processing interrupted but the reason why was not known";
+            switch (closeReason.get()) {
+                case CHANNEL_CLOSED:
+                    msg = "Processing interrupted because the channel was closed";
+                    break;
+                case SESSION_TIMEOUT:
+                    msg = String.format("Session closed - %s - sessionLifetimeTimeout of %s ms exceeded", sessionId, actualTimeoutLengthWhenClosed);
+                    break;
+                case REQUEST_TIMEOUT:
+                    msg = String.format("Evaluation exceeded timeout threshold of %s ms", actualTimeoutLengthWhenClosed);
+                    break;
+            }
+            final ResponseStatusCode code = closeReason.get() == CloseReason.SESSION_TIMEOUT || closeReason.get() == CloseReason.REQUEST_TIMEOUT ?
+                    ResponseStatusCode.SERVER_ERROR_TIMEOUT : ResponseStatusCode.SERVER_ERROR;
             throw new RexsterException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
-                    .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                    .code(code)
                     .statusMessage(msg).create());
         }
 

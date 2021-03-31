@@ -76,6 +76,10 @@ public class Context {
         return requestTimeout;
     }
 
+    public boolean isFinalResponseWritten() {
+        return this.finalResponseWritten.get();
+    }
+
     public RequestContentType getRequestContentType() {
         return requestContentType;
     }

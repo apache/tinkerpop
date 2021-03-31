@@ -161,6 +161,11 @@ public abstract class AbstractGremlinServerIntegrationTest {
         OpLoader.reset();
     }
 
+    protected boolean isUsingUnifiedChannelizer() {
+        return server.getServerGremlinExecutor().
+                getSettings().channelizer.equals(UnifiedChannelizer.class.getName());
+    }
+
     public static boolean deleteDirectory(final File directory) {
         if (directory.exists()) {
             final File[] files = directory.listFiles();

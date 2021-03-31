@@ -88,6 +88,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -365,6 +366,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProduceProperExceptionOnTimeout() throws Exception {
+        // this test will not work quite right on UnifiedChannelizer
+        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
+
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 

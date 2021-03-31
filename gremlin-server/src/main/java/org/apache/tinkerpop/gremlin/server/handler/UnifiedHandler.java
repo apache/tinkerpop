@@ -149,19 +149,19 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             if (sessions.containsKey(sessionId)) {
                 final Rexster rexster = sessions.get(sessionId);
 
-                // check if the session is still accepting requests - if not block further requests
-                if (!rexster.acceptingTasks()) {
-                    final String sessionClosedMessage = String.format(
-                            "Session %s is no longer accepting requests as it has been closed", sessionId);
+                // check if the session is bound to this channel, thus one client per session
+                if (!rexster.isBoundTo(gremlinContext.getChannelHandlerContext().channel())) {
+                    final String sessionClosedMessage = String.format("Session %s is not bound to the connecting client", sessionId);
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                             .statusMessage(sessionClosedMessage).create();
                     ctx.writeAndFlush(response);
                     return;
                 }
 
-                // check if the session is bound to this channel, thus one client per session
-                if (!rexster.isBoundTo(gremlinContext.getChannelHandlerContext().channel())) {
-                    final String sessionClosedMessage = String.format("Session %s is not bound to the connecting client", sessionId);
+                // check if the session is still accepting requests - if not block further requests
+                if (!rexster.acceptingTasks()) {
+                    final String sessionClosedMessage = String.format(
+                            "Session %s is no longer accepting requests as it has been closed", sessionId);
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                             .statusMessage(sessionClosedMessage).create();
                     ctx.writeAndFlush(response);
@@ -199,6 +199,30 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", message.getOp(), Tokens.ARGS_GREMLIN);
             throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+        }
+
+        if (message.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
+            final Optional<Object> mtx = message.optionalArgs(Tokens.ARGS_MANAGE_TRANSACTION);
+            if (mtx.isPresent() && !(mtx.get() instanceof Boolean)) {
+                final String msg = String.format("%s argument must be of type boolean", Tokens.ARGS_MANAGE_TRANSACTION);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            final Optional<Object> msae = message.optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION);
+            if (msae.isPresent() && !(msae.get() instanceof Boolean)) {
+                final String msg = String.format("%s argument must be of type boolean", Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+        } else {
+            if (message.optionalArgs(Tokens.ARGS_MANAGE_TRANSACTION).isPresent()) {
+                final String msg = String.format("%s argument only applies to requests made for sessions", Tokens.ARGS_MANAGE_TRANSACTION);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            if (message.optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION).isPresent()) {
+                final String msg = String.format("%s argument only applies to requests made for sessions", Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION);
+                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
         }
 
         if (message.optionalArgs(Tokens.ARGS_BINDINGS).isPresent()) {

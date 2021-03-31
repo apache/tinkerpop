@@ -87,7 +87,6 @@ public class MultiRexster extends AbstractRexster {
 
     @Override
     public void addTask(final Context gremlinContext) {
-        // todo: explicitly reject request???
         if (acceptingTasks())
             queue.offer(gremlinContext);
     }
@@ -96,33 +95,48 @@ public class MultiRexster extends AbstractRexster {
     public void run() {
         // there must be one item in the queue at least since addTask() gets called before the worker
         // is ever started
-        Context gremlinContext = queue.poll();
-        if (null == gremlinContext)
+        Context currentGremlinContext = queue.poll();
+        if (null == currentGremlinContext)
             throw new IllegalStateException(String.format("Worker has no initial context for session: %s", getSessionId()));
 
         try {
-            startTransaction(gremlinContext);
+            startTransaction(currentGremlinContext);
             try {
                 while (true) {
                     // schedule timeout for the current request from the queue
-                    final long seto = gremlinContext.getRequestTimeout();
+                    final long seto = currentGremlinContext.getRequestTimeout();
                     requestCancelFuture = scheduledExecutorService.schedule(
                             () -> this.triggerTimeout(seto, false),
                             seto, TimeUnit.MILLISECONDS);
 
-                    process(gremlinContext);
+                    // only stop processing stuff in the queue if this Rexster isn't configured to hold state between
+                    // exceptions (i.e. the old OpProcessor way) or if this Rexster is closing down by certain death
+                    // (i.e. channel close or lifetime session timeout)
+                    try {
+                        process(currentGremlinContext);
+                    } catch (RexsterException ex) {
+                        if (!maintainStateAfterException || closeReason.get() == CloseReason.CHANNEL_CLOSED ||
+                            closeReason.get() == CloseReason.SESSION_TIMEOUT) {
+                            throw ex;
+                        }
+
+                        // reset the close reason as we are maintaining state
+                        closeReason.set(null);
+
+                        logger.warn(ex.getMessage(), ex);
+                        currentGremlinContext.writeAndFlush(ex.getResponseMessage());
+                    }
 
                     // work is done within the timeout period so cancel it
                     cancelRequestTimeout();
 
-                    gremlinContext = queue.take();
+                    currentGremlinContext = queue.take();
                 }
             } catch (Exception ex) {
-                // stop accepting requests on this worker since it is heading to close()
-                ending.set(true);
+                stopAcceptingRequests();
 
                 // the current context gets its exception handled...
-                handleException(gremlinContext, ex);
+                handleException(currentGremlinContext, ex);
             }
         } catch (RexsterException rexex) {
             // remaining work items in the queue are ignored since this worker is closing. must send
@@ -134,7 +148,7 @@ public class MultiRexster extends AbstractRexster {
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusMessage(String.format(
                                 "An earlier request [%s] failed prior to this one having a chance to execute",
-                                gremlinContext.getRequestMessage().getRequestId())).create());
+                                currentGremlinContext.getRequestMessage().getRequestId())).create());
             }
 
             // exception should trigger a rollback in the session. a more focused rollback may have occurred
@@ -142,15 +156,25 @@ public class MultiRexster extends AbstractRexster {
             // the request
             closeTransactionSafely(Transaction.Status.ROLLBACK);
 
-            logger.warn(rexex.getMessage(), rexex);
-            gremlinContext.writeAndFlush(rexex.getResponseMessage());
+            // the current context could already be completed with SUCCESS and we're just waiting for another
+            // one to show up while a timeout occurs or the channel closes. in these cases, this would be a valid
+            // close in all likelihood so there's no reason to log or alert the client as the client already has
+            // the best answer
+            if (!currentGremlinContext.isFinalResponseWritten()) {
+                logger.warn(rexex.getMessage(), rexex);
+                currentGremlinContext.writeAndFlush(rexex.getResponseMessage());
+            }
         } finally {
-            close();
+            // if this is a normal end to the session or if the session life timeout is exceeded then the
+            // session needs to be removed and everything cleaned up
+            if (closeReason.compareAndSet(null, CloseReason.NORMAL) || closeReason.get() == CloseReason.SESSION_TIMEOUT) {
+                close();
+            }
         }
     }
 
     @Override
-    public synchronized void close() {
+    public void close() {
         ending.set(true);
         cancelRequestTimeout();
         super.close();
@@ -160,6 +184,11 @@ public class MultiRexster extends AbstractRexster {
     private void cancelRequestTimeout() {
         if (requestCancelFuture != null && !requestCancelFuture.isDone())
             requestCancelFuture.cancel(true);
+    }
+
+    private void stopAcceptingRequests() {
+        ending.set(true);
+        cancel(true);
     }
 
     @Override
