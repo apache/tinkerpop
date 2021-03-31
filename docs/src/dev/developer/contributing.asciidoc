@@ -75,10 +75,10 @@ old content.
 
 For both types of documentation, changes can be submitted via pull request. For project documentation, TinkerPop has
 a robust documentation system that is based on link:http://asciidoc.org/[asciidoc]. The content can be found in the
-link:https://github.com/apache/tinkerpop/tree/master/docs/src[docs/src]. Recall that this documentation is version
-specific, so consider the appropriate branch on which to submit the pull request so that the documentation is reflective
-of the version it is tied to. To view generated documentation locally, read more about environment configurations in
-the <<documentation-environment,Documentation Environment>> section.
+link:https://github.com/apache/tinkerpop/tree/master/docs/src[docs/src]. Documentation is version specific, so consider
+the appropriate branch on which to submit the pull request so that the documentation is reflective of the version it is
+tied to. To view generated documentation locally, read more about environment configurations in the
+<<documentation-environment,Documentation Environment>> and <<documentation, Contributor Documentation>> sections.
 
 For web site changes, the process is largely the same except that the documentation system is HTML based instead of
 Asciidoc. The content can be found in the source control tree at link:https://github.com/apache/tinkerpop/tree/master/docs/site[docs/site].

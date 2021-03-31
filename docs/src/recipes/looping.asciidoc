@@ -82,8 +82,8 @@ If the desired output is to get each vertex and its associated depth this can be
 ----
 g.withSack(1).V('A').
   repeat(both().simplePath().
-    sack(assign).by(loops())
-  ).emit().
+         sack(assign).by(loops())).
+    emit().
   project('vertex', 'depth').
     by().
     by(sack())
@@ -95,9 +95,11 @@ this can be accomplished with this traversal.
 [gremlin-groovy,existing]
 ----
 g.V('A').
-  repeat(both().simplePath().group('x').
-    by(loops())
-  ).emit().times(3).
+  repeat(both().simplePath().
+         group('x').
+           by(loops())).
+    emit().
+    times(3).
   cap('x')
 ----
 
