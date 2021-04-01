@@ -178,7 +178,7 @@ public class MultiRexster extends AbstractRexster {
         ending.set(true);
         cancelRequestTimeout();
         super.close();
-        logger.info("Session {} closed", getSessionId());
+        logger.debug("Session {} closed", getSessionId());
     }
 
     private void cancelRequestTimeout() {

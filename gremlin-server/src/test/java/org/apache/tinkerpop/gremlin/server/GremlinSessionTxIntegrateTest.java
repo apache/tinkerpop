@@ -214,8 +214,9 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
 
-        // need to open significantly more sessions that we have threads in gremlinPool
-        final int numberOfSessions = 500;
+        // need to open significantly more sessions that we have threads in gremlinPool. if we go too obscene on
+        // OpProcessor this test will take too long
+        final int numberOfSessions = isUsingUnifiedChannelizer() ? 1000 : 100;
         for (int ix = 0; ix < numberOfSessions; ix ++) {
             final Transaction tx = g.tx();
             final GraphTraversalSource gtx = tx.begin();
