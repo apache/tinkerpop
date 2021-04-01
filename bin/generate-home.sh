@@ -23,12 +23,21 @@ cd `dirname $0`/..
 rm -rf target/site/home
 mkdir -p target/site/
 
+pushd docs/gremlint
+
+npm install
+npm run build
+
+popd
+
 hash rsync 2> /dev/null
 
 if [ $? -eq 0 ]; then
   rsync -avq docs/site/home target/site --exclude template
+  rsync -avq docs/gremlint/build/ target/site/home/gremlint
 else
   cp -R docs/site/home target/site
+  cp -R docs/gremlint/build/. target/site/home/gremlint
   rm -rf target/site/home/template
 fi
 

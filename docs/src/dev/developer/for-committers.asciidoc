@@ -766,8 +766,13 @@ Cause: link:https://github.com/asciidoctor/asciidoctor/issues/1514[#1514]
 The content for the TinkerPop home page and related pages that make up the web site at link://tinkerpop.apache.org[tinkerpop.apache.org]
 is stored in the git repository under `/docs/site`. In this way, it becomes easier for the community to provide content
 presented there, because the content can be accepted via the standard workflow of a pull request. To generate the site
-for local viewing, run `bin/generate-home.sh`, which will build the site in `target/site/`. PMC members can officially
-publish the site with `bin/publish-home.sh <username>`.
+for local viewing, run `bin/generate-home.sh`, which will build the site in `target/site/`. Note that Node.js and npm
+have to be installed in order for the script to work. See the <<nodejs-environment,JavaScript Environment>> section for
+more info about what parts of TinkerPop depend on Node.js and npm. While most of the generated website files can be
+viewed locally by opening them in a browser, some of them rely on imported resources that will be blocked by the
+browser's same-origin policy if not served from a single origin using a web server. The generated website can be served
+locally by running `npx serve target/site/home`. PMC members can officially publish the site with
+`bin/publish-home.sh <username>`.
 
 "Publishing" does not publish documentation (e.g. reference docs, javadocs, etc) and only publishes what is generated
 from the content in `/docs/site`. Publishing the site can be performed out of band with the release cycle and is no
