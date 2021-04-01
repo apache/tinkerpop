@@ -45,6 +45,7 @@ from gremlin_python import __version__
 version = __version__.version
 
 install_requires = [
+    'aiohttp>=3.7.0,<=3.7.4',
     'aenum>=1.4.5,<3.0.0',
     'tornado>=6.0',
     'six>=1.10.0,<2.0.0',
