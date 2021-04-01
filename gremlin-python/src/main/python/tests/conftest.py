@@ -132,7 +132,7 @@ def remote_connection_authenticated(request):
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
                                                  username='stephen', password='password',
                                                  message_serializer=serializer.GraphSONSerializersV2d0(),
-                                                 transport_factory=lambda: TornadoTransport(ssl_options=ssl_opts))
+                                                 transport_factory=lambda: AiohttpTransport(ssl_options=ssl_opts))
         elif request.param == 'kerberos':
             remote_conn = DriverRemoteConnection(kerberos_url, 'gmodern', kerberized_service=kerberized_service,
                                                  message_serializer=serializer.GraphSONSerializersV2d0())
