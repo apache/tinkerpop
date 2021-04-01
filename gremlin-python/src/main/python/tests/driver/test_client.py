@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import asyncio
 import threading
 import uuid
 
@@ -25,8 +26,8 @@ from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph
-from gremlin_python.driver.tornado.transport import TornadoTransport
-from tornado.util import TimeoutError
+from gremlin_python.driver.aiohttp.transport import AiohttpTransport
+from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -91,16 +92,17 @@ def test_client_connection_pool_after_error(client):
         assert client.available_pool_size == 1
 
 
-def test_client_side_timeout_set_for_tornado(client):
+def test_client_side_timeout_set_for_aiohttp(client):
     client = Client('ws://localhost:45940/gremlin', 'gmodern',
-                    transport_factory=lambda: TornadoTransport(read_timeout=1, write_timeout=1))
+                    transport_factory=lambda: AiohttpTransport(read_timeout=1, write_timeout=1))
 
     try:
         # should fire an exception
         client.submit('Thread.sleep(2000);1').all().result()
         assert False
-    except TimeoutError as toerr:
-        assert str(toerr) == "Operation timed out after 1 seconds"
+    except TimeoutError as err:
+        # asyncio TimeoutError has no message.
+        assert str(err) == ""
 
 
 def test_client_bytecode(client):
@@ -348,3 +350,14 @@ def test_big_result_set_secure(authenticated_client):
     for result in result_set:
         results += result
     assert len(results) == 10000
+
+
+async def asyncio_func():
+    return 1
+
+
+def test_asyncio(client):
+    try:
+        asyncio.get_event_loop().run_until_complete(asyncio_func())
+    except RuntimeError:
+        assert False

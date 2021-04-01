@@ -54,17 +54,17 @@ class Client:
         self._sessionEnabled = (session != "")
         if transport_factory is None:
             try:
-                from gremlin_python.driver.tornado.transport import (
-                    TornadoTransport)
+                from gremlin_python.driver.aiohttp.transport import (
+                    AiohttpTransport)
             except ImportError:
-                raise Exception("Please install Tornado or pass"
+                raise Exception("Please install AIOHTTP or pass"
                                 "custom transport factory")
             else:
-                transport_factory = lambda: TornadoTransport(
+                def transport_factory(): return AiohttpTransport(
                     max_content_length=max_content_length)
         self._transport_factory = transport_factory
         if protocol_factory is None:
-            protocol_factory = lambda: protocol.GremlinServerWSProtocol(
+            def protocol_factory(): return protocol.GremlinServerWSProtocol(
                 self._message_serializer,
                 username=self._username,
                 password=self._password,
