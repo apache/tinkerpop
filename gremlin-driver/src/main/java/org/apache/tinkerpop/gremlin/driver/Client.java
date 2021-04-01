@@ -360,7 +360,7 @@ public abstract class Client {
      * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
      */
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
-        if (isClosing()) throw new IllegalStateException("Client has been closed");
+        if (isClosing()) throw new IllegalStateException("Client is closed");
 
         if (!initialized)
             init();
@@ -655,19 +655,19 @@ public abstract class Client {
             return client.chooseConnection(msg);
         }
 
-        /**
-         * Prevents messages from being sent from this {@code Client}. Note that calling this method does not call
-         * close on the {@code Client} that created it.
-         */
+        @Override
+        public void close() {
+            client.close();
+        }
+
         @Override
         public synchronized CompletableFuture<Void> closeAsync() {
-            close.complete(null);
-            return close;
+            return client.closeAsync();
         }
 
         @Override
         public boolean isClosing() {
-            return close.isDone();
+            return client.isClosing();
         }
 
         /**

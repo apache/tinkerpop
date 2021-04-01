@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-0]]
 === TinkerPop 3.5.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-This release also includes changes from <<release-3-4-3, 3.4.3>>.
+This release also includes changes from <<release-3-4-11, 3.4.11>>.
 
 * Added `gremlin-language` module.
 * Allowed the possibility for the propagation of `null` as a `Traverser` in Gremlin.
@@ -44,6 +44,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Allowed additional arguments to `Client.submit()` in Javascript driver to enable setting of parameters like `scriptEvaluationTimeout`.
 * Gremlin.Net driver no longer supports skipping deserialization by default. Users can however create their own `IMessageSerializer` if they need this functionality.
 * Supported deserialization of `dict` and `list` as a key in a `dict` for Python.
+* Changed the aliased `Client` to proxy `close()` methods to its underlying client.
 * Added support for remote `g.tx()` usage.
 * Added support for bytecode-based sessions.
 * Added a `Graph.Feature` for `supportsNullPropertyValues`.

@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.io.File;
@@ -188,7 +189,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
         gtx.addV("person").iterate();
         assertEquals(1, (long) gtx.V().count().next());
-        gtx.tx().close();
+        gtx.close();
         assertThat(gtx.tx().isOpen(), is(false));
 
         // sessionless connections should still be good - close() should not affect that
@@ -202,6 +203,38 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldOpenAndCloseObsceneAmountOfSessions() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        // need to open significantly more sessions that we have threads in gremlinPool
+        final int numberOfSessions = 500;
+        for (int ix = 0; ix < numberOfSessions; ix ++) {
+            final Transaction tx = g.tx();
+            final GraphTraversalSource gtx = tx.begin();
+            try {
+                final Vertex v1 = gtx.addV("person").property("pid", ix + "a").next();
+                final Vertex v2 = gtx.addV("person").property("pid", ix + "b").next();
+                gtx.addE("knows").from(v1).to(v2).iterate();
+                tx.commit();
+            } catch (Exception ex) {
+                tx.rollback();
+                fail("Should not expect any failures");
+            } finally {
+                assertThat(tx.isOpen(), is(false));
+            }
+        }
+
+        // sessionless connections should still be good - close() should not affect that
+        assertEquals(numberOfSessions * 2, (long) g.V().count().next());
+        assertEquals(numberOfSessions, (long) g.E().count().next());
 
         cluster.close();
     }

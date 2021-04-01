@@ -1702,7 +1702,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
-            assertEquals("Client has been closed", root.getMessage());
+            assertEquals("Client is closed", root.getMessage());
         }
 
         try {
@@ -1711,7 +1711,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
-            assertEquals("Client has been closed", root.getMessage());
+            assertEquals("Client is closed", root.getMessage());
         }
 
         try {
@@ -1720,7 +1720,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
-            assertEquals("Client has been closed", root.getMessage());
+            assertEquals("Client is closed", root.getMessage());
         }
 
         try {
@@ -1729,7 +1729,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
-            assertEquals("Client has been closed", root.getMessage());
+            assertEquals("Client is closed", root.getMessage());
         }
 
         try {
@@ -1738,7 +1738,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
-            assertEquals("Client has been closed", root.getMessage());
+            assertEquals("Client is closed", root.getMessage());
         }
 
         // allow call to close() even though closed through cluster
