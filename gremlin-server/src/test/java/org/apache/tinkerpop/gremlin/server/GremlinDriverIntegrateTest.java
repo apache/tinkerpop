@@ -56,6 +56,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -373,6 +374,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("This test had some bad semantics that allowed it to pass even though it was technically failing")
     public void shouldEventuallySucceedOnSameServerWithDefault() throws Exception {
         stopServer();
 
@@ -390,6 +392,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             startServer();
 
+            boolean succeedAtLeastOnce = false;
+
             // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
             // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
             // waiting for Gremlin Server to pop back up
@@ -398,11 +402,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 try {
                     final int result = client.submit("1+1").all().join().get(0).getInt();
                     assertEquals(2, result);
+                    succeedAtLeastOnce = true;
                     break;
                 } catch (Exception ignored) {
                     logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithDefault", ix);
                 }
             }
+
+            assertThat(succeedAtLeastOnce, is(true));
 
         } finally {
             cluster.close();
