@@ -60,7 +60,7 @@ jobs:
       name: "gremlin server"
     - script:
         - "mvn clean install -q -DskipTests -Dci"
-        - "travis_wait 60 mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -DtestUnified=true"
+        - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -DtestUnified=true"
       name: "gremlin server - unified"
     - script:
         - "mvn clean install -q -DskipTests -Dci"

@@ -21,6 +21,7 @@
 # Changes to this file need to be appropriately replicated to
 #
 # - docker/gremlin-server/gremlin-server-integration.yaml
+# - docker/gremlin-server/gremlin-server-integration-krb5.yaml
 # - docker/gremlin-server/gremlin-server-integration-secure.yaml
 #
 # Without such changes, the test docker server can't be started for independent
@@ -61,6 +62,7 @@ processors:
   - { className: org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor, config: {}}
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
+gremlinPool: 8
 strictTransactionManagement: false
 idleConnectionTimeout: 0
 keepAliveInterval: 0

@@ -48,6 +48,7 @@ processors:
   - { className: org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor, config: {}}
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
+gremlinPool: 8
 strictTransactionManagement: false
 idleConnectionTimeout: 0
 keepAliveInterval: 0
