@@ -62,7 +62,7 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 TIP: To host Neo4j in <<gremlin-server,Gremlin Server>>, the dependencies must first be "installed" or otherwise
 copied to the Gremlin Server path. The automated method for doing this would be to execute
 `bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin x.y.z`. Once installed, the Gremlin Server
-configuration file must be edited to include the `Neo4jGremlinPlugin` as shown in `conf/gremlin-server.neo4j`.
+configuration file must be edited to include the `Neo4jGremlinPlugin` as shown in `conf/gremlin-server-neo4j.yaml`.
 
 === Indices
 
