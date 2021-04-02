@@ -588,7 +588,7 @@ public class GraphSONMessageSerializerV2d0Test {
         logger.setLevel(previousLevel);
     }
 
-    private ResponseMessage convert(final Object toSerialize, MessageSerializer serializer) throws SerializationException {
+    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }

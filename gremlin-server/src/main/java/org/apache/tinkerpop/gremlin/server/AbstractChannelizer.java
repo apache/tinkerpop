@@ -107,7 +107,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected static final String GREMLIN_ENDPOINT = "/gremlin";
 
-    protected final Map<String, MessageSerializer> serializers = new HashMap<>();
+    protected final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
 
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
@@ -237,7 +237,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 if (clazz.getAnnotation(Deprecated.class) != null)
                     logger.warn("The {} serialization class is deprecated.", config.className);
 
-                final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+                final MessageSerializer<?> serializer = (MessageSerializer) clazz.newInstance();
                 final Map<String, Graph> graphsDefinedAtStartup = new HashMap<>();
                 for (String graphName : settings.graphs.keySet()) {
                     graphsDefinedAtStartup.put(graphName, graphManager.getGraph(graphName));
@@ -258,7 +258,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                         Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
         ).forEach(pair -> {
             final String mimeType = pair.getValue0();
-            final MessageSerializer serializer = pair.getValue1();
+            final MessageSerializer<?> serializer = pair.getValue1();
             if (serializers.containsKey(mimeType))
                 logger.info("{} already has {} configured - it will not be replaced by {}, change order of serialization configuration if this is not desired.",
                         mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());

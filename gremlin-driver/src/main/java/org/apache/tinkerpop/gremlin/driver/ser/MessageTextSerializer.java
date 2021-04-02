@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface MessageTextSerializer extends MessageSerializer {
+public interface MessageTextSerializer<M> extends MessageSerializer<M> {
     public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException;
 
     public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException;

@@ -48,7 +48,7 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMessageSerializer {
+public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMessageSerializer<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV2d0.class);
 
     protected ObjectMapper mapper;
@@ -145,6 +145,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
                 .version(GraphSONVersion.V2_0);
     }
 
+    @Override
     public ObjectMapper getMapper() {
         return this.mapper;
     }

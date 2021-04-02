@@ -96,7 +96,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     /**
      * Serializers for the response.
      */
-    private final Map<String, MessageSerializer> serializers;
+    private final Map<String, MessageSerializer<?>> serializers;
 
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
@@ -104,7 +104,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     private static final Pattern pattern = Pattern.compile("(.*);q=(.*)");
 
-    public HttpGremlinEndpointHandler(final Map<String, MessageSerializer> serializers,
+    public HttpGremlinEndpointHandler(final Map<String, MessageSerializer<?>> serializers,
                                       final GremlinExecutor gremlinExecutor,
                                       final GraphManager graphManager,
                                       final Settings settings) {
@@ -146,7 +146,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
-            final Pair<String, MessageTextSerializer> serializer = chooseSerializer(acceptString);
+            final Pair<String, MessageTextSerializer<?>> serializer = chooseSerializer(acceptString);
             if (null == serializer) {
                 HttpHandlerUtil.sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString),
                         keepAlive);
@@ -308,7 +308,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         return bindings;
     }
 
-    private Pair<String, MessageTextSerializer> chooseSerializer(final String acceptString) {
+    private Pair<String, MessageTextSerializer<?>> chooseSerializer(final String acceptString) {
         final List<Pair<String, Double>> ordered = Stream.of(acceptString.split(",")).map(mediaType -> {
             // parse out each mediaType with its params - keeping it simple and just looking for "quality".  if
             // that value isn't there, default it to 1.0.  not really validating here so users better get their
@@ -322,7 +322,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             // super useful for gremlin server really.
             final String accept = p.getValue0().equals("*/*") ? "application/json" : p.getValue0();
             if (serializers.containsKey(accept))
-                return Pair.with(accept, (MessageTextSerializer) serializers.get(accept));
+                return Pair.with(accept, (MessageTextSerializer<?>) serializers.get(accept));
         }
 
         return null;

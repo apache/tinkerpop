@@ -42,9 +42,14 @@ import java.util.ServiceLoader;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface MessageSerializer {
+public interface MessageSerializer<M> {
 
     static final Logger logger = LoggerFactory.getLogger(MessageSerializer.class);
+
+    /**
+     * Gets the "mapper" that performs the underlying serialization work.
+     */
+    M getMapper();
 
     /**
      * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.

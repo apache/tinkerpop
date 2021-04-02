@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * @deprecated As of release 3.4.3, replaced by {@link GraphBinaryMessageSerializerV1}.
  */
 @Deprecated
-public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageSerializer {
+public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageSerializer<Kryo> {
     private GryoMapper gryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override
@@ -72,6 +72,11 @@ public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageS
      */
     public AbstractGryoMessageSerializerV3d0(final GryoMapper kryo) {
         this.gryoMapper = kryo;
+    }
+
+    @Override
+    public Kryo getMapper() {
+        return kryoThreadLocal.get();
     }
 
     /**

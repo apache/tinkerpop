@@ -72,6 +72,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Bumped to Spark 3.0.0.
 * Bumped to Jackson 2.11.x.
 * Supported build for Java 11.
+* Added `MessageSerializer.getMapper()` to return the underlying object that handles serialization for a particular implementation.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
 * Added a kerberos KDC to the docker container for testing GLV's.

@@ -39,9 +39,9 @@ import java.util.List;
 public final class WebSocketGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
     private final boolean binaryEncoding;
 
-    private final MessageSerializer serializer;
+    private final MessageSerializer<?> serializer;
 
-    public WebSocketGremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer serializer) {
+    public WebSocketGremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer<?> serializer) {
         this.binaryEncoding = binaryEncoding;
         this.serializer = serializer;
     }
@@ -53,7 +53,7 @@ public final class WebSocketGremlinRequestEncoder extends MessageToMessageEncode
                 final ByteBuf encodedMessage = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
                 objects.add(new BinaryWebSocketFrame(encodedMessage));
             } else {
-                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
                 objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
             }
         } catch (Exception ex) {

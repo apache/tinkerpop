@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.RequestMessageSerializer;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
+public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<GraphBinaryMapper> {
 
     public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_BUILDER = "builder";
@@ -57,6 +58,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private GraphBinaryWriter writer;
     private RequestMessageSerializer requestSerializer;
     private ResponseMessageSerializer responseSerializer;
+    private GraphBinaryMapper mapper;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.
@@ -68,6 +70,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     public GraphBinaryMessageSerializerV1(final TypeSerializerRegistry registry) {
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
+        mapper = new GraphBinaryMapper(writer, reader);
 
         requestSerializer = new RequestMessageSerializer();
         responseSerializer = new ResponseMessageSerializer();
@@ -75,6 +78,11 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     public GraphBinaryMessageSerializerV1(final TypeSerializerRegistry.Builder builder) {
         this(builder.create());
+    }
+
+    @Override
+    public GraphBinaryMapper getMapper() {
+        return mapper;
     }
 
     @Override

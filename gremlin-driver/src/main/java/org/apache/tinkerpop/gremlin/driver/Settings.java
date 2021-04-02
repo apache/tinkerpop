@@ -419,9 +419,9 @@ final class Settings {
          */
         public Map<String, Object> config = null;
 
-        public MessageSerializer create() throws Exception {
+        public MessageSerializer<?> create() throws Exception {
             final Class<?> clazz = Class.forName(className);
-            final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+            final MessageSerializer<?> serializer = (MessageSerializer<?>) clazz.newInstance();
             Optional.ofNullable(config).ifPresent(c -> serializer.configure(c, null));
             return serializer;
         }

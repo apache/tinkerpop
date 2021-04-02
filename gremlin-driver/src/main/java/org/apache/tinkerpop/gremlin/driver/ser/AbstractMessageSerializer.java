@@ -33,7 +33,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractMessageSerializer implements MessageSerializer {
+public abstract class AbstractMessageSerializer<M> implements MessageSerializer<M> {
     public static final String TOKEN_IO_REGISTRIES = "ioRegistries";
 
     /**

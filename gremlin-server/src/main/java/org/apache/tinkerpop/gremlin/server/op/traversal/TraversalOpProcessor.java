@@ -288,7 +288,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
-        final MessageSerializer serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
+        final MessageSerializer<?> serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = nettyContext.channel().attr(StateKey.USE_BINARY).get();
         boolean warnOnce = false;
 

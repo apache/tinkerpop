@@ -85,7 +85,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
-        final MessageSerializer serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
+        final MessageSerializer<?> serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = nettyContext.channel().attr(StateKey.USE_BINARY).get();
         boolean warnOnce = false;
 
@@ -281,7 +281,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     }
 
     protected static Frame makeFrame(final Context ctx, final RequestMessage msg,
-                                     final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
+                                     final MessageSerializer<?> serializer, final boolean useBinary, final List<Object> aggregate,
                                      final ResponseStatusCode code, final Map<String,Object> responseMetaData,
                                      final Map<String,Object> statusAttributes) throws Exception {
         try {
@@ -296,7 +296,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
-                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
                 return new Frame(textSerializer.serializeResponseAsString(ResponseMessage.build(msg)
                         .code(code)
                         .statusAttributes(statusAttributes)

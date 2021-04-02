@@ -42,9 +42,9 @@ import java.util.Map;
 public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     private static final Logger logger = LoggerFactory.getLogger(WsGremlinTextRequestDecoder.class);
 
-    private final Map<String, MessageSerializer> serializers;
+    private final Map<String, MessageSerializer<?>> serializers;
 
-    public WsGremlinTextRequestDecoder(final Map<String, MessageSerializer> serializers) {
+    public WsGremlinTextRequestDecoder(final Map<String, MessageSerializer<?>> serializers) {
         this.serializers = serializers;
     }
 
@@ -52,7 +52,7 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
         try {
             // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
-            final MessageTextSerializer serializer = (MessageTextSerializer) select("application/json", ServerSerializers.DEFAULT_TEXT_SERIALIZER);
+            final MessageTextSerializer<?> serializer = (MessageTextSerializer<?>) select("application/json", ServerSerializers.DEFAULT_TEXT_SERIALIZER);
 
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed
@@ -67,7 +67,7 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
         }
     }
 
-    private MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
+    private MessageSerializer<?> select(final String mimeType, final MessageSerializer<?> defaultSerializer) {
         if (logger.isWarnEnabled() && !serializers.containsKey(mimeType))
             logger.warn("Gremlin Server is not configured with a serializer for the requested mime type [{}] - using {} by default",
                     mimeType, defaultSerializer.getClass().getName());

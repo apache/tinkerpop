@@ -37,6 +37,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -65,7 +66,7 @@ public class WebSocketClient extends AbstractClient {
         try {
             final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
                     uri, WebSocketVersion.V13, null, true, EmptyHttpHeaders.INSTANCE, 65536), 10000);
-            final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
+            final MessageSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override

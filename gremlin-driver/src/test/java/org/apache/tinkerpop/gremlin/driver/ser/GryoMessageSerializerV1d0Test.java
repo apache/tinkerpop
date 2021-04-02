@@ -91,7 +91,7 @@ public class GryoMessageSerializerV1d0Test {
     public String name;
 
     @Parameterized.Parameter(value = 1)
-    public Supplier<MessageSerializer> serializerSupplier;
+    public Supplier<MessageSerializer<?>> serializerSupplier;
 
     private static final Map<String, Object> configForText = new HashMap<String, Object>() {{
         put(GryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
@@ -107,7 +107,7 @@ public class GryoMessageSerializerV1d0Test {
             put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Collections.singletonList(ColorIoRegistry.class.getName()));
         }};
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(config, null);
 
         final ResponseMessage toSerialize = ResponseMessage.build(requestId).result(Color.RED).create();
@@ -124,7 +124,7 @@ public class GryoMessageSerializerV1d0Test {
             put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Collections.singletonList(ColorIoRegistryInstance.class.getName()));
         }};
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(config, null);
 
         final ResponseMessage toSerialize = ResponseMessage.build(requestId).result(Color.RED).create();
@@ -141,7 +141,7 @@ public class GryoMessageSerializerV1d0Test {
             put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Collections.singletonList(ColorIoRegistryGetInstance.class.getName()));
         }};
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(config, null);
 
         final ResponseMessage toSerialize = ResponseMessage.build(requestId).result(Color.RED).create();
@@ -158,7 +158,7 @@ public class GryoMessageSerializerV1d0Test {
             put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplier.class.getName());
         }};
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(config, null);
 
         try {
@@ -175,7 +175,7 @@ public class GryoMessageSerializerV1d0Test {
             put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplierAsInstance.class.getName());
         }};
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(config, null);
 
         try {
@@ -192,7 +192,7 @@ public class GryoMessageSerializerV1d0Test {
             put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplierAsGetInstance.class.getName());
         }};
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(config, null);
 
         try {
@@ -362,7 +362,7 @@ public class GryoMessageSerializerV1d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         final ByteBuf bb = serializer.serializeResponseAsBinary(response, allocator);
         final ResponseMessage deserialized = serializer.deserializeResponse(bb);
 
@@ -396,7 +396,7 @@ public class GryoMessageSerializerV1d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer<Kryo> binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             put("bufferSize", 1);
         }};
@@ -431,7 +431,7 @@ public class GryoMessageSerializerV1d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer<Kryo> binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             // set to bufferSize < total message size but still greater than any individual object requires
             put("bufferSize", 50);
@@ -453,7 +453,7 @@ public class GryoMessageSerializerV1d0Test {
                 .addArg("test", "this")
                 .create();
 
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         final ByteBuf bb = serializer.serializeRequestAsBinary(request, allocator);
         final int mimeLen = bb.readByte();
         bb.readBytes(new byte[mimeLen]);
@@ -475,7 +475,7 @@ public class GryoMessageSerializerV1d0Test {
                 .addArg("test", "this")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer<Kryo> binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             put("bufferSize", 1);
         }};
@@ -500,7 +500,7 @@ public class GryoMessageSerializerV1d0Test {
                 .addArg("test", "this")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer<Kryo> binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             // set to bufferSize < total message size but still greater than any individual object requires
             put("bufferSize", 50);
@@ -649,13 +649,13 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     private ResponseMessage convertBinary(final Object toSerialize) throws SerializationException {
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }
 
     private ResponseMessage convertText(final Object toSerialize) throws SerializationException {
-        final MessageSerializer serializer = serializerSupplier.get();
+        final MessageSerializer<?> serializer = serializerSupplier.get();
         serializer.configure(configForText, null);
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
