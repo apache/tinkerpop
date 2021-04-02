@@ -145,6 +145,10 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
                 .version(GraphSONVersion.V2_0);
     }
 
+    public ObjectMapper getMapper() {
+        return this.mapper;
+    }
+
     public final static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
