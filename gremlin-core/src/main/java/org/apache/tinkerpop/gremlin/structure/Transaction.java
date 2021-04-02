@@ -18,27 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * A set of methods that allow for control of transactional behavior of a {@link Graph} instance. Providers may
  * consider using {@link AbstractTransaction} as a base implementation that provides default features for most of
  * these methods.
- * <p/>
- * It is expected that this interface be implemented by providers in a {@link ThreadLocal} fashion. In other words
- * transactions are bound to the current thread, which means that any graph operation executed by the thread occurs
- * in the context of that transaction and that there may only be one thread executing in a single transaction.
- * <p/>
- * It is important to realize that this class is not a "transaction object".  It is a class that holds transaction
- * related methods thus hiding them from the {@link Graph} interface.  This object is not meant to be passed around
- * as a transactional context.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -71,8 +61,28 @@ public interface Transaction extends AutoCloseable {
      * A threaded transaction is a {@link Graph} instance that has a transaction context that enables multiple
      * threads to collaborate on the same transaction.  A standard transactional context tied to a {@link Graph}
      * that supports transactions will typically bind a transaction to a single thread via {@link ThreadLocal}.
+     *
+     * @deprecated As of release 3.5.0, replaced by {@link Graph#tx(Class)} ()} in which an implementation of
+     * {@code Transaction} should provide its own methods for exposing a "threaded transaction".
      */
-    public <G extends Graph> G createThreadedTx();
+    @Deprecated
+    public default <G extends Graph> G createThreadedTx() {
+        throw Transaction.Exceptions.threadedTransactionsNotSupported();
+    }
+
+    /**
+     * Starts a transaction in the context of a {@link GraphTraversalSource} instance. It is up to the
+     * {@link Transaction} implementation to decide what this means and up to users to be aware of that meaning.
+     */
+    public default <T extends TraversalSource> T begin() {
+        return (T) begin(GraphTraversalSource.class);
+    }
+
+    /**
+     * Starts a transaction in the context of a particular {@link TraversalSource} instance. It is up to the
+     * {@link Transaction} implementation to decide what this means and up to users to be aware of that meaning.
+     */
+    public <T extends TraversalSource> T begin(final Class<T> traversalSourceClass);
 
     /**
      * Determines if a transaction is currently open.
@@ -218,4 +228,66 @@ public interface Transaction extends AutoCloseable {
             }
         }
     }
+
+    public static final Transaction NO_OP = new Transaction() {
+        @Override
+        public void open() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void commit() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void rollback() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public <C extends TraversalSource> C begin(final Class<C> traversalSourceClass) {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public boolean isOpen() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void readWrite() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void close() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public Transaction onReadWrite(final Consumer<Transaction> consumer) {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public Transaction onClose(final Consumer<Transaction> consumer) {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void addTransactionListener(final Consumer<Status> listener) {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void removeTransactionListener(final Consumer<Status> listener) {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+
+        @Override
+        public void clearTransactionListeners() {
+            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
+        }
+    };
 }

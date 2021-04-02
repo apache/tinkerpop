@@ -67,6 +67,13 @@ public final class BytecodeHelper {
         return clone;
     }
 
+    /**
+     * Checks if the bytecode is one of the standard {@link Bytecode#GRAPH_OPERATIONS}.
+     */
+    public static boolean isGraphOperation(final Bytecode bytecode) {
+        return Bytecode.GRAPH_OPERATIONS.contains(bytecode);
+    }
+
     public static Optional<String> getLambdaLanguage(final Bytecode bytecode) {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             for (Object object : instruction.getArguments()) {

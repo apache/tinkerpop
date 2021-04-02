@@ -426,6 +426,54 @@ graph providers to provide this custom functionality.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
 link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
 
+==== Transaction Improvements
+
+The TinkerPop Transaction API and its related features have not changed much since TinkerPop 3.x was initially
+released. Transactions have remained a feature for embedded use cases and script execution (where supported) even in
+the face of the rise of remote graph use cases. With the varying contexts that exist for how and when transactions can
+be used, it has led to a fair bit of confusion.
+
+For 3.5.0, TinkerPop introduces a change in approach to transactions that has the goal of unifying the API and features
+for all use cases, while addressing the more current state of the graph ecosystem which has shifted heavily toward
+remote communication and more diverse programming language ecosystems beyond the JVM.
+
+NOTE: The old transaction API remains intact in 3.5.0, so this version should be backward compatible with the old
+model for embedded transactions. Migrating to the new model would be preferred at this point, but nothing (with the
+exception of the `Transaction#createdThreadedTransaction()` method) has been officially deprecated as the API itself
+is technically still relevant.
+
+The new model for transactions looks like this:
+
+[source,groovy]
+----
+g = traversal().withEmbedded(graph)
+// or
+g = traversal().withRemote(conn)
+
+tx = g.tx() // create a Transaction object
+gtx = tx.begin()  // spawn a GraphTraversalSource from the Transaction
+assert tx.isOpen() == true
+gtx.addV('person').iterate()
+gtx.addV('software').iterate()
+tx.commit() // alternatively you could explicitly rollback()
+assert tx.isOpen() == false
+
+// it is still possible to use g, but gtx is "done" after it is closed so use
+// tx.begin() to produce a new gtx instance for a fresh transaction
+assert 2 == g.V().count().next()
+----
+
+The first important point to take away here is that the same transaction code will work for either embedded or remote
+use cases. The second important point is that for remote cases, transaction support with bytecode is a wholly new
+feature, which was implemented by providing support for bytecode in sessions. Up until this time, sessions could only
+support script-based requests, so that makes another added feature related to this one.
+
+IMPORTANT: The `g.tx()` is only supported in Java at this time. Support for other languages will come available in
+future releases on the 3.5.x line.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2537[TINKERPOP-2537],
+link:https://tinkerpop.apache.org/docs/current/reference/#transactions[Reference Documentation - Transactions]
+
 ==== Retry Conditions
 
 Some error conditions are temporary in nature and therefore an operation that ends in such a situation may be tried
