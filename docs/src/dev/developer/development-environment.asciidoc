@@ -230,6 +230,12 @@ When building `gremlin-javascript`, mvn command will include a local copy of Nod
 using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
 other existing Node.js runtime instances in your machine.
 
+To run the development and build scripts of `gremlint` and its corresponding web page `docs/gremlint`, Node.js and npm
+have to be installed. When generating or publishing the TinkerPop website, the `docs/gremlint` web page has to be
+built. Consequently, the scripts `bin/generate-home.sh` and `bin/publish-home.sh` require that Node.js and npm are
+installed. Version 5.2.0 or newer of npm is recommended, as it comes pre-bundled with npx which provides tooling to
+easily serve the generated website locally. This is covered in more detail in the <<site,Site>> section.
+
 TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
 can be used to help run tests.
 
