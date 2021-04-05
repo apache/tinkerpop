@@ -147,7 +147,7 @@ limitations under the License.
         <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
-        <commons.configuration.version>2.6</commons.configuration.version>
+        <commons.configuration.version>2.7</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.11</commons.lang3.version>
         <commons.text.version>1.9</commons.text.version>
@@ -609,6 +609,18 @@ limitations under the License.
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-configuration2</artifactId>
                 <version>${commons.configuration.version}</version>
+                <exclusions>
+                    <!-- still on 1.8 and we need 1.9 -->
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-text</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
             </dependency>
             <!-- commons-configuration2 requires beanutils because we rely on file loaders -->
             <dependency>
