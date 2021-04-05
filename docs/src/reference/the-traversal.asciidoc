@@ -4333,6 +4333,20 @@ const translator = new gremlin.process.Translator('g');
 console.log(translator.translate(t));
 // OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
 ----
+[source,python]
+----
+from gremlin_python.process.translator import *
+
+g = ...
+t = (g.V().has('person','name','marko').
+          where(__.in_("knows")).
+          values("age"))
+
+# Groovy
+translator = Translator().of('g');
+print(translator.translate(t.bytecode));
+# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age') 
+----
 
 The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to
 identify opportunities to generate an output that would replace constant values with parameters. The parameters would
