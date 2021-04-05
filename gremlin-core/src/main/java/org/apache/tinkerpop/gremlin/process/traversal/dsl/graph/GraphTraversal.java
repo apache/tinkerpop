@@ -2127,6 +2127,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      * @deprecated As of release 3.4.3, replaced by {@link #aggregate(Scope, String)} using {@link Scope#local}.
      */
+    @Deprecated
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.store, sideEffectKey);
         return this.asAdmin().addStep(new AggregateLocalStep<>(this.asAdmin(), sideEffectKey));
