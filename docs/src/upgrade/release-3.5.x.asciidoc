@@ -595,20 +595,53 @@ Remote traversals no longer support the retrieval of remote side-effects. Users 
 side-effects as part of their query if they need that data. Note that server settings for `TraversalOpProcessor`, which
 formerly held the cache for these side-effects, no longer have any effect and can be removed.
 
-*Gremlin Server Audit Logging*
+*Audit Logging*
 
 The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
 to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
 formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
 
-*Gremlin Server Authorization*
+*Authorization*
 
 While Gremlin Server has long had authentication options to determine if a user can connect to the server, it now also
 contains the ability to apply a level of authorization to better control what a particular authenticated user will
 have access to. Authorization is controlled by the new `Authorizer` interface, which can be implemented by users and
 graph providers to provide this custom functionality.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
+*UnifiedChannelizer*
+
+Gremlin Server uses a `Channelizer` abstraction to configure different Netty pipelines which can then offer different
+server behaviors. Most commonly, users configure the `WebSocketChannelizer` to enable the websocket protocol to which
+the various language drivers can connect.
+
+TinkerPop 3.5.0 introduces a new `Channelizer` implementation called the `UnifiedChannelizer`. This channelizer is
+somewhat similar to the `WsAndHttpChannelizer` in that combines websocket and standard HTTP protocols in the server,
+but it provides a new and improved thread management approach as well as a more streamlined execution model. The
+`UnifiedChannelizer` technically replaces all existing implementations, but is not yet configured by default in Gremlin
+Server. To use it, modify the `channelizer` setting in the server yaml file as follows:
+
+```[source,yaml]
+----
+channelizer: org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer
+----
+
+As the `UnifiedChannelizer` is tested further, it will eventually become the default implementation. It may however
+be the preferred channelizer when using large numbers of short-lived sessions as the the threading model of the
+`UnifiedChannelizer` is better suited for such situations. If using this new channelizer, there are a few considerations
+to keep in mind:
+
+* The `UnifiedChannelizer` does not use the `OpProcessor` infrastructure, therefore those
+link:https://tinkerpop.apache.org/docs/3.5.0/reference/#opprocessor-configurations[configurations] are no longer
+relevant and can be ignored.
+
+it is important to read about
+the `gremlinPool` setting in the link:https://tinkerpop.apache.org/docs/3.5.0/reference/#_tuning[Tuning Section] of
+the reference documentation and to look into the link:https://tinkerpop.apache.org/docs/3.5.0/reference/#_configuring_2[new configurations]
+available related to this channelizer: `maxParameters`, `sessionLifeTimeout`, `useGlobalFunctionCacheForSessions`, and
+`useCommonEngineForSessions`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2245[TINKERPOP-2245],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
 link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
 
