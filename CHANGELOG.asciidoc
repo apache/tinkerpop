@@ -32,6 +32,9 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Improved error message for `addE()` when the `from()` or `to()` does not resolve to a `Vertex`.
 * Improved error message for `addE()` when cardinality is specified on `property()` assignments.
 * Allowed `property(T.label,Object)` to be used if no value was supplied to `addV(String)`.
+* Dropped support for .NET Standard 1.3 in Gremlin.Net. Only .NET Standard 2.0 is supported starting with this version.
+* Added GraphBinary support for .NET.
+* Switched from `Newtonsoft.Json` to `System.Text.Json` as the JSON library for Gremlin.Net.
 * Allowed additional arguments to `Client.submit()` in Javascript driver to enable setting of parameters like `scriptEvaluationTimeout`.
 * Gremlin.Net driver no longer supports skipping deserialization by default. Users can however create their own `IMessageSerializer` if they need this functionality.
 * Supported deserialization of `dict` and `list` as a key in a `dict` for Python.
