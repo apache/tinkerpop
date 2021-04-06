@@ -95,6 +95,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Edge
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -272,6 +276,11 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Traversal.class);
         CLASS_IMPORTS.add(TraversalMetrics.class);
         CLASS_IMPORTS.add(Translator.class);
+        CLASS_IMPORTS.add(DotNetTranslator.class);
+        CLASS_IMPORTS.add(GroovyTranslator.class);
+        CLASS_IMPORTS.add(JavaTranslator.class);
+        CLASS_IMPORTS.add(JavascriptTranslator.class);
+        CLASS_IMPORTS.add(PythonTranslator.class);
         CLASS_IMPORTS.add(Bindings.class);
         // graph computer
         CLASS_IMPORTS.add(Computer.class);
