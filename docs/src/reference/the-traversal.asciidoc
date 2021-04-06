@@ -4592,11 +4592,11 @@ columns represent the language that Gremlin can be generated in:
 [width="100%",cols="<,^,^,^,^,^",options="header"]
 |=========================================================
 | |Java |Groovy |Javascript |.NET |Python
-|*Java* |- |X |X | |X
+|*Java* |- |X |X |X |X
 |*Groovy* | |X |X | |X
 |*Javascript* | |X |- | |
 |*.NET* | | | |- |
-|*Python*  | | | | |-
+|*Python*  | |X | | |-
 |=========================================================
 
 Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
@@ -4638,6 +4638,20 @@ const t = g.V().has("person","name","marko").
 const translator = new gremlin.process.Translator('g');
 console.log(translator.translate(t));
 // OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+----
+[source,python]
+----
+from gremlin_python.process.translator import *
+
+g = ...
+t = (g.V().has('person','name','marko').
+          where(__.in_("knows")).
+          values("age"))
+
+# Groovy
+translator = Translator().of('g');
+print(translator.translate(t.bytecode));
+# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age') 
 ----
 
 The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to
