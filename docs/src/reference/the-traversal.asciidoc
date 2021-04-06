@@ -4613,11 +4613,15 @@ GraphTraversalSource g = ...;
 Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
                                 where(in("knows")).
                                 values("age").
-                                map(Lambda.Function("it.get() + 1");
+                                map(Lambda.function("it.get() + 1"));
 
 Translator.ScriptTranslator groovyTranslator = GroovyTranslator.of("g");
 System.out.println(groovyTranslator.translate(t).getScript());
 // OUTPUT: g.V().has("person","name","marko").where(__.in("knows")).values("age").map({it.get() + 1})
+
+Translator.ScriptTranslator dotnetTranslator = DotNetTranslator.of("g");
+System.out.println(dotnetTranslator.translate(t).getScript());
+// OUTPUT: g.V().Has("person","name","marko").Where(__.In("knows")).Values<object>("age").Map<object>(Lambda.Groovy("it.get() + 1"))
 
 Translator.ScriptTranslator pythonTranslator = PythonTranslator.of("g");
 System.out.println(pythonTranslator.translate(t).getScript());
