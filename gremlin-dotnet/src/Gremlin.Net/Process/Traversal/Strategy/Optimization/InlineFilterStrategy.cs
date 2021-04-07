@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class InlineFilterStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(InlineFilterStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="InlineFilterStrategy" /> class.
+        /// </summary>
+        public InlineFilterStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

@@ -34,8 +34,8 @@ namespace Gremlin.Net.Structure
         /// <param name="id">The id of the vertex property.</param>
         /// <param name="label">The label of the vertex property.</param>
         /// <param name="value">The id of the vertex property.</param>
-        /// <param name="vertex">The <see cref="Vertex" /> that owns this <see cref="VertexProperty" />.</param>
-        public VertexProperty(object id, string label, dynamic value, Vertex vertex)
+        /// <param name="vertex">The (optional) <see cref="Vertex" /> that owns this <see cref="VertexProperty" />.</param>
+        public VertexProperty(object id, string label, dynamic value, Vertex vertex = null)
             : base(id, label)
         {
             Value = value;

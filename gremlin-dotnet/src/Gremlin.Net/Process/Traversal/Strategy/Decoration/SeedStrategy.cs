@@ -31,11 +31,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
     /// </summary>
     public class SeedStrategy : AbstractTraversalStrategy
     {
-
+        private const string JavaFqcn = DecorationNamespace + nameof(SeedStrategy);
+        
         /// <summary>
-        ///     Initializes a new instance of the <see cref="OptionsStrategy" /> class.
+        ///     Initializes a new instance of the <see cref="SeedStrategy" /> class.
         /// </summary>
-        public SeedStrategy()
+        public SeedStrategy() : base(JavaFqcn)
         {
         }
 
@@ -44,6 +45,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// </summary>
         /// <param name="seed">Specifies the seed the traversal will use.</param>
         public SeedStrategy(long seed)
+            : this()
         {
             Configuration["seed"] = seed;
         }

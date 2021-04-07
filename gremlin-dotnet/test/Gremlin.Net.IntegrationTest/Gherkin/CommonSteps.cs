@@ -32,6 +32,7 @@ using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
+using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
 
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
@@ -47,6 +48,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private object[] _result;
         private static readonly JsonSerializerOptions JsonDeserializingOptions = new JsonSerializerOptions
             {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
+        
+        public static ScenarioData ScenarioData { get; set; } = new ScenarioData(new GraphSON3MessageSerializer());
 
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
@@ -113,14 +116,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             
             _traversal =
-                TraversalEvaluation.Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
+                Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
         }
 
         [Given("the graph initializer of")]
         public void InitTraversal(string traversalText)
         {
             var traversal =
-                TraversalEvaluation.Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
+                Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
             traversal.Iterate();
             
             // We may have modified the so-called `empty` graph
@@ -230,7 +233,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             
             var traversal =
-                TraversalEvaluation.Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
+                Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);
             
             var count = 0;
             while (traversal.MoveNext())

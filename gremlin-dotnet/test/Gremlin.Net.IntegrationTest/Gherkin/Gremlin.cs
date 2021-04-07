@@ -29,18 +29,33 @@
 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
-namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
+namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     public class Gremlin
     {
-        public static readonly IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>,ITraversal>>> FixedTranslations = 
+        public static void InstantiateTranslationsForTestRun()
+        {
+            // We need to copy the fixed translations as we remove translations from the list after using them
+            // so we can enumerate through the translations while evaluating a scenario.
+            _translationsForTestRun =
+                new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>(
+                    FixedTranslations.Count);
+            foreach (var (traversal, translations) in FixedTranslations)
+            {
+                _translationsForTestRun.Add(traversal,
+                    new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>(translations));
+            }
+        }
+
+        private static IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>
+            _translationsForTestRun;
+
+        private static readonly IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>,ITraversal>>> FixedTranslations = 
             new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>
             {
                {"g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Branch<object>((IFunction) p["l1"]).Option("a",__.Values<object>("age")).Option("b",__.Values<object>("lang")).Option("b",__.Values<object>("name"))}}, 
@@ -679,7 +694,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters)
         {
-            List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> list = FixedTranslations[scenarioName];
+            List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> list = _translationsForTestRun[scenarioName];
             Func<GraphTraversalSource, IDictionary<string, object>, ITraversal> f = list[0];
             list.RemoveAt(0);
             return f.Invoke(g, parameters);

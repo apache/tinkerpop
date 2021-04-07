@@ -28,24 +28,18 @@ namespace Gremlin.Net.Process.Traversal
     internal class StringBasedLambda : ILambda
     {
         private const int DefaultArgument = -1;
-        private int _arguments;
 
         public StringBasedLambda(string expression, string language)
         {
             LambdaExpression = expression;
             Language = language;
-            _arguments = DefaultArgument;
         }
 
         public string LambdaExpression { get; }
 
         public string Language { get; }
 
-        public int Arguments
-        {
-            get => _arguments;
-            protected set => _arguments = value;
-        }
+        public int Arguments { get; protected set; } = DefaultArgument;
     }
 
     internal class GroovyStringBasedLambda : StringBasedLambda

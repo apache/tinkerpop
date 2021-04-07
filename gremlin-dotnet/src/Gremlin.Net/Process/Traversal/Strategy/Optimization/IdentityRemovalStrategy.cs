@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class IdentityRemovalStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(IdentityRemovalStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="IdentityRemovalStrategy" /> class.
+        /// </summary>
+        public IdentityRemovalStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

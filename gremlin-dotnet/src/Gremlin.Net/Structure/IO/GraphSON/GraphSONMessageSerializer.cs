@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
 
@@ -56,10 +57,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         }
 
         /// <inheritdoc />
-        public virtual byte[] SerializeMessage(RequestMessage requestMessage)
+        public virtual Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage)
         {
             var graphSONMessage = _graphSONWriter.WriteObject(requestMessage);
-            return Encoding.UTF8.GetBytes(MessageWithHeader(graphSONMessage));
+            return Task.FromResult(Encoding.UTF8.GetBytes(MessageWithHeader(graphSONMessage)));
         }
 
         private string MessageWithHeader(string messageContent)
@@ -68,18 +69,18 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         }
 
         /// <inheritdoc />
-        public virtual ResponseMessage<List<object>> DeserializeMessage(byte[] message)
+        public virtual Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
-            if (message.Length == 0) return default;
+            if (message.Length == 0) return Task.FromResult<ResponseMessage<List<object>>>(null);
             
             var reader = new Utf8JsonReader(message);
             var responseMessage =
                 JsonSerializer.Deserialize<ResponseMessage<JsonElement>>(ref reader, JsonDeserializingOptions);
-            if (responseMessage == null) return null;
+            if (responseMessage == null) return Task.FromResult<ResponseMessage<List<object>>>(null);;
             
             var data = _graphSONReader.ToObject(responseMessage.Result.Data);
-            return CopyMessageWithNewData(responseMessage, data);
+            return Task.FromResult(CopyMessageWithNewData(responseMessage, data));
         }
 
         private static ResponseMessage<List<object>> CopyMessageWithNewData(ResponseMessage<JsonElement> origMsg,

@@ -29,5 +29,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class LazyBarrierStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(LazyBarrierStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="LazyBarrierStrategy" /> class.
+        /// </summary>
+        public LazyBarrierStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

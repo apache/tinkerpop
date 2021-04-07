@@ -26,11 +26,14 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
 #pragma warning disable 1591
     public class MatchAlgorithmStrategy : AbstractTraversalStrategy
     {
-        public MatchAlgorithmStrategy()
+        private const string JavaFqcn = FinalizationNamespace + nameof(MatchAlgorithmStrategy);
+        
+        public MatchAlgorithmStrategy() : base(JavaFqcn)
         {
         }
 
-        public MatchAlgorithmStrategy(string matchAlgorithm = null)
+        public MatchAlgorithmStrategy(string matchAlgorithm)
+            : this()
         {
             if (matchAlgorithm != null)
                 Configuration["matchAlgorithm"] = matchAlgorithm;

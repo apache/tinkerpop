@@ -75,17 +75,32 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("//********************************************************************************\n\n")
 
     writer.writeLine('using System;\n' +
-                     'using System.Collections;\n' +
                      'using System.Collections.Generic;\n' +
-                     'using System.Linq;\n' +
                      'using Gremlin.Net.Structure;\n' +
                      'using Gremlin.Net.Process.Traversal;\n' +
                      'using Gremlin.Net.Process.Traversal.Strategy.Decoration;\n')
-    writer.writeLine('namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation\n' +
+    writer.writeLine('namespace Gremlin.Net.IntegrationTest.Gherkin\n' +
             '{\n' +
             '    public class Gremlin\n' +
             '    {\n' +
-            '        public static readonly IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>,ITraversal>>> FixedTranslations = \n' +
+            '        public static void InstantiateTranslationsForTestRun()\n' +
+            '        {\n' +
+            '            // We need to copy the fixed translations as we remove translations from the list after using them\n' +
+            '            // so we can enumerate through the translations while evaluating a scenario.\n' +
+            '            _translationsForTestRun =\n' +
+            '                new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>(\n' +
+            '                    FixedTranslations.Count);\n' +
+            '            foreach (var (traversal, translations) in FixedTranslations)\n' +
+            '            {\n' +
+            '                _translationsForTestRun.Add(traversal,\n' +
+            '                    new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>(translations));\n' +
+            '            }\n' +
+            '        }\n')
+    writer.writeLine(
+            '        private static IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
+            '            _translationsForTestRun;\n')
+    writer.writeLine(
+            '        private static readonly IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>,ITraversal>>> FixedTranslations = \n' +
             '            new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
             '            {')
 
@@ -141,7 +156,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
             '        public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters)\n' +
             '        {\n' +
-            '            List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> list = FixedTranslations[scenarioName];\n' +
+            '            List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> list = _translationsForTestRun[scenarioName];\n' +
             '            Func<GraphTraversalSource, IDictionary<string, object>, ITraversal> f = list[0];\n' +
             '            list.RemoveAt(0);\n' +
             '            return f.Invoke(g, parameters);\n' +

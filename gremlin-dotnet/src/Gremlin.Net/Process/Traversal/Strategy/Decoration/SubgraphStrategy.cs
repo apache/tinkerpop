@@ -28,10 +28,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
     /// </summary>
     public class SubgraphStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = DecorationNamespace + nameof(SubgraphStrategy);
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="SubgraphStrategy" /> class.
         /// </summary>
-        public SubgraphStrategy()
+        public SubgraphStrategy() : base(JavaFqcn)
         {
         }
 
@@ -43,6 +45,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// <param name="vertexProperties">Constrains vertex properties for the <see cref="ITraversal" />.</param>
         public SubgraphStrategy(ITraversal vertices = null, ITraversal edges = null,
             ITraversal vertexProperties = null)
+            : this()
         {
             if (vertices != null)
                 Configuration["vertices"] = vertices;

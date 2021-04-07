@@ -31,10 +31,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
     /// </summary>
     public class ReservedKeysVerificationStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = VerificationNamespace + nameof(ReservedKeysVerificationStrategy);
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="ReservedKeysVerificationStrategy" /> class.
         /// </summary>
-        public ReservedKeysVerificationStrategy()
+        public ReservedKeysVerificationStrategy() : base(JavaFqcn)
         {
         }
 
@@ -44,7 +46,9 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
         /// <param name="logWarning">Write a warning to the configured log on the server if a reserved key is used.</param>
         /// <param name="throwException">Throw an exception if a reserved key is used.</param>
         /// <param name="keys">List of keys to define as reserved. If not set then the defaults are used.</param>
-        public ReservedKeysVerificationStrategy(bool logWarning = false, bool throwException = false, List<string> keys = null)
+        public ReservedKeysVerificationStrategy(bool logWarning = false, bool throwException = false,
+            List<string> keys = null)
+            : this()
         {
             Configuration["logWarning"] = logWarning;
             Configuration["throwException"] = throwException;

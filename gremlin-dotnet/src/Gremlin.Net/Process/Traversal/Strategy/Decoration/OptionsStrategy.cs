@@ -31,10 +31,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
     /// </summary>
     public class OptionsStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = DecorationNamespace + nameof(OptionsStrategy);
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="OptionsStrategy" /> class.
         /// </summary>
-        public OptionsStrategy()
+        public OptionsStrategy() : base(JavaFqcn)
         {
         }
 
@@ -43,6 +45,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// </summary>
         /// <param name="options">Specifies the options for the traversal.</param>
         public OptionsStrategy(IDictionary<string,object> options)
+            : this()
         {
             foreach(var item in options)
             {

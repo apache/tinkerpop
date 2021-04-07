@@ -34,7 +34,7 @@ namespace Gremlin.Net.Driver.Messages
         /// <summary>
         ///     Gets or sets the identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.
         /// </summary>
-        public Guid RequestId { get; set; }
+        public Guid? RequestId { get; set; }
 
         /// <summary>
         ///     Gets or sets status information about this <see cref="ResponseMessage{T}"/>.

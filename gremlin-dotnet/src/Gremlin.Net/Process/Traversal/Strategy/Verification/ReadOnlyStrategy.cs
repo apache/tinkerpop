@@ -28,5 +28,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
     /// </summary>
     public class ReadOnlyStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = VerificationNamespace + nameof(ReadOnlyStrategy);
+        
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ReadOnlyStrategy" /> class.
+        /// </summary>
+        public ReadOnlyStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

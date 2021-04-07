@@ -23,6 +23,7 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
 
@@ -31,37 +32,39 @@ namespace Gremlin.Net.UnitTest.Driver
     public class GraphSONMessageSerializerTests
     {
         [Fact]
-        public void DeserializingNullThrows()
+        public async Task DeserializingNullThrows()
         {
             var sut = CreateMessageSerializer();
 
-            Assert.Throws<ArgumentNullException>(()=> sut.DeserializeMessage(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(()=> sut.DeserializeMessageAsync(null));
         }
 
         [Fact]
-        public void EmptyArrayDeserializedIntoNull()
+        public async Task EmptyArrayDeserializedIntoNull()
         {
             var sut = CreateMessageSerializer();
 
-            Assert.Null(sut.DeserializeMessage(new byte[0]));            
+            var result = await sut.DeserializeMessageAsync(new byte[0]);
+            
+            Assert.Null(result);
         }
 
         [Fact]
-        public void EmptyStringDeserializedIntoNull()
+        public async Task EmptyStringDeserializedIntoNull()
         {
             var sut = CreateMessageSerializer();
             var ofEmpty = Encoding.UTF8.GetBytes("");
 
-            Assert.Null(sut.DeserializeMessage(ofEmpty));
+            Assert.Null(await sut.DeserializeMessageAsync(ofEmpty));
         }
 
         [Fact]
-        public void JsonNullDeserializedIntoNull()
+        public async Task JsonNullDeserializedIntoNull()
         {
             var sut = CreateMessageSerializer();
             var ofNull = Encoding.UTF8.GetBytes("null");
 
-            Assert.Null(sut.DeserializeMessage(ofNull));
+            Assert.Null(await sut.DeserializeMessageAsync(ofNull));
         }
 
         private static GraphSONMessageSerializer CreateMessageSerializer()

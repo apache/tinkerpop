@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
 namespace Gremlin.Net.Driver
@@ -36,13 +37,13 @@ namespace Gremlin.Net.Driver
         /// </summary>
         /// <param name="requestMessage">The <see cref="RequestMessage"/> to serialize.</param>
         /// <returns>The serialized message.</returns>
-        byte[] SerializeMessage(RequestMessage requestMessage);
+        Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage);
         
         /// <summary>
         ///     Deserializes a <see cref="ResponseMessage{T}"/> from a byte array.
         /// </summary>
         /// <param name="message">The serialized message to deserialize.</param>
         /// <returns>The deserialized <see cref="ResponseMessage{T}"/>.</returns>
-        ResponseMessage<List<object>> DeserializeMessage(byte[] message);
+        Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message);
     }
 }

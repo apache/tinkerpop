@@ -26,6 +26,11 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
 #pragma warning disable 1591
     public class GraphFilterStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(GraphFilterStrategy);
+        
+        public GraphFilterStrategy() : base(JavaFqcn)
+        {
+        }
     }
 #pragma warning restore 1591
 }
