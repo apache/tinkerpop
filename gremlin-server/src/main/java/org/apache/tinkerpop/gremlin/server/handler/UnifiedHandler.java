@@ -158,8 +158,8 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                     return;
                 }
 
-                // check if the session is still accepting requests - if not block further requests
-                if (!rexster.acceptingTasks()) {
+                // if the session is done accepting tasks then error time
+                if (!rexster.addTask(gremlinContext)) {
                     final String sessionClosedMessage = String.format(
                             "Session %s is no longer accepting requests as it has been closed", sessionId);
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
@@ -168,7 +168,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                     return;
                 }
 
-                rexster.addTask(gremlinContext);
+                ;
             } else {
                 final Rexster rexster = optSession.isPresent() ?
                         createMulti(gremlinContext, sessionId) : createSingle(gremlinContext, sessionId);

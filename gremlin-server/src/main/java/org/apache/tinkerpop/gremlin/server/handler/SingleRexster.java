@@ -45,12 +45,12 @@ public class SingleRexster extends AbstractRexster {
      * request in it and no more can be added, therefore this method always return {@code false}.
      */
     @Override
-    public boolean acceptingTasks() {
+    public boolean isAcceptingTasks() {
         return false;
     }
 
     @Override
-    public void addTask(final Context gremlinContext) {
+    public boolean addTask(final Context gremlinContext) {
         throw new UnsupportedOperationException("SingleWorker doesn't accept tasks beyond the one provided to the constructor");
     }
 

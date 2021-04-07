@@ -57,22 +57,31 @@ public class MultiRexster extends AbstractRexster {
     private ScheduledFuture<?> requestCancelFuture;
     private Bindings bindings;
 
-    MultiRexster(final Context gremlinContext, final String sessionId,
+    /**
+     * Creates a new {@code MultiRexster} object providing the initial starting context that starts up the session.
+     * As more requests arrive on the {@code sessionId} they are added to the queue on this session to be executed
+     * in the order they arrive.
+     *
+     * @param initialGremlinContext The context that starts the session.
+     * @param sessionId The id of the session
+     * @param sessions The session id to {@link Rexster} instances mapping
+     */
+    MultiRexster(final Context initialGremlinContext, final String sessionId,
                  final ConcurrentMap<String, Rexster> sessions) {
-        super(gremlinContext, sessionId, false, sessions);
+        super(initialGremlinContext, sessionId, false, sessions);
 
         // using a global function cache is cheaper than creating a new on per session especially if you have to
         // create a lot of sessions. it will generate a ton of throw-away objects. mostly keeping the option open
         // to not use it to preserve the ability to use the old functionality if wanted or if there is some specific
         // use case with sessions that needs it. if we wanted this could eventually become a per-request option
         // so that the client could control it as necessary and get scriptengine isolation if they need it.
-        if (gremlinContext.getSettings().useCommonEngineForSessions)
-            scriptEngineManager = gremlinContext.getGremlinExecutor().getScriptEngineManager();
+        if (initialGremlinContext.getSettings().useCommonEngineForSessions)
+            scriptEngineManager = initialGremlinContext.getGremlinExecutor().getScriptEngineManager();
         else
-            scriptEngineManager = initializeGremlinExecutor(gremlinContext).getScriptEngineManager();
+            scriptEngineManager = initializeGremlinExecutor(initialGremlinContext).getScriptEngineManager();
 
-        scheduledExecutorService = gremlinContext.getScheduledExecutorService();
-        addTask(gremlinContext);
+        scheduledExecutorService = initialGremlinContext.getScheduledExecutorService();
+        addTask(initialGremlinContext);
     }
 
     @Override
@@ -81,14 +90,13 @@ public class MultiRexster extends AbstractRexster {
     }
 
     @Override
-    public boolean acceptingTasks() {
+    public boolean isAcceptingTasks() {
         return !ending.get();
     }
 
     @Override
-    public void addTask(final Context gremlinContext) {
-        if (acceptingTasks())
-            queue.offer(gremlinContext);
+    public boolean addTask(final Context gremlinContext) {
+        return isAcceptingTasks() && queue.offer(gremlinContext);
     }
 
     @Override

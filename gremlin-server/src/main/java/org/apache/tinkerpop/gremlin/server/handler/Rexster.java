@@ -37,7 +37,7 @@ public interface Rexster extends Runnable {
     /**
      * Adds a task for Rexster to complete.
      */
-    void addTask(final Context gremlinContext);
+    boolean addTask(final Context gremlinContext);
 
     /**
      * Sets a reference to the job that will cancel this Rexster if it exceeds its timeout period.
@@ -67,7 +67,7 @@ public interface Rexster extends Runnable {
     /**
      * Determins if this Rexster can accept additional tasks or not.
      */
-    boolean acceptingTasks();
+    boolean isAcceptingTasks();
 
     public class RexsterException extends Exception {
         private final ResponseMessage responseMessage;
