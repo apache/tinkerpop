@@ -51,11 +51,11 @@ import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.
 public class MultiRexster extends AbstractRexster {
     private static final Logger logger = LoggerFactory.getLogger(MultiRexster.class);
     protected final BlockingQueue<Context> queue = new LinkedBlockingQueue<>();
-    private ScheduledFuture<?> requestCancelFuture;
-    private Bindings bindings;
     private final AtomicBoolean ending = new AtomicBoolean(false);
     private final ScheduledExecutorService scheduledExecutorService;
     private final GremlinScriptEngineManager scriptEngineManager;
+    private ScheduledFuture<?> requestCancelFuture;
+    private Bindings bindings;
 
     MultiRexster(final Context gremlinContext, final String sessionId,
                  final ConcurrentMap<String, Rexster> sessions) {
