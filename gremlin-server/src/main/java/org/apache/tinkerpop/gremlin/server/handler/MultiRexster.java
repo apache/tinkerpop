@@ -181,9 +181,16 @@ public class MultiRexster extends AbstractRexster {
         }
     }
 
+    /**
+     * This method stops incoming requests from being added to the session queue. It then cancels the session lifetime
+     * timeout and then calls {@link super#close()} which will then interrupt this {@link #run()} which will clear out
+     * remaining requests in the queue. This latter part of the close, where the interruption is concerned, is an
+     * asynchronous operation and will not block as it finishes its processing in the "gremlinPool" thread that was
+     * originally handling the work.
+     */
     @Override
     public void close() {
-        ending.set(true);
+        stopAcceptingRequests();
         cancelRequestTimeout();
         super.close();
         logger.debug("Session {} closed", getSessionId());
@@ -192,11 +199,13 @@ public class MultiRexster extends AbstractRexster {
     private void cancelRequestTimeout() {
         if (requestCancelFuture != null && !requestCancelFuture.isDone())
             requestCancelFuture.cancel(true);
+        else
+            logger.debug("Could not cancel request timeout for {} - {}", getSessionId(), requestCancelFuture);
     }
 
     private void stopAcceptingRequests() {
-        ending.set(true);
-        cancel(true);
+        if (ending.compareAndSet(false, true))
+            cancel(true);
     }
 
     @Override
