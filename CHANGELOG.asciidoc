@@ -25,6 +25,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
+* Changed transport implementation to use AIOHTTP instead of Tornado for gremlin-python.
+* Added max_content_length and unit test for it in gremlin-python.
+* Removed compression_option support for transport in gremlin-python.
+* Fixed event loop issues and added unit test for it in gremlin-python.
+* Fixed DriverRemoteConnection multithreading issues and added unit test for it in gremlin-python.
+* Fixed heartbeat timeout issues and tested with local server manually for gremlin-python.
+* Fixed build errors emitted for gremlin-python (asyncio task destroyed but is pending error).
 * Added `gremlin-language` module.
 * Allowed the possibility for the propagation of `null` as a `Traverser` in Gremlin.
 * Added a fully shaded version of `gremlin-driver`.
