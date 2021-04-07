@@ -32,15 +32,15 @@ import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
  */
 public class UnifiedChannelizer extends AbstractChannelizer {
 
-    private WsAndHttpChannelizerHandler handler;
+    private WsAndHttpChannelizerHandler wsAndHttpChannelizerHandler;
     private UnifiedHandler unifiedHandler;
     protected static final String PIPELINE_UNIFIED = "unified";
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
-        handler = new WsAndHttpChannelizerHandler();
-        handler.init(serverGremlinExecutor, new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings));
+        wsAndHttpChannelizerHandler = new WsAndHttpChannelizerHandler();
+        wsAndHttpChannelizerHandler.init(serverGremlinExecutor, new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings));
 
         // these handlers don't share any state and can thus be initialized once per pipeline
         unifiedHandler = new UnifiedHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService, this);
@@ -48,13 +48,21 @@ public class UnifiedChannelizer extends AbstractChannelizer {
 
     @Override
     public void configure(final ChannelPipeline pipeline) {
-        handler.configure(pipeline);
-        pipeline.addAfter(PIPELINE_HTTP_REQUEST_DECODER, "WsAndHttpChannelizerHandler", handler);
+        wsAndHttpChannelizerHandler.configure(pipeline);
+        pipeline.addAfter(PIPELINE_HTTP_REQUEST_DECODER, "WsAndHttpChannelizerHandler", wsAndHttpChannelizerHandler);
     }
 
     @Override
     public void finalize(final ChannelPipeline pipeline) {
         super.finalize(pipeline);
+
+        // currently the AbstractChannelizer adds the following handlers which prior to 3.5.0 were essentially
+        // required by any Gremlin-processing pipeline you could think of because they provided the functionality
+        // of the OpProcessor infrastructure. the OpProcessor infrastructure is on its way to deprecation after
+        // TINKERPOP-2245 which introduced this channelizer implementation. since AbstractChannelizer does a nice
+        // job of rigging up the rest of the pipeline it seemed to make sense to leave it unchanged to ensure it
+        // does not break anyone's channelizers that may depend on it (including TinkerPop's and simply remove
+        // those bits here. in the future, when we remove OpProcessor stuff completely we can clean this up.
         pipeline.remove(PIPELINE_OP_SELECTOR);
         pipeline.remove(PIPELINE_OP_EXECUTOR);
 
@@ -72,6 +80,6 @@ public class UnifiedChannelizer extends AbstractChannelizer {
 
     @Override
     public Object createIdleDetectionMessage() {
-        return handler.getWsChannelizer().createIdleDetectionMessage();
+        return wsAndHttpChannelizerHandler.getWsChannelizer().createIdleDetectionMessage();
     }
 }

@@ -286,8 +286,9 @@ public class GremlinServer {
 
             try {
                 if (gremlinExecutorService != null) {
-                    if (!gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS))
+                    if (!gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS)) {
                         logger.warn("Gremlin thread pool did not fully terminate - continuing with shutdown process");
+                    }
                 }
             } catch (InterruptedException ie) {
                 logger.warn("Timeout waiting for Gremlin thread pool to shutdown - continuing with shutdown process.");

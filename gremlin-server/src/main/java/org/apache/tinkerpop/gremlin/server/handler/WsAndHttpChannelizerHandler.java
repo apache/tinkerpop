@@ -62,6 +62,19 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, final Object obj) {
         final ChannelPipeline pipeline = ctx.pipeline();
         if (obj instanceof HttpMessage && !WebSocketHandlerUtil.isWebSocket((HttpMessage)obj)) {
+            // if the message is for HTTP and not websockets then this handler injects the endpoint handler in front
+            // of the HTTP Aggregator to intercept the HttpMessage. Therefore the pipeline looks like this at start:
+            //
+            // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
+            //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
+            //    WebSocketServerCompressionHandler -> WebSocketServerProtocolHandshakeHandler -> (more websockets)
+            //
+            // and shifts to (setting aside the authentication condition):
+            //
+            // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
+            //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
+            //    HttpGremlinEndpointHandler ->
+            //    WebSocketServerCompressionHandler - WebSocketServerProtocolHandshakeHandler -> (more websockets)
             if (null != pipeline.get(PIPELINE_AUTHENTICATOR)) {
                 pipeline.remove(PIPELINE_REQUEST_HANDLER);
                 final ChannelHandler authenticator = pipeline.get(PIPELINE_AUTHENTICATOR);
