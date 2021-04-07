@@ -34,9 +34,9 @@ import java.util.List;
  */
 @ChannelHandler.Sharable
 public final class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
-    private final MessageSerializer serializer;
+    private final MessageSerializer<?> serializer;
 
-    public WebSocketGremlinResponseDecoder(final MessageSerializer serializer) {
+    public WebSocketGremlinResponseDecoder(final MessageSerializer<?> serializer) {
         this.serializer = serializer;
     }
 
@@ -47,7 +47,7 @@ public final class WebSocketGremlinResponseDecoder extends MessageToMessageDecod
             objects.add(serializer.deserializeResponse(tf.content()));
         } else if (webSocketFrame instanceof TextWebSocketFrame) {
             final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
-            final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+            final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
             objects.add(textSerializer.deserializeResponse(tf.text()));
         } else {
             throw new RuntimeException(String.format("WebSocket channel does not handle this type of message: %s", webSocketFrame.getClass().getName()));

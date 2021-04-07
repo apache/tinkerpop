@@ -122,6 +122,7 @@ limitations under the License.
         </contributor>
     </contributors>
     <modules>
+        <module>gremlin-language</module>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
@@ -146,9 +147,10 @@ limitations under the License.
         <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
-        <commons.configuration.version>2.6</commons.configuration.version>
+        <commons.configuration.version>2.7</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.11</commons.lang3.version>
+        <commons.text.version>1.9</commons.text.version>
         <groovy.version>2.5.14</groovy.version>
         <hadoop.version>2.7.7</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
@@ -391,6 +393,7 @@ limitations under the License.
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/incorrect-traversals.txt</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/groovy/plugin/script-customizer-*.groovy</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/jsr223/script-customizer-*.groovy</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/jsr223/script-customizer-*.groovy</exclude>
@@ -404,6 +407,10 @@ limitations under the License.
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/gremlint/build/**</exclude>
+                        <exclude>docs/gremlint/node_modules/**</exclude>
+                        <exclude>docs/gremlint/public/CNAME</exclude>
+                        <exclude>docs/gremlint/.prettierrc</exclude>
                         <exclude>**/Debug/**</exclude>
                         <exclude>**/Release/**</exclude>
                         <exclude>**/obj/**</exclude>
@@ -421,6 +428,9 @@ limitations under the License.
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
+                        <exclude>**/gremlint/lib/**</exclude>
+                        <exclude>**/gremlint/node_modules/**</exclude>
+                        <exclude>**/gremlint/.prettierrc</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -525,7 +535,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>1.5.5</version>
+                    <version>1.5.8</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -599,6 +609,18 @@ limitations under the License.
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-configuration2</artifactId>
                 <version>${commons.configuration.version}</version>
+                <exclusions>
+                    <!-- still on 1.8 and we need 1.9 -->
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-text</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
             </dependency>
             <!-- commons-configuration2 requires beanutils because we rely on file loaders -->
             <dependency>

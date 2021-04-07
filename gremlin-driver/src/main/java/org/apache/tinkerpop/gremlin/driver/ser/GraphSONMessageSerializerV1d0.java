@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,7 @@ import java.util.UUID;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer {
+public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV1d0.class);
     private static final String MIME_TYPE = SerTokens.MIME_JSON;
 

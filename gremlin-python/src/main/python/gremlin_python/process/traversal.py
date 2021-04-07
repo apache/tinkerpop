@@ -319,10 +319,6 @@ def outside(*args):
     return P.outside(*args)
 
 
-def test(*args):
-    return P.test(*args)
-
-
 def within(*args):
     return P.within(*args)
 
@@ -350,8 +346,6 @@ statics.add_static('neq', neq)
 statics.add_static('not_', not_)
 
 statics.add_static('outside', outside)
-
-statics.add_static('test', test)
 
 statics.add_static('within', within)
 

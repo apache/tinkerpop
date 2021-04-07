@@ -37,7 +37,7 @@ public final class StateKey {
     /**
      * The key for the current serializer requested by the client.
      */
-    public static final AttributeKey<MessageSerializer> SERIALIZER = AttributeKey.valueOf("serializer");
+    public static final AttributeKey<MessageSerializer<?>> SERIALIZER = AttributeKey.valueOf("serializer");
 
     /**
      * The key to indicate if the serializer should use its binary format.

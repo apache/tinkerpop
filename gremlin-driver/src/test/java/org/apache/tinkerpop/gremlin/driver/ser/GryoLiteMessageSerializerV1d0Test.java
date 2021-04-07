@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class GryoLiteMessageSerializerV1d0Test {
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer binarySerializer = new GryoLiteMessageSerializerV1d0();
+    public MessageSerializer<Kryo> binarySerializer = new GryoLiteMessageSerializerV1d0();
 
     @Test
     public void shouldSerializeEdge() throws Exception {

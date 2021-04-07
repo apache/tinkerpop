@@ -230,6 +230,12 @@ When building `gremlin-javascript`, mvn command will include a local copy of Nod
 using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
 other existing Node.js runtime instances in your machine.
 
+To run the development and build scripts of `gremlint` and its corresponding web page `docs/gremlint`, Node.js and npm
+have to be installed. When generating or publishing the TinkerPop website, the `docs/gremlint` web page has to be
+built. Consequently, the scripts `bin/generate-home.sh` and `bin/publish-home.sh` require that Node.js and npm are
+installed. Version 5.2.0 or newer of npm is recommended, as it comes pre-bundled with npx which provides tooling to
+easily serve the generated website locally. This is covered in more detail in the <<site,Site>> section.
+
 TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
 can be used to help run tests.
 
@@ -467,3 +473,20 @@ Intellij should be able to detect the processor automatically on build.
 `target/generated-test-sources` should be marked as "Generated Sources Root". If they are not setup that way by
 Intellij by default then simply right-click on them use the "Mark Directory with" option to make the appropriate
 selections.
+
+The `gremlin-grammar` module requires ANTLR processing. While this processing is configured to execute with Maven, it
+can also be setup to generate parser files within Intellij itself on command:
+
+. Install the ANTLR4 Grammar Plugin for Intellij
+. Right-click on the `Gremlin.g4` file and "Configure ANTLR"
+. Set "Output directory where all output is generated" to `target/generated-sources/antlr4`
+. Set "Grammar file encoding" to `utf-8`
+. Set "Package/namespace for the generated code" to `org.apache.tinkerpop.gremlin.language.grammar`
+. Set "Language" to `Java`
+. Set "Case transformation in the Preview window" should be "Leave as-is"
+. The "generate parse tree listener" should be unchecked and the "generate parse tree visitor" should be checked.
+
+With these settings it should be possible to right-click `Gremlin.g4` and "Generate ANTLR Recognizer" which will place
+the generated code in where specified at `target/generated-sources/antlr4`. Be sure to right-click the `antlr4`
+directory and "Mark directory as" "Generated Sources Root" which should allow Intellij to recognize it.
+

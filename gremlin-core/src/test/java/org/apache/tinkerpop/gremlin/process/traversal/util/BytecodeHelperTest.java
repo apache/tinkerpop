@@ -18,15 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
@@ -93,5 +90,12 @@ public class BytecodeHelperTest {
         final Bytecode filteredAfterRemoved = BytecodeHelper.filterInstructions(
                 bc, i -> Stream.of(i.getArguments()).anyMatch(o -> o instanceof Bytecode.Binding));
         assertEquals(0, filteredAfterRemoved.getStepInstructions().size());
+    }
+
+    @Test
+    public void shouldDetermineOperation() {
+        assertThat(BytecodeHelper.isGraphOperation(Bytecode.TX_COMMIT), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(Bytecode.TX_ROLLBACK), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(g.V().out("knows").asAdmin().getBytecode()), is(false));
     }
 }

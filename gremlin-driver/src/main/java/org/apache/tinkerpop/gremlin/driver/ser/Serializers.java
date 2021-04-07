@@ -65,7 +65,7 @@ public enum Serializers {
         return value;
     }
 
-    public MessageSerializer simpleInstance() {
+    public MessageSerializer<?> simpleInstance() {
         switch (value) {
             case SerTokens.MIME_JSON:
                 return new GraphSONMessageSerializerV3d0();

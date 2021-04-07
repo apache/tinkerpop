@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
+* Added `gremlin-language` module.
 * Allowed the possibility for the propagation of `null` as a `Traverser` in Gremlin.
 * Added a fully shaded version of `gremlin-driver`.
 * Exposed websocket connection status in JavaScript driver.
@@ -39,6 +40,8 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Allowed additional arguments to `Client.submit()` in Javascript driver to enable setting of parameters like `scriptEvaluationTimeout`.
 * Gremlin.Net driver no longer supports skipping deserialization by default. Users can however create their own `IMessageSerializer` if they need this functionality.
 * Supported deserialization of `dict` and `list` as a key in a `dict` for Python.
+* Added support for remote `g.tx()` usage.
+* Added support for bytecode-based sessions.
 * Added a `Graph.Feature` for `supportsNullPropertyValues`.
 * Modified `TokenTraversal` to support `Property` thus `by(key)` and `by(value)` can now apply to `Edge` and meta-properties.
 * Added `SeedStrategy` to allow deterministic behavior for `coin()`, `sample()` and `Order.shuffle`.
@@ -64,6 +67,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Configured GraphSON 3.0 as the default setting for the `GraphSONMapper`.
 * Added `JavascriptTranslator` for Java.
 * Added `DotNetTranslator` for Java.
+* Added Groovy `Translator` for Python.
 * Fixed bug in `PythonTranslator` for processing `TraversalStrategy` instances in GraphBinary.
 * Fixed bug in bytecode `Bindings` where calling `of()` prior to calling a child traversal in the same parent would cause the initial binding to be lost.
 * Bumped to tornado 6.1 for gremlinpython.
@@ -71,6 +75,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Bumped to Spark 3.0.0.
 * Bumped to Jackson 2.11.x.
 * Supported build for Java 11.
+* Added `MessageSerializer.getMapper()` to return the underlying object that handles serialization for a particular implementation.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
 * Added a kerberos KDC to the docker container for testing GLV's.
@@ -81,6 +86,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
 * Changed the Groovy to an optional dependency in `gremlin-driver`.
 * Added support for configuring an `Authorizer` implementation to Gremlin Server, allowing for authorization of individual gremlin requests.
+* Added `gremlint` module to house the Gremlin query formatting JavaScript library powering gremlint.com.
 * Removed internal functionality for the session close message in Gremlin Server - the message is accepted but ignored if sent.
 * Removed `Property.Exceptions.propertyValueCanNotBeNull` exception type as `null` now has meaning in Gremlin.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.

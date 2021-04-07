@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class GraphSONMessageSerializerV3d0Test {
     private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public final MessageSerializer serializer = new GraphSONMessageSerializerV3d0();
+    public final MessageSerializer<ObjectMapper> serializer = new GraphSONMessageSerializerV3d0();
 
     @Test
     public void shouldSerializeIterable() throws Exception {
@@ -386,7 +387,7 @@ public class GraphSONMessageSerializerV3d0Test {
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
     }
 
-    private ResponseMessage convert(final Object toSerialize, MessageSerializer serializer) throws SerializationException {
+    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }

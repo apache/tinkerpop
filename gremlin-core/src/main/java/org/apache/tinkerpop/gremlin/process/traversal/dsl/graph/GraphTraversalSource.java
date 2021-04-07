@@ -402,10 +402,21 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Proxies calls through to the underlying {@link Graph#tx()}.
+     * Proxies calls through to the underlying {@link Graph#tx()} or to the {@link RemoteConnection#tx()}.
      */
     public Transaction tx() {
-        return this.graph.tx();
+        if (null == this.connection)
+            return this.graph.tx();
+        else {
+            // prevent child transactions and let the current Transaction object be bound to the
+            // TraversalSource that spawned it
+            final Transaction tx = this.connection.tx();
+            if (tx == Transaction.NO_OP && this.connection instanceof Transaction)
+                return (Transaction) this.connection;
+            else
+                return tx;
+        }
+
     }
 
     /**

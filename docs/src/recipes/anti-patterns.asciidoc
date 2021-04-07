@@ -68,7 +68,7 @@ the traversal and process them from there.
 
 [gremlin-groovy]
 ----
-g.withSideEffect("relations", relations).
+g.withSideEffect("rels", relations).
   inject(persons).sideEffect(
     unfold().
     addV("person").
@@ -78,7 +78,7 @@ g.withSideEffect("relations", relations).
     group("m").
       by(id).
       by(unfold())).
-  select("relations").unfold().as("r").
+  select("rels").unfold().as("r").
   addE("knows").
     from(select("m").select(select("r").select("from"))).
     to(select("m").select(select("r").select("to"))).

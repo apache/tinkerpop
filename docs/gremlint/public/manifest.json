@@ -1,0 +1,15 @@
+{
+  "short_name": "Gremlint",
+  "name": "Gremlint - Gremlin query formatter",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

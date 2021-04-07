@@ -465,7 +465,7 @@ public final class Cluster {
         return manager.factory;
     }
 
-    MessageSerializer getSerializer() {
+    MessageSerializer<?> getSerializer() {
         return manager.serializer;
     }
 
@@ -558,7 +558,7 @@ public final class Cluster {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
-        private MessageSerializer serializer = null;
+        private MessageSerializer<?> serializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
@@ -645,7 +645,7 @@ public final class Cluster {
         /**
          * Sets the {@link MessageSerializer} to use.
          */
-        public Builder serializer(final MessageSerializer serializer) {
+        public Builder serializer(final MessageSerializer<?> serializer) {
             this.serializer = serializer;
             return this;
         }
@@ -1012,7 +1012,7 @@ public final class Cluster {
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
         private final Factory factory;
-        private final MessageSerializer serializer;
+        private final MessageSerializer<?> serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final AuthProperties authProps;

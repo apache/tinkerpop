@@ -65,7 +65,7 @@ public final class OpLoader {
     }
 
     /**
-     * Gets an {@link OpProcessor} by its name. If it cannot be found an {@link Optional#EMPTY} is returned.
+     * Gets an {@link OpProcessor} by its name. If it cannot be found an {@link Optional#empty()} is returned.
      */
     public static Optional<OpProcessor> getProcessor(final String name) {
         return Optional.ofNullable(processors.get(name));

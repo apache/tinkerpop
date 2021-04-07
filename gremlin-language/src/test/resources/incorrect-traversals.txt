@@ -1,0 +1,22 @@
+g.addVertex()
+g.V();---
+g.VVV()
+g.tx().error()
+;;
+
+something something error
+h.V()
+V()
+addV()
+tx().commit()
+g.next()
+g.hasNext()
+g.V().repeat(g).times(10)
+g.V().repeat(g.V().next()).times(10)
+' '
+"  "
+g.V().has("person","name", startingWith(1234)).id()
+g.V('3').oute().limit(1)
+g.V('3').dedupe()
+g.V().order().bye('code').limit(1)
+g.V().horder().by(id)

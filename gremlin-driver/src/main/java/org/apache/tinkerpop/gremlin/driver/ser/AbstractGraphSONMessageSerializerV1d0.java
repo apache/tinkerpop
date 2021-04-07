@@ -50,7 +50,7 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMessageSerializer {
+public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMessageSerializer<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV1d0.class);
 
     protected ObjectMapper mapper;
@@ -152,6 +152,11 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
         final GraphSONMapper.Builder b = null == builder ? GraphSONMapper.build() : builder;
         return b.addCustomModule(new AbstractGraphSONMessageSerializerV1d0.GremlinServerModule())
                 .version(GraphSONVersion.V1_0);
+    }
+
+    @Override
+    public ObjectMapper getMapper() {
+        return this.mapper;
     }
 
     public final static class GremlinServerModule extends SimpleModule {

@@ -718,6 +718,18 @@ the existing `<execution>` entries, paying special attention to the pathing of t
 `<outputDirectory>` and `<imagesdir>`.  Note that the `<outputDirectory>` represents where the book will exist when
 uploaded to the server and should preserve the directory structure in git as referenced in `<sourceDirectory>`.
 
+Adding Gremlin code examples to any of the link:https://github.com/apache/tinkerpop/tree/master/docs/src/recipes[docs/src/recipes]
+or to link:https://github.com/apache/tinkerpop/tree/master/docs/src/reference/the-traversal.asciidoc[docs/src/reference/the-traversal.asciidoc]
+also has the effect of improving testing of the Gremlin language. All Gremlin found in code sections that are marked
+as `[gremlin-groovy]` are tested in two ways:
+
+1. When `mvn clean install` is executed all such Gremlin are passed through the grammar parser to ensure validity.
+As the grammar parser is not a Groovy parser, the test framework attempts to filter away or ignore things it can't
+possibly parse. Ideally, examples should be written in such a way as to be parsed by the grammar, but in cases where it
+cannot be as such, the test suite simply needs to be modified to suitably ignore the example.
+2. When the documentation is built, the code snippets are actually executed and errors will result in a failure to
+build the documentation.
+
 Please see the <<building-testing,Building and Testing>> section for more information on how to generate the
 documentation.
 
@@ -754,8 +766,13 @@ Cause: link:https://github.com/asciidoctor/asciidoctor/issues/1514[#1514]
 The content for the TinkerPop home page and related pages that make up the web site at link://tinkerpop.apache.org[tinkerpop.apache.org]
 is stored in the git repository under `/docs/site`. In this way, it becomes easier for the community to provide content
 presented there, because the content can be accepted via the standard workflow of a pull request. To generate the site
-for local viewing, run `bin/generate-home.sh`, which will build the site in `target/site/`. PMC members can officially
-publish the site with `bin/publish-home.sh <username>`.
+for local viewing, run `bin/generate-home.sh`, which will build the site in `target/site/`. Note that Node.js and npm
+have to be installed in order for the script to work. See the <<nodejs-environment,JavaScript Environment>> section for
+more info about what parts of TinkerPop depend on Node.js and npm. While most of the generated website files can be
+viewed locally by opening them in a browser, some of them rely on imported resources that will be blocked by the
+browser's same-origin policy if not served from a single origin using a web server. The generated website can be served
+locally by running `npx serve target/site/home`. PMC members can officially publish the site with
+`bin/publish-home.sh <username>`.
 
 "Publishing" does not publish documentation (e.g. reference docs, javadocs, etc) and only publishes what is generated
 from the content in `/docs/site`. Publishing the site can be performed out of band with the release cycle and is no

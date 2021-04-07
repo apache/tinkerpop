@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -53,6 +54,17 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
+
+    public static final Bytecode TX_COMMIT = new Bytecode("tx", "commit");
+    public static final Bytecode TX_ROLLBACK = new Bytecode("tx", "rollback");
+
+    public static final Set<Bytecode> GRAPH_OPERATIONS = new HashSet<>(Arrays.asList(TX_COMMIT, TX_ROLLBACK));
+
+    public Bytecode() {}
+
+    private Bytecode(final String sourceName, final Object... arguments) {
+        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+    }
 
     /**
      * Add a {@link TraversalSource} instruction to the bytecode.

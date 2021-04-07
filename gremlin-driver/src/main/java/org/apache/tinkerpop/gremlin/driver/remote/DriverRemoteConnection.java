@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
@@ -55,7 +56,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     private static final String DEFAULT_TRAVERSAL_SOURCE = "g";
 
-    private final Client client;
+    final Client client;
     private final boolean tryCloseCluster;
     private final boolean tryCloseClient;
     private final String remoteTraversalSourceName;
@@ -113,11 +114,15 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     private DriverRemoteConnection(final Client client, final String remoteTraversalSourceName) {
+        this(client, remoteTraversalSourceName, false);
+    }
+
+    private DriverRemoteConnection(final Client client, final String remoteTraversalSourceName, final boolean tryCloseClient) {
         this.client = client.alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = false;
-        attachElements = false;
-        tryCloseClient = false;
+        this.attachElements = false;
+        this.tryCloseClient = tryCloseClient;
     }
 
     /**
@@ -227,6 +232,18 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * If the connection is bound to a session, then get the session identifier from it.
+     */
+    Optional<String> getSessionId() {
+        if (client instanceof Client.SessionedClient) {
+            Client.SessionedClient c = (Client.SessionedClient) client;
+            return Optional.of(c.getSessionId());
+        }
+
+        return Optional.empty();
+    }
+
     protected static RequestOptions getRequestOptions(final Bytecode bytecode) {
         final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(bytecode, OptionsStrategy.class);
         final RequestOptions.Builder builder = RequestOptions.build();
@@ -256,6 +273,16 @@ public class DriverRemoteConnection implements RemoteConnection {
             if (tryCloseCluster)
                 client.getCluster().close();
         }
+    }
+
+    /**
+     * Constructs a new {@link DriverRemoteTransaction}.
+     */
+    @Override
+    public Transaction tx() {
+        final DriverRemoteConnection session = new DriverRemoteConnection(
+                client.getCluster().connect(UUID.randomUUID().toString()), remoteTraversalSourceName, true);
+        return new DriverRemoteTransaction(session);
     }
 
     @Override

@@ -52,7 +52,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
 
     @Override
     protected void encode(final ChannelHandlerContext ctx, final ResponseMessage o, final List<Object> objects) throws Exception {
-        final MessageSerializer serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
+        final MessageSerializer<?> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
         final Session session = ctx.channel().attr(StateKey.SESSION).get();
 
@@ -77,7 +77,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
             } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
-                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
 
                 final Frame serialized;
 
@@ -101,7 +101,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
             if (useBinary) {
                 objects.add(serializer.serializeResponseAsBinary(error, ctx.alloc()));
             } else {
-                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
                 objects.add(textSerializer.serializeResponseAsString(error));
             }
         }

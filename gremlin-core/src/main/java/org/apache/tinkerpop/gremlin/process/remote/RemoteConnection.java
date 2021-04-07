@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
@@ -39,6 +40,13 @@ import java.util.concurrent.CompletableFuture;
 public interface RemoteConnection extends AutoCloseable {
     public static final String GREMLIN_REMOTE = "gremlin.remote.";
     public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
+
+    /**
+     * Creates a {@link Transaction} object designed to work with remote semantics.
+     */
+    public default Transaction tx() {
+        throw new UnsupportedOperationException("This implementation does not support remote transactions");
+    }
 
     /**
      * Submits {@link Traversal} {@link Bytecode} to a server and returns a promise of a {@link RemoteTraversal}.

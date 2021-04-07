@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Reads the feature files and extracts Gremlin to a {@code Map} structure that can be used to then generate
+ * Reads the feature files and extracts Gremlin to a {@code Map} structure of the test name as the key with a
+ * {@code List} of Gremlin strings for the value.
  */
 public class FeatureReader {
 

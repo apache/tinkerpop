@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 
@@ -63,5 +64,10 @@ public final class TraversalStrategyProxy<T extends TraversalStrategy> implement
     @Override
     public int compareTo(final Object o) {
         throw new UnsupportedOperationException("TraversalStrategyProxy is not meant to be used directly as a TraversalStrategy and is for serialization purposes only");
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.traversalStrategyProxyString(this);
     }
 }

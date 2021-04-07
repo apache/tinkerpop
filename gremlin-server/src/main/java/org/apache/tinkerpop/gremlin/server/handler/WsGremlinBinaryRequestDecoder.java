@@ -45,9 +45,9 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
     private static final Logger logger = LoggerFactory.getLogger(WsGremlinBinaryRequestDecoder.class);
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
-    private final Map<String, MessageSerializer> serializers;
+    private final Map<String, MessageSerializer<?>> serializers;
 
-    public WsGremlinBinaryRequestDecoder(final Map<String, MessageSerializer> serializers) {
+    public WsGremlinBinaryRequestDecoder(final Map<String, MessageSerializer<?>> serializers) {
         this.serializers = serializers;
     }
 
@@ -64,7 +64,7 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
         try {
             messageBytes.readBytes(contentTypeBytes);
             final String contentType = contentTypeBytes.toString(UTF8);
-            final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_BINARY_SERIALIZER);
+            final MessageSerializer<?> serializer = select(contentType, ServerSerializers.DEFAULT_BINARY_SERIALIZER);
 
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed
@@ -83,7 +83,7 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
         }
     }
 
-    private MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
+    private MessageSerializer<?> select(final String mimeType, final MessageSerializer<?> defaultSerializer) {
         if (logger.isWarnEnabled() && !serializers.containsKey(mimeType))
             logger.warn("Gremlin Server is not configured with a serializer for the requested mime type [{}] - using {} by default",
                     mimeType, defaultSerializer.getClass().getName());

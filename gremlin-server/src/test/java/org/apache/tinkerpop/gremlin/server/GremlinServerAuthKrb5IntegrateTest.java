@@ -231,7 +231,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV1());
     }
 
-    public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializer serializer) throws InterruptedException, ExecutionException {
+    public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializer<?> serializer) throws InterruptedException, ExecutionException {
         final Map<String,Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);

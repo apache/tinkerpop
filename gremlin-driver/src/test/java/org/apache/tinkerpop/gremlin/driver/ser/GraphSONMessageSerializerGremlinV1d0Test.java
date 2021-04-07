@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
@@ -60,7 +61,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1d0();
+    public MessageSerializer<ObjectMapper> serializer = new GraphSONMessageSerializerGremlinV1d0();
 
     @Test
     public void shouldSerializeIterable() throws Exception {
