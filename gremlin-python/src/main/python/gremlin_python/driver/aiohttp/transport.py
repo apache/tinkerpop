@@ -29,8 +29,8 @@ __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 class AiohttpTransport(AbstractBaseTransport):
 
-    def __init__(self, read_timeout=None, write_timeout=None,
-                 compression=None, ssl_options=None,
+    # Default heartbeat of 5.0 seconds.
+    def __init__(self, read_timeout=None, write_timeout=None, ssl_options=None,
                  heartbeat=5.0, max_content_length=None):
         # Start event loop and initialize websocket and client to None
         self._loop = asyncio.new_event_loop()
@@ -40,7 +40,6 @@ class AiohttpTransport(AbstractBaseTransport):
         # Set all inner variables to parameters passed in.
         self._read_timeout = read_timeout
         self._write_timeout = write_timeout
-        self._compression = compression
         self._ssl_options = ssl_options
         self._heartbeat = heartbeat
         self._max_content_length = max_content_length
@@ -49,10 +48,12 @@ class AiohttpTransport(AbstractBaseTransport):
         # Inner function to perform async connect.
         async def async_connect():
             # Start client session and use it to create a websocket with all the connection options provided.
-            self._client_session = aiohttp.ClientSession()
-            self._websocket = await self._client_session.ws_connect(url, ssl=self._ssl_options, headers=headers,
-                                                             compress=self._compression, heartbeat=self._heartbeat,
-                                                             max_msg_size=self._max_content_length)
+            self._client_session = aiohttp.ClientSession(loop=self._loop)
+            self._websocket = await self._client_session.ws_connect(url,
+                                                                    ssl=self._ssl_options,
+                                                                    headers=headers,
+                                                                    heartbeat=self._heartbeat,
+                                                                    max_msg_size=self._max_content_length)
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
