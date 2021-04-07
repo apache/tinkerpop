@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_COMMIT;
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -94,8 +96,8 @@ public class BytecodeHelperTest {
 
     @Test
     public void shouldDetermineOperation() {
-        assertThat(BytecodeHelper.isGraphOperation(Bytecode.TX_COMMIT), is(true));
-        assertThat(BytecodeHelper.isGraphOperation(Bytecode.TX_ROLLBACK), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(TX_COMMIT.getBytecode()), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(TX_ROLLBACK.getBytecode()), is(true));
         assertThat(BytecodeHelper.isGraphOperation(g.V().out("knows").asAdmin().getBytecode()), is(false));
     }
 }

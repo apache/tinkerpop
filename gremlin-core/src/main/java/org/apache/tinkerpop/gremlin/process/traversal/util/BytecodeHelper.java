@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -31,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Utility class for parsing {@link Bytecode}.
@@ -68,10 +70,10 @@ public final class BytecodeHelper {
     }
 
     /**
-     * Checks if the bytecode is one of the standard {@link Bytecode#GRAPH_OPERATIONS}.
+     * Checks if the bytecode is one of the standard {@link GraphOp} options.
      */
     public static boolean isGraphOperation(final Bytecode bytecode) {
-        return Bytecode.GRAPH_OPERATIONS.contains(bytecode);
+        return Stream.of(GraphOp.values()).anyMatch(op -> op.equals(bytecode));
     }
 
     public static Optional<String> getLambdaLanguage(final Bytecode bytecode) {

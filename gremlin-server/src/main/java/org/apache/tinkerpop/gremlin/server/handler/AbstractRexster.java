@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
@@ -73,6 +74,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_COMMIT;
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK;
 
 /**
  * A base implementation of {@link Rexster} which offers some common functionality that matches typical Gremlin Server
@@ -578,13 +582,13 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
     }
 
     /**
-     * If {@link Bytecode} is detected to contain a "graph operation" then it gets processed by this method.
+     * If {@link Bytecode} is detected to contain a {@link GraphOp} then it gets processed by this method.
      */
     protected void handleGraphOperation(final Context gremlinContext, final Bytecode bytecode, final Graph graph) throws Exception {
         final RequestMessage msg = gremlinContext.getRequestMessage();
         if (graph.features().graph().supportsTransactions()) {
-            if (bytecode.equals(Bytecode.TX_COMMIT) || bytecode.equals(Bytecode.TX_ROLLBACK)) {
-                final boolean commit = bytecode.equals(Bytecode.TX_COMMIT);
+            if (TX_COMMIT.equals(bytecode) || TX_ROLLBACK.equals(bytecode)) {
+                final boolean commit = TX_COMMIT.equals(bytecode);
                 closeTransaction(gremlinContext, commit ? Transaction.Status.COMMIT : Transaction.Status.ROLLBACK);
 
                 // write back a no-op for success
