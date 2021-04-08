@@ -23,7 +23,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -33,7 +32,6 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -143,6 +141,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
+            case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
                 clearNeo4j(settings);
                 break;
         }
@@ -153,6 +152,58 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     private static void clearNeo4j(Settings settings) {
         deleteDirectory(new File("/tmp/neo4j"));
         settings.graphs.put("graph", "conf/neo4j-empty.properties");
+    }
+
+    @Test
+    public void shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails() throws Exception {
+        assumeNeo4jIsPresent();
+        assumeThat(isUsingUnifiedChannelizer(), is(true));
+
+        final Cluster cluster = TestClientFactory.open();
+        final Client session = cluster.connect(name.getMethodName());
+        final List<CompletableFuture<ResultSet>> futuresAfterFailure = new ArrayList<>();
+
+        // short, sweet and successful - but will rollback after close
+        final CompletableFuture<List<Result>> first = session.submit("g.addV('person').iterate();1").all();
+        assertEquals(1, first.get().get(0).getInt());
+
+        // leave enough time for the results to queue behind this
+        final int followOnRequestCount = 8;
+        final CompletableFuture<ResultSet> second = session.submitAsync("g.addV('person').sideEffect{Thread.sleep(60000)}");
+
+        // these requests will queue
+        for (int ix = 0; ix < followOnRequestCount; ix ++) {
+            futuresAfterFailure.add(session.submitAsync("g.addV('software')"));
+        }
+
+        // close the session which will interrupt "second" request and flush the queue of requests behind it
+        session.close();
+
+        try {
+            second.join().all().join();
+            fail("should have been interrupted by channel close");
+        } catch (Exception ex) {
+            assertEquals("Connection to server is no longer active", ex.getCause().getMessage());
+        }
+
+        final AtomicInteger fails = new AtomicInteger(0);
+        futuresAfterFailure.forEach(f -> {
+            try {
+                f.join().all().join();
+                fail("should have been interrupted by channel close");
+            } catch (Exception ex) {
+                assertEquals("Connection to server is no longer active", ex.getCause().getMessage());
+                fails.incrementAndGet();
+            }
+        });
+
+        // all are failures
+        assertEquals(followOnRequestCount, fails.get());
+
+        // validate the rollback
+        final Client client = cluster.connect();
+        assertEquals(0, client.submit("g.V().count()").all().get().get(0).getInt());
+        cluster.close();
     }
 
     @Test
