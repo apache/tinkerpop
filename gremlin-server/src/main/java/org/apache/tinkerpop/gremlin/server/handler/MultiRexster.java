@@ -147,6 +147,10 @@ public class MultiRexster extends AbstractRexster {
                 handleException(currentGremlinContext, ex);
             }
         } catch (RexsterException rexex) {
+            // if the close reason isn't already set then things stopped during gremlin execution somewhere and not
+            // more external issues like channel close or timeouts.
+            closeReason.compareAndSet(null, CloseReason.PROCESSING_EXCEPTION);
+
             // remaining work items in the queue are ignored since this worker is closing. must send
             // back some sort of response to satisfy the client. writeAndFlush code is different than
             // the ResponseMessage as we don't want the message to be "final" for the Context. that
@@ -173,9 +177,12 @@ public class MultiRexster extends AbstractRexster {
                 currentGremlinContext.writeAndFlush(rexex.getResponseMessage());
             }
         } finally {
-            // if this is a normal end to the session or if the session life timeout is exceeded then the
-            // session needs to be removed and everything cleaned up
-            if (closeReason.compareAndSet(null, CloseReason.NORMAL) || closeReason.get() == CloseReason.SESSION_TIMEOUT) {
+            // if this is a normal end to the session or if there is some general processing exception which tanks
+            // the entire session or if the session life timeout is exceeded then the  session needs to be removed
+            // and everything cleaned up
+            if (closeReason.compareAndSet(null, CloseReason.EXIT_PROCESSING) ||
+                    closeReason.get() == CloseReason.PROCESSING_EXCEPTION ||
+                    closeReason.get() == CloseReason.SESSION_TIMEOUT) {
                 close();
             }
         }

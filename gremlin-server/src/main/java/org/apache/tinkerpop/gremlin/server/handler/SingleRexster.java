@@ -20,12 +20,10 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
 
 /**
  * A simple {@link Rexster} implementation that accepts one request, processes it and exits.
@@ -60,6 +58,10 @@ public class SingleRexster extends AbstractRexster {
             startTransaction(gremlinContext);
             process(gremlinContext);
         } catch (RexsterException we) {
+            // if the close reason isn't already set then things stopped during gremlin execution somewhere and not
+            // more external issues like channel close or timeouts.
+            closeReason.compareAndSet(null, CloseReason.PROCESSING_EXCEPTION);
+
             logger.warn(we.getMessage(), we);
 
             // should have already rolledback - this is a safety valve
@@ -67,6 +69,7 @@ public class SingleRexster extends AbstractRexster {
 
             gremlinContext.writeAndFlush(we.getResponseMessage());
         } finally {
+            closeReason.compareAndSet(null, CloseReason.EXIT_PROCESSING);
             close();
         }
     }

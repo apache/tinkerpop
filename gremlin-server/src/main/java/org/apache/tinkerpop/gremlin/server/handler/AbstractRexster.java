@@ -22,6 +22,7 @@ import groovy.lang.GroovyRuntimeException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -103,7 +104,44 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
     protected final ConcurrentMap<String, Rexster> sessions;
     protected final Set<String> aliasesUsedByRexster = new HashSet<>();
 
-    protected enum CloseReason { UNDETERMINED, CHANNEL_CLOSED, SESSION_TIMEOUT, REQUEST_TIMEOUT, NORMAL }
+    /**
+     * The reason that a particular session closed. The reason for the close is generally not important as a
+     * final disposition for the {@link Rexster} instance and is more useful in aiding flow control during the
+     * close process.
+     */
+    protected enum CloseReason {
+
+        /**
+         * The session exits in a fashion that did not precipitate from some form of interruption, timeout or
+         * exception, i.e. it is simply allowed to process to an exit through its normal execution flow. This status
+         * may or may not be possible given the context of the implementation. For example, a {@link MultiRexster}
+         * needs to be interrupted to stop processing.
+         */
+        EXIT_PROCESSING,
+
+        /**
+         * The session was interrupted by the channel closing, which can be something initiated by closing the
+         * {@link Client} or might be triggered by the server. This may not be considered an error situation and
+         * depending on context, might be similar to a {@link #EXIT_PROCESSING} termination.
+         */
+        CHANNEL_CLOSED,
+
+        /**
+         * The session encountered an exception related to execution like a script error, traversal iteration problem,
+         * serialization issue, etc.
+         */
+        PROCESSING_EXCEPTION,
+
+        /**
+         * The session was interrupted by the session lifetime timeout.
+         */
+        SESSION_TIMEOUT,
+
+        /**
+         * The session was interrupted by the request timeout.
+         */
+        REQUEST_TIMEOUT
+    }
 
     AbstractRexster(final Context gremlinContext, final String sessionId,
                     final boolean transactionManaged,
