@@ -119,8 +119,6 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         // close Rexster if the channel closes to cleanup and close transactions
         this.initialChannel.closeFuture().addListener(f -> {
             if (closeReason.compareAndSet(null, CloseReason.CHANNEL_CLOSED)) {
-                // cancel session worker or it will keep waiting for items to appear in the session queue
-                cancel(true);
                 close();
             }
         });
@@ -493,15 +491,6 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
             if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush) aggregate.add(itty.next());
-
-            // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
-            // not active, and hence we should break the loop.
-            if (!nettyContext.channel().isActive()) {
-                if (managedTransactionsForRequest) {
-                    closeTransaction(gremlinContext, Transaction.Status.ROLLBACK);
-                }
-                break;
-            }
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
