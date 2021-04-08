@@ -375,13 +375,11 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             fail("Should have tossed the manually generated exception");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            ex.printStackTrace();
             assertEquals("no worky", root.getMessage());
 
-            // just force a commit here of "something" in case there is something lingering
+            // just force a commit here of "something" to ensure the rollback of the previous request
             client.submit("graph.addVertex(); graph.tx().commit()").all().get();
         }
-
 
         // the transaction is managed so a rollback should have executed
         assertEquals(1, client.submit("g.V().count()").all().get().get(0).getInt());
@@ -430,22 +428,34 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
+        final Client session = cluster.connect(name.getMethodName());
 
-        final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
+        final ResultSet results1 = session.submit("x = [1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);
         results1.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
 
-        final ResultSet results2 = client.submit("x[0]+1");
+        final ResultSet results2 = session.submit("x[0]+1");
         assertEquals(2, results2.all().get().get(0).getInt());
 
-        // session times out in 3 seconds
-        Thread.sleep(3500);
+        // session times out in 3 seconds but slow environments like travis might not be so exacting in the
+        // shutdown process so be patient
+        if (isUsingUnifiedChannelizer()) {
+            boolean sessionAlive = true;
+            for (int ix = 1; ix < 11; ix++) {
+                sessionAlive = ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName());
+                if (!sessionAlive) break;
+                Thread.sleep(ix * 500);
+            }
+
+            assertThat(sessionAlive, is(false));
+        } else {
+            Thread.sleep(5000);
+        }
 
         try {
             // the original session should be dead so this call will open a new session with the same name but fail
             // because the state is now gone - x is an invalid property
-            client.submit("x[1]+2").all().get();
+            session.submit("x[1]+2").all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
             final Throwable cause = ExceptionUtils.getCause(ex);
@@ -453,7 +463,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
 
             // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, session.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
