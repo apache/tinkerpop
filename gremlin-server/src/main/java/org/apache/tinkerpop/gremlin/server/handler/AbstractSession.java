@@ -390,6 +390,12 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         }
     }
 
+    /**
+     * Constructs an {@code Iterator} from the results of a script evaluation provided in the {@link SessionTask}.
+     *
+     * @param sessionTask The session task which can be used as a context in constructing the {@code Iterator}
+     * @param script The script extracted by the calling method from the {@code sessionTask}
+     */
     protected Iterator<?> fromScript(final SessionTask sessionTask, final String script) throws Exception {
         final RequestMessage msg = sessionTask.getRequestMessage();
         final Map<String, Object> args = msg.getArgs();
@@ -398,6 +404,13 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 script, mergeBindingsFromRequest(sessionTask, getWorkerBindings())));
     }
 
+    /**
+     * Constructs an {@code Iterator} from {@link Bytecode} provided in the {@link SessionTask}. If the {@link Bytecode}
+     * is found to evalute to a {@link GraphOp} then it is processed and an empty {@code Optional} is returned.
+     *
+     * @param sessionTask The session task which can be used as a context in constructing the {@code Iterator}
+     * @param bytecode The {@link Bytecode} extracted by the calling method from the {@code sessionTask}
+     */
     protected Optional<Iterator<?>> fromBytecode(final SessionTask sessionTask, final Bytecode bytecode) throws Exception {
         final RequestMessage msg = sessionTask.getRequestMessage();
 

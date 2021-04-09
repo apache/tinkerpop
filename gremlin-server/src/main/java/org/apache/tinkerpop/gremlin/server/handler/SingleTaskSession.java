@@ -31,8 +31,11 @@ public class SingleTaskSession extends AbstractSession {
     private static final Logger logger = LoggerFactory.getLogger(SingleTaskSession.class);
     protected final SessionTask onlySessionTask;
 
-    SingleTaskSession(final SessionTask onlySessionTask, final String sessionId,
-                      final ConcurrentMap<String, Session> sessions) {
+    /**
+     * Constructs a {@code SingleTaskSession} that has the task to execute supplied on construction.
+     */
+    public SingleTaskSession(final SessionTask onlySessionTask, final String sessionId,
+                             final ConcurrentMap<String, Session> sessions) {
         super(onlySessionTask, sessionId,true, sessions);
         this.onlySessionTask = onlySessionTask;
     }
@@ -46,6 +49,10 @@ public class SingleTaskSession extends AbstractSession {
         return false;
     }
 
+    /**
+     * This implementation only take a single {@link SessionTask} on construction - no additional tasks can be
+     * submitted.
+     */
     @Override
     public boolean submitTask(final SessionTask sessionTask) {
         throw new UnsupportedOperationException("SingleWorker doesn't accept tasks beyond the one provided to the constructor");

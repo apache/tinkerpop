@@ -45,7 +45,10 @@ import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.
 
 /**
  * A {@link Session} implementation that queues tasks given to it and executes them in a serial fashion within the
- * same thread which thus allows multiple tasks to be executed in the same transaction.
+ * same thread which thus allows multiple tasks to be executed in the same transaction. The first {@link SessionTask}
+ * to execute is supplied on the constructor and additional ones may be added as they arrive with
+ * {@link #submitTask(SessionTask)} where they will be added to a queue where they will await execution in the thread
+ * bound to this session.
  */
 public class MultiTaskSession extends AbstractSession {
     private static final Logger logger = LoggerFactory.getLogger(MultiTaskSession.class);
@@ -57,15 +60,14 @@ public class MultiTaskSession extends AbstractSession {
     private Bindings bindings;
 
     /**
-     * Creates a new {@code MultiTaskSession} object providing the initial starting context that starts up the session.
-     * As more requests arrive on the {@code sessionId} they are added to the queue on this session to be executed
-     * in the order they arrive.
+     * Creates a new {@code MultiTaskSession} object providing the initial starting {@link SessionTask} that gets
+     * executed by the session when it starts.
      *
-     * @param initialSessionTask The context that starts the session.
+     * @param initialSessionTask The tasks that starts the session.
      * @param sessionId The id of the session
      * @param sessions The session id to {@link Session} instances mapping
      */
-    MultiTaskSession(final SessionTask initialSessionTask, final String sessionId,
+    public MultiTaskSession(final SessionTask initialSessionTask, final String sessionId,
                      final ConcurrentMap<String, Session> sessions) {
         super(initialSessionTask, sessionId, false, sessions);
 
