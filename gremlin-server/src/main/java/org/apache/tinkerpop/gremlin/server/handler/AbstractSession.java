@@ -97,7 +97,12 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     private final AtomicReference<ScheduledFuture<?>> sessionCancelFuture = new AtomicReference<>();
     private final AtomicReference<Future<?>> sessionFuture = new AtomicReference<>();
     private long actualTimeoutLengthWhenClosed = 0;
-    private Thread sessionThread;
+
+    /**
+     * The session thread is a reference to the thread that is running the session and should be set by an
+     * implementation as the first line of the {@link #run()} method.
+     */
+    protected Thread sessionThread;
     protected final boolean maintainStateAfterException;
     protected final AtomicReference<CloseReason> closeReason = new AtomicReference<>();
     protected final GraphManager graphManager;
@@ -199,10 +204,6 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         return sessionTask.getGremlinExecutor().getScriptEngineManager().getEngineByName(language);
     }
 
-    public void setSessionThread(final Thread runner) {
-        this.sessionThread = runner;
-    }
-
     @Override
     public void setSessionCancelFuture(final ScheduledFuture<?> f) {
         if (!sessionCancelFuture.compareAndSet(null, f))
@@ -228,8 +229,19 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 // SingleTaskSession request then we can just straight cancel() the session instance
                 if (causedBySession || !sessionIdOnRequest)
                     cancel(true);
-                else
-                    sessionThread.interrupt();
+                else {
+                    // in both MultiTaskSession and SingleTaskSession the thread gets set immediately at the start
+                    // of run() as it should (though "single" has little need for it). As triggerTimeout() for a
+                    // request MultiTaskSession can only be called AFTER we are deep in the run() there should be
+                    // no chance of race conditions or situations where the sessionThread is null at this point.
+                    if (sessionThread != null) {
+                        sessionThread.interrupt();
+                    } else {
+                        logger.debug("{} is a {} which is not interruptable as the thread running the session has not " +
+                                        "been set - please check the implementation if this is not desirable",
+                                sessionId, this.getClass().getSimpleName());
+                    }
+                }
             }
         }
     }

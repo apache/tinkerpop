@@ -52,11 +52,6 @@ public interface Session extends Runnable {
     void setSessionFuture(final Future<?> f);
 
     /**
-     * Sets a reference to the all powerful thread that is running this session.
-     */
-    void setSessionThread(final Thread t);
-
-    /**
      * Provides a general way to interrupt the session by way of a timeout.
      *
      * @param timeout the length of time that passed for the timeout to have triggered

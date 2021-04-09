@@ -51,6 +51,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +68,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
     protected final GraphManager graphManager;
     protected final GremlinExecutor gremlinExecutor;
     protected final ScheduledExecutorService scheduledExecutorService;
-    protected final SessionExecutor sessionExecutor;
+    protected final ExecutorService sessionExecutor;
     protected final Channelizer channelizer;
 
     protected final ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
@@ -120,9 +122,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
         this.channelizer = channelizer;
-
-        // the UnifiedChannelizer validates that we have a SessionExecutor here
-        this.sessionExecutor = (SessionExecutor) gremlinExecutor.getExecutorService();
+        this.sessionExecutor = gremlinExecutor.getExecutorService();
     }
 
     @Override
@@ -174,8 +174,9 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                         createMultiTaskSession(sessionTask, sessionId) :
                         createSingleTaskSession(sessionTask, sessionId);
 
-                // queue the session for execution
-                sessionExecutor.submit(session);
+                // queue the session to startup when a thread is ready to take it
+                final Future<?> sessionFuture = sessionExecutor.submit(session);
+                session.setSessionFuture(sessionFuture);
                 sessions.put(sessionId, session);
 
                 // determine the max session life. for multi that's going to be "session life" and for single that
@@ -293,7 +294,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
 
     /**
      * Called when creating a single task session where the provided {@link SessionTask} will be the only one to be
-     * executed and can therefore take a more efficient execution path in the {@link SessionExecutor}.
+     * executed and can therefore take a more efficient execution path.
      */
     protected Session createSingleTaskSession(final SessionTask sessionTask, final String sessionId) {
         return new SingleTaskSession(sessionTask, sessionId, sessions);

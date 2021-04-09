@@ -53,6 +53,10 @@ public class SingleTaskSession extends AbstractSession {
 
     @Override
     public void run() {
+        // allow the Session to know about the thread that is running it - the thread really only has relevance
+        // once the session has started.
+        this.sessionThread = Thread.currentThread();
+
         try {
             startTransaction(onlySessionTask);
             process(onlySessionTask);

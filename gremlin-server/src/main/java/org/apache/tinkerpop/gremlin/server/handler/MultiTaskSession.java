@@ -104,6 +104,10 @@ public class MultiTaskSession extends AbstractSession {
 
     @Override
     public void run() {
+        // allow the Session to know about the thread that is running it - the thread really only has relevance
+        // once the session has started.
+        this.sessionThread = Thread.currentThread();
+
         // there must be one item in the queue at least since addTask() gets called before the worker
         // is ever started
         SessionTask sessionTask = queue.poll();
