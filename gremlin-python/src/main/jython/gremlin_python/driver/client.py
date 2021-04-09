@@ -39,10 +39,12 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
-                 headers=None, session=""):
+                 headers=None, session="", max_content_length=None):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
+        if max_content_length is None:
+            max_content_length = 10 * 1024 * 1024
         if message_serializer is None:
             message_serializer = serializer.GraphSONSerializersV3d0()
         self._message_serializer = message_serializer
@@ -58,7 +60,8 @@ class Client:
                 raise Exception("Please install Tornado or pass"
                                 "custom transport factory")
             else:
-                transport_factory = lambda: TornadoTransport()
+                transport_factory = lambda: TornadoTransport(
+                    max_content_length=max_content_length)
         self._transport_factory = transport_factory
         if protocol_factory is None:
             protocol_factory = lambda: protocol.GremlinServerWSProtocol(

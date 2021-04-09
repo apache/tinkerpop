@@ -33,6 +33,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `toString()` representation of `P` when string values are present in Javascript.
 * Exposed barrier size with getter for `NoOpBarrierStep`.
 * Bumped to Netty 4.1.59.
+* Added `max_content_length` as a Python driver setting.
 * Ensured that `barrier()` additions by strategies were controlled solely by `LazyBarrierStrategy`.
 * Fixed `NullPointerException` in `ResponseMessage` deserialization for GraphSON.
 * Enabled the Gremlin.Net driver to repair its connection pool after the server was temporarily unavailable.

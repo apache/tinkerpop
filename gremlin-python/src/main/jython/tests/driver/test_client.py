@@ -44,6 +44,17 @@ def test_connection(connection):
     assert 'host' in results_set.status_attributes
 
 
+def test_client_message_too_big(client):
+    try:
+        client = Client("http://localhost", 'g', max_content_length=1024)
+        client.submit("1+1").all().result()
+        assert False
+    except Exception:
+        assert True
+    finally:
+        client.close()
+
+
 def test_client_simple_eval(client):
     assert client.submit('1 + 1').all().result()[0] == 2
 
