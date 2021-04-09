@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.handler.SessionExecutor;
 import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;

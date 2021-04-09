@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.util;
+package org.apache.tinkerpop.gremlin.server.handler;
 
-import org.apache.tinkerpop.gremlin.server.handler.Session;
-
+import java.util.Optional;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
@@ -36,15 +37,44 @@ public class SessionExecutor extends ThreadPoolExecutor {
         super(nThreads, nThreads,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
     }
 
+    /**
+     * Starts a {@link Session} running in a particular thread selected from the pool. The {@code Future} for
+     * completion of the running session is assigned to the session itself
+     */
+    public Future<?> submit(final Session session) {
+        final Future<?> sessionFuture = submit((Runnable) session);
+        session.setSessionFuture(sessionFuture);
+        return sessionFuture;
+    }
+
     @Override
     protected <T> RunnableFuture<T> newTaskFor(final Runnable runnable, final T value) {
         return new SessionFutureTask<>(runnable, value);
     }
 
-
     @Override
     protected void beforeExecute(final Thread t, final Runnable r) {
         if (r instanceof SessionFutureTask)
             ((SessionFutureTask<?>) r).getSession().ifPresent(rex -> rex.setSessionThread(t));
+    }
+
+    /**
+     * A cancellable asynchronous operation with the added ability to get a {@link Session} instance if the
+     * {@code Runnable} for the task was of that type.
+     */
+    public static class SessionFutureTask<V> extends FutureTask<V> {
+
+        private final Session session;
+
+        public SessionFutureTask(final Runnable runnable, final  V result) {
+            super(runnable, result);
+
+            // hold an instance to the Session instance if it is of that type
+            this.session = runnable instanceof Session ? (Session) runnable : null;
+        }
+
+        public Optional<Session> getSession() {
+            return Optional.ofNullable(this.session);
+        }
     }
 }

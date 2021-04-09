@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.util.SessionExecutor;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -52,7 +51,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -137,8 +135,8 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 return;
             }
 
-            final Optional<String> optSession = msg.optionalArgs(Tokens.ARGS_SESSION);
-            final String sessionId = optSession.orElse(UUID.randomUUID().toString());
+            final Optional<String> optMultiTaskSession = msg.optionalArgs(Tokens.ARGS_SESSION);
+            final String sessionId = optMultiTaskSession.orElse(UUID.randomUUID().toString());
 
             // the SessionTask is really a Context from OpProcessor. we still need the GremlinExecutor/ScriptEngine
             // config that is all rigged up into the server nicely right now so it seemed best to just keep the general
@@ -170,22 +168,26 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                     return;
                 }
             } else {
-                final Session session = optSession.isPresent() ?
-                        createMulti(sessionTask, sessionId) : createSingle(sessionTask, sessionId);
-                final Future<?> sessionFuture = sessionExecutor.submit(session);
-                session.setSessionFuture(sessionFuture);
+                // determine the type of session to start - one that processes the current request only and close OR
+                // one that will process this current request and ones that may arrive in the future.
+                final Session session = optMultiTaskSession.isPresent() ?
+                        createMultiTaskSession(sessionTask, sessionId) :
+                        createSingleTaskSession(sessionTask, sessionId);
+
+                // queue the session for execution
+                sessionExecutor.submit(session);
                 sessions.put(sessionId, session);
 
                 // determine the max session life. for multi that's going to be "session life" and for single that
                 // will be the span of the request timeout
                 final long seto = sessionTask.getRequestTimeout();
-                final long sessionLife = optSession.isPresent() ? settings.sessionLifetimeTimeout : seto;
+                final long sessionLife = optMultiTaskSession.isPresent() ? settings.sessionLifetimeTimeout : seto;
 
                 // if timeout is enabled when greater than zero
                 if (seto > 0) {
                     final ScheduledFuture<?> sessionCancelFuture =
                             scheduledExecutorService.schedule(
-                                    () -> session.triggerTimeout(sessionLife, optSession.isPresent()),
+                                    () -> session.triggerTimeout(sessionLife, optMultiTaskSession.isPresent()),
                                     sessionLife, TimeUnit.MILLISECONDS);
                     session.setSessionCancelFuture(sessionCancelFuture);
                 }
@@ -289,11 +291,19 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         }
     }
 
-    protected Session createSingle(final SessionTask sessionTask, final String sessionId) {
+    /**
+     * Called when creating a single task session where the provided {@link SessionTask} will be the only one to be
+     * executed and can therefore take a more efficient execution path in the {@link SessionExecutor}.
+     */
+    protected Session createSingleTaskSession(final SessionTask sessionTask, final String sessionId) {
         return new SingleTaskSession(sessionTask, sessionId, sessions);
     }
 
-    protected Session createMulti(final SessionTask sessionTask, final String sessionId) {
+    /**
+     * Called when creating a {@link Session} that will be long-lived to extend over multiple requests and therefore
+     * process the provided {@link SessionTask} as well as ones that may arrive in the future.
+     */
+    protected Session createMultiTaskSession(final SessionTask sessionTask, final String sessionId) {
         return new MultiTaskSession(sessionTask, sessionId, sessions);
     }
 

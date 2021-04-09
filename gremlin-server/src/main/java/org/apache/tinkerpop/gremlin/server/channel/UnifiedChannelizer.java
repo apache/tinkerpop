@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsAndHttpChannelizerHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
-import org.apache.tinkerpop.gremlin.server.util.SessionExecutor;
+import org.apache.tinkerpop.gremlin.server.handler.SessionExecutor;
 
 import java.util.concurrent.ExecutorService;
 

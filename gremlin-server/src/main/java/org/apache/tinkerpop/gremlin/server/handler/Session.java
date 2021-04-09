@@ -30,6 +30,12 @@ import java.util.concurrent.ScheduledFuture;
  * {@link SingleTaskSession} or may be longer-lived by handling multiple tasks, as with the {@link MultiTaskSession}.
  */
 public interface Session extends Runnable {
+
+    /**
+     * Gets the identifier for the session.
+     */
+    String getSessionId();
+
     /**
      * Adds a task for session to complete.
      */

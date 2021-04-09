@@ -175,6 +175,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         return transactionManaged;
     }
 
+    @Override
     public String getSessionId() {
         return sessionId;
     }
