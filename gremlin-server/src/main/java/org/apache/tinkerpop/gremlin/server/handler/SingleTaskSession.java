@@ -47,7 +47,7 @@ public class SingleTaskSession extends AbstractSession {
     }
 
     @Override
-    public boolean submitTask(final SessionTask gremlinContext) {
+    public boolean submitTask(final SessionTask sessionTask) {
         throw new UnsupportedOperationException("SingleWorker doesn't accept tasks beyond the one provided to the constructor");
     }
 

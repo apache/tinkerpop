@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
@@ -50,7 +49,7 @@ import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.
  */
 public class MultiTaskSession extends AbstractSession {
     private static final Logger logger = LoggerFactory.getLogger(MultiTaskSession.class);
-    protected final BlockingQueue<Context> queue = new LinkedBlockingQueue<>();
+    protected final BlockingQueue<SessionTask> queue = new LinkedBlockingQueue<>();
     private final AtomicBoolean ending = new AtomicBoolean(false);
     private final ScheduledExecutorService scheduledExecutorService;
     private final GremlinScriptEngineManager scriptEngineManager;
@@ -84,8 +83,12 @@ public class MultiTaskSession extends AbstractSession {
         submitTask(initialSessionTask);
     }
 
+    /**
+     * Gets the script engine specific to this session which is dependent on the
+     * {@link Settings#useCommonEngineForSessions} configuration.
+     */
     @Override
-    public GremlinScriptEngine getScriptEngine(final Context gremlinContext, final String language) {
+    public GremlinScriptEngine getScriptEngine(final SessionTask sessionTask, final String language) {
         return scriptEngineManager.getEngineByName(language);
     }
 
@@ -95,24 +98,24 @@ public class MultiTaskSession extends AbstractSession {
     }
 
     @Override
-    public boolean submitTask(final SessionTask gremlinContext) {
-        return isAcceptingTasks() && queue.offer(gremlinContext);
+    public boolean submitTask(final SessionTask sessionTask) {
+        return isAcceptingTasks() && queue.offer(sessionTask);
     }
 
     @Override
     public void run() {
         // there must be one item in the queue at least since addTask() gets called before the worker
         // is ever started
-        Context currentGremlinContext = queue.poll();
-        if (null == currentGremlinContext)
+        SessionTask sessionTask = queue.poll();
+        if (null == sessionTask)
             throw new IllegalStateException(String.format("Worker has no initial context for session: %s", getSessionId()));
 
         try {
-            startTransaction(currentGremlinContext);
+            startTransaction(sessionTask);
             try {
                 while (true) {
                     // schedule timeout for the current request from the queue
-                    final long seto = currentGremlinContext.getRequestTimeout();
+                    final long seto = sessionTask.getRequestTimeout();
                     requestCancelFuture = scheduledExecutorService.schedule(
                             () -> this.triggerTimeout(seto, false),
                             seto, TimeUnit.MILLISECONDS);
@@ -121,7 +124,7 @@ public class MultiTaskSession extends AbstractSession {
                     // exceptions (i.e. the old OpProcessor way) or if this session is closing down by certain death
                     // (i.e. channel close or lifetime session timeout)
                     try {
-                        process(currentGremlinContext);
+                        process(sessionTask);
                     } catch (SessionException ex) {
                         if (!maintainStateAfterException || closeReason.get() == CloseReason.CHANNEL_CLOSED ||
                             closeReason.get() == CloseReason.SESSION_TIMEOUT) {
@@ -132,19 +135,19 @@ public class MultiTaskSession extends AbstractSession {
                         closeReason.set(null);
 
                         logger.warn(ex.getMessage(), ex);
-                        currentGremlinContext.writeAndFlush(ex.getResponseMessage());
+                        sessionTask.writeAndFlush(ex.getResponseMessage());
                     }
 
                     // work is done within the timeout period so cancel it
                     cancelRequestTimeout();
 
-                    currentGremlinContext = queue.take();
+                    sessionTask = queue.take();
                 }
             } catch (Exception ex) {
                 stopAcceptingRequests();
 
                 // the current context gets its exception handled...
-                handleException(currentGremlinContext, ex);
+                handleException(sessionTask, ex);
             }
         } catch (SessionException rexex) {
             // if the close reason isn't already set then things stopped during gremlin execution somewhere and not
@@ -155,12 +158,12 @@ public class MultiTaskSession extends AbstractSession {
             // back some sort of response to satisfy the client. writeAndFlush code is different than
             // the ResponseMessage as we don't want the message to be "final" for the Context. that
             // status must be reserved for the message that caused the error
-            for (Context gctx : queue) {
-                gctx.writeAndFlush(ResponseStatusCode.PARTIAL_CONTENT, ResponseMessage.build(gctx.getRequestMessage())
+            for (SessionTask st : queue) {
+                st.writeAndFlush(ResponseStatusCode.PARTIAL_CONTENT, ResponseMessage.build(st.getRequestMessage())
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusMessage(String.format(
                                 "An earlier request [%s] failed prior to this one having a chance to execute",
-                                currentGremlinContext.getRequestMessage().getRequestId())).create());
+                                sessionTask.getRequestMessage().getRequestId())).create());
             }
 
             // exception should trigger a rollback in the session. a more focused rollback may have occurred
@@ -172,9 +175,9 @@ public class MultiTaskSession extends AbstractSession {
             // one to show up while a timeout occurs or the channel closes. in these cases, this would be a valid
             // close in all likelihood so there's no reason to log or alert the client as the client already has
             // the best answer
-            if (!currentGremlinContext.isFinalResponseWritten()) {
+            if (!sessionTask.isFinalResponseWritten()) {
                 logger.warn(rexex.getMessage(), rexex);
-                currentGremlinContext.writeAndFlush(rexex.getResponseMessage());
+                sessionTask.writeAndFlush(rexex.getResponseMessage());
             }
         } finally {
             // if this is a normal end to the session or if there is some general processing exception which tanks
@@ -222,9 +225,9 @@ public class MultiTaskSession extends AbstractSession {
         return this.bindings;
     }
 
-    protected GremlinExecutor initializeGremlinExecutor(final Context gremlinContext) {
-        final Settings settings = gremlinContext.getSettings();
-        final ExecutorService executor = gremlinContext.getGremlinExecutor().getExecutorService();
+    protected GremlinExecutor initializeGremlinExecutor(final SessionTask sessionTask) {
+        final Settings settings = sessionTask.getSettings();
+        final ExecutorService executor = sessionTask.getGremlinExecutor().getExecutorService();
         final boolean useGlobalFunctionCache = settings.useGlobalFunctionCacheForSessions;
 
         // these initial settings don't matter so much as we don't really execute things through the

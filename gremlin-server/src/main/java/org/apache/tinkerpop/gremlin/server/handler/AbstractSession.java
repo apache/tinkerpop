@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
@@ -39,7 +40,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
-import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -143,16 +143,16 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         REQUEST_TIMEOUT
     }
 
-    AbstractSession(final Context gremlinContext, final String sessionId,
+    AbstractSession(final SessionTask sessionTask, final String sessionId,
                     final boolean transactionManaged,
                     final ConcurrentMap<String, Session> sessions) {
         // this only applies to sessions
-        this.maintainStateAfterException = (boolean) gremlinContext.getRequestMessage().
+        this.maintainStateAfterException = (boolean) sessionTask.getRequestMessage().
                 optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION).orElse(false);
-        this.sessionIdOnRequest = gremlinContext.getRequestMessage().optionalArgs(Tokens.ARGS_SESSION).isPresent();
+        this.sessionIdOnRequest = sessionTask.getRequestMessage().optionalArgs(Tokens.ARGS_SESSION).isPresent();
         this.transactionManaged = transactionManaged;
         this.sessionId = sessionId;
-        this.initialChannel = gremlinContext.getChannelHandlerContext().channel();
+        this.initialChannel = sessionTask.getChannelHandlerContext().channel();
 
         // close session if the channel closes to cleanup and close transactions
         this.initialChannel.closeFuture().addListener(f -> {
@@ -161,7 +161,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
             }
         });
         this.sessions = sessions;
-        this.graphManager = gremlinContext.getGraphManager();
+        this.graphManager = sessionTask.getGraphManager();
     }
 
     protected synchronized void cancel(final boolean mayInterruptIfRunning) {
@@ -191,8 +191,11 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         return Optional.ofNullable(closeReason.get());
     }
 
-    public GremlinScriptEngine getScriptEngine(final Context context, final String language) {
-        return context.getGremlinExecutor().getScriptEngineManager().getEngineByName(language);
+    /**
+     * Gets the script engine from the cached one in the {@link GremlinExecutor}.
+     */
+    public GremlinScriptEngine getScriptEngine(final SessionTask sessionTask, final String language) {
+        return sessionTask.getGremlinExecutor().getScriptEngineManager().getEngineByName(language);
     }
 
     public void setSessionThread(final Thread runner) {
@@ -230,39 +233,39 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         }
     }
 
-    protected void process(final Context gremlinContext) throws SessionException {
-        final RequestMessage msg = gremlinContext.getRequestMessage();
+    protected void process(final SessionTask sessionTask) throws SessionException {
+        final RequestMessage msg = sessionTask.getRequestMessage();
         final Map<String, Object> args = msg.getArgs();
         final Object gremlinToExecute = args.get(Tokens.ARGS_GREMLIN);
 
         // for strict transactions track the aliases used so that we can commit them and only them on close()
-        if (gremlinContext.getSettings().strictTransactionManagement)
+        if (sessionTask.getSettings().strictTransactionManagement)
             msg.optionalArgs(Tokens.ARGS_ALIASES).ifPresent(m -> aliasesUsedBySession.addAll(((Map<String,String>) m).values()));
 
         try {
             // itty is optional as Bytecode could be a "graph operation" rather than a Traversal. graph operations
             // don't need to be iterated and handle their own lifecycle
             final Optional<Iterator<?>> itty = gremlinToExecute instanceof Bytecode ?
-                    fromBytecode(gremlinContext, (Bytecode) gremlinToExecute) :
-                    Optional.of(fromScript(gremlinContext, (String) gremlinToExecute));
+                    fromBytecode(sessionTask, (Bytecode) gremlinToExecute) :
+                    Optional.of(fromScript(sessionTask, (String) gremlinToExecute));
 
-            processAuditLog(gremlinContext.getSettings(), gremlinContext.getChannelHandlerContext(), gremlinToExecute);
+            processAuditLog(sessionTask.getSettings(), sessionTask.getChannelHandlerContext(), gremlinToExecute);
 
             if (itty.isPresent())
-                handleIterator(gremlinContext, itty.get());
+                handleIterator(sessionTask, itty.get());
         } catch (Exception ex) {
-            handleException(gremlinContext, ex);
+            handleException(sessionTask, ex);
         }
     }
 
-    protected void handleException(final Context gremlinContext, final Throwable t) throws SessionException {
+    protected void handleException(final SessionTask sessionTask, final Throwable t) throws SessionException {
         if (t instanceof SessionException) throw (SessionException) t;
 
         final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
         if (possibleTemporaryException.isPresent()) {
             final Throwable temporaryException = possibleTemporaryException.get();
             throw new SessionException(temporaryException.getMessage(), t,
-                    ResponseMessage.build(gremlinContext.getRequestMessage())
+                    ResponseMessage.build(sessionTask.getRequestMessage())
                             .code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
                             .statusMessage(temporaryException.getMessage())
                             .statusAttributeException(temporaryException).create());
@@ -273,8 +276,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         if (root instanceof TimedInterruptTimeoutException) {
             // occurs when the TimedInterruptCustomizerProvider is in play
             final String msg = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider",
-                    gremlinContext.getRequestMessage().getRequestId());
-            throw new SessionException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+                    sessionTask.getRequestMessage().getRequestId());
+            throw new SessionException(msg, root, ResponseMessage.build(sessionTask.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                     .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
                     .create());
@@ -282,8 +285,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
 
         if (root instanceof TimeoutException) {
             final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]",
-                    gremlinContext.getRequestMessage().getRequestId());
-            throw new SessionException(errorMessage, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+                    sessionTask.getRequestMessage().getRequestId());
+            throw new SessionException(errorMessage, root, ResponseMessage.build(sessionTask.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                     .statusMessage(t.getMessage())
                     .create());
@@ -306,16 +309,16 @@ public abstract class AbstractSession implements Session, AutoCloseable {
             }
             final ResponseStatusCode code = closeReason.get() == CloseReason.SESSION_TIMEOUT || closeReason.get() == CloseReason.REQUEST_TIMEOUT ?
                     ResponseStatusCode.SERVER_ERROR_TIMEOUT : ResponseStatusCode.SERVER_ERROR;
-            throw new SessionException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(msg, root, ResponseMessage.build(sessionTask.getRequestMessage())
                     .code(code)
                     .statusMessage(msg).create());
         }
 
         if (root instanceof MultipleCompilationErrorsException && root.getMessage().contains("Method too large") &&
                 ((MultipleCompilationErrorsException) root).getErrorCollector().getErrorCount() == 1) {
-            final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(gremlinContext.getRequestMessage()));
+            final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(sessionTask.getRequestMessage()));
             logger.warn(errorMessage);
-            throw new SessionException(errorMessage, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(errorMessage, root, ResponseMessage.build(sessionTask.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                     .statusMessage(errorMessage)
                     .statusAttributeException(root).create());
@@ -327,14 +330,14 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         if (root instanceof GroovyRuntimeException ||
                 root instanceof VerificationException ||
                 root instanceof ScriptException) {
-            throw new SessionException(root.getMessage(), root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(root.getMessage(), root, ResponseMessage.build(sessionTask.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                     .statusMessage(root.getMessage())
                     .statusAttributeException(root).create());
         }
 
         throw new SessionException(root.getClass().getSimpleName() + ": " + root.getMessage(), root,
-                ResponseMessage.build(gremlinContext.getRequestMessage())
+                ResponseMessage.build(sessionTask.getRequestMessage())
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(root)
                         .statusMessage(root.getMessage()).create());
@@ -374,26 +377,26 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         }
     }
 
-    protected Iterator<?> fromScript(final Context gremlinContext, final String script) throws Exception {
-        final RequestMessage msg = gremlinContext.getRequestMessage();
+    protected Iterator<?> fromScript(final SessionTask sessionTask, final String script) throws Exception {
+        final RequestMessage msg = sessionTask.getRequestMessage();
         final Map<String, Object> args = msg.getArgs();
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-groovy";
-        return IteratorUtils.asIterator(getScriptEngine(gremlinContext, language).eval(
-                script, mergeBindingsFromRequest(gremlinContext, getWorkerBindings())));
+        return IteratorUtils.asIterator(getScriptEngine(sessionTask, language).eval(
+                script, mergeBindingsFromRequest(sessionTask, getWorkerBindings())));
     }
 
-    protected Optional<Iterator<?>> fromBytecode(final Context gremlinContext, final Bytecode bytecode) throws Exception {
-        final RequestMessage msg = gremlinContext.getRequestMessage();
+    protected Optional<Iterator<?>> fromBytecode(final SessionTask sessionTask, final Bytecode bytecode) throws Exception {
+        final RequestMessage msg = sessionTask.getRequestMessage();
 
         final Traversal.Admin<?, ?> traversal;
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
-        final GraphManager graphManager = gremlinContext.getGraphManager();
+        final GraphManager graphManager = sessionTask.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
         final TraversalSource g = graphManager.getTraversalSource(traversalSourceName);
 
         // handle bytecode based graph operations like commit/rollback commands
         if (BytecodeHelper.isGraphOperation(bytecode)) {
-            handleGraphOperation(gremlinContext, bytecode, g.getGraph());
+            handleGraphOperation(sessionTask, bytecode, g.getGraph());
             return Optional.empty();
         } else {
 
@@ -403,7 +406,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
             else {
                 final SimpleBindings bindings = new SimpleBindings();
                 bindings.put(traversalSourceName, g);
-                traversal = gremlinContext.getGremlinExecutor().getScriptEngineManager().getEngineByName(lambdaLanguage.get()).eval(bytecode, bindings, traversalSourceName);
+                traversal = sessionTask.getGremlinExecutor().getScriptEngineManager().
+                        getEngineByName(lambdaLanguage.get()).eval(bytecode, bindings, traversalSourceName);
             }
 
             // compile the traversal - without it getEndStep() has nothing in it
@@ -417,16 +421,16 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         return new SimpleBindings(graphManager.getAsBindings());
     }
 
-    protected Bindings mergeBindingsFromRequest(final Context gremlinContext, final Bindings bindings) throws SessionException {
+    protected Bindings mergeBindingsFromRequest(final SessionTask sessionTask, final Bindings bindings) throws SessionException {
         // alias any global bindings to a different variable.
-        final RequestMessage msg = gremlinContext.getRequestMessage();
+        final RequestMessage msg = sessionTask.getRequestMessage();
         if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
             final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_ALIASES);
             for (Map.Entry<String,String> aliasKv : aliases.entrySet()) {
                 boolean found = false;
 
                 // first check if the alias refers to a Graph instance
-                final Graph graph = gremlinContext.getGraphManager().getGraph(aliasKv.getValue());
+                final Graph graph = sessionTask.getGraphManager().getGraph(aliasKv.getValue());
                 if (null != graph) {
                     bindings.put(aliasKv.getKey(), graph);
                     found = true;
@@ -435,7 +439,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 // if the alias wasn't found as a Graph then perhaps it is a TraversalSource - it needs to be
                 // something
                 if (!found) {
-                    final TraversalSource ts = gremlinContext.getGraphManager().getTraversalSource(aliasKv.getValue());
+                    final TraversalSource ts = sessionTask.getGraphManager().getTraversalSource(aliasKv.getValue());
                     if (null != ts) {
                         bindings.put(aliasKv.getKey(), ts);
                         found = true;
@@ -453,7 +457,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
             }
         } else {
             // there's no bindings so determine if that's ok with Gremlin Server
-            if (gremlinContext.getSettings().strictTransactionManagement) {
+            if (sessionTask.getSettings().strictTransactionManagement) {
                 final String error = "Gremlin Server is configured with strictTransactionManagement as 'true' - the 'aliases' arguments must be provided";
                 throw new SessionException(error, ResponseMessage.build(msg)
                         .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
@@ -468,13 +472,13 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     /**
      * Provides a generic way of iterating a result set back to the client.
      *
-     * @param gremlinContext The Gremlin Server {@link Context} object containing settings, request message, etc.
+     * @param sessionTask The Gremlin Server {@link SessionTask} object containing settings, request message, etc.
      * @param itty The result to iterator
      */
-    protected void handleIterator(final Context gremlinContext, final Iterator<?> itty) throws InterruptedException {
-        final ChannelHandlerContext nettyContext = gremlinContext.getChannelHandlerContext();
-        final RequestMessage msg = gremlinContext.getRequestMessage();
-        final Settings settings = gremlinContext.getSettings();
+    protected void handleIterator(final SessionTask sessionTask, final Iterator<?> itty) throws InterruptedException {
+        final ChannelHandlerContext nettyContext = sessionTask.getChannelHandlerContext();
+        final RequestMessage msg = sessionTask.getRequestMessage();
+        final Settings settings = sessionTask.getSettings();
         boolean warnOnce = false;
 
         // sessionless requests are always transaction managed, but in-session requests are configurable.
@@ -483,13 +487,13 @@ public abstract class AbstractSession implements Session, AutoCloseable {
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
-            final Map<String, Object> attributes = generateStatusAttributes(gremlinContext,ResponseStatusCode.NO_CONTENT, itty);
+            final Map<String, Object> attributes = generateStatusAttributes(sessionTask,ResponseStatusCode.NO_CONTENT, itty);
             // as there is nothing left to iterate if we are transaction managed then we should execute a
             // commit here before we send back a NO_CONTENT which implies success
             if (managedTransactionsForRequest)
-                closeTransaction(gremlinContext, Transaction.Status.COMMIT);
+                closeTransaction(sessionTask, Transaction.Status.COMMIT);
 
-            gremlinContext.writeAndFlush(ResponseMessage.build(msg)
+            sessionTask.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .statusAttributes(attributes)
                     .create());
@@ -543,7 +547,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                     final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
                     Frame frame = null;
                     try {
-                        frame = makeFrame(gremlinContext, aggregate, code, itty);
+                        frame = makeFrame(sessionTask, aggregate, code, itty);
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
@@ -552,7 +556,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
                         if (managedTransactionsForRequest)
-                            closeTransaction(gremlinContext, Transaction.Status.ROLLBACK);
+                            closeTransaction(sessionTask, Transaction.Status.ROLLBACK);
                         break;
                     }
 
@@ -572,7 +576,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                             // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
                             // there are no more items to iterate and serialization is complete
                             if (managedTransactionsForRequest)
-                                closeTransaction(gremlinContext, Transaction.Status.COMMIT);
+                                closeTransaction(sessionTask, Transaction.Status.COMMIT);
 
                             // exit the result iteration loop as there are no more results left.  using this external control
                             // because of the above commit.  some graphs may open a new transaction on the call to
@@ -586,13 +590,13 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                         throw ex;
                     }
 
-                    if (!moreInIterator) iterateComplete(gremlinContext, itty);
+                    if (!moreInIterator) iterateComplete(sessionTask, itty);
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
                     // required then it will be 100% complete before the client receives it. the "frame" at this point
                     // should have completely detached objects from the transaction (i.e. serialization has occurred)
                     // so a new one should not be opened on the flush down the netty pipeline
-                    gremlinContext.writeAndFlush(code, frame);
+                    sessionTask.writeAndFlush(code, frame);
                 }
             } else {
                 // don't keep triggering this warning over and over again for the same request
@@ -611,17 +615,17 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     /**
      * If {@link Bytecode} is detected to contain a {@link GraphOp} then it gets processed by this method.
      */
-    protected void handleGraphOperation(final Context gremlinContext, final Bytecode bytecode, final Graph graph) throws Exception {
-        final RequestMessage msg = gremlinContext.getRequestMessage();
+    protected void handleGraphOperation(final SessionTask sessionTask, final Bytecode bytecode, final Graph graph) throws Exception {
+        final RequestMessage msg = sessionTask.getRequestMessage();
         if (graph.features().graph().supportsTransactions()) {
             if (TX_COMMIT.equals(bytecode) || TX_ROLLBACK.equals(bytecode)) {
                 final boolean commit = TX_COMMIT.equals(bytecode);
-                closeTransaction(gremlinContext, commit ? Transaction.Status.COMMIT : Transaction.Status.ROLLBACK);
+                closeTransaction(sessionTask, commit ? Transaction.Status.COMMIT : Transaction.Status.ROLLBACK);
 
                 // write back a no-op for success
-                final Map<String, Object> attributes = generateStatusAttributes(gremlinContext,
+                final Map<String, Object> attributes = generateStatusAttributes(sessionTask,
                         ResponseStatusCode.NO_CONTENT, Collections.emptyIterator());
-                gremlinContext.writeAndFlush(ResponseMessage.build(msg)
+                sessionTask.writeAndFlush(ResponseMessage.build(msg)
                             .code(ResponseStatusCode.NO_CONTENT)
                             .statusAttributes(attributes)
                             .create());
@@ -633,11 +637,11 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     }
 
     /**
-     * Called when iteration within {@link #handleIterator(Context, Iterator)} is on its final pass and the final
+     * Called when iteration within {@link #handleIterator(SessionTask, Iterator)} is on its final pass and the final
      * frame is about to be sent back to the client. This method only gets called on successful iteration of the
      * entire result.
      */
-    protected void iterateComplete(final Context gremlinContext, final Iterator<?> itty) {
+    protected void iterateComplete(final SessionTask sessionTask, final Iterator<?> itty) {
         // do nothing by default
     }
 
@@ -647,13 +651,13 @@ public abstract class AbstractSession implements Session, AutoCloseable {
      * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
      *             this method
      */
-    protected Map<String, Object> generateStatusAttributes(final Context gremlinContext,
+    protected Map<String, Object> generateStatusAttributes(final SessionTask sessionTask,
                                                            final ResponseStatusCode code, final Iterator<?> itty) {
         // only return server metadata on the last message
         if (itty.hasNext()) return Collections.emptyMap();
 
         final Map<String, Object> metaData = new HashMap<>();
-        metaData.put(Tokens.ARGS_HOST, gremlinContext.getChannelHandlerContext().channel().remoteAddress().toString());
+        metaData.put(Tokens.ARGS_HOST, sessionTask.getChannelHandlerContext().channel().remoteAddress().toString());
 
         return metaData;
     }
@@ -664,20 +668,20 @@ public abstract class AbstractSession implements Session, AutoCloseable {
      * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
      *             this method
      */
-    protected Map<String, Object> generateResponseMetaData(final Context gremlinContext,
+    protected Map<String, Object> generateResponseMetaData(final SessionTask sessionTask,
                                                            final ResponseStatusCode code, final Iterator<?> itty) {
         return Collections.emptyMap();
     }
 
-    protected Frame makeFrame(final Context gremlinContext, final List<Object> aggregate,
+    protected Frame makeFrame(final SessionTask sessionTask, final List<Object> aggregate,
                               final ResponseStatusCode code, final Iterator<?> itty) throws Exception {
-        final RequestMessage msg = gremlinContext.getRequestMessage();
-        final ChannelHandlerContext nettyContext = gremlinContext.getChannelHandlerContext();
+        final RequestMessage msg = sessionTask.getRequestMessage();
+        final ChannelHandlerContext nettyContext = sessionTask.getChannelHandlerContext();
         final MessageSerializer serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = nettyContext.channel().attr(StateKey.USE_BINARY).get();
 
-        final Map<String, Object> responseMetaData = generateResponseMetaData(gremlinContext, code, itty);
-        final Map<String, Object> statusAttributes = generateStatusAttributes(gremlinContext, code, itty);
+        final Map<String, Object> responseMetaData = generateResponseMetaData(sessionTask, code, itty);
+        final Map<String, Object> statusAttributes = generateStatusAttributes(sessionTask, code, itty);
         try {
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
@@ -702,7 +706,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                     .statusMessage(errorMessage)
                     .statusAttributeException(ex)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
-            gremlinContext.writeAndFlush(error);
+            sessionTask.writeAndFlush(error);
             throw ex;
         }
     }
@@ -710,14 +714,14 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     /**
      * Called right before a transaction starts within {@link #run()}.
      */
-    protected void startTransaction(final Context gremlinContext) {
+    protected void startTransaction(final SessionTask sessionTask) {
         // check if transactions are open and rollback first to ensure a fresh start.
         graphManager.rollbackAll();
     }
 
     /**
-     * Close the transaction without a {@link Context} which supplies {@code null} to that argument for
-     * {@link #closeTransaction(Context, Transaction.Status)}. This method is idempotent.
+     * Close the transaction without a {@link SessionTask} which supplies {@code null} to that argument for
+     * {@link #closeTransaction(SessionTask, Transaction.Status)}. This method is idempotent.
      */
     protected void closeTransaction(final Transaction.Status status) {
         closeTransaction(null, status);
@@ -733,39 +737,11 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     /**
      * Tries to close the transaction but will catch exceptions and log them. This method is idempotent.
      */
-    protected void closeTransactionSafely(final Context gremlinContext, final Transaction.Status status) {
+    protected void closeTransactionSafely(final SessionTask sessionTask, final Transaction.Status status) {
         try {
-            closeTransaction(gremlinContext, status);
+            closeTransaction(sessionTask, status);
         } catch (Exception ex) {
             logger.error("Failed to close transaction", ex);
-        }
-    }
-
-    /**
-     * Closes a transaction with commit or rollback. Strict transaction management settings are observed when
-     * configured as such in {@link Settings#strictTransactionManagement} and when aliases are present on the
-     * request in the current {@link Context}. If the supplied {@link Context} is {@code null} then "strict" is
-     * bypassed so this form must be called with care. Bypassing is often useful to ensure that all transactions
-     * are cleaned up when multiple graphs are referenced. Prefer calling {@link #closeTransaction(Transaction.Status)}
-     * in this case instead. This method is idempotent.
-     */
-    protected void closeTransaction(final Context gremlinContext, final Transaction.Status status) {
-        if (status != Transaction.Status.COMMIT && status != Transaction.Status.ROLLBACK)
-            throw new IllegalStateException(String.format("Transaction.Status not supported: %s", status));
-
-        final boolean commit = status == Transaction.Status.COMMIT;
-        final boolean strict = gremlinContext != null && gremlinContext.getSettings().strictTransactionManagement;
-
-        if (strict) {
-            if (commit)
-                graphManager.commit(new HashSet<>(aliasesUsedBySession));
-            else
-                graphManager.rollback(new HashSet<>(aliasesUsedBySession));
-        } else {
-            if (commit)
-                graphManager.commitAll();
-            else
-                graphManager.rollbackAll();
         }
     }
 
@@ -784,6 +760,34 @@ public abstract class AbstractSession implements Session, AutoCloseable {
             String address = ctx.channel().remoteAddress().toString();
             if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
             auditLogger.info("User with address {} requested: {}", address, gremlinToExecute);
+        }
+    }
+
+    /**
+     * Closes a transaction with commit or rollback. Strict transaction management settings are observed when
+     * configured as such in {@link Settings#strictTransactionManagement} and when aliases are present on the
+     * request in the current {@link SessionTask}. If the supplied {@link SessionTask} is {@code null} then "strict" is
+     * bypassed so this form must be called with care. Bypassing is often useful to ensure that all transactions
+     * are cleaned up when multiple graphs are referenced. Prefer calling {@link #closeTransaction(Transaction.Status)}
+     * in this case instead. This method is idempotent.
+     */
+    protected void closeTransaction(final SessionTask sessionTask, final Transaction.Status status) {
+        if (status != Transaction.Status.COMMIT && status != Transaction.Status.ROLLBACK)
+            throw new IllegalStateException(String.format("Transaction.Status not supported: %s", status));
+
+        final boolean commit = status == Transaction.Status.COMMIT;
+        final boolean strict = sessionTask != null && sessionTask.getSettings().strictTransactionManagement;
+
+        if (strict) {
+            if (commit)
+                graphManager.commit(new HashSet<>(aliasesUsedBySession));
+            else
+                graphManager.rollback(new HashSet<>(aliasesUsedBySession));
+        } else {
+            if (commit)
+                graphManager.commitAll();
+            else
+                graphManager.rollbackAll();
         }
     }
 }
