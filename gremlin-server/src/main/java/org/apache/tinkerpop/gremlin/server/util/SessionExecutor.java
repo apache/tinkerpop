@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import org.apache.tinkerpop.gremlin.server.handler.Rexster;
+import org.apache.tinkerpop.gremlin.server.handler.Session;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
@@ -27,24 +27,24 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A special {@code ThreadPoolExecutor} which will construct {@link RexsterFutureTask} instances and inject the
- * current running thread into a {@link Rexster} instance if one is present.
+ * A special {@code ThreadPoolExecutor} which will construct {@link SessionFutureTask} instances and inject the
+ * current running thread into a {@link Session} instance if one is present.
  */
-public class RexsterExecutorService extends ThreadPoolExecutor {
+public class SessionExecutor extends ThreadPoolExecutor {
 
-    public RexsterExecutorService(final int nThreads, final ThreadFactory threadFactory) {
+    public SessionExecutor(final int nThreads, final ThreadFactory threadFactory) {
         super(nThreads, nThreads,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
     }
 
     @Override
     protected <T> RunnableFuture<T> newTaskFor(final Runnable runnable, final T value) {
-        return new RexsterFutureTask<>(runnable, value);
+        return new SessionFutureTask<>(runnable, value);
     }
 
 
     @Override
     protected void beforeExecute(final Thread t, final Runnable r) {
-        if (r instanceof RexsterFutureTask)
-            ((RexsterFutureTask<?>) r).getRexster().ifPresent(rex -> rex.setSessionThread(t));
+        if (r instanceof SessionFutureTask)
+            ((SessionFutureTask<?>) r).getSession().ifPresent(rex -> rex.setSessionThread(t));
     }
 }

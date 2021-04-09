@@ -18,27 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import org.apache.tinkerpop.gremlin.server.handler.Rexster;
+import org.apache.tinkerpop.gremlin.server.handler.Session;
 
 import java.util.Optional;
 import java.util.concurrent.FutureTask;
 
 /**
- * A cancellable asynchronous operation with the added ability to get a {@code Rexster} instance if the
+ * A cancellable asynchronous operation with the added ability to get a {@link Session} instance if the
  * {@code Runnable} for the task was of that type.
  */
-public class RexsterFutureTask<V> extends FutureTask<V> {
+public class SessionFutureTask<V> extends FutureTask<V> {
 
-    private final Rexster rexster;
+    private final Session session;
 
-    public RexsterFutureTask(final Runnable runnable, final  V result) {
+    public SessionFutureTask(final Runnable runnable, final  V result) {
         super(runnable, result);
 
-        // hold an instance to the Rexster instance if it is of that type
-        this.rexster = runnable instanceof Rexster ? (Rexster) runnable : null;
+        // hold an instance to the Session instance if it is of that type
+        this.session = runnable instanceof Session ? (Session) runnable : null;
     }
 
-    public Optional<Rexster> getRexster() {
-        return Optional.ofNullable(this.rexster);
+    public Optional<Session> getSession() {
+        return Optional.ofNullable(this.session);
     }
 }

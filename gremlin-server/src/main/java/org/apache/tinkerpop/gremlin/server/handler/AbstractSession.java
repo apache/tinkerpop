@@ -80,14 +80,14 @@ import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_COMMIT;
 import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK;
 
 /**
- * A base implementation of {@link Rexster} which offers some common functionality that matches typical Gremlin Server
+ * A base implementation of {@link Session} which offers some common functionality that matches typical Gremlin Server
  * request response expectations for script, bytecode and graph operations. The class is designed to be extended but
  * take care in understanding the way that different methods are called as they do depend on one another a bit. It
  * maybe best to examine the source code to determine how best to use this class or to extend from the higher order
- * classes of {@link SingleRexster} or {@link MultiRexster}.
+ * classes of {@link SingleTaskSession} or {@link MultiTaskSession}.
  */
-public abstract class AbstractRexster implements Rexster, AutoCloseable {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractRexster.class);
+public abstract class AbstractSession implements Session, AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractSession.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
     private final boolean sessionIdOnRequest;
@@ -101,12 +101,12 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
     protected final boolean maintainStateAfterException;
     protected final AtomicReference<CloseReason> closeReason = new AtomicReference<>();
     protected final GraphManager graphManager;
-    protected final ConcurrentMap<String, Rexster> sessions;
-    protected final Set<String> aliasesUsedByRexster = new HashSet<>();
+    protected final ConcurrentMap<String, Session> sessions;
+    protected final Set<String> aliasesUsedBySession = new HashSet<>();
 
     /**
      * The reason that a particular session closed. The reason for the close is generally not important as a
-     * final disposition for the {@link Rexster} instance and is more useful in aiding flow control during the
+     * final disposition for the {@link Session} instance and is more useful in aiding flow control during the
      * close process.
      */
     protected enum CloseReason {
@@ -114,7 +114,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         /**
          * The session exits in a fashion that did not precipitate from some form of interruption, timeout or
          * exception, i.e. it is simply allowed to process to an exit through its normal execution flow. This status
-         * may or may not be possible given the context of the implementation. For example, a {@link MultiRexster}
+         * may or may not be possible given the context of the implementation. For example, a {@link MultiTaskSession}
          * needs to be interrupted to stop processing.
          */
         EXIT_PROCESSING,
@@ -143,9 +143,9 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         REQUEST_TIMEOUT
     }
 
-    AbstractRexster(final Context gremlinContext, final String sessionId,
+    AbstractSession(final Context gremlinContext, final String sessionId,
                     final boolean transactionManaged,
-                    final ConcurrentMap<String, Rexster> sessions) {
+                    final ConcurrentMap<String, Session> sessions) {
         // this only applies to sessions
         this.maintainStateAfterException = (boolean) gremlinContext.getRequestMessage().
                 optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION).orElse(false);
@@ -154,7 +154,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         this.sessionId = sessionId;
         this.initialChannel = gremlinContext.getChannelHandlerContext().channel();
 
-        // close Rexster if the channel closes to cleanup and close transactions
+        // close session if the channel closes to cleanup and close transactions
         this.initialChannel.closeFuture().addListener(f -> {
             if (closeReason.compareAndSet(null, CloseReason.CHANNEL_CLOSED)) {
                 close();
@@ -213,15 +213,15 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
 
     @Override
     public synchronized void triggerTimeout(final long timeout, final boolean causedBySession) {
-        // triggering timeout triggers the stop of the Rexster Runnable which will end in close()
+        // triggering timeout triggers the stop of the session which will end in close()
         // for final cleanup
         final Future<?> f = sessionFuture.get();
         if (f != null && !f.isDone()) {
             if (closeReason.compareAndSet(null, causedBySession ? CloseReason.SESSION_TIMEOUT : CloseReason.REQUEST_TIMEOUT)) {
                 actualTimeoutLengthWhenClosed = timeout;
 
-                // if caused by a session timeout for a session OR if it is a request timeout for a sessionless
-                // request then we can just straight cancel() the Rexster instance
+                // if caused by a session timeout for a MultiTaskSession OR if it is a request timeout for a
+                // SingleTaskSession request then we can just straight cancel() the session instance
                 if (causedBySession || !sessionIdOnRequest)
                     cancel(true);
                 else
@@ -230,14 +230,14 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         }
     }
 
-    protected void process(final Context gremlinContext) throws RexsterException {
+    protected void process(final Context gremlinContext) throws SessionException {
         final RequestMessage msg = gremlinContext.getRequestMessage();
         final Map<String, Object> args = msg.getArgs();
         final Object gremlinToExecute = args.get(Tokens.ARGS_GREMLIN);
 
         // for strict transactions track the aliases used so that we can commit them and only them on close()
         if (gremlinContext.getSettings().strictTransactionManagement)
-            msg.optionalArgs(Tokens.ARGS_ALIASES).ifPresent(m -> aliasesUsedByRexster.addAll(((Map<String,String>) m).values()));
+            msg.optionalArgs(Tokens.ARGS_ALIASES).ifPresent(m -> aliasesUsedBySession.addAll(((Map<String,String>) m).values()));
 
         try {
             // itty is optional as Bytecode could be a "graph operation" rather than a Traversal. graph operations
@@ -255,13 +255,13 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         }
     }
 
-    protected void handleException(final Context gremlinContext, final Throwable t) throws RexsterException {
-        if (t instanceof RexsterException) throw (RexsterException) t;
+    protected void handleException(final Context gremlinContext, final Throwable t) throws SessionException {
+        if (t instanceof SessionException) throw (SessionException) t;
 
         final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
         if (possibleTemporaryException.isPresent()) {
             final Throwable temporaryException = possibleTemporaryException.get();
-            throw new RexsterException(temporaryException.getMessage(), t,
+            throw new SessionException(temporaryException.getMessage(), t,
                     ResponseMessage.build(gremlinContext.getRequestMessage())
                             .code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
                             .statusMessage(temporaryException.getMessage())
@@ -274,7 +274,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
             // occurs when the TimedInterruptCustomizerProvider is in play
             final String msg = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider",
                     gremlinContext.getRequestMessage().getRequestId());
-            throw new RexsterException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                     .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
                     .create());
@@ -283,7 +283,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         if (root instanceof TimeoutException) {
             final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]",
                     gremlinContext.getRequestMessage().getRequestId());
-            throw new RexsterException(errorMessage, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(errorMessage, root, ResponseMessage.build(gremlinContext.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                     .statusMessage(t.getMessage())
                     .create());
@@ -306,7 +306,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
             }
             final ResponseStatusCode code = closeReason.get() == CloseReason.SESSION_TIMEOUT || closeReason.get() == CloseReason.REQUEST_TIMEOUT ?
                     ResponseStatusCode.SERVER_ERROR_TIMEOUT : ResponseStatusCode.SERVER_ERROR;
-            throw new RexsterException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(msg, root, ResponseMessage.build(gremlinContext.getRequestMessage())
                     .code(code)
                     .statusMessage(msg).create());
         }
@@ -315,7 +315,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
                 ((MultipleCompilationErrorsException) root).getErrorCollector().getErrorCount() == 1) {
             final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(gremlinContext.getRequestMessage()));
             logger.warn(errorMessage);
-            throw new RexsterException(errorMessage, root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(errorMessage, root, ResponseMessage.build(gremlinContext.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                     .statusMessage(errorMessage)
                     .statusAttributeException(root).create());
@@ -327,13 +327,13 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         if (root instanceof GroovyRuntimeException ||
                 root instanceof VerificationException ||
                 root instanceof ScriptException) {
-            throw new RexsterException(root.getMessage(), root, ResponseMessage.build(gremlinContext.getRequestMessage())
+            throw new SessionException(root.getMessage(), root, ResponseMessage.build(gremlinContext.getRequestMessage())
                     .code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                     .statusMessage(root.getMessage())
                     .statusAttributeException(root).create());
         }
 
-        throw new RexsterException(root.getClass().getSimpleName() + ": " + root.getMessage(), root,
+        throw new SessionException(root.getClass().getSimpleName() + ": " + root.getMessage(), root,
                 ResponseMessage.build(gremlinContext.getRequestMessage())
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(root)
@@ -413,11 +413,11 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
         }
     }
 
-    protected Bindings getWorkerBindings() throws RexsterException {
+    protected Bindings getWorkerBindings() throws SessionException {
         return new SimpleBindings(graphManager.getAsBindings());
     }
 
-    protected Bindings mergeBindingsFromRequest(final Context gremlinContext, final Bindings bindings) throws RexsterException {
+    protected Bindings mergeBindingsFromRequest(final Context gremlinContext, final Bindings bindings) throws SessionException {
         // alias any global bindings to a different variable.
         final RequestMessage msg = gremlinContext.getRequestMessage();
         if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
@@ -447,7 +447,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
                 if (!found) {
                     final String error = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
                             aliasKv.getKey(), aliasKv.getValue(), aliasKv.getValue());
-                    throw new RexsterException(error, ResponseMessage.build(msg)
+                    throw new SessionException(error, ResponseMessage.build(msg)
                             .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
                 }
             }
@@ -455,7 +455,7 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
             // there's no bindings so determine if that's ok with Gremlin Server
             if (gremlinContext.getSettings().strictTransactionManagement) {
                 final String error = "Gremlin Server is configured with strictTransactionManagement as 'true' - the 'aliases' arguments must be provided";
-                throw new RexsterException(error, ResponseMessage.build(msg)
+                throw new SessionException(error, ResponseMessage.build(msg)
                         .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
             }
         }
@@ -758,9 +758,9 @@ public abstract class AbstractRexster implements Rexster, AutoCloseable {
 
         if (strict) {
             if (commit)
-                graphManager.commit(new HashSet<>(aliasesUsedByRexster));
+                graphManager.commit(new HashSet<>(aliasesUsedBySession));
             else
-                graphManager.rollback(new HashSet<>(aliasesUsedByRexster));
+                graphManager.rollback(new HashSet<>(aliasesUsedBySession));
         } else {
             if (commit)
                 graphManager.commitAll();

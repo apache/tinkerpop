@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +25,16 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A simple {@link Rexster} implementation that accepts one request, processes it and exits.
+ * A simple {@link Session} implementation that accepts one request, processes it and exits.
  */
-public class SingleRexster extends AbstractRexster {
-    private static final Logger logger = LoggerFactory.getLogger(SingleRexster.class);
-    protected final Context gremlinContext;
+public class SingleTaskSession extends AbstractSession {
+    private static final Logger logger = LoggerFactory.getLogger(SingleTaskSession.class);
+    protected final SessionTask onlySessionTask;
 
-    SingleRexster(final Context gremlinContext, final String sessionId,
-                  final ConcurrentMap<String, Rexster> sessions) {
-        super(gremlinContext, sessionId,true, sessions);
-        this.gremlinContext = gremlinContext;
+    SingleTaskSession(final SessionTask onlySessionTask, final String sessionId,
+                      final ConcurrentMap<String, Session> sessions) {
+        super(onlySessionTask, sessionId,true, sessions);
+        this.onlySessionTask = onlySessionTask;
     }
 
     /**
@@ -48,16 +47,16 @@ public class SingleRexster extends AbstractRexster {
     }
 
     @Override
-    public boolean addTask(final Context gremlinContext) {
+    public boolean submitTask(final SessionTask gremlinContext) {
         throw new UnsupportedOperationException("SingleWorker doesn't accept tasks beyond the one provided to the constructor");
     }
 
     @Override
     public void run() {
         try {
-            startTransaction(gremlinContext);
-            process(gremlinContext);
-        } catch (RexsterException we) {
+            startTransaction(onlySessionTask);
+            process(onlySessionTask);
+        } catch (SessionException we) {
             // if the close reason isn't already set then things stopped during gremlin execution somewhere and not
             // more external issues like channel close or timeouts.
             closeReason.compareAndSet(null, CloseReason.PROCESSING_EXCEPTION);
@@ -65,9 +64,9 @@ public class SingleRexster extends AbstractRexster {
             logger.warn(we.getMessage(), we);
 
             // should have already rolledback - this is a safety valve
-            closeTransactionSafely(gremlinContext, Transaction.Status.ROLLBACK);
+            closeTransactionSafely(onlySessionTask, Transaction.Status.ROLLBACK);
 
-            gremlinContext.writeAndFlush(we.getResponseMessage());
+            onlySessionTask.writeAndFlush(we.getResponseMessage());
         } finally {
             closeReason.compareAndSet(null, CloseReason.EXIT_PROCESSING);
             close();

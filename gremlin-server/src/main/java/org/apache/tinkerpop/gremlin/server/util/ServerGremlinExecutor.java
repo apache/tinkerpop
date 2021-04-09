@@ -100,11 +100,11 @@ public class ServerGremlinExecutor {
             // RexsterExecutorService adds some important bits that are helpful to the UnifiedChannelizer, but
             // using it generally should really have no ill effect to the old OpProcessor stuff or GremlinExecutor
             // in general.
-            this.gremlinExecutorService = new RexsterExecutorService(settings.gremlinPool, threadFactoryGremlin);
+            this.gremlinExecutorService = new SessionExecutor(settings.gremlinPool, threadFactoryGremlin);
         } else {
             if (settings.channelizer.equals(UnifiedChannelizer.class.getName())) {
                 logger.error("The {} requires use of a {} for the GremlinExecutor but a {} was provided instead",
-                        settings.channelizer, RexsterExecutorService.class.getName(), gremlinExecutorService.getClass().getName());
+                        settings.channelizer, SessionExecutor.class.getName(), gremlinExecutorService.getClass().getName());
             }
 
             this.gremlinExecutorService = gremlinExecutorService;

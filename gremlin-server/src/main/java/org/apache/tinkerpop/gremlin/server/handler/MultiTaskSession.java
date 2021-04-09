@@ -45,11 +45,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED;
 
 /**
- * A {@link Rexster} implementation that queues tasks given to it and executes them in a serial fashion within the
+ * A {@link Session} implementation that queues tasks given to it and executes them in a serial fashion within the
  * same thread which thus allows multiple tasks to be executed in the same transaction.
  */
-public class MultiRexster extends AbstractRexster {
-    private static final Logger logger = LoggerFactory.getLogger(MultiRexster.class);
+public class MultiTaskSession extends AbstractSession {
+    private static final Logger logger = LoggerFactory.getLogger(MultiTaskSession.class);
     protected final BlockingQueue<Context> queue = new LinkedBlockingQueue<>();
     private final AtomicBoolean ending = new AtomicBoolean(false);
     private final ScheduledExecutorService scheduledExecutorService;
@@ -58,30 +58,30 @@ public class MultiRexster extends AbstractRexster {
     private Bindings bindings;
 
     /**
-     * Creates a new {@code MultiRexster} object providing the initial starting context that starts up the session.
+     * Creates a new {@code MultiTaskSession} object providing the initial starting context that starts up the session.
      * As more requests arrive on the {@code sessionId} they are added to the queue on this session to be executed
      * in the order they arrive.
      *
-     * @param initialGremlinContext The context that starts the session.
+     * @param initialSessionTask The context that starts the session.
      * @param sessionId The id of the session
-     * @param sessions The session id to {@link Rexster} instances mapping
+     * @param sessions The session id to {@link Session} instances mapping
      */
-    MultiRexster(final Context initialGremlinContext, final String sessionId,
-                 final ConcurrentMap<String, Rexster> sessions) {
-        super(initialGremlinContext, sessionId, false, sessions);
+    MultiTaskSession(final SessionTask initialSessionTask, final String sessionId,
+                     final ConcurrentMap<String, Session> sessions) {
+        super(initialSessionTask, sessionId, false, sessions);
 
         // using a global function cache is cheaper than creating a new on per session especially if you have to
         // create a lot of sessions. it will generate a ton of throw-away objects. mostly keeping the option open
         // to not use it to preserve the ability to use the old functionality if wanted or if there is some specific
         // use case with sessions that needs it. if we wanted this could eventually become a per-request option
         // so that the client could control it as necessary and get scriptengine isolation if they need it.
-        if (initialGremlinContext.getSettings().useCommonEngineForSessions)
-            scriptEngineManager = initialGremlinContext.getGremlinExecutor().getScriptEngineManager();
+        if (initialSessionTask.getSettings().useCommonEngineForSessions)
+            scriptEngineManager = initialSessionTask.getGremlinExecutor().getScriptEngineManager();
         else
-            scriptEngineManager = initializeGremlinExecutor(initialGremlinContext).getScriptEngineManager();
+            scriptEngineManager = initializeGremlinExecutor(initialSessionTask).getScriptEngineManager();
 
-        scheduledExecutorService = initialGremlinContext.getScheduledExecutorService();
-        addTask(initialGremlinContext);
+        scheduledExecutorService = initialSessionTask.getScheduledExecutorService();
+        submitTask(initialSessionTask);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class MultiRexster extends AbstractRexster {
     }
 
     @Override
-    public boolean addTask(final Context gremlinContext) {
+    public boolean submitTask(final SessionTask gremlinContext) {
         return isAcceptingTasks() && queue.offer(gremlinContext);
     }
 
@@ -117,12 +117,12 @@ public class MultiRexster extends AbstractRexster {
                             () -> this.triggerTimeout(seto, false),
                             seto, TimeUnit.MILLISECONDS);
 
-                    // only stop processing stuff in the queue if this Rexster isn't configured to hold state between
-                    // exceptions (i.e. the old OpProcessor way) or if this Rexster is closing down by certain death
+                    // only stop processing stuff in the queue if this session isn't configured to hold state between
+                    // exceptions (i.e. the old OpProcessor way) or if this session is closing down by certain death
                     // (i.e. channel close or lifetime session timeout)
                     try {
                         process(currentGremlinContext);
-                    } catch (RexsterException ex) {
+                    } catch (SessionException ex) {
                         if (!maintainStateAfterException || closeReason.get() == CloseReason.CHANNEL_CLOSED ||
                             closeReason.get() == CloseReason.SESSION_TIMEOUT) {
                             throw ex;
@@ -146,7 +146,7 @@ public class MultiRexster extends AbstractRexster {
                 // the current context gets its exception handled...
                 handleException(currentGremlinContext, ex);
             }
-        } catch (RexsterException rexex) {
+        } catch (SessionException rexex) {
             // if the close reason isn't already set then things stopped during gremlin execution somewhere and not
             // more external issues like channel close or timeouts.
             closeReason.compareAndSet(null, CloseReason.PROCESSING_EXCEPTION);
@@ -216,7 +216,7 @@ public class MultiRexster extends AbstractRexster {
     }
 
     @Override
-    protected Bindings getWorkerBindings() throws RexsterException {
+    protected Bindings getWorkerBindings() throws SessionException {
         if (null == bindings)
             bindings = super.getWorkerBindings();
         return this.bindings;

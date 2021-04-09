@@ -34,11 +34,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
-import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.handler.Rexster.RexsterException;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -73,7 +71,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
     protected final ExecutorService executorService;
     protected final Channelizer channelizer;
 
-    protected final ConcurrentMap<String, Rexster> sessions = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     /**
      * This may or may not be the full set of invalid binding keys.  It is dependent on the static imports made to
@@ -132,7 +130,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         try {
             try {
                 validateRequest(msg, graphManager);
-            } catch (RexsterException we) {
+            } catch (SessionException we) {
                 ctx.writeAndFlush(we.getResponseMessage());
                 return;
             }
@@ -140,17 +138,19 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             final Optional<String> optSession = msg.optionalArgs(Tokens.ARGS_SESSION);
             final String sessionId = optSession.orElse(UUID.randomUUID().toString());
 
-            // still using GremlinExecutor here in the Context so that this object doesn't need to immediately
-            // change, but also because GremlinExecutor/ScriptEngine config is all rigged up into the server nicely
-            // right now. when the UnifiedChannelizer is "ready" we can factor out the GremlinExecutor
-            final Context gremlinContext = new Context(msg, ctx, settings, graphManager,
+            // the SessionTask is really a Context from OpProcessor. we still need the GremlinExecutor/ScriptEngine
+            // config that is all rigged up into the server nicely right now so it seemed best to just keep the general
+            // Context object but extend (essentially rename) it to SessionTask so that it better fits the nomenclature
+            // we have here. when we drop OpProcessor stuff and rid ourselves of GremlinExecutor then we can probably
+            // pare down the constructor for SessionTask further.
+            final SessionTask sessionTask = new SessionTask(msg, ctx, settings, graphManager,
                     gremlinExecutor, scheduledExecutorService);
 
             if (sessions.containsKey(sessionId)) {
-                final Rexster rexster = sessions.get(sessionId);
+                final Session session = sessions.get(sessionId);
 
                 // check if the session is bound to this channel, thus one client per session
-                if (!rexster.isBoundTo(gremlinContext.getChannelHandlerContext().channel())) {
+                if (!session.isBoundTo(ctx.channel())) {
                     final String sessionClosedMessage = String.format("Session %s is not bound to the connecting client", sessionId);
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                             .statusMessage(sessionClosedMessage).create();
@@ -159,7 +159,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 }
 
                 // if the session is done accepting tasks then error time
-                if (!rexster.addTask(gremlinContext)) {
+                if (!session.submitTask(sessionTask)) {
                     final String sessionClosedMessage = String.format(
                             "Session %s is no longer accepting requests as it has been closed", sessionId);
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
@@ -167,27 +167,25 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                     ctx.writeAndFlush(response);
                     return;
                 }
-
-                ;
             } else {
-                final Rexster rexster = optSession.isPresent() ?
-                        createMulti(gremlinContext, sessionId) : createSingle(gremlinContext, sessionId);
-                final Future<?> sessionFuture = executorService.submit(rexster);
-                rexster.setSessionFuture(sessionFuture);
-                sessions.put(sessionId, rexster);
+                final Session session = optSession.isPresent() ?
+                        createMulti(sessionTask, sessionId) : createSingle(sessionTask, sessionId);
+                final Future<?> sessionFuture = executorService.submit(session);
+                session.setSessionFuture(sessionFuture);
+                sessions.put(sessionId, session);
 
                 // determine the max session life. for multi that's going to be "session life" and for single that
                 // will be the span of the request timeout
-                final long seto = gremlinContext.getRequestTimeout();
+                final long seto = sessionTask.getRequestTimeout();
                 final long sessionLife = optSession.isPresent() ? settings.sessionLifetimeTimeout : seto;
 
                 // if timeout is enabled when greater than zero
                 if (seto > 0) {
                     final ScheduledFuture<?> sessionCancelFuture =
                             scheduledExecutorService.schedule(
-                                    () -> rexster.triggerTimeout(sessionLife, optSession.isPresent()),
+                                    () -> session.triggerTimeout(sessionLife, optSession.isPresent()),
                                     sessionLife, TimeUnit.MILLISECONDS);
-                    rexster.setSessionCancelFuture(sessionCancelFuture);
+                    session.setSessionCancelFuture(sessionCancelFuture);
                 }
             }
         } finally {
@@ -195,33 +193,33 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         }
     }
 
-    protected void validateRequest(final RequestMessage message, final GraphManager graphManager) throws RexsterException {
+    protected void validateRequest(final RequestMessage message, final GraphManager graphManager) throws SessionException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", message.getOp(), Tokens.ARGS_GREMLIN);
-            throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (message.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
             final Optional<Object> mtx = message.optionalArgs(Tokens.ARGS_MANAGE_TRANSACTION);
             if (mtx.isPresent() && !(mtx.get() instanceof Boolean)) {
                 final String msg = String.format("%s argument must be of type boolean", Tokens.ARGS_MANAGE_TRANSACTION);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             final Optional<Object> msae = message.optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION);
             if (msae.isPresent() && !(msae.get() instanceof Boolean)) {
                 final String msg = String.format("%s argument must be of type boolean", Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         } else {
             if (message.optionalArgs(Tokens.ARGS_MANAGE_TRANSACTION).isPresent()) {
                 final String msg = String.format("%s argument only applies to requests made for sessions", Tokens.ARGS_MANAGE_TRANSACTION);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             if (message.optionalArgs(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION).isPresent()) {
                 final String msg = String.format("%s argument only applies to requests made for sessions", Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         }
 
@@ -229,20 +227,20 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             final Map bindings = (Map) message.getArgs().get(Tokens.ARGS_BINDINGS);
             if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
                 final String msg = String.format("The [%s] message is using one or more invalid binding keys - they must be of type String and cannot be null", Tokens.OPS_EVAL);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(bindings.keySet().iterator(), INVALID_BINDINGS_KEYS::contains));
             if (!badBindings.isEmpty()) {
                 final String msg = String.format("The [%s] message supplies one or more invalid parameters key of [%s] - these are reserved names.", Tokens.OPS_EVAL, badBindings);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             // ignore control bindings that get passed in with the "#jsr223" prefix - those aren't used in compilation
             if (IteratorUtils.count(IteratorUtils.filter(bindings.keySet().iterator(), k -> !k.toString().startsWith("#jsr223"))) > settings.maxParameters) {
                 final String msg = String.format("The [%s] message contains %s bindings which is more than is allowed by the server %s configuration",
                         Tokens.OPS_EVAL, bindings.size(), settings.maxParameters);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         }
 
@@ -251,19 +249,19 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
             if (!aliases.isPresent()) {
                 final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             if (aliases.get().size() != 1 || !aliases.get().containsKey(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS)) {
                 final String msg = String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment named '%s'.",
                         Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             final String traversalSourceBindingForAlias = aliases.get().values().iterator().next();
             if (!graphManager.getTraversalSourceNames().contains(traversalSourceBindingForAlias)) {
                 final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", traversalSourceBindingForAlias, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
-                throw new RexsterException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         }
     }
@@ -289,12 +287,12 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         }
     }
 
-    protected Rexster createSingle(final Context gremlinContext, final String sessionId) {
-        return new SingleRexster(gremlinContext, sessionId, sessions);
+    protected Session createSingle(final SessionTask sessionTask, final String sessionId) {
+        return new SingleTaskSession(sessionTask, sessionId, sessions);
     }
 
-    protected Rexster createMulti(final Context gremlinContext, final String sessionId) {
-        return new MultiRexster(gremlinContext, sessionId, sessions);
+    protected Session createMulti(final SessionTask sessionTask, final String sessionId) {
+        return new MultiTaskSession(sessionTask, sessionId, sessions);
     }
 
     public boolean isActiveSession(final String sessionId) {
