@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
+import org.apache.tinkerpop.gremlin.server.util.SessionExecutor;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -51,7 +52,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -68,7 +68,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
     protected final GraphManager graphManager;
     protected final GremlinExecutor gremlinExecutor;
     protected final ScheduledExecutorService scheduledExecutorService;
-    protected final ExecutorService executorService;
+    protected final SessionExecutor sessionExecutor;
     protected final Channelizer channelizer;
 
     protected final ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
@@ -121,8 +121,10 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
         this.graphManager = graphManager;
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
-        this.executorService = gremlinExecutor.getExecutorService();
         this.channelizer = channelizer;
+
+        // the UnifiedChannelizer validates that we have a SessionExecutor here
+        this.sessionExecutor = (SessionExecutor) gremlinExecutor.getExecutorService();
     }
 
     @Override
@@ -170,7 +172,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             } else {
                 final Session session = optSession.isPresent() ?
                         createMulti(sessionTask, sessionId) : createSingle(sessionTask, sessionId);
-                final Future<?> sessionFuture = executorService.submit(session);
+                final Future<?> sessionFuture = sessionExecutor.submit(session);
                 session.setSessionFuture(sessionFuture);
                 sessions.put(sessionId, session);
 

@@ -25,6 +25,9 @@ import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsAndHttpChannelizerHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.util.SessionExecutor;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * A {@link Channelizer} that supports websocket and HTTP requests and does so with the most streamlined processing
@@ -38,7 +41,15 @@ public class UnifiedChannelizer extends AbstractChannelizer {
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
+        final ExecutorService underlyingExecutorServiceForGremlin = serverGremlinExecutor.getGremlinExecutor().getExecutorService();
+        if (!(underlyingExecutorServiceForGremlin instanceof SessionExecutor)) {
+            throw new IllegalStateException(String.format(
+                    "The %s requires use of a %s for the GremlinExecutor but a %s was provided instead",
+                    UnifiedChannelizer.class.getSimpleName(), SessionExecutor.class.getName(), underlyingExecutorServiceForGremlin.getClass().getName()));
+        }
+
         super.init(serverGremlinExecutor);
+
         wsAndHttpChannelizerHandler = new WsAndHttpChannelizerHandler();
         wsAndHttpChannelizerHandler.init(serverGremlinExecutor, new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings));
 

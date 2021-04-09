@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,8 @@ public class ServerGremlinExecutor {
      * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.  If either of the {@link ExecutorService}
      * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size.
      *
-     * @param gremlinExecutorService Expects a RexsterExecutorService if using the {@link UnifiedChannelizer}.
+     * @param gremlinExecutorService Expects a {@link SessionExecutor} if using the {@link UnifiedHandler} or related
+     *                               variations.
      */
     public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
                                  final ScheduledExecutorService scheduledExecutorService) {
@@ -97,16 +98,11 @@ public class ServerGremlinExecutor {
         if (null == gremlinExecutorService) {
             final ThreadFactory threadFactoryGremlin = ThreadFactoryUtil.create("exec-%d");
 
-            // RexsterExecutorService adds some important bits that are helpful to the UnifiedChannelizer, but
+            // SessionExecutor adds some important bits that are helpful to the UnifiedChannelizer, but
             // using it generally should really have no ill effect to the old OpProcessor stuff or GremlinExecutor
-            // in general.
+            // in general. at its heart it is still just a thread pool.
             this.gremlinExecutorService = new SessionExecutor(settings.gremlinPool, threadFactoryGremlin);
         } else {
-            if (settings.channelizer.equals(UnifiedChannelizer.class.getName())) {
-                logger.error("The {} requires use of a {} for the GremlinExecutor but a {} was provided instead",
-                        settings.channelizer, SessionExecutor.class.getName(), gremlinExecutorService.getClass().getName());
-            }
-
             this.gremlinExecutorService = gremlinExecutorService;
         }
 
