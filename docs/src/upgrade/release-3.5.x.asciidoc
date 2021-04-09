@@ -523,6 +523,180 @@ appropriate token versions automatically.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
+==== Complex dict Deserialization
+
+In Gremlin it is common to return a `dict` or `list` as a key value in another `dict`. The problem for Python is that
+these values are not hashable and will result in an error. By introducing a `HashableDict` and `Tuple` for those keys
+(respectively), it is now possible to return these types of results and not have to work around them:
+
+[source,text]
+----
+>>> g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+{{<T.id: 1>: 1, <T.label: 4>: 'person', 'name': 'marko'}: 1}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2407[TINKERPOP-2407]
+
+==== Gremlin Server Audit Logging
+
+The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
+to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
+formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
+
+==== Gremlin Server Authorization
+
+While Gremlin Server has long had authentication options to determine if a user can connect to the server, it now also
+contains the ability to apply a level of authorization to better control what a particular authenticated user will
+have access to. Authorization is controlled by the new `Authorizer` interface, which can be implemented by users and
+graph providers to provide this custom functionality.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
+link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
+
+==== Transaction Improvements
+
+The TinkerPop Transaction API and its related features have not changed much since TinkerPop 3.x was initially
+released. Transactions have remained a feature for embedded use cases and script execution (where supported) even in
+the face of the rise of remote graph use cases. With the varying contexts that exist for how and when transactions can
+be used, it has led to a fair bit of confusion.
+
+For 3.5.0, TinkerPop introduces a change in approach to transactions that has the goal of unifying the API and features
+for all use cases, while addressing the more current state of the graph ecosystem which has shifted heavily toward
+remote communication and more diverse programming language ecosystems beyond the JVM.
+
+NOTE: The old transaction API remains intact in 3.5.0, so this version should be backward compatible with the old
+model for embedded transactions. Migrating to the new model would be preferred at this point, but nothing (with the
+exception of the `Transaction#createdThreadedTransaction()` method) has been officially deprecated as the API itself
+is technically still relevant.
+
+The new model for transactions looks like this:
+
+[source,groovy]
+----
+g = traversal().withEmbedded(graph)
+// or
+g = traversal().withRemote(conn)
+
+tx = g.tx() // create a Transaction object
+gtx = tx.begin()  // spawn a GraphTraversalSource from the Transaction
+assert tx.isOpen() == true
+gtx.addV('person').iterate()
+gtx.addV('software').iterate()
+tx.commit() // alternatively you could explicitly rollback()
+assert tx.isOpen() == false
+
+// it is still possible to use g, but gtx is "done" after it is closed so use
+// tx.begin() to produce a new gtx instance for a fresh transaction
+assert 2 == g.V().count().next()
+----
+
+The first important point to take away here is that the same transaction code will work for either embedded or remote
+use cases. The second important point is that for remote cases, transaction support with bytecode is a wholly new
+feature, which was implemented by providing support for bytecode in sessions. Up until this time, sessions could only
+support script-based requests, so that makes another added feature related to this one.
+
+IMPORTANT: The `g.tx()` is only supported in Java at this time. Support for other languages will come available in
+future releases on the 3.5.x line.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2537[TINKERPOP-2537],
+link:https://tinkerpop.apache.org/docs/current/reference/#transactions[Reference Documentation - Transactions]
+
+==== Retry Conditions
+
+Some error conditions are temporary in nature and therefore an operation that ends in such a situation may be tried
+again as-is to potential success. In embedded use cases, an exception that implements the `TemporaryException`
+interface implies that the failing operation can be retried. For remote use cases, a `ResponseStatusCode` of `596`
+which equates to `SERVER_ERROR_TEMPORARY` is an indicator that a request may be retried.
+
+With this more concrete and generalized approach to determining when retries should happen, the need to trap provider
+specific exceptions or to examine the text of error messages are removed. Before replacing existing code that might
+do these things currently, it may be best to include this sort of retry checking in addition to current methods as
+it may take time for providers to support these new options. Alternatively, if you can confirm that a provider does
+support this functionality then feel free to proceed wholly with this generalized TinkerPop approach.
+
+Finally, it is important to note that TinkerPop drivers do not automatically retry when these conditions are met. It
+is up to the application to determine if retry is desired and how best to do so.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
+
+==== Python 2.x Support
+
+The gremlin-python module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from
+a user's perspective, there are no specific API changes to consider as a result of this change. It is also worth
+noting that Jython support has been removed and that `gremlin-python` no longer produces a JVM-based artifact. This
+change means that the `GremlinJythonScriptEngine` no longer exists and there is no way to write native Python lambdas.
+All lambdas should be written using `gremlin-groovy` if they are needed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
+
+==== Python Transportation Layer Rewrite
+
+With the removal of Python 2.x support the transport layer of gremlin-python has been rewritten to use a library that
+utilizes the asyncio event loop of Python 3. link:https://github.com/aio-libs/aiohttp[AIOHTTP] utilizes Python 3's
+event loop with a minimal HTTP abstraction and is now used for the transport layer. From a user's perspective there is
+not much of a change except there is now a working heartbeat that can be set and there is no longer a
+compression_options config when connecting with a custom transport factory. This change fixed a number of issues that
+were related to the IOLoop of the old link:https://github.com/tornadoweb/tornado[Tornado] transport layer.
+
+==== Python Kerberos Support
+
+The Python Driver now supports Kerberos based authentication:
+
+[source,python]
+----
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
+link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
+
+==== .NET Standard 2.0 Only
+
+Gremlin.NET no longer targets .NET Standard 1.3, but only .NET Standard 2.0. Since .NET Core 2.0 and .NET Framework
+4.6.1 already support this .NET Standard version, most users should not be impacted by this.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
+
+==== Gremlin.NET: GraphBinary
+
+Gremlin.NET now also supports GraphBinary. GraphSON 3 however still remains the default serialization format as
+GraphBinary should be considered experimental for this version.
+
+GraphBinary needs of course to be also enabled on the server side before it can be used in the driver. It can then be
+used like this:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Upgrade/Release35Tests.cs[tags=graphBinary]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2472[TINKERPOP-2472]
+
+==== Gremlin.NET: New JSON Library
+
+Gremlin.NET now uses `System.Text.Json` instead of Newtonsoft.Json as `System.Text.Json` is already included in .NET
+Core 3.0 and higher which means that we have one dependency less on this platform and because it offers an increased
+performance.
+Most users should not notice this change. But users who have implemented their own GraphSON serializers or
+deserializers probably have to change them accordingly. The same applies to users that let Gremlin.NET return data
+without deserializing it first as the returned data types will change in this case, for example from Newtonsoft.Json's
+`JObject` or `JToken` to `JsonElement` with `System.Text.Json`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2349[TINKERPOP-2349],
+link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
+
+==== Neo4j Changes
+
+There were two key changes to the neo4j-gremlin module:
+
+* The underlying Neo4j version moved from the 3.2.x line to 3.4.x line. Please see the
+link:https://neo4j.com/guides/upgrade-archive/[Neo4j Upgrade FAQ] for more information as features and
+configuration options may have changed.
+* Experimental support for multi/meta-properties in Neo4j which were previously deprecated have now been permanently
+removed.
+
 ==== match() Consistency
 
 The `match()` step behavior might have seemed inconsistent those first using it. While there are a number of examples

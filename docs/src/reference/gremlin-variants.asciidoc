@@ -831,14 +831,14 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |password |The password to submit on requests that require authentication. |""
 |pool_size |The number of connections used by the pool. |4
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
-|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
+|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.aiohttp.transport.AiohttpTransport`
 |username |The username to submit on requests that require authentication. |""
 |kerberized_service |the first part of the principal name configured for the gremlin service|"""
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |=========================================================
 
-Note that the `transport_factory` can allow for additional configuration of the `TornadoTransport`, which exposes
-options to manage `ioloop` timeouts and compression settings:
+Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which exposes
+options to manage `asyncio` timeouts, heartbeat, max content length, and ssl options:
 
 [source,python]
 ----
@@ -846,9 +846,10 @@ import ssl
 ...
 g = traversal().withRemote(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
-                         transport_factory=lambda: TornadoTransport(read_timeout=10,
+                         transport_factory=lambda: AiohttpTransport(read_timeout=10,
                                                                     write_timeout=10,
-                                                                    compression_options={'compression_level':5,'mem_level':5},
+                                                                    heartbeat=1.0,
+                                                                    max_content_length=100*1024*1024
                                                                     ssl_options=ssl.create_default_context(Purpose.CLIENT_AUTH))))
 ----
 
@@ -1133,7 +1134,7 @@ and is designed to work best with a running <<gremlin-server,Gremlin Server>> co
 [source,shell]
 ----
 pip install gremlinpython
-pip install tornado
+pip install aiohttp
 python example.py
 ----
 
