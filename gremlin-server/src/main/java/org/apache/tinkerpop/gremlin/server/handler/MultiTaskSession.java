@@ -36,6 +36,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +53,7 @@ import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.
  */
 public class MultiTaskSession extends AbstractSession {
     private static final Logger logger = LoggerFactory.getLogger(MultiTaskSession.class);
-    protected final BlockingQueue<SessionTask> queue = new LinkedBlockingQueue<>();
+    protected final BlockingQueue<SessionTask> queue;
     private final AtomicBoolean ending = new AtomicBoolean(false);
     private final ScheduledExecutorService scheduledExecutorService;
     private final GremlinScriptEngineManager scriptEngineManager;
@@ -70,6 +71,8 @@ public class MultiTaskSession extends AbstractSession {
     public MultiTaskSession(final SessionTask initialSessionTask, final String sessionId,
                      final ConcurrentMap<String, Session> sessions) {
         super(initialSessionTask, sessionId, false, sessions);
+
+        queue = new LinkedBlockingQueue<>(initialSessionTask.getSettings().maxSessionTaskQueueSize);
 
         // using a global function cache is cheaper than creating a new on per session especially if you have to
         // create a lot of sessions. it will generate a ton of throw-away objects. mostly keeping the option open
@@ -100,8 +103,14 @@ public class MultiTaskSession extends AbstractSession {
     }
 
     @Override
-    public boolean submitTask(final SessionTask sessionTask) {
-        return isAcceptingTasks() && queue.offer(sessionTask);
+    public boolean submitTask(final SessionTask sessionTask) throws RejectedExecutionException {
+        try {
+            return isAcceptingTasks() && queue.add(sessionTask);
+        } catch (IllegalStateException ise) {
+            final String msg = String.format("Task %s rejected from session %s",
+                    sessionTask.getRequestMessage().getRequestId(), getSessionId());
+            throw new RejectedExecutionException(msg);
+        }
     }
 
     @Override
@@ -265,5 +274,10 @@ public class MultiTaskSession extends AbstractSession {
         });
 
         return gremlinExecutorBuilder.create();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s - session: %s", MultiTaskSession.class.getSimpleName(), getSessionId());
     }
 }

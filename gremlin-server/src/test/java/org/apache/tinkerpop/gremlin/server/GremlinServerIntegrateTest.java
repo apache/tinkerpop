@@ -59,6 +59,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -214,6 +215,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldCloseChannelIfClientDoesntRespond":
                 settings.idleConnectionTimeout = 1000;
                 break;
+            case "shouldBlowTheWorkQueueSize":
+                settings.gremlinPool = 1;
+                settings.maxWorkQueueSize = 1;
+                break;
             default:
                 break;
         }
@@ -246,6 +251,41 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         properties.put("ScriptBaseClass", BaseScriptForTesting.class.getName());
         scriptEngineConf.put("compilerConfigurationOptions", properties);
         return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldBlowTheWorkQueueSize() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        // maxWorkQueueSize=1 && gremlinPool=1
+        // we should be able to do one request at a time serially
+        assertEquals("test1", client.submit("'test1'").all().get().get(0).getString());
+        assertEquals("test2", client.submit("'test2'").all().get().get(0).getString());
+        assertEquals("test3", client.submit("'test3'").all().get().get(0).getString());
+
+        final AtomicBoolean errorTriggered = new AtomicBoolean();
+        final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'").get();
+
+        final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
+        for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
+            blockers.add(client.submit("'test'").all().exceptionally(t -> {
+                final ResponseException re = (ResponseException) t.getCause();
+                errorTriggered.compareAndSet(false, ResponseStatusCode.TOO_MANY_REQUESTS == re.getResponseStatusCode());
+                return null;
+            }));
+        }
+
+        assertThat(errorTriggered.get(), is(true));
+
+        // wait for the blockage to clear for sure
+        assertEquals("test4", r1.all().get().get(0).getString());
+        blockers.forEach(CompletableFuture::join);
+
+        // should be accepting test6 now
+        assertEquals("test6", client.submit("'test6'").all().get().get(0).getString());
+
+        cluster.close();
     }
 
     @Test

@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -265,10 +266,15 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             return null;
         });
 
-        final Future<?> executionFuture = context.getGremlinExecutor().getExecutorService().submit(evalFuture);
-        if (seto > 0) {
-            // Schedule a timeout in the thread pool for future execution
-            context.getScheduledExecutorService().schedule(() -> executionFuture.cancel(true), seto, TimeUnit.MILLISECONDS);
+        try {
+            final Future<?> executionFuture = context.getGremlinExecutor().getExecutorService().submit(evalFuture);
+            if (seto > 0) {
+                // Schedule a timeout in the thread pool for future execution
+                context.getScheduledExecutorService().schedule(() -> executionFuture.cancel(true), seto, TimeUnit.MILLISECONDS);
+            }
+        } catch (RejectedExecutionException ree) {
+            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.TOO_MANY_REQUESTS)
+                    .statusMessage("Rate limiting").create());
         }
     }
 

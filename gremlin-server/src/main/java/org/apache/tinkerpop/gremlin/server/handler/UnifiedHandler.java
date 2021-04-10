@@ -53,6 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -165,7 +166,6 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                             .statusMessage(sessionClosedMessage).create();
                     ctx.writeAndFlush(response);
-                    return;
                 }
             } else {
                 // determine the type of session to start - one that processes the current request only and close OR
@@ -184,7 +184,8 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 final long seto = sessionTask.getRequestTimeout();
                 final long sessionLife = optMultiTaskSession.isPresent() ? settings.sessionLifetimeTimeout : seto;
 
-                // if timeout is enabled when greater than zero
+                // if timeout is enabled when greater than zero schedule up a timeout which is a session life timeout
+                // for a multi or technically a request timeout for a single.
                 if (seto > 0) {
                     final ScheduledFuture<?> sessionCancelFuture =
                             scheduledExecutorService.schedule(
@@ -193,6 +194,14 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                     session.setSessionCancelFuture(sessionCancelFuture);
                 }
             }
+        } catch (RejectedExecutionException ree) {
+            logger.warn(ree.getMessage());
+
+            // generic message seems ok here? like, you would know what you were submitting on, i.e. session or
+            // sessionless, when you got this error. probably don't need gory details.
+            final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.TOO_MANY_REQUESTS)
+                    .statusMessage("Rate limiting").create();
+            ctx.writeAndFlush(response);
         } finally {
             ReferenceCountUtil.release(msg);
         }

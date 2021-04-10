@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.Session;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -196,6 +197,28 @@ public class Settings {
      * The full class name of the {@link GraphManager} to use in Gremlin Server.
      */
     public String graphManager = DefaultGraphManager.class.getName();
+
+    /**
+     * Maximum size the general processing queue can grow before starting to reject requests. The general processing
+     * queue is managed by a thread pool that has its size determined by {@link #gremlinPool}. All incoming requests
+     * will be processed by this thread pool. If the threads are exhausted, the requests will queue to the size
+     * specified by this value after which they will begin to reject the requests.
+     * <p/>
+     * This value should be taken in account with the {@link #maxSessionTaskQueueSize} which is related in some
+     * respects. A request that starts a new {@link Session} is handled by this queue, but additional requests to a
+     * created {@link Session} will queue separately given that setting per session.
+     * <p/>
+     * By default this value is set to 8192.
+     */
+    public int maxWorkQueueSize = 8192;
+
+    /**
+     * Maximum size that an individual {@link Session} can queue requests before starting to reject them. Note that this
+     * configuration only applies to the {@link UnifiedChannelizer}. By default this value is set to 4096.
+     *
+     * @see #maxWorkQueueSize
+     */
+    public int maxSessionTaskQueueSize = 4096;
 
     /**
      * Maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts.

@@ -982,6 +982,8 @@ The following table describes the various YAML configuration options that Gremli
 |maxHeaderSize |The maximum length of all headers. |8192
 |maxInitialLineLength |The maximum length of the initial line (e.g.  "GET / HTTP/1.0") processed in a request, which essentially controls the maximum length of the submitted URI. |4096
 |maxParameters |The maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts. This configuration only applies to the `UnifiedChannelizer`. |16
+|maxSessionTaskQueueSize |The maximum size that an individual session can queue requests before starting to reject them. This configuration only applies to the `UnifiedChannelizer`. |4096
+|maxWorkQueueSize |The maximum size the general processing queue can grow before the `gremlinPool` starts to reject requests. |8192
 |metrics.consoleReporter.enabled |Turns on console reporting of metrics. |false
 |metrics.consoleReporter.interval |Time in milliseconds between reports of metrics to console. |180000
 |metrics.csvReporter.enabled |Turns on CSV reporting of metrics. |false

@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -269,60 +270,65 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     }
                 }).create();
 
-        final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings, lifeCycle);
+        try {
+            final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings, lifeCycle);
 
-        evalFuture.handle((v, t) -> {
-            timerContext.stop();
+            evalFuture.handle((v, t) -> {
+                timerContext.stop();
 
-            if (t != null) {
-                // if any exception in the chain is TemporaryException then we should respond with the right error
-                // code so that the client knows to retry
-                final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
-                if (possibleTemporaryException.isPresent()) {
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
-                            .statusMessage(possibleTemporaryException.get().getMessage())
-                            .statusAttributeException(possibleTemporaryException.get()).create());
-                } else if (t instanceof OpProcessorException) {
-                    ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
-                } else if (t instanceof TimedInterruptTimeoutException) {
-                    // occurs when the TimedInterruptCustomizerProvider is in play
-                    final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
-                    logger.warn(errorMessage);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                                     .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
-                                                     .statusAttributeException(t).create());
-                } else if (t instanceof TimeoutException) {
-                    final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
-                    logger.warn(errorMessage, t);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                                     .statusMessage(t.getMessage())
-                                                     .statusAttributeException(t).create());
-                } else {
-                    // try to trap the specific jvm error of "Method code too large!" to re-write it as something nicer,
-                    // but only re-write if it's the only error because otherwise we might lose some other important
-                    // information related to the failure. at this point, there hasn't been a scenario that has
-                    // presented itself where the "Method code too large!" comes with other compilation errors so
-                    // it seems that this message trumps other compilation errors to some reasonable degree that ends
-                    // up being favorable for this problem
-                    if (t instanceof MultipleCompilationErrorsException && t.getMessage().contains("Method too large") &&
-                            ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
-                        final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
+                if (t != null) {
+                    // if any exception in the chain is TemporaryException then we should respond with the right error
+                    // code so that the client knows to retry
+                    final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
+                    if (possibleTemporaryException.isPresent()) {
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
+                                .statusMessage(possibleTemporaryException.get().getMessage())
+                                .statusAttributeException(possibleTemporaryException.get()).create());
+                    } else if (t instanceof OpProcessorException) {
+                        ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
+                    } else if (t instanceof TimedInterruptTimeoutException) {
+                        // occurs when the TimedInterruptCustomizerProvider is in play
+                        final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
-                                                         .statusMessage(errorMessage)
-                                                         .statusAttributeException(t).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
+                                .statusAttributeException(t).create());
+                    } else if (t instanceof TimeoutException) {
+                        final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
+                        logger.warn(errorMessage, t);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusMessage(t.getMessage())
+                                .statusAttributeException(t).create());
                     } else {
-                        final String errorMessage =  (t.getMessage() == null) ? t.toString() : t.getMessage();
-                        logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
-                                                         .statusMessage(errorMessage)
-                                                         .statusAttributeException(t).create());
+                        // try to trap the specific jvm error of "Method code too large!" to re-write it as something nicer,
+                        // but only re-write if it's the only error because otherwise we might lose some other important
+                        // information related to the failure. at this point, there hasn't been a scenario that has
+                        // presented itself where the "Method code too large!" comes with other compilation errors so
+                        // it seems that this message trumps other compilation errors to some reasonable degree that ends
+                        // up being favorable for this problem
+                        if (t instanceof MultipleCompilationErrorsException && t.getMessage().contains("Method too large") &&
+                                ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
+                            final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
+                            logger.warn(errorMessage);
+                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
+                                    .statusMessage(errorMessage)
+                                    .statusAttributeException(t).create());
+                        } else {
+                            final String errorMessage = (t.getMessage() == null) ? t.toString() : t.getMessage();
+                            logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
+                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
+                                    .statusMessage(errorMessage)
+                                    .statusAttributeException(t).create());
+                        }
                     }
                 }
-            }
 
-            return null;
-        });
+                return null;
+            });
+        } catch (RejectedExecutionException ree) {
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.TOO_MANY_REQUESTS)
+                    .statusMessage("Rate limiting").create());
+        }
     }
 
     /**

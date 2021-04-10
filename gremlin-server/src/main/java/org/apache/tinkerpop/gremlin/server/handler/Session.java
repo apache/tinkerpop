@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import io.netty.channel.Channel;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 
 /**
@@ -38,8 +39,10 @@ public interface Session extends Runnable {
 
     /**
      * Adds a task for session to complete.
+     *
+     * @throws RejectedExecutionException if the task cannot be queued
      */
-    boolean submitTask(final SessionTask sessionTask);
+    boolean submitTask(final SessionTask sessionTask) throws RejectedExecutionException;
 
     /**
      * Sets a reference to the job that will cancel this session if it exceeds its timeout period.

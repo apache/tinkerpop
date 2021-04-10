@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -145,6 +146,10 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
                 clearNeo4j(settings);
                 break;
+            case "shouldBlowTheSessionQueueSize":
+                clearNeo4j(settings);
+                settings.maxSessionTaskQueueSize = 1;
+                break;
         }
 
         return settings;
@@ -153,6 +158,48 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     private static void clearNeo4j(Settings settings) {
         deleteDirectory(new File("/tmp/neo4j"));
         settings.graphs.put("graph", "conf/neo4j-empty.properties");
+    }
+
+    @Test
+    public void shouldBlowTheSessionQueueSize() throws Exception {
+        assumeNeo4jIsPresent();
+        assumeThat(isUsingUnifiedChannelizer(), is(true));
+
+        final Cluster cluster = TestClientFactory.open();
+        final Client session = cluster.connect(name.getMethodName());
+
+        // maxSessionQueueSize=1
+        // we should be able to do one request at a time serially
+        assertEquals("test1", session.submit("'test1'").all().get().get(0).getString());
+        assertEquals("test2", session.submit("'test2'").all().get().get(0).getString());
+        assertEquals("test3", session.submit("'test3'").all().get().get(0).getString());
+
+        final AtomicBoolean errorTriggered = new AtomicBoolean();
+        final ResultSet r1 = session.submitAsync("Thread.sleep(1000);'test4'").get();
+
+        final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
+        for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
+            blockers.add(session.submit("'test'").all().exceptionally(t -> {
+                final ResponseException re = (ResponseException) t.getCause();
+                errorTriggered.compareAndSet(false, ResponseStatusCode.TOO_MANY_REQUESTS == re.getResponseStatusCode());
+                return null;
+            }));
+
+            // low resource environments like travis might need a break
+            if (ix % 32 == 0) Thread.sleep(500);
+        }
+
+        // wait for the blockage to clear for sure
+        assertEquals("test4", r1.all().get().get(0).getString());
+        blockers.forEach(CompletableFuture::join);
+
+        assertThat(errorTriggered.get(), is(true));
+
+        // should be accepting test6 now
+        assertEquals("test6", session.submit("'test6'").all().get().get(0).getString());
+
+        session.close();
+        cluster.close();
     }
 
     @Test

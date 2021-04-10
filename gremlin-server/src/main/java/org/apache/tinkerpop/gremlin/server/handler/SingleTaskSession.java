@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A simple {@link Session} implementation that accepts one request, processes it and exits.
@@ -54,7 +55,7 @@ public class SingleTaskSession extends AbstractSession {
      * submitted.
      */
     @Override
-    public boolean submitTask(final SessionTask sessionTask) {
+    public boolean submitTask(final SessionTask sessionTask) throws RejectedExecutionException {
         throw new UnsupportedOperationException("SingleWorker doesn't accept tasks beyond the one provided to the constructor");
     }
 
@@ -82,5 +83,10 @@ public class SingleTaskSession extends AbstractSession {
             closeReason.compareAndSet(null, CloseReason.EXIT_PROCESSING);
             close();
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s - session: %s", SingleTaskSession.class.getSimpleName(), getSessionId());
     }
 }
