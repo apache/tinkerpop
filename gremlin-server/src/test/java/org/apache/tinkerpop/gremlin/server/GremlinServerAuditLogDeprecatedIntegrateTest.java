@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
@@ -94,7 +93,6 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
 
     @Override
     public void tearDown() throws Exception {
-        super.tearDown();
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.removeAppender(recordingAppender);
         kdcServer.close();
@@ -148,7 +146,7 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
     @Test
     public void shouldAuditLogWithAllowAllAuthenticator() throws Exception {
 
-        final Cluster cluster = TestClientFactory.build().addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
 
         try {
@@ -175,8 +173,7 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
         final String username = "stephen";
         final String password = "password";
 
-        final Cluster cluster = TestClientFactory.build().credentials(username, password)
-                .addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).credentials(username, password).create();
         final Client client = cluster.connect();
 
         try {
@@ -211,8 +208,8 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
 
     @Test
     public void shouldAuditLogWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -243,8 +240,8 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
 
     @Test
     public void shouldNotAuditLogWhenDisabled() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -305,9 +302,7 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
         final String username = "stephen";
         final String password = "password";
 
-        final Cluster cluster = TestClientFactory.build().credentials(username, password)
-                .addContactPoint(kdcServer.gremlinHostname).create();
-        final Client client = cluster.connect();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).credentials(username, password).create();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().
                 withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
 
@@ -336,11 +331,11 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
 
     @Test
     public void shouldAuditLogTwoClientsWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
-        final Cluster cluster2 = TestClientFactory.build().jaasEntry(TESTCONSOLE2)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster2 = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE2)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client2 = cluster2.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());

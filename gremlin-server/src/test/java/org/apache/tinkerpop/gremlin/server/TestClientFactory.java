@@ -37,6 +37,10 @@ public final class TestClientFactory {
         return Cluster.build("localhost").port(45940);
     }
 
+    public static Cluster.Builder build(final String address) {
+        return Cluster.build(address).port(45940);
+    }
+
     public static Cluster open() {
         return build().create();
     }
