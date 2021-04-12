@@ -23,6 +23,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -454,8 +455,12 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
         try {
             // the original session should be dead so this call will open a new session with the same name but fail
-            // because the state is now gone - x is an invalid property
-            session.submit("x[1]+2").all().get();
+            // because the state is now gone - x is an invalid property.
+            //
+            // for UnifiedChannelizer the state needs to be maintained after exception so that the session doesnt
+            // close out before the validation attempt in the catch where we try to send messages on the same session
+            session.submit("x[1]+2",
+                    RequestOptions.build().maintainStateAfterException(true).create()).all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
             final Throwable cause = ExceptionUtils.getCause(ex);

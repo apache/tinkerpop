@@ -2418,6 +2418,21 @@ would successfully evaluate and return a `Traversal`.  The variable "a" would be
 if there was a failure in transaction management on the call to `commit()`, "a" would still be available to the next
 request.
 
+To avoid unexpected problems with state in relation to errors in sessions, it is best to follow these guidelines:
+
+* Do not re-use session identifiers. Simply use a new UUID for each session.
+* On exception, be sure to call `close()` on the `Client` and create a new session.
+* While you may submit parallel asynchronous requests to a session, it may not make sense to do so because they are
+simply executed serially as they arrive to the session. A failed asynchronous request could leave an invalid state
+in the session which may not allow later requests to succeed. Either use synchronous requests only or carefully
+consider error conditions with asynchronous requests.
+
+IMPORTANT: If using the `UnifiedChannelizer`, failures in evaluation will result in the session being closed and state
+being lost. Asynchronous requests that are queued on the server will be cancelled and additional requests, in-flight or
+otherwise will be rejected. Users should create a new session from the `Cluster` object in this case. The alternative,
+to match the old `OpProcessor` GremlinServer behavior is to add a per-request option to `maintainStateAfterException`
+and will instead have similar behavior to that described in this section.
+
 A session is a "heavier" approach to the simple "request/response" approach of sessionless requests, but is sometimes
 necessary for a given use case.
 
