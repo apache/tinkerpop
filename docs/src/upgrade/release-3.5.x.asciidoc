@@ -637,7 +637,10 @@ utilizes the asyncio event loop of Python 3. link:https://github.com/aio-libs/ai
 event loop with a minimal HTTP abstraction and is now used for the transport layer. From a user's perspective there is
 not much of a change except there is now a working heartbeat that can be set and there is no longer a
 compression_options config when connecting with a custom transport factory. This change fixed a number of issues that
-were related to the IOLoop of the old link:https://github.com/tornadoweb/tornado[Tornado] transport layer.
+were related to the IOLoop of the old link:https://github.com/tornadoweb/tornado[Tornado] transport layer, which has
+been completely removed from the library.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2546[TINKERPOP-2546]
 
 ==== Python Kerberos Support
 
