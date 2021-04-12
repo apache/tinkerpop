@@ -22,25 +22,28 @@ import aiohttp
 import asyncio
 import async_timeout
 
-""" 
-    The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called within an
-    event loop without nest_asyncio. If the code is ever refactored so that it can be called within an event loop
-    this import and call can be removed. Without this, applications which use the event loop to call gremlin-python
-    (such as Jupyter) will not work.
-"""
-import nest_asyncio
-nest_asyncio.apply()
-
 from gremlin_python.driver.transport import AbstractBaseTransport
 
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 class AiohttpTransport(AbstractBaseTransport):
+    nest_asyncio_applied = False
 
     # Default heartbeat of 5.0 seconds.
     def __init__(self, read_timeout=None, write_timeout=None, ssl_options=None,
-                 heartbeat=5.0, max_content_length=None):
+                 heartbeat=5.0, max_content_length=None, call_from_event_loop=None):
+        if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
+            """ 
+                The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called within an
+                event loop without nest_asyncio. If the code is ever refactored so that it can be called within an event loop
+                this import and call can be removed. Without this, applications which use the event loop to call gremlin-python
+                (such as Jupyter) will not work.
+            """
+            import nest_asyncio
+            nest_asyncio.apply()
+            AiohttpTransport.nest_asyncio_applied = True
+
         # Start event loop and initialize websocket and client to None
         self._loop = asyncio.new_event_loop()
         self._websocket = None
