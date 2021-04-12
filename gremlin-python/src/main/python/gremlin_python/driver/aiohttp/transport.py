@@ -22,76 +22,108 @@ import aiohttp
 import asyncio
 import async_timeout
 
-""" 
-    The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called within an
-    event loop without nest_asyncio. If the code is ever refactored so that it can be called within an event loop
-    this import and call can be removed. Without this, applications which use the event loop to call gremlin-python
-    (such as Jupyter) will not work.
-"""
-import nest_asyncio
-nest_asyncio.apply()
-
 from gremlin_python.driver.transport import AbstractBaseTransport
 
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 class AiohttpTransport(AbstractBaseTransport):
+    nest_asyncio_applied = False
 
-    def __init__(self, read_timeout=None, write_timeout=None,
-                 compression=None, ssl_options=None,
-                 heartbeat=5.0, max_content_length=None):
+    # Default heartbeat of 5.0 seconds.
+    def __init__(self, read_timeout=None, write_timeout=None, ssl_options=None,
+                 heartbeat=5.0, max_content_length=None, call_from_event_loop=None):
+        if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
+            """ 
+                The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called within an
+                event loop without nest_asyncio. If the code is ever refactored so that it can be called within an event loop
+                this import and call can be removed. Without this, applications which use the event loop to call gremlin-python
+                (such as Jupyter) will not work.
+            """
+            import nest_asyncio
+            nest_asyncio.apply()
+            AiohttpTransport.nest_asyncio_applied = True
+
         # Start event loop and initialize websocket and client to None
         self._loop = asyncio.new_event_loop()
-        self._ws = None
+        self._websocket = None
+        self._client_session = None
+
+        # Set all inner variables to parameters passed in.
         self._read_timeout = read_timeout
         self._write_timeout = write_timeout
-        self._compression = compression
         self._ssl_options = ssl_options
         self._heartbeat = heartbeat
+        self._max_content_length = max_content_length
 
     def connect(self, url, headers=None):
         # Inner function to perform async connect.
         async def async_connect():
             # Start client session and use it to create a websocket with all the connection options provided.
-            self._client_session = aiohttp.ClientSession()
-            self._websocket = await self._client_session.ws_connect(url, ssl=self._ssl_options, headers=headers,
-                                                             compress=self._compression, heartbeat=self._heartbeat,
-                                                             max_msg_size=self._max_content_length)
+            self._client_session = aiohttp.ClientSession(loop=self._loop)
+            self._websocket = await self._client_session.ws_connect(url,
+                                                                    ssl=self._ssl_options,
+                                                                    headers=headers,
+                                                                    heartbeat=self._heartbeat,
+                                                                    max_msg_size=self._max_content_length)
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
 
     def write(self, message):
-        self._loop.run_until_complete(self._async_write(message))
+        # Inner function to perform async write.
+        async def async_write():
+            async with async_timeout.timeout(self._write_timeout):
+                await self._websocket.send_bytes(message)
+
+        # Execute the async write synchronously.
+        self._loop.run_until_complete(async_write())
 
     def read(self):
-        return self._loop.run_until_complete(self._async_read())
+        # Inner function to perform async read.
+        async def async_read():
+            async with async_timeout.timeout(self._read_timeout):
+                return await self._websocket.receive()
+
+        # Execute the async read synchronously.
+        msg = self._loop.run_until_complete(async_read())
+
+        # Need to handle multiple potential message types.
+        if msg.type == aiohttp.WSMsgType.close:
+            # Server is closing connection, shutdown and throw exception.
+            self.close()
+            raise RuntimeError("Connection was closed by server.")
+        elif msg.type == aiohttp.WSMsgType.closed:
+            # Should not be possible since our loop and socket would be closed.
+            raise RuntimeError("Connection was already closed.")
+        elif msg.type == aiohttp.WSMsgType.error:
+            # Error on connection, try to convert message to a string in error.
+            raise RuntimeError("Received error on read: '" + str(msg.data) + "'")
+        elif msg.type == aiohttp.WSMsgType.text:
+            # Convert message to bytes.
+            data = msg.data.strip().encode('utf-8')
+        else:
+            # General handle, return byte data.
+            data = msg.data
+        return data
 
     def close(self):
-        if self._loop.is_running():
-            # TODO: review and see if this is the correct way of closing
-            # self._loop.run_until_complete(self._async_close())
+        # Inner function to perform async close.
+        async def async_close():
+            if not self._websocket.closed:
+                await self._websocket.close()
+            if not self._client_session.closed:
+                await self._client_session.close()
+
+        # If the loop is not closed (connection hasn't already been closed)
+        if not self._loop.is_closed():
+            # Execute the async close synchronously.
+            self._loop.run_until_complete(async_close())
+
+            # Close the event loop.
             self._loop.close()
 
+    @property
     def closed(self):
-        return self._ws.closed
-
-    async def _async_connect(self, url, headers=None):
-        self._client = aiohttp.ClientSession()
-        self._ws = await self._client.ws_connect(
-            url, ssl=self._ssl_options, headers=headers, heartbeat=self._heartbeat)
-
-    async def _async_write(self, message):
-        async with async_timeout.timeout(self._write_timeout):
-            await self._ws.send_bytes(message)
-
-    async def _async_read(self):
-        async with async_timeout.timeout(self._read_timeout):
-            return (await self._ws.receive()).data
-
-    async def _async_close(self):
-        if not self._ws.closed:
-            await self._ws.close()
-        if not self._client.closed:
-            await self._client.close()
+        # Connection is closed if either the websocket or the client session is closed.
+        return self._websocket.closed or self._client_session.closed

@@ -40,7 +40,8 @@ class Client:
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
                  kerberized_service="", headers=None, session="",
-                 max_content_length=None, heartbeat=None):
+                 max_content_length=None, heartbeat=None,
+                 call_from_event_loop=None):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -63,7 +64,8 @@ class Client:
             else:
                 def transport_factory():
                     return AiohttpTransport(heartbeat=heartbeat,
-                                            max_content_length=max_content_length)
+                                            max_content_length=max_content_length,
+                                            call_from_event_loop=call_from_event_loop)
         self._transport_factory = transport_factory
         if protocol_factory is None:
             def protocol_factory(): return protocol.GremlinServerWSProtocol(

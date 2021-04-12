@@ -33,7 +33,8 @@ class DriverRemoteConnection(RemoteConnection):
                  username="", password="", kerberized_service='',
                  message_serializer=None, graphson_reader=None,
                  graphson_writer=None, headers=None,
-                 max_content_length=None, heartbeat=None):
+                 max_content_length=None, heartbeat=None,
+                 call_from_event_loop=None):
         if message_serializer is None:
             message_serializer = serializer.GraphSONMessageSerializer(
                 reader=graphson_reader,
@@ -49,7 +50,8 @@ class DriverRemoteConnection(RemoteConnection):
                                      kerberized_service=kerberized_service,
                                      headers=headers,
                                      heartbeat=heartbeat,
-                                     max_content_length=max_content_length)
+                                     max_content_length=max_content_length,
+                                     call_from_event_loop=call_from_event_loop)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source
 
