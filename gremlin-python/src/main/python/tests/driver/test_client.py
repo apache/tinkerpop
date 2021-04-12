@@ -105,6 +105,20 @@ def test_client_side_timeout_set_for_aiohttp(client):
         assert str(err) == ""
 
 
+async def async_connect():
+    try:
+        transport = AiohttpTransport()
+        transport.connect('ws://localhost:45940/gremlin')
+        transport.close()
+        return True
+    except RuntimeError:
+        return False
+
+
+def test_from_event_loop():
+    assert asyncio.get_event_loop().run_until_complete(async_connect())
+
+
 def test_client_bytecode(client):
     g = Graph().traversal()
     t = g.V()
