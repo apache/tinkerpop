@@ -114,4 +114,14 @@ public interface GraphManager {
      * from the {@code GraphManager}.
      */
     public Graph removeGraph(final String graphName) throws Exception;
+
+    /**
+     * Determines if any {@link Graph} instances that support transactions have open transactions.
+     */
+    public default boolean hasAnyOpenTransactions() {
+        return getGraphNames().stream().anyMatch(graphName -> {
+            final Graph graph = getGraph(graphName);
+            return graph.features().graph().supportsTransactions() && graph.tx().isOpen();
+        });
+    }
 }
