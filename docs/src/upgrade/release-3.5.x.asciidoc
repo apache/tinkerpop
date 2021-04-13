@@ -283,9 +283,7 @@ for all use cases, while addressing the more current state of the graph ecosyste
 remote communication and more diverse programming language ecosystems beyond the JVM.
 
 NOTE: The old transaction API remains intact in 3.5.0, so this version should be backward compatible with the old
-model for embedded transactions. Migrating to the new model would be preferred at this point, but nothing (with the
-exception of the `Transaction#createdThreadedTransaction()` method) has been officially deprecated as the API itself
-is technically still relevant.
+model for embedded transactions.
 
 The new model for transactions looks like this:
 
