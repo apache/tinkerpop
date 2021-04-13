@@ -352,7 +352,6 @@ public abstract class Client {
         options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
         options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
-        request.addArg(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION, options.isMaintainStateAfterExceptionEnabled());
 
         return submitAsync(request.create());
     }
@@ -891,8 +890,10 @@ public abstract class Client {
             }
 
             /**
-             * If enabled, errors related to individual request timeouts or errors during processing will no result
-             * in a close of the session itself.
+             * When {@code true} an exception within a session will not close the session and remove the state bound to
+             * that session. This setting is for the {@code UnifiedChannelizer} and when set to {@code true} will allow
+             * sessions to behave similar to how they did under the {@code OpProcessor} approach original to Gremlin
+             * Server. By default this value is {@code false}.
              */
             public Builder maintainStateAfterException(final boolean maintainStateAfterException) {
                 this.maintainStateAfterException = maintainStateAfterException;

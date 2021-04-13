@@ -40,7 +40,6 @@ public final class RequestOptions {
     private final Long timeout;
     private final UUID overrideRequestId;
     private final String userAgent;
-    private boolean maintainStateAfterException;
 
     private RequestOptions(final Builder builder) {
         this.aliases = builder.aliases;
@@ -49,7 +48,6 @@ public final class RequestOptions {
         this.timeout = builder.timeout;
         this.overrideRequestId = builder.overrideRequestId;
         this.userAgent = builder.userAgent;
-        this.maintainStateAfterException = builder.maintainStateAfterException;
     }
 
     public Optional<UUID> getOverrideRequestId() {
@@ -74,10 +72,6 @@ public final class RequestOptions {
 
     public Optional<String> getUserAgent() {
         return Optional.ofNullable(userAgent);
-    }
-
-    public boolean isMaintainStateAfterExceptionEnabled() {
-        return maintainStateAfterException;
     }
 
     public static Builder build() {
@@ -147,17 +141,6 @@ public final class RequestOptions {
          */
         public Builder userAgent(final String userAgent) {
             this.userAgent = userAgent;
-            return this;
-        }
-
-        /**
-         * When {@code true} an exception within a session will not close the session and remove the state bound to
-         * that session. This setting is for the {@code UnifiedChannelizer} and when set to {@code true} will allow
-         * sessions to behave similar to how they did under the {@code OpProcessor} approach original to Gremlin
-         * Server. By default this value is {@code false}.
-         */
-        public Builder maintainStateAfterException(final boolean enabled) {
-            this.maintainStateAfterException = enabled;
             return this;
         }
 

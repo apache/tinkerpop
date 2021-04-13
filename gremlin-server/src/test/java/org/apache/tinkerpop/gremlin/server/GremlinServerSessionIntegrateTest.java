@@ -476,7 +476,9 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client session = cluster.connect(name.getMethodName());
+        final Client.SessionSettings settings = Client.SessionSettings.build().
+                sessionId(name.getMethodName()).maintainStateAfterException(true).create();
+        final Client session = cluster.connect(Client.Settings.build().useSession(settings).create());
 
         final ResultSet results1 = session.submit("x = [1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);
@@ -503,11 +505,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         try {
             // the original session should be dead so this call will open a new session with the same name but fail
             // because the state is now gone - x is an invalid property.
-            //
-            // for UnifiedChannelizer the state needs to be maintained after exception so that the session doesnt
-            // close out before the validation attempt in the catch where we try to send messages on the same session
-            session.submit("x[1]+2",
-                    RequestOptions.build().maintainStateAfterException(true).create()).all().get();
+            session.submit("x[1]+2").all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
             final Throwable cause = ExceptionUtils.getCause(ex);
