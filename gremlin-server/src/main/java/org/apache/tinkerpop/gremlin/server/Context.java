@@ -54,7 +54,25 @@ public class Context {
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
 
-    public enum RequestContentType { BYTECODE, SCRIPT, UNKNOWN }
+    /**
+     * The type of the request as determined by the contents of {@link Tokens#ARGS_GREMLIN}.
+     */
+    public enum RequestContentType {
+        /**
+         * Contents is of type {@link Bytecode}.
+         */
+        BYTECODE,
+
+        /**
+         * Contents is of type {@code String}.
+         */
+        SCRIPT,
+
+        /**
+         * Contents are not of a type that is expected.
+         */
+        UNKNOWN
+    }
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -72,6 +90,12 @@ public class Context {
         this.requestTimeout = determineTimeout();
     }
 
+    /**
+     * The timeout for the request. If the request is a script it examines the script for a timeout setting using
+     * {@code with()}. If that is not found then it examines the request itself to see if the timeout is provided by
+     * {@link Tokens#ARGS_EVAL_TIMEOUT}. If that is not provided then the {@link Settings#evaluationTimeout} is
+     * utilized as the default.
+     */
     public long getRequestTimeout() {
         return requestTimeout;
     }

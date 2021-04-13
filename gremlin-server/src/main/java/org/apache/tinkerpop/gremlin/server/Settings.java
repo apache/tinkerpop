@@ -229,7 +229,10 @@ public class Settings {
     /**
      * The time in milliseconds that a {@link UnifiedChannelizer} session can exist. This value cannot be extended
      * beyond this value irrespective of the number of requests and their individual timeouts. Requests must complete
-     * within this time frame. The default is 10 minutes.
+     * within this time frame. If this timeout is reached while there is a running evaluation, there will be an attempt
+     * to interrupt it which will result in a timeout error to the client. If there are existing requests enqueued for
+     * the session when this timeout is reached, those requests will not be executed and will be closed with server
+     * errors. Open transactions will be issued a rollback. The default is 10 minutes.
      */
     public long sessionLifetimeTimeout = 600000;
 

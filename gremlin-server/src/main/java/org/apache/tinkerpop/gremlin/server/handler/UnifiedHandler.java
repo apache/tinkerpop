@@ -137,7 +137,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             }
 
             final Optional<String> optMultiTaskSession = msg.optionalArgs(Tokens.ARGS_SESSION);
-            final String sessionId = optMultiTaskSession.orElse(UUID.randomUUID().toString());
+            final String sessionId = optMultiTaskSession.orElse(msg.getRequestId().toString());
 
             // the SessionTask is really a Context from OpProcessor. we still need the GremlinExecutor/ScriptEngine
             // config that is all rigged up into the server nicely right now so it seemed best to just keep the general
@@ -160,7 +160,7 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 }
 
                 // if the session is done accepting tasks then error time
-                if (!session.submitTask(sessionTask)) {
+                if (session.isAcceptingTasks() && !session.submitTask(sessionTask)) {
                     final String sessionClosedMessage = String.format(
                             "Session %s is no longer accepting requests as it has been closed", sessionId);
                     final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
@@ -185,7 +185,8 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 final long sessionLife = optMultiTaskSession.isPresent() ? settings.sessionLifetimeTimeout : seto;
 
                 // if timeout is enabled when greater than zero schedule up a timeout which is a session life timeout
-                // for a multi or technically a request timeout for a single.
+                // for a multi or technically a request timeout for a single. this will be cancelled when the session
+                // closes by way of other reasons (i.e. success or exception) - see AbstractSession#close()
                 if (seto > 0) {
                     final ScheduledFuture<?> sessionCancelFuture =
                             scheduledExecutorService.schedule(

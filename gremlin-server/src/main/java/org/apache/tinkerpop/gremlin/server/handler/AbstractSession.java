@@ -377,6 +377,9 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 filter(i -> i instanceof TemporaryException).findFirst();
     }
 
+    /**
+     * Removes the session from the session list and cancels the future that manages the lifetime of the session.
+     */
     @Override
     public synchronized void close() {
         // already closing/closed
@@ -738,11 +741,19 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     }
 
     /**
-     * Called right before a transaction starts within {@link #run()}.
+     * Called right before a transaction starts within {@link #run()}. The default implementation checks for open
+     * transactions and throws an exception if it finds any and generally assumes auto-transactions are enabled on
+     * graphs (i.e. transaction automatically start on read/write).
+     * <p/>
+     * Providers who do not follow these sorts of transaction semantics should provide an override to this method.
      */
     protected void startTransaction(final SessionTask sessionTask) {
-        // check if transactions are open and rollback first to ensure a fresh start.
-        graphManager.rollbackAll();
+        if (graphManager.hasAnyOpenTransactions()) {
+            // logger and handling in calling method
+            throw new IllegalStateException(String.format(
+                    "Attempted to start transaction for %s but the transaction was already open",
+                    sessionTask.getRequestMessage().getRequestId()));
+        }
     }
 
     /**

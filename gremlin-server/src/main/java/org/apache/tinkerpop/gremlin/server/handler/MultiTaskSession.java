@@ -85,7 +85,18 @@ public class MultiTaskSession extends AbstractSession {
             scriptEngineManager = initializeGremlinExecutor(initialSessionTask).getScriptEngineManager();
 
         scheduledExecutorService = initialSessionTask.getScheduledExecutorService();
-        submitTask(initialSessionTask);
+
+        // would be odd if this tossed an exception because on construction the queue should be empty,
+        // but let's handle it in the same fashion as if it had been rejected by the queue itself but put up
+        // an additional log because something would be rather off here if we hit this condition
+        if (!submitTask(initialSessionTask)) {
+            logger.error("Task {} rejected on creation of the {} for session {}",
+                    initialSessionTask.getRequestMessage().getRequestId(), this.getClass().getSimpleName(),
+                    getSessionId());
+            final String msg = String.format("Task %s rejected from session %s",
+                    initialSessionTask.getRequestMessage().getRequestId(), getSessionId());
+            throw new RejectedExecutionException(msg);
+        }
     }
 
     /**
@@ -115,8 +126,10 @@ public class MultiTaskSession extends AbstractSession {
 
     @Override
     public void run() {
-        // allow the Session to know about the thread that is running it - the thread really only has relevance
-        // once the session has started.
+        // allow the Session to know about the thread that is running it which will be a thread from the gremlinPool
+        // the thread really only has relevance once the session has started. this thread is then held below in the
+        // while() loop awaiting items to arrive on the request queue. it will hold until the session is properly
+        // closed by the client or through interruption/error
         this.sessionThread = Thread.currentThread();
 
         // there must be one item in the queue at least since addTask() gets called before the worker

@@ -633,12 +633,17 @@ to keep in mind:
 * The `UnifiedChannelizer` does not use the `OpProcessor` infrastructure, therefore those
 link:https://tinkerpop.apache.org/docs/3.5.0/reference/#opprocessor-configurations[configurations] are no longer
 relevant and can be ignored.
-
-it is important to read about
-the `gremlinPool` setting in the link:https://tinkerpop.apache.org/docs/3.5.0/reference/#_tuning[Tuning Section] of
+* It is important to read about the `gremlinPool` setting in the link:https://tinkerpop.apache.org/docs/3.5.0/reference/#_tuning[Tuning Section] of
 the reference documentation and to look into the link:https://tinkerpop.apache.org/docs/3.5.0/reference/#_configuring_2[new configurations]
 available related to this channelizer: `maxParameters`, `sessionLifeTimeout`, `useGlobalFunctionCacheForSessions`, and
 `useCommonEngineForSessions`.
+* Generally speaking, if current usage patterns involve mixing heavy loads of sessionless requests with arbitrary
+numbers of long-run sessions that have unpredictable end times, then the `UnifiedChannelizer` may not be the right
+choice for that situation. The long-run sessions will consume threads that would normally be available to sessionless
+requests and eventually slow their processing. On the other hand, if usage patterns involve mixing heavy loads of
+sessionless requests with short-lived sessions of similar execution time or if usage patterns allow the ability to
+predict the size of the pool that will support the workload then the `UnifiedChannelizer` will greatly improve
+performance over the old model.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2245[TINKERPOP-2245],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
@@ -1094,6 +1099,15 @@ portion of the Gremlin used for examples in the Reference Documentation. The gra
 * `Vertex` and `Edge` instance definitions
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2533[https://issues.apache.org/jira/browse/TINKERPOP-2533]
+
+===== UnifiedChannelizer
+
+The `UnifiedChannelizer` is a new `Channelizer` implementation. It exposes new a new `Session` interface that allows
+this channelizer to be extended with custom functionality specific to a providers environment. As of 3.5.0, this
+channelizer is not the default and only fits certain workload patterns. The interfaces should therefore be considered
+volatile and may change.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2245[TINKERPOP-2245]
 
 ==== Graph Driver Providers
 
