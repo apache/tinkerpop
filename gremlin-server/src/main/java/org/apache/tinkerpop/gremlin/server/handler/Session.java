@@ -18,11 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import com.codahale.metrics.Timer;
 import io.netty.channel.Channel;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Requests that arrive through the {@link UnifiedHandler} are all processed within a {@code Session} implementation.
@@ -31,6 +36,9 @@ import java.util.concurrent.ScheduledFuture;
  * {@link SingleTaskSession} or may be longer-lived by handling multiple tasks, as with the {@link MultiTaskSession}.
  */
 public interface Session extends Runnable {
+
+    public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
+    public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
     /**
      * Gets the identifier for the session.

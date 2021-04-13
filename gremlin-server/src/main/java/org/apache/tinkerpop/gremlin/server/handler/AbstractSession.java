@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import com.codahale.metrics.Timer;
 import groovy.lang.GroovyRuntimeException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -255,6 +256,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         if (sessionTask.getSettings().strictTransactionManagement)
             msg.optionalArgs(Tokens.ARGS_ALIASES).ifPresent(m -> aliasesUsedBySession.addAll(((Map<String,String>) m).values()));
 
+        final Timer.Context timer = getMetricsTimer(sessionTask);
         try {
             // itty is optional as Bytecode could be a "graph operation" rather than a Traversal. graph operations
             // don't need to be iterated and handle their own lifecycle
@@ -268,6 +270,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 handleIterator(sessionTask, itty.get());
         } catch (Exception ex) {
             handleException(sessionTask, ex);
+        } finally {
+            timer.stop();
         }
     }
 
@@ -825,6 +829,19 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 graphManager.commitAll();
             else
                 graphManager.rollbackAll();
+        }
+    }
+
+    private Timer.Context getMetricsTimer(final SessionTask sessionTask) {
+        // getting something other than bytecode or script at this point is unlikely as earlier validations
+        // should have picked this up.
+        switch (sessionTask.getRequestContentType()) {
+            case BYTECODE:
+                return Session.traversalOpTimer.time();
+            case SCRIPT:
+                return Session.evalOpTimer.time();
+            default:
+                throw new IllegalStateException("Unrecognized content of the 'gremlin' argument in the request");
         }
     }
 }

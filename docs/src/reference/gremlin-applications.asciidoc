@@ -1225,19 +1225,22 @@ NOTE: Installing Ganglia will include `org.acplt:oncrpc`, which is an LGPL licen
 Regardless of the output, the metrics gathered are the same. Each metric is prefixed with
 `org.apache.tinkerpop.gremlin.server.GremlinServer` and the following metrics are reported:
 
-* `sessions` - the number of sessions open at the time the metric was last measured.
-* `errors` - the number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
-* `op.eval` - the number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
+* `sessions` - The number of sessions open at the time the metric was last measured. For the `UnifiedChannelizer`, each
+request creates a "session", even a so-called "sessionless request", which is basically a session that will only
+execute within the context of that single request.
+* `errors` - The number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
+* `op.eval` - The number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
 (note that these time apply to both sessionless and in-session requests).
-* `op.traversal` - the number of `Traversal` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
-mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
-times.
-* `engine-name.session.session-id.*` - metrics related to different `GremlinScriptEngine` instances configured for
+* `op.traversal` - The number of `Traversal` bytecode-based executions, mean rate, 1, 5, and 15 minute rates, minimum,
+maximum, median, mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th
+percentile evaluation times.
+* `engine-name.session.session-id.*` - Metrics related to different `GremlinScriptEngine` instances configured for
 session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
-"session-id" will be the identifier for the session itself.
-* `engine-name.sessionless.*` - metrics related to different `GremlinScriptEngine` instances configured for sessionless
-requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy".
+"session-id" will be the identifier for the session itself. This metric is not measured under the `UnifiedChannelizer`.
+* `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
+requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
+measured under the `UnifiedChannelizer`.
 
 ==== As A Service
 

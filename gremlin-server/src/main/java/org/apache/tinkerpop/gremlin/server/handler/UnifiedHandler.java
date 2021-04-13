@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -258,8 +259,25 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
             }
         }
 
-        // bytecode must have an alias defined
-        if (message.getOp().equals(Tokens.OPS_BYTECODE)) {
+        // validations for specific op codes
+        if (message.getOp().equals(Tokens.OPS_EVAL)) {
+            // eval must have gremlin that is type of String
+            // likely a problem with the driver and how it is sending requests
+            if (!(message.optionalArgs(Tokens.ARGS_GREMLIN).get() instanceof String)) {
+                final String msg = String.format("A message with [%s] op code requires a [%s] argument that is of type %s.",
+                        Tokens.OPS_EVAL, Tokens.ARGS_GREMLIN, String.class.getSimpleName());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+        } else if (message.getOp().equals(Tokens.OPS_BYTECODE)) {
+            // bytecode should have gremlin that is of type Bytecode
+            // likely a problem with the driver and how it is sending requests
+            if (!(message.optionalArgs(Tokens.ARGS_GREMLIN).get() instanceof Bytecode)) {
+                final String msg = String.format("A message with [%s] op code requires a [%s] argument that is of type %s.",
+                        Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN, Bytecode.class.getSimpleName());
+                throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            // bytecode should have an alias bound
             final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
             if (!aliases.isPresent()) {
                 final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
