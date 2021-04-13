@@ -22,13 +22,14 @@
 #endregion
 
 using System;
+using System.Linq;
 
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
     ///     Represents a <see cref="Bytecode" /> instruction by an operator name and its arguments.
     /// </summary>
-    public class Instruction
+    public class Instruction : IEquatable<Instruction>
     {   
         /// <summary>
         ///     Initializes a new instance of the <see cref="Instruction" /> class.
@@ -54,10 +55,46 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     String representation of the <see cref="Instruction"/>.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             return OperatorName + " [" + String.Join(",", Arguments) + "]";
+        }
+
+        /// <inheritdoc />
+        public bool Equals(Instruction other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return OperatorName == other.OperatorName && Arguments.SequenceEqual(other.Arguments);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((Instruction) obj);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = 19;
+                if (OperatorName != null)
+                {
+                    hash = hash * 397 + OperatorName.GetHashCode();
+                }
+
+                if (Arguments != null)
+                {
+                    hash = Arguments.Aggregate(hash, (current, value) => current * 31 + value.GetHashCode());
+                }
+
+                return hash;
+            }
         }
     }
 }

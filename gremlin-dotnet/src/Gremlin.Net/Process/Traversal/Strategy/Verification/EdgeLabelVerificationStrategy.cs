@@ -28,10 +28,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
     /// </summary>
     public class EdgeLabelVerificationStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = VerificationNamespace + nameof(EdgeLabelVerificationStrategy);
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="EdgeLabelVerificationStrategy" /> class.
         /// </summary>
-        public EdgeLabelVerificationStrategy()
+        public EdgeLabelVerificationStrategy() : base(JavaFqcn)
         {
         }
 
@@ -41,6 +43,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
         /// <param name="logWarning">Constrains vertices for the <see cref="ITraversal" />.</param>
         /// <param name="throwException">Constrains edges for the <see cref="ITraversal" />.</param>
         public EdgeLabelVerificationStrategy(bool logWarning = false, bool throwException = false)
+            : this()
         {
             Configuration["logWarning"] = logWarning;
             Configuration["throwException"] = throwException;

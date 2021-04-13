@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Gherkin.Ast;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Remote;
@@ -36,10 +37,8 @@ using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
-    internal class ScenarioData
+    internal class ScenarioData : IDisposable
     {
-        private static readonly Lazy<ScenarioData> Lazy = new Lazy<ScenarioData>(Load);
-        
         private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink"};
 
         private static readonly IDictionary<string, Vertex> EmptyVertices =
@@ -48,38 +47,32 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<string, Edge> EmptyEdges =
             new ReadOnlyDictionary<string, Edge>(new Dictionary<string, Edge>());
         
-        private static readonly RemoteConnectionFactory ConnectionFactory = new RemoteConnectionFactory();
+        private readonly RemoteConnectionFactory _connectionFactory;
 
-        public static ScenarioDefinition CurrentScenario;
+        public ScenarioDefinition CurrentScenario;
 
-        public static ScenarioDataPerGraph GetByGraphName(string name)
+        public ScenarioDataPerGraph GetByGraphName(string name)
         {
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name), "Graph name can not be empty");
             }
-            var dataPerGraph = Lazy.Value._dataPerGraph;
-            if (!dataPerGraph.TryGetValue(name, out var data))
+            if (!_dataPerGraph.TryGetValue(name, out var data))
             {
                 throw new KeyNotFoundException($"Graph data with key '{name}' not found");
             }
             return data;
         }
 
-        public static void Shutdown()
-        {
-            ConnectionFactory.Dispose();
-        }
-
-        public static void CleanEmptyData()
+        public void CleanEmptyData()
         {
             var g = Traversal().WithRemote(GetByGraphName("empty").Connection);
             g.V().Drop().Iterate();
         }
 
-        public static void ReloadEmptyData()
+        public void ReloadEmptyData()
         {
-            var graphData = Lazy.Value._dataPerGraph["empty"];
+            var graphData = _dataPerGraph["empty"];
             var g = Traversal().WithRemote(graphData.Connection);
             graphData.Vertices = GetVertices(g);
             graphData.Edges = GetEdges(g);
@@ -87,22 +80,23 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private readonly IDictionary<string, ScenarioDataPerGraph> _dataPerGraph;
         
-        private ScenarioData(IDictionary<string, ScenarioDataPerGraph> dataPerGraph)
+        public ScenarioData(IMessageSerializer messageSerializer)
         {
-            _dataPerGraph = new Dictionary<string, ScenarioDataPerGraph>(dataPerGraph);
-            var empty = new ScenarioDataPerGraph("empty", ConnectionFactory.CreateRemoteConnection("ggraph"),
+            _connectionFactory = new RemoteConnectionFactory(messageSerializer);
+            _dataPerGraph = LoadDataPerGraph();
+            var empty = new ScenarioDataPerGraph("empty", _connectionFactory.CreateRemoteConnection("ggraph"),
                 new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>());
             _dataPerGraph.Add("empty", empty);
         }
 
-        private static ScenarioData Load()
+        private Dictionary<string, ScenarioDataPerGraph> LoadDataPerGraph()
         {
-            return new ScenarioData(GraphNames.Select(name =>
+            return GraphNames.Select(name =>
             {
-                var connection = ConnectionFactory.CreateRemoteConnection($"g{name}");
+                var connection = _connectionFactory.CreateRemoteConnection($"g{name}");
                 var g = Traversal().WithRemote(connection);
                 return new ScenarioDataPerGraph(name, connection, GetVertices(g), GetEdges(g));
-            }).ToDictionary(x => x.Name));
+            }).ToDictionary(x => x.Name);
         }
 
         private static IDictionary<string, Vertex> GetVertices(GraphTraversalSource g)
@@ -136,6 +130,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 // Property name might not exist
                 return EmptyEdges;
             }
+        }
+
+        public void Dispose()
+        {
+            _connectionFactory?.Dispose();
         }
     }
 

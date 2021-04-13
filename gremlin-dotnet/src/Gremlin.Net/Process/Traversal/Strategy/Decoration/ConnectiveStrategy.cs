@@ -29,5 +29,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
     /// </summary>
     public class ConnectiveStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = DecorationNamespace + nameof(ConnectiveStrategy);
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ConnectiveStrategy" /> class.
+        /// </summary>
+        public ConnectiveStrategy() : base(JavaFqcn)
+        {
+        }
     }
 }

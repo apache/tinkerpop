@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
+using Gremlin.Net.Structure.IO.GraphSON;
 using DriverRemoteConnectionImpl = Gremlin.Net.Driver.Remote.DriverRemoteConnection;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
@@ -35,7 +36,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         private readonly IList<DriverRemoteConnectionImpl> _connections = new List<DriverRemoteConnectionImpl>();
+        private readonly IMessageSerializer _messageSerializer;
 
+        public RemoteConnectionFactory(IMessageSerializer messageSerializer = null)
+        {
+            _messageSerializer = messageSerializer ?? new GraphSON3MessageSerializer();
+        }
+        
         public IRemoteConnection CreateRemoteConnection()
         {
             // gmodern is the standard test traversalsource that the main body of test uses
@@ -45,7 +52,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public IRemoteConnection CreateRemoteConnection(string traversalSource)
         {
             var c = new DriverRemoteConnectionImpl(
-                new GremlinClient(new GremlinServer(TestHost, TestPort),
+                new GremlinClient(new GremlinServer(TestHost, TestPort), _messageSerializer,
                     connectionPoolSettings: new ConnectionPoolSettings {PoolSize = 2}),
                 traversalSource);
             _connections.Add(c);

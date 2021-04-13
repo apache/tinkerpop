@@ -26,6 +26,11 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
 #pragma warning disable 1591
     public class PathRetractionStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = OptimizationNamespace + nameof(PathRetractionStrategy);
+        
+        public PathRetractionStrategy() : base(JavaFqcn)
+        {
+        }
     }
 #pragma warning restore 1591
 }

@@ -128,11 +128,12 @@ namespace Gremlin.Net.UnitTest.Process.Traversal.Strategy
 
     internal class TestStrategy : AbstractTraversalStrategy
     {
-        public TestStrategy()
+        public TestStrategy() : base("test.package." + nameof(TestStrategy))
         {
         }
 
         public TestStrategy(string configKey, dynamic configValue)
+            : this()
         {
             Configuration[configKey] = configValue;
         }

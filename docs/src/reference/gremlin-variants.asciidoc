@@ -1241,12 +1241,20 @@ A `ServerUnavailableException` is thrown if no connection is available to the se
 [[gremlin-dotnet-serialization]]
 === Serialization
 
-The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use GraphSON 2.0 which can be necessary
-when the server does not support GraphSON 3.0 yet:
+The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use another serialization format by passing a message serializer when creating the `GremlinClient`.
+
+GraphBinary can be configured like this:
 
 [source,csharp]
 ----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serialization]
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationBinary]
+----
+
+and GraphSON 2.0 like this:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationGraphSon]
 ----
 
 [[gremlin-dotnet-strategies]]

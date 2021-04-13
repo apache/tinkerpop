@@ -30,10 +30,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
     /// </summary>
     public class PartitionStrategy : AbstractTraversalStrategy
     {
+        private const string JavaFqcn = DecorationNamespace + nameof(PartitionStrategy);
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="PartitionStrategy" /> class.
         /// </summary>
-        public PartitionStrategy()
+        public PartitionStrategy() : base(JavaFqcn)
         {
         }
 
@@ -49,6 +51,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// <param name="includeMetaProperties">Set to true if vertex properties should get assigned to partitions.</param>
         public PartitionStrategy(string partitionKey = null, string writePartition = null,
             IEnumerable<string> readPartitions = null, bool? includeMetaProperties = null)
+            : this()
         {
             if (partitionKey != null)
                 Configuration["partitionKey"] = partitionKey;

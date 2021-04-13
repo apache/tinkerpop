@@ -30,7 +30,10 @@ using System.Text.RegularExpressions;
 using Xunit;
 using Gherkin;
 using Gherkin.Ast;
+using Gremlin.Net.Driver;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
+using Gremlin.Net.Structure.IO.GraphBinary;
+using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit.Abstractions;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
@@ -41,18 +44,27 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
-                { "g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported },
+                {"g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
 
                 // expect to fix the following before 3.5.0 release. they are not failing as a result of the Gremlin
                 // itself - they are failing because of shortcomings in the test suite.
                 // https://issues.apache.org/jira/browse/TINKERPOP-2518
-                { "g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.NoReason },
-                { "g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack", IgnoreReason.NoReason },
-                { "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack", IgnoreReason.NoReason },
-                { "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack", IgnoreReason.NoReason },
-                { "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX", IgnoreReason.ArrayKeysInMapNotAssertingInGherkin },
+                {"g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.NoReason},
+                {"g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack", IgnoreReason.NoReason},
+                {
+                    "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack",
+                    IgnoreReason.NoReason
+                },
+                {
+                    "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
+                    IgnoreReason.NoReason
+                },
+                {
+                    "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX",
+                    IgnoreReason.ArrayKeysInMapNotAssertingInGherkin
+                },
             };
-        
+
         private static class Keywords
         {
             public const string Given = "GIVEN";
@@ -68,14 +80,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             When,
             Then
         }
-        
+
         private static readonly IDictionary<StepBlock, Type> Attributes = new Dictionary<StepBlock, Type>
         {
-            { StepBlock.Given, typeof(GivenAttribute) },
-            { StepBlock.When, typeof(WhenAttribute) },
-            { StepBlock.Then, typeof(ThenAttribute) }
+            {StepBlock.Given, typeof(GivenAttribute)},
+            {StepBlock.When, typeof(WhenAttribute)},
+            {StepBlock.Then, typeof(ThenAttribute)}
         };
-        
+
         private readonly ITestOutputHelper _output;
 
         public GherkinTestRunner(ITestOutputHelper output)
@@ -83,12 +95,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _output = output;
         }
 
-        [Fact]
-        public void RunGherkinBasedTests()
+        [Theory]
+        [MemberData(nameof(MessageSerializers))]
+        public void RunGherkinBasedTests(IMessageSerializer messageSerializer)
         {
-            WriteOutput("Starting Gherkin-based tests");
+            WriteOutput($"Starting Gherkin-based tests with serializer: {messageSerializer.GetType().Name}");
+            Gremlin.InstantiateTranslationsForTestRun();
             var stepDefinitionTypes = GetStepDefinitionTypes();
             var results = new List<ResultFeature>();
+            using var scenarioData = new ScenarioData(messageSerializer);
+            CommonSteps.ScenarioData = scenarioData;
             foreach (var feature in GetFeatures())
             {
                 var resultFeature = new ResultFeature(feature);
@@ -102,6 +118,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(reason));
                         continue;
                     }
+
                     StepBlock? currentStep = null;
                     StepDefinition stepDefinition = null;
                     foreach (var step in scenario.Steps)
@@ -110,16 +127,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         currentStep = GetStepBlock(currentStep, step.Keyword);
                         if (currentStep == StepBlock.Given && previousStep != StepBlock.Given)
                         {
-                            stepDefinition?.Dispose();
                             stepDefinition = GetStepDefinitionInstance(stepDefinitionTypes, step.Text);
                         }
+
                         if (stepDefinition == null)
                         {
                             throw new NotSupportedException(
                                 $"Step '{step.Text} not supported without a 'Given' step first");
                         }
 
-                        ScenarioData.CurrentScenario = scenario;
+                        scenarioData.CurrentScenario = scenario;
                         var result = ExecuteStep(stepDefinition, currentStep.Value, step);
                         if (result != null)
                         {
@@ -130,10 +147,17 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     }
                 }
             }
+
             OutputResults(results);
-            WriteOutput("Finished Gherkin-based tests");
-            ScenarioData.Shutdown();
+            WriteOutput($"Finished Gherkin-based tests with serializer: {messageSerializer.GetType().Name}.");
         }
+
+        public static IEnumerable<object[]> MessageSerializers =>
+            new List<object[]>
+            {
+                new object[] {new GraphBinaryMessageSerializer()},
+                new object[] {new GraphSON3MessageSerializer()}
+            };
 
         private void WriteOutput(string line)
         {

@@ -29,6 +29,7 @@ using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Step.Util;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Structure.IO.GraphBinary;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
 // tag::commonImports[]
@@ -62,13 +63,21 @@ var g = Traversal().WithRemote(remoteConnection);
         }
         
         [Fact(Skip="No Server under localhost")]
-        public void SerializationTest()
+        public void SerializationGraphBinaryTest()
         {
-// tag::serialization[]
-var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2MessageSerializer());
-// end::serialization[]
+// tag::serializationBinary[]
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinaryMessageSerializer());
+// end::serializationBinary[]
         }
         
+        [Fact(Skip="No Server under localhost")]
+        public void SerializationGraphson2Test()
+        {
+// tag::serializationGraphSon[]
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2MessageSerializer());
+// end::serializationGraphSon[]
+        }
+
         [Fact(Skip="We can't apply strategies")]
         public void TraversalStrategiesTest()
         {

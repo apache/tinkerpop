@@ -479,8 +479,8 @@ link:https://tinkerpop.apache.org/docs/3.3.5/reference/#gremlin-server-cache[Ref
 A new strategy named `EarlyLimitStrategy` was added. The strategy will try to find a better spot for any `RangeStep`,
 which is as early as possible in the traversal. If possible it will also merge multiple `RangeStep`s into a single one
 by recalculating the range for the first step and removing the second. If it turns out that the merge of two steps won't
-produce a valid range (an empty result), then the `EarlyLimitStrategy` will remove the `RangeStep`s and insert a `NoneStep`
-instead.
+produce a valid range (an empty result), then the `EarlyLimitStrategy` will remove the `RangeStep` instances and
+insert a `NoneStep` instead.
 
 This strategy is particularly useful when a provider implementation generates the queries to the underlying database. By
 making sure that the ranges are applied as early as possible, we can ensure that the underlying database is only asked
