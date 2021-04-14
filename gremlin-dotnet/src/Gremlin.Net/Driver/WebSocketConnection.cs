@@ -41,9 +41,9 @@ namespace Gremlin.Net.Driver
             webSocketConfiguration?.Invoke(_client.Options);
         }
 
-        public async Task ConnectAsync(Uri uri)
+        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
-            await _client.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
+            await _client.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CloseAsync()
@@ -66,14 +66,14 @@ namespace Gremlin.Net.Driver
                                             _client.State == WebSocketState.Aborted ||
                                             _client.State == WebSocketState.CloseSent;
 
-        public async Task SendMessageAsync(byte[] message)
+        public async Task SendMessageAsync(byte[] message, CancellationToken cancellationToken)
         {
             await
-                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, CancellationToken.None)
+                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, cancellationToken)
                     .ConfigureAwait(false);
         }
 
-        public async Task<byte[]> ReceiveMessageAsync()
+        public async Task<byte[]> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             using (var ms = new MemoryStream())
             {
@@ -82,8 +82,9 @@ namespace Gremlin.Net.Driver
 
                 do
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     var receiveBuffer = new ArraySegment<byte>(buffer);
-                    received = await _client.ReceiveAsync(receiveBuffer, CancellationToken.None).ConfigureAwait(false);
+                    received = await _client.ReceiveAsync(receiveBuffer, cancellationToken).ConfigureAwait(false);
                     ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
                 } while (!received.EndOfMessage);
 

@@ -54,6 +54,7 @@ namespace Gremlin.Net.Driver
         private readonly string _sessionId;
         private readonly bool _sessionEnabled;
         private readonly ConcurrentQueue<RequestMessage> _writeQueue = new ConcurrentQueue<RequestMessage>();
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private readonly ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId =
             new ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage>();
@@ -81,7 +82,7 @@ namespace Gremlin.Net.Driver
 
         public async Task ConnectAsync()
         {
-            await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
+            await _webSocketConnection.ConnectAsync(_uri, _cancellationTokenSource.Token).ConfigureAwait(false);
             BeginReceiving();
         }
 
@@ -107,11 +108,11 @@ namespace Gremlin.Net.Driver
 
         private async Task ReceiveMessagesAsync()
         {
-            while (true)
+            while (!_cancellationTokenSource.IsCancellationRequested)
             {
                 try
                 {
-                    var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
+                    var received = await _webSocketConnection.ReceiveMessageAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
                     Parse(received);
                 }
                 catch (Exception e)
@@ -198,6 +199,7 @@ namespace Gremlin.Net.Driver
         {
             while (_writeQueue.TryDequeue(out var msg))
             {
+                _cancellationTokenSource.Token.ThrowIfCancellationRequested();
                 try
                 {
                     await SendMessageAsync(msg).ConfigureAwait(false);
@@ -249,7 +251,7 @@ namespace Gremlin.Net.Driver
             }
             var graphsonMsg = _graphSONWriter.WriteObject(message);
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
-            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+            await _webSocketConnection.SendMessageAsync(serializedMsg, _cancellationTokenSource.Token).ConfigureAwait(false);
         }
 
         private RequestMessage RebuildSessionMessage(RequestMessage message)
@@ -272,11 +274,12 @@ namespace Gremlin.Net.Driver
         public async Task CloseAsync()
         {
             Interlocked.Exchange(ref _connectionState, Closed);
-
+            
             if (_sessionEnabled)
             {
                 await CloseSession().ConfigureAwait(false);
             }
+            _cancellationTokenSource.Cancel();
             await _webSocketConnection.CloseAsync().ConfigureAwait(false);
         }
 
