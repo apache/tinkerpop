@@ -40,13 +40,12 @@ class Client:
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
                  kerberized_service="", headers=None, session="",
-                 max_content_length=None, heartbeat=None,
-                 call_from_event_loop=None):
+                 **transport_kwargs):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
-        if max_content_length is None:
-            max_content_length = 10 * 1024 * 1024
+        if "max_content_length" not in transport_kwargs:
+            transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
             message_serializer = serializer.GraphSONSerializersV3d0()
         self._message_serializer = message_serializer
@@ -63,9 +62,7 @@ class Client:
                                 "custom transport factory")
             else:
                 def transport_factory():
-                    return AiohttpTransport(heartbeat=heartbeat,
-                                            max_content_length=max_content_length,
-                                            call_from_event_loop=call_from_event_loop)
+                    return AiohttpTransport(**transport_kwargs)
         self._transport_factory = transport_factory
         if protocol_factory is None:
             def protocol_factory(): return protocol.GremlinServerWSProtocol(

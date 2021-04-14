@@ -837,9 +837,10 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |=========================================================
 
-Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which exposes
-options to manage `asyncio` timeouts, heartbeat, max content length, ssl options, and the ability to call the api from
-an event loop:
+Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
+pass through of the named parameters available in
+link:https://docs.aiohttp.org/en/stable/client_reference.html#aiohttp.ClientSession.ws_connect[AIOHTTP's ws_connect],
+and the ability to call the api from an event loop:
 
 [source,python]
 ----

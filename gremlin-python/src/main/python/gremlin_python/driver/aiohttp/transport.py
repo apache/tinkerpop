@@ -31,8 +31,7 @@ class AiohttpTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
     # Default heartbeat of 5.0 seconds.
-    def __init__(self, read_timeout=None, write_timeout=None, ssl_options=None,
-                 heartbeat=5.0, max_content_length=None, call_from_event_loop=None):
+    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs):
         if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
             """ 
                 The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called within an
@@ -50,22 +49,20 @@ class AiohttpTransport(AbstractBaseTransport):
         self._client_session = None
 
         # Set all inner variables to parameters passed in.
-        self._read_timeout = read_timeout
+        self._aiohttp_kwargs = kwargs
         self._write_timeout = write_timeout
-        self._ssl_options = ssl_options
-        self._heartbeat = heartbeat
-        self._max_content_length = max_content_length
+        self._read_timeout = read_timeout
+        if "max_content_length" in self._aiohttp_kwargs:
+            self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop("max_content_length")
+        if "ssl_options" in self._aiohttp_kwargs:
+            self._aiohttp_kwargs["ssl"] = self._aiohttp_kwargs.pop("ssl_options")
 
     def connect(self, url, headers=None):
         # Inner function to perform async connect.
         async def async_connect():
             # Start client session and use it to create a websocket with all the connection options provided.
             self._client_session = aiohttp.ClientSession(loop=self._loop)
-            self._websocket = await self._client_session.ws_connect(url,
-                                                                    ssl=self._ssl_options,
-                                                                    headers=headers,
-                                                                    heartbeat=self._heartbeat,
-                                                                    max_msg_size=self._max_content_length)
+            self._websocket = await self._client_session.ws_connect(url, **self._aiohttp_kwargs, headers=headers)
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
