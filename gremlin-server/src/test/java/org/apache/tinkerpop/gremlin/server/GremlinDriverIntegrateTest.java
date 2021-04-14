@@ -1544,14 +1544,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+            client.close();
         }
 
-        final Client aliased = client.alias("graph");
-        assertEquals("jason", aliased.submit("n='jason'").all().get().get(0).getString());
-        final Vertex v = aliased.submit("g.addVertex('name',n)").all().get().get(0).getVertex();
-        assertEquals("jason", v.value("name"));
-
-        cluster.close();
+        try {
+            final Client aliased = cluster.connect(name.getMethodName()).alias("graph");
+            assertEquals("jason", aliased.submit("n='jason'").all().get().get(0).getString());
+            final Vertex v = aliased.submit("g.addVertex('name',n)").all().get().get(0).getVertex();
+            assertEquals("jason", v.value("name"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
