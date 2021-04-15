@@ -53,7 +53,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
 The `gremlin-driver` has an additional packaging which may make it easier to upgrade for some users who may have
 extensive dependency chains.
 
-[source,xml}
+[source,xml]
 ----
 <dependency>
    <groupId>org.apache.tinkerpop</groupId>
@@ -63,8 +63,9 @@ extensive dependency chains.
 </dependency>
 ----
 
-The above dependency with the `shaded` classifier shades all the dependencies of `gremlin-driver` and includes
-`gremlin-core` and `tinkergraph-gremlin` in an unshaded form.
+The above dependency with the `shaded` classifier shades all the non-optional dependencies of `gremlin-driver` and
+includes `gremlin-core` and `tinkergraph-gremlin` in an unshaded form. The slf4j dependency was not included because
+shading it can cause problems with its operations.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]
 

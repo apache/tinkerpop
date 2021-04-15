@@ -167,11 +167,14 @@ limitations under the License.
                             <shadedClassifierName>shaded</shadedClassifierName>
                             <artifactSet>
                                 <!-- exclude logging stuff from uberjar - shading prevents proper logger initialization -->
+                                <!-- exclude groovy as it's only needed for json serialization and is an optional dependency -->
                                 <excludes>
                                     <exclude>log4j:log4j</exclude>
                                     <exclude>org.slf4j:slf4j-log4j12</exclude>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                     <exclude>org.slf4j:jcl-over-slf4j</exclude>
+                                    <exclude>org.codehaus.groovy:groovy</exclude>
+                                    <exclude>org.codehaus.groovy:groovy-json</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>

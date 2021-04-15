@@ -99,7 +99,7 @@ connection methods described in the <<connecting-gremlin,Connecting Gremlin>> Se
 </dependency>
 
 <!--
-alternatively the driver is packaged as an uberjar with shaded dependencies including gremlin-core and
+alternatively the driver is packaged as an uberjar with shaded non-optional dependencies including gremlin-core and
 tinkergraph-gremlin which are not shaded.
 -->
 <dependency>
