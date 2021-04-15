@@ -29,11 +29,24 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
-==== Java 11
+==== Host Language Runtimes
 
-TinkerPop now builds and is compatible with Java 11.
+TinkerPop implements Gremlin in a variety of different programming languages. For 3.5.0, there are a number of major
+upgrades to those programming language environments:
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2076[TINKERPOP-2076]
+* *Java* - TinkerPop now builds and is compatible with Java 11.
+* *Python* - Support for Python 2.x has been dropped completely. Users must use Python 3 going forward. For the most
+part, from a user’s perspective, there are no specific API changes to consider as a result of this change.
+* *Javascript* - Upgraded to support Node version 10.
+* *Jython* - Support for Jython has been removed and gremlin-python no longer produces a JVM-based artifact. This change
+means that the `GremlinJythonScriptEngine` no longer exists and there is no way to write native Python lambdas that can
+execute in Gremlin Server. All lambdas should be written using gremlin-groovy if they are needed.
+* *.NET* - Gremlin.NET no longer targets .NET Standard 1.3, but only .NET Standard 2.0. Since .NET Core 2.0 and .NET
+Framework 4.6.1 already support this .NET Standard version, most users should not be impacted by this.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2076[TINKERPOP-2076],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
 
 ==== Shaded Java Driver
 
@@ -492,16 +505,6 @@ is up to the application to determine if retry is desired and how best to do so.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
 
-==== Python 2.x Support
-
-The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from
-a user's perspective, there are no specific API changes to consider as a result of this change. It is also worth
-noting that Jython support has been removed and that `gremlin-python` no longer produces a JVM-based artifact. This
-change means that the `GremlinJythonScriptEngine` no longer exists and there is no way to write native Python lambdas.
-All lambdas should be written using `gremlin-groovy` if they are needed.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
-
 ==== Python Kerberos Support
 
 The Python Driver now supports Kerberos based authentication:
@@ -514,13 +517,6 @@ g = traversal().withRemote(DriverRemoteConnection(
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
 link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
-
-==== .NET Standard 2.0 Only
-
-Gremlin.NET no longer targets .NET Standard 1.3, but only .NET Standard 2.0. Since .NET Core 2.0 and .NET Framework
-4.6.1 already support this .NET Standard version, most users should not be impacted by this.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
 
 ==== Gremlin.NET: GraphBinary
 
