@@ -149,7 +149,8 @@ removed.
 
 The `gremlin-driver` module made its dependency on Groovy `optional` as its only reason for inclusion was to support
 `JsonBuilder` serialization and this feature is little known and perhaps even less used. Read more about this change
-here in the Upgrade Documentation in the <<graphson-and-jsonbuilder, GraphSON and JsonBuilder Section>>.
+here in the Upgrade Documentation in the <<serialization-3_5_0, Serialization Section>> under the subsection title
+"GraphSON and JsonBuilder".
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2185[TINKERPOP-2185]
 
@@ -174,34 +175,25 @@ shading it can cause problems with its operations.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]
 
-==== Anonymous Child Traversals
+[[serialization-3_5_0]]
+==== Serialization
 
-TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
+*Java and Gryo*
 
-[source,groovy]
-g.addV('person').addE('self').to(__.V(1))
+Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and
+Java Driver. It was also used as the default serialization format for Gremlin Console remote connectivity to Gremlin
+Server. As of this release, Gryo has been replaced as the default by GraphBinary. All packaged configuration files
+and programmatic defaults have been modified as such.
 
-or more succinctly via static import as:
+It is still possible to utilize Gryo as a message serialization format by modifying Gremlin Server configuration files
+to include the appropriate Gryo configurations. If using Gryo, do not user earlier versions of the driver and server
+with 3.5.0. Use a 3.5.0 client to connect to a 3.5.0 server. Generally speaking, mixed version combinations will
+appear to work properly, but problems will likely occur during general course of usage and it is therefore not
+advisable to take this approach.
 
-[source,groovy]
-g.addV('person').addE('self').to(V(1))
+For best compatibility between 3.4.x and 3.5.x, please use GraphBinary.
 
-Some users have chosen to instead write the above as:
-
-[source,groovy]
-g.addV('person').addE('self').to(g.V(1))
-
-which spawns a child traversal from a `GraphTraversalSource`. When spawned this way, a traversal is bound to a "source"
-and therefore is not anonymous. While the above code worked, it is important that there be less ways to do things
-with Gremlin so as to avoid confusion in examples, documentations and mailing list answers.
-
-As of 3.5.0, attempting to use a traversal spawned from a "source" will result in an exception. Users will need to
-modify their code if they use the unconventional syntax.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
-
-[[graphson-and-jsonbuilder]]
-==== GraphSON and JsonBuilder
+*GraphSON and JsonBuilder*
 
 GraphSON serialization support for Groovy's `JsonBuilder` has been present since the first version of GraphSON. That
 approach to returning results has never materialized as a standardized way to use Gremlin as originally envisioned.
@@ -236,24 +228,74 @@ mean adding the following dependencies:
 The `${groovy.version}` should match the version specified in TinkerPop's root
 link:https://github.com/apache/tinkerpop/blob/master/pom.xml[pom.xml].
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460]
+*.NET: GraphBinary*
 
-==== Gryo Usage
+Gremlin.NET now also supports GraphBinary. GraphSON 3 however still remains the default serialization format as
+GraphBinary should be considered experimental for this version.
 
-Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and
-Java Driver. It was also used as the default serialization format for Gremlin Console remote connectivity to Gremlin
-Server. As of this release, Gryo has been replaced as the default by GraphBinary. All packaged configuration files
-and programmatic defaults have been modified as such.
+GraphBinary needs of course to be also enabled on the server side before it can be used in the driver. It can then be
+used like this:
 
-It is still possible to utilize Gryo as a message serialization format by modifying Gremlin Server configuration files
-to include the appropriate Gryo configurations. If using Gryo, do not user earlier versions of the driver and server
-with 3.5.0. Use a 3.5.0 client to connect to a 3.5.0 server. Generally speaking, mixed version combinations will
-appear to work properly, but problems will likely occur during general course of usage and it is therefore not
-advisable to take this approach.
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Upgrade/Release35Tests.cs[tags=graphBinary]
+----
 
-For best compatibility between 3.4.x and 3.5.x, please use GraphBinary.
+*.NET: New JSON Library*
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
+Gremlin.NET now uses `System.Text.Json` instead of Newtonsoft.Json as `System.Text.Json` is already included in .NET
+Core 3.0 and higher which means that we have one dependency less on this platform and because it offers an increased
+performance.
+Most users should not notice this change. But users who have implemented their own GraphSON serializers or
+deserializers probably have to change them accordingly. The same applies to users that let Gremlin.NET return data
+without deserializing it first as the returned data types will change in this case, for example from Newtonsoft.Json's
+`JObject` or `JToken` to `JsonElement` with `System.Text.Json`.
+
+*Python dict Deserialization*
+
+In Gremlin it is common to return a `dict` or `list` as a key value in another `dict`. The problem for Python is that
+these values are not hashable and will result in an error. By introducing a `HashableDict` and `Tuple` for those keys
+(respectively), it is now possible to return these types of results and not have to work around them:
+
+[source,text]
+----
+>>> g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+{{<T.id: 1>: 1, <T.label: 4>: 'person', 'name': 'marko'}: 1}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2349[TINKERPOP-2349],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2407[TINKERPOP-2407],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2472[TINKERPOP-2472],
+link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
+
+==== Anonymous Child Traversals
+
+TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
+
+[source,groovy]
+g.addV('person').addE('self').to(__.V(1))
+
+or more succinctly via static import as:
+
+[source,groovy]
+g.addV('person').addE('self').to(V(1))
+
+Some users have chosen to instead write the above as:
+
+[source,groovy]
+g.addV('person').addE('self').to(g.V(1))
+
+which spawns a child traversal from a `GraphTraversalSource`. When spawned this way, a traversal is bound to a "source"
+and therefore is not anonymous. While the above code worked, it is important that there be less ways to do things
+with Gremlin so as to avoid confusion in examples, documentations and mailing list answers.
+
+As of 3.5.0, attempting to use a traversal spawned from a "source" will result in an exception. Users will need to
+modify their code if they use the unconventional syntax.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
 
 ==== Use of null
 
@@ -443,21 +485,6 @@ appropriate token versions automatically.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
-==== Complex dict Deserialization
-
-In Gremlin it is common to return a `dict` or `list` as a key value in another `dict`. The problem for Python is that
-these values are not hashable and will result in an error. By introducing a `HashableDict` and `Tuple` for those keys
-(respectively), it is now possible to return these types of results and not have to work around them:
-
-[source,text]
-----
->>> g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
-{{<T.id: 1>: 1, <T.label: 4>: 'person', 'name': 'marko'}: 1}
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395],
-link:https://issues.apache.org/jira/browse/TINKERPOP-2407[TINKERPOP-2407]
-
 ==== Gremlin Server Audit Logging
 
 The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
@@ -552,34 +579,6 @@ g = traversal().withRemote(DriverRemoteConnection(
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
 link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
-
-==== Gremlin.NET: GraphBinary
-
-Gremlin.NET now also supports GraphBinary. GraphSON 3 however still remains the default serialization format as
-GraphBinary should be considered experimental for this version.
-
-GraphBinary needs of course to be also enabled on the server side before it can be used in the driver. It can then be
-used like this:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Upgrade/Release35Tests.cs[tags=graphBinary]
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2472[TINKERPOP-2472]
-
-==== Gremlin.NET: New JSON Library
-
-Gremlin.NET now uses `System.Text.Json` instead of Newtonsoft.Json as `System.Text.Json` is already included in .NET
-Core 3.0 and higher which means that we have one dependency less on this platform and because it offers an increased
-performance.
-Most users should not notice this change. But users who have implemented their own GraphSON serializers or
-deserializers probably have to change them accordingly. The same applies to users that let Gremlin.NET return data
-without deserializing it first as the returned data types will change in this case, for example from Newtonsoft.Json's
-`JObject` or `JToken` to `JsonElement` with `System.Text.Json`.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2349[TINKERPOP-2349],
-link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
 
 ==== match() Consistency
 
