@@ -618,7 +618,7 @@ but it provides a new and improved thread management approach as well as a more 
 `UnifiedChannelizer` technically replaces all existing implementations, but is not yet configured by default in Gremlin
 Server. To use it, modify the `channelizer` setting in the server yaml file as follows:
 
-```[source,yaml]
+[source,yaml]
 ----
 channelizer: org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer
 ----
