@@ -48,27 +48,6 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2076[TINKERPOP-2076],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
 
-==== Shaded Java Driver
-
-The `gremlin-driver` has an additional packaging which may make it easier to upgrade for some users who may have
-extensive dependency chains.
-
-[source,xml]
-----
-<dependency>
-   <groupId>org.apache.tinkerpop</groupId>
-   <artifactId>gremlin-driver</artifactId>
-   <version>x.y.z</version>
-   <classifier>shaded</classifier>
-</dependency>
-----
-
-The above dependency with the `shaded` classifier shades all the non-optional dependencies of `gremlin-driver` and
-includes `gremlin-core` and `tinkergraph-gremlin` in an unshaded form. The slf4j dependency was not included because
-shading it can cause problems with its operations.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]
-
 ==== Gremlint
 
 Gremlint, the JavaScript library powering link:https://www.gremlint.com[gremlint.com], is now part of the TinkerPop
@@ -130,6 +109,71 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2451[TINKERPOP-2451],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2452[TINKERPOP-2452],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2527[TINKERPOP-2527]
 
+==== Major Versions and Dependencies
+
+*Apache Commons*
+
+There is a major breaking change in the use of `Configuration` objects. Prior to 3.5.0, `Configuration` objects were
+from the Apache Commons `commons-configuration` library, but in this version, they are of `commons-configuration2`.
+While this is a breaking change, the fix for most implementations will be quite simple, Simply, change the import
+statements from:
+
+[source,text]
+----
+org.apache.commons.configuration.*
+----
+
+to
+
+[source,text]
+----
+org.apache.commons.configuration2.*
+----
+
+It is also worth noting that default list handling in configurations is treated differently. TinkerPop largely
+disabled the default list handling approach in `Configuration` 1.x, but if that functionality is still needed, it can
+be reclaimed by setting the `LegacyListDelimiterHandler` - details for doing taking this step and other relevant
+upgrade information can be found in the link:https://commons.apache.org/proper/commons-configuration/userguide/upgradeto2_0.html[2.x Upgrade Documentation].
+
+*Neo4j*
+
+There were two key changes to the `neo4j-gremlin` module:
+
+* The underlying Neo4j version moved from the 3.2.x line to 3.4.x line. Please see the
+link:https://neo4j.com/guides/upgrade-archive/[Neo4j Upgrade FAQ] for more information as features and
+configuration options may have changed.
+* Experimental support for multi/meta-properties in Neo4j which were previously deprecated have now been permanently
+removed.
+
+*Groovy Dependency in Java Driver*
+
+The `gremlin-driver` module made its dependency on Groovy `optional` as its only reason for inclusion was to support
+`JsonBuilder` serialization and this feature is little known and perhaps even less used. Read more about this change
+here in the Upgrade Documentation in the <<graphson-and-jsonbuilder, GraphSON and JsonBuilder Section>>.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2185[TINKERPOP-2185]
+
+==== Shaded Java Driver
+
+The `gremlin-driver` has an additional packaging which may make it easier to upgrade for some users who may have
+extensive dependency chains.
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>x.y.z</version>
+   <classifier>shaded</classifier>
+</dependency>
+----
+
+The above dependency with the `shaded` classifier shades all the non-optional dependencies of `gremlin-driver` and
+includes `gremlin-core` and `tinkergraph-gremlin` in an unshaded form. The slf4j dependency was not included because
+shading it can cause problems with its operations.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]
+
 ==== Anonymous Child Traversals
 
 TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
@@ -156,6 +200,7 @@ modify their code if they use the unconventional syntax.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
 
+[[graphson-and-jsonbuilder]]
 ==== GraphSON and JsonBuilder
 
 GraphSON serialization support for Groovy's `JsonBuilder` has been present since the first version of GraphSON. That
@@ -209,32 +254,6 @@ advisable to take this approach.
 For best compatibility between 3.4.x and 3.5.x, please use GraphBinary.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
-
-==== Configuration Upgrade
-
-There is a major breaking change in the use of `Configuration` objects. Prior to 3.5.0, `Configuration` objects were
-from the Apache Commons `commons-configuration` library, but in this version, they are of `commons-configuration2`.
-While this is a breaking change, the fix for most implementations will be quite simple, Simply, change the import
-statements from:
-
-[source,text]
-----
-org.apache.commons.configuration.*
-----
-
-to
-
-[source,text]
-----
-org.apache.commons.configuration2.*
-----
-
-It is also worth noting that default list handling in configurations is treated differently. TinkerPop largely
-disabled the default list handling approach in `Configuration` 1.x, but if that functionality is still needed, it can
-be reclaimed by setting the `LegacyListDelimiterHandler` - details for doing taking this step and other relevant
-upgrade information can be found in the link:https://commons.apache.org/proper/commons-configuration/userguide/upgradeto2_0.html[2.x Upgrade Documentation].
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2185[TINKERPOP-2185]
 
 ==== Use of null
 
@@ -561,16 +580,6 @@ without deserializing it first as the returned data types will change in this ca
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2349[TINKERPOP-2349],
 link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
-
-==== Neo4j Changes
-
-There were two key changes to the neo4j-gremlin module:
-
-* The underlying Neo4j version moved from the 3.2.x line to 3.4.x line. Please see the
-link:https://neo4j.com/guides/upgrade-archive/[Neo4j Upgrade FAQ] for more information as features and
-configuration options may have changed.
-* Experimental support for multi/meta-properties in Neo4j which were previously deprecated have now been permanently
-removed.
 
 ==== match() Consistency
 
