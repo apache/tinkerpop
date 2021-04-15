@@ -69,6 +69,67 @@ shading it can cause problems with its operations.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2476[TINKERPOP-2476]
 
+==== Gremlint
+
+Gremlint, the JavaScript library powering link:https://www.gremlint.com[gremlint.com], is now part of the TinkerPop
+project. It provides utilities for formatting Gremlin queries, taking parameters such as indentation, maximum line
+length and dot placement into account.
+
+Until recently Gremlint has been an independent project maintained by Øyvind Sæbø, a developer at Ardoq. Ardoq has
+since donated Gremlint, as well as gremlint.com, to TinkerPop so that it can serve as TinkerPop's canonical Gremlin
+code formatter.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2530[TINKERPOP-2530]
+
+==== Translators
+
+`Translator` implementations were moved from a mostly quiet and internal feature of TinkerPop to a documented and more
+readily accessible form in 3.4.9. For 3.5.0, the functionality has been expanded significantly in a number of ways.
+First, for Java, `gremlin-core` now has a `JavascriptTranslator` and a `DotNetTranslator` which complete the set of
+Gremlin translation functions for the programming languages that TinkerPop supports. It is therefore now possible to
+convert Gremlin bytecode to string representations that can compile in C#, Groovy, Javascript and Python.
+
+The following example demonstrates what this functionality looks like in Javascript but it is quite similar for each
+`Translator` implementation:
+
+[source,java]
+----
+// gremlin-core module
+import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
+
+GraphTraversalSource g = ...;
+Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
+                                where(in("knows")).
+                                values("age").
+                                map(Lambda.function("it.get() + 1"));
+
+Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
+System.out.println(javascriptTranslator.translate(t).getScript());
+// OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
+----
+
+In addition, a native Python `Translator` implementation has been added that will generate a string of Gremlin that
+will compile on the JVM.
+
+[source,python]
+----
+from gremlin_python.process.translator import *
+
+g = ...
+t = (g.V().has('person','name','marko').
+          where(__.in_("knows")).
+          values("age"))
+
+# Groovy
+translator = Translator().of('g');
+print(translator.translate(t.bytecode));
+# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2451[TINKERPOP-2451],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2452[TINKERPOP-2452],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2527[TINKERPOP-2527]
+
 ==== Anonymous Child Traversals
 
 TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
@@ -131,52 +192,6 @@ The `${groovy.version}` should match the version specified in TinkerPop's root
 link:https://github.com/apache/tinkerpop/blob/master/pom.xml[pom.xml].
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460]
-
-==== JavascriptTranslator
-
-Introduced a `JavascriptTranslator` for Java, which is in `gremlin-core` with the other language translators. It
-generates a Javascript representation of Gremlin from bytecode.
-
-[source,java]
-----
-// gremlin-core module
-import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
-
-GraphTraversalSource g = ...;
-Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
-                                where(in("knows")).
-                                values("age").
-                                map(Lambda.function("it.get() + 1"));
-
-Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
-System.out.println(javascriptTranslator.translate(t).getScript());
-// OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2451[TINKERPOP-2451]
-
-==== DotNetTranslator
-
-Introduced a `DotNetTranslator` for Java, which is in `gremlin-core` with the other language translators. It
-generates a C# representation of Gremlin from bytecode.
-
-[source,java]
-----
-// gremlin-core module
-import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator;
-
-GraphTraversalSource g = ...;
-Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
-                                where(in("knows")).
-                                values("age").
-                                map(Lambda.function("it.get() + 1"));
-
-Translator.ScriptTranslator dotnetTranslator = DotNetTranslator.of("g");
-System.out.println(dotnetTranslator.translate(t).getScript());
-// OUTPUT: g.V().Has("person","name","marko").Where(__.In("knows")).Values<object>("age").Map<object>(Lambda.Groovy("it.get() + 1"))
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2452[TINKERPOP-2452]
 
 ==== Gryo Usage
 
@@ -705,17 +720,6 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2273[TINKERPOP-2273],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2455[TINKERPOP-2455],
 link:https://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrade Documentation for SSL]
-
-==== Introducing Gremlint to TinkerPop
-
-Gremlint, the JavaScript library powering gremlint.com, is now included in TinkerPop. It provides utils for formatting
-Gremlin queries, taking parameters such as indentation, max line length and dot placement into account.
-
-Until recently Gremlint has been an independent project maintained by Øyvind Sæbø, a developer at Ardoq. Ardoq has
-since donated Gremlint, as well as gremlint.com, to TinkerPop so that it can serve as TinkerPop's canonical Gremlin
-code formatter.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2530[TINKERPOP-2530]
 
 === Upgrading for Provider
 
