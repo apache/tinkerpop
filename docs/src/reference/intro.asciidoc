@@ -469,10 +469,11 @@ of this documentation, so be sure to consult their documentation for more inform
 [[basic-gremlin]]
 == Basic Gremlin
 
-The `GraphTraversalSource` is basically the connection to a graph instance. That graph instance might be
-<<connecting-embedded,embedded>>, hosted in <<connecting-gremlin-server,Gremlin Server>> or hosted in a
-<<connecting-rgp,RGP>>, but the `GraphTraversalSource` is agnostic to that. Assuming "g" is the `GraphTraversalSource`,
-getting data into the graph regardless of programming language or mode of operation is just some basic Gremlin:
+image:language-variants.png[width=300,float=right] The `GraphTraversalSource` is basically the connection to a graph
+instance. That graph instance might be <<connecting-embedded,embedded>>, hosted in
+<<connecting-gremlin-server,Gremlin Server>> or hosted in a <<connecting-rgp,RGP>>, but the `GraphTraversalSource` is
+agnostic to that. Assuming "g" is the `GraphTraversalSource`, getting data into the graph regardless of programming
+language or mode of operation is just some basic Gremlin:
 
 [gremlin-groovy]
 ----

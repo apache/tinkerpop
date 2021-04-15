@@ -1076,7 +1076,7 @@ as attempts to close long run jobs can occur more rapidly. If not provided, this
 
 Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The
 `TraversalOpProcessor` however allows Gremlin `Bytecode` to be submitted to the server. Supporting this `OpProcessor`
-makes it possible for a link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variant]
+makes it possible for a link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variant]
 to submit a `Traversal` directly to Gremlin Server in the native language of the GLV without having to use a script in
 a different language.
 
@@ -1154,7 +1154,7 @@ single alias).
 Gremlin Server supports link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based]
 authentication.  A SASL implementation provides a series of challenges and responses that a driver must comply with
 in order to authenticate.  Gremlin Server supports the "PLAIN" SASL mechanism, which is a cleartext
-password system, for all link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants].
+password system, for all link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variants].
 Other SASL mechanisms supported for selected clients are listed in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#security[security section of the Gremlin Server reference documentation].
 

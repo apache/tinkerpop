@@ -27,22 +27,21 @@ the programming language they intend to use. The choice of programming language 
 architecture and design of the application and the choice itself may have limits imposed upon it by the chosen graph
 provider. For example, a <<connecting-rgp,Remote Gremlin Provider>> will require the selection of a driver to interact
 with it. On the other hand, a graph system that is designed for embedded use, like TinkerGraph, needs the Java
-Virtual Machine (JVM) environment so will require <<connecting-gremlin-server,Gremlin Server>>, if using a programming
-language that is not on the JVM and will further require driver selection.
+Virtual Machine (JVM) environment which is easily accessed with a JVM programming language. If however the programming
+language is not built for the JVM then it will require <<connecting-gremlin-server,Gremlin Server>> in the architecture
+as well.
 
 TinkerPop provides an array of drivers in different programming languages as a way to connect to a remote Gremlin
 Server or Remote Gremlin Provider. Drivers allow the developer to make requests to that remote system and get back
 results from the TinkerPop-enabled graphs hosted within. A driver can submit Gremlin strings and Gremlin bytecode
 over this sub-protocol. Gremlin strings are written in the scripting language made available by the remote system that
 the driver is connecting to (typically, Groovy-based). This connection approach is quite similar to what developers
-are likely familiar with when using JDBC and SQL. While it is familiar, it is not recommended and for TinkerPop it is
-considered an out-dated concept and is largely still present for the purpose of supporting applications that might
-still be using that method of interaction.
+are likely familiar with when using JDBC and SQL.
 
 The preferred approach is to use bytecode-based requests, which essentially allows the ability to craft Gremlin
 directly in the programming language of choice. As Gremlin makes use of two fundamental programming constructs:
 link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
-link:https://en.wikipedia.org/wiki/Nested_function[function nesting]. it is possible to embed the Gremlin language
+link:https://en.wikipedia.org/wiki/Nested_function[function nesting], it is possible to embed the Gremlin language
 in any modern programming language. It is a far more natural way to program, because it enables IDE interaction,
 compile time checks, and language level checks that can help prevent errors prior to execution. The differences
 between these two approaches were outlined in the <<connecting-via-drivers,Connecting Via Drivers>> Section, which
@@ -64,10 +63,6 @@ variants ensures that the general Gremlin reference documentation is applicable 
 between development languages can easily adopt the Gremlin variant for that language.
 
 image::gremlin-variant-architecture.png[width=650,float=left]
-
-NOTE: The information herein describes how to use the Gremlin language variants distributed
-with Apache TinkerPop. For information on how to build a Gremlin language variant, please review the
-link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] tutorial.
 
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 provided more detailed information about usage, configuration and known limitations.

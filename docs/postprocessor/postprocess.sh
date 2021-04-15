@@ -23,6 +23,10 @@ pushd "$(dirname $0)/../.." > /dev/null
 TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
 
 if [ -d "target/docs" ]; then
+
+  # redirect the GLV Tutorial to reference docs
+  sed -i "s/<meta charset=\"UTF-8\">/<meta http-equiv=\"Refresh\" content=\"0; url='https:\/\/tinkerpop.apache.org\/docs\/x.y.z\/reference\/#gremlin-drivers-variants'\" \/>/" target/docs/htmlsingle/tutorials/gremlin-language-variants/index.html
+
   find target/docs -name index.html | while read file ; do
     awk -f "docs/postprocessor/processor.awk" "${file}" 2>/dev/null       \
       | perl -0777 -pe 's/<span class="comment">\/\*\n \*\/<\/span>//igs' \

@@ -63,8 +63,6 @@ Provides a detailed look at The Gremlin Console and how it can be used when work
 Identifies and explains the component parts of a Gremlin traversal.
 ^|image:gremlin-chef.png[width=125] |link:https://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes] +
 A collection of best practices and common traversal patterns for Gremlin.
-^|image:gremlin-house-of-mirrors-cropped.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] +
-Instructs developers on the approach to building a Gremlin variant in their native programming language.
 |image:gremlin-lab-coat.png[width=200] |link:http://sql2gremlin.com/[Sql2Gremlin] +
 Learn Gremlin using typical patterns found when querying data with SQL. (*external*)
 ^|image:gremlin-standing.png[width=125] |link:https://academy.datastax.com/resources/getting-started-graph-databases[Getting Started with Graph Databases] +
