@@ -109,7 +109,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2451[TINKERPOP-2451],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2452[TINKERPOP-2452],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2527[TINKERPOP-2527]
 
-==== Major Versions and Dependencies
+==== Versions and Dependencies
 
 *Apache Commons*
 
@@ -271,6 +271,54 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2472[TINKERPOP-2472],
 link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
 
+==== Transaction Improvements
+
+The TinkerPop Transaction API and its related features have not changed much since TinkerPop 3.x was initially
+released. Transactions have remained a feature for embedded use cases and script execution (where supported) even in
+the face of the rise of remote graph use cases. With the varying contexts that exist for how and when transactions can
+be used, it has led to a fair bit of confusion.
+
+For 3.5.0, TinkerPop introduces a change in approach to transactions that has the goal of unifying the API and features
+for all use cases, while addressing the more current state of the graph ecosystem which has shifted heavily toward
+remote communication and more diverse programming language ecosystems beyond the JVM.
+
+NOTE: The old transaction API remains intact in 3.5.0, so this version should be backward compatible with the old
+model for embedded transactions. Migrating to the new model would be preferred at this point, but nothing (with the
+exception of the `Transaction#createdThreadedTransaction()` method) has been officially deprecated as the API itself
+is technically still relevant.
+
+The new model for transactions looks like this:
+
+[source,groovy]
+----
+g = traversal().withEmbedded(graph)
+// or
+g = traversal().withRemote(conn)
+
+tx = g.tx() // create a Transaction object
+gtx = tx.begin()  // spawn a GraphTraversalSource from the Transaction
+assert tx.isOpen() == true
+gtx.addV('person').iterate()
+gtx.addV('software').iterate()
+tx.commit() // alternatively you could explicitly rollback()
+assert tx.isOpen() == false
+
+// it is still possible to use g, but gtx is "done" after it is closed so use
+// tx.begin() to produce a new gtx instance for a fresh transaction
+assert 2 == g.V().count().next()
+----
+
+The first important point to take away here is that the same transaction code will work for either embedded or remote
+use cases. The second important point is that for remote cases, transaction support with bytecode is a wholly new
+feature, which was implemented by providing support for bytecode in sessions. Up until this time, sessions could only
+support script-based requests, so that makes another added feature related to this one.
+
+IMPORTANT: The `g.tx()` is only supported in Java at this time. Support for other languages will come available in
+future releases on the 3.5.x line.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2537[TINKERPOP-2537],
+link:https://tinkerpop.apache.org/docs/current/reference/#transactions[Reference Documentation - Transactions]
+
 ==== Anonymous Child Traversals
 
 TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
@@ -418,14 +466,6 @@ there are no opportunities to improve existing logic to take greater advantage o
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 
-==== Remote SideEffects
-
-Remote traversals no longer support the retrieval of remote side-effects. Users must therefore directly return
-side-effects as part of their query if they need that data. Note that server settings for `TraversalOpProcessor`, which
-formerly held the cache for these side-effects, no longer have any effect and can be removed.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
-
 ==== ByModulatorOptimizationStrategy
 
 The new `ByModulatorOptimizationStrategy` attempts to re-write `by()` modulator traversals to use their more optimized
@@ -484,101 +524,6 @@ introduction of `ByModulatorOptimizationStrategy` which will optimize `by(key())
 appropriate token versions automatically.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
-
-==== Gremlin Server Audit Logging
-
-The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
-to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
-formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
-
-==== Gremlin Server Authorization
-
-While Gremlin Server has long had authentication options to determine if a user can connect to the server, it now also
-contains the ability to apply a level of authorization to better control what a particular authenticated user will
-have access to. Authorization is controlled by the new `Authorizer` interface, which can be implemented by users and
-graph providers to provide this custom functionality.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
-link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
-
-==== Transaction Improvements
-
-The TinkerPop Transaction API and its related features have not changed much since TinkerPop 3.x was initially
-released. Transactions have remained a feature for embedded use cases and script execution (where supported) even in
-the face of the rise of remote graph use cases. With the varying contexts that exist for how and when transactions can
-be used, it has led to a fair bit of confusion.
-
-For 3.5.0, TinkerPop introduces a change in approach to transactions that has the goal of unifying the API and features
-for all use cases, while addressing the more current state of the graph ecosystem which has shifted heavily toward
-remote communication and more diverse programming language ecosystems beyond the JVM.
-
-NOTE: The old transaction API remains intact in 3.5.0, so this version should be backward compatible with the old
-model for embedded transactions. Migrating to the new model would be preferred at this point, but nothing (with the
-exception of the `Transaction#createdThreadedTransaction()` method) has been officially deprecated as the API itself
-is technically still relevant.
-
-The new model for transactions looks like this:
-
-[source,groovy]
-----
-g = traversal().withEmbedded(graph)
-// or
-g = traversal().withRemote(conn)
-
-tx = g.tx() // create a Transaction object
-gtx = tx.begin()  // spawn a GraphTraversalSource from the Transaction
-assert tx.isOpen() == true
-gtx.addV('person').iterate()
-gtx.addV('software').iterate()
-tx.commit() // alternatively you could explicitly rollback()
-assert tx.isOpen() == false
-
-// it is still possible to use g, but gtx is "done" after it is closed so use
-// tx.begin() to produce a new gtx instance for a fresh transaction
-assert 2 == g.V().count().next()
-----
-
-The first important point to take away here is that the same transaction code will work for either embedded or remote
-use cases. The second important point is that for remote cases, transaction support with bytecode is a wholly new
-feature, which was implemented by providing support for bytecode in sessions. Up until this time, sessions could only
-support script-based requests, so that makes another added feature related to this one.
-
-IMPORTANT: The `g.tx()` is only supported in Java at this time. Support for other languages will come available in
-future releases on the 3.5.x line.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2537[TINKERPOP-2537],
-link:https://tinkerpop.apache.org/docs/current/reference/#transactions[Reference Documentation - Transactions]
-
-==== Retry Conditions
-
-Some error conditions are temporary in nature and therefore an operation that ends in such a situation may be tried
-again as-is to potential success. In embedded use cases, an exception that implements the `TemporaryException`
-interface implies that the failing operation can be retried. For remote use cases, a `ResponseStatusCode` of `596`
-which equates to `SERVER_ERROR_TEMPORARY` is an indicator that a request may be retried.
-
-With this more concrete and generalized approach to determining when retries should happen, the need to trap provider
-specific exceptions or to examine the text of error messages are removed. Before replacing existing code that might
-do these things currently, it may be best to include this sort of retry checking in addition to current methods as
-it may take time for providers to support these new options. Alternatively, if you can confirm that a provider does
-support this functionality then feel free to proceed wholly with this generalized TinkerPop approach.
-
-Finally, it is important to note that TinkerPop drivers do not automatically retry when these conditions are met. It
-is up to the application to determine if retry is desired and how best to do so.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
-
-==== Python Kerberos Support
-
-The Python Driver now supports Kerberos based authentication:
-
-[source,python]
-----
-g = traversal().withRemote(DriverRemoteConnection(
-    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
-link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
 
 ==== match() Consistency
 
@@ -641,6 +586,62 @@ gremlin> g.V().match(__.as("a").out("knows").as("b")).unfold()
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2481[TINKERPOP-2481],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2499[TINKERPOP-2499]
+
+==== Gremlin Server
+
+*Remote SideEffects*
+
+Remote traversals no longer support the retrieval of remote side-effects. Users must therefore directly return
+side-effects as part of their query if they need that data. Note that server settings for `TraversalOpProcessor`, which
+formerly held the cache for these side-effects, no longer have any effect and can be removed.
+
+*Gremlin Server Audit Logging*
+
+The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
+to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
+formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
+
+*Gremlin Server Authorization*
+
+While Gremlin Server has long had authentication options to determine if a user can connect to the server, it now also
+contains the ability to apply a level of authorization to better control what a particular authenticated user will
+have access to. Authorization is controlled by the new `Authorizer` interface, which can be implemented by users and
+graph providers to provide this custom functionality.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2389[TINKERPOP-2389],
+link:https://tinkerpop.apache.org/docs/3.5.0/reference/#authorization[Reference Documentation]
+
+==== Retry Conditions
+
+Some error conditions are temporary in nature and therefore an operation that ends in such a situation may be tried
+again as-is to potential success. In embedded use cases, an exception that implements the `TemporaryException`
+interface implies that the failing operation can be retried. For remote use cases, a `ResponseStatusCode` of `596`
+which equates to `SERVER_ERROR_TEMPORARY` is an indicator that a request may be retried.
+
+With this more concrete and generalized approach to determining when retries should happen, the need to trap provider
+specific exceptions or to examine the text of error messages are removed. Before replacing existing code that might
+do these things currently, it may be best to include this sort of retry checking in addition to current methods as
+it may take time for providers to support these new options. Alternatively, if you can confirm that a provider does
+support this functionality then feel free to proceed wholly with this generalized TinkerPop approach.
+
+Finally, it is important to note that TinkerPop drivers do not automatically retry when these conditions are met. It
+is up to the application to determine if retry is desired and how best to do so.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
+
+==== Python Kerberos Support
+
+The Python Driver now supports Kerberos based authentication:
+
+[source,python]
+----
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
+link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
 
 ==== Deprecation Removal
 
