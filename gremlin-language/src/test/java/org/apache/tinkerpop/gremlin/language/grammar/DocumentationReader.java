@@ -113,7 +113,7 @@ public class DocumentationReader {
                 replace("System.out.&println", "{it}").
                 replace("persons", "\"persons\"").
                 replace("marko.value('age')", "11").
-                replace("seedStrategy", "ReadOnlyStrategy").
+                replace("seedStrategy", "new SeedStrategy(99999)").
                 replace(".getClass()", "").
                 replace("result.toArray()", "4").
                 replace("vA.value('amount')", "0.0").

@@ -754,12 +754,14 @@ traversalStrategy
     : 'new' 'PartitionStrategy' LPAREN traversalStrategyArgs_PartitionStrategy? (COMMA traversalStrategyArgs_PartitionStrategy)* RPAREN
 //  | 'RequirementStrategy' - not supported as it's internally relevant only
 //  | 'SackStrategy' - not supported directly as it's internal to withSack()
+    | 'new' 'SeedStrategy' LPAREN integerLiteral RPAREN
 //  | 'SideEffectStrategy' - not supported directly as it's internal to withSideEffect()
     | 'new' 'SubgraphStrategy' LPAREN traversalStrategyArgs_SubgraphStrategy? (COMMA traversalStrategyArgs_SubgraphStrategy)* RPAREN
 //  | 'MatchAlgorithmStrategy' - not supported directly as it's internal to match()
 //  | 'ProfileStrategy' - not supported directly as it's internal to profile()
 //  | 'ReferenceElementStrategy' - not supported directly as users really can't/shouldn't change this in our context of a remote Gremlin provider
 //  | 'AdjacentToIncidentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+//  | 'ByModulatorOptimizationStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'CountStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'EarlyLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'FilterRankingStrategy' - not supported as it is a default strategy and we don't allow removal at this time
