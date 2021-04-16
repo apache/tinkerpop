@@ -34,11 +34,15 @@ import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -93,7 +97,10 @@ public class ServerGremlinExecutor {
 
         if (null == gremlinExecutorService) {
             final ThreadFactory threadFactoryGremlin = ThreadFactoryUtil.create("exec-%d");
-            this.gremlinExecutorService = Executors.newFixedThreadPool(settings.gremlinPool, threadFactoryGremlin);
+            final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(settings.maxWorkQueueSize);
+            this.gremlinExecutorService = new ThreadPoolExecutor(settings.gremlinPool, settings.gremlinPool,
+                    0L, TimeUnit.MILLISECONDS, queue, threadFactoryGremlin,
+                    new ThreadPoolExecutor.AbortPolicy());
         } else {
             this.gremlinExecutorService = gremlinExecutorService;
         }

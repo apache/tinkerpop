@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -58,7 +59,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,6 +81,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -87,6 +89,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -115,9 +118,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         if (name.getMethodName().equals("shouldPingChannelIfClientDies") ||
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
-            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
-            previousLogLevel = webSocketClientHandlerLogger.getLevel();
-            webSocketClientHandlerLogger.setLevel(Level.INFO);
+            final org.apache.log4j.Logger opSelectorHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
+            final org.apache.log4j.Logger unifiedHandlerLogger = org.apache.log4j.Logger.getLogger(UnifiedHandler.class);
+            previousLogLevel = opSelectorHandlerLogger.getLevel();
+            opSelectorHandlerLogger.setLevel(Level.INFO);
+            unifiedHandlerLogger.setLevel(Level.INFO);
         }
 
         rootLogger.addAppender(recordingAppender);
@@ -129,8 +134,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
-            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
-            webSocketClientHandlerLogger.setLevel(previousLogLevel);
+            final org.apache.log4j.Logger opSelectorHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
+            opSelectorHandlerLogger.setLevel(previousLogLevel);
+            final org.apache.log4j.Logger unifiedHandlerLogger = org.apache.log4j.Logger.getLogger(UnifiedHandler.class);
+            unifiedHandlerLogger.setLevel(previousLogLevel);
         }
 
         rootLogger.removeAppender(recordingAppender);
@@ -145,6 +152,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         switch (nameOfTest) {
             case "shouldProvideBetterExceptionForMethodCodeTooLarge":
                 settings.maxContentLength = 4096000;
+
+                // OpProcessor setting
                 final Settings.ProcessorSettings processorSettingsBig = new Settings.ProcessorSettings();
                 processorSettingsBig.className = StandardOpProcessor.class.getName();
                 processorSettingsBig.config = new HashMap<String,Object>() {{
@@ -152,6 +161,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }};
                 settings.processors.clear();
                 settings.processors.add(processorSettingsBig);
+
+                // Unified setting
+                settings.maxParameters = Integer.MAX_VALUE;
                 break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
                 settings.writeBufferHighWaterMark = 64;
@@ -182,6 +194,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForBaseScript();
                 break;
             case "shouldReturnInvalidRequestArgsWhenBindingCountExceedsAllowable":
+                // OpProcessor settings
                 final Settings.ProcessorSettings processorSettingsSmall = new Settings.ProcessorSettings();
                 processorSettingsSmall.className = StandardOpProcessor.class.getName();
                 processorSettingsSmall.config = new HashMap<String,Object>() {{
@@ -189,6 +202,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }};
                 settings.processors.clear();
                 settings.processors.add(processorSettingsSmall);
+
+                // Unified settings
+                settings.maxParameters = 1;
                 break;
             case "shouldTimeOutRemoteTraversal":
                 settings.evaluationTimeout = 500;
@@ -198,6 +214,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldCloseChannelIfClientDoesntRespond":
                 settings.idleConnectionTimeout = 1000;
+                break;
+            case "shouldBlowTheWorkQueueSize":
+                settings.gremlinPool = 1;
+                settings.maxWorkQueueSize = 1;
                 break;
             default:
                 break;
@@ -231,6 +251,41 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         properties.put("ScriptBaseClass", BaseScriptForTesting.class.getName());
         scriptEngineConf.put("compilerConfigurationOptions", properties);
         return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldBlowTheWorkQueueSize() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        // maxWorkQueueSize=1 && gremlinPool=1
+        // we should be able to do one request at a time serially
+        assertEquals("test1", client.submit("'test1'").all().get().get(0).getString());
+        assertEquals("test2", client.submit("'test2'").all().get().get(0).getString());
+        assertEquals("test3", client.submit("'test3'").all().get().get(0).getString());
+
+        final AtomicBoolean errorTriggered = new AtomicBoolean();
+        final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'").get();
+
+        final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
+        for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
+            blockers.add(client.submit("'test'").all().exceptionally(t -> {
+                final ResponseException re = (ResponseException) t.getCause();
+                errorTriggered.compareAndSet(false, ResponseStatusCode.TOO_MANY_REQUESTS == re.getResponseStatusCode());
+                return null;
+            }));
+        }
+
+        assertThat(errorTriggered.get(), is(true));
+
+        // wait for the blockage to clear for sure
+        assertEquals("test4", r1.all().get().get(0).getString());
+        blockers.forEach(CompletableFuture::join);
+
+        // should be accepting test6 now
+        assertEquals("test6", client.submit("'test6'").all().get().get(0).getString());
+
+        cluster.close();
     }
 
     @Test
@@ -351,6 +406,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProduceProperExceptionOnTimeout() throws Exception {
+        // this test will not work quite right on UnifiedChannelizer
+        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
+
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
@@ -699,7 +757,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
-            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 1000 ms"));
+            assertThat(responses.get(0).getStatus().getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("1000 ms")));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
@@ -715,7 +773,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                     .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
                     .create();
             final List<ResponseMessage> responses = client.submit(msg);
-            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 100 ms"));
+            assertThat(responses.get(0).getStatus().getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("100 ms")));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());

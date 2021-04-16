@@ -61,11 +61,7 @@ public interface Transaction extends AutoCloseable {
      * A threaded transaction is a {@link Graph} instance that has a transaction context that enables multiple
      * threads to collaborate on the same transaction.  A standard transactional context tied to a {@link Graph}
      * that supports transactions will typically bind a transaction to a single thread via {@link ThreadLocal}.
-     *
-     * @deprecated As of release 3.5.0, replaced by {@link Graph#tx(Class)} ()} in which an implementation of
-     * {@code Transaction} should provide its own methods for exposing a "threaded transaction".
      */
-    @Deprecated
     public default <G extends Graph> G createThreadedTx() {
         throw Transaction.Exceptions.threadedTransactionsNotSupported();
     }

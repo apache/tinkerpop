@@ -65,7 +65,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         handlerLogger.setLevel(Level.OFF);
 
         try {
-            final String projectBaseDir = System.getProperty("basedir");
+            final String projectBaseDir = System.getProperty("basedir", ".");
             final String authConfigName = projectBaseDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf";
             System.setProperty("java.security.auth.login.config", authConfigName);
             kdcServer = new KdcFixture(projectBaseDir);

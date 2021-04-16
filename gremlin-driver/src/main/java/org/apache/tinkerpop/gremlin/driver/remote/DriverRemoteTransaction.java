@@ -22,11 +22,15 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_COMMIT;
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK;
 
 /**
  * A remote {@link Transaction} implementation that is implemented with the Java driver. It is also a proxy for a
@@ -74,21 +78,21 @@ public class DriverRemoteTransaction implements Transaction, RemoteConnection {
 
     @Override
     public void commit() {
-        closeRemoteTransaction(Bytecode.TX_COMMIT, "Transaction commit for %s failed");
+        closeRemoteTransaction(TX_COMMIT, "Transaction commit for %s failed");
     }
 
     @Override
     public void rollback() {
-        closeRemoteTransaction(Bytecode.TX_ROLLBACK, "Transaction rollback for %s failed");
+        closeRemoteTransaction(TX_ROLLBACK, "Transaction rollback for %s failed");
     }
 
-    private void closeRemoteTransaction(final Bytecode closeTxWith, final String failureMsg) {
+    private void closeRemoteTransaction(final GraphOp closeTxWith, final String failureMsg) {
         try {
             // kinda weird but we hasNext() the graph command here to ensure that it runs to completion or
             // else you don't guarantee that we have the returned NO_CONTENT message in hand before proceeding
             // which could mean the transaction is still in the process of committing. not sure why iterate()
             // doesn't quite work in this context.
-            this.sessionBasedConnection.submitAsync(closeTxWith).join().hasNext();
+            this.sessionBasedConnection.submitAsync(closeTxWith.getBytecode()).join().hasNext();
             this.sessionBasedConnection.close();
         } catch (Exception ex) {
             throw new RuntimeException(String.format(failureMsg, sessionBasedConnection.getSessionId()), ex);

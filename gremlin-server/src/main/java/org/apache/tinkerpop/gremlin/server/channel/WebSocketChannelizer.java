@@ -81,8 +81,11 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
     @Override
     public void configure(final ChannelPipeline pipeline) {
+
         if (logger.isDebugEnabled())
-            pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
+            pipeline.addLast(new LoggingHandler("log-encoder-aggregator", LogLevel.DEBUG));
+
+        pipeline.addLast(PIPELINE_HTTP_RESPONSE_ENCODER, new HttpResponseEncoder());
 
         logger.debug("HttpRequestDecoder settings - maxInitialLineLength={}, maxHeaderSize={}, maxChunkSize={}",
                 settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize);
@@ -95,12 +98,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
                 settings.maxContentLength, settings.maxAccumulationBufferComponents);
         final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
         aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
-        pipeline.addLast("aggregator", aggregator);
-
-        if (logger.isDebugEnabled())
-            pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
-
-        pipeline.addLast(PIPELINE_HTTP_RESPONSE_ENCODER, new HttpResponseEncoder());
+        pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, aggregator);
         // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
         pipeline.addLast(PIPELINE_WEBSOCKET_SERVER_COMPRESSION, new WebSocketServerCompressionHandler());
 

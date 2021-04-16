@@ -78,6 +78,13 @@ public final class Tokens {
     public static final String ARGS_HOST = "host";
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
+
+    /**
+     * Argument name that is intended to be used with a session which when its value is {@code true} makes it so
+     * that a processing error or request timeout will not close the session, but leave it to continue processing in
+     * whatever state it may hold. This argument only applies to the {@code UnifiedChannelizer}.
+     */
+    public static final String ARGS_MAINTAIN_STATE_AFTER_EXCEPTION = "maintainStateAfterException";
     public static final String ARGS_SASL = "sasl";
     public static final String ARGS_SASL_MECHANISM = "saslMechanism";
 

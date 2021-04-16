@@ -76,6 +76,13 @@ public enum ResponseStatusCode {
     AUTHENTICATE(407),
 
     /**
+     * Indicates that too many requests have been sent in a given amount of time.
+     *
+     * @since 3.5.0
+     */
+    TOO_MANY_REQUESTS(429),
+
+    /**
      * The request message contains objects that were not serializable on the client side.
      *
      * @since 3.3.6

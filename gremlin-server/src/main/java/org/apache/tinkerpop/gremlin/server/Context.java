@@ -18,16 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinScriptChecker;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,6 +50,29 @@ public class Context {
     private final GremlinExecutor gremlinExecutor;
     private final ScheduledExecutorService scheduledExecutorService;
     private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
+    private final long requestTimeout;
+    private final RequestContentType requestContentType;
+    private final Object gremlinArgument;
+
+    /**
+     * The type of the request as determined by the contents of {@link Tokens#ARGS_GREMLIN}.
+     */
+    public enum RequestContentType {
+        /**
+         * Contents is of type {@link Bytecode}.
+         */
+        BYTECODE,
+
+        /**
+         * Contents is of type {@code String}.
+         */
+        SCRIPT,
+
+        /**
+         * Contents are not of a type that is expected.
+         */
+        UNKNOWN
+    }
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -55,6 +83,33 @@ public class Context {
         this.graphManager = graphManager;
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
+
+        // order of calls matter as one depends on the next
+        this.gremlinArgument = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
+        this.requestContentType = determineRequestContents();
+        this.requestTimeout = determineTimeout();
+    }
+
+    /**
+     * The timeout for the request. If the request is a script it examines the script for a timeout setting using
+     * {@code with()}. If that is not found then it examines the request itself to see if the timeout is provided by
+     * {@link Tokens#ARGS_EVAL_TIMEOUT}. If that is not provided then the {@link Settings#evaluationTimeout} is
+     * utilized as the default.
+     */
+    public long getRequestTimeout() {
+        return requestTimeout;
+    }
+
+    public boolean isFinalResponseWritten() {
+        return this.finalResponseWritten.get();
+    }
+
+    public RequestContentType getRequestContentType() {
+        return requestContentType;
+    }
+
+    public Object getGremlinArgument() {
+        return gremlinArgument;
     }
 
     public ScheduledExecutorService getScheduledExecutorService() {
@@ -132,5 +187,29 @@ public class Context {
             logger.warn(logMessage);
         }
 
+    }
+
+    private RequestContentType determineRequestContents() {
+        if (gremlinArgument instanceof Bytecode)
+            return RequestContentType.BYTECODE;
+        else if (gremlinArgument instanceof String)
+            return RequestContentType.SCRIPT;
+        else
+            return RequestContentType.UNKNOWN;
+    }
+
+    private long determineTimeout() {
+        // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
+        // both configurations from being submitted at the same time
+        final Map<String, Object> args = requestMessage.getArgs();
+        final long seto = args.containsKey(Tokens.ARGS_EVAL_TIMEOUT) ?
+                ((Number) args.get(Tokens.ARGS_EVAL_TIMEOUT)).longValue() : settings.getEvaluationTimeout();
+
+        // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
+        // options then allow that value to override what's provided on the lifecycle
+        final Optional<Long> timeoutDefinedInScript = requestContentType == RequestContentType.SCRIPT ?
+                GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout() : Optional.empty();
+
+        return timeoutDefinedInScript.orElse(seto);
     }
 }

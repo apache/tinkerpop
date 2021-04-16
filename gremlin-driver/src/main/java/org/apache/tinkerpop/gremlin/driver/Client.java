@@ -360,7 +360,7 @@ public abstract class Client {
      * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
      */
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
-        if (isClosing()) throw new IllegalStateException("Client has been closed");
+        if (isClosing()) throw new IllegalStateException("Client is closed");
 
         if (!initialized)
             init();
@@ -655,19 +655,19 @@ public abstract class Client {
             return client.chooseConnection(msg);
         }
 
-        /**
-         * Prevents messages from being sent from this {@code Client}. Note that calling this method does not call
-         * close on the {@code Client} that created it.
-         */
+        @Override
+        public void close() {
+            client.close();
+        }
+
         @Override
         public synchronized CompletableFuture<Void> closeAsync() {
-            close.complete(null);
-            return close;
+            return client.closeAsync();
         }
 
         @Override
         public boolean isClosing() {
-            return close.isDone();
+            return client.isClosing();
         }
 
         /**
@@ -688,6 +688,7 @@ public abstract class Client {
     public final static class SessionedClient extends Client {
         private final String sessionId;
         private final boolean manageTransactions;
+        private final boolean maintainStateAfterException;
 
         private ConnectionPool connectionPool;
 
@@ -697,6 +698,7 @@ public abstract class Client {
             super(cluster, settings);
             this.sessionId = settings.getSession().get().sessionId;
             this.manageTransactions = settings.getSession().get().manageTransactions;
+            this.maintainStateAfterException = settings.getSession().get().maintainStateAfterException;
         }
 
         /**
@@ -714,6 +716,7 @@ public abstract class Client {
             builder.processor("session");
             builder.addArg(Tokens.ARGS_SESSION, sessionId);
             builder.addArg(Tokens.ARGS_MANAGE_TRANSACTION, manageTransactions);
+            builder.addArg(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION, maintainStateAfterException);
             return builder;
         }
 
@@ -838,11 +841,13 @@ public abstract class Client {
         private final boolean manageTransactions;
         private final String sessionId;
         private final boolean forceClosed;
+        private final boolean maintainStateAfterException;
 
         private SessionSettings(final Builder builder) {
             manageTransactions = builder.manageTransactions;
             sessionId = builder.sessionId;
             forceClosed = builder.forceClosed;
+            maintainStateAfterException = builder.maintainStateAfterException;
         }
 
         /**
@@ -867,6 +872,10 @@ public abstract class Client {
             return forceClosed;
         }
 
+        public boolean maintainStateAfterException() {
+            return maintainStateAfterException;
+        }
+
         public static SessionSettings.Builder build() {
             return new SessionSettings.Builder();
         }
@@ -875,8 +884,20 @@ public abstract class Client {
             private boolean manageTransactions = false;
             private String sessionId = UUID.randomUUID().toString();
             private boolean forceClosed = false;
+            private boolean maintainStateAfterException = false;
 
             private Builder() {
+            }
+
+            /**
+             * When {@code true} an exception within a session will not close the session and remove the state bound to
+             * that session. This setting is for the {@code UnifiedChannelizer} and when set to {@code true} will allow
+             * sessions to behave similar to how they did under the {@code OpProcessor} approach original to Gremlin
+             * Server. By default this value is {@code false}.
+             */
+            public Builder maintainStateAfterException(final boolean maintainStateAfterException) {
+                this.maintainStateAfterException = maintainStateAfterException;
+                return this;
             }
 
             /**

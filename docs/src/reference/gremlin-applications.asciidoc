@@ -832,6 +832,10 @@ channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 [source,yaml]
 channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
 
+NOTE: The `UnifiedChannelizer` introduced in 3.5.0 can also be used to support HTTP requests as its functionality
+is similar to `WsAndHttpChannelizer`. Please see the Gremlin Server UnifiedChannelizer Section of the Upgrade
+Documentation for 3.5.0 for more link:https://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_5_0[details].
+
 The `HttpChannelizer` is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin
 Server distribution.  To utilize it, start Gremlin Server as follows:
 
@@ -966,7 +970,7 @@ The following table describes the various YAML configuration options that Gremli
 |authorization.config |A `Map` of configuration settings to be passed to the `Authorizer` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. WebSocket). |`WebSocketChannelizer`
 |enableAuditLog |The `AuthenticationHandler`, `AuthorizationHandler` and processors can issue audit logging messages with the authenticated user, remote socket address and requests with a gremlin query. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the log4j.properties file. |_false_
-|graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. It is important to note that the TinkerPop HTTP and WebSocketChannelizers auto-commit and auto-rollback based on the graphs stored in the graphManager upon script execution completion. To prevent Gremlin Server from starting when all graphs fails, the `CheckedGraphManager` can be used.|`DefaultGraphManager`
+|graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. To prevent Gremlin Server from starting when all graphs fails, the `CheckedGraphManager` can be used.|`DefaultGraphManager`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
@@ -977,6 +981,9 @@ The following table describes the various YAML configuration options that Gremli
 |maxContentLength |The maximum length of the aggregated content for a message.  Works in concert with `maxChunkSize` where chunked requests are accumulated back into a single message.  A request exceeding this size will return a `413 - Request Entity Too Large` status code.  A response exceeding this size will raise an internal exception. |65536
 |maxHeaderSize |The maximum length of all headers. |8192
 |maxInitialLineLength |The maximum length of the initial line (e.g.  "GET / HTTP/1.0") processed in a request, which essentially controls the maximum length of the submitted URI. |4096
+|maxParameters |The maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts. This configuration only applies to the `UnifiedChannelizer`. |16
+|maxSessionTaskQueueSize |The maximum size that an individual session can queue requests before starting to reject them. This configuration only applies to the `UnifiedChannelizer`. |4096
+|maxWorkQueueSize |The maximum size the general processing queue can grow before the `gremlinPool` starts to reject requests. |8192
 |metrics.consoleReporter.enabled |Turns on console reporting of metrics. |false
 |metrics.consoleReporter.interval |Time in milliseconds between reports of metrics to console. |180000
 |metrics.csvReporter.enabled |Turns on CSV reporting of metrics. |false
@@ -1009,6 +1016,7 @@ The following table describes the various YAML configuration options that Gremli
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and GraphBinary but will not register any `ioRegistries` for configured graphs. |_empty_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
+|sessionLifetimeTimeout |The maximum time in milliseconds that a session can exist. This value cannot be extended beyond this value irrespective of the number of requests and their individual timeouts. The session life cannot be extended once started. This configuration only applies to the `UnifiedChannelizer`. |600000 (10 minutes)
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyStore |The private key in JKS or PKCS#12 format.  |_none_
 |ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
@@ -1021,7 +1029,9 @@ The following table describes the various YAML configuration options that Gremli
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
-|useEpollEventLoop |try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
+|useCommonEngineForSessions |Ensures that the same `ScriptEngine` is used to support sessions and sessionless requests which will lead to better performance. Do not change this setting from the default without a specific use case in mind. This configuration only applies to the `UnifiedChannelizer`. |true
+|useEpollEventLoop |Try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
+|useGlobalFunctionCacheForSessions |Enable the global function cache for sessions when using the `UnifiedChannelizer`. When `true` it means that functions created in one request to a session remain available on the next request to that session. This setting is only relevant when `useGlobalFunctionCacheForSessions` is `false`. |true
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
 |writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |65536
 |=========================================================
@@ -1030,6 +1040,9 @@ See the <<metrics,Metrics>> section for more information on how to configure Gan
 
 [[opprocessor-configurations]]
 ==== OpProcessor Configurations
+
+IMPORTANT: The `UnifiedChannelizer` does not rely on `OpProcessor` infrastructure. If using that channelizer, these
+configuration options can be ignored.
 
 An `OpProcessor` provides a way to plug-in handlers to Gremlin Server's processing flow. Gremlin Server uses this
 plug-in system itself to expose the packaged functionality that it exposes. Configurations can be supplied to an
@@ -1212,19 +1225,22 @@ NOTE: Installing Ganglia will include `org.acplt:oncrpc`, which is an LGPL licen
 Regardless of the output, the metrics gathered are the same. Each metric is prefixed with
 `org.apache.tinkerpop.gremlin.server.GremlinServer` and the following metrics are reported:
 
-* `sessions` - the number of sessions open at the time the metric was last measured.
-* `errors` - the number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
-* `op.eval` - the number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
+* `sessions` - The number of sessions open at the time the metric was last measured. For the `UnifiedChannelizer`, each
+request creates a "session", even a so-called "sessionless request", which is basically a session that will only
+execute within the context of that single request.
+* `errors` - The number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
+* `op.eval` - The number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
 (note that these time apply to both sessionless and in-session requests).
-* `op.traversal` - the number of `Traversal` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
-mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
-times.
-* `engine-name.session.session-id.*` - metrics related to different `GremlinScriptEngine` instances configured for
+* `op.traversal` - The number of `Traversal` bytecode-based executions, mean rate, 1, 5, and 15 minute rates, minimum,
+maximum, median, mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th
+percentile evaluation times.
+* `engine-name.session.session-id.*` - Metrics related to different `GremlinScriptEngine` instances configured for
 session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
-"session-id" will be the identifier for the session itself.
-* `engine-name.sessionless.*` - metrics related to different `GremlinScriptEngine` instances configured for sessionless
-requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy".
+"session-id" will be the identifier for the session itself. This metric is not measured under the `UnifiedChannelizer`.
+* `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
+requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
+measured under the `UnifiedChannelizer`.
 
 ==== As A Service
 
@@ -2045,22 +2061,35 @@ expected workload. More discussion on this topic can be found in the <<parameter
 Section below.
 * When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a
 maximum of `2*number of cores`.
-* The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
+* The "right" size of the `gremlinPool` setting is somewhat dependent on the type of requests that will be processed
 by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in
 this pool.  When this pool is exhausted of threads, Gremlin Server will continue to accept incoming requests, but
 the queue will continue to grow.  If left to grow too large, the server will begin to slow.  When tuning around
 this setting, consider whether the bulk of the scripts being processed will be "fast" or "slow", where "fast"
 generally means being measured in the low hundreds of milliseconds and "slow" means anything longer than that.
-* Scripts that are "slow" can really hurt Gremlin Server if they are not properly accounted for.  `ScriptEngine`
-evaluations are blocking operations that aren't always easily interrupted, so once a "slow" script is being evaluated in
-the context of a `ScriptEngine` it must finish its work.  Lots of "slow" scripts will eventually consume the
-`gremlinPool` preventing other scripts from getting processed from the queue.
+* Requests that are "slow" can really hurt Gremlin Server if they are not properly accounted for. Since these requests
+block a thread until the job is complete or successfully interrupted, lots of long-run requests will eventually consume
+the `gremlinPool` preventing other requests from getting processed from the queue.
 ** To limit the impact of this problem, consider properly setting the `evaluationTimeout` to something "sane".
 In other words, test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate
-and iterate over results, then set the timeout value accordingly.
+and iterate over results, then set the timeout value accordingly. Also, consider setting a shorter global timeout for
+requests and then use longer per-request timeouts for those specific ones that might execute at a longer rate.
 ** Note that `evaluationTimeout` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
 Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` that did the evaluation
 may still be consumed after the timeout if interruption does not succeed on the thread.
+* When using sessions, there are different options to consider depending on the `Channelizer` implementation being
+used:
+** `WebSocketChannelizer` and `WsAndHttpChannelizer` - Both of these channelizers use the `gremlinPool` only for
+sessionless requests and construct a single threaded pool for each session created. In this way, these channelizers
+tend to optimize sessions to be long-lived. For short-lived sessions, which may be typical when using bytecode based
+remote transactions, quickly creating and destroying these sessions can be expensive. It is likely that there will be
+increased garbage collection times and frequency as well as a general increase in overall server processing.
+** `UnifiedChannelizer` - The threads of the `gremlinPool` are used to service both sessions and sessionless requests.
+With a common thread pool, this channelizer is a better choice when using lots of short-lived sessions as compared to
+`WebSocketChannelizer` and `WsAndHttpChannelizer`, because there is less cost in starting and stopping sessions. It is
+important though to understand the expected workload for the server and plan the size accordingly to ensure that the
+server does not need to wait for an extended period of time for a thread to be available to process the queue of
+incoming requests.
 * Graph element serialization for `Vertex` and `Edge` can be expensive, as their data structures are complex given the
 possible existence of multi-properties and meta-properties. When returning data from Gremlin Server only return the
 data that is required. For example, if only two properties of a `Vertex` are needed then simply return the two rather
@@ -2393,6 +2422,28 @@ g.addV()
 would successfully evaluate and return a `Traversal`.  The variable "a" would be available on the next request. However,
 if there was a failure in transaction management on the call to `commit()`, "a" would still be available to the next
 request.
+
+To avoid unexpected problems with state in relation to errors in sessions, it is best to follow these guidelines:
+
+* Do not re-use session identifiers. Simply use a new UUID for each session.
+* On exception, be sure to call `close()` on the `Client` and create a new session.
+* While you may submit parallel asynchronous requests to a session, it may not make sense to do so because they are
+simply executed serially as they arrive to the session. A failed asynchronous request could leave an invalid state
+in the session which may not allow later requests to succeed. Either use synchronous requests only or carefully
+consider error conditions with asynchronous requests.
+
+If using the `UnifiedChannelizer`, failures in evaluation will result in the session being closed and state being
+lost. Asynchronous requests that are queued on the server will be cancelled and additional requests, in-flight or
+otherwise will be rejected. Users should create a new session from the `Cluster` object in this case. The alternative,
+to match the old `OpProcessor` GremlinServer behavior, is to add the `maintainStateAfterException` session setting to
+`true` which will instead have similar behavior to that described in this section.
+
+[source,java]
+----
+Client.SessionSettings settings =
+    Client.SessionSettings.build().maintainStateAfterException(true).create();
+Client session = cluster.connect(Client.Settings.build().useSession(settings).create());
+----
 
 A session is a "heavier" approach to the simple "request/response" approach of sessionless requests, but is sometimes
 necessary for a given use case.

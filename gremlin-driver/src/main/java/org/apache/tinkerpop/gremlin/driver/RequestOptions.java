@@ -85,6 +85,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private UUID overrideRequestId = null;
         private String userAgent = null;
+        private boolean maintainStateAfterException = false;
 
         /**
          * The aliases to set on the request.

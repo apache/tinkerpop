@@ -70,6 +70,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_COMMIT;
+import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK;
 
 /**
  * Simple {@link OpProcessor} implementation that handles {@code ScriptEngine} script evaluation in the context of
@@ -483,8 +485,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         final RequestMessage msg = context.getRequestMessage();
         final Session session = getSession(context, msg);
         if (graph.features().graph().supportsTransactions()) {
-            if (bytecode.equals(Bytecode.TX_COMMIT) || bytecode.equals(Bytecode.TX_ROLLBACK)) {
-                final boolean commit = bytecode.equals(Bytecode.TX_COMMIT);
+            if (TX_COMMIT.equals(bytecode) || TX_ROLLBACK.equals(bytecode)) {
+                final boolean commit = TX_COMMIT.equals(bytecode);
                 submitToGremlinExecutor(context, 0, session, new FutureTask<>(() -> {
                     try {
                         if (graph.tx().isOpen()) {

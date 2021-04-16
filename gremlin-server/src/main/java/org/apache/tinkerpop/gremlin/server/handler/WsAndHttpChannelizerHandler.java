@@ -28,9 +28,9 @@ import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 
+import static org.apache.tinkerpop.gremlin.server.AbstractChannelizer.PIPELINE_HTTP_AGGREGATOR;
 import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.PIPELINE_AUTHENTICATOR;
 import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.PIPELINE_REQUEST_HANDLER;
-import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.PIPELINE_HTTP_RESPONSE_ENCODER;
 
 /**
  * A ChannelInboundHandlerAdapter for use with {@link WsAndHttpChannelizer} that toggles between WebSockets
@@ -62,15 +62,28 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, final Object obj) {
         final ChannelPipeline pipeline = ctx.pipeline();
         if (obj instanceof HttpMessage && !WebSocketHandlerUtil.isWebSocket((HttpMessage)obj)) {
+            // if the message is for HTTP and not websockets then this handler injects the endpoint handler in front
+            // of the HTTP Aggregator to intercept the HttpMessage. Therefore the pipeline looks like this at start:
+            //
+            // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
+            //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
+            //    WebSocketServerCompressionHandler -> WebSocketServerProtocolHandshakeHandler -> (more websockets)
+            //
+            // and shifts to (setting aside the authentication condition):
+            //
+            // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
+            //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
+            //    HttpGremlinEndpointHandler ->
+            //    WebSocketServerCompressionHandler - WebSocketServerProtocolHandshakeHandler -> (more websockets)
             if (null != pipeline.get(PIPELINE_AUTHENTICATOR)) {
                 pipeline.remove(PIPELINE_REQUEST_HANDLER);
                 final ChannelHandler authenticator = pipeline.get(PIPELINE_AUTHENTICATOR);
                 pipeline.remove(PIPELINE_AUTHENTICATOR);
-                pipeline.addAfter(PIPELINE_HTTP_RESPONSE_ENCODER, PIPELINE_AUTHENTICATOR, authenticator);
+                pipeline.addAfter(PIPELINE_HTTP_AGGREGATOR, PIPELINE_AUTHENTICATOR, authenticator);
                 pipeline.addAfter(PIPELINE_AUTHENTICATOR, PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
             } else {
                 pipeline.remove(PIPELINE_REQUEST_HANDLER);
-                pipeline.addAfter(PIPELINE_HTTP_RESPONSE_ENCODER, PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
+                pipeline.addAfter(PIPELINE_HTTP_AGGREGATOR, PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
             }
         }
         ctx.fireChannelRead(obj);

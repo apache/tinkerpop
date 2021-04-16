@@ -62,7 +62,9 @@ public class HttpChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
-        pipeline.addLast(new HttpObjectAggregator(settings.maxContentLength));
+        final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
+        aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
+        pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, aggregator);
 
         if (authenticator != null) {
             // Cannot add the same handler instance multiple times unless

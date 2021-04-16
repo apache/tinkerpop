@@ -93,7 +93,7 @@ public class Session {
     private final ConcurrentHashMap<String, Session> sessions;
 
     public Session(final String session, final Context context, final ConcurrentHashMap<String, Session> sessions) {
-        logger.info("New session established for {}", session);
+        logger.debug("New session established for {}", session);
         this.session = session;
         this.bindings = new SimpleBindings();
         this.settings = context.getSettings();
@@ -201,7 +201,7 @@ public class Session {
                     try {
                         executor.submit(() -> {
                             if (g.tx().isOpen()) {
-                                logger.info("Rolling back open transactions on {} before killing session: {}", gName, session);
+                                logger.debug("Rolling back open transactions on {} before killing session: {}", gName, session);
                                 g.tx().rollback();
                             }
                         }).get(configuredPerGraphCloseTimeout, TimeUnit.MILLISECONDS);
@@ -211,7 +211,7 @@ public class Session {
                 }
             });
         } else {
-            logger.info("Skipped attempt to close open graph transactions on {} - close was forced", session);
+            logger.debug("Skipped attempt to close open graph transactions on {} - close was forced", session);
         }
 
         // prevent any additional requests from processing. if the kill was not "forced" then jobs were scheduled to
@@ -225,7 +225,7 @@ public class Session {
         // once a session is dead release the gauges in the registry for it
         MetricManager.INSTANCE.getRegistry().removeMatching((s, metric) -> s.contains(session));
 
-        logger.info("Session {} closed", session);
+        logger.debug("Session {} closed", session);
     }
 
     private GremlinExecutor.Builder initializeGremlinExecutor() {

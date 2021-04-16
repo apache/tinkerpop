@@ -78,6 +78,7 @@ public class GremlinServer {
     private final ExecutorService gremlinExecutorService;
     private final ServerGremlinExecutor serverGremlinExecutor;
     private final boolean isEpollEnabled;
+    private Channelizer channelizer;
 
     /**
      * Construct a Gremlin Server instance from {@link Settings}.
@@ -159,7 +160,7 @@ public class GremlinServer {
                 }
             });
 
-            final Channelizer channelizer = createChannelizer(settings);
+            channelizer = createChannelizer(settings);
             channelizer.init(serverGremlinExecutor);
             b.group(bossGroup, workerGroup)
                     .childHandler(channelizer);
@@ -284,8 +285,11 @@ public class GremlinServer {
             }
 
             try {
-                if (gremlinExecutorService != null)
-                    gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+                if (gremlinExecutorService != null) {
+                    if (!gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS)) {
+                        logger.warn("Gremlin thread pool did not fully terminate - continuing with shutdown process");
+                    }
+                }
             } catch (InterruptedException ie) {
                 logger.warn("Timeout waiting for Gremlin thread pool to shutdown - continuing with shutdown process.");
             }
@@ -328,6 +332,10 @@ public class GremlinServer {
 
     public ServerGremlinExecutor getServerGremlinExecutor() {
         return serverGremlinExecutor;
+    }
+
+    public Channelizer getChannelizer() {
+        return channelizer;
     }
 
     public static void main(final String[] args) throws Exception {

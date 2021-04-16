@@ -21,15 +21,25 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 
 /**
  * Provides an abstraction point to allow for http auth schemes beyond basic auth.
  */
 public abstract class AbstractAuthenticationHandler extends ChannelInboundHandlerAdapter {
     protected final Authenticator authenticator;
+    protected final Authorizer authorizer;
 
+    /**
+     * @deprecated As of release 3.5.0, replaced by {@link #AbstractAuthenticationHandler(Authenticator, Authorizer)}.
+     */
+    @Deprecated
     public AbstractAuthenticationHandler(final Authenticator authenticator) {
-        this.authenticator = authenticator;
+        this(authenticator, null);
     }
 
+    public AbstractAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer) {
+        this.authenticator = authenticator;
+        this.authorizer = authorizer;
+    }
 }
