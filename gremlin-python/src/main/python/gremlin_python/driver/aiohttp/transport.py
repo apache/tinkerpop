@@ -21,6 +21,7 @@
 import aiohttp
 import asyncio
 import async_timeout
+from aiohttp import ClientResponseError
 
 from gremlin_python.driver.transport import AbstractBaseTransport
 
@@ -62,7 +63,15 @@ class AiohttpTransport(AbstractBaseTransport):
         async def async_connect():
             # Start client session and use it to create a websocket with all the connection options provided.
             self._client_session = aiohttp.ClientSession(loop=self._loop)
-            self._websocket = await self._client_session.ws_connect(url, **self._aiohttp_kwargs, headers=headers)
+            try:
+                self._websocket = await self._client_session.ws_connect(url, **self._aiohttp_kwargs, headers=headers)
+            except ClientResponseError as err:
+                # If 403, just send forbidden because in some cases this prints out a huge verbose message
+                # that includes credentials.
+                if err.status == 403:
+                    raise Exception('Failed to connect to server: HTTP Error code 403 - Forbidden.')
+                else:
+                    raise
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
