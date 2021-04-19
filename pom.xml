@@ -420,6 +420,9 @@ limitations under the License.
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
+                        <exclude>**/gremlint/lib/**</exclude>
+                        <exclude>**/gremlint/node_modules/**</exclude>
+                        <exclude>**/gremlint/.prettierrc</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
