@@ -36,7 +36,12 @@ public final class TestClientFactory {
     public static final String RESOURCE_PATH = "conf/remote-objects.yaml";
 
     public static Cluster.Builder build() {
-        return Cluster.build("localhost").port(45940);
+        // if we let low resource environments have their way with getAvailableProcessors() workerPoolSize gets set
+        // to 1 and the ClusteredClient will have trouble initializing because initializeImplementation() does a
+        // join() to wait for ConnectionPool to initialize, but ConnectionPool also schedules tasks to join() in its
+        // constructor in the same executor. If there's only one thread we get a deadlock (or perhaps some odd case
+        // where multiple hosts schedule in a similar manner to exhaust whatever the size of the workerPoolSize is)
+        return Cluster.build("localhost").port(45940).workerPoolSize(4);
     }
 
     public static Cluster open() {
