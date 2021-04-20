@@ -401,6 +401,10 @@ limitations under the License.
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/gremlint/build/**</exclude>
+                        <exclude>docs/gremlint/node_modules/**</exclude>
+                        <exclude>docs/gremlint/public/CNAME</exclude>
+                        <exclude>docs/gremlint/.prettierrc</exclude>
                         <exclude>**/Debug/**</exclude>
                         <exclude>**/Release/**</exclude>
                         <exclude>**/obj/**</exclude>
