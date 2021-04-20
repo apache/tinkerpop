@@ -34,6 +34,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Exposed barrier size with getter for `NoOpBarrierStep`.
 * Bumped to Netty 4.1.61.
 * Added `max_content_length` as a Python driver setting.
+* Fixed bug in Java `Client` initialization where certain configurations might produce a deadlock.
 * Ensured that `barrier()` additions by strategies were controlled solely by `LazyBarrierStrategy`.
 * Fixed `NullPointerException` in `ResponseMessage` deserialization for GraphSON.
 * Enabled the Gremlin.Net driver to repair its connection pool after the server was temporarily unavailable.

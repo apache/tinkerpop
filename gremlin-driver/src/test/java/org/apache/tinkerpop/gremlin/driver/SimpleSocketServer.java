@@ -36,7 +36,7 @@ public class SimpleSocketServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public Channel start(ChannelInitializer<SocketChannel>  channelInitializer) throws InterruptedException {
+    public Channel start(final ChannelInitializer<SocketChannel> channelInitializer) throws InterruptedException {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
         final ServerBootstrap b = new ServerBootstrap();
