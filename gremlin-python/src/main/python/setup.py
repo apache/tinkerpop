@@ -45,8 +45,9 @@ from gremlin_python import __version__
 version = __version__.version
 
 install_requires = [
+    'nest_asyncio',
+    'aiohttp>=3.7.0,<=3.7.4',
     'aenum>=1.4.5,<3.0.0',
-    'tornado>=6.0',
     'six>=1.10.0,<2.0.0',
     'isodate>=0.6.0,<1.0.0',
     'pyparsing>=2.4.7,<3.0.0'
@@ -59,7 +60,7 @@ setup(
     name='gremlinpython',
     version=version,
     packages=['gremlin_python', 'gremlin_python.driver',
-              'gremlin_python.driver.tornado', 'gremlin_python.process',
+              'gremlin_python.driver.aiohttp', 'gremlin_python.process',
               'gremlin_python.structure', 'gremlin_python.structure.io'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',

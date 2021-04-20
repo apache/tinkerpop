@@ -41,6 +41,7 @@ class AbstractBaseTransport:
     def close(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def closed(self):
         pass

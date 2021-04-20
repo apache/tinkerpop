@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import concurrent.futures
 import sys
 from threading import Thread
 from six.moves import queue
@@ -72,3 +73,24 @@ def _executor(q, conn):
         # Close conn
         if close:
             conn.close()
+
+
+def handle_request():
+    try:
+        remote_connection = DriverRemoteConnection("ws://localhost:45940/gremlin", "g")
+        g = traversal().withRemote(remote_connection)
+        g.V().limit(1).toList()
+        remote_connection.close()
+        return True
+    except RuntimeError:
+        return False
+
+
+def test_multithread(client):
+    try:
+        for i in range(10):
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(handle_request)
+                assert future.result()
+    except RuntimeError:
+        assert False
