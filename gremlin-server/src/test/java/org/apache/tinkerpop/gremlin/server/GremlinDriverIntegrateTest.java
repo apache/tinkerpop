@@ -34,12 +34,11 @@ import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
-import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
@@ -50,11 +49,10 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
-import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
+import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,11 +84,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
@@ -99,7 +99,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -209,6 +208,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldInterceptRequests() throws Exception {
+        final int requestsToMake = 32;
+        final AtomicInteger websocketHandshakeRequests = new AtomicInteger(0);
+
+        final Cluster cluster = TestClientFactory.build().
+                minConnectionPoolSize(1).maxConnectionPoolSize(1).handshakeInterceptor(r -> {
+            websocketHandshakeRequests.incrementAndGet();
+            return r;
+        }).create();
+
+        try {
+            final Client client = cluster.connect();
+            for (int ix = 0; ix < requestsToMake; ix++) {
+                assertEquals(ix + 1, client.submit(ix + "+1").all().get().get(0).getInt());
+            }
+        } finally {
+            cluster.close();
+        }
+
+        assertEquals(1, websocketHandshakeRequests.get());
     }
 
     @Test
@@ -1409,7 +1431,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, IsInstanceOf.instanceOf(ResponseException.class));
+            assertThat(root, instanceOf(ResponseException.class));
             assertThat(root.getMessage(), containsString("No such property: x for class"));
         }
 
@@ -1418,7 +1440,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, IsInstanceOf.instanceOf(ResponseException.class));
+            assertThat(root, instanceOf(ResponseException.class));
             assertThat(root.getMessage(), containsString("No such property: x for class"));
         }
 
@@ -1427,7 +1449,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, IsInstanceOf.instanceOf(ResponseException.class));
+            assertThat(root, instanceOf(ResponseException.class));
             assertThat(root.getMessage(), containsString("No such property: x for class"));
         }
 
@@ -1766,9 +1788,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = Mockito.spy(cluster.connect().alias("g"));
         client.submit("", RequestOptions.build().userAgent("test").create()).all().get();
         cluster.close();
-        ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+        final ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
         verify(client).submitAsync(requestMessageCaptor.capture());
-        RequestMessage requestMessage = requestMessageCaptor.getValue();
+        final RequestMessage requestMessage = requestMessageCaptor.getValue();
         assertEquals("test", requestMessage.getArgs().get(Tokens.ARGS_USER_AGENT));
     }
 
@@ -1777,7 +1799,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
         final Client client = Mockito.spy(cluster.connect().alias("g"));
         Mockito.when(client.alias("g")).thenReturn(client);
-        GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client));
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
         g.with(Tokens.ARGS_USER_AGENT, "test").V().iterate();
         cluster.close();
         ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
@@ -1797,7 +1819,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
             final Client client = Mockito.spy(cluster.connect().alias("g"));
             Mockito.when(client.alias("g")).thenReturn(client);
-            GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client));
+            GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
             g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
             cluster.close();
             ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
