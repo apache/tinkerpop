@@ -142,6 +142,8 @@ user to understand the types used for identifiers when querying, meaning that `g
 two different vertices.  `LONG`, `INTEGER` and `UUID` settings will try to coerce identifier values to the expected
 type as well as generate new identifiers with that specified type.
 
+TIP: Setting the `IdManager` to `ANY` also allows `String` type ID values to be used.                                              
+
 If the TinkerGraph is configured for persistence with `gremlin.tinkergraph.graphLocation` and
 `gremlin.tinkergraph.graphFormat`, then the graph will be written to the specified location with the specified
 format when `Graph.close()` is called.  In addition, if these settings are present, TinkerGraph will attempt to
