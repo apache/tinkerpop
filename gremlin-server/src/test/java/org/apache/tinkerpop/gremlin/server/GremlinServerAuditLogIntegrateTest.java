@@ -95,7 +95,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Override
     public void tearDown() throws Exception {
-        super.tearDown();
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.removeAppender(recordingAppender);
         kdcServer.close();
@@ -150,7 +149,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldAuditLogWithAllowAllAuthenticator() throws Exception {
 
-        final Cluster cluster = TestClientFactory.build().addContactPoint(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
 
         try {

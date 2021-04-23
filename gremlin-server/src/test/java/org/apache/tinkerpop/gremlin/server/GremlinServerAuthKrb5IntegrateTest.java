@@ -121,7 +121,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
                 final String principal = "no-principal/somehost@TEST.COM";
                 try { kdcServer.createPrincipal(principal); } catch(Exception e) {
                     logger.error("Cannot create principal in overrideSettings(): " + e.getMessage());
-                };
+                }
                 authConfig.put("principal", principal);
                 break;
             case "shouldAuthenticateWithSsl":
@@ -177,17 +177,17 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     }
 
     @Test
-    public void shouldFailWithNonexistentServerPrincipal() throws Exception {
+    public void shouldFailWithNonexistentServerPrincipal() {
         assertFailedLogin();
     }
 
     @Test
-    public void shouldFailWithEmptyServerKeytab() throws Exception {
+    public void shouldFailWithEmptyServerKeytab() {
         assertFailedLogin();
     }
 
     @Test
-    public void shouldFailWithWrongServerKeytab() throws Exception {
+    public void shouldFailWithWrongServerKeytab() {
         assertFailedLogin();
     }
 
