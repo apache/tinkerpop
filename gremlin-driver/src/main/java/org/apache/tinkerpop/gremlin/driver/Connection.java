@@ -288,10 +288,15 @@ final class Connection {
             shutdown(closeFuture.get());
     }
 
-    private synchronized void shutdown(final CompletableFuture<Void> future) {
+    private void shutdown(final CompletableFuture<Void> future) {
         // shutdown can be called directly from closeAsync() or after write() and therefore this method should only
         // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
+        //
+        // this method used to be synchronized prior to 3.4.11, but it seems to be able to leave the driver in a
+        // hanging state because of the write() down below that can call back in on shutdown() (which is weird i
+        // guess). that seems to put the executor thread in a monitor state that it doesn't recover from. since all
+        // the code in here is behind shutdownInitiated the synchronized doesn't seem necessary
         if (shutdownInitiated.compareAndSet(false, true)) {
             final String connectionInfo = this.getConnectionInfo();
             channelizer.close(channel);
