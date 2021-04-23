@@ -28,7 +28,6 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -469,6 +468,10 @@ public final class Cluster {
         return manager.serializer;
     }
 
+    HandshakeInterceptor getHandshakeInterceptor() {
+        return manager.interceptor;
+    }
+
     ScheduledExecutorService executor() {
         return manager.executor;
     }
@@ -587,6 +590,7 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
+        private HandshakeInterceptor interceptor = HandshakeInterceptor.NO_OP;
         private AuthProperties authProps = new AuthProperties();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
 
@@ -898,6 +902,15 @@ public final class Cluster {
         }
 
         /**
+         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the
+         * {@code FullHttpRequest} prior to its being sent over the websocket.
+         */
+        public Builder handshakeInterceptor(final HandshakeInterceptor interceptor) {
+            this.interceptor = interceptor;
+            return this;
+        }
+
+        /**
          * Specifies parameters for authentication to Gremlin Server.
          */
         public Builder authProperties(final AuthProperties authProps) {
@@ -1018,6 +1031,7 @@ public final class Cluster {
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessage.Builder> validationRequest;
+        private final HandshakeInterceptor interceptor;
 
         private final ScheduledThreadPoolExecutor executor;
 
@@ -1036,6 +1050,7 @@ public final class Cluster {
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
+            this.interceptor = builder.interceptor;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;

@@ -31,7 +31,6 @@ import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
@@ -180,9 +179,10 @@ public interface Channelizer extends ChannelHandler {
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new WebSocketClientHandler(
-                    WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, /*allow extensions*/ true,
-                            EmptyHttpHeaders.INSTANCE, maxContentLength), cluster.getConnectionSetupTimeout());
+                    new WebSocketClientHandler.InterceptedWebSocketClientHandshaker13(
+                            connection.getUri(), WebSocketVersion.V13, null,true,
+                            EmptyHttpHeaders.INSTANCE, maxContentLength, true, false, -1,
+                            cluster.getHandshakeInterceptor()), cluster.getConnectionSetupTimeout());
 
             final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(
                     cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
