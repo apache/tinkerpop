@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -95,9 +96,9 @@ final class ConnectionPool {
         this.connections = new CopyOnWriteArrayList<>();
 
         try {
-            final List<CompletableFuture<Void>> connCreationFutures = new ArrayList<>();
+            final List<CompletableFuture<Void>> connectionCreationFutures = new ArrayList<>();
             for (int i = 0; i < minPoolSize; i++) {
-                connCreationFutures.add(CompletableFuture.runAsync(() -> {
+                connectionCreationFutures.add(CompletableFuture.runAsync(() -> {
                     try {
                         this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
                     } catch (ConnectionException e) {
@@ -106,7 +107,7 @@ final class ConnectionPool {
                 }, cluster.executor()));
             }
 
-            CompletableFuture.allOf(connCreationFutures.toArray(new CompletableFuture[0])).join();
+            CompletableFuture.allOf(connectionCreationFutures.toArray(new CompletableFuture[0])).join();
         } catch (CancellationException ce) {
             logger.warn("Initialization of connections cancelled for {}", getPoolInfo(), ce);
             throw ce;
@@ -118,8 +119,7 @@ final class ConnectionPool {
                     " Successful connections=" + this.connections.size() +
                     ". Closing the connection pool.";
 
-
-            Throwable cause = null;
+            Throwable cause;
             Throwable result = ce;
 
             if (null != (cause = result.getCause())) {
