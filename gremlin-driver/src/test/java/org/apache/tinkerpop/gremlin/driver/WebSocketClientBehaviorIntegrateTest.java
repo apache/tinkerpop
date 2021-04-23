@@ -32,6 +32,10 @@ import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -82,6 +86,58 @@ public class WebSocketClientBehaviorIntegrateTest {
         }
 
         rootLogger.removeAppender(recordingAppender);
+    }
+
+    /**
+     * Constructs a deadlock situation when initializing a {@link Client} object in sessionless form that leads to
+     * hanging behavior in low resource environments (TINKERPOP-2504) and for certain configurations of the
+     * {@link Cluster} object where there are simply not enough threads to properly allow the {@link Host} and its
+     * related {@link ConnectionPool} objects to spin up properly - see TINKERPOP-2550.
+     */
+    @Test
+    public void shouldNotDeadlockOnInitialization() throws Exception {
+        // it seems you cah add the same host more than once so while kinda weird it is helpful in faithfully
+        // recreating the deadlock situation, though it can/will happen with just one host. workerPoolSize at
+        // "1" also helps faithfully reproduce the problem though it can happen at larger pool sizes depending
+        // on the timing/interleaving of tasks. the larger connection pool sizes may not be required given the
+        // other settings at play but again, just trying to make sure the deadlock state is consistently produced
+        // and a larger pool size will mean more time to elapse scheduling connection creation tasks which may
+        // further improve chances of scheduling conflicts that produce the deadlock.
+        //
+        // to force this test to a fail state, change ClusteredClient.initializeImplementation() to use the
+        // standard Cluster.executor rather than the hostExecutor (which is a single threaded independent thread
+        // pool used just for the purpose of initializing the hosts).
+        final Cluster cluster = Cluster.build("localhost").
+                addContactPoint("localhost").
+                addContactPoint("localhost").port(SimpleSocketServer.PORT).
+                workerPoolSize(1).
+                minConnectionPoolSize(32).maxConnectionPoolSize(32).create();
+
+        final AtomicBoolean failed = new AtomicBoolean(false);
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try {
+                final Client client = cluster.connect();
+
+                // test will hang in init() where the Host and ConnectionPool are started up
+                client.init();
+            } catch (Exception ex) {
+                // should not "fail" - just hang and then timeout during the executor shutdown as there is
+                // a deadlock state, but we have this here just in case. a failed assertion of this value
+                // below could be interesting
+                logger.error("Client initialization failed with exception which was unexpected", ex);
+                failed.set(true);
+            } finally {
+                cluster.close();
+            }
+        });
+
+        executor.shutdown();
+
+        // 30 seconds should be ample time, even for travis. the deadlock state happens quite immediately in
+        // testing and in most situations this test should zip by in subsecond pace
+        assertThat(executor.awaitTermination(30, TimeUnit.SECONDS), is(true));
+        assertThat(failed.get(), is(false));
     }
 
     /**

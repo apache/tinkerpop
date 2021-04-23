@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -41,6 +43,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -511,19 +515,30 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
+            // use a special executor here to initialize the Host instances as the worker thread pool may be
+            // insufficiently sized for this task and the parallel initialization of the ConnectionPool. if too small
+            // tasks may be schedule in such a way as to produce a deadlock: TINKERPOP-2550
+            //
+            // the cost of this single threaded executor here should be fairly small because it is only used once at
+            // initialization and shutdown. since users will typically construct a Client once for the life of their
+            // application there shouldn't be tons of thread pools being created and destroyed.
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-init-%d").build();
+            final ExecutorService hostExecutor = Executors.newSingleThreadExecutor(threadFactory);
             try {
                 CompletableFuture.allOf(cluster.allHosts().stream()
-                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), cluster.executor()))
+                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
                         .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
-                Throwable cause = null;
+                Throwable cause;
                 Throwable result = ex;
                 if (null != (cause = ex.getCause())) {
                     result = cause;
                 }
 
                 logger.error("", result);
+            } finally {
+                hostExecutor.shutdown();
             }
         }
 
