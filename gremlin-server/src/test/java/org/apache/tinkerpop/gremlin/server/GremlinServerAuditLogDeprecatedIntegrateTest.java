@@ -333,12 +333,17 @@ public class GremlinServerAuditLogDeprecatedIntegrateTest extends AbstractGremli
 
     @Test
     public void shouldAuditLogTwoClientsWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).create();
+        // calling init to make sure the clusters get their connections primed in low resource environments like travis
+        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE).
+                protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
-        final Cluster cluster2 = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE2)
-                .protocol(kdcServer.serverPrincipalName).create();
+        client.init();
+
+        final Cluster cluster2 = TestClientFactory.build(kdcServer.gremlinHostname).jaasEntry(TESTCONSOLE2).
+                protocol(kdcServer.serverPrincipalName).create();
         final Client client2 = cluster2.connect();
+        client2.init();
+
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(22, client2.submit("11+11").all().get().get(0).getInt());
