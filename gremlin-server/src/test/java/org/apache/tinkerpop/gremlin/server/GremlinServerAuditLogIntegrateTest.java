@@ -95,10 +95,10 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
     @After
     @Override
     public void tearDown() throws Exception {
-        super.tearDown();
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.removeAppender(recordingAppender);
         kdcServer.close();
+        super.tearDown();
     }
 
     /**
@@ -151,7 +151,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldAuditLogWithAllowAllAuthenticator() throws Exception {
 
-        final Cluster cluster = TestClientFactory.build().addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.hostname).create();
         final Client client = cluster.connect();
 
         try {
@@ -178,8 +178,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final String username = "stephen";
         final String password = "password";
 
-        final Cluster cluster = TestClientFactory.build().credentials(username, password)
-                .addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.hostname).credentials(username, password).create();
         final Client client = cluster.connect();
 
         try {
@@ -214,8 +213,8 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuditLogWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.hostname).jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -246,8 +245,8 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldNotAuditLogWhenDisabled() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.hostname).jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -274,8 +273,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuditLogWithNioTransport() throws Exception {
-        final Cluster cluster = TestClientFactory.build().channelizer(Channelizer.NioChannelizer.class.getName())
-                .jaasEntry(TESTCONSOLE).protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.hostname).
+                channelizer(Channelizer.NioChannelizer.class.getName()).
+                jaasEntry(TESTCONSOLE).protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -337,11 +337,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuditLogTwoClientsWithKrb5Authenticator() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster = TestClientFactory.build(kdcServer.hostname).jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
-        final Cluster cluster2 = TestClientFactory.build().jaasEntry(TESTCONSOLE2)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Cluster cluster2 = TestClientFactory.build(kdcServer.hostname).jaasEntry(TESTCONSOLE2)
+                .protocol(kdcServer.serverPrincipalName).create();
         final Client client2 = cluster2.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
