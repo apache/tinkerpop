@@ -21,12 +21,21 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker13;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+
+import java.net.URI;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.HandshakeInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +75,7 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
         if (!handshakeFuture.isDone()) {
             // channel was closed before the handshake could be completed.
             handshakeFuture.setFailure(
@@ -101,6 +110,30 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
             }
         } else {
             super.userEventTriggered(ctx, event);
+        }
+    }
+
+    /**
+     * Extension to the Netty implementation that allows for the {@link #newHandshakeRequest()} to be modified by way
+     * of a {@link HandshakeInterceptor} that is supplied to the {@link Cluster} when it is created.
+     */
+    public static class InterceptedWebSocketClientHandshaker13 extends WebSocketClientHandshaker13 {
+
+        private final HandshakeInterceptor interceptor;
+
+        public InterceptedWebSocketClientHandshaker13(final URI webSocketURL, final WebSocketVersion version,
+                                                      final String subprotocol, final boolean allowExtensions,
+                                                      final HttpHeaders customHeaders, final int maxFramePayloadLength,
+                                                      final boolean performMasking, final boolean allowMaskMismatch,
+                                                      final long forceCloseTimeoutMillis, final HandshakeInterceptor interceptor) {
+            super(webSocketURL, version, subprotocol, allowExtensions, customHeaders, maxFramePayloadLength,
+                    performMasking, allowMaskMismatch, forceCloseTimeoutMillis);
+            this.interceptor = interceptor;
+        }
+
+        @Override
+        protected FullHttpRequest newHandshakeRequest() {
+            return this.interceptor.apply(super.newHandshakeRequest());
         }
     }
 }
