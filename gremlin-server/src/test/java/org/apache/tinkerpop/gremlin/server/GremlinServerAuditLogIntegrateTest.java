@@ -337,12 +337,17 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuditLogTwoClientsWithKrb5Authenticator() throws Exception {
+        // calling init to make sure the clusters get their connections primed in low resource environments like travis
         final Cluster cluster = TestClientFactory.build(kdcServer.hostname).jaasEntry(TESTCONSOLE)
                 .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
+        client.init();
+
         final Cluster cluster2 = TestClientFactory.build(kdcServer.hostname).jaasEntry(TESTCONSOLE2)
                 .protocol(kdcServer.serverPrincipalName).create();
         final Client client2 = cluster2.connect();
+        client2.init();
+
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(22, client2.submit("11+11").all().get().get(0).getInt());
