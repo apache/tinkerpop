@@ -119,10 +119,15 @@ public class Krb5Authenticator implements Authenticator {
                 final String[] principalParts = principalName.split("/|@");
                 if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
+
+                if (null == saslServer)
+                    logger.error("SaslServer could not be constructed with the mechanism of {} - set as null", mechanism);
+                else
+                    logger.debug("SaslServer created with: {}",  saslServer.getMechanismName());
+
             } catch(Exception e) {
                 logger.error("Creating sasl server failed: ", e);
             }
-            logger.debug("SaslServer created with: " + saslServer.getMechanismName());
         }
 
         /*
