@@ -88,8 +88,8 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                     // newSaslNegotiator can cause troubles - if we don't catch and respond nicely the driver seems
                     // to hang until timeout which isn't so nice. treating this like a server error as it means that
                     // the Authenticator isn't really ready to deal with requests for some reason.
-                    logger.error("{} is not ready to handle requests - check it's configuration or related services",
-                            authenticator.getClass().getSimpleName());
+                    logger.error(String.format("%s is not ready to handle requests - check its configuration or related services",
+                            authenticator.getClass().getSimpleName()), ex);
 
                     final ResponseMessage error = ResponseMessage.build(requestMessage)
                             .statusMessage("Authenticator is not ready to handle requests")
