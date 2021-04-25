@@ -27,6 +27,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import java.io.File;
 import java.net.InetAddress;
@@ -120,14 +121,18 @@ public class Krb5Authenticator implements Authenticator {
                 if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
 
-                if (null == saslServer)
-                    logger.error("SaslServer could not be constructed with the mechanism of {} - set as null", mechanism);
-                else
-                    logger.debug("SaslServer created with: {}",  saslServer.getMechanismName());
-
-            } catch(Exception e) {
+            } catch(SaslException e) {
                 logger.error("Creating sasl server failed: ", e);
+                throw new IllegalStateException(e);
             }
+
+            // createSaslServer() can return null
+            if (null == saslServer) {
+                logger.error("Could not a find a SaslServerFactory for mechanism of {}", mechanism);
+                throw new IllegalStateException("Creating sasl server failed");
+            }
+
+            logger.debug("SaslServer created with: {}",  saslServer.getMechanismName());
         }
 
         /*
