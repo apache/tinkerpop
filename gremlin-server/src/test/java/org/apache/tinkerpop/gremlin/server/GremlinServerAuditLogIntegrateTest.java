@@ -87,8 +87,8 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             System.setProperty("java.security.auth.login.config", authConfigName);
             kdcServer = new KdcFixture(moduleBaseDir);
             kdcServer.setUp();
-        } catch(Exception e)  {
-            logger.warn(e.getMessage());
+        } catch(Exception ex)  {
+            logger.warn(String.format("Could not start Kerberos Server for %s", name.getMethodName()), ex);
         }
         super.setUp();
     }
