@@ -514,18 +514,9 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
-            // use a special executor here to initialize the Host instances as the worker thread pool may be
-            // insufficiently sized for this task and the parallel initialization of the ConnectionPool. if too small
-            // tasks may be schedule in such a way as to produce a deadlock: TINKERPOP-2550
-            //
-            // the cost of this single threaded executor here should be fairly small because it is only used once at
-            // initialization and shutdown. since users will typically construct a Client once for the life of their
-            // application there shouldn't be tons of thread pools being created and destroyed.
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-init-%d").build();
-            final ExecutorService hostExecutor = Executors.newSingleThreadExecutor(threadFactory);
             try {
                 CompletableFuture.allOf(cluster.allHosts().stream()
-                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
+                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), cluster.scheduler()))
                         .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
@@ -536,8 +527,6 @@ public abstract class Client {
                 }
 
                 logger.error("", result);
-            } finally {
-                hostExecutor.shutdown();
             }
         }
 

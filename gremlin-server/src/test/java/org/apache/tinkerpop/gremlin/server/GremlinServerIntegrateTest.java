@@ -59,6 +59,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -99,6 +101,7 @@ import static org.junit.Assume.assumeThat;
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     private Level previousLogLevel;
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerIntegrateTest.class);
 
     private Log4jRecordingAppender recordingAppender = null;
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph("graph");
@@ -895,7 +898,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailOnDeadHost() throws Exception {
-        final Cluster cluster = TestClientFactory.build().create();
+        final Cluster cluster = TestClientFactory.build().reconnectInterval(1000).create();
         final Client client = cluster.connect();
 
         // ensure that connection to server is good
@@ -925,10 +928,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 // the retry interval is 1 second, wait a bit longer
                 TimeUnit.SECONDS.sleep(5);
 
+                logger.warn("Waiting for reconnect on restarted host: {}", ix);
+
                 try {
+                    // just need to succeed at reconnect one time
                     final List<Result> results = client.submit("1+1").all().join();
                     assertEquals(1, results.size());
                     assertEquals(2, results.get(0).getInt());
+                    break;
                 } catch (Exception ex) {
                     if (ix == 10)
                         fail("Should have eventually succeeded");

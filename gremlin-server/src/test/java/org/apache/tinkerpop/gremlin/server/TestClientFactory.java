@@ -38,7 +38,7 @@ public final class TestClientFactory {
     }
 
     public static Cluster.Builder build(final String address) {
-        return Cluster.build(address).port(45940).workerPoolSize(1);
+        return Cluster.build(address).port(45940);
     }
 
     public static Cluster open() {
