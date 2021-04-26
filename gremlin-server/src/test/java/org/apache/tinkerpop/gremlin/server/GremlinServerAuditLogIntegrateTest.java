@@ -86,8 +86,8 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             kdcServer = new KdcFixture(buildDir +
                     "/test-classes/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf");
             kdcServer.setUp();
-        } catch(Exception e)  {
-            logger.warn(e.getMessage());
+        } catch(Exception ex)  {
+            logger.warn(String.format("Could not start Kerberos Server for %s", name.getMethodName()), ex);
         }
         super.setUp();
     }
