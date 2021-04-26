@@ -292,7 +292,7 @@ final class Connection {
         // try to keep the connection alive if the channel allows such things - websockets will
         if (channelizer.supportsKeepAlive() && keepAliveInterval > 0) {
 
-            final ScheduledFuture oldKeepAliveFuture = keepAliveFuture.getAndSet(cluster.executor().scheduleAtFixedRate(() -> {
+            final ScheduledFuture oldKeepAliveFuture = keepAliveFuture.getAndSet(cluster.scheduler().scheduleAtFixedRate(() -> {
                 logger.debug("Request sent to server to keep {} alive", thisConnection);
                 try {
                     channel.writeAndFlush(channelizer.createKeepAliveMessage());

@@ -49,18 +49,22 @@ public class ClientTest {
     private Client.Settings settings;
 
     private ScheduledExecutorService executor;
+    private ScheduledExecutorService scheduler;
 
     @Before
     public void setup() {
         executor = Executors.newScheduledThreadPool(1);
+        scheduler = Executors.newScheduledThreadPool(1);
         when(mockAvailableHost.isAvailable()).thenReturn(true);
         when(cluster.allHosts()).thenReturn(Collections.singletonList(mockAvailableHost));
         when(cluster.executor()).thenReturn(executor);
+        when(cluster.scheduler()).thenReturn(scheduler);
     }
 
     @After
     public void cleanup() {
         executor.shutdown();
+        scheduler.shutdown();
     }
 
     @Test(expected = NoHostAvailableException.class)
