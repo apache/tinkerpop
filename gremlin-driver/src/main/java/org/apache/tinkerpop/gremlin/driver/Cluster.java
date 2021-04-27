@@ -61,8 +61,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -1204,7 +1202,7 @@ public final class Cluster {
             // the executor above should be reserved for reading/writing background tasks that wont interfere with each
             // other if the thread pool is 1 otherwise tasks may be schedule in such a way as to produce a deadlock
             // as in TINKERPOP-2550. not sure if there is a way to only require the worker pool for all of this. as it
-            // sits now the worker pool probably doens't need to be a scheduled executor type
+            // sits now the worker pool probably doesn't need to be a scheduled executor type
             this.scheduler = new ScheduledThreadPoolExecutor(1,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-scheduler").build());
 
