@@ -18,14 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.op.OpLoader;
-import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
-import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -90,24 +85,15 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        logger.info("* Testing: " + name.getMethodName());
-        logger.info("* Epoll option enabled:" + GREMLIN_SERVER_EPOLL);
+        logger.info("Starting: " + name.getMethodName());
 
         startServer();
     }
 
     public void setUp(final Settings settings) throws Exception {
-        logger.info("* Testing: " + name.getMethodName());
-        logger.info("* Epoll option enabled:" + GREMLIN_SERVER_EPOLL);
+        logger.info("Starting: " + name.getMethodName());
 
         startServer(settings);
-    }
-
-    private boolean shouldTestUnified() {
-        // ignore all tests in the UnifiedChannelizerIntegrateTest package as they are already rigged to test
-        // over the various channelizer implementations
-        return Boolean.parseBoolean(System.getProperty("testUnified", "false")) &&
-                !this.getClass().getPackage().equals(UnifiedChannelizerIntegrateTest.class.getPackage());
     }
 
     public void startServer(final Settings settings) throws Exception {
@@ -150,6 +136,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
     @After
     public void tearDown() throws Exception {
         stopServer();
+        logger.info("Ending: " + name.getMethodName());
     }
 
     public void stopServer() throws Exception {
@@ -192,5 +179,12 @@ public abstract class AbstractGremlinServerIntegrationTest {
             neo4jIncludedForTesting = false;
         }
         assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));
+    }
+
+    private boolean shouldTestUnified() {
+        // ignore all tests in the UnifiedChannelizerIntegrateTest package as they are already rigged to test
+        // over the various channelizer implementations
+        return Boolean.parseBoolean(System.getProperty("testUnified", "false")) &&
+                !this.getClass().getPackage().equals(UnifiedChannelizerIntegrateTest.class.getPackage());
     }
 }
