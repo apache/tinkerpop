@@ -64,7 +64,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2530[TINKERPOP-2530]
 
 `Translator` implementations were moved from a mostly quiet and internal feature of TinkerPop to a documented and more
 readily accessible form in 3.4.9. For 3.5.0, the functionality has been expanded significantly in a number of ways.
-First, for Java, `gremlin-core` now has a `JavascriptTranslator` and a `DotNetTranslator` which complete the set of
+First, for Java, `gremlin-core` now has a `JavascriptTranslator` and a `DotNetTranslator` which completes the set of
 Gremlin translation functions for the programming languages that TinkerPop supports. It is therefore now possible to
 convert Gremlin bytecode to string representations that can compile in C#, Groovy, Javascript and Python.
 
@@ -115,8 +115,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2527[TINKERPOP-2527]
 
 There is a major breaking change in the use of `Configuration` objects. Prior to 3.5.0, `Configuration` objects were
 from the Apache Commons `commons-configuration` library, but in this version, they are of `commons-configuration2`.
-While this is a breaking change, the fix for most implementations will be quite simple, Simply, change the import
-statements from:
+While this is a breaking change, the fix for most implementations will be quite simple and amounts to changing the
+import statements from:
 
 [source,text]
 ----
@@ -186,7 +186,7 @@ Server. As of this release, Gryo has been replaced as the default by GraphBinary
 and programmatic defaults have been modified as such.
 
 It is still possible to utilize Gryo as a message serialization format by modifying Gremlin Server configuration files
-to include the appropriate Gryo configurations. If using Gryo, do not user earlier versions of the driver and server
+to include the appropriate Gryo configurations. If using Gryo, do not use earlier versions of the driver and server
 with 3.5.0. Use a 3.5.0 client to connect to a 3.5.0 server. Generally speaking, mixed version combinations will
 appear to work properly, but problems will likely occur during general course of usage and it is therefore not
 advisable to take this approach.
@@ -231,10 +231,7 @@ link:https://github.com/apache/tinkerpop/blob/master/pom.xml[pom.xml].
 *.NET: GraphBinary*
 
 Gremlin.NET now also supports GraphBinary. GraphSON 3 however still remains the default serialization format as
-GraphBinary should be considered experimental for this version.
-
-GraphBinary needs of course to be also enabled on the server side before it can be used in the driver. It can then be
-used like this:
+GraphBinary should be considered experimental for this version in .NET:
 
 [source,csharp]
 ----
@@ -244,12 +241,11 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Upgrade/R
 *.NET: New JSON Library*
 
 Gremlin.NET now uses `System.Text.Json` instead of Newtonsoft.Json as `System.Text.Json` is already included in .NET
-Core 3.0 and higher which means that we have one dependency less on this platform and because it offers an increased
-performance.
-Most users should not notice this change. But users who have implemented their own GraphSON serializers or
-deserializers probably have to change them accordingly. The same applies to users that let Gremlin.NET return data
-without deserializing it first as the returned data types will change in this case, for example from Newtonsoft.Json's
-`JObject` or `JToken` to `JsonElement` with `System.Text.Json`.
+Core 3.0 and higher which removes a dependency and offers better performance. Most users should not notice this change,
+however users who have implemented their own GraphSON serializers or deserializers will need to modify them
+accordingly. The same applies to users that let Gremlin.NET return data without deserializing it first as the returned
+data types will change in this case, for example from Newtonsoft.Json's `JObject` or `JToken` to `JsonElement` with
+`System.Text.Json`.
 
 *Python dict Deserialization*
 
@@ -269,14 +265,14 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2407[TINKERPOP-2407],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2460[TINKERPOP-2460],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2472[TINKERPOP-2472],
-link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
+link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Custom JSON serialization with Gremlin.NET]
 
 ==== Transaction Improvements
 
 The TinkerPop Transaction API and its related features have not changed much since TinkerPop 3.x was initially
-released. Transactions have remained a feature for embedded use cases and script execution (where supported) even in
-the face of the rise of remote graph use cases. With the varying contexts that exist for how and when transactions can
-be used, it has led to a fair bit of confusion.
+released. Transactions that extend beyond the scope of a single traversal (or request) have remained a feature for
+embedded use cases and script execution (where supported) even in the face of the rise of remote graph use cases.
+With the varying contexts that exist for how and when transactions can be used, it has led to a fair bit of confusion.
 
 For 3.5.0, TinkerPop introduces a change in approach to transactions that has the goal of unifying the API and features
 for all use cases, while addressing the more current state of the graph ecosystem which has shifted heavily toward
@@ -285,7 +281,7 @@ remote communication and more diverse programming language ecosystems beyond the
 NOTE: The old transaction API remains intact in 3.5.0, so this version should be backward compatible with the old
 model for embedded transactions.
 
-The new model for transactions looks like this:
+The new model for using a transaction looks like this:
 
 [source,groovy]
 ----
@@ -423,7 +419,7 @@ gremlin> g.V().hasLabel('person').elementMap()
 ==>[id:6,label:person,name:peter]
 ----
 
-Then, assuming `null` is supported as a property value:
+Then, assuming `null` is supported as a property value, it would simply store the `null` for the key:
 
 [source,text]
 ----
@@ -435,7 +431,7 @@ gremlin> g.V().has('person','age',null)
 ==>v[13]
 ----
 
-The above described changes also has an effect on steps like `group()` and `groupCount()` which formerly produced
+The above described changes also have an effect on steps like `group()` and `groupCount()` which formerly produced
 exceptions when keys could not be found:
 
 [source,text]
@@ -446,9 +442,9 @@ Type ':help' or ':h' for help.
 Display stack trace? [yN]n
 ----
 
-The solution was to filter away vertices that did not have the available key so that such steps would work properly
-or to write a more complex `by()` modulator to better handle the possibility of a missing key. With the latest changes
-however none of that is necessary unless desired:
+For situations where the key did not exist, the approach was to filter away vertices that did not have the available
+key so that such steps would work properly or to write a more complex `by()` modulator to better handle the possibility
+of a missing key. With the latest changes however none of that is necessary unless desired:
 
 [source,text]
 ----
@@ -456,7 +452,7 @@ gremlin> g.V().groupCount().by('age')
 ==>[null:2,32:1,35:1,27:1,29:1]
 ----
 
-In conclusion, this change in greater support of `null` may affect the behavior of existing traversals written in past
+In conclusion, this improved support of `null` may affect the behavior of existing traversals written in past
 versions of TinkerPop as it is no longer possible to rely on `null` to expect a filtering action for traversers.
 Please review existing Gremlin carefully to ensure that there are no unintended consequences of this change and that
 there are no opportunities to improve existing logic to take greater advantage of this expansion of `null` semantics.
@@ -493,6 +489,8 @@ gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().ord
 gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
 ==>[lop,peter,josh,marko,vadas,ripple]
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2014[TINKERPOP-2014]
 
 ==== by(T) for Property
 
@@ -595,7 +593,7 @@ formerly held the cache for these side-effects, no longer have any effect and ca
 
 *Audit Logging*
 
-The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
+The `authentication.enableAuditlog` configuration property is deprecated and replaced by the `enableAuditLog` property
 to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
 formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
 
@@ -800,7 +798,7 @@ link:https://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_authentication_and_a
 
 ===== ScalarMapStep
 
-`MapStep` had a single abstract method that needed to be implemented:
+Previous versions of `MapStep` had a single abstract method that needed to be implemented:
 
 [source,java]
 ----
