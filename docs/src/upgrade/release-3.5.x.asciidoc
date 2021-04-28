@@ -666,7 +666,7 @@ is up to the application to determine if retry is desired and how best to do so.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2517[TINKERPOP-2517]
 
-==== Python Transportation Layer Rewrite
+==== Python Transport Layer
 
 With the removal of Python 2.x support the transport layer of gremlin-python has been rewritten to use a library that
 utilizes the asyncio event loop of Python 3. link:https://github.com/aio-libs/aiohttp[AIOHTTP] utilizes Python 3's
@@ -677,6 +677,11 @@ more details. This change fixed a number of issues that were related to the IOLo
 link:https://github.com/tornadoweb/tornado[Tornado] transport layer, which has been completely removed from the
 library. An additional config which enables the driver to be used from within an event loop has been added and can be
 used by setting `call_from_event_loop=True` when connecting.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1886[TINKERPOP-1886],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2388[TINKERPOP-2388],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2484[TINKERPOP-2484],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2546[TINKERPOP-2546],
 
 ==== Python Kerberos Support
 
