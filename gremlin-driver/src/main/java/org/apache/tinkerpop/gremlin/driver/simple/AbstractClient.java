@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -41,7 +42,7 @@ public abstract class AbstractClient implements SimpleClient {
 
     public AbstractClient(final String threadPattern) {
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern(threadPattern).build();
-        group = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), threadFactory);
+        group = new NioEventLoopGroup(1, threadFactory);
     }
 
     public abstract void writeAndFlush(final RequestMessage requestMessage) throws Exception;
@@ -54,7 +55,10 @@ public abstract class AbstractClient implements SimpleClient {
 
     @Override
     public List<ResponseMessage> submit(final RequestMessage requestMessage) throws Exception {
-        return submitAsync(requestMessage).get();
+        // this is just a test client to force certain behaviors of the server. hanging tests are a pain to deal with
+        // especially in travis as it's not always clear where the hang is. a few reasonable timeouts might help
+        // make debugging easier when we look at logs
+        return submitAsync(requestMessage).get(180, TimeUnit.SECONDS);
     }
 
     @Override
@@ -68,7 +72,7 @@ public abstract class AbstractClient implements SimpleClient {
             results.add(response);
 
             // check if the current message is terminating - if it is then we can mark complete
-            if (!response.getStatus().getCode().equals(ResponseStatusCode.PARTIAL_CONTENT)) {
+            if (response.getStatus().getCode().isFinalResponse()) {
                 f.complete(results);
             }
         };

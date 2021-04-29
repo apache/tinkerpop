@@ -38,9 +38,12 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
@@ -48,6 +51,7 @@ import java.net.URI;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class WebSocketClient extends AbstractClient {
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
     private final Channel channel;
 
     public WebSocketClient() {
@@ -83,7 +87,7 @@ public class WebSocketClient extends AbstractClient {
                     });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-            wsHandler.handshakeFuture().get();
+            wsHandler.handshakeFuture().get(30, TimeUnit.SECONDS);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -91,17 +95,19 @@ public class WebSocketClient extends AbstractClient {
 
     @Override
     public void writeAndFlush(final RequestMessage requestMessage) throws Exception {
-        channel.writeAndFlush(requestMessage).get();
+        channel.writeAndFlush(requestMessage);
     }
 
     @Override
     public void close() throws IOException {
         try {
-            channel.close().get();
-        } catch (Exception ignored) {
-
+            channel.close().get(30, TimeUnit.SECONDS);
+        } catch (Exception ex) {
+            logger.error("Failure closing simple WebSocketClient", ex);
         } finally {
-            group.shutdownGracefully().awaitUninterruptibly();
+            if (!group.shutdownGracefully().awaitUninterruptibly(30, TimeUnit.SECONDS)) {
+                logger.error("Could not cleanly shutdown thread pool on WebSocketClient");
+            }
         }
     }
 }
