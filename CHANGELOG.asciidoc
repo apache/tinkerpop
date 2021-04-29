@@ -16,7 +16,7 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-== TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte symphonique)
+== TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 

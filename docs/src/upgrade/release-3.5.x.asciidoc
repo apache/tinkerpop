@@ -19,7 +19,7 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=225]
 
-*The Sleeping Gremlin: No. 18 Entr'acte symphonique*
+*The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
 == TinkerPop 3.5.0
 
