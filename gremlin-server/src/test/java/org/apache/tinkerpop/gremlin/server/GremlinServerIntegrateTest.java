@@ -62,6 +62,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -179,6 +180,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.maxContentLength = 1024;
                 break;
             case "shouldBatchResultsByTwos":
+            case "shouldBatchResultsByTwosToDriver":
                 settings.resultIterationBatchSize = 2;
                 break;
             case "shouldUseSimpleSandbox":
@@ -713,6 +715,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldBatchResultsByTwos() throws Exception {
+        // this test will not work quite right on UnifiedChannelizer, but seems to only be a problem in Travis
+        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
+
         try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9]").create();
@@ -729,6 +734,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(7, ((List<Integer>) msgs.get(3).getResult().getData()).get(1).intValue());
             assertEquals(8, ((List<Integer>) msgs.get(4).getResult().getData()).get(0).intValue());
             assertEquals(9, ((List<Integer>) msgs.get(4).getResult().getData()).get(1).intValue());
+        }
+    }
+
+    @Test
+    public void shouldBatchResultsByTwosWithDriver() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            final List<Result> results = client.submit("[0,1,2,3,4,5,6,7,8,9]").all().join();
+            for (int ix = 0; ix < results.size(); ix++) {
+                assertEquals(ix, results.get(ix).getInt());
+            }
+        } finally {
+            cluster.close();
         }
     }
 
