@@ -737,20 +737,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
-    public void shouldBatchResultsByTwosWithDriver() throws Exception {
-        final Cluster cluster = TestClientFactory.build().create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> results = client.submit("[0,1,2,3,4,5,6,7,8,9]").all().join();
-            for (int ix = 0; ix < results.size(); ix++) {
-                assertEquals(ix, results.get(ix).getInt());
-            }
-        } finally {
-            cluster.close();
-        }
-    }
+//    @Test
+//    public void shouldBatchResultsByTwosWithDriver() throws Exception {
+//        final Cluster cluster = TestClientFactory.build().create();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            final List<Result> results = client.submit("[0,1,2,3,4,5,6,7,8,9]").all().join();
+//            for (int ix = 0; ix < results.size(); ix++) {
+//                assertEquals(ix, results.get(ix).getInt());
+//            }
+//        } finally {
+//            cluster.close();
+//        }
+//    }
 
     @Test
     @SuppressWarnings("unchecked")
