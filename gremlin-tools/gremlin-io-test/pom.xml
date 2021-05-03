@@ -6,7 +6,7 @@
     <parent>
         <artifactId>gremlin-tools</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.4.11-SNAPSHOT</version>
+        <version>3.4.11</version>
     </parent>
     <artifactId>gremlin-io-test</artifactId>
     <name>Apache TinkerPop :: Gremlin IO Test</name>
