@@ -130,7 +130,7 @@ This release also includes changes from <<release-3-4-11, 3.4.11>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-11]]
-=== TinkerPop 3.4.11 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.11 (Release Date: May 3, 2021)
 
 * Prevented Java driver from sending multiple request messages with the same identifier.
 * Improved error message for `property(T,Object)` when mutating graph elements.
@@ -148,6 +148,24 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `NullPointerException` in `ResponseMessage` deserialization for GraphSON.
 * Enabled the Gremlin.Net driver to repair its connection pool after the server was temporarily unavailable.
 * Added the ability to supply a `HandshakeInterceptor` to a `Cluster` which will provide access to the initial HTTP request that establishes the websocket.
+
+==== Bugs
+
+* TINKERPOP-2512 Duplicate jars in classpath when running gremlin-server.sh
+* TINKERPOP-2514 Java client driver requests with same request ids hang
+* TINKERPOP-2516 Property folding has trouble with coalesce
+* TINKERPOP-2529 Global dedup() in reducing by() of group() detaches elements for OLTP
+* TINKERPOP-2531 Gremlin .NET driver ConnectionPool can remain without connections if server is down for 1-2 minutes
+
+==== Improvements
+
+* TINKERPOP-1994 LazyBarrierStrategy fully responsible for barrier() additions
+* TINKERPOP-2168 GraphSON: P deserialization should be optimized
+* TINKERPOP-2457 Add a max_content_length parameter to DriverRemoteConnection in the Python client
+* TINKERPOP-2532 MaxBarrierSize of NoOpBarrierStep should be accessible
+* TINKERPOP-2535 Netty 4.1.52 flagged as medium security violation
+* TINKERPOP-2547 Provide an option to supply a callback before handshake submission
+* TINKERPOP-2550 Deadlock on Client initialization
 
 [[release-3-4-10]]
 === TinkerPop 3.4.10 (Release Date: January 18, 2021)
