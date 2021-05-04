@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.5.0
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: May 3, 2021*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asciidoc#release-3-5-0[changelog] for a complete list of all the modifications that are part of this release.
 
