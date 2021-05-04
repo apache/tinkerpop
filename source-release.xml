@@ -70,6 +70,9 @@
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?release\.properties]</exclude>
 
                 <!-- custom gremlin variant exclusions that are not "source" files but aren't really known to maven -->
+                <exclude>docs/gremlint/package-lock.json</exclude>
+                <exclude>docs/gremlint/node_modules/**</exclude>
+                <exclude>docs/gremlint/build/**</exclude>
                 <exclude>gremlin-dotnet/.glv</exclude>
                 <exclude>gremlin-dotnet/src/docfx/**</exclude>
                 <exclude>gremlin-dotnet/src/target/**</exclude>
