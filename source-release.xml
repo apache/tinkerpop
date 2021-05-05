@@ -91,6 +91,7 @@
                 <exclude>gremlin-python/src/main/python/venv/**</exclude>
                 <exclude>gremlin-python/src/main/python/.pytest_cache/**</exclude>
                 <exclude>gremlin-python/src/main/python/.idea/**</exclude>
+                <exclude>gremlin-python/src/main/python/**/__pycache__/**</exclude>
                 <!-- on 3.4-dev/3.4.x python->jython -->
                 <exclude>gremlin-python/src/main/jython/**</exclude>
                 <exclude>gremlin-javascript/.glv</exclude>
