@@ -329,7 +329,7 @@ file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&
                                         <script><![CDATA[
 // prevent SNAPSHOT deployment for .NET
 def versionToUse = '${project.version}'
-if (versionToUse.endsWith("-SNAPSHOT")
+if (versionToUse.endsWith("-SNAPSHOT"))
   throw new RuntimeException("Current version is a SNAPSHOT which can not be deployed to nuget")
 ]]>
                                         </script>
