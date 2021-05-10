@@ -344,6 +344,10 @@ This release also includes changes from <<release-3-4-11, 3.4.11>>.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
+[[release-3-4-12]]
+=== TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)
 
