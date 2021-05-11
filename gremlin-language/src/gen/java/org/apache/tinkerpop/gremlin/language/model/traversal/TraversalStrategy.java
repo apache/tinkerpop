@@ -5,25 +5,6 @@ public abstract class TraversalStrategy {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class ReadOnlyValue {
-        /**
-         * Constructs an immutable ReadOnlyValue object
-         */
-        public ReadOnlyValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof ReadOnlyValue)) return false;
-            ReadOnlyValue o = (ReadOnlyValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a TraversalStrategy according to its variant (subclass)
      */
@@ -163,14 +144,10 @@ public abstract class TraversalStrategy {
     }
     
     public static final class ReadOnly extends TraversalStrategy {
-        public final ReadOnlyValue readOnly;
-        
         /**
          * Constructs an immutable ReadOnly object
          */
-        public ReadOnly(ReadOnlyValue readOnly) {
-            this.readOnly = readOnly;
-        }
+        public ReadOnly() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -181,12 +158,12 @@ public abstract class TraversalStrategy {
         public boolean equals(Object other) {
             if (!(other instanceof ReadOnly)) return false;
             ReadOnly o = (ReadOnly) other;
-            return readOnly.equals(o.readOnly);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * readOnly.hashCode();
+            return 0;
         }
     }
     

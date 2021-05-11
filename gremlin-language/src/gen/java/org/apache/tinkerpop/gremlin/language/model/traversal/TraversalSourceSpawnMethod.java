@@ -10,44 +10,6 @@ public abstract class TraversalSourceSpawnMethod {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class IoValue {
-        /**
-         * Constructs an immutable IoValue object
-         */
-        public IoValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof IoValue)) return false;
-            IoValue o = (IoValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
-    public static class EValue {
-        /**
-         * Constructs an immutable EValue object
-         */
-        public EValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof EValue)) return false;
-            EValue o = (EValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a TraversalSourceSpawnMethod according to its variant (subclass)
      */
@@ -162,14 +124,10 @@ public abstract class TraversalSourceSpawnMethod {
     }
     
     public static final class E extends TraversalSourceSpawnMethod {
-        public final EValue e;
-        
         /**
          * Constructs an immutable E object
          */
-        public E(EValue e) {
-            this.e = e;
-        }
+        public E() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -180,12 +138,12 @@ public abstract class TraversalSourceSpawnMethod {
         public boolean equals(Object other) {
             if (!(other instanceof E)) return false;
             E o = (E) other;
-            return e.equals(o.e);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * e.hashCode();
+            return 0;
         }
     }
     
@@ -252,14 +210,10 @@ public abstract class TraversalSourceSpawnMethod {
     }
     
     public static final class Io extends TraversalSourceSpawnMethod {
-        public final IoValue io;
-        
         /**
          * Constructs an immutable Io object
          */
-        public Io(IoValue io) {
-            this.io = io;
-        }
+        public Io() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -270,12 +224,12 @@ public abstract class TraversalSourceSpawnMethod {
         public boolean equals(Object other) {
             if (!(other instanceof Io)) return false;
             Io o = (Io) other;
-            return io.equals(o.io);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * io.hashCode();
+            return 0;
         }
     }
 }

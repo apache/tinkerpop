@@ -7,44 +7,6 @@ public abstract class AddVStep {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class NullValue {
-        /**
-         * Constructs an immutable NullValue object
-         */
-        public NullValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof NullValue)) return false;
-            NullValue o = (NullValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
-    public static class EmptyValue {
-        /**
-         * Constructs an immutable EmptyValue object
-         */
-        public EmptyValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof EmptyValue)) return false;
-            EmptyValue o = (EmptyValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a AddVStep according to its variant (subclass)
      */
@@ -85,14 +47,10 @@ public abstract class AddVStep {
     }
     
     public static final class Empty extends AddVStep {
-        public final EmptyValue empty;
-        
         /**
          * Constructs an immutable Empty object
          */
-        public Empty(EmptyValue empty) {
-            this.empty = empty;
-        }
+        public Empty() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -103,12 +61,12 @@ public abstract class AddVStep {
         public boolean equals(Object other) {
             if (!(other instanceof Empty)) return false;
             Empty o = (Empty) other;
-            return empty.equals(o.empty);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * empty.hashCode();
+            return 0;
         }
     }
     
@@ -144,14 +102,10 @@ public abstract class AddVStep {
     }
     
     public static final class Null extends AddVStep {
-        public final NullValue nullEsc;
-        
         /**
          * Constructs an immutable Null object
          */
-        public Null(NullValue nullEsc) {
-            this.nullEsc = nullEsc;
-        }
+        public Null() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -162,12 +116,12 @@ public abstract class AddVStep {
         public boolean equals(Object other) {
             if (!(other instanceof Null)) return false;
             Null o = (Null) other;
-            return nullEsc.equals(o.nullEsc);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * nullEsc.hashCode();
+            return 0;
         }
     }
     

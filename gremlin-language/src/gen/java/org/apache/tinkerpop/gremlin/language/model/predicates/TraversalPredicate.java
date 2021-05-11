@@ -5,25 +5,6 @@ public abstract class TraversalPredicate {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class NegateValue {
-        /**
-         * Constructs an immutable NegateValue object
-         */
-        public NegateValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof NegateValue)) return false;
-            NegateValue o = (NegateValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a TraversalPredicate according to its variant (subclass)
      */
@@ -712,14 +693,10 @@ public abstract class TraversalPredicate {
     }
     
     public static final class Negate extends TraversalPredicate {
-        public final NegateValue negate;
-        
         /**
          * Constructs an immutable Negate object
          */
-        public Negate(NegateValue negate) {
-            this.negate = negate;
-        }
+        public Negate() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -730,12 +707,12 @@ public abstract class TraversalPredicate {
         public boolean equals(Object other) {
             if (!(other instanceof Negate)) return false;
             Negate o = (Negate) other;
-            return negate.equals(o.negate);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * negate.hashCode();
+            return 0;
         }
     }
 }

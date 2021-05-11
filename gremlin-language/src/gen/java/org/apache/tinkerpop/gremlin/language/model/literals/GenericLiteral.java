@@ -5,25 +5,6 @@ public abstract class GenericLiteral {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class NullValue {
-        /**
-         * Constructs an immutable NullValue object
-         */
-        public NullValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof NullValue)) return false;
-            NullValue o = (NullValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a GenericLiteral according to its variant (subclass)
      */
@@ -231,14 +212,10 @@ public abstract class GenericLiteral {
     }
     
     public static final class Null extends GenericLiteral {
-        public final NullValue nullEsc;
-        
         /**
          * Constructs an immutable Null object
          */
-        public Null(NullValue nullEsc) {
-            this.nullEsc = nullEsc;
-        }
+        public Null() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -249,12 +226,12 @@ public abstract class GenericLiteral {
         public boolean equals(Object other) {
             if (!(other instanceof Null)) return false;
             Null o = (Null) other;
-            return nullEsc.equals(o.nullEsc);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * nullEsc.hashCode();
+            return 0;
         }
     }
 }

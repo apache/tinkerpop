@@ -9,25 +9,6 @@ public abstract class Query {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class EmptyValue {
-        /**
-         * Constructs an immutable EmptyValue object
-         */
-        public EmptyValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof EmptyValue)) return false;
-            EmptyValue o = (EmptyValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     public static class WithRootValue {
         public final RootTraversal root;
         
@@ -239,14 +220,10 @@ public abstract class Query {
     }
     
     public static final class Empty extends Query {
-        public final EmptyValue empty;
-        
         /**
          * Constructs an immutable Empty object
          */
-        public Empty(EmptyValue empty) {
-            this.empty = empty;
-        }
+        public Empty() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -257,12 +234,12 @@ public abstract class Query {
         public boolean equals(Object other) {
             if (!(other instanceof Empty)) return false;
             Empty o = (Empty) other;
-            return empty.equals(o.empty);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * empty.hashCode();
+            return 0;
         }
     }
 }

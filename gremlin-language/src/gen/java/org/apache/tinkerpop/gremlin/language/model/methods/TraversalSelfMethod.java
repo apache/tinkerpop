@@ -5,25 +5,6 @@ public abstract class TraversalSelfMethod {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class NoneValue {
-        /**
-         * Constructs an immutable NoneValue object
-         */
-        public NoneValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof NoneValue)) return false;
-            NoneValue o = (NoneValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a TraversalSelfMethod according to its variant (subclass)
      */
@@ -46,14 +27,10 @@ public abstract class TraversalSelfMethod {
     }
     
     public static final class None extends TraversalSelfMethod {
-        public final NoneValue none;
-        
         /**
          * Constructs an immutable None object
          */
-        public None(NoneValue none) {
-            this.none = none;
-        }
+        public None() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -64,12 +41,12 @@ public abstract class TraversalSelfMethod {
         public boolean equals(Object other) {
             if (!(other instanceof None)) return false;
             None o = (None) other;
-            return none.equals(o.none);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * none.hashCode();
+            return 0;
         }
     }
 }

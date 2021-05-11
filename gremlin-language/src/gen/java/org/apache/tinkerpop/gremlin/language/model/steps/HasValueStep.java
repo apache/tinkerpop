@@ -7,25 +7,6 @@ public abstract class HasValueStep {
     
     public abstract <R> R accept(Visitor<R> visitor) ;
     
-    public static class WithValuesValue {
-        /**
-         * Constructs an immutable WithValuesValue object
-         */
-        public WithValuesValue() {}
-        
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof WithValuesValue)) return false;
-            WithValuesValue o = (WithValuesValue) other;
-            return true;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-    }
-    
     /**
      * An interface for applying a function to a HasValueStep according to its variant (subclass)
      */
@@ -85,14 +66,10 @@ public abstract class HasValueStep {
     }
     
     public static final class WithValues extends HasValueStep {
-        public final WithValuesValue withValues;
-        
         /**
          * Constructs an immutable WithValues object
          */
-        public WithValues(WithValuesValue withValues) {
-            this.withValues = withValues;
-        }
+        public WithValues() {}
         
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -103,12 +80,12 @@ public abstract class HasValueStep {
         public boolean equals(Object other) {
             if (!(other instanceof WithValues)) return false;
             WithValues o = (WithValues) other;
-            return withValues.equals(o.withValues);
+            return true;
         }
         
         @Override
         public int hashCode() {
-            return 2 * withValues.hashCode();
+            return 0;
         }
     }
 }
