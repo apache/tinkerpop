@@ -1,0 +1,575 @@
+#  /*********************************************
+#      PARSER RULES
+#  **********************************************/
+
+#  /*********************************************
+#      ARGUMENT AND TERMINAL RULES
+#  **********************************************/
+
+status: experimental
+
+includes:
+  - literals
+  - methods
+  - steps
+
+definitions:
+
+#  traversalSource
+#      : TRAVERSAL_ROOT (DOT traversalSourceSelfMethod)?
+#      | traversalSource DOT traversalSourceSelfMethod
+#      ;
+
+  - name: TraversalSource
+    type:
+      list: TraversalSourceSelfMethod
+
+#  rootTraversal
+#      : traversalSource DOT traversalSourceSpawnMethod (DOT (chainedTraversal | chainedParentOfGraphTraversal))?
+#      ;
+
+  - name: RootTraversal
+    type:
+      record:
+        - name: source
+          type: TraversalSource
+
+        - name: spawnMethod
+          type: TraversalSourceSpawnMethod
+
+        - name: rest
+          type:
+            optional:
+              union:
+                - name: chained
+                  type: ChainedTraversal
+
+                - name: parent
+                  type: ChainedParentOfGraphTraversal
+
+#  traversalSourceSelfMethod
+#      : traversalSourceSelfMethod_withBulk
+#      | traversalSourceSelfMethod_withPath
+#      | traversalSourceSelfMethod_withSack
+#      | traversalSourceSelfMethod_withSideEffect
+#      | traversalSourceSelfMethod_withStrategies
+#      | traversalSourceSelfMethod_with
+#      ;
+
+  - name: TraversalSourceSelfMethod
+    type:
+      union:
+        - name: withBulk
+          type: WithBulk
+
+        - name: withPath
+          type: WithPath
+
+        - name: withSack
+          type: WithSack
+
+        - name: withSideEffect
+          type: WithSideEffect
+
+        - name: withStrategies
+          type: WithStrategies
+
+        - name: with
+          type: With
+
+#  traversalSourceSelfMethod_withBulk
+#      : 'withBulk' LPAREN booleanLiteral RPAREN
+#      ;
+
+  - name: WithBulk
+    type:
+      record:
+        - name: useBulk
+          type: boolean
+
+#  traversalSourceSelfMethod_withPath
+#      : 'withPath' LPAREN RPAREN
+#      ;
+
+  - name: WithPath
+
+#  traversalSourceSelfMethod_withSack
+#      : 'withSack' LPAREN genericLiteral (COMMA traversalOperator)? RPAREN
+#      ;
+
+  - name: WithSack
+    type:
+      record:
+        - name: initialValue
+          type: literals.StringLiteral
+
+        - name: operator
+          type:
+            optional: TraversalOperator
+
+#  traversalSourceSelfMethod_withSideEffect
+#      : 'withSideEffect' LPAREN stringLiteral COMMA genericLiteral RPAREN
+#      ;
+
+  - name: WithSideEffect
+    type:
+      record:
+        - name: key
+          type: literals.StringLiteral
+
+        - name: initialValue
+          type: literals.GenericLiteral
+
+#  traversalSourceSelfMethod_withStrategies
+#      : 'withStrategies' LPAREN traversalStrategy (COMMA traversalStrategyList)? RPAREN
+#      ;
+
+  - name: WithStrategies
+    type:
+      record:
+        - name: traversalStrategies
+          type:
+            list: TraversalStrategy
+
+#  traversalSourceSelfMethod_with
+#      : 'with' LPAREN stringLiteral (COMMA genericLiteral)? RPAREN
+#      ;
+
+  - name: With
+    type:
+      record:
+        - name: key
+          type: string
+
+        - name: value
+          type:
+            optional: literals.GenericLiteral
+
+#  traversalSourceSpawnMethod
+#      : traversalSourceSpawnMethod_addE
+#      | traversalSourceSpawnMethod_addV
+#      | traversalSourceSpawnMethod_E
+#      | traversalSourceSpawnMethod_V
+#      | traversalSourceSpawnMethod_inject
+#      | traversalSourceSpawnMethod_io
+#      ;
+
+  - name: TraversalSourceSpawnMethod
+    type:
+      union:
+        - name: addE
+          type: steps.AddEStep
+
+        - name: addV
+          type: steps.AddVStep
+
+        - name: e
+          # TODO: steps.EStep
+
+        - name: v
+          type: steps.VStep
+
+        - name: inject
+          type: steps.InjectStep
+
+        - name: io
+          # TODO: steps.IoStep
+
+#  traversalSourceSpawnMethod_addE
+#      : 'addE' LPAREN (stringLiteral | nestedTraversal) RPAREN
+#      ;
+
+#  traversalSourceSpawnMethod_addV
+#        // null means use the default vertex label
+#      : 'addV' LPAREN (stringLiteral | nullLiteral | nestedTraversal)? RPAREN
+#      ;
+#
+#  traversalSourceSpawnMethod_E
+#      : 'E' LPAREN genericLiteralList RPAREN
+#      ;
+#
+#  traversalSourceSpawnMethod_V
+#      : 'V' LPAREN genericLiteralList RPAREN
+#      ;
+#
+#  traversalSourceSpawnMethod_inject
+#      : 'inject' LPAREN genericLiteralList RPAREN
+#      ;
+#
+#  traversalSourceSpawnMethod_io
+#      : 'io' LPAREN stringLiteral RPAREN
+#      ;
+#
+#  chainedTraversal
+#      : traversalMethod
+#      | chainedTraversal DOT (traversalMethod | chainedParentOfGraphTraversal)
+#      ;
+
+  - name: ChainedTraversal
+    type:
+      record:
+        - name: first
+          type: steps.TraversalMethod
+
+        - name: rest
+          type:
+            list:
+              union:
+                - name: method
+                  type: steps.TraversalMethod
+
+                - name: chainedParent
+                  type: ChainedParentOfGraphTraversal
+
+#  chainedParentOfGraphTraversal
+#      : traversalSelfMethod (DOT chainedParentOfGraphTraversal)?
+#      ;
+
+  - name: ChainedParentOfGraphTraversal
+    type:
+      record:
+        - name: first
+          type: methods.TraversalSelfMethod
+
+        - name: rest
+          type:
+            optional: ChainedParentOfGraphTraversal
+
+#  nestedTraversal
+#      : rootTraversal
+#      | (ANON_TRAVERSAL_ROOT DOT)? chainedTraversal
+#      ;
+
+  - name: NestedTraversal
+    type:
+      union:
+        - name: root
+          type: RootTraversal
+
+        - name: chained
+          type:
+            record:
+              - name: anonymous
+                type: boolean
+
+              - name: traversal
+                type: ChainedTraversal
+
+#  terminatedTraversal
+#      : rootTraversal DOT traversalTerminalMethod
+#      ;
+
+  #  traversalStrategy
+  #  //  : 'ConnectiveStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'ElementIdStrategy' - not supported as the configuration takes a lambda
+  #  //  | 'EventStrategy' - not supported as there is no way to send events back to the client
+  #  //  | 'HaltedTraverserStrategy' - not supported as it is not typically relevant to OLTP
+  #  //  | 'OptionsStrategy' - not supported as it's internal to with()
+  #      : 'new' 'PartitionStrategy' LPAREN traversalStrategyArgs_PartitionStrategy? (COMMA traversalStrategyArgs_PartitionStrategy)* RPAREN
+  #  //  | 'RequirementStrategy' - not supported as it's internally relevant only
+  #  //  | 'SackStrategy' - not supported directly as it's internal to withSack()
+  #  //  | 'SideEffectStrategy' - not supported directly as it's internal to withSideEffect()
+  #      | 'new' 'SubgraphStrategy' LPAREN traversalStrategyArgs_SubgraphStrategy? (COMMA traversalStrategyArgs_SubgraphStrategy)* RPAREN
+  #  //  | 'MatchAlgorithmStrategy' - not supported directly as it's internal to match()
+  #  //  | 'ProfileStrategy' - not supported directly as it's internal to profile()
+  #  //  | 'ReferenceElementStrategy' - not supported directly as users really can't/shouldn't change this in our context of a remote Gremlin provider
+  #  //  | 'AdjacentToIncidentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'CountStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'EarlyLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'FilterRankingStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'IdentityRemovalStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'IncidentToAdjacentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'InlineFilterStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'LazyBarrierStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'MatchPredicateStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'OrderLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'PathProcessorStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'PathRetractionStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'RepeatUnrollStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+  #  //  | 'ComputerVerificationStrategy' - not supported since it's GraphComputer related
+  #      | 'new' 'EdgeLabelVerificationStrategy' LPAREN traversalStrategyArgs_EdgeLabelVerificationStrategy? (COMMA traversalStrategyArgs_EdgeLabelVerificationStrategy)* RPAREN
+  #  //  | 'LambdaRestrictionStrategy' - not supported as we don't support lambdas in any situation
+  #      | 'ReadOnlyStrategy'
+  #      | 'new' 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
+  #  //  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
+  #      ;
+
+  - name: TraversalStrategy
+    type:
+      union:
+        - name: partition
+          type:
+            list: PartitionStrategy
+
+        - name: subgraph
+          type:
+            list: SubgraphStrategy
+
+        - name: edgeLabelVerification
+          type:
+            list: EdgeLabelVerificationStrategy
+
+        - name: readOnly
+
+        - name: reservedKeysVerification
+          type:
+            list: ReservedKeysVerificationStrategy
+
+  #  traversalStrategyArgs_PartitionStrategy
+  #      : 'includeMetaProperties' COLON booleanLiteral
+  #      | 'writePartition' COLON stringLiteral
+  #      | 'partitionKey' COLON stringLiteral
+  #      | 'readPartitions' COLON stringLiteralList
+  #      ;
+
+  - name: PartitionStrategy
+    type:
+      union:
+        - name: includeMetaProperties
+          type: boolean
+
+        - name: writePartition
+          type: string
+
+        - name: partitionKey
+          type: string
+
+        - name: readPartitions
+          type:
+            list: string
+
+  #  traversalStrategyArgs_SubgraphStrategy
+  #      : 'vertices' COLON nestedTraversal
+  #      | 'edges' COLON nestedTraversal
+  #      | 'vertexProperties' COLON nestedTraversal
+  #      | 'checkAdjacentVertices' COLON booleanLiteral
+  #      ;
+
+  - name: SubgraphStrategy
+    type:
+      union:
+        - name: vertices
+          type: NestedTraversal
+
+        - name: edges
+          type: NestedTraversal
+
+        - name: vertexProperties
+          type: NestedTraversal
+
+        - name: checkAdjacentVertixes
+          type: boolean
+
+  #  traversalStrategyArgs_EdgeLabelVerificationStrategy
+  #      : 'throwException' COLON booleanLiteral
+  #      | 'logWarning' COLON booleanLiteral
+  #      ;
+
+  - name: EdgeLabelVerificationStrategy
+    type:
+      union:
+        - name: throwException
+          type: boolean
+
+        - name: logWarning
+          type: boolean
+
+  #  traversalStrategyArgs_ReservedKeysVerificationStrategy
+  #      : 'keys' COLON stringLiteralList
+  #      | 'throwException' COLON booleanLiteral
+  #      | 'logWarning' COLON booleanLiteral
+  #      ;
+
+  - name: ReservedKeysVerificationStrategy
+    type:
+      union:
+        - name: keys
+          type:
+            list: string
+
+        - name: throwException
+          type: boolean
+
+        - name: logWarning
+          type: boolean
+
+  #  traversalScope
+  #      : 'local' | 'Scope.local'
+  #      | 'global' | 'Scope.global'
+  #      ;
+
+  - name: TraversalScope
+    type:
+      enum:
+        - local
+        - global
+
+  #  traversalToken
+  #      : 'id' | 'T.id'
+  #      | 'label' | 'T.label'
+  #      | 'key' | 'T.key'
+  #      | 'value' | 'T.value'
+  #      ;
+
+  - name: TraversalToken
+    type:
+      enum:
+        - id
+        - label
+        - key
+        - value
+
+  #  traversalOrder
+  #      : 'incr' | 'Order.incr'
+  #      | 'decr' | 'Order.decr'
+  #      | 'asc'  | 'Order.asc'
+  #      | 'desc' | 'Order.desc'
+  #      | 'shuffle' | 'Order.shuffle'
+  #      ;
+
+  - name: TraversalOrder
+    type:
+      enum:
+        - incr
+        - decr
+        - asc
+        - desc
+        - shuffle
+
+  #  traversalDirection
+  #      : 'IN' | 'Direction.IN'
+  #      | 'OUT' | 'Direction.OUT'
+  #      | 'BOTH' | 'Direction.BOTH'
+  #      ;
+
+  - name: TraversalDirection
+    type:
+      enum:
+        - in
+        - out
+        - both
+
+  #  traversalCardinality
+  #      : 'single' | 'Cardinality.single'
+  #      | 'set' | 'Cardinality.set'
+  #      | 'list' | 'Cardinality.list'
+  #      ;
+
+  - name: TraversalCardinality
+    type:
+      enum:
+        - single
+        - set
+        - list
+
+  #  traversalColumn
+  #      : 'keys' | 'Column.keys'
+  #      | 'values' | 'Column.values'
+  #      ;
+
+  - name: TraversalColumn
+    type:
+      enum:
+        - keys
+        - values
+
+  #  traversalPop
+  #      : 'first' | 'Pop.first'
+  #      | 'last' | 'Pop.last'
+  #      | 'all' | 'Pop.all'
+  #      | 'mixed' | 'Pop.mixed'
+  #      ;
+
+  - name: TraversalPop
+    type:
+      enum:
+        - first
+        - last
+        - all
+        - mixed
+
+  #  traversalOperator
+  #      : 'addAll' | 'Operator.addAll'
+  #      | 'and' | 'Operator.and'
+  #      | 'assign' | 'Operator.assign'
+  #      | 'div' | 'Operator.div'
+  #      | 'max' | 'Operator.max'
+  #      | 'min' | 'Operator.min'
+  #      | 'minus' | 'Operator.minus'
+  #      | 'mult' | 'Operator.mult'
+  #      | 'or' | 'Operator.or'
+  #      | 'sum' | 'Operator.sum'
+  #      | 'sumLong' | 'Operator.sumLong'
+  #      ;
+
+  - name: TraversalOperator
+    type:
+      enum:
+        - addAll
+        - and
+        - assign
+        - div
+        - max
+        - min
+        - minus
+        - mult
+        - or
+        - sum
+        - sumLong
+
+  #  traversalOptionParent
+  #      : 'any' | 'Pick.any'
+  #      | 'none' | 'Pick.none'
+  #      ;
+
+  - name: TraversalOptionParent
+    type:
+      enum:
+        - any
+        - none
+
+  #  // Additional special rules that are derived from above
+  #  // These are used to restrict broad method signatures that accept lambdas
+  #  // to a smaller set.
+  #  traversalComparator
+  #      : traversalOrder
+  #      ;
+
+  - name: TraversalComparator
+    type: TraversalOrder
+
+  #  traversalFunction
+  #      : traversalToken
+  #      | traversalColumn
+  #      ;
+
+  - name: TraversalFunction
+    type:
+      union:
+        - name: token
+          type: TraversalToken
+
+        - name: column
+          type: TraversalColumn
+
+  #  traversalBiFunction
+  #      : traversalOperator
+  #      ;
+
+  - name: TraversalBiFunction
+    type: TraversalOperator
+
+#  traversalStrategyList
+#      : traversalStrategyExpr?
+#      ;
+#  traversalStrategyExpr
+#      : traversalStrategy (COMMA traversalStrategy)*
+#      ;
+#
+#  nestedTraversalList
+#      : nestedTraversalExpr?
+#      ;
+#
+#  nestedTraversalExpr
+#      : nestedTraversal (COMMA nestedTraversal)*
+#      ;

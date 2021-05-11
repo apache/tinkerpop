@@ -1,0 +1,60 @@
+status: experimental
+
+includes:
+  - methods
+  - traversal
+
+definitions:
+
+  #  queryList
+  #      : query (SEMI? query)* SEMI? EOF
+  #      ;
+  #
+  #  query
+  #      : traversalSource (DOT transactionPart)?
+  #      | rootTraversal (DOT traversalTerminalMethod)?
+  #      | query DOT 'toString' LPAREN RPAREN
+  #      | emptyQuery
+  #      ;
+
+  - name: Query
+    type:
+      union:
+        - name: withSource
+          type:
+            record:
+              - name: source
+                type: traversal.TraversalSource
+
+              - name: transactionPart
+                type:
+                  optional: TransactionPart
+
+        - name: withRoot
+          type:
+            record:
+              - name: root
+                type: traversal.RootTraversal
+
+              - name: method
+                type:
+                  optional: methods.TraversalTerminalMethod
+
+        - name: toString
+          type: Query
+
+        - name: empty
+
+  #  emptyQuery
+  #      : EmptyStringLiteral
+  #      ;
+
+  #  transactionPart
+  #      : 'tx' LPAREN RPAREN DOT ('commit' | 'rollback')? LPAREN RPAREN
+  #      ;
+
+  - name: TransactionPart
+    type:
+      enum:
+        - commit
+        - rollback

@@ -1,0 +1,200 @@
+#  // Gremlin specific lexer rules
+
+definitions:
+
+  #  gremlinStringConstants
+  #      : withOptionsStringConstants
+  #      | shortestPathStringConstants
+  #      | pageRankStringConstants
+  #      | peerPressureStringConstants
+  #      ;
+
+  - name: GremlinStringConstant
+    type:
+      union:
+        - name: withOptions
+          type: WithOptionsStringConstant
+
+        - name: shortestPath
+          type: ShortestPathStringConstant
+
+        - name: pageRank
+          type: PageRankStringConstant
+
+        - name: peerPressure
+          type: PeerPressureStringConstant
+
+  #  pageRankStringConstants
+  #      : gremlinStringConstants_pageRankStringConstants_edges
+  #      | gremlinStringConstants_pageRankStringConstants_times
+  #      | gremlinStringConstants_pageRankStringConstants_propertyName
+  #      ;
+
+  - name: PageRankStringConstant
+    type:
+      enum:
+        - edges
+        - times
+        - propertyName
+
+  #  peerPressureStringConstants
+  #      : gremlinStringConstants_peerPressureStringConstants_edges
+  #      | gremlinStringConstants_peerPressureStringConstants_times
+  #      | gremlinStringConstants_peerPressureStringConstants_propertyName
+  #      ;
+
+  - name: PeerPressureStringConstant
+    type:
+      enum:
+        - edges
+        - times
+        - propertyName
+
+  #  shortestPathStringConstants
+  #      : gremlinStringConstants_shortestPathStringConstants_target
+  #      | gremlinStringConstants_shortestPathStringConstants_edges
+  #      | gremlinStringConstants_shortestPathStringConstants_distance
+  #      | gremlinStringConstants_shortestPathStringConstants_maxDistance
+  #      | gremlinStringConstants_shortestPathStringConstants_includeEdges
+  #      ;
+
+  - name: ShortestPathStringConstant
+    type:
+      enum:
+        - tokens
+        - none
+        - ids
+        - labels
+        - keys
+        - values
+        - all
+        - indexer
+        - list
+        - map
+
+  #  withOptionsStringConstants
+  #      : gremlinStringConstants_withOptionsStringConstants_tokens
+  #      | gremlinStringConstants_withOptionsStringConstants_none
+  #      | gremlinStringConstants_withOptionsStringConstants_ids
+  #      | gremlinStringConstants_withOptionsStringConstants_labels
+  #      | gremlinStringConstants_withOptionsStringConstants_keys
+  #      | gremlinStringConstants_withOptionsStringConstants_values
+  #      | gremlinStringConstants_withOptionsStringConstants_all
+  #      | gremlinStringConstants_withOptionsStringConstants_indexer
+  #      | gremlinStringConstants_withOptionsStringConstants_list
+  #      | gremlinStringConstants_withOptionsStringConstants_map
+  #      ;
+
+  - name: WithOptionsStringConstant
+    type:
+      enum:
+        - tokens
+        - none
+        - ids
+        - labels
+        - keys
+        - values
+        - all
+        - indexer
+        - list
+        - map
+
+#  gremlinStringConstants_pageRankStringConstants_edges
+#      : pageRankStringConstant DOT 'edges'
+#      ;
+#
+#  gremlinStringConstants_pageRankStringConstants_times
+#      : pageRankStringConstant DOT 'times'
+#      ;
+#
+#  gremlinStringConstants_pageRankStringConstants_propertyName
+#      : pageRankStringConstant DOT 'propertyName'
+#      ;
+#
+#  gremlinStringConstants_peerPressureStringConstants_edges
+#      : peerPressureStringConstant DOT 'edges'
+#      ;
+#
+#  gremlinStringConstants_peerPressureStringConstants_times
+#      : peerPressureStringConstant DOT 'times'
+#      ;
+#
+#  gremlinStringConstants_peerPressureStringConstants_propertyName
+#      : peerPressureStringConstant DOT 'propertyName'
+#      ;
+#
+#  gremlinStringConstants_shortestPathStringConstants_target
+#      : shortestPathStringConstant DOT 'target'
+#      ;
+#
+#  gremlinStringConstants_shortestPathStringConstants_edges
+#      : shortestPathStringConstant DOT 'edges'
+#      ;
+#
+#  gremlinStringConstants_shortestPathStringConstants_distance
+#      : shortestPathStringConstant DOT 'distance'
+#      ;
+#
+#  gremlinStringConstants_shortestPathStringConstants_maxDistance
+#      : shortestPathStringConstant DOT 'maxDistance'
+#      ;
+#
+#  gremlinStringConstants_shortestPathStringConstants_includeEdges
+#      : shortestPathStringConstant DOT 'includeEdges'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_tokens
+#      : withOptionsStringConstant DOT 'tokens'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_none
+#      : withOptionsStringConstant DOT 'none'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_ids
+#      : withOptionsStringConstant DOT 'ids'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_labels
+#      : withOptionsStringConstant DOT 'labels'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_keys
+#      : withOptionsStringConstant DOT 'keys'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_values
+#      : withOptionsStringConstant DOT 'values'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_all
+#      : withOptionsStringConstant DOT 'all'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_indexer
+#      : withOptionsStringConstant DOT 'indexer'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_list
+#      : withOptionsStringConstant DOT 'list'
+#      ;
+#
+#  gremlinStringConstants_withOptionsStringConstants_map
+#      : withOptionsStringConstant DOT 'map'
+#      ;
+#
+#  pageRankStringConstant
+#      : 'PageRank'
+#      ;
+#
+#  peerPressureStringConstant
+#      : 'PeerPressure'
+#      ;
+#
+#  shortestPathStringConstant
+#      : 'ShortestPath'
+#      ;
+#
+#  withOptionsStringConstant
+#      : 'WithOptions'
+#      ;

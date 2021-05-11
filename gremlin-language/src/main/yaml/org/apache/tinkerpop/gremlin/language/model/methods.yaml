@@ -1,0 +1,113 @@
+status: experimental
+
+definitions:
+
+  #  traversalSackMethod
+  #      : 'normSack' | 'Barrier.normSack'
+  #      ;
+
+  - name: TraversalSackMethod
+
+  #  traversalSelfMethod
+  #      : traversalSelfMethod_none
+  #      ;
+
+  - name: TraversalSelfMethod
+    type:
+      union:
+        - name: none
+
+  #  traversalSelfMethod_none
+  #      : 'none' LPAREN RPAREN
+  #      ;
+  #
+  #
+
+  #  traversalTerminalMethod
+  #      : traversalTerminalMethod_explain
+  #      | traversalTerminalMethod_iterate
+  #      | traversalTerminalMethod_hasNext
+  #      | traversalTerminalMethod_tryNext
+  #      | traversalTerminalMethod_next
+  #      | traversalTerminalMethod_toList
+  #      | traversalTerminalMethod_toSet
+  #      | traversalTerminalMethod_toBulkSet
+  #      ;
+
+  - name: TraversalTerminalMethod
+    type:
+      union:
+        - name: explain
+          type: ExplainMethod
+
+        - name: iterate
+          type: IterateMethod
+
+        - name: hasNext
+          type: HasNextMethod
+
+        - name: tryNext
+          type: TryNextMethod
+
+        - name: next
+          type: NextMethod
+
+        - name: toList
+          type: ToListMethod
+
+        - name: toSet
+          type: ToSetMethod
+
+        - name: toBulkSet
+          type: ToBulkSetMethod
+
+  #  traversalTerminalMethod_explain
+  #      : 'explain' LPAREN RPAREN
+  #      ;
+
+  - name: ExplainMethod
+
+  #  traversalTerminalMethod_hasNext
+  #      : 'hasNext' LPAREN RPAREN
+  #      ;
+
+  - name: HasNextMethod
+
+  #  traversalTerminalMethod_iterate
+  #      : 'iterate' LPAREN RPAREN
+  #      ;
+
+  - name: IterateMethod
+
+  #  traversalTerminalMethod_tryNext
+  #      : 'tryNext' LPAREN RPAREN
+  #      ;
+
+  - name: TryNextMethod
+
+  #  traversalTerminalMethod_next
+  #      : 'next' LPAREN RPAREN
+  #      | 'next' LPAREN integerLiteral RPAREN
+  #      ;
+
+  - name: NextMethod
+    type:
+      optional: integer
+
+  #  traversalTerminalMethod_toList
+  #      : 'toList' LPAREN RPAREN
+  #      ;
+
+  - name: ToListMethod
+
+  #  traversalTerminalMethod_toSet
+  #      : 'toSet' LPAREN RPAREN
+  #      ;
+
+  - name: ToSetMethod
+
+  #  traversalTerminalMethod_toBulkSet
+  #      : 'toBulkSet' LPAREN RPAREN
+  #      ;
+
+  - name: ToBulkSetMethod

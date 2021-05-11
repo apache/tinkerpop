@@ -1,0 +1,1802 @@
+#  /*********************************************
+#      GENERATED GRAMMAR - DO NOT CHANGE
+#  **********************************************/
+
+status: experimental
+
+includes:
+  - literals
+  - methods
+  - predicates
+  - traversal
+
+definitions:
+
+#  traversalMethod
+#      : traversalMethod_V
+#      | traversalMethod_addE
+#      | traversalMethod_addV
+#      | traversalMethod_aggregate
+#      | traversalMethod_and
+#      | traversalMethod_as
+#      | traversalMethod_barrier
+#      | traversalMethod_both
+#      | traversalMethod_bothE
+#      | traversalMethod_bothV
+#      | traversalMethod_branch
+#      | traversalMethod_by
+#      | traversalMethod_cap
+#      | traversalMethod_choose
+#      | traversalMethod_coalesce
+#      | traversalMethod_coin
+#      | traversalMethod_connectedComponent
+#      | traversalMethod_constant
+#      | traversalMethod_count
+#      | traversalMethod_cyclicPath
+#      | traversalMethod_dedup
+#      | traversalMethod_drop
+#      | traversalMethod_elementMap
+#      | traversalMethod_emit
+#      | traversalMethod_filter
+#      | traversalMethod_flatMap
+#      | traversalMethod_fold
+#      | traversalMethod_from
+#      | traversalMethod_group
+#      | traversalMethod_groupCount
+#      | traversalMethod_has
+#      | traversalMethod_hasId
+#      | traversalMethod_hasKey
+#      | traversalMethod_hasLabel
+#      | traversalMethod_hasNot
+#      | traversalMethod_hasValue
+#      | traversalMethod_id
+#      | traversalMethod_identity
+#      | traversalMethod_in
+#      | traversalMethod_inE
+#      | traversalMethod_inV
+#      | traversalMethod_index
+#      | traversalMethod_inject
+#      | traversalMethod_is
+#      | traversalMethod_key
+#      | traversalMethod_label
+#      | traversalMethod_limit
+#      | traversalMethod_local
+#      | traversalMethod_loops
+#      | traversalMethod_map
+#      | traversalMethod_match
+#      | traversalMethod_math
+#      | traversalMethod_max
+#      | traversalMethod_mean
+#      | traversalMethod_min
+#      | traversalMethod_not
+#      | traversalMethod_option
+#      | traversalMethod_optional
+#      | traversalMethod_or
+#      | traversalMethod_order
+#      | traversalMethod_otherV
+#      | traversalMethod_out
+#      | traversalMethod_outE
+#      | traversalMethod_outV
+#      | traversalMethod_pageRank
+#      | traversalMethod_path
+#      | traversalMethod_peerPressure
+#      | traversalMethod_profile
+#      | traversalMethod_project
+#      | traversalMethod_properties
+#      | traversalMethod_property
+#      | traversalMethod_propertyMap
+#      | traversalMethod_range
+#      | traversalMethod_read
+#      | traversalMethod_repeat
+#      | traversalMethod_sack
+#      | traversalMethod_sample
+#      | traversalMethod_select
+#      | traversalMethod_shortestPath
+#      | traversalMethod_sideEffect
+#      | traversalMethod_simplePath
+#      | traversalMethod_skip
+#      | traversalMethod_store
+#      | traversalMethod_subgraph
+#      | traversalMethod_sum
+#      | traversalMethod_tail
+#      | traversalMethod_timeLimit
+#      | traversalMethod_times
+#      | traversalMethod_to
+#      | traversalMethod_toE
+#      | traversalMethod_toV
+#      | traversalMethod_tree
+#      | traversalMethod_unfold
+#      | traversalMethod_union
+#      | traversalMethod_until
+#      | traversalMethod_value
+#      | traversalMethod_valueMap
+#      | traversalMethod_values
+#      | traversalMethod_where
+#      | traversalMethod_with
+#      | traversalMethod_write
+#      ;
+
+  - name: TraversalMethod
+    type:
+      union:
+        - name: v
+          type: VStep
+
+        - name: addE
+          type: AddEStep
+
+        - name: addV
+          type: AddVStep
+
+        - name: aggregate
+          type: AggregateStep
+
+        - name: and
+          type: AndStep
+
+        - name: as
+          type: AsStep
+
+        - name: barrier
+          type: BarrierStep
+
+        - name: both
+          type: BothStep
+
+        - name: bothE
+          type: BothEStep
+
+        - name: bothV
+          type: BothVStep
+
+        - name: branch
+          type: BranchStep
+
+        - name: by
+          type: ByStep
+
+        - name: cap
+          type: CapStep
+
+        - name: choose
+          type: ChooseStep
+
+        - name: coalesce
+          type: CoalesceStep
+
+        - name: coin
+          type: CoinStep
+
+        - name: connectedComponent
+          type: ConnectedComponentStep
+
+        - name: constant
+          type: ConstantStep
+
+        - name: count
+          type: CountStep
+
+        - name: cyclicPath
+          type: CyclicPathStep
+
+        - name: dedup
+          type: DedupStep
+
+        - name: drop
+          type: DropStep
+
+        - name: elementMap
+          type: ElementMapStep
+
+        - name: emit
+          type: EmitStep
+
+        - name: filter
+          type: FilterStep
+
+        - name: flatMap
+          type: FlatMapStep
+
+        - name: fold
+          type: FoldStep
+
+        - name: from
+          type: FromStep
+
+        - name: group
+          type: GroupStep
+
+        - name: groupCount
+          type: GroupCountStep
+
+        - name: has
+          type: HasStep
+
+        - name: hasId
+          type: HasIdStep
+
+        - name: hasKey
+          type: HasKeyStep
+
+        - name: hasLabel
+          type: HasLabelStep
+
+        - name: hasNot
+          type: HasNotStep
+
+        - name: hasValue
+          type: HasValueStep
+
+        - name: id
+          type: IdStep
+
+        - name: identity
+          type: IdentityStep
+
+        - name: in
+          type: InStep
+
+        - name: inE
+          type: InEStep
+
+        - name: inV
+          type: InVStep
+
+        - name: index
+          type: IndexStep
+
+        - name: inject
+          type: InjectStep
+
+        - name: is
+          type: IsStep
+
+        - name: key
+          type: KeyStep
+
+        - name: label
+          type: LabelStep
+
+        - name: limit
+          type: LimitStep
+
+        - name: local
+          type: LocalStep
+
+        - name: loops
+          type: LoopsStep
+
+        - name: map
+          type: MapStep
+
+        - name: match
+          type: MatchStep
+
+        - name: math
+          type: MathStep
+
+        - name: max
+          type: MaxStep
+
+        - name: mean
+          type: MeanStep
+
+        - name: min
+          type: MinStep
+
+        - name: not
+          type: NotStep
+
+        - name: option
+          type: OptionStep
+
+        - name: optional
+          type: OptionalStep
+
+        - name: or
+          type: OrStep
+
+        - name: order
+          type: OrderStep
+
+        - name: otherV
+          type: OtherVStep
+
+        - name: out
+          type: OutStep
+
+        - name: outE
+          type: OutEStep
+
+        - name: outV
+          type: OutVStep
+
+        - name: pageRank
+          type: PageRankStep
+
+        - name: path
+          type: PathStep
+
+        - name: peerPressure
+          type: PeerPressureStep
+
+        - name: profile
+          type: ProfileStep
+
+        - name: project
+          type: ProjectStep
+
+        - name: properties
+          type: PropertiesStep
+
+        - name: property
+          type: PropertyStep
+
+        - name: propertyMap
+          type: PropertyMapStep
+
+        - name: range
+          type: RangeStep
+
+        - name: read
+          type: ReadStep
+
+        - name: repeat
+          type: RepeatStep
+
+        - name: sack
+          type: SackStep
+
+        - name: sample
+          type: SampleStep
+
+        - name: select
+          type: SelectStep
+
+        - name: shortestPath
+          type: ShortestPathStep
+
+        - name: sideEffect
+          type: SideEffectStep
+
+        - name: simplePath
+          type: SimplePathStep
+
+        - name: skip
+          type: SkipStep
+
+        - name: store
+          type: StoreStep
+
+        - name: subgraph
+          type: SubgraphStep
+
+        - name: sum
+          type: SumStep
+
+        - name: tail
+          type: TailStep
+
+        - name: timeLimit
+          type: TimeLimitStep
+
+        - name: times
+          type: TimesStep
+
+        - name: to
+          type: ToStep
+
+        - name: toE
+          type: ToEStep
+
+        - name: toV
+          type: ToVStep
+
+        - name: tree
+          type: TreeStep
+
+        - name: unfold
+          type: UnfoldStep
+
+        - name: union
+          type: UnionStep
+
+        - name: until
+          type: UntilStep
+
+        - name: value
+          type: ValueStep
+
+        - name: valueMap
+          type: ValueMapStep
+
+        - name: values
+          type: ValuesStep
+
+        - name: where
+          type: WhereStep
+
+        - name: with
+          type: WithStep
+
+        - name: write
+          type: WriteStep
+
+#  traversalMethod_V
+#      : 'V' LPAREN genericLiteralList RPAREN
+#      ;
+
+  - name: VStep
+    properties:
+      - type: annotations.StepName
+        value: "V"
+    type:
+      record:
+        - name: vertexIdsOrElements
+          type:
+            list: literals.GenericLiteral
+
+#  traversalMethod_addE
+#      : 'addE' LPAREN stringLiteral RPAREN #traversalMethod_addE_String
+#      | 'addE' LPAREN nestedTraversal RPAREN #traversalMethod_addE_Traversal
+#      ;
+
+  - name: AddEStep
+    type:
+      union:
+        - name: edgeLabel
+          type: string
+
+        - name: edgeLabelTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_addV
+#      : 'addV' LPAREN RPAREN #traversalMethod_addV_Empty
+#      | 'addV' LPAREN stringLiteral RPAREN #traversalMethod_addV_String
+#      | 'addV' LPAREN nullLiteral RPAREN #traversalMethod_addV_String        // null means use the default vertex label
+#      | 'addV' LPAREN nestedTraversal RPAREN #traversalMethod_addV_Traversal
+#      ;
+
+  - name: AddVStep
+    type:
+      union:
+        - name: empty
+
+        - name: vertexLabel
+          type: string
+
+        - name: "null"
+
+        - name: vertexLabelTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_aggregate
+#      : 'aggregate' LPAREN traversalScope COMMA stringLiteral RPAREN #traversalMethod_aggregate_Scope_String
+#      | 'aggregate' LPAREN stringLiteral RPAREN #traversalMethod_aggregate_String
+#      ;
+
+  - name: AggregateStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: sideEffectKey
+          type: string
+
+#  traversalMethod_and
+#      : 'and' LPAREN nestedTraversalList RPAREN
+#      ;
+
+  - name: AndStep
+    type:
+      record:
+        - name: andTraversals
+          type:
+            list: traversal.NestedTraversal
+
+#  traversalMethod_as
+#      : 'as' LPAREN stringLiteral (COMMA stringLiteralList)? RPAREN
+#      ;
+
+  - name: AsStep
+    type:
+      record:
+        - name: stepLabel
+          type: string
+
+        - name: stepLabels
+          type:
+            list: string
+
+#  traversalMethod_barrier
+#      : 'barrier' LPAREN traversalSackMethod RPAREN #traversalMethod_barrier_Consumer
+#      | 'barrier' LPAREN RPAREN #traversalMethod_barrier_Empty
+#      | 'barrier' LPAREN integerLiteral RPAREN #traversalMethod_barrier_int
+#      ;
+
+  - name: BarrierStep
+    type:
+      optional:
+        union:
+          - name: barrierConsumer
+            type: methods.TraversalSackMethod
+
+          - name: maxBarrierSize
+            type: integer
+
+  #  traversalMethod_both
+#      : 'both' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: BothStep
+    type:
+      record:
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_bothE
+#      : 'bothE' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: BothEStep
+    type:
+      record:
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_bothV
+#      : 'bothV' LPAREN RPAREN
+#      ;
+
+  - name: BothVStep
+
+#  traversalMethod_branch
+#      : 'branch' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: BranchStep
+    type:
+      record:
+        - name: branchTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_by
+#      : 'by' LPAREN traversalComparator RPAREN #traversalMethod_by_Comparator
+#      | 'by' LPAREN RPAREN #traversalMethod_by_Empty
+#      | 'by' LPAREN traversalFunction RPAREN #traversalMethod_by_Function
+#      | 'by' LPAREN traversalFunction COMMA traversalComparator RPAREN #traversalMethod_by_Function_Comparator
+#      | 'by' LPAREN traversalOrder RPAREN #traversalMethod_by_Order
+#      | 'by' LPAREN stringLiteral RPAREN #traversalMethod_by_String
+#      | 'by' LPAREN stringLiteral COMMA traversalComparator RPAREN #traversalMethod_by_String_Comparator
+#      | 'by' LPAREN traversalToken RPAREN #traversalMethod_by_T
+#      | 'by' LPAREN nestedTraversal RPAREN #traversalMethod_by_Traversal
+#      | 'by' LPAREN nestedTraversal COMMA traversalComparator RPAREN #traversalMethod_by_Traversal_Comparator
+#      ;
+
+  - name: ByStep
+    type:
+      optional:
+        union:
+          - name: withTraversal
+            type:
+              record:
+                - name: traversal
+                  type: traversal.NestedTraversal
+
+                - name: comparator
+                  type: traversal.TraversalComparator
+
+          - name: withKey
+            type:
+              record:
+                - name: key
+                  type: string
+
+                - name: comparator
+                  type:
+                    optional: traversal.TraversalComparator
+
+          - name: withFunction
+            type:
+              record:
+                - name: function
+                  type: traversal.TraversalFunction
+
+                - name: comparator
+                  type:
+                    optional: traversal.TraversalComparator
+
+          - name: token
+            type: traversal.TraversalToken
+
+          - name: comparator
+            type: traversal.TraversalComparator
+
+          - name: order
+            type: traversal.TraversalOrder
+
+#  traversalMethod_cap
+#      : 'cap' LPAREN stringLiteral (COMMA stringLiteralList)? RPAREN
+#      ;
+
+  - name: CapStep
+    type:
+      record:
+        - name: sideEffectKey
+          type: string
+
+        - name: sideEffectKeys
+          type:
+            list: string
+
+#  traversalMethod_choose
+#      : 'choose' LPAREN traversalFunction RPAREN #traversalMethod_choose_Function
+#      | 'choose' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_choose_Predicate_Traversal
+#      | 'choose' LPAREN traversalPredicate COMMA nestedTraversal COMMA nestedTraversal RPAREN #traversalMethod_choose_Predicate_Traversal_Traversal
+#      | 'choose' LPAREN nestedTraversal RPAREN #traversalMethod_choose_Traversal
+#      | 'choose' LPAREN nestedTraversal COMMA nestedTraversal RPAREN #traversalMethod_choose_Traversal_Traversal
+#      | 'choose' LPAREN nestedTraversal COMMA nestedTraversal COMMA nestedTraversal RPAREN #traversalMethod_choose_Traversal_Traversal_Traversal
+#      ;
+
+  - name: ChooseStep
+    type:
+      union:
+        - name: choiceTraversal
+          type: traversal.NestedTraversal
+
+        - name: withTraversal
+          type:
+            record:
+              - name: traversalPredicate
+                type: traversal.NestedTraversal
+
+              - name: trueChoice
+                type: predicates.TraversalPredicate
+
+              - name: falseChoice
+                type:
+                  optional: predicates.TraversalPredicate
+
+        - name: withPredicate
+          type:
+            record:
+              - name: traversalPredicate
+                type: predicates.TraversalPredicate
+
+              - name: trueChoice
+                type: predicates.TraversalPredicate
+
+              - name: falseChoice
+                type:
+                  optional: predicates.TraversalPredicate
+
+#  traversalMethod_coalesce
+#      : 'coalesce' LPAREN nestedTraversalList RPAREN
+#      ;
+
+  - name: CoalesceStep
+    type:
+      record:
+        - name: coalesceTraversals
+          type:
+            list: traversal.NestedTraversal
+
+#  traversalMethod_coin
+#      : 'coin' LPAREN floatLiteral RPAREN
+#      ;
+
+  - name: CoinStep
+    type:
+      record:
+        - name: probability
+          type: float
+
+#  traversalMethod_connectedComponent
+#      : 'connectedComponent' LPAREN RPAREN
+#      ;
+
+  - name: ConnectedComponentStep
+
+#  traversalMethod_constant
+#      : 'constant' LPAREN genericLiteral RPAREN
+#      ;
+
+  - name: ConstantStep
+    type:
+      record:
+        - name: e
+          type: literals.GenericLiteral
+
+#  traversalMethod_count
+#      : 'count' LPAREN RPAREN #traversalMethod_count_Empty
+#      | 'count' LPAREN traversalScope RPAREN #traversalMethod_count_Scope
+#      ;
+
+  - name: CountStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+#  traversalMethod_cyclicPath
+#      : 'cyclicPath' LPAREN RPAREN
+#      ;
+
+  - name: CyclicPathStep
+
+#  traversalMethod_dedup
+#      : 'dedup' LPAREN traversalScope (COMMA stringLiteralList)? RPAREN #traversalMethod_dedup_Scope_String
+#      | 'dedup' LPAREN stringLiteralList RPAREN #traversalMethod_dedup_String
+#      ;
+
+  - name: DedupStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: dedupLabels
+          type:
+            list: string
+
+#  traversalMethod_drop
+#      : 'drop' LPAREN RPAREN
+#      ;
+
+  - name: DropStep
+
+#  traversalMethod_elementMap
+#      : 'elementMap' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: ElementMapStep
+    type:
+      record:
+        - name: propertyKeys
+          type:
+            list: string
+
+#  traversalMethod_emit
+#      : 'emit' LPAREN RPAREN #traversalMethod_emit_Empty
+#      | 'emit' LPAREN traversalPredicate RPAREN #traversalMethod_emit_Predicate
+#      | 'emit' LPAREN nestedTraversal RPAREN #traversalMethod_emit_Traversal
+#      ;
+
+  - name: EmitStep
+    type:
+      optional:
+        union:
+          - name: emitPredicate
+            type: predicates.TraversalPredicate
+
+          - name: emitTraversal
+            type: traversal.NestedTraversal
+
+#  traversalMethod_filter
+#      : 'filter' LPAREN traversalPredicate RPAREN #traversalMethod_filter_Predicate
+#      | 'filter' LPAREN nestedTraversal RPAREN #traversalMethod_filter_Traversal
+#      ;
+
+  - name: FilterStep
+    type:
+      union:
+        - name: predicate
+          type: predicates.TraversalPredicate
+
+        - name: filterTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_flatMap
+#      : 'flatMap' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: FlatMapStep
+    type:
+      record:
+        - name: flatMapTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_fold
+#      : 'fold' LPAREN RPAREN #traversalMethod_fold_Empty
+#      | 'fold' LPAREN genericLiteral COMMA traversalBiFunction RPAREN #traversalMethod_fold_Object_BiFunction
+#      ;
+
+  - name: FoldStep
+    type:
+      optional:
+        record:
+          - name: seed
+            type: literals.GenericLiteral
+
+          - name: foldFunction
+            type: traversal.TraversalBiFunction
+
+#  traversalMethod_from
+#      : 'from' LPAREN stringLiteral RPAREN #traversalMethod_from_String
+#      | 'from' LPAREN nestedTraversal RPAREN #traversalMethod_from_Traversal
+#      ;
+
+  - name: FromStep
+    type:
+      union:
+        - name: fromStepLabel
+          type: string
+
+        - name: fromVertex
+          type: traversal.NestedTraversal
+
+#  traversalMethod_group
+#      : 'group' LPAREN RPAREN #traversalMethod_group_Empty
+#      | 'group' LPAREN stringLiteral RPAREN #traversalMethod_group_String
+#      ;
+
+  - name: GroupStep
+    type:
+      record:
+        - name: sideEffectKey
+          type:
+            optional: string
+
+#  traversalMethod_groupCount
+#      : 'groupCount' LPAREN RPAREN #traversalMethod_groupCount_Empty
+#      | 'groupCount' LPAREN stringLiteral RPAREN #traversalMethod_groupCount_String
+#      ;
+
+  - name: GroupCountStep
+    type:
+      record:
+        - name: sideEffectKey
+          type:
+            optional: string
+
+#  traversalMethod_has
+#      : 'has' LPAREN stringLiteral RPAREN #traversalMethod_has_String
+#      | 'has' LPAREN stringLiteral COMMA genericLiteral RPAREN #traversalMethod_has_String_Object
+#      | 'has' LPAREN stringLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_P
+#      | 'has' LPAREN stringLiteral COMMA stringLiteral COMMA genericLiteral RPAREN #traversalMethod_has_String_String_Object
+#      | 'has' LPAREN stringLiteral COMMA stringLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_String_P
+#      | 'has' LPAREN stringLiteral COMMA nestedTraversal RPAREN #traversalMethod_has_String_Traversal
+#      | 'has' LPAREN traversalToken COMMA genericLiteral RPAREN #traversalMethod_has_T_Object
+#      | 'has' LPAREN traversalToken COMMA traversalPredicate RPAREN #traversalMethod_has_T_P
+#      | 'has' LPAREN traversalToken COMMA nestedTraversal RPAREN #traversalMethod_has_T_Traversal
+#      ;
+
+  - name: HasStep
+    type:
+      union:
+        - name: withPropertyKey
+          type:
+            record:
+              - name: propertyKey
+                type: string
+
+              - name: otherArguments
+                type:
+                  optional:
+                    union:
+                      - name: predicate
+                        type: predicates.TraversalPredicate
+
+                      - name: value
+                        type: literals.GenericLiteral
+
+                      - name: traversal
+                        type: traversal.NestedTraversal
+
+        - name: withAccessor
+          type:
+            record:
+              - name: accessor
+                type: traversal.TraversalToken
+
+              - name: other
+                type:
+                  union:
+                    - name: predicate
+                      type: predicates.TraversalPredicate
+
+                    - name: value
+                      type: literals.GenericLiteral
+
+                    - name: traversal
+                      type: traversal.NestedTraversal
+
+        - name: withLabel
+          type:
+            record:
+              - name: label
+                type: string
+
+              - name: propertyKey
+                type: string
+
+              - name: other
+                type:
+                  union:
+                    - name: predicate
+                      type: predicates.TraversalPredicate
+
+                    - name: value
+                      type: literals.GenericLiteral
+
+#  traversalMethod_hasId
+#      : 'hasId' LPAREN genericLiteral (COMMA genericLiteralList)? RPAREN #traversalMethod_hasId_Object_Object
+#      | 'hasId' LPAREN traversalPredicate RPAREN #traversalMethod_hasId_P
+#      ;
+
+  - name: HasIdStep
+    type:
+      union:
+        - name: predicate
+          type: predicates.TraversalPredicate
+
+        - name: withIds
+          type:
+            record:
+              - name: id
+                type: literals.GenericLiteral
+
+              - name: otherIds
+                type:
+                  list: literals.GenericLiteral
+
+#  traversalMethod_hasKey
+#      : 'hasKey' LPAREN traversalPredicate RPAREN #traversalMethod_hasKey_P
+#      | 'hasKey' LPAREN stringLiteral (COMMA stringLiteralList)? RPAREN #traversalMethod_hasKey_String_String
+#      ;
+
+  - name: HasKeyStep
+    type:
+      union:
+        - name: predicate
+          type: predicates.TraversalPredicate
+
+        - name: withLabels
+          type:
+            record:
+              - name: label
+                type: string
+
+              - name: otherLabels
+                type:
+                  list: string
+
+#  traversalMethod_hasLabel
+#      : 'hasLabel' LPAREN traversalPredicate RPAREN #traversalMethod_hasLabel_P
+#      | 'hasLabel' LPAREN stringLiteral (COMMA stringLiteralList)? RPAREN #traversalMethod_hasLabel_String_String
+#      ;
+
+  - name: HasLabelStep
+    type:
+      union:
+        - name: predicate
+          type: predicates.TraversalPredicate
+
+        - name: withLabels
+          type:
+            record:
+              - name: label
+                type: string
+
+              - name: otherLabels
+                type:
+                  list: string
+
+#  traversalMethod_hasNot
+#      : 'hasNot' LPAREN stringLiteral RPAREN
+#      ;
+
+  - name: HasNotStep
+    type:
+      record:
+        - name: propertyKey
+          type: string
+
+#  traversalMethod_hasValue
+#      : 'hasValue' LPAREN genericLiteral (COMMA genericLiteralList)? RPAREN #traversalMethod_hasValue_Object_Object
+#      | 'hasValue' LPAREN traversalPredicate RPAREN #traversalMethod_hasValue_P
+#      ;
+
+  - name: HasValueStep
+    type:
+      union:
+        - name: predicate
+          type: predicates.TraversalPredicate
+
+        - name: withValues
+          type:
+            - name: value
+              type: literals.GenericLiteral
+
+            - name: otherValues
+              type:
+                list: literals.GenericLiteral
+
+#  traversalMethod_id
+#      : 'id' LPAREN RPAREN
+#      ;
+
+  - name: IdStep
+
+#  traversalMethod_identity
+#      : 'identity' LPAREN RPAREN
+#      ;
+
+  - name: IdentityStep
+
+#  traversalMethod_in
+#      : 'in' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: InStep
+    type:
+      record:
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_inE
+#      : 'inE' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: InEStep
+    type:
+      record:
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_inV
+#      : 'inV' LPAREN RPAREN
+#      ;
+
+  - name: InVStep
+
+#  traversalMethod_index
+#      : 'index' LPAREN RPAREN
+#      ;
+
+  - name: IndexStep
+
+#  traversalMethod_inject
+#      : 'inject' LPAREN genericLiteralList RPAREN
+#      ;
+
+  - name: InjectStep
+    type:
+      record:
+        - name: injections
+          type:
+            list: literals.GenericLiteral
+
+#  traversalMethod_is
+#      : 'is' LPAREN genericLiteral RPAREN #traversalMethod_is_Object
+#      | 'is' LPAREN traversalPredicate RPAREN #traversalMethod_is_P
+#      ;
+
+  - name: IsStep
+    type:
+      union:
+        - name: predicate
+          type: predicates.TraversalPredicate
+
+        - name: value
+          type: literals.GenericLiteral
+
+#  traversalMethod_key
+#      : 'key' LPAREN RPAREN
+#      ;
+
+  - name: KeyStep
+
+#  traversalMethod_label
+#      : 'label' LPAREN RPAREN
+#      ;
+
+  - name: LabelStep
+
+#  traversalMethod_limit
+#      : 'limit' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_limit_Scope_long
+#      | 'limit' LPAREN integerLiteral RPAREN #traversalMethod_limit_long
+#      ;
+
+  - name: LimitStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: limit
+          type: integer
+
+#  traversalMethod_local
+#      : 'local' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: LocalStep
+    type:
+      record:
+        - name: localTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_loops
+#      : 'loops' LPAREN RPAREN #traversalMethod_loops_Empty
+#      | 'loops' LPAREN stringLiteral RPAREN #traversalMethod_loops_String
+#      ;
+
+  - name: LoopsStep
+    type:
+      record:
+        - name: loopName
+          type:
+            optional: string
+
+#  traversalMethod_map
+#      : 'map' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: MapStep
+    type:
+      record:
+        - name: mapTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_match
+#      : 'match' LPAREN nestedTraversalList RPAREN
+#      ;
+
+  - name: MatchStep
+    type:
+      record:
+        - name: matchTraversals
+          type:
+            list: traversal.NestedTraversal
+
+#  traversalMethod_math
+#      : 'math' LPAREN stringLiteral RPAREN
+#      ;
+
+  - name: MathStep
+    type:
+      record:
+        - name: expression
+          type: string
+
+#  traversalMethod_max
+#      : 'max' LPAREN RPAREN #traversalMethod_max_Empty
+#      | 'max' LPAREN traversalScope RPAREN #traversalMethod_max_Scope
+#      ;
+
+  - name: MaxStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+#  traversalMethod_mean
+#      : 'mean' LPAREN RPAREN #traversalMethod_mean_Empty
+#      | 'mean' LPAREN traversalScope RPAREN #traversalMethod_mean_Scope
+#      ;
+
+  - name: MeanStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+#  traversalMethod_min
+#      : 'min' LPAREN RPAREN #traversalMethod_min_Empty
+#      | 'min' LPAREN traversalScope RPAREN #traversalMethod_min_Scope
+#      ;
+
+  - name: MinStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+#  traversalMethod_not
+#      : 'not' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: NotStep
+    type:
+      record:
+        - name: notTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_option
+#      : 'option' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_option_Predicate_Traversal
+#      | 'option' LPAREN genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_option_Object_Traversal
+#      | 'option' LPAREN nestedTraversal RPAREN #traversalMethod_option_Traversal
+#      ;
+
+    # TODO: the Java API does not agree with the grammar here
+  - name: OptionStep
+    type:
+      union:
+        - name: predicateTraversal
+          type:
+            record:
+              - name: predicate
+                type: predicates.TraversalPredicate
+
+              - name: traversal
+                type: traversal.NestedTraversal
+
+        - name: objectTraversal
+          type:
+            record:
+              - name: object
+                type: literals.GenericLiteral
+
+              - name: traversal
+                type: traversal.NestedTraversal
+
+        - name: traversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_optional
+#      : 'optional' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: OptionalStep
+    type:
+      record:
+        - name: optionalTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_or
+#      : 'or' LPAREN nestedTraversalList RPAREN
+#      ;
+
+  - name: OrStep
+    type:
+      record:
+        - name: orTraversals
+          type:
+            list: traversal.NestedTraversal
+
+#  traversalMethod_order
+#      : 'order' LPAREN RPAREN #traversalMethod_order_Empty
+#      | 'order' LPAREN traversalScope RPAREN #traversalMethod_order_Scope
+#      ;
+
+  - name: OrderStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+#  traversalMethod_otherV
+#      : 'otherV' LPAREN RPAREN
+#      ;
+
+  - name: OtherVStep
+
+#  traversalMethod_out
+#      : 'out' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: OutStep
+    type:
+      record:
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_outE
+#      : 'outE' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: OutEStep
+    type:
+      record:
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_outV
+#      : 'outV' LPAREN RPAREN
+#      ;
+
+  - name: OutVStep
+
+#  traversalMethod_pageRank
+#      : 'pageRank' LPAREN RPAREN #traversalMethod_pageRank_Empty
+#      | 'pageRank' LPAREN floatLiteral RPAREN #traversalMethod_pageRank_double
+#      ;
+
+  - name: PageRankStep
+    type:
+      record:
+        - name: alpha
+          type:
+            optional: float
+
+#  traversalMethod_path
+#      : 'path' LPAREN RPAREN
+#      ;
+
+  - name: PathStep
+
+#  traversalMethod_peerPressure
+#      : 'peerPressure' LPAREN RPAREN
+#      ;
+
+  - name: PeerPressureStep
+
+#  traversalMethod_profile
+#      : 'profile' LPAREN RPAREN #traversalMethod_profile_Empty
+#      | 'profile' LPAREN stringLiteral RPAREN #traversalMethod_profile_String
+#      ;
+
+  - name: ProfileStep
+    type:
+      record:
+        - name: sideEffectKey
+          type:
+            optional: string
+
+#  traversalMethod_project
+#      : 'project' LPAREN stringLiteral (COMMA stringLiteralList)? RPAREN
+#      ;
+
+  - name: ProjectStep
+    type:
+      record:
+        - name: projectKey
+          type: string
+
+        - name: otherProjectKeys
+          type:
+            list: string
+
+#  traversalMethod_properties
+#      : 'properties' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: PropertiesStep
+    type:
+      record:
+        - name: propertyKeys
+          type:
+            list: string
+
+#  traversalMethod_property
+#      : 'property' LPAREN traversalCardinality COMMA genericLiteral COMMA genericLiteral (COMMA genericLiteralList)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
+#      | 'property' LPAREN genericLiteral COMMA genericLiteral (COMMA genericLiteralList)? RPAREN #traversalMethod_property_Object_Object_Object
+#      ;
+
+  - name: PropertyStep
+    type:
+      record:
+        - name: cardinality
+          type:
+            optional: traversal.TraversalCardinality
+
+        - name: key
+          type: literals.GenericLiteral
+
+        - name: value
+          type: literals.GenericLiteral
+
+        - name: keyValues
+          type:
+            list: literals.GenericLiteral
+
+#  traversalMethod_propertyMap
+#      : 'propertyMap' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: PropertyMapStep
+    type:
+      record:
+        - name: propertyKeys
+          type:
+            list: string
+
+#  traversalMethod_range
+#      : 'range' LPAREN traversalScope COMMA integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_Scope_long_long
+#      | 'range' LPAREN integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_long_long
+#      ;
+
+  - name: RangeStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: low
+          type: integer
+
+        - name: high
+          type: integer
+
+#  traversalMethod_read
+#      : 'read' LPAREN RPAREN
+#      ;
+
+  - name: ReadStep
+
+#  traversalMethod_repeat
+#      : 'repeat' LPAREN stringLiteral COMMA nestedTraversal RPAREN #traversalMethod_repeat_String_Traversal
+#      | 'repeat' LPAREN nestedTraversal RPAREN #traversalMethod_repeat_Traversal
+#      ;
+
+  - name: RepeatStep
+    type:
+      record:
+        - name: loopName
+          type:
+            optional: string
+
+        - name: repeatTraversals
+          type: traversal.NestedTraversal
+
+#  traversalMethod_sack
+#      : 'sack' LPAREN traversalBiFunction RPAREN #traversalMethod_sack_BiFunction
+#      | 'sack' LPAREN RPAREN #traversalMethod_sack_Empty
+#      ;
+
+  - name: SackStep
+    type:
+      record:
+        - name: sackOperator
+          type:
+            optional: traversal.TraversalBiFunction
+
+#  traversalMethod_sample
+#      : 'sample' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_sample_Scope_int
+#      | 'sample' LPAREN integerLiteral RPAREN #traversalMethod_sample_int
+#      ;
+
+  - name: SampleStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: amountToSample
+          type: integer
+
+#  traversalMethod_select
+#      : 'select' LPAREN traversalColumn RPAREN #traversalMethod_select_Column
+#      | 'select' LPAREN traversalPop COMMA stringLiteral RPAREN #traversalMethod_select_Pop_String
+#      | 'select' LPAREN traversalPop COMMA stringLiteral COMMA stringLiteral (COMMA stringLiteralList)? RPAREN #traversalMethod_select_Pop_String_String_String
+#      | 'select' LPAREN traversalPop COMMA nestedTraversal RPAREN #traversalMethod_select_Pop_Traversal
+#      | 'select' LPAREN stringLiteral RPAREN #traversalMethod_select_String
+#      | 'select' LPAREN stringLiteral COMMA stringLiteral (COMMA stringLiteralList)? RPAREN #traversalMethod_select_String_String_String
+#      | 'select' LPAREN nestedTraversal RPAREN #traversalMethod_select_Traversal
+#      ;
+
+  - name: SelectStep
+    type:
+      union:
+        - name: column
+          type: traversal.TraversalColumn
+
+        - name: key
+          type:
+            record:
+              - name: pop
+                type:
+                  optional: traversal.TraversalPop
+
+              - name: selectKey
+                type: string
+
+        - name: keys
+          type:
+            record:
+              - name: pop
+                type:
+                  optional: traversal.TraversalPop
+
+              - name: selectKey1
+                type: string
+
+              - name: selectKey2
+                type: string
+
+              - name: otherSelectKeys
+                type:
+                  list: string
+
+        - name: traversal
+          type:
+            record:
+              - name: pop
+                type:
+                  optional: traversal.TraversalPop
+
+              - name: traversal
+                type: traversal.NestedTraversal
+
+#  traversalMethod_shortestPath
+#      : 'shortestPath' LPAREN RPAREN
+#      ;
+
+  - name: ShortestPathStep
+
+#  traversalMethod_sideEffect
+#      : 'sideEffect' LPAREN nestedTraversal RPAREN
+#      ;
+
+  - name: SideEffectStep
+    type:
+      record:
+        - name: sideEffectTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_simplePath
+#      : 'simplePath' LPAREN RPAREN
+#      ;
+
+  - name: SimplePathStep
+
+#  traversalMethod_skip
+#      : 'skip' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_skip_Scope_long
+#      | 'skip' LPAREN integerLiteral RPAREN #traversalMethod_skip_long
+#      ;
+
+  - name: SkipStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: skip
+          type: integer
+
+#  traversalMethod_store
+#      : 'store' LPAREN stringLiteral RPAREN
+#      ;
+
+  - name: StoreStep
+    type:
+      record:
+        - name: sideEffectKey
+          type: string
+
+#  traversalMethod_subgraph
+#      : 'subgraph' LPAREN stringLiteral RPAREN
+#      ;
+
+  - name: SubgraphStep
+    type:
+      record:
+        - name: sideEffectKey
+          type: string
+
+#  traversalMethod_sum
+#      : 'sum' LPAREN RPAREN #traversalMethod_sum_Empty
+#      | 'sum' LPAREN traversalScope RPAREN #traversalMethod_sum_Scope
+#      ;
+
+  - name: SumStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+#  traversalMethod_tail
+#      : 'tail' LPAREN RPAREN #traversalMethod_tail_Empty
+#      | 'tail' LPAREN traversalScope RPAREN #traversalMethod_tail_Scope
+#      | 'tail' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_tail_Scope_long
+#      | 'tail' LPAREN integerLiteral RPAREN #traversalMethod_tail_long
+#      ;
+
+  - name: TailStep
+    type:
+      record:
+        - name: scope
+          type:
+            optional: traversal.TraversalScope
+
+        - name: limit
+          type:
+            optional: integer
+
+#  traversalMethod_timeLimit
+#      : 'timeLimit' LPAREN integerLiteral RPAREN
+#      ;
+
+  - name: TimeLimitStep
+    type:
+      record:
+        - name: timeLimit
+          type: integer
+
+#  traversalMethod_times
+#      : 'times' LPAREN integerLiteral RPAREN
+#      ;
+
+  - name: TimesStep
+    type:
+      record:
+        - name: maxLoops
+          type: integer
+
+#  traversalMethod_to
+#      : 'to' LPAREN traversalDirection (COMMA stringLiteralList)? RPAREN #traversalMethod_to_Direction_String
+#      | 'to' LPAREN stringLiteral RPAREN #traversalMethod_to_String
+#      | 'to' LPAREN nestedTraversal RPAREN #traversalMethod_to_Traversal
+#      ;
+
+  - name: ToStep
+    type:
+      union:
+        - name: withDirection
+          type:
+            record:
+              - name: direction
+                type: traversal.TraversalDirection
+
+              - name: edgeLabels
+                type:
+                  list: string
+
+        - name: toStepLabel
+          type: string
+
+        - name: toVertex
+          type: traversal.NestedTraversal
+
+#  traversalMethod_toE
+#      : 'toE' LPAREN traversalDirection (COMMA stringLiteralList)? RPAREN
+#      ;
+
+  - name: ToEStep
+    type:
+      record:
+        - name: direction
+          type: traversal.TraversalDirection
+
+        - name: edgeLabels
+          type:
+            list: string
+
+#  traversalMethod_toV
+#      : 'toV' LPAREN traversalDirection RPAREN
+#      ;
+
+  - name: ToVStep
+    type:
+      record:
+        - name: direction
+          type: traversal.TraversalDirection
+
+#  traversalMethod_tree
+#      : 'tree' LPAREN RPAREN #traversalMethod_tree_Empty
+#      | 'tree' LPAREN stringLiteral RPAREN #traversalMethod_tree_String
+#      ;
+
+  - name: TreeStep
+    type:
+      record:
+        - name: sideEffectKey
+          type:
+            optional: string
+
+#  traversalMethod_unfold
+#      : 'unfold' LPAREN RPAREN
+#      ;
+
+  - name: UnfoldStep
+
+#  traversalMethod_union
+#      : 'union' LPAREN nestedTraversalList RPAREN
+#      ;
+
+  - name: UnionStep
+    type:
+      record:
+        - name: unionTraversals
+          type:
+            list: traversal.NestedTraversal
+
+#  traversalMethod_until
+#      : 'until' LPAREN traversalPredicate RPAREN #traversalMethod_until_Predicate
+#      | 'until' LPAREN nestedTraversal RPAREN #traversalMethod_until_Traversal
+#      ;
+
+  - name: UntilStep
+    type:
+      union:
+        - name: untilPredicate
+          type: predicates.TraversalPredicate
+
+        - name: untilTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_value
+#      : 'value' LPAREN RPAREN
+#      ;
+
+  - name: ValueStep
+
+#  traversalMethod_valueMap
+#      : 'valueMap' LPAREN stringLiteralList RPAREN #traversalMethod_valueMap_String
+#      | 'valueMap' LPAREN booleanLiteral (COMMA stringLiteralList)? RPAREN #traversalMethod_valueMap_boolean_String
+#      ;
+
+  - name: ValueMapStep
+    type:
+      record:
+        - name: includeTokens
+          type:
+            optional: boolean
+
+        - name: propertyKeys
+          type:
+            list: string
+
+#  traversalMethod_values
+#      : 'values' LPAREN stringLiteralList RPAREN
+#      ;
+
+  - name: ValuesStep
+    type:
+      record:
+        - name: propertyKeys
+          type:
+            list: string
+
+#  traversalMethod_where
+#      : 'where' LPAREN traversalPredicate RPAREN #traversalMethod_where_P
+#      | 'where' LPAREN stringLiteral COMMA traversalPredicate RPAREN #traversalMethod_where_String_P
+#      | 'where' LPAREN nestedTraversal RPAREN #traversalMethod_where_Traversal
+#      ;
+
+  - name: WhereStep
+    type:
+      union:
+        - name: withPredicate
+          type:
+            record:
+              - name: startKey
+                type:
+                  optional: string
+
+              - name: predicate
+                type: predicates.TraversalPredicate
+
+        - name: whereTraversal
+          type: traversal.NestedTraversal
+
+#  traversalMethod_with
+#      : 'with' LPAREN stringLiteral RPAREN #traversalMethod_with_String
+#      | 'with' LPAREN stringLiteral COMMA genericLiteral RPAREN #traversalMethod_with_String_Object
+#      ;
+
+  - name: WithStep
+    type:
+      record:
+        - name: key
+          type: string
+
+        - name: value
+          type:
+            optional: literals.GenericLiteral
+
+#  traversalMethod_write
+#      : 'write' LPAREN RPAREN
+#      ;
+
+  - name: WriteStep

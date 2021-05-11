@@ -1,0 +1,404 @@
+#  /*********************************************
+#      LEXER RULES
+#  **********************************************/
+#
+#  // Lexer rules
+#  // These rules are extracted from Java ANTLRv4 Grammar.
+#  // Source: https://github.com/antlr/grammars-v4/blob/master/java8/Java8.g4
+
+status: experimental
+comments:
+  - >
+    These definitions greatly simplify the original lexer rules from gremlin-language,
+    because we are not concerned with encoding here.
+
+includes:
+  - constants
+
+definitions:
+
+#  // 3.9 Keywords
+#
+#  NEW : 'new';
+#
+#  // Integer Literals
+#
+#  IntegerLiteral
+#      :	Sign? DecimalIntegerLiteral
+#      |	Sign? HexIntegerLiteral
+#      |	Sign? OctalIntegerLiteral
+#      ;
+#
+#  fragment
+#  DecimalIntegerLiteral
+#      :	DecimalNumeral IntegerTypeSuffix?
+#      ;
+#
+#  fragment
+#  HexIntegerLiteral
+#      :	HexNumeral IntegerTypeSuffix?
+#      ;
+#
+#  fragment
+#  OctalIntegerLiteral
+#      :	OctalNumeral IntegerTypeSuffix?
+#      ;
+#
+#  fragment
+#  IntegerTypeSuffix
+#      :	[lL]
+#      ;
+#
+#  fragment
+#  DecimalNumeral
+#      :	'0'
+#      |	NonZeroDigit (Digits? | Underscores Digits)
+#      ;
+#
+#  fragment
+#  Digits
+#      :	Digit (DigitsAndUnderscores? Digit)?
+#      ;
+#
+#  fragment
+#  Digit
+#      :	'0'
+#      |	NonZeroDigit
+#      ;
+#
+#  fragment
+#  NonZeroDigit
+#      :	[1-9]
+#      ;
+#
+#  fragment
+#  DigitsAndUnderscores
+#      :	DigitOrUnderscore+
+#      ;
+#
+#  fragment
+#  DigitOrUnderscore
+#      :	Digit
+#      |	'_'
+#      ;
+#
+#  fragment
+#  Underscores
+#      :	'_'+
+#      ;
+#
+#  fragment
+#  HexNumeral
+#      :	'0' [xX] HexDigits
+#      ;
+#
+#  fragment
+#  HexDigits
+#      :	HexDigit (HexDigitsAndUnderscores? HexDigit)?
+#      ;
+#
+#  fragment
+#  HexDigit
+#      :	[0-9a-fA-F]
+#      ;
+#
+#  fragment
+#  HexDigitsAndUnderscores
+#      :	HexDigitOrUnderscore+
+#      ;
+#
+#  fragment
+#  HexDigitOrUnderscore
+#      :	HexDigit
+#      |	'_'
+#      ;
+#
+#  fragment
+#  OctalNumeral
+#      :	'0' Underscores? OctalDigits
+#      ;
+#
+#  fragment
+#  OctalDigits
+#      :	OctalDigit (OctalDigitsAndUnderscores? OctalDigit)?
+#      ;
+#
+#  fragment
+#  OctalDigit
+#      :	[0-7]
+#      ;
+#
+#  fragment
+#  OctalDigitsAndUnderscores
+#      :	OctalDigitOrUnderscore+
+#      ;
+#
+#  fragment
+#  OctalDigitOrUnderscore
+#      :	OctalDigit
+#      |	'_'
+#      ;
+#
+#  // Floating-Point Literals
+#
+#  FloatingPointLiteral
+#      :	Sign? DecimalFloatingPointLiteral
+#      ;
+#
+#  fragment
+#  DecimalFloatingPointLiteral
+#      :   Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
+#      |	Digits FloatTypeSuffix
+#      ;
+#
+#  fragment
+#  ExponentPart
+#      :	ExponentIndicator SignedInteger
+#      ;
+#
+#  fragment
+#  ExponentIndicator
+#      :	[eE]
+#      ;
+#
+#  fragment
+#  SignedInteger
+#      :	Sign? Digits
+#      ;
+#
+#  fragment
+#  Sign
+#      :	[+-]
+#      ;
+#
+#  fragment
+#  FloatTypeSuffix
+#      :	[fFdD]
+#      ;
+#
+#  // Boolean Literals
+#
+#  BooleanLiteral
+#      :	'true'
+#      |	'false'
+#      ;
+#
+#  // Null Literal
+#
+#  NullLiteral
+#      :	'null'
+#      ;
+#
+#  // String Literals
+#
+#  // String literal is customized since Java only allows double quoted strings where Groovy supports single quoted
+#  // literals also. A side effect of this is ANTLR will not be able to parse single character string literals with
+#  // single quoted so we instead remove char literal altogether and only have string literal in lexer tokens.
+#  NonEmptyStringLiteral
+#      :   '"' DoubleQuotedStringCharacters '"'
+#      |   '\'' SingleQuotedStringCharacters '\''
+#      ;
+
+  - name: NonEmptyStringLiteral
+    type: string
+
+#  // We define NonEmptyStringLiteral and EmptyStringLiteral separately so that we can unambiguously handle empty queries
+#  EmptyStringLiteral
+#      :   '""'
+#      |   '\'\''
+#      ;
+
+  - name: EmptyStringLiteral
+
+#  fragment
+#  DoubleQuotedStringCharacters
+#      :	DoubleQuotedStringCharacter+
+#      ;
+#
+#  fragment
+#  DoubleQuotedStringCharacter
+#      :	~('"' | '\\')
+#      |   JoinLineEscape
+#      |	EscapeSequence
+#      ;
+#
+#  fragment
+#  SingleQuotedStringCharacters
+#      :	SingleQuotedStringCharacter+
+#      ;
+#
+#  fragment
+#  SingleQuotedStringCharacter
+#      :	~('\'' | '\\')
+#      |   JoinLineEscape
+#      |	EscapeSequence
+#      ;
+#
+#  // Escape Sequences for Character and String Literals
+#  fragment JoinLineEscape
+#      : '\\' '\r'? '\n'
+#      ;
+#
+#  fragment
+#  EscapeSequence
+#      :	'\\' [btnfr"'\\]
+#      |	OctalEscape
+#      |   UnicodeEscape // This is not in the spec but prevents having to preprocess the input
+#      ;
+#
+#  fragment
+#  OctalEscape
+#      :	'\\' OctalDigit
+#      |	'\\' OctalDigit OctalDigit
+#      |	'\\' ZeroToThree OctalDigit OctalDigit
+#      ;
+#
+#  fragment
+#  ZeroToThree
+#      :	[0-3]
+#      ;
+#
+#  // This is not in the spec but prevents having to preprocess the input
+#  fragment
+#  UnicodeEscape
+#      :   '\\' 'u'+  HexDigit HexDigit HexDigit HexDigit
+#      ;
+#
+#  // Separators
+#
+#  LPAREN : '(';
+#  RPAREN : ')';
+#  LBRACE : '{';
+#  RBRACE : '}';
+#  LBRACK : '[';
+#  RBRACK : ']';
+#  SEMI : ';';
+#  COMMA : ',';
+#  DOT : '.';
+#  COLON : ':';
+#
+#  TRAVERSAL_ROOT:     'g';
+#  ANON_TRAVERSAL_ROOT:     '__';
+#
+#  // Trim whitespace and comments if present
+#
+#  WS  :  [ \t\r\n\u000C]+ -> skip
+#      ;
+#
+#  LINE_COMMENT
+#      :   '//' ~[\r\n]* -> skip
+#      ;
+
+
+  #  genericLiteralList
+  #      : genericLiteralExpr?
+  #      ;
+  #
+  #  genericLiteralExpr
+  #      : genericLiteral (COMMA genericLiteral)*
+  #      ;
+  #
+  #  genericLiteralRange
+  #      : integerLiteral DOT DOT integerLiteral
+  #      | stringLiteral DOT DOT stringLiteral
+  #      ;
+  #
+  #  genericLiteralCollection
+  #      : LBRACK (genericLiteral (COMMA genericLiteral)*)? RBRACK
+  #      ;
+  #
+  #  stringLiteralList
+  #      : stringLiteralExpr?
+  #      | LBRACK stringLiteralExpr? RBRACK
+  #      ;
+  #
+  #  stringLiteralExpr
+  #      : stringLiteral (COMMA stringLiteral)*
+  #      ;
+  #
+  #  genericLiteral
+  #      : integerLiteral
+  #      | floatLiteral
+  #      | booleanLiteral
+  #      | stringLiteral
+  #      | dateLiteral
+  #      | nullLiteral
+  #      // Allow the generic literal to match specific gremlin tokens also
+  #      | traversalToken
+  #      | traversalCardinality
+  #      | traversalDirection
+  #      | traversalOptionParent
+  #      | genericLiteralCollection
+  #      | genericLiteralRange
+  #      | nestedTraversal
+  #      | terminatedTraversal
+  #      | genericLiteralMap
+  #      ;
+
+  - name: GenericLiteral
+    type:
+      union:
+        - name: integer
+          type: integer
+
+        - name: float
+          type: float
+
+        - name: boolean
+          type: boolean
+
+        - name: string
+          type: string
+
+        - name: date
+          type: DateLiteral
+
+        - name: "null"
+
+        # TODO: others
+
+  #  genericLiteralMap
+  #    : LBRACK (genericLiteral)? COLON (genericLiteral)? (COMMA (genericLiteral)? COLON (genericLiteral)?)* RBRACK
+  #    ;
+  #
+  #  integerLiteral
+  #      : IntegerLiteral
+  #      ;
+  #
+  #  floatLiteral
+  #      : FloatingPointLiteral
+  #      ;
+  #
+  #  booleanLiteral
+  #      : BooleanLiteral
+  #      ;
+  #
+  #  stringLiteral
+  #      : NonEmptyStringLiteral
+  #      | EmptyStringLiteral
+  #      | gremlinStringConstants
+  #      ;
+
+  - name: StringLiteral
+    type:
+      union:
+        - name: empty
+          type: EmptyStringLiteral
+
+        - name: nonEmpty
+          type: NonEmptyStringLiteral
+
+        - name: constant
+          type: constants.GremlinStringConstant
+
+  #  dateLiteral
+  #      : 'datetime' LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: DateLiteral
+    type: string
+
+#  nullLiteral
+#      : NullLiteral
+#      ;
+#

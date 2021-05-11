@@ -1,0 +1,234 @@
+status: experimental
+
+includes:
+  - literals
+
+definitions:
+
+  #  traversalPredicate
+  #      : traversalPredicate_eq
+  #      | traversalPredicate_neq
+  #      | traversalPredicate_lt
+  #      | traversalPredicate_lte
+  #      | traversalPredicate_gt
+  #      | traversalPredicate_gte
+  #      | traversalPredicate_inside
+  #      | traversalPredicate_outside
+  #      | traversalPredicate_between
+  #      | traversalPredicate_within
+  #      | traversalPredicate_without
+  #      | traversalPredicate_not
+  #      | traversalPredicate_startingWith
+  #      | traversalPredicate_notStartingWith
+  #      | traversalPredicate_endingWith
+  #      | traversalPredicate_notEndingWith
+  #      | traversalPredicate_containing
+  #      | traversalPredicate_notContaining
+  #      | traversalPredicate DOT 'and' LPAREN traversalPredicate RPAREN
+  #      | traversalPredicate DOT 'or' LPAREN traversalPredicate RPAREN
+  #      | traversalPredicate DOT 'negate' LPAREN RPAREN
+  #      ;
+
+  - name: TraversalPredicate
+    type:
+      union:
+        - name: eq
+          type: Eq
+
+        - name: neq
+          type: Neq
+
+        - name: lt
+          type: Lt
+
+        - name: lte
+          type: Lte
+
+        - name: gt
+          type: Gt
+
+        - name: gte
+          type: Gte
+
+        - name: inside
+          type: Inside
+
+        - name: outside
+          type: Outside
+
+        - name: between
+          type: Between
+
+        - name: within
+          type: Within
+
+        - name: without
+          type: Without
+
+        - name: not
+          type: Not
+
+        - name: startingWith
+          type: StartingWith
+
+        - name: notStartingWith
+          type: NotStartingWith
+
+        - name: endingWith
+          type: NotEndingWith
+
+        - name: containing
+          type: NotContaining
+
+        - name: and
+          type: TraversalPredicate
+
+        - name: or
+          type: TraversalPredicate
+
+        - name: negate
+
+  #  traversalPredicate_eq
+  #      : ('P.eq' | 'eq') LPAREN genericLiteral RPAREN
+  #      ;
+  - name: Eq
+    type: literals.GenericLiteral
+
+  #  traversalPredicate_neq
+  #      : ('P.neq' | 'neq') LPAREN genericLiteral RPAREN
+  #      ;
+
+  - name: Neq
+    type: literals.GenericLiteral
+
+  #  traversalPredicate_lt
+  #      : ('P.lt' | 'lt') LPAREN genericLiteral RPAREN
+  #      ;
+
+  - name: Lt
+    type: literals.GenericLiteral
+
+  #  traversalPredicate_lte
+  #      : ('P.lte' | 'lte') LPAREN genericLiteral RPAREN
+  #      ;
+
+  - name: Lte
+    type: literals.GenericLiteral
+
+  #  traversalPredicate_gt
+  #      : ('P.gt' | 'gt') LPAREN genericLiteral RPAREN
+  #      ;
+
+  - name: Gt
+    type: literals.GenericLiteral
+
+  #  traversalPredicate_gte
+  #      : ('P.gte' | 'gte') LPAREN genericLiteral RPAREN
+  #      ;
+
+  - name: Gte
+    type: literals.GenericLiteral
+
+  #  traversalPredicate_inside
+  #      : ('P.inside' | 'inside') LPAREN genericLiteral COMMA genericLiteral RPAREN
+  #      ;
+
+  - name: Inside
+    type:
+      record:
+        - name: min
+          type: literals.GenericLiteral
+
+        - name: max
+          type: literals.GenericLiteral
+
+  #  traversalPredicate_outside
+  #      : ('P.outside' | 'outside') LPAREN genericLiteral COMMA genericLiteral RPAREN
+  #      ;
+
+  - name: Outside
+    type:
+      record:
+        - name: min
+          type: literals.GenericLiteral
+
+        - name: max
+          type: literals.GenericLiteral
+
+  #  traversalPredicate_between
+  #      : ('P.between' | 'between') LPAREN genericLiteral COMMA genericLiteral RPAREN
+  #      ;
+
+  - name: Between
+    type:
+      record:
+        - name: min
+          type: literals.GenericLiteral
+
+        - name: max
+          type: literals.GenericLiteral
+
+  #  traversalPredicate_within
+  #      : ('P.within' | 'within') LPAREN genericLiteralList RPAREN
+  #      ;
+
+  - name: Within
+    type:
+      list: literals.GenericLiteral
+
+  #  traversalPredicate_without
+  #      : ('P.without' | 'without') LPAREN genericLiteralList RPAREN
+  #      ;
+
+  - name: Without
+    type:
+      list: literals.GenericLiteral
+
+  #  traversalPredicate_not
+  #      : ('P.not' | 'not') LPAREN traversalPredicate RPAREN
+  #      ;
+
+  - name: Not
+    type: string
+
+  #  traversalPredicate_containing
+  #      : ('TextP.containing' | 'containing') LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: Containing
+    type: string
+
+  #  traversalPredicate_notContaining
+  #      : ('TextP.notContaining' | 'notContaining') LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: NotContaining
+    type: string
+
+  #  traversalPredicate_startingWith
+  #      : ('TextP.startingWith' | 'startingWith') LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: StartingWith
+    type: string
+
+  #  traversalPredicate_notStartingWith
+  #      : ('TextP.notStartingWith' | 'notStartingWith') LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: NotStartingWith
+    type: string
+
+  #  traversalPredicate_endingWith
+  #      : ('TextP.endingWith' | 'endingWith') LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: EndingWith
+    type: string
+
+  #  traversalPredicate_notEndingWith
+  #      : ('TextP.notEndingWith' | 'notEndingWith') LPAREN stringLiteral RPAREN
+  #      ;
+
+  - name: NotEndingWith
+    type: string
