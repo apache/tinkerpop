@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -122,6 +123,7 @@ public class Model {
 
         // the inverse of this definition is basically 3.5.0 or better for both GraphSON and Gryo with no support for
         // untyped GraphSON anywhere along the way
+        List<Compatibility> c = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0").match();
         final Compatibility[] before3_5_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.5.0")
                 .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
                         .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.5.0"))).matchToArray();
@@ -445,7 +447,7 @@ public class Model {
             writer.println(String.join(",", headers));
 
             final List<Entry> sorted = new ArrayList<>(entries());
-            Collections.sort(sorted, (o1, o2) -> o1.getResourceName().compareTo(o2.getResourceName()));
+            sorted.sort(Comparator.comparing(Entry::getResourceName));
 
             sorted.forEach(e -> {
                 writer.write(e.getResourceName());
