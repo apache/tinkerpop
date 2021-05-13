@@ -278,10 +278,10 @@ code is still under potential development, it may stay.
 
 == Post-release Tasks
 
-A number of administration tasks should be taken care of after release is public. Some of these items can be performed
-during the VOTE period at the release manager's discretion, though it may be wise to wait until a successful VOTE is
-eminent before reopening development. When there are multiple release managers, it's best to coordinate these tasks
-as one individual may simply just handle them all.
+A number of administration tasks should be taken care of after the release is public. Some of these items can be
+performed during the VOTE period at the release manager's discretion, though it may be wise to wait until a successful
+VOTE is eminent before reopening development. When there are multiple release managers, it's best to coordinate these
+tasks as one individual may simply just handle them all.
 
 . Perform JIRA administration tasks:
 .. "Release" the current version and set the "release date"
