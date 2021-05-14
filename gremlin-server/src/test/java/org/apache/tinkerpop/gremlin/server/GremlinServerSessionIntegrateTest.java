@@ -416,7 +416,13 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName(), true);
+        final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
+                sessionId(name.getMethodName()).
+                manageTransactions(true).
+                maintainStateAfterException(false).
+                create();
+        final Client.Settings clientSettings = Client.Settings.build().useSession(sessionSettings).create();
+        final Client client = cluster.connect(clientSettings);
 
         try {
             client.submit("graph.addVertex(); throw new Exception('no worky')").all().get();
@@ -424,15 +430,17 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals("no worky", root.getMessage());
-
-            // just force a commit here of "something" to ensure the rollback of the previous request
-            client.submit("graph.addVertex(); graph.tx().commit()").all().get();
         }
 
-        // the transaction is managed so a rollback should have executed
-        assertEquals(1, client.submit("g.V().count()").all().get().get(0).getInt());
+        try {
+            // just force a commit here of "something" to ensure the rollback of the previous request
+            client.submit("graph.addVertex(); graph.tx().commit()").all().get(10, TimeUnit.SECONDS);
 
-        cluster.close();
+            // the transaction is managed so a rollback should have executed
+            assertEquals(1, client.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
