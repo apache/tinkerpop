@@ -174,19 +174,38 @@ public class Context {
      * @see #writeAndFlush(ResponseMessage)
      */
     public void writeAndFlush(final ResponseStatusCode code, final Object responseMessage) {
+        writeAndMaybeFlush(code, responseMessage, true);
+    }
+
+    public void write(final ResponseMessage message) {
+        this.write(message.getStatus().getCode(), message);
+    }
+
+    public void write(final ResponseStatusCode code, final Object responseMessage) {
+        writeAndMaybeFlush(code, responseMessage, false);
+    }
+
+    /**
+     * Flushes messages to the underlying transport.
+     */
+    public void flush() {
+        this.getChannelHandlerContext().flush();
+    }
+
+    private void writeAndMaybeFlush(final ResponseStatusCode code, final Object responseMessage, final boolean flush) {
         final boolean messageIsFinal = code.isFinalResponse();
-        if(finalResponseWritten.compareAndSet(false, messageIsFinal)) {
-            this.getChannelHandlerContext().writeAndFlush(responseMessage);
+        if (finalResponseWritten.compareAndSet(false, messageIsFinal)) {
+            this.getChannelHandlerContext().write(responseMessage);
+            if (flush) this.getChannelHandlerContext().flush();
         } else {
             if (responseMessage instanceof Frame) {
                 ((Frame) responseMessage).tryRelease();
             }
 
             final String logMessage = String.format("Another final response message was already written for request %s, ignoring response code: %s",
-                                                    this.getRequestMessage().getRequestId(), code);
+                    this.getRequestMessage().getRequestId(), code);
             logger.warn(logMessage);
         }
-
     }
 
     private RequestContentType determineRequestContents() {
