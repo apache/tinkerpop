@@ -187,7 +187,7 @@ public class MultiTaskSession extends AbstractSession {
             // the ResponseMessage as we don't want the message to be "final" for the Context. that
             // status must be reserved for the message that caused the error
             for (SessionTask st : queue) {
-                st.writeAndFlush(ResponseStatusCode.PARTIAL_CONTENT, ResponseMessage.build(st.getRequestMessage())
+                st.write(ResponseStatusCode.PARTIAL_CONTENT, ResponseMessage.build(st.getRequestMessage())
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusMessage(String.format(
                                 "An earlier request [%s] failed prior to this one having a chance to execute",
@@ -205,7 +205,7 @@ public class MultiTaskSession extends AbstractSession {
             // the best answer
             if (!sessionTask.isFinalResponseWritten()) {
                 logger.warn(rexex.getMessage(), rexex);
-                sessionTask.writeAndFlush(rexex.getResponseMessage());
+                sessionTask.write(rexex.getResponseMessage());
             }
         } finally {
             // if this is a normal end to the session or if there is some general processing exception which tanks
@@ -215,6 +215,15 @@ public class MultiTaskSession extends AbstractSession {
                     closeReason.get() == CloseReason.PROCESSING_EXCEPTION ||
                     closeReason.get() == CloseReason.SESSION_TIMEOUT) {
                 close();
+
+                // the session is now in a state where it is no longer in the set of current sessions so flush
+                // remaining messages to the transport, if any. the remaining message should be failures from
+                // the SessionException in the catch. this prevents an unlikely case where a fast client can
+                // get ahead of the server and start to send messages to a technically errored out session. that
+                // in itself is not necessarily bad but it makes tests fail sometimes because the tests are
+                // designed to assert in the same fashion for OpProcessor and UnifiedChannelizer infrastructure
+                // and they are slightly at odds with each other in certain situations.
+                sessionTask.flush();
             }
         }
     }
