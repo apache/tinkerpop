@@ -31,7 +31,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+This release also includes changes from <<release-3-4-12, 3.4.12>>.
 
+* Fixed bug in Javascript error message related to validating anonymous traversal spawns.
 
 [[release-3-5-0]]
 === TinkerPop 3.5.0 (Release Date: May 3, 2021)
