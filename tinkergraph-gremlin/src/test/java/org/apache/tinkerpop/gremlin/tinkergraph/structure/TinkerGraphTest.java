@@ -24,11 +24,14 @@ import org.apache.tinkerpop.gremlin.GraphHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -854,6 +857,26 @@ public class TinkerGraphTest {
             assertThat(m.containsKey("a"), is(true));
             assertThat(m.containsKey("b"), is(true));
         });
+    }
+
+    @Test
+    public void shouldApplyStrategiesRecursivelyWithGraph() {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = traversal().withEmbedded(graph).withStrategies(new TraversalStrategy.ProviderOptimizationStrategy() {
+            @Override
+            public void apply(final Traversal.Admin<?, ?> traversal) {
+                final Graph graph = TraversalHelper.getRootTraversal(traversal).getGraph().get();
+                graph.addVertex("person");
+            }
+        });
+
+        // adds one person by way of the strategy
+        g.inject(0).iterate();
+        assertEquals(1, traversal().withEmbedded(graph).V().hasLabel("person").count().next().intValue());
+
+        // adds two persons by way of the strategy one for the parent and one for the child
+        g.inject(0).sideEffect(__.addV()).iterate();
+        assertEquals(3, traversal().withEmbedded(graph).V().hasLabel("person").count().next().intValue());
     }
 
     /**
