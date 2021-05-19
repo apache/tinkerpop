@@ -31,8 +31,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -131,6 +131,6 @@ public class DriverRemoteAcceptorTest {
         // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should
         // be ok to just validate that a connection is created
         assertThat(acceptor.connect(Arrays.asList(Storage.toPath(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp")))).toString(),
-                   startsWith("Configured "));
+                   startsWith("Host was not available "));
     }
 }

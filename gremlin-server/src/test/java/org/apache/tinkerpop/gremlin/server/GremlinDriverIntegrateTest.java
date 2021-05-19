@@ -892,17 +892,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             stopServer();
 
             // We create a new client here which will fail to initialize but the original client still has
-            // host marked as connected. Since the second client failed during initialization, it has no way to
-            // test if a host is indeed unreachable because it doesn't have any established connections. It will not add
-            // the host to load balancer but it will also not remove it if it already exists there. Leave that
-            // responsibility to a client that added it. In this case, let the second client perform it's own mechanism
-            // to mark host as unavailable. The first client will discover that the host has failed either with next
-            // keepAlive message or the next request, whichever is earlier. In this case, we will simulate the second
-            // scenario by sending a new request on first client. The request would fail (since server is down) and
-            // client should mark the host unavailable.
-            cluster.connect().init();
+            // host marked as connected. The second client will mark the Host as unavailable when it tries to
+            // initialize the ConnectionPool.
+            try {
+                cluster.connect().init();
+                fail("Should have thrown NoHostAvailableException");
+            } catch (NoHostAvailableException ignored) {
+                // ignored
+            }
 
             try {
+                // client1 should now be dead
                 client1.submit("1+1").all().join();
                 fail("Expecting an exception because the server is shut down.");
             } catch (Exception ex) {
@@ -910,6 +910,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             }
 
             assertEquals(0, cluster.availableHosts().size());
+
+            // reconnect gets tested in a similar fashion in GremlinServerIntegrateTest#shouldFailOnInitiallyDeadHost
+
         } finally {
             cluster.close();
         }

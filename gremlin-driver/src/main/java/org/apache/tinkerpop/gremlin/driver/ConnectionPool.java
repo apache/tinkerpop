@@ -111,8 +111,11 @@ final class ConnectionPool {
             logger.warn("Initialization of connections cancelled for {}", getPoolInfo(), ce);
             throw ce;
         } catch (CompletionException ce) {
-            // Some connections might have been initialized. Close the connection pool gracefully to close them.
-            this.closeAsync();
+            // since there was some error here, the host is likely unavailable at this point. if we dont mark it as
+            // such the client won't try to reconnect to the dead host. need to initialize this.open because if we
+            // don't then reconnects will fail when trying to create a new one with addConnectionIfUnderMaximum()
+            this.open = new AtomicInteger(0);
+            considerHostUnavailable();
 
             final String errMsg = "Could not initialize " + minPoolSize + " (minPoolSize) connections in pool." +
                     " Successful connections=" + this.connections.size() +

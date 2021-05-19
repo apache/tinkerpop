@@ -23,6 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed bug in Java driver where it would not reconnect to a host that it did not successfully connect to at initialization.
+* Changed behavior for Java driver `Client` such that a failed initialization will notify other existing `Client` instances of a dead host and therefore throw `NoHostAvailableException`.
 
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)

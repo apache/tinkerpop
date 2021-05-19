@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -900,7 +901,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // try to re-issue a request now that the server is down
-            client.submit("g").all().join();
+            client.submit("g").all().get(3000, TimeUnit.MILLISECONDS);
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             // Client would have no active connections to the host, hence it would encounter a timeout
@@ -923,10 +924,54 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
                 try {
                     // just need to succeed at reconnect one time
-                    final List<Result> results = client.submit("1+1").all().join();
+                    final List<Result> results = client.submit("1+1").all().get(3000, TimeUnit.MILLISECONDS);
                     assertEquals(1, results.size());
                     assertEquals(2, results.get(0).getInt());
                     break;
+                } catch (Exception ex) {
+                    if (ix == 10)
+                        fail("Should have eventually succeeded");
+                }
+            }
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldFailOnInitiallyDeadHost() throws Exception {
+
+        // start test with no server
+        this.stopServer();
+
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            // try to re-issue a request now that the server is down
+            client.submit("g").all().get(3000, TimeUnit.MILLISECONDS);
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            // Client would have no active connections to the host, hence it would encounter a timeout
+            // trying to find an alive connection to the host.
+            assertThat(re.getCause(), instanceOf(NoHostAvailableException.class));
+
+            //
+            // should recover when the server comes back
+            //
+
+            // restart server
+            this.startServer();
+
+            // try a bunch of times to reconnect. on slower systems this may simply take longer...looking at you travis
+            for (int ix = 1; ix < 11; ix++) {
+                // the retry interval is 1 second, wait a bit longer
+                TimeUnit.SECONDS.sleep(5);
+
+                try {
+                    final List<Result> results = client.submit("1+1").all().get(3000, TimeUnit.MILLISECONDS);
+                    assertEquals(1, results.size());
+                    assertEquals(2, results.get(0).getInt());
                 } catch (Exception ex) {
                     if (ix == 10)
                         fail("Should have eventually succeeded");
