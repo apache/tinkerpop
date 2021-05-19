@@ -54,6 +54,7 @@ namespace Gremlin.Net.Driver
         /// <summary>
         ///     Operation used to get all the keys of all side-effects as produced by a previously executed Traversal.
         /// </summary>
+        [Obsolete("The close message was removed from servers in 3.5.0 so it has no value any more.")]
         public static string OpsClose = "close";
 
         /// <summary>
