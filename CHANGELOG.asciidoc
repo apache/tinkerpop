@@ -23,6 +23,7 @@ limitations under the License.
 [[release-3-6-0]]
 === TinkerPop 3.6.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 
