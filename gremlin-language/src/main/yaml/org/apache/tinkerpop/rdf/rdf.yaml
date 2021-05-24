@@ -1,0 +1,183 @@
+description: "A schema representing the RDF 1.1 abstract syntax"
+comments:
+  - >
+    This schema provides data types for those concepts introduced by the RDF 1.1 abstract syntax
+    which are necessary for directly representing RDF data,
+    including RDF datasets, graphs, triples, terms (IRIs, literals, and blank nodes), language tags,
+    as well as convenience types for namespace prefixes and RDF vocabularies.
+    An "RDF subject term" type is provided as an alias for "IRI or blank node".
+  - >
+    In most respects, this schema is very close to the specification.
+    The one place it differs significantly is in the definition of a blank node,
+    to which rdf11-concepts avoids assigning any internal structure,
+    but which in this schema is provided with a required, string-valued identifier.
+    This is a common choice for RDF implementations, as the identifier enables pragmatic operations
+    on RDF terms, triples, graphs, and datasets.
+
+seeAlso:
+  - title: "RDF 1.1 Concepts and Abstract Syntax"
+    id: "https://www.w3.org/TR/rdf11-concepts"
+status: development
+
+definitions:
+
+  - name: BlankNode
+    description: "A node in an RDF graph which is neither an IRI nor a literal"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 3.4: Blank Nodes"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-blank-nodes"
+    type:
+      record:
+        - name: identifier
+          description: "A local identifier for the blank node which may be used in concrete syntaxes"
+          comments:
+            - >
+              Giving a blank node a string-valued identifier is a pragmatic choice which is intended to support
+              implementations.
+              rdf11-concepts makes clear that such identifiers are not part of the RDF abstract syntax,
+              and should not be used as persistent or portable identifiers for blank nodes.
+          type: string
+
+  - name: Iri
+    description: "A Unicode string that conforms to the syntax defined in RFC 3987"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 3.2: IRIs"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-IRIs"
+      - title: "The Unicode Standard"
+        id: "http://www.unicode.org/versions/latest"
+      - title: "Internationalized Resource Identifiers (IRIs)"
+        id: "http://www.ietf.org/rfc/rfc3987.txt"
+    type: string
+
+  - name: LanguageTag
+    description: "A BCP 47 language tag"
+    seeAlso:
+      - title: "Tags for Identifying Languages"
+        id: "http://tools.ietf.org/html/bcp47"
+    examples:
+      - "en"
+      - "de"
+      - "zh"
+    type: string
+
+  - name: NamespacePrefix
+    description: "A common prefix for IRIs in the same RDF vocabulary"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 1.4: RDF Vocabularies and Namespace IRIs"
+        id: "https://www.w3.org/TR/rdf11-concepts/#vocabularies"
+    type: string
+
+  - name: RdfDataset
+    description: "A collection of RDF graphs, consisting of a default graph and a set of named graphs"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 4: RDF Datasets"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-dataset"
+    type:
+      record:
+        - name: defaultGraph
+          description: "The single default (unnamed) graph of the RDF dataset"
+          type: RdfGraph
+
+        - name: namedGraphs
+          description: "The named graphs of the RDF dataset, as a map from unique graph names to graphs"
+          type:
+            map:
+              keys: RdfSubjectTerm
+              values: RdfGraph
+
+  - name: RdfGraph
+    description: "A set of RDF triples"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 3: RDF Graphs"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-rdf-graph"
+    type:
+      set: RdfTriple
+
+  - name: RdfLiteral
+    description: "A value such as a string, number, or date"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 3.2: Literals"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal"
+    type:
+      record:
+        - name: lexicalForm
+          description: "A Unicode string which should be in Normal Form C"
+          seeAlso:
+            - title: "TR15, Unicode Normalization Forms"
+              id: "http://www.unicode.org/reports/tr15"
+          type: string
+
+        - name: datatype
+          description: "An IRI identifying a datatype that determines how the lexical form maps to a literal value"
+          type: Iri
+
+        - name: languageTag
+          description: "An optional language tag, provided only if the datatype of this literal is rdf:langString"
+          type:
+            optional: LanguageTag
+
+  - name: RdfSubjectTerm
+    description: "An RDF term which may appear in the subject position of a triple, i.e. an IRI or a blank node"
+    comments:
+      - >
+        The concept of an "RDF subject" is not directly defined in rdf11-concepts;
+        it is provided here as a convenience.
+    type:
+      union:
+        - name: iri
+          description: "An IRI"
+          type: Iri
+
+        - name: blankNode
+          description: "A blank node"
+          type: BlankNode
+
+  - name: RdfTerm
+    description: "An IRI, literal, or blank node"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 3.1: Triples"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-triples"
+    comments:
+      - >
+        Whereas the "nodes" of a graph are all of that graph's subjects and objects,
+        RDF terms are the set of all possible IRIs, literals, and blank nodes.
+    type:
+      union:
+        - name: iri
+          description: "An IRI"
+          type: Iri
+
+        - name: literal
+          description: "A literal"
+          type: RdfLiteral
+
+        - name: blankNode
+          description: "A blank node"
+          type: BlankNode
+
+  - name: RdfTriple
+    description: "A triple consisting of a subject, predicate, and object"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 3.1: Triples"
+        id: "https://www.w3.org/TR/rdf11-concepts/#section-triples"
+    type:
+      record:
+        - name: subject
+          description: "The subject of the triple, which is an IRI or a blank node"
+          type: RdfSubjectTerm
+
+        - name: predicate
+          description: "The predicate of the triple, which is an IRI"
+          type: Iri
+
+        - name: object
+          description: "The object of the triple, which is an IRI, a literal or a blank node"
+          type: RdfTerm
+
+  - name: RdfVocabulary
+    description: "A collection of IRIs intended for use in RDF graphs"
+    seeAlso:
+      - title: "RDF 1.1 Concepts and Abstract Syntax, section 1.4: RDF Vocabularies and Namespace IRIs"
+        id: "https://www.w3.org/TR/rdf11-concepts/#vocabularies"
+    type:
+      set: Iri
