@@ -112,7 +112,7 @@ private@tinkerpop.apache.org):
 
 [source,text]
 ----
-Subject [NOTICE] [name of PMC new member] for Apache TinkerPop PMC
+SUBJECT: [NOTICE] [name of PMC new member] for Apache TinkerPop PMC
 
 Apache TinkerPop proposes to invite [name of PMC new member] ([ApacheId]) to join the PMC.
 
@@ -128,13 +128,13 @@ to copy private@ when sending the email):
 
 [source,text]
 ----
-Subject Invitation to join the Apache TinkerPop PMC: [name of PMC new member]
+SUBJECT: Invitation to join the Apache TinkerPop PMC: [name of PMC new member]
 
 In recognition of your contributions to Apache TinkerPop, the TinkerPop PMC has voted to make you a PMC member. If you are unfamiliar with what the PMC does, please see this link to be sure you are comfortable with the responsibilities:
 
 https://www.apache.org/dev/pmc.html
 
-As you have already signed an ICLA and have an Apache account no additional paperwork is required by you other than replying to this email (ensuring to include private@ which is CC'd) to say if you accept or reject the invitation. Obviously there is no requirement to accept - you maybe simply choose to continue working in the capacity of a committer as you are now. We're happy to answer any questions you might have.
+As you have already signed an ICLA and have an Apache account no additional paperwork is required by you other than replying to this email (ensuring to include private@ which is CC'd) to say if you accept or reject the invitation. Obviously there is no requirement to accept - you may simply choose to continue working in the capacity of a committer as you are now. We're happy to answer any questions you might have.
 
 Thank you for your efforts on the project.
 ----
