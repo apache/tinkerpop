@@ -46,21 +46,21 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class Parameters implements Cloneable, Serializable {
+public class Parameters implements Cloneable, Serializable {
 
     public static final Parameters EMPTY = new Parameters();
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
-    private Map<Object, List<Object>> parameters = new HashMap<>();
-    private Set<String> referencedLabels = new HashSet<>();
+    protected Map<Object, List<Object>> parameters = new HashMap<>();
+    protected Set<String> referencedLabels = new HashSet<>();
 
     /**
      * A cached list of traversals that serve as parameter values. The list is cached on calls to
      * {@link #set(TraversalParent, Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
      * high number of calls to {@link #getTraversals()} is great.
      */
-    private List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+    protected List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
 
     /**
      * Checks for existence of key in parameter set.
