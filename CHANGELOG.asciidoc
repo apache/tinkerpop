@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Fixed bug in the `vertexLabelKey` validation for `GraphMLWriter` which was inadvertently validating the `edgeLabelKey`.
+* Changed `IndexStep` to make it easier for providers to determine the type of indexer being used.
 
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)
