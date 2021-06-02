@@ -55,6 +55,10 @@ public class IndexStep<S, E> extends MapStep<S, E> implements TraversalParent, C
         this.configure(WithOptions.indexer, WithOptions.list);
     }
 
+    public Function<Iterator, Object> getIndexer() {
+        return indexer;
+    }
+
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         //noinspection unchecked
