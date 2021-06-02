@@ -173,7 +173,7 @@ public final class GraphMLWriter implements GraphWriter {
 
         if (identifiedEdgeKeyTypes.containsKey(this.edgeLabelKey))
             throw new IllegalStateException(String.format("The edgeLabelKey value of[%s] conflicts with the name of an existing property key to be included in the GraphML", this.edgeLabelKey));
-        if (identifiedEdgeKeyTypes.containsKey(this.edgeLabelKey))
+        if (identifiedVertexKeyTypes.containsKey(this.vertexLabelKey))
             throw new IllegalStateException(String.format("The vertexLabelKey value of[%s] conflicts with the name of an existing property key to be included in the GraphML", this.vertexLabelKey));
 
         identifiedEdgeKeyTypes.put(this.edgeLabelKey, GraphMLTokens.STRING);
