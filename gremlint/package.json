@@ -43,6 +43,5 @@
   },
   "files": [
     "lib/**/*"
-  ],
-  "dependencies": {}
+  ]
 }
