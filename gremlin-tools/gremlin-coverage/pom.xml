@@ -33,11 +33,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-python</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-server</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -96,17 +91,6 @@
                                     <includes>
                                         <include>**/*.class</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>Lib/*.class</exclude>
-                                        <exclude>Lib/aenum/**</exclude>
-                                        <exclude>Lib/backports/**</exclude>
-                                        <exclude>Lib/certifi/**</exclude>
-                                        <exclude>Lib/setuptools/**</exclude>
-                                        <exclude>Lib/setuptools.command/**</exclude>
-                                        <exclude>Lib/tornado/**</exclude>
-                                        <exclude>Lib/tornado.platform/**</exclude>
-                                        <exclude>Lib/tornado.test/**</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
