@@ -23,7 +23,9 @@ public class SkipStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SkipStep)) return false;
+        if (!(other instanceof SkipStep)) {
+            return false;
+        }
         SkipStep o = (SkipStep) other;
         return scope.equals(o.scope)
             && skip.equals(o.skip);

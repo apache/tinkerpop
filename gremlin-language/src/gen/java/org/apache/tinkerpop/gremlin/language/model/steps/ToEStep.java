@@ -23,7 +23,9 @@ public class ToEStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ToEStep)) return false;
+        if (!(other instanceof ToEStep)) {
+            return false;
+        }
         ToEStep o = (ToEStep) other;
         return direction.equals(o.direction)
             && edgeLabels.equals(o.edgeLabels);

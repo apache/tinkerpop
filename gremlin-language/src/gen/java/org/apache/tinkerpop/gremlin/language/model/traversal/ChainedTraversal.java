@@ -30,7 +30,9 @@ public class ChainedTraversal {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ChainedTraversal)) return false;
+        if (!(other instanceof ChainedTraversal)) {
+            return false;
+        }
         ChainedTraversal o = (ChainedTraversal) other;
         return first.equals(o.first)
             && rest.equals(o.rest);
@@ -79,15 +81,20 @@ public class ChainedTraversal {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(Method instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(ChainedParent instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/steps.TraversalMethod
+         */
         public static final class Method extends RestValue {
             public final TraversalMethod method;
             
@@ -105,7 +112,9 @@ public class ChainedTraversal {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Method)) return false;
+                if (!(other instanceof Method)) {
+                    return false;
+                }
                 Method o = (Method) other;
                 return method.equals(o.method);
             }
@@ -116,6 +125,9 @@ public class ChainedTraversal {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.ChainedParentOfGraphTraversal
+         */
         public static final class ChainedParent extends RestValue {
             public final ChainedParentOfGraphTraversal chainedParent;
             
@@ -133,7 +145,9 @@ public class ChainedTraversal {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof ChainedParent)) return false;
+                if (!(other instanceof ChainedParent)) {
+                    return false;
+                }
                 ChainedParent o = (ChainedParent) other;
                 return chainedParent.equals(o.chainedParent);
             }

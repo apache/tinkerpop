@@ -15,7 +15,9 @@ public class NotStartingWith {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof NotStartingWith)) return false;
+        if (!(other instanceof NotStartingWith)) {
+            return false;
+        }
         NotStartingWith o = (NotStartingWith) other;
         return value.equals(o.value);
     }

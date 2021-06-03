@@ -15,7 +15,9 @@ public class GroupCountStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof GroupCountStep)) return false;
+        if (!(other instanceof GroupCountStep)) {
+            return false;
+        }
         GroupCountStep o = (GroupCountStep) other;
         return sideEffectKey.equals(o.sideEffectKey);
     }

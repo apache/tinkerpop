@@ -17,7 +17,9 @@ public class LocalStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof LocalStep)) return false;
+        if (!(other instanceof LocalStep)) {
+            return false;
+        }
         LocalStep o = (LocalStep) other;
         return localTraversal.equals(o.localTraversal);
     }

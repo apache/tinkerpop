@@ -57,78 +57,97 @@ public abstract class TraversalPredicate {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Eq instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Neq instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Lt instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Lte instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Gt instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Gte instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Inside instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Outside instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Between instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Within instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Without instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Not instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(StartingWith instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(NotStartingWith instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(EndingWith instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Containing instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(And instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Or instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Negate instance) {
             return otherwise(instance);
         }
@@ -154,7 +173,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Eq)) return false;
+            if (!(other instanceof Eq)) {
+                return false;
+            }
             Eq o = (Eq) other;
             return eq.equals(o.eq);
         }
@@ -185,7 +206,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Neq)) return false;
+            if (!(other instanceof Neq)) {
+                return false;
+            }
             Neq o = (Neq) other;
             return neq.equals(o.neq);
         }
@@ -216,7 +239,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Lt)) return false;
+            if (!(other instanceof Lt)) {
+                return false;
+            }
             Lt o = (Lt) other;
             return lt.equals(o.lt);
         }
@@ -247,7 +272,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Lte)) return false;
+            if (!(other instanceof Lte)) {
+                return false;
+            }
             Lte o = (Lte) other;
             return lte.equals(o.lte);
         }
@@ -278,7 +305,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Gt)) return false;
+            if (!(other instanceof Gt)) {
+                return false;
+            }
             Gt o = (Gt) other;
             return gt.equals(o.gt);
         }
@@ -309,7 +338,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Gte)) return false;
+            if (!(other instanceof Gte)) {
+                return false;
+            }
             Gte o = (Gte) other;
             return gte.equals(o.gte);
         }
@@ -340,7 +371,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Inside)) return false;
+            if (!(other instanceof Inside)) {
+                return false;
+            }
             Inside o = (Inside) other;
             return inside.equals(o.inside);
         }
@@ -371,7 +404,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Outside)) return false;
+            if (!(other instanceof Outside)) {
+                return false;
+            }
             Outside o = (Outside) other;
             return outside.equals(o.outside);
         }
@@ -402,7 +437,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Between)) return false;
+            if (!(other instanceof Between)) {
+                return false;
+            }
             Between o = (Between) other;
             return between.equals(o.between);
         }
@@ -433,7 +470,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Within)) return false;
+            if (!(other instanceof Within)) {
+                return false;
+            }
             Within o = (Within) other;
             return within.equals(o.within);
         }
@@ -464,7 +503,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Without)) return false;
+            if (!(other instanceof Without)) {
+                return false;
+            }
             Without o = (Without) other;
             return without.equals(o.without);
         }
@@ -495,7 +536,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Not)) return false;
+            if (!(other instanceof Not)) {
+                return false;
+            }
             Not o = (Not) other;
             return not.equals(o.not);
         }
@@ -526,7 +569,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof StartingWith)) return false;
+            if (!(other instanceof StartingWith)) {
+                return false;
+            }
             StartingWith o = (StartingWith) other;
             return startingWith.equals(o.startingWith);
         }
@@ -557,7 +602,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof NotStartingWith)) return false;
+            if (!(other instanceof NotStartingWith)) {
+                return false;
+            }
             NotStartingWith o = (NotStartingWith) other;
             return notStartingWith.equals(o.notStartingWith);
         }
@@ -588,7 +635,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof EndingWith)) return false;
+            if (!(other instanceof EndingWith)) {
+                return false;
+            }
             EndingWith o = (EndingWith) other;
             return endingWith.equals(o.endingWith);
         }
@@ -619,7 +668,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Containing)) return false;
+            if (!(other instanceof Containing)) {
+                return false;
+            }
             Containing o = (Containing) other;
             return containing.equals(o.containing);
         }
@@ -650,7 +701,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof And)) return false;
+            if (!(other instanceof And)) {
+                return false;
+            }
             And o = (And) other;
             return and.equals(o.and);
         }
@@ -681,7 +734,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Or)) return false;
+            if (!(other instanceof Or)) {
+                return false;
+            }
             Or o = (Or) other;
             return or.equals(o.or);
         }
@@ -705,7 +760,9 @@ public abstract class TraversalPredicate {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Negate)) return false;
+            if (!(other instanceof Negate)) {
+                return false;
+            }
             Negate o = (Negate) other;
             return true;
         }

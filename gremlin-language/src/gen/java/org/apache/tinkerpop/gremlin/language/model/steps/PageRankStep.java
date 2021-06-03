@@ -15,7 +15,9 @@ public class PageRankStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof PageRankStep)) return false;
+        if (!(other instanceof PageRankStep)) {
+            return false;
+        }
         PageRankStep o = (PageRankStep) other;
         return alpha.equals(o.alpha);
     }

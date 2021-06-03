@@ -26,10 +26,12 @@ public abstract class IsStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Predicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Value instance) {
             return otherwise(instance);
         }
@@ -55,7 +57,9 @@ public abstract class IsStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Predicate)) return false;
+            if (!(other instanceof Predicate)) {
+                return false;
+            }
             Predicate o = (Predicate) other;
             return predicate.equals(o.predicate);
         }
@@ -86,7 +90,9 @@ public abstract class IsStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Value)) return false;
+            if (!(other instanceof Value)) {
+                return false;
+            }
             Value o = (Value) other;
             return value.equals(o.value);
         }

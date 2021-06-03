@@ -9,8 +9,14 @@ public abstract class ToStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithDirectionValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalDirection
+         */
         public final TraversalDirection direction;
         
+        /**
+         * @type list: string
+         */
         public final java.util.List<String> edgeLabels;
         
         /**
@@ -23,7 +29,9 @@ public abstract class ToStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithDirectionValue)) return false;
+            if (!(other instanceof WithDirectionValue)) {
+                return false;
+            }
             WithDirectionValue o = (WithDirectionValue) other;
             return direction.equals(o.direction)
                 && edgeLabels.equals(o.edgeLabels);
@@ -70,14 +78,17 @@ public abstract class ToStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(WithDirection instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToStepLabel instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToVertex instance) {
             return otherwise(instance);
         }
@@ -100,7 +111,9 @@ public abstract class ToStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithDirection)) return false;
+            if (!(other instanceof WithDirection)) {
+                return false;
+            }
             WithDirection o = (WithDirection) other;
             return withDirection.equals(o.withDirection);
         }
@@ -131,7 +144,9 @@ public abstract class ToStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToStepLabel)) return false;
+            if (!(other instanceof ToStepLabel)) {
+                return false;
+            }
             ToStepLabel o = (ToStepLabel) other;
             return toStepLabel.equals(o.toStepLabel);
         }
@@ -162,7 +177,9 @@ public abstract class ToStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToVertex)) return false;
+            if (!(other instanceof ToVertex)) {
+                return false;
+            }
             ToVertex o = (ToVertex) other;
             return toVertex.equals(o.toVertex);
         }

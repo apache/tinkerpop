@@ -36,7 +36,9 @@ public class PropertyStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof PropertyStep)) return false;
+        if (!(other instanceof PropertyStep)) {
+            return false;
+        }
         PropertyStep o = (PropertyStep) other;
         return cardinality.equals(o.cardinality)
             && key.equals(o.key)

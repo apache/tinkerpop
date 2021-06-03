@@ -8,7 +8,9 @@ public class PeerPressureStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof PeerPressureStep)) return false;
+        if (!(other instanceof PeerPressureStep)) {
+            return false;
+        }
         PeerPressureStep o = (PeerPressureStep) other;
         return true;
     }

@@ -17,7 +17,9 @@ public class SideEffectStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SideEffectStep)) return false;
+        if (!(other instanceof SideEffectStep)) {
+            return false;
+        }
         SideEffectStep o = (SideEffectStep) other;
         return sideEffectTraversal.equals(o.sideEffectTraversal);
     }

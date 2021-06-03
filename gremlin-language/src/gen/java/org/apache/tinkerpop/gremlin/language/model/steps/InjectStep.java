@@ -17,7 +17,9 @@ public class InjectStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof InjectStep)) return false;
+        if (!(other instanceof InjectStep)) {
+            return false;
+        }
         InjectStep o = (InjectStep) other;
         return injections.equals(o.injections);
     }

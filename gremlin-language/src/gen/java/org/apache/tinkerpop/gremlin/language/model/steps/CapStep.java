@@ -21,7 +21,9 @@ public class CapStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof CapStep)) return false;
+        if (!(other instanceof CapStep)) {
+            return false;
+        }
         CapStep o = (CapStep) other;
         return sideEffectKey.equals(o.sideEffectKey)
             && sideEffectKeys.equals(o.sideEffectKeys);

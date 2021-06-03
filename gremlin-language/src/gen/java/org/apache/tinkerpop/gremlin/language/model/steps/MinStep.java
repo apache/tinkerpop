@@ -17,7 +17,9 @@ public class MinStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof MinStep)) return false;
+        if (!(other instanceof MinStep)) {
+            return false;
+        }
         MinStep o = (MinStep) other;
         return scope.equals(o.scope);
     }

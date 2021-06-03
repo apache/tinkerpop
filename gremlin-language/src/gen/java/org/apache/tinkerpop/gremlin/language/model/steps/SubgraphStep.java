@@ -15,7 +15,9 @@ public class SubgraphStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SubgraphStep)) return false;
+        if (!(other instanceof SubgraphStep)) {
+            return false;
+        }
         SubgraphStep o = (SubgraphStep) other;
         return sideEffectKey.equals(o.sideEffectKey);
     }

@@ -17,7 +17,9 @@ public class SackStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SackStep)) return false;
+        if (!(other instanceof SackStep)) {
+            return false;
+        }
         SackStep o = (SackStep) other;
         return sackOperator.equals(o.sackOperator);
     }

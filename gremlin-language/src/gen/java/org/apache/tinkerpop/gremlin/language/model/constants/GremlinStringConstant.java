@@ -27,18 +27,22 @@ public abstract class GremlinStringConstant {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(WithOptions instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ShortestPath instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(PageRank instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(PeerPressure instance) {
             return otherwise(instance);
         }
@@ -64,7 +68,9 @@ public abstract class GremlinStringConstant {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithOptions)) return false;
+            if (!(other instanceof WithOptions)) {
+                return false;
+            }
             WithOptions o = (WithOptions) other;
             return withOptions.equals(o.withOptions);
         }
@@ -95,7 +101,9 @@ public abstract class GremlinStringConstant {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ShortestPath)) return false;
+            if (!(other instanceof ShortestPath)) {
+                return false;
+            }
             ShortestPath o = (ShortestPath) other;
             return shortestPath.equals(o.shortestPath);
         }
@@ -126,7 +134,9 @@ public abstract class GremlinStringConstant {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PageRank)) return false;
+            if (!(other instanceof PageRank)) {
+                return false;
+            }
             PageRank o = (PageRank) other;
             return pageRank.equals(o.pageRank);
         }
@@ -157,7 +167,9 @@ public abstract class GremlinStringConstant {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PeerPressure)) return false;
+            if (!(other instanceof PeerPressure)) {
+                return false;
+            }
             PeerPressure o = (PeerPressure) other;
             return peerPressure.equals(o.peerPressure);
         }

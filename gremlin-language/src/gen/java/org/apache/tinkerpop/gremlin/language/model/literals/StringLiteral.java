@@ -27,14 +27,17 @@ public abstract class StringLiteral {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Empty instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(NonEmpty instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Constant instance) {
             return otherwise(instance);
         }
@@ -60,7 +63,9 @@ public abstract class StringLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Empty)) return false;
+            if (!(other instanceof Empty)) {
+                return false;
+            }
             Empty o = (Empty) other;
             return empty.equals(o.empty);
         }
@@ -91,7 +96,9 @@ public abstract class StringLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof NonEmpty)) return false;
+            if (!(other instanceof NonEmpty)) {
+                return false;
+            }
             NonEmpty o = (NonEmpty) other;
             return nonEmpty.equals(o.nonEmpty);
         }
@@ -122,7 +129,9 @@ public abstract class StringLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Constant)) return false;
+            if (!(other instanceof Constant)) {
+                return false;
+            }
             Constant o = (Constant) other;
             return constant.equals(o.constant);
         }

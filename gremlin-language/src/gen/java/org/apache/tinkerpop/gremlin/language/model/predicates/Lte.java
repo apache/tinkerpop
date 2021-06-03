@@ -17,7 +17,9 @@ public class Lte {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Lte)) return false;
+        if (!(other instanceof Lte)) {
+            return false;
+        }
         Lte o = (Lte) other;
         return genericLiteral.equals(o.genericLiteral);
     }

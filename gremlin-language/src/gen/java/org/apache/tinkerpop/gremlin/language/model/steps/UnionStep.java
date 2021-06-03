@@ -17,7 +17,9 @@ public class UnionStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof UnionStep)) return false;
+        if (!(other instanceof UnionStep)) {
+            return false;
+        }
         UnionStep o = (UnionStep) other;
         return unionTraversals.equals(o.unionTraversals);
     }

@@ -8,7 +8,9 @@ public class IndexStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof IndexStep)) return false;
+        if (!(other instanceof IndexStep)) {
+            return false;
+        }
         IndexStep o = (IndexStep) other;
         return true;
     }

@@ -8,7 +8,9 @@ public class ToSetMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ToSetMethod)) return false;
+        if (!(other instanceof ToSetMethod)) {
+            return false;
+        }
         ToSetMethod o = (ToSetMethod) other;
         return true;
     }

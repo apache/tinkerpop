@@ -15,7 +15,9 @@ public class NotEndingWith {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof NotEndingWith)) return false;
+        if (!(other instanceof NotEndingWith)) {
+            return false;
+        }
         NotEndingWith o = (NotEndingWith) other;
         return value.equals(o.value);
     }

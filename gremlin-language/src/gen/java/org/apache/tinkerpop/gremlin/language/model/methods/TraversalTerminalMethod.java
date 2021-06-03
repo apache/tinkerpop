@@ -35,34 +35,42 @@ public abstract class TraversalTerminalMethod {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Explain instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Iterate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(HasNext instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(TryNext instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Next instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToList instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToSet instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToBulkSet instance) {
             return otherwise(instance);
         }
@@ -88,7 +96,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Explain)) return false;
+            if (!(other instanceof Explain)) {
+                return false;
+            }
             Explain o = (Explain) other;
             return explain.equals(o.explain);
         }
@@ -119,7 +129,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Iterate)) return false;
+            if (!(other instanceof Iterate)) {
+                return false;
+            }
             Iterate o = (Iterate) other;
             return iterate.equals(o.iterate);
         }
@@ -150,7 +162,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof HasNext)) return false;
+            if (!(other instanceof HasNext)) {
+                return false;
+            }
             HasNext o = (HasNext) other;
             return hasNext.equals(o.hasNext);
         }
@@ -181,7 +195,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof TryNext)) return false;
+            if (!(other instanceof TryNext)) {
+                return false;
+            }
             TryNext o = (TryNext) other;
             return tryNext.equals(o.tryNext);
         }
@@ -212,7 +228,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Next)) return false;
+            if (!(other instanceof Next)) {
+                return false;
+            }
             Next o = (Next) other;
             return next.equals(o.next);
         }
@@ -243,7 +261,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToList)) return false;
+            if (!(other instanceof ToList)) {
+                return false;
+            }
             ToList o = (ToList) other;
             return toList.equals(o.toList);
         }
@@ -274,7 +294,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToSet)) return false;
+            if (!(other instanceof ToSet)) {
+                return false;
+            }
             ToSet o = (ToSet) other;
             return toSet.equals(o.toSet);
         }
@@ -305,7 +327,9 @@ public abstract class TraversalTerminalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToBulkSet)) return false;
+            if (!(other instanceof ToBulkSet)) {
+                return false;
+            }
             ToBulkSet o = (ToBulkSet) other;
             return toBulkSet.equals(o.toBulkSet);
         }

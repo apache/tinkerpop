@@ -8,7 +8,9 @@ public class ConnectedComponentStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ConnectedComponentStep)) return false;
+        if (!(other instanceof ConnectedComponentStep)) {
+            return false;
+        }
         ConnectedComponentStep o = (ConnectedComponentStep) other;
         return true;
     }

@@ -17,7 +17,9 @@ public class OrderStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof OrderStep)) return false;
+        if (!(other instanceof OrderStep)) {
+            return false;
+        }
         OrderStep o = (OrderStep) other;
         return scope.equals(o.scope);
     }

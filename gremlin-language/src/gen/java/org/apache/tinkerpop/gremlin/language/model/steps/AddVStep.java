@@ -29,18 +29,22 @@ public abstract class AddVStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Empty instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(VertexLabel instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Null instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(VertexLabelTraversal instance) {
             return otherwise(instance);
         }
@@ -59,7 +63,9 @@ public abstract class AddVStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Empty)) return false;
+            if (!(other instanceof Empty)) {
+                return false;
+            }
             Empty o = (Empty) other;
             return true;
         }
@@ -90,7 +96,9 @@ public abstract class AddVStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof VertexLabel)) return false;
+            if (!(other instanceof VertexLabel)) {
+                return false;
+            }
             VertexLabel o = (VertexLabel) other;
             return vertexLabel.equals(o.vertexLabel);
         }
@@ -114,7 +122,9 @@ public abstract class AddVStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Null)) return false;
+            if (!(other instanceof Null)) {
+                return false;
+            }
             Null o = (Null) other;
             return true;
         }
@@ -145,7 +155,9 @@ public abstract class AddVStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof VertexLabelTraversal)) return false;
+            if (!(other instanceof VertexLabelTraversal)) {
+                return false;
+            }
             VertexLabelTraversal o = (VertexLabelTraversal) other;
             return vertexLabelTraversal.equals(o.vertexLabelTraversal);
         }

@@ -25,10 +25,12 @@ public abstract class FromStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(FromStepLabel instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(FromVertex instance) {
             return otherwise(instance);
         }
@@ -54,7 +56,9 @@ public abstract class FromStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof FromStepLabel)) return false;
+            if (!(other instanceof FromStepLabel)) {
+                return false;
+            }
             FromStepLabel o = (FromStepLabel) other;
             return fromStepLabel.equals(o.fromStepLabel);
         }
@@ -85,7 +89,9 @@ public abstract class FromStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof FromVertex)) return false;
+            if (!(other instanceof FromVertex)) {
+                return false;
+            }
             FromVertex o = (FromVertex) other;
             return fromVertex.equals(o.fromVertex);
         }

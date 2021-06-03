@@ -221,406 +221,507 @@ public abstract class TraversalMethod {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(V instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(AddE instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(AddV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Aggregate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(And instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(As instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Barrier instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Both instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(BothE instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(BothV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Branch instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(By instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Cap instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Choose instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Coalesce instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Coin instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ConnectedComponent instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Constant instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Count instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(CyclicPath instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Dedup instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Drop instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ElementMap instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Emit instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Filter instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(FlatMap instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Fold instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(From instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Group instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(GroupCount instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Has instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(HasId instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(HasKey instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(HasLabel instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(HasNot instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(HasValue instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Id instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Identity instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(In instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(InE instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(InV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Index instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Inject instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Is instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Key instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Label instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Limit instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Local instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Loops instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Map instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Match instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(MathEsc instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Max instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Mean instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Min instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Not instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Option instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Optional instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Or instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Order instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(OtherV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Out instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(OutE instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(OutV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(PageRank instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Path instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(PeerPressure instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Profile instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Project instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Properties instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Property instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(PropertyMap instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Range instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Read instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Repeat instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Sack instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Sample instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Select instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ShortestPath instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(SideEffect instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(SimplePath instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Skip instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Store instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Subgraph instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Sum instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Tail instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(TimeLimit instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Times instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(To instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToE instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Tree instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Unfold instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Union instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Until instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Value instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ValueMap instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Values instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Where instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(With instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Write instance) {
             return otherwise(instance);
         }
@@ -646,7 +747,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof V)) return false;
+            if (!(other instanceof V)) {
+                return false;
+            }
             V o = (V) other;
             return v.equals(o.v);
         }
@@ -677,7 +780,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof AddE)) return false;
+            if (!(other instanceof AddE)) {
+                return false;
+            }
             AddE o = (AddE) other;
             return addE.equals(o.addE);
         }
@@ -708,7 +813,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof AddV)) return false;
+            if (!(other instanceof AddV)) {
+                return false;
+            }
             AddV o = (AddV) other;
             return addV.equals(o.addV);
         }
@@ -739,7 +846,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Aggregate)) return false;
+            if (!(other instanceof Aggregate)) {
+                return false;
+            }
             Aggregate o = (Aggregate) other;
             return aggregate.equals(o.aggregate);
         }
@@ -770,7 +879,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof And)) return false;
+            if (!(other instanceof And)) {
+                return false;
+            }
             And o = (And) other;
             return and.equals(o.and);
         }
@@ -801,7 +912,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof As)) return false;
+            if (!(other instanceof As)) {
+                return false;
+            }
             As o = (As) other;
             return as.equals(o.as);
         }
@@ -832,7 +945,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Barrier)) return false;
+            if (!(other instanceof Barrier)) {
+                return false;
+            }
             Barrier o = (Barrier) other;
             return barrier.equals(o.barrier);
         }
@@ -863,7 +978,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Both)) return false;
+            if (!(other instanceof Both)) {
+                return false;
+            }
             Both o = (Both) other;
             return both.equals(o.both);
         }
@@ -894,7 +1011,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof BothE)) return false;
+            if (!(other instanceof BothE)) {
+                return false;
+            }
             BothE o = (BothE) other;
             return bothE.equals(o.bothE);
         }
@@ -925,7 +1044,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof BothV)) return false;
+            if (!(other instanceof BothV)) {
+                return false;
+            }
             BothV o = (BothV) other;
             return bothV.equals(o.bothV);
         }
@@ -956,7 +1077,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Branch)) return false;
+            if (!(other instanceof Branch)) {
+                return false;
+            }
             Branch o = (Branch) other;
             return branch.equals(o.branch);
         }
@@ -987,7 +1110,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof By)) return false;
+            if (!(other instanceof By)) {
+                return false;
+            }
             By o = (By) other;
             return by.equals(o.by);
         }
@@ -1018,7 +1143,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Cap)) return false;
+            if (!(other instanceof Cap)) {
+                return false;
+            }
             Cap o = (Cap) other;
             return cap.equals(o.cap);
         }
@@ -1049,7 +1176,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Choose)) return false;
+            if (!(other instanceof Choose)) {
+                return false;
+            }
             Choose o = (Choose) other;
             return choose.equals(o.choose);
         }
@@ -1080,7 +1209,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Coalesce)) return false;
+            if (!(other instanceof Coalesce)) {
+                return false;
+            }
             Coalesce o = (Coalesce) other;
             return coalesce.equals(o.coalesce);
         }
@@ -1111,7 +1242,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Coin)) return false;
+            if (!(other instanceof Coin)) {
+                return false;
+            }
             Coin o = (Coin) other;
             return coin.equals(o.coin);
         }
@@ -1142,7 +1275,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ConnectedComponent)) return false;
+            if (!(other instanceof ConnectedComponent)) {
+                return false;
+            }
             ConnectedComponent o = (ConnectedComponent) other;
             return connectedComponent.equals(o.connectedComponent);
         }
@@ -1173,7 +1308,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Constant)) return false;
+            if (!(other instanceof Constant)) {
+                return false;
+            }
             Constant o = (Constant) other;
             return constant.equals(o.constant);
         }
@@ -1204,7 +1341,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Count)) return false;
+            if (!(other instanceof Count)) {
+                return false;
+            }
             Count o = (Count) other;
             return count.equals(o.count);
         }
@@ -1235,7 +1374,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof CyclicPath)) return false;
+            if (!(other instanceof CyclicPath)) {
+                return false;
+            }
             CyclicPath o = (CyclicPath) other;
             return cyclicPath.equals(o.cyclicPath);
         }
@@ -1266,7 +1407,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Dedup)) return false;
+            if (!(other instanceof Dedup)) {
+                return false;
+            }
             Dedup o = (Dedup) other;
             return dedup.equals(o.dedup);
         }
@@ -1297,7 +1440,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Drop)) return false;
+            if (!(other instanceof Drop)) {
+                return false;
+            }
             Drop o = (Drop) other;
             return drop.equals(o.drop);
         }
@@ -1328,7 +1473,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ElementMap)) return false;
+            if (!(other instanceof ElementMap)) {
+                return false;
+            }
             ElementMap o = (ElementMap) other;
             return elementMap.equals(o.elementMap);
         }
@@ -1359,7 +1506,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Emit)) return false;
+            if (!(other instanceof Emit)) {
+                return false;
+            }
             Emit o = (Emit) other;
             return emit.equals(o.emit);
         }
@@ -1390,7 +1539,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Filter)) return false;
+            if (!(other instanceof Filter)) {
+                return false;
+            }
             Filter o = (Filter) other;
             return filter.equals(o.filter);
         }
@@ -1421,7 +1572,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof FlatMap)) return false;
+            if (!(other instanceof FlatMap)) {
+                return false;
+            }
             FlatMap o = (FlatMap) other;
             return flatMap.equals(o.flatMap);
         }
@@ -1452,7 +1605,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Fold)) return false;
+            if (!(other instanceof Fold)) {
+                return false;
+            }
             Fold o = (Fold) other;
             return fold.equals(o.fold);
         }
@@ -1483,7 +1638,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof From)) return false;
+            if (!(other instanceof From)) {
+                return false;
+            }
             From o = (From) other;
             return from.equals(o.from);
         }
@@ -1514,7 +1671,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Group)) return false;
+            if (!(other instanceof Group)) {
+                return false;
+            }
             Group o = (Group) other;
             return group.equals(o.group);
         }
@@ -1545,7 +1704,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof GroupCount)) return false;
+            if (!(other instanceof GroupCount)) {
+                return false;
+            }
             GroupCount o = (GroupCount) other;
             return groupCount.equals(o.groupCount);
         }
@@ -1576,7 +1737,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Has)) return false;
+            if (!(other instanceof Has)) {
+                return false;
+            }
             Has o = (Has) other;
             return has.equals(o.has);
         }
@@ -1607,7 +1770,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof HasId)) return false;
+            if (!(other instanceof HasId)) {
+                return false;
+            }
             HasId o = (HasId) other;
             return hasId.equals(o.hasId);
         }
@@ -1638,7 +1803,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof HasKey)) return false;
+            if (!(other instanceof HasKey)) {
+                return false;
+            }
             HasKey o = (HasKey) other;
             return hasKey.equals(o.hasKey);
         }
@@ -1669,7 +1836,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof HasLabel)) return false;
+            if (!(other instanceof HasLabel)) {
+                return false;
+            }
             HasLabel o = (HasLabel) other;
             return hasLabel.equals(o.hasLabel);
         }
@@ -1700,7 +1869,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof HasNot)) return false;
+            if (!(other instanceof HasNot)) {
+                return false;
+            }
             HasNot o = (HasNot) other;
             return hasNot.equals(o.hasNot);
         }
@@ -1731,7 +1902,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof HasValue)) return false;
+            if (!(other instanceof HasValue)) {
+                return false;
+            }
             HasValue o = (HasValue) other;
             return hasValue.equals(o.hasValue);
         }
@@ -1762,7 +1935,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Id)) return false;
+            if (!(other instanceof Id)) {
+                return false;
+            }
             Id o = (Id) other;
             return id.equals(o.id);
         }
@@ -1793,7 +1968,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Identity)) return false;
+            if (!(other instanceof Identity)) {
+                return false;
+            }
             Identity o = (Identity) other;
             return identity.equals(o.identity);
         }
@@ -1824,7 +2001,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof In)) return false;
+            if (!(other instanceof In)) {
+                return false;
+            }
             In o = (In) other;
             return in.equals(o.in);
         }
@@ -1855,7 +2034,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof InE)) return false;
+            if (!(other instanceof InE)) {
+                return false;
+            }
             InE o = (InE) other;
             return inE.equals(o.inE);
         }
@@ -1886,7 +2067,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof InV)) return false;
+            if (!(other instanceof InV)) {
+                return false;
+            }
             InV o = (InV) other;
             return inV.equals(o.inV);
         }
@@ -1917,7 +2100,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Index)) return false;
+            if (!(other instanceof Index)) {
+                return false;
+            }
             Index o = (Index) other;
             return index.equals(o.index);
         }
@@ -1948,7 +2133,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Inject)) return false;
+            if (!(other instanceof Inject)) {
+                return false;
+            }
             Inject o = (Inject) other;
             return inject.equals(o.inject);
         }
@@ -1979,7 +2166,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Is)) return false;
+            if (!(other instanceof Is)) {
+                return false;
+            }
             Is o = (Is) other;
             return is.equals(o.is);
         }
@@ -2010,7 +2199,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Key)) return false;
+            if (!(other instanceof Key)) {
+                return false;
+            }
             Key o = (Key) other;
             return key.equals(o.key);
         }
@@ -2041,7 +2232,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Label)) return false;
+            if (!(other instanceof Label)) {
+                return false;
+            }
             Label o = (Label) other;
             return label.equals(o.label);
         }
@@ -2072,7 +2265,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Limit)) return false;
+            if (!(other instanceof Limit)) {
+                return false;
+            }
             Limit o = (Limit) other;
             return limit.equals(o.limit);
         }
@@ -2103,7 +2298,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Local)) return false;
+            if (!(other instanceof Local)) {
+                return false;
+            }
             Local o = (Local) other;
             return local.equals(o.local);
         }
@@ -2134,7 +2331,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Loops)) return false;
+            if (!(other instanceof Loops)) {
+                return false;
+            }
             Loops o = (Loops) other;
             return loops.equals(o.loops);
         }
@@ -2165,7 +2364,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Map)) return false;
+            if (!(other instanceof Map)) {
+                return false;
+            }
             Map o = (Map) other;
             return map.equals(o.map);
         }
@@ -2196,7 +2397,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Match)) return false;
+            if (!(other instanceof Match)) {
+                return false;
+            }
             Match o = (Match) other;
             return match.equals(o.match);
         }
@@ -2227,7 +2430,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof MathEsc)) return false;
+            if (!(other instanceof MathEsc)) {
+                return false;
+            }
             MathEsc o = (MathEsc) other;
             return math.equals(o.math);
         }
@@ -2258,7 +2463,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Max)) return false;
+            if (!(other instanceof Max)) {
+                return false;
+            }
             Max o = (Max) other;
             return max.equals(o.max);
         }
@@ -2289,7 +2496,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Mean)) return false;
+            if (!(other instanceof Mean)) {
+                return false;
+            }
             Mean o = (Mean) other;
             return mean.equals(o.mean);
         }
@@ -2320,7 +2529,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Min)) return false;
+            if (!(other instanceof Min)) {
+                return false;
+            }
             Min o = (Min) other;
             return min.equals(o.min);
         }
@@ -2351,7 +2562,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Not)) return false;
+            if (!(other instanceof Not)) {
+                return false;
+            }
             Not o = (Not) other;
             return not.equals(o.not);
         }
@@ -2382,7 +2595,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Option)) return false;
+            if (!(other instanceof Option)) {
+                return false;
+            }
             Option o = (Option) other;
             return option.equals(o.option);
         }
@@ -2413,7 +2628,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Optional)) return false;
+            if (!(other instanceof Optional)) {
+                return false;
+            }
             Optional o = (Optional) other;
             return optional.equals(o.optional);
         }
@@ -2444,7 +2661,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Or)) return false;
+            if (!(other instanceof Or)) {
+                return false;
+            }
             Or o = (Or) other;
             return or.equals(o.or);
         }
@@ -2475,7 +2694,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Order)) return false;
+            if (!(other instanceof Order)) {
+                return false;
+            }
             Order o = (Order) other;
             return order.equals(o.order);
         }
@@ -2506,7 +2727,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof OtherV)) return false;
+            if (!(other instanceof OtherV)) {
+                return false;
+            }
             OtherV o = (OtherV) other;
             return otherV.equals(o.otherV);
         }
@@ -2537,7 +2760,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Out)) return false;
+            if (!(other instanceof Out)) {
+                return false;
+            }
             Out o = (Out) other;
             return out.equals(o.out);
         }
@@ -2568,7 +2793,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof OutE)) return false;
+            if (!(other instanceof OutE)) {
+                return false;
+            }
             OutE o = (OutE) other;
             return outE.equals(o.outE);
         }
@@ -2599,7 +2826,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof OutV)) return false;
+            if (!(other instanceof OutV)) {
+                return false;
+            }
             OutV o = (OutV) other;
             return outV.equals(o.outV);
         }
@@ -2630,7 +2859,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PageRank)) return false;
+            if (!(other instanceof PageRank)) {
+                return false;
+            }
             PageRank o = (PageRank) other;
             return pageRank.equals(o.pageRank);
         }
@@ -2661,7 +2892,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Path)) return false;
+            if (!(other instanceof Path)) {
+                return false;
+            }
             Path o = (Path) other;
             return path.equals(o.path);
         }
@@ -2692,7 +2925,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PeerPressure)) return false;
+            if (!(other instanceof PeerPressure)) {
+                return false;
+            }
             PeerPressure o = (PeerPressure) other;
             return peerPressure.equals(o.peerPressure);
         }
@@ -2723,7 +2958,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Profile)) return false;
+            if (!(other instanceof Profile)) {
+                return false;
+            }
             Profile o = (Profile) other;
             return profile.equals(o.profile);
         }
@@ -2754,7 +2991,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Project)) return false;
+            if (!(other instanceof Project)) {
+                return false;
+            }
             Project o = (Project) other;
             return project.equals(o.project);
         }
@@ -2785,7 +3024,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Properties)) return false;
+            if (!(other instanceof Properties)) {
+                return false;
+            }
             Properties o = (Properties) other;
             return properties.equals(o.properties);
         }
@@ -2816,7 +3057,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Property)) return false;
+            if (!(other instanceof Property)) {
+                return false;
+            }
             Property o = (Property) other;
             return property.equals(o.property);
         }
@@ -2847,7 +3090,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PropertyMap)) return false;
+            if (!(other instanceof PropertyMap)) {
+                return false;
+            }
             PropertyMap o = (PropertyMap) other;
             return propertyMap.equals(o.propertyMap);
         }
@@ -2878,7 +3123,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Range)) return false;
+            if (!(other instanceof Range)) {
+                return false;
+            }
             Range o = (Range) other;
             return range.equals(o.range);
         }
@@ -2909,7 +3156,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Read)) return false;
+            if (!(other instanceof Read)) {
+                return false;
+            }
             Read o = (Read) other;
             return read.equals(o.read);
         }
@@ -2940,7 +3189,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Repeat)) return false;
+            if (!(other instanceof Repeat)) {
+                return false;
+            }
             Repeat o = (Repeat) other;
             return repeat.equals(o.repeat);
         }
@@ -2971,7 +3222,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Sack)) return false;
+            if (!(other instanceof Sack)) {
+                return false;
+            }
             Sack o = (Sack) other;
             return sack.equals(o.sack);
         }
@@ -3002,7 +3255,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Sample)) return false;
+            if (!(other instanceof Sample)) {
+                return false;
+            }
             Sample o = (Sample) other;
             return sample.equals(o.sample);
         }
@@ -3033,7 +3288,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Select)) return false;
+            if (!(other instanceof Select)) {
+                return false;
+            }
             Select o = (Select) other;
             return select.equals(o.select);
         }
@@ -3064,7 +3321,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ShortestPath)) return false;
+            if (!(other instanceof ShortestPath)) {
+                return false;
+            }
             ShortestPath o = (ShortestPath) other;
             return shortestPath.equals(o.shortestPath);
         }
@@ -3095,7 +3354,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof SideEffect)) return false;
+            if (!(other instanceof SideEffect)) {
+                return false;
+            }
             SideEffect o = (SideEffect) other;
             return sideEffect.equals(o.sideEffect);
         }
@@ -3126,7 +3387,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof SimplePath)) return false;
+            if (!(other instanceof SimplePath)) {
+                return false;
+            }
             SimplePath o = (SimplePath) other;
             return simplePath.equals(o.simplePath);
         }
@@ -3157,7 +3420,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Skip)) return false;
+            if (!(other instanceof Skip)) {
+                return false;
+            }
             Skip o = (Skip) other;
             return skip.equals(o.skip);
         }
@@ -3188,7 +3453,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Store)) return false;
+            if (!(other instanceof Store)) {
+                return false;
+            }
             Store o = (Store) other;
             return store.equals(o.store);
         }
@@ -3219,7 +3486,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Subgraph)) return false;
+            if (!(other instanceof Subgraph)) {
+                return false;
+            }
             Subgraph o = (Subgraph) other;
             return subgraph.equals(o.subgraph);
         }
@@ -3250,7 +3519,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Sum)) return false;
+            if (!(other instanceof Sum)) {
+                return false;
+            }
             Sum o = (Sum) other;
             return sum.equals(o.sum);
         }
@@ -3281,7 +3552,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Tail)) return false;
+            if (!(other instanceof Tail)) {
+                return false;
+            }
             Tail o = (Tail) other;
             return tail.equals(o.tail);
         }
@@ -3312,7 +3585,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof TimeLimit)) return false;
+            if (!(other instanceof TimeLimit)) {
+                return false;
+            }
             TimeLimit o = (TimeLimit) other;
             return timeLimit.equals(o.timeLimit);
         }
@@ -3343,7 +3618,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Times)) return false;
+            if (!(other instanceof Times)) {
+                return false;
+            }
             Times o = (Times) other;
             return times.equals(o.times);
         }
@@ -3374,7 +3651,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof To)) return false;
+            if (!(other instanceof To)) {
+                return false;
+            }
             To o = (To) other;
             return to.equals(o.to);
         }
@@ -3405,7 +3684,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToE)) return false;
+            if (!(other instanceof ToE)) {
+                return false;
+            }
             ToE o = (ToE) other;
             return toE.equals(o.toE);
         }
@@ -3436,7 +3717,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToV)) return false;
+            if (!(other instanceof ToV)) {
+                return false;
+            }
             ToV o = (ToV) other;
             return toV.equals(o.toV);
         }
@@ -3467,7 +3750,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Tree)) return false;
+            if (!(other instanceof Tree)) {
+                return false;
+            }
             Tree o = (Tree) other;
             return tree.equals(o.tree);
         }
@@ -3498,7 +3783,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Unfold)) return false;
+            if (!(other instanceof Unfold)) {
+                return false;
+            }
             Unfold o = (Unfold) other;
             return unfold.equals(o.unfold);
         }
@@ -3529,7 +3816,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Union)) return false;
+            if (!(other instanceof Union)) {
+                return false;
+            }
             Union o = (Union) other;
             return union.equals(o.union);
         }
@@ -3560,7 +3849,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Until)) return false;
+            if (!(other instanceof Until)) {
+                return false;
+            }
             Until o = (Until) other;
             return until.equals(o.until);
         }
@@ -3591,7 +3882,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Value)) return false;
+            if (!(other instanceof Value)) {
+                return false;
+            }
             Value o = (Value) other;
             return value.equals(o.value);
         }
@@ -3622,7 +3915,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ValueMap)) return false;
+            if (!(other instanceof ValueMap)) {
+                return false;
+            }
             ValueMap o = (ValueMap) other;
             return valueMap.equals(o.valueMap);
         }
@@ -3653,7 +3948,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Values)) return false;
+            if (!(other instanceof Values)) {
+                return false;
+            }
             Values o = (Values) other;
             return values.equals(o.values);
         }
@@ -3684,7 +3981,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Where)) return false;
+            if (!(other instanceof Where)) {
+                return false;
+            }
             Where o = (Where) other;
             return where.equals(o.where);
         }
@@ -3715,7 +4014,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof With)) return false;
+            if (!(other instanceof With)) {
+                return false;
+            }
             With o = (With) other;
             return with.equals(o.with);
         }
@@ -3746,7 +4047,9 @@ public abstract class TraversalMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Write)) return false;
+            if (!(other instanceof Write)) {
+                return false;
+            }
             Write o = (Write) other;
             return write.equals(o.write);
         }

@@ -29,22 +29,27 @@ public abstract class TraversalStrategy {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Partition instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Subgraph instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(EdgeLabelVerification instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ReadOnly instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ReservedKeysVerification instance) {
             return otherwise(instance);
         }
@@ -70,7 +75,9 @@ public abstract class TraversalStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Partition)) return false;
+            if (!(other instanceof Partition)) {
+                return false;
+            }
             Partition o = (Partition) other;
             return partition.equals(o.partition);
         }
@@ -101,7 +108,9 @@ public abstract class TraversalStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Subgraph)) return false;
+            if (!(other instanceof Subgraph)) {
+                return false;
+            }
             Subgraph o = (Subgraph) other;
             return subgraph.equals(o.subgraph);
         }
@@ -132,7 +141,9 @@ public abstract class TraversalStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof EdgeLabelVerification)) return false;
+            if (!(other instanceof EdgeLabelVerification)) {
+                return false;
+            }
             EdgeLabelVerification o = (EdgeLabelVerification) other;
             return edgeLabelVerification.equals(o.edgeLabelVerification);
         }
@@ -156,7 +167,9 @@ public abstract class TraversalStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ReadOnly)) return false;
+            if (!(other instanceof ReadOnly)) {
+                return false;
+            }
             ReadOnly o = (ReadOnly) other;
             return true;
         }
@@ -187,7 +200,9 @@ public abstract class TraversalStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ReservedKeysVerification)) return false;
+            if (!(other instanceof ReservedKeysVerification)) {
+                return false;
+            }
             ReservedKeysVerification o = (ReservedKeysVerification) other;
             return reservedKeysVerification.equals(o.reservedKeysVerification);
         }

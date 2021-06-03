@@ -15,7 +15,9 @@ public class ProfileStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ProfileStep)) return false;
+        if (!(other instanceof ProfileStep)) {
+            return false;
+        }
         ProfileStep o = (ProfileStep) other;
         return sideEffectKey.equals(o.sideEffectKey);
     }

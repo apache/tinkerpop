@@ -23,7 +23,9 @@ public class Inside {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Inside)) return false;
+        if (!(other instanceof Inside)) {
+            return false;
+        }
         Inside o = (Inside) other;
         return min.equals(o.min)
             && max.equals(o.max);

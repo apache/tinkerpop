@@ -23,7 +23,9 @@ public class Outside {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Outside)) return false;
+        if (!(other instanceof Outside)) {
+            return false;
+        }
         Outside o = (Outside) other;
         return min.equals(o.min)
             && max.equals(o.max);

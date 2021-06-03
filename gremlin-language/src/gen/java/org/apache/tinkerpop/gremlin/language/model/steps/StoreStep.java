@@ -15,7 +15,9 @@ public class StoreStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof StoreStep)) return false;
+        if (!(other instanceof StoreStep)) {
+            return false;
+        }
         StoreStep o = (StoreStep) other;
         return sideEffectKey.equals(o.sideEffectKey);
     }

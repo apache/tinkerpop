@@ -15,7 +15,9 @@ public class Containing {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Containing)) return false;
+        if (!(other instanceof Containing)) {
+            return false;
+        }
         Containing o = (Containing) other;
         return value.equals(o.value);
     }

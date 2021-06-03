@@ -8,7 +8,9 @@ public class UnfoldStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof UnfoldStep)) return false;
+        if (!(other instanceof UnfoldStep)) {
+            return false;
+        }
         UnfoldStep o = (UnfoldStep) other;
         return true;
     }

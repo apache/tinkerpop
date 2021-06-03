@@ -29,7 +29,9 @@ public class RangeStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof RangeStep)) return false;
+        if (!(other instanceof RangeStep)) {
+            return false;
+        }
         RangeStep o = (RangeStep) other;
         return scope.equals(o.scope)
             && low.equals(o.low)

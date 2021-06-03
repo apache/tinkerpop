@@ -31,26 +31,32 @@ public abstract class GenericLiteral {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(IntegerEsc instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(FloatEsc instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(BooleanEsc instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(StringEsc instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Date instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Null instance) {
             return otherwise(instance);
         }
@@ -76,7 +82,9 @@ public abstract class GenericLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof IntegerEsc)) return false;
+            if (!(other instanceof IntegerEsc)) {
+                return false;
+            }
             IntegerEsc o = (IntegerEsc) other;
             return integer.equals(o.integer);
         }
@@ -107,7 +115,9 @@ public abstract class GenericLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof FloatEsc)) return false;
+            if (!(other instanceof FloatEsc)) {
+                return false;
+            }
             FloatEsc o = (FloatEsc) other;
             return floatEsc.equals(o.floatEsc);
         }
@@ -138,7 +148,9 @@ public abstract class GenericLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof BooleanEsc)) return false;
+            if (!(other instanceof BooleanEsc)) {
+                return false;
+            }
             BooleanEsc o = (BooleanEsc) other;
             return booleanEsc.equals(o.booleanEsc);
         }
@@ -169,7 +181,9 @@ public abstract class GenericLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof StringEsc)) return false;
+            if (!(other instanceof StringEsc)) {
+                return false;
+            }
             StringEsc o = (StringEsc) other;
             return string.equals(o.string);
         }
@@ -200,7 +214,9 @@ public abstract class GenericLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Date)) return false;
+            if (!(other instanceof Date)) {
+                return false;
+            }
             Date o = (Date) other;
             return date.equals(o.date);
         }
@@ -224,7 +240,9 @@ public abstract class GenericLiteral {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Null)) return false;
+            if (!(other instanceof Null)) {
+                return false;
+            }
             Null o = (Null) other;
             return true;
         }

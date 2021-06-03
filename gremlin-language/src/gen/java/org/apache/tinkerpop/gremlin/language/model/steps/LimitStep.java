@@ -23,7 +23,9 @@ public class LimitStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof LimitStep)) return false;
+        if (!(other instanceof LimitStep)) {
+            return false;
+        }
         LimitStep o = (LimitStep) other;
         return scope.equals(o.scope)
             && limit.equals(o.limit);

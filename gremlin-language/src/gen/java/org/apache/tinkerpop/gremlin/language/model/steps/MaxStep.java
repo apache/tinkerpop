@@ -17,7 +17,9 @@ public class MaxStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof MaxStep)) return false;
+        if (!(other instanceof MaxStep)) {
+            return false;
+        }
         MaxStep o = (MaxStep) other;
         return scope.equals(o.scope);
     }

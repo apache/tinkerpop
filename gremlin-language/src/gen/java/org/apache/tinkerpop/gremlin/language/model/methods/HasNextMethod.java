@@ -8,7 +8,9 @@ public class HasNextMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof HasNextMethod)) return false;
+        if (!(other instanceof HasNextMethod)) {
+            return false;
+        }
         HasNextMethod o = (HasNextMethod) other;
         return true;
     }

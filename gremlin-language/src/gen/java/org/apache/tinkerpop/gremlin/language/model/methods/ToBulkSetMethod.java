@@ -8,7 +8,9 @@ public class ToBulkSetMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ToBulkSetMethod)) return false;
+        if (!(other instanceof ToBulkSetMethod)) {
+            return false;
+        }
         ToBulkSetMethod o = (ToBulkSetMethod) other;
         return true;
     }

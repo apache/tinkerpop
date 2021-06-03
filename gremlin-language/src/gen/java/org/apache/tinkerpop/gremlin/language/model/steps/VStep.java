@@ -17,7 +17,9 @@ public class VStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof VStep)) return false;
+        if (!(other instanceof VStep)) {
+            return false;
+        }
         VStep o = (VStep) other;
         return vertexIdsOrElements.equals(o.vertexIdsOrElements);
     }

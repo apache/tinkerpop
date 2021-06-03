@@ -15,7 +15,9 @@ public class Not {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Not)) return false;
+        if (!(other instanceof Not)) {
+            return false;
+        }
         Not o = (Not) other;
         return value.equals(o.value);
     }

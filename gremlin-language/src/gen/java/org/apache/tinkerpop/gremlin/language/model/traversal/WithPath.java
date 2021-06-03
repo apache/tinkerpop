@@ -8,7 +8,9 @@ public class WithPath {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WithPath)) return false;
+        if (!(other instanceof WithPath)) {
+            return false;
+        }
         WithPath o = (WithPath) other;
         return true;
     }

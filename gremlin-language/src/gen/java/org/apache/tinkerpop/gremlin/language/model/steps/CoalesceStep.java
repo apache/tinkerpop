@@ -17,7 +17,9 @@ public class CoalesceStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof CoalesceStep)) return false;
+        if (!(other instanceof CoalesceStep)) {
+            return false;
+        }
         CoalesceStep o = (CoalesceStep) other;
         return coalesceTraversals.equals(o.coalesceTraversals);
     }

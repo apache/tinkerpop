@@ -10,8 +10,14 @@ public abstract class Query {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithRootValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.RootTraversal
+         */
         public final RootTraversal root;
         
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/methods.TraversalTerminalMethod
+         */
         public final java.util.Optional<TraversalTerminalMethod> method;
         
         /**
@@ -24,7 +30,9 @@ public abstract class Query {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithRootValue)) return false;
+            if (!(other instanceof WithRootValue)) {
+                return false;
+            }
             WithRootValue o = (WithRootValue) other;
             return root.equals(o.root)
                 && method.equals(o.method);
@@ -52,8 +60,14 @@ public abstract class Query {
     }
     
     public static class WithSourceValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalSource
+         */
         public final TraversalSource source;
         
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/query.TransactionPart
+         */
         public final java.util.Optional<TransactionPart> transactionPart;
         
         /**
@@ -66,7 +80,9 @@ public abstract class Query {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithSourceValue)) return false;
+            if (!(other instanceof WithSourceValue)) {
+                return false;
+            }
             WithSourceValue o = (WithSourceValue) other;
             return source.equals(o.source)
                 && transactionPart.equals(o.transactionPart);
@@ -115,18 +131,22 @@ public abstract class Query {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(WithSource instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithRoot instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ToString instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Empty instance) {
             return otherwise(instance);
         }
@@ -149,7 +169,9 @@ public abstract class Query {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithSource)) return false;
+            if (!(other instanceof WithSource)) {
+                return false;
+            }
             WithSource o = (WithSource) other;
             return withSource.equals(o.withSource);
         }
@@ -177,7 +199,9 @@ public abstract class Query {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithRoot)) return false;
+            if (!(other instanceof WithRoot)) {
+                return false;
+            }
             WithRoot o = (WithRoot) other;
             return withRoot.equals(o.withRoot);
         }
@@ -208,7 +232,9 @@ public abstract class Query {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ToString)) return false;
+            if (!(other instanceof ToString)) {
+                return false;
+            }
             ToString o = (ToString) other;
             return toString.equals(o.toString);
         }
@@ -232,7 +258,9 @@ public abstract class Query {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Empty)) return false;
+            if (!(other instanceof Empty)) {
+                return false;
+            }
             Empty o = (Empty) other;
             return true;
         }

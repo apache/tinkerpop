@@ -34,7 +34,9 @@ public class RootTraversal {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof RootTraversal)) return false;
+        if (!(other instanceof RootTraversal)) {
+            return false;
+        }
         RootTraversal o = (RootTraversal) other;
         return source.equals(o.source)
             && spawnMethod.equals(o.spawnMethod)
@@ -92,15 +94,20 @@ public class RootTraversal {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(Chained instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Parent instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.ChainedTraversal
+         */
         public static final class Chained extends RestValue {
             public final ChainedTraversal chained;
             
@@ -118,7 +125,9 @@ public class RootTraversal {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Chained)) return false;
+                if (!(other instanceof Chained)) {
+                    return false;
+                }
                 Chained o = (Chained) other;
                 return chained.equals(o.chained);
             }
@@ -129,6 +138,9 @@ public class RootTraversal {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.ChainedParentOfGraphTraversal
+         */
         public static final class Parent extends RestValue {
             public final ChainedParentOfGraphTraversal parent;
             
@@ -146,7 +158,9 @@ public class RootTraversal {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Parent)) return false;
+                if (!(other instanceof Parent)) {
+                    return false;
+                }
                 Parent o = (Parent) other;
                 return parent.equals(o.parent);
             }

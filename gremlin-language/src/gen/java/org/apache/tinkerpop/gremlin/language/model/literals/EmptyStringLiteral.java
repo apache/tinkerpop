@@ -8,7 +8,9 @@ public class EmptyStringLiteral {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof EmptyStringLiteral)) return false;
+        if (!(other instanceof EmptyStringLiteral)) {
+            return false;
+        }
         EmptyStringLiteral o = (EmptyStringLiteral) other;
         return true;
     }

@@ -8,7 +8,9 @@ public class KeyStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof KeyStep)) return false;
+        if (!(other instanceof KeyStep)) {
+            return false;
+        }
         KeyStep o = (KeyStep) other;
         return true;
     }

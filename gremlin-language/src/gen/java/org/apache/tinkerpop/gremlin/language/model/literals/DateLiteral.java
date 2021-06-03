@@ -15,7 +15,9 @@ public class DateLiteral {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof DateLiteral)) return false;
+        if (!(other instanceof DateLiteral)) {
+            return false;
+        }
         DateLiteral o = (DateLiteral) other;
         return value.equals(o.value);
     }

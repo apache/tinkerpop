@@ -23,7 +23,9 @@ public class AggregateStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof AggregateStep)) return false;
+        if (!(other instanceof AggregateStep)) {
+            return false;
+        }
         AggregateStep o = (AggregateStep) other;
         return scope.equals(o.scope)
             && sideEffectKey.equals(o.sideEffectKey);

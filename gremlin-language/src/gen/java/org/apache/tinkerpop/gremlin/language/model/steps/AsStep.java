@@ -21,7 +21,9 @@ public class AsStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof AsStep)) return false;
+        if (!(other instanceof AsStep)) {
+            return false;
+        }
         AsStep o = (AsStep) other;
         return stepLabel.equals(o.stepLabel)
             && stepLabels.equals(o.stepLabels);

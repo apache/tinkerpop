@@ -8,8 +8,14 @@ public abstract class HasLabelStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithLabelsValue {
+        /**
+         * @type string
+         */
         public final String label;
         
+        /**
+         * @type list: string
+         */
         public final java.util.List<String> otherLabels;
         
         /**
@@ -22,7 +28,9 @@ public abstract class HasLabelStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithLabelsValue)) return false;
+            if (!(other instanceof WithLabelsValue)) {
+                return false;
+            }
             WithLabelsValue o = (WithLabelsValue) other;
             return label.equals(o.label)
                 && otherLabels.equals(o.otherLabels);
@@ -67,10 +75,12 @@ public abstract class HasLabelStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Predicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithLabels instance) {
             return otherwise(instance);
         }
@@ -96,7 +106,9 @@ public abstract class HasLabelStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Predicate)) return false;
+            if (!(other instanceof Predicate)) {
+                return false;
+            }
             Predicate o = (Predicate) other;
             return predicate.equals(o.predicate);
         }
@@ -124,7 +136,9 @@ public abstract class HasLabelStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithLabels)) return false;
+            if (!(other instanceof WithLabels)) {
+                return false;
+            }
             WithLabels o = (WithLabels) other;
             return withLabels.equals(o.withLabels);
         }

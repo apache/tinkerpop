@@ -15,7 +15,9 @@ public class TimesStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TimesStep)) return false;
+        if (!(other instanceof TimesStep)) {
+            return false;
+        }
         TimesStep o = (TimesStep) other;
         return maxLoops.equals(o.maxLoops);
     }

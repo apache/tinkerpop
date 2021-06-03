@@ -15,7 +15,9 @@ public class NotContaining {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof NotContaining)) return false;
+        if (!(other instanceof NotContaining)) {
+            return false;
+        }
         NotContaining o = (NotContaining) other;
         return value.equals(o.value);
     }

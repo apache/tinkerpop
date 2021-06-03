@@ -23,7 +23,9 @@ public class ChainedParentOfGraphTraversal {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ChainedParentOfGraphTraversal)) return false;
+        if (!(other instanceof ChainedParentOfGraphTraversal)) {
+            return false;
+        }
         ChainedParentOfGraphTraversal o = (ChainedParentOfGraphTraversal) other;
         return first.equals(o.first)
             && rest.equals(o.rest);

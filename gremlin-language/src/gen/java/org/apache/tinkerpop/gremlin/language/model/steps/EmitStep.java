@@ -25,7 +25,9 @@ public class EmitStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof EmitStep)) return false;
+        if (!(other instanceof EmitStep)) {
+            return false;
+        }
         EmitStep o = (EmitStep) other;
         return value.equals(o.value);
     }
@@ -58,15 +60,20 @@ public class EmitStep {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(EmitPredicate instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(EmitTraversal instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public static final class EmitPredicate extends Value {
             public final TraversalPredicate emitPredicate;
             
@@ -84,7 +91,9 @@ public class EmitStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof EmitPredicate)) return false;
+                if (!(other instanceof EmitPredicate)) {
+                    return false;
+                }
                 EmitPredicate o = (EmitPredicate) other;
                 return emitPredicate.equals(o.emitPredicate);
             }
@@ -95,6 +104,9 @@ public class EmitStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public static final class EmitTraversal extends Value {
             public final NestedTraversal emitTraversal;
             
@@ -112,7 +124,9 @@ public class EmitStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof EmitTraversal)) return false;
+                if (!(other instanceof EmitTraversal)) {
+                    return false;
+                }
                 EmitTraversal o = (EmitTraversal) other;
                 return emitTraversal.equals(o.emitTraversal);
             }

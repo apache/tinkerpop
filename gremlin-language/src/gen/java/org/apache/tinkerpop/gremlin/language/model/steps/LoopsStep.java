@@ -15,7 +15,9 @@ public class LoopsStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof LoopsStep)) return false;
+        if (!(other instanceof LoopsStep)) {
+            return false;
+        }
         LoopsStep o = (LoopsStep) other;
         return loopName.equals(o.loopName);
     }

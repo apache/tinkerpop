@@ -24,7 +24,9 @@ public class BarrierStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof BarrierStep)) return false;
+        if (!(other instanceof BarrierStep)) {
+            return false;
+        }
         BarrierStep o = (BarrierStep) other;
         return value.equals(o.value);
     }
@@ -57,15 +59,20 @@ public class BarrierStep {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(BarrierConsumer instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(MaxBarrierSize instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/methods.TraversalSackMethod
+         */
         public static final class BarrierConsumer extends Value {
             public final TraversalSackMethod barrierConsumer;
             
@@ -83,7 +90,9 @@ public class BarrierStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof BarrierConsumer)) return false;
+                if (!(other instanceof BarrierConsumer)) {
+                    return false;
+                }
                 BarrierConsumer o = (BarrierConsumer) other;
                 return barrierConsumer.equals(o.barrierConsumer);
             }
@@ -94,6 +103,9 @@ public class BarrierStep {
             }
         }
         
+        /**
+         * @type integer
+         */
         public static final class MaxBarrierSize extends Value {
             public final Integer maxBarrierSize;
             
@@ -111,7 +123,9 @@ public class BarrierStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof MaxBarrierSize)) return false;
+                if (!(other instanceof MaxBarrierSize)) {
+                    return false;
+                }
                 MaxBarrierSize o = (MaxBarrierSize) other;
                 return maxBarrierSize.equals(o.maxBarrierSize);
             }

@@ -15,7 +15,9 @@ public class NextMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof NextMethod)) return false;
+        if (!(other instanceof NextMethod)) {
+            return false;
+        }
         NextMethod o = (NextMethod) other;
         return value.equals(o.value);
     }

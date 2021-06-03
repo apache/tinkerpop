@@ -23,7 +23,9 @@ public class DedupStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof DedupStep)) return false;
+        if (!(other instanceof DedupStep)) {
+            return false;
+        }
         DedupStep o = (DedupStep) other;
         return scope.equals(o.scope)
             && dedupLabels.equals(o.dedupLabels);

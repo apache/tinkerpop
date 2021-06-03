@@ -26,10 +26,12 @@ public abstract class UntilStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(UntilPredicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(UntilTraversal instance) {
             return otherwise(instance);
         }
@@ -55,7 +57,9 @@ public abstract class UntilStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof UntilPredicate)) return false;
+            if (!(other instanceof UntilPredicate)) {
+                return false;
+            }
             UntilPredicate o = (UntilPredicate) other;
             return untilPredicate.equals(o.untilPredicate);
         }
@@ -86,7 +90,9 @@ public abstract class UntilStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof UntilTraversal)) return false;
+            if (!(other instanceof UntilTraversal)) {
+                return false;
+            }
             UntilTraversal o = (UntilTraversal) other;
             return untilTraversal.equals(o.untilTraversal);
         }

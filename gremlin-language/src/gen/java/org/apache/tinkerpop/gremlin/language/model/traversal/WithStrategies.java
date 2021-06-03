@@ -15,7 +15,9 @@ public class WithStrategies {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WithStrategies)) return false;
+        if (!(other instanceof WithStrategies)) {
+            return false;
+        }
         WithStrategies o = (WithStrategies) other;
         return traversalStrategies.equals(o.traversalStrategies);
     }

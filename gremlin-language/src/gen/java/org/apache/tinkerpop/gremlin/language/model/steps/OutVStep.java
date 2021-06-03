@@ -8,7 +8,9 @@ public class OutVStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof OutVStep)) return false;
+        if (!(other instanceof OutVStep)) {
+            return false;
+        }
         OutVStep o = (OutVStep) other;
         return true;
     }

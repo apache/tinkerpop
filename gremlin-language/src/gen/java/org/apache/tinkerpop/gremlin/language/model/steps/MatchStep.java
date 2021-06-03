@@ -17,7 +17,9 @@ public class MatchStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof MatchStep)) return false;
+        if (!(other instanceof MatchStep)) {
+            return false;
+        }
         MatchStep o = (MatchStep) other;
         return matchTraversals.equals(o.matchTraversals);
     }

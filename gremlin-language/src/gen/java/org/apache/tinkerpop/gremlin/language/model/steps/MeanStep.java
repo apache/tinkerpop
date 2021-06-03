@@ -17,7 +17,9 @@ public class MeanStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof MeanStep)) return false;
+        if (!(other instanceof MeanStep)) {
+            return false;
+        }
         MeanStep o = (MeanStep) other;
         return scope.equals(o.scope);
     }

@@ -8,7 +8,9 @@ public class ExplainMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ExplainMethod)) return false;
+        if (!(other instanceof ExplainMethod)) {
+            return false;
+        }
         ExplainMethod o = (ExplainMethod) other;
         return true;
     }

@@ -27,18 +27,22 @@ public abstract class SubgraphStrategy {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Vertices instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Edges instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(VertexProperties instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(CheckAdjacentVertixes instance) {
             return otherwise(instance);
         }
@@ -64,7 +68,9 @@ public abstract class SubgraphStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Vertices)) return false;
+            if (!(other instanceof Vertices)) {
+                return false;
+            }
             Vertices o = (Vertices) other;
             return vertices.equals(o.vertices);
         }
@@ -95,7 +101,9 @@ public abstract class SubgraphStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Edges)) return false;
+            if (!(other instanceof Edges)) {
+                return false;
+            }
             Edges o = (Edges) other;
             return edges.equals(o.edges);
         }
@@ -126,7 +134,9 @@ public abstract class SubgraphStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof VertexProperties)) return false;
+            if (!(other instanceof VertexProperties)) {
+                return false;
+            }
             VertexProperties o = (VertexProperties) other;
             return vertexProperties.equals(o.vertexProperties);
         }
@@ -157,7 +167,9 @@ public abstract class SubgraphStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof CheckAdjacentVertixes)) return false;
+            if (!(other instanceof CheckAdjacentVertixes)) {
+                return false;
+            }
             CheckAdjacentVertixes o = (CheckAdjacentVertixes) other;
             return checkAdjacentVertixes.equals(o.checkAdjacentVertixes);
         }

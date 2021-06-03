@@ -15,7 +15,9 @@ public class TraversalSource {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TraversalSource)) return false;
+        if (!(other instanceof TraversalSource)) {
+            return false;
+        }
         TraversalSource o = (TraversalSource) other;
         return value.equals(o.value);
     }

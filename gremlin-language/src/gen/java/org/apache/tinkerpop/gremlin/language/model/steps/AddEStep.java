@@ -25,10 +25,12 @@ public abstract class AddEStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(EdgeLabel instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(EdgeLabelTraversal instance) {
             return otherwise(instance);
         }
@@ -54,7 +56,9 @@ public abstract class AddEStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof EdgeLabel)) return false;
+            if (!(other instanceof EdgeLabel)) {
+                return false;
+            }
             EdgeLabel o = (EdgeLabel) other;
             return edgeLabel.equals(o.edgeLabel);
         }
@@ -85,7 +89,9 @@ public abstract class AddEStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof EdgeLabelTraversal)) return false;
+            if (!(other instanceof EdgeLabelTraversal)) {
+                return false;
+            }
             EdgeLabelTraversal o = (EdgeLabelTraversal) other;
             return edgeLabelTraversal.equals(o.edgeLabelTraversal);
         }

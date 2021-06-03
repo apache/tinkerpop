@@ -23,7 +23,9 @@ public class WithStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WithStep)) return false;
+        if (!(other instanceof WithStep)) {
+            return false;
+        }
         WithStep o = (WithStep) other;
         return key.equals(o.key)
             && value.equals(o.value);

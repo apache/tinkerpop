@@ -11,8 +11,14 @@ public abstract class HasStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithLabelValue {
+        /**
+         * @type string
+         */
         public final String label;
         
+        /**
+         * @type string
+         */
         public final String propertyKey;
         
         public final WithLabelOtherValue other;
@@ -28,7 +34,9 @@ public abstract class HasStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithLabelValue)) return false;
+            if (!(other instanceof WithLabelValue)) {
+                return false;
+            }
             WithLabelValue o = (WithLabelValue) other;
             return label.equals(o.label)
                 && propertyKey.equals(o.propertyKey)
@@ -87,15 +95,20 @@ public abstract class HasStep {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(Predicate instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Value instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public static final class Predicate extends WithLabelOtherValue {
             public final TraversalPredicate predicate;
             
@@ -113,7 +126,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Predicate)) return false;
+                if (!(other instanceof Predicate)) {
+                    return false;
+                }
                 Predicate o = (Predicate) other;
                 return predicate.equals(o.predicate);
             }
@@ -124,6 +139,9 @@ public abstract class HasStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public static final class Value extends WithLabelOtherValue {
             public final GenericLiteral value;
             
@@ -141,7 +159,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Value)) return false;
+                if (!(other instanceof Value)) {
+                    return false;
+                }
                 Value o = (Value) other;
                 return value.equals(o.value);
             }
@@ -154,6 +174,9 @@ public abstract class HasStep {
     }
     
     public static class WithAccessorValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalToken
+         */
         public final TraversalToken accessor;
         
         public final WithAccessorOtherValue other;
@@ -168,7 +191,9 @@ public abstract class HasStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithAccessorValue)) return false;
+            if (!(other instanceof WithAccessorValue)) {
+                return false;
+            }
             WithAccessorValue o = (WithAccessorValue) other;
             return accessor.equals(o.accessor)
                 && other.equals(o.other);
@@ -220,19 +245,25 @@ public abstract class HasStep {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(Predicate instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Value instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Traversal instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public static final class Predicate extends WithAccessorOtherValue {
             public final TraversalPredicate predicate;
             
@@ -250,7 +281,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Predicate)) return false;
+                if (!(other instanceof Predicate)) {
+                    return false;
+                }
                 Predicate o = (Predicate) other;
                 return predicate.equals(o.predicate);
             }
@@ -261,6 +294,9 @@ public abstract class HasStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public static final class Value extends WithAccessorOtherValue {
             public final GenericLiteral value;
             
@@ -278,7 +314,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Value)) return false;
+                if (!(other instanceof Value)) {
+                    return false;
+                }
                 Value o = (Value) other;
                 return value.equals(o.value);
             }
@@ -289,6 +327,9 @@ public abstract class HasStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public static final class Traversal extends WithAccessorOtherValue {
             public final NestedTraversal traversal;
             
@@ -306,7 +347,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Traversal)) return false;
+                if (!(other instanceof Traversal)) {
+                    return false;
+                }
                 Traversal o = (Traversal) other;
                 return traversal.equals(o.traversal);
             }
@@ -319,8 +362,24 @@ public abstract class HasStep {
     }
     
     public static class WithPropertyKeyValue {
+        /**
+         * @type string
+         */
         public final String propertyKey;
         
+        /**
+         * @type optional:
+         *         union:
+         *         - index: 1
+         *           name: predicate
+         *           type: org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         *         - index: 2
+         *           name: value
+         *           type: org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         *         - index: 3
+         *           name: traversal
+         *           type: org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public final java.util.Optional<WithPropertyKeyOtherArgumentsValue> otherArguments;
         
         /**
@@ -333,7 +392,9 @@ public abstract class HasStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPropertyKeyValue)) return false;
+            if (!(other instanceof WithPropertyKeyValue)) {
+                return false;
+            }
             WithPropertyKeyValue o = (WithPropertyKeyValue) other;
             return propertyKey.equals(o.propertyKey)
                 && otherArguments.equals(o.otherArguments);
@@ -385,19 +446,25 @@ public abstract class HasStep {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(Predicate instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Value instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Traversal instance) {
                 return otherwise(instance);
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public static final class Predicate extends WithPropertyKeyOtherArgumentsValue {
             public final TraversalPredicate predicate;
             
@@ -415,7 +482,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Predicate)) return false;
+                if (!(other instanceof Predicate)) {
+                    return false;
+                }
                 Predicate o = (Predicate) other;
                 return predicate.equals(o.predicate);
             }
@@ -426,6 +495,9 @@ public abstract class HasStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public static final class Value extends WithPropertyKeyOtherArgumentsValue {
             public final GenericLiteral value;
             
@@ -443,7 +515,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Value)) return false;
+                if (!(other instanceof Value)) {
+                    return false;
+                }
                 Value o = (Value) other;
                 return value.equals(o.value);
             }
@@ -454,6 +528,9 @@ public abstract class HasStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public static final class Traversal extends WithPropertyKeyOtherArgumentsValue {
             public final NestedTraversal traversal;
             
@@ -471,7 +548,9 @@ public abstract class HasStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Traversal)) return false;
+                if (!(other instanceof Traversal)) {
+                    return false;
+                }
                 Traversal o = (Traversal) other;
                 return traversal.equals(o.traversal);
             }
@@ -503,14 +582,17 @@ public abstract class HasStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(WithPropertyKey instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithAccessor instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithLabel instance) {
             return otherwise(instance);
         }
@@ -533,7 +615,9 @@ public abstract class HasStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPropertyKey)) return false;
+            if (!(other instanceof WithPropertyKey)) {
+                return false;
+            }
             WithPropertyKey o = (WithPropertyKey) other;
             return withPropertyKey.equals(o.withPropertyKey);
         }
@@ -561,7 +645,9 @@ public abstract class HasStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithAccessor)) return false;
+            if (!(other instanceof WithAccessor)) {
+                return false;
+            }
             WithAccessor o = (WithAccessor) other;
             return withAccessor.equals(o.withAccessor);
         }
@@ -589,7 +675,9 @@ public abstract class HasStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithLabel)) return false;
+            if (!(other instanceof WithLabel)) {
+                return false;
+            }
             WithLabel o = (WithLabel) other;
             return withLabel.equals(o.withLabel);
         }

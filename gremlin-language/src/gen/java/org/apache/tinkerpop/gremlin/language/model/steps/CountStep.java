@@ -17,7 +17,9 @@ public class CountStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof CountStep)) return false;
+        if (!(other instanceof CountStep)) {
+            return false;
+        }
         CountStep o = (CountStep) other;
         return scope.equals(o.scope);
     }

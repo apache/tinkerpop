@@ -17,7 +17,9 @@ public class NotStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof NotStep)) return false;
+        if (!(other instanceof NotStep)) {
+            return false;
+        }
         NotStep o = (NotStep) other;
         return notTraversal.equals(o.notTraversal);
     }

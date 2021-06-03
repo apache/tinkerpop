@@ -23,7 +23,9 @@ public class Between {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Between)) return false;
+        if (!(other instanceof Between)) {
+            return false;
+        }
         Between o = (Between) other;
         return min.equals(o.min)
             && max.equals(o.max);

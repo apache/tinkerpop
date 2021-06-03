@@ -8,7 +8,9 @@ public class IterateMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof IterateMethod)) return false;
+        if (!(other instanceof IterateMethod)) {
+            return false;
+        }
         IterateMethod o = (IterateMethod) other;
         return true;
     }

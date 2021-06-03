@@ -23,7 +23,9 @@ public class RepeatStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof RepeatStep)) return false;
+        if (!(other instanceof RepeatStep)) {
+            return false;
+        }
         RepeatStep o = (RepeatStep) other;
         return loopName.equals(o.loopName)
             && repeatTraversals.equals(o.repeatTraversals);

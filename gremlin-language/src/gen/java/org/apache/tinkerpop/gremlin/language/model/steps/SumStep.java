@@ -17,7 +17,9 @@ public class SumStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SumStep)) return false;
+        if (!(other instanceof SumStep)) {
+            return false;
+        }
         SumStep o = (SumStep) other;
         return scope.equals(o.scope);
     }

@@ -8,7 +8,9 @@ public class IdStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof IdStep)) return false;
+        if (!(other instanceof IdStep)) {
+            return false;
+        }
         IdStep o = (IdStep) other;
         return true;
     }

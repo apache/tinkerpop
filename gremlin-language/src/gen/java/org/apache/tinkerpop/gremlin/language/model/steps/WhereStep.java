@@ -9,8 +9,14 @@ public abstract class WhereStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithPredicateValue {
+        /**
+         * @type optional: string
+         */
         public final java.util.Optional<String> startKey;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final TraversalPredicate predicate;
         
         /**
@@ -23,7 +29,9 @@ public abstract class WhereStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPredicateValue)) return false;
+            if (!(other instanceof WithPredicateValue)) {
+                return false;
+            }
             WithPredicateValue o = (WithPredicateValue) other;
             return startKey.equals(o.startKey)
                 && predicate.equals(o.predicate);
@@ -68,10 +76,12 @@ public abstract class WhereStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(WithPredicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WhereTraversal instance) {
             return otherwise(instance);
         }
@@ -94,7 +104,9 @@ public abstract class WhereStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPredicate)) return false;
+            if (!(other instanceof WithPredicate)) {
+                return false;
+            }
             WithPredicate o = (WithPredicate) other;
             return withPredicate.equals(o.withPredicate);
         }
@@ -125,7 +137,9 @@ public abstract class WhereStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WhereTraversal)) return false;
+            if (!(other instanceof WhereTraversal)) {
+                return false;
+            }
             WhereTraversal o = (WhereTraversal) other;
             return whereTraversal.equals(o.whereTraversal);
         }

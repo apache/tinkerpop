@@ -17,7 +17,9 @@ public class BranchStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof BranchStep)) return false;
+        if (!(other instanceof BranchStep)) {
+            return false;
+        }
         BranchStep o = (BranchStep) other;
         return branchTraversal.equals(o.branchTraversal);
     }

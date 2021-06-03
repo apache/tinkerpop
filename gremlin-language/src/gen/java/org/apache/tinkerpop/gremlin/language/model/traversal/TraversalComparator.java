@@ -15,7 +15,9 @@ public class TraversalComparator {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TraversalComparator)) return false;
+        if (!(other instanceof TraversalComparator)) {
+            return false;
+        }
         TraversalComparator o = (TraversalComparator) other;
         return traversalOrder.equals(o.traversalOrder);
     }

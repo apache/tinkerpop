@@ -8,7 +8,9 @@ public class ToListMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ToListMethod)) return false;
+        if (!(other instanceof ToListMethod)) {
+            return false;
+        }
         ToListMethod o = (ToListMethod) other;
         return true;
     }

@@ -10,8 +10,14 @@ public abstract class OptionStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class ObjectTraversalValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public final GenericLiteral object;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public final NestedTraversal traversal;
         
         /**
@@ -24,7 +30,9 @@ public abstract class OptionStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ObjectTraversalValue)) return false;
+            if (!(other instanceof ObjectTraversalValue)) {
+                return false;
+            }
             ObjectTraversalValue o = (ObjectTraversalValue) other;
             return object.equals(o.object)
                 && traversal.equals(o.traversal);
@@ -52,8 +60,14 @@ public abstract class OptionStep {
     }
     
     public static class PredicateTraversalValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final TraversalPredicate predicate;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public final NestedTraversal traversal;
         
         /**
@@ -66,7 +80,9 @@ public abstract class OptionStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PredicateTraversalValue)) return false;
+            if (!(other instanceof PredicateTraversalValue)) {
+                return false;
+            }
             PredicateTraversalValue o = (PredicateTraversalValue) other;
             return predicate.equals(o.predicate)
                 && traversal.equals(o.traversal);
@@ -113,14 +129,17 @@ public abstract class OptionStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(PredicateTraversal instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ObjectTraversal instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Traversal instance) {
             return otherwise(instance);
         }
@@ -143,7 +162,9 @@ public abstract class OptionStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PredicateTraversal)) return false;
+            if (!(other instanceof PredicateTraversal)) {
+                return false;
+            }
             PredicateTraversal o = (PredicateTraversal) other;
             return predicateTraversal.equals(o.predicateTraversal);
         }
@@ -171,7 +192,9 @@ public abstract class OptionStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ObjectTraversal)) return false;
+            if (!(other instanceof ObjectTraversal)) {
+                return false;
+            }
             ObjectTraversal o = (ObjectTraversal) other;
             return objectTraversal.equals(o.objectTraversal);
         }
@@ -202,7 +225,9 @@ public abstract class OptionStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Traversal)) return false;
+            if (!(other instanceof Traversal)) {
+                return false;
+            }
             Traversal o = (Traversal) other;
             return traversal.equals(o.traversal);
         }

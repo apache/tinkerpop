@@ -8,7 +8,9 @@ public class LabelStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof LabelStep)) return false;
+        if (!(other instanceof LabelStep)) {
+            return false;
+        }
         LabelStep o = (LabelStep) other;
         return true;
     }

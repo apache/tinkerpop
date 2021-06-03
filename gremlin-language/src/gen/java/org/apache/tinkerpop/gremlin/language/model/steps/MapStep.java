@@ -17,7 +17,9 @@ public class MapStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof MapStep)) return false;
+        if (!(other instanceof MapStep)) {
+            return false;
+        }
         MapStep o = (MapStep) other;
         return mapTraversal.equals(o.mapTraversal);
     }

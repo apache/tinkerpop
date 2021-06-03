@@ -15,7 +15,9 @@ public class TraversalBiFunction {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TraversalBiFunction)) return false;
+        if (!(other instanceof TraversalBiFunction)) {
+            return false;
+        }
         TraversalBiFunction o = (TraversalBiFunction) other;
         return traversalOperator.equals(o.traversalOperator);
     }

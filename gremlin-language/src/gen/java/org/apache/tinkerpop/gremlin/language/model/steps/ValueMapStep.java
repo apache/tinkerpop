@@ -21,7 +21,9 @@ public class ValueMapStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ValueMapStep)) return false;
+        if (!(other instanceof ValueMapStep)) {
+            return false;
+        }
         ValueMapStep o = (ValueMapStep) other;
         return includeTokens.equals(o.includeTokens)
             && propertyKeys.equals(o.propertyKeys);

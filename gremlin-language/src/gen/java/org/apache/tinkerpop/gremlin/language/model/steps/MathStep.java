@@ -15,7 +15,9 @@ public class MathStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof MathStep)) return false;
+        if (!(other instanceof MathStep)) {
+            return false;
+        }
         MathStep o = (MathStep) other;
         return expression.equals(o.expression);
     }

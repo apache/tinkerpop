@@ -17,7 +17,9 @@ public class FlatMapStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof FlatMapStep)) return false;
+        if (!(other instanceof FlatMapStep)) {
+            return false;
+        }
         FlatMapStep o = (FlatMapStep) other;
         return flatMapTraversal.equals(o.flatMapTraversal);
     }

@@ -23,7 +23,9 @@ public class SampleStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SampleStep)) return false;
+        if (!(other instanceof SampleStep)) {
+            return false;
+        }
         SampleStep o = (SampleStep) other;
         return scope.equals(o.scope)
             && amountToSample.equals(o.amountToSample);

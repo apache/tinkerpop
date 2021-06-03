@@ -36,26 +36,32 @@ public abstract class TraversalSourceSpawnMethod {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(AddE instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(AddV instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(E instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(V instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Inject instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Io instance) {
             return otherwise(instance);
         }
@@ -81,7 +87,9 @@ public abstract class TraversalSourceSpawnMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof AddE)) return false;
+            if (!(other instanceof AddE)) {
+                return false;
+            }
             AddE o = (AddE) other;
             return addE.equals(o.addE);
         }
@@ -112,7 +120,9 @@ public abstract class TraversalSourceSpawnMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof AddV)) return false;
+            if (!(other instanceof AddV)) {
+                return false;
+            }
             AddV o = (AddV) other;
             return addV.equals(o.addV);
         }
@@ -136,7 +146,9 @@ public abstract class TraversalSourceSpawnMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof E)) return false;
+            if (!(other instanceof E)) {
+                return false;
+            }
             E o = (E) other;
             return true;
         }
@@ -167,7 +179,9 @@ public abstract class TraversalSourceSpawnMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof V)) return false;
+            if (!(other instanceof V)) {
+                return false;
+            }
             V o = (V) other;
             return v.equals(o.v);
         }
@@ -198,7 +212,9 @@ public abstract class TraversalSourceSpawnMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Inject)) return false;
+            if (!(other instanceof Inject)) {
+                return false;
+            }
             Inject o = (Inject) other;
             return inject.equals(o.inject);
         }
@@ -222,7 +238,9 @@ public abstract class TraversalSourceSpawnMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Io)) return false;
+            if (!(other instanceof Io)) {
+                return false;
+            }
             Io o = (Io) other;
             return true;
         }

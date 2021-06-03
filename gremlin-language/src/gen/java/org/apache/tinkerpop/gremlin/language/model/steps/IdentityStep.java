@@ -8,7 +8,9 @@ public class IdentityStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof IdentityStep)) return false;
+        if (!(other instanceof IdentityStep)) {
+            return false;
+        }
         IdentityStep o = (IdentityStep) other;
         return true;
     }

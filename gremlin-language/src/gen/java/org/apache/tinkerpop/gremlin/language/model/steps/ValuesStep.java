@@ -15,7 +15,9 @@ public class ValuesStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ValuesStep)) return false;
+        if (!(other instanceof ValuesStep)) {
+            return false;
+        }
         ValuesStep o = (ValuesStep) other;
         return propertyKeys.equals(o.propertyKeys);
     }

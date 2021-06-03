@@ -8,7 +8,9 @@ public class DropStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof DropStep)) return false;
+        if (!(other instanceof DropStep)) {
+            return false;
+        }
         DropStep o = (DropStep) other;
         return true;
     }

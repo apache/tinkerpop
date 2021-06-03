@@ -17,7 +17,9 @@ public class OrStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof OrStep)) return false;
+        if (!(other instanceof OrStep)) {
+            return false;
+        }
         OrStep o = (OrStep) other;
         return orTraversals.equals(o.orTraversals);
     }

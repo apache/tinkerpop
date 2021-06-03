@@ -15,7 +15,9 @@ public class WithBulk {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WithBulk)) return false;
+        if (!(other instanceof WithBulk)) {
+            return false;
+        }
         WithBulk o = (WithBulk) other;
         return useBulk.equals(o.useBulk);
     }

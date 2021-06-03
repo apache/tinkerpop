@@ -8,7 +8,9 @@ public class ReadStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ReadStep)) return false;
+        if (!(other instanceof ReadStep)) {
+            return false;
+        }
         ReadStep o = (ReadStep) other;
         return true;
     }

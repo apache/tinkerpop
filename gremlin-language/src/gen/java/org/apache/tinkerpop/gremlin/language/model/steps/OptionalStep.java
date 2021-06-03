@@ -17,7 +17,9 @@ public class OptionalStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof OptionalStep)) return false;
+        if (!(other instanceof OptionalStep)) {
+            return false;
+        }
         OptionalStep o = (OptionalStep) other;
         return optionalTraversal.equals(o.optionalTraversal);
     }

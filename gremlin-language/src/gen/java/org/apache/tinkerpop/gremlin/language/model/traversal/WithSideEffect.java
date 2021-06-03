@@ -24,7 +24,9 @@ public class WithSideEffect {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WithSideEffect)) return false;
+        if (!(other instanceof WithSideEffect)) {
+            return false;
+        }
         WithSideEffect o = (WithSideEffect) other;
         return key.equals(o.key)
             && initialValue.equals(o.initialValue);

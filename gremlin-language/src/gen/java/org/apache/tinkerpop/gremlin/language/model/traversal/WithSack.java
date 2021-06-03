@@ -23,7 +23,9 @@ public class WithSack {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WithSack)) return false;
+        if (!(other instanceof WithSack)) {
+            return false;
+        }
         WithSack o = (WithSack) other;
         return initialValue.equals(o.initialValue)
             && operator.equals(o.operator);

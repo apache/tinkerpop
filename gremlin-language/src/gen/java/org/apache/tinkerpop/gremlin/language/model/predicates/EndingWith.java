@@ -15,7 +15,9 @@ public class EndingWith {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof EndingWith)) return false;
+        if (!(other instanceof EndingWith)) {
+            return false;
+        }
         EndingWith o = (EndingWith) other;
         return value.equals(o.value);
     }

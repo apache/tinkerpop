@@ -8,7 +8,9 @@ public class WriteStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof WriteStep)) return false;
+        if (!(other instanceof WriteStep)) {
+            return false;
+        }
         WriteStep o = (WriteStep) other;
         return true;
     }

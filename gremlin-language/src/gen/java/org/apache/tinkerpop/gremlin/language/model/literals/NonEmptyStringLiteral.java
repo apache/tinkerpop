@@ -15,7 +15,9 @@ public class NonEmptyStringLiteral {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof NonEmptyStringLiteral)) return false;
+        if (!(other instanceof NonEmptyStringLiteral)) {
+            return false;
+        }
         NonEmptyStringLiteral o = (NonEmptyStringLiteral) other;
         return value.equals(o.value);
     }

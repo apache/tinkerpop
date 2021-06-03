@@ -26,10 +26,12 @@ public abstract class FilterStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Predicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(FilterTraversal instance) {
             return otherwise(instance);
         }
@@ -55,7 +57,9 @@ public abstract class FilterStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Predicate)) return false;
+            if (!(other instanceof Predicate)) {
+                return false;
+            }
             Predicate o = (Predicate) other;
             return predicate.equals(o.predicate);
         }
@@ -86,7 +90,9 @@ public abstract class FilterStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof FilterTraversal)) return false;
+            if (!(other instanceof FilterTraversal)) {
+                return false;
+            }
             FilterTraversal o = (FilterTraversal) other;
             return filterTraversal.equals(o.filterTraversal);
         }

@@ -25,10 +25,12 @@ public abstract class HasValueStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Predicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithValues instance) {
             return otherwise(instance);
         }
@@ -54,7 +56,9 @@ public abstract class HasValueStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Predicate)) return false;
+            if (!(other instanceof Predicate)) {
+                return false;
+            }
             Predicate o = (Predicate) other;
             return predicate.equals(o.predicate);
         }
@@ -78,7 +82,9 @@ public abstract class HasValueStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithValues)) return false;
+            if (!(other instanceof WithValues)) {
+                return false;
+            }
             WithValues o = (WithValues) other;
             return true;
         }

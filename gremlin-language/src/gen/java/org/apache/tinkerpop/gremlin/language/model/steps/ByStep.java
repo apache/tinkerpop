@@ -63,7 +63,9 @@ public class ByStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ByStep)) return false;
+        if (!(other instanceof ByStep)) {
+            return false;
+        }
         ByStep o = (ByStep) other;
         return value.equals(o.value);
     }
@@ -104,26 +106,32 @@ public class ByStep {
                 throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
             }
             
+            @Override
             default R visit(WithTraversal instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(WithKey instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(WithFunction instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Token instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Comparator instance) {
                 return otherwise(instance);
             }
             
+            @Override
             default R visit(Order instance) {
                 return otherwise(instance);
             }
@@ -146,7 +154,9 @@ public class ByStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof WithTraversal)) return false;
+                if (!(other instanceof WithTraversal)) {
+                    return false;
+                }
                 WithTraversal o = (WithTraversal) other;
                 return withTraversal.equals(o.withTraversal);
             }
@@ -174,7 +184,9 @@ public class ByStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof WithKey)) return false;
+                if (!(other instanceof WithKey)) {
+                    return false;
+                }
                 WithKey o = (WithKey) other;
                 return withKey.equals(o.withKey);
             }
@@ -202,7 +214,9 @@ public class ByStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof WithFunction)) return false;
+                if (!(other instanceof WithFunction)) {
+                    return false;
+                }
                 WithFunction o = (WithFunction) other;
                 return withFunction.equals(o.withFunction);
             }
@@ -213,6 +227,9 @@ public class ByStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalToken
+         */
         public static final class Token extends Value {
             public final TraversalToken token;
             
@@ -230,7 +247,9 @@ public class ByStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Token)) return false;
+                if (!(other instanceof Token)) {
+                    return false;
+                }
                 Token o = (Token) other;
                 return token.equals(o.token);
             }
@@ -241,6 +260,9 @@ public class ByStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalComparator
+         */
         public static final class Comparator extends Value {
             public final TraversalComparator comparator;
             
@@ -258,7 +280,9 @@ public class ByStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Comparator)) return false;
+                if (!(other instanceof Comparator)) {
+                    return false;
+                }
                 Comparator o = (Comparator) other;
                 return comparator.equals(o.comparator);
             }
@@ -269,6 +293,9 @@ public class ByStep {
             }
         }
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalOrder
+         */
         public static final class Order extends Value {
             public final TraversalOrder order;
             
@@ -286,7 +313,9 @@ public class ByStep {
             
             @Override
             public boolean equals(Object other) {
-                if (!(other instanceof Order)) return false;
+                if (!(other instanceof Order)) {
+                    return false;
+                }
                 Order o = (Order) other;
                 return order.equals(o.order);
             }
@@ -299,8 +328,14 @@ public class ByStep {
     }
     
     public static class WithFunctionValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalFunction
+         */
         public final TraversalFunction function;
         
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/traversal.TraversalComparator
+         */
         public final java.util.Optional<TraversalComparator> comparator;
         
         /**
@@ -313,7 +348,9 @@ public class ByStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithFunctionValue)) return false;
+            if (!(other instanceof WithFunctionValue)) {
+                return false;
+            }
             WithFunctionValue o = (WithFunctionValue) other;
             return function.equals(o.function)
                 && comparator.equals(o.comparator);
@@ -341,8 +378,14 @@ public class ByStep {
     }
     
     public static class WithKeyValue {
+        /**
+         * @type string
+         */
         public final String key;
         
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/traversal.TraversalComparator
+         */
         public final java.util.Optional<TraversalComparator> comparator;
         
         /**
@@ -355,7 +398,9 @@ public class ByStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithKeyValue)) return false;
+            if (!(other instanceof WithKeyValue)) {
+                return false;
+            }
             WithKeyValue o = (WithKeyValue) other;
             return key.equals(o.key)
                 && comparator.equals(o.comparator);
@@ -383,8 +428,14 @@ public class ByStep {
     }
     
     public static class WithTraversalValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public final NestedTraversal traversal;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalComparator
+         */
         public final TraversalComparator comparator;
         
         /**
@@ -397,7 +448,9 @@ public class ByStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithTraversalValue)) return false;
+            if (!(other instanceof WithTraversalValue)) {
+                return false;
+            }
             WithTraversalValue o = (WithTraversalValue) other;
             return traversal.equals(o.traversal)
                 && comparator.equals(o.comparator);

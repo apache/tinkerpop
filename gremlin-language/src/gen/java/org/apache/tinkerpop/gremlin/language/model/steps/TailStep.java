@@ -23,7 +23,9 @@ public class TailStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TailStep)) return false;
+        if (!(other instanceof TailStep)) {
+            return false;
+        }
         TailStep o = (TailStep) other;
         return scope.equals(o.scope)
             && limit.equals(o.limit);

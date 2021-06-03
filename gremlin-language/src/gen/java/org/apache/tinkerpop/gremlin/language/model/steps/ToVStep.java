@@ -17,7 +17,9 @@ public class ToVStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ToVStep)) return false;
+        if (!(other instanceof ToVStep)) {
+            return false;
+        }
         ToVStep o = (ToVStep) other;
         return direction.equals(o.direction);
     }

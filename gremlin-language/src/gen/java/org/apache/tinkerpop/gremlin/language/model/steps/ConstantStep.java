@@ -17,7 +17,9 @@ public class ConstantStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ConstantStep)) return false;
+        if (!(other instanceof ConstantStep)) {
+            return false;
+        }
         ConstantStep o = (ConstantStep) other;
         return e.equals(o.e);
     }

@@ -15,7 +15,9 @@ public class CoinStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof CoinStep)) return false;
+        if (!(other instanceof CoinStep)) {
+            return false;
+        }
         CoinStep o = (CoinStep) other;
         return probability.equals(o.probability);
     }

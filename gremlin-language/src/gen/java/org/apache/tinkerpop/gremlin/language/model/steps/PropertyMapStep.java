@@ -15,7 +15,9 @@ public class PropertyMapStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof PropertyMapStep)) return false;
+        if (!(other instanceof PropertyMapStep)) {
+            return false;
+        }
         PropertyMapStep o = (PropertyMapStep) other;
         return propertyKeys.equals(o.propertyKeys);
     }

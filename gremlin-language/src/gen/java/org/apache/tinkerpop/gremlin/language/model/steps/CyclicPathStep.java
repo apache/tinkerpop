@@ -8,7 +8,9 @@ public class CyclicPathStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof CyclicPathStep)) return false;
+        if (!(other instanceof CyclicPathStep)) {
+            return false;
+        }
         CyclicPathStep o = (CyclicPathStep) other;
         return true;
     }

@@ -8,7 +8,9 @@ public class SimplePathStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SimplePathStep)) return false;
+        if (!(other instanceof SimplePathStep)) {
+            return false;
+        }
         SimplePathStep o = (SimplePathStep) other;
         return true;
     }

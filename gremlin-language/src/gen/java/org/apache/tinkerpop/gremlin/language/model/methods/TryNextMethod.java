@@ -8,7 +8,9 @@ public class TryNextMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TryNextMethod)) return false;
+        if (!(other instanceof TryNextMethod)) {
+            return false;
+        }
         TryNextMethod o = (TryNextMethod) other;
         return true;
     }

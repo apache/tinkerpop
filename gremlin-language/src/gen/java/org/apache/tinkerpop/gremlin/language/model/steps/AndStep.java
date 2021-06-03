@@ -17,7 +17,9 @@ public class AndStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof AndStep)) return false;
+        if (!(other instanceof AndStep)) {
+            return false;
+        }
         AndStep o = (AndStep) other;
         return andTraversals.equals(o.andTraversals);
     }

@@ -23,10 +23,12 @@ public abstract class TraversalFunction {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Token instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Column instance) {
             return otherwise(instance);
         }
@@ -52,7 +54,9 @@ public abstract class TraversalFunction {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Token)) return false;
+            if (!(other instanceof Token)) {
+                return false;
+            }
             Token o = (Token) other;
             return token.equals(o.token);
         }
@@ -83,7 +87,9 @@ public abstract class TraversalFunction {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Column)) return false;
+            if (!(other instanceof Column)) {
+                return false;
+            }
             Column o = (Column) other;
             return column.equals(o.column);
         }

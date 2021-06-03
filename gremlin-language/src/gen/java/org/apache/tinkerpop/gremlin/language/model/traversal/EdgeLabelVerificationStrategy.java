@@ -23,10 +23,12 @@ public abstract class EdgeLabelVerificationStrategy {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(ThrowException instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(LogWarning instance) {
             return otherwise(instance);
         }
@@ -52,7 +54,9 @@ public abstract class EdgeLabelVerificationStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ThrowException)) return false;
+            if (!(other instanceof ThrowException)) {
+                return false;
+            }
             ThrowException o = (ThrowException) other;
             return throwException.equals(o.throwException);
         }
@@ -83,7 +87,9 @@ public abstract class EdgeLabelVerificationStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof LogWarning)) return false;
+            if (!(other instanceof LogWarning)) {
+                return false;
+            }
             LogWarning o = (LogWarning) other;
             return logWarning.equals(o.logWarning);
         }

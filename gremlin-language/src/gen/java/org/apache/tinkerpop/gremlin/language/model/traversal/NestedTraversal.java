@@ -6,8 +6,14 @@ public abstract class NestedTraversal {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class ChainedValue {
+        /**
+         * @type boolean
+         */
         public final Boolean anonymous;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.ChainedTraversal
+         */
         public final ChainedTraversal traversal;
         
         /**
@@ -20,7 +26,9 @@ public abstract class NestedTraversal {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ChainedValue)) return false;
+            if (!(other instanceof ChainedValue)) {
+                return false;
+            }
             ChainedValue o = (ChainedValue) other;
             return anonymous.equals(o.anonymous)
                 && traversal.equals(o.traversal);
@@ -65,10 +73,12 @@ public abstract class NestedTraversal {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Root instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Chained instance) {
             return otherwise(instance);
         }
@@ -94,7 +104,9 @@ public abstract class NestedTraversal {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Root)) return false;
+            if (!(other instanceof Root)) {
+                return false;
+            }
             Root o = (Root) other;
             return root.equals(o.root);
         }
@@ -122,7 +134,9 @@ public abstract class NestedTraversal {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Chained)) return false;
+            if (!(other instanceof Chained)) {
+                return false;
+            }
             Chained o = (Chained) other;
             return chained.equals(o.chained);
         }

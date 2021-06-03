@@ -9,8 +9,14 @@ public abstract class HasIdStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithIdsValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public final GenericLiteral id;
         
+        /**
+         * @type list: org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public final java.util.List<GenericLiteral> otherIds;
         
         /**
@@ -23,7 +29,9 @@ public abstract class HasIdStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithIdsValue)) return false;
+            if (!(other instanceof WithIdsValue)) {
+                return false;
+            }
             WithIdsValue o = (WithIdsValue) other;
             return id.equals(o.id)
                 && otherIds.equals(o.otherIds);
@@ -68,10 +76,12 @@ public abstract class HasIdStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Predicate instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithIds instance) {
             return otherwise(instance);
         }
@@ -97,7 +107,9 @@ public abstract class HasIdStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Predicate)) return false;
+            if (!(other instanceof Predicate)) {
+                return false;
+            }
             Predicate o = (Predicate) other;
             return predicate.equals(o.predicate);
         }
@@ -125,7 +137,9 @@ public abstract class HasIdStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithIds)) return false;
+            if (!(other instanceof WithIds)) {
+                return false;
+            }
             WithIds o = (WithIds) other;
             return withIds.equals(o.withIds);
         }

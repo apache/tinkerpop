@@ -21,7 +21,9 @@ public class ProjectStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof ProjectStep)) return false;
+        if (!(other instanceof ProjectStep)) {
+            return false;
+        }
         ProjectStep o = (ProjectStep) other;
         return projectKey.equals(o.projectKey)
             && otherProjectKeys.equals(o.otherProjectKeys);

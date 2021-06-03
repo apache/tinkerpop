@@ -15,7 +15,9 @@ public class HasNotStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof HasNotStep)) return false;
+        if (!(other instanceof HasNotStep)) {
+            return false;
+        }
         HasNotStep o = (HasNotStep) other;
         return propertyKey.equals(o.propertyKey);
     }

@@ -23,7 +23,9 @@ public class With {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof With)) return false;
+        if (!(other instanceof With)) {
+            return false;
+        }
         With o = (With) other;
         return key.equals(o.key)
             && value.equals(o.value);

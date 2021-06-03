@@ -17,7 +17,9 @@ public class Without {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Without)) return false;
+        if (!(other instanceof Without)) {
+            return false;
+        }
         Without o = (Without) other;
         return value.equals(o.value);
     }

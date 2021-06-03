@@ -15,7 +15,9 @@ public class OutEStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof OutEStep)) return false;
+        if (!(other instanceof OutEStep)) {
+            return false;
+        }
         OutEStep o = (OutEStep) other;
         return edgeLabels.equals(o.edgeLabels);
     }

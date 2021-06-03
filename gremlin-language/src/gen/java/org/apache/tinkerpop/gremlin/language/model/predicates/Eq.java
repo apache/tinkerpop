@@ -17,7 +17,9 @@ public class Eq {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Eq)) return false;
+        if (!(other instanceof Eq)) {
+            return false;
+        }
         Eq o = (Eq) other;
         return genericLiteral.equals(o.genericLiteral);
     }

@@ -31,26 +31,32 @@ public abstract class TraversalSourceSelfMethod {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(WithBulk instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithPath instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithSack instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithSideEffect instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithStrategies instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(With instance) {
             return otherwise(instance);
         }
@@ -76,7 +82,9 @@ public abstract class TraversalSourceSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithBulk)) return false;
+            if (!(other instanceof WithBulk)) {
+                return false;
+            }
             WithBulk o = (WithBulk) other;
             return withBulk.equals(o.withBulk);
         }
@@ -107,7 +115,9 @@ public abstract class TraversalSourceSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPath)) return false;
+            if (!(other instanceof WithPath)) {
+                return false;
+            }
             WithPath o = (WithPath) other;
             return withPath.equals(o.withPath);
         }
@@ -138,7 +148,9 @@ public abstract class TraversalSourceSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithSack)) return false;
+            if (!(other instanceof WithSack)) {
+                return false;
+            }
             WithSack o = (WithSack) other;
             return withSack.equals(o.withSack);
         }
@@ -169,7 +181,9 @@ public abstract class TraversalSourceSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithSideEffect)) return false;
+            if (!(other instanceof WithSideEffect)) {
+                return false;
+            }
             WithSideEffect o = (WithSideEffect) other;
             return withSideEffect.equals(o.withSideEffect);
         }
@@ -200,7 +214,9 @@ public abstract class TraversalSourceSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithStrategies)) return false;
+            if (!(other instanceof WithStrategies)) {
+                return false;
+            }
             WithStrategies o = (WithStrategies) other;
             return withStrategies.equals(o.withStrategies);
         }
@@ -231,7 +247,9 @@ public abstract class TraversalSourceSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof With)) return false;
+            if (!(other instanceof With)) {
+                return false;
+            }
             With o = (With) other;
             return with.equals(o.with);
         }

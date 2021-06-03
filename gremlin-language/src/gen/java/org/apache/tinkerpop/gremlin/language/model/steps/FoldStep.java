@@ -25,7 +25,9 @@ public class FoldStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof FoldStep)) return false;
+        if (!(other instanceof FoldStep)) {
+            return false;
+        }
         FoldStep o = (FoldStep) other;
         return value.equals(o.value);
     }
@@ -36,8 +38,14 @@ public class FoldStep {
     }
     
     public static class Value {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/literals.GenericLiteral
+         */
         public final GenericLiteral seed;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.TraversalBiFunction
+         */
         public final TraversalBiFunction foldFunction;
         
         /**
@@ -50,7 +58,9 @@ public class FoldStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Value)) return false;
+            if (!(other instanceof Value)) {
+                return false;
+            }
             Value o = (Value) other;
             return seed.equals(o.seed)
                 && foldFunction.equals(o.foldFunction);

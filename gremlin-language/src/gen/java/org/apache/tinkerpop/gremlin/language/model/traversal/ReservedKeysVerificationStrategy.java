@@ -25,14 +25,17 @@ public abstract class ReservedKeysVerificationStrategy {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Keys instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ThrowException instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(LogWarning instance) {
             return otherwise(instance);
         }
@@ -58,7 +61,9 @@ public abstract class ReservedKeysVerificationStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Keys)) return false;
+            if (!(other instanceof Keys)) {
+                return false;
+            }
             Keys o = (Keys) other;
             return keys.equals(o.keys);
         }
@@ -89,7 +94,9 @@ public abstract class ReservedKeysVerificationStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ThrowException)) return false;
+            if (!(other instanceof ThrowException)) {
+                return false;
+            }
             ThrowException o = (ThrowException) other;
             return throwException.equals(o.throwException);
         }
@@ -120,7 +127,9 @@ public abstract class ReservedKeysVerificationStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof LogWarning)) return false;
+            if (!(other instanceof LogWarning)) {
+                return false;
+            }
             LogWarning o = (LogWarning) other;
             return logWarning.equals(o.logWarning);
         }

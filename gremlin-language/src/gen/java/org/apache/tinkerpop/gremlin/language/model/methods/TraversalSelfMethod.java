@@ -21,6 +21,7 @@ public abstract class TraversalSelfMethod {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(None instance) {
             return otherwise(instance);
         }
@@ -39,7 +40,9 @@ public abstract class TraversalSelfMethod {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof None)) return false;
+            if (!(other instanceof None)) {
+                return false;
+            }
             None o = (None) other;
             return true;
         }

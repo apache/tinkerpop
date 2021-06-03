@@ -27,18 +27,22 @@ public abstract class PartitionStrategy {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(IncludeMetaProperties instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WritePartition instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(PartitionKey instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(ReadPartitions instance) {
             return otherwise(instance);
         }
@@ -64,7 +68,9 @@ public abstract class PartitionStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof IncludeMetaProperties)) return false;
+            if (!(other instanceof IncludeMetaProperties)) {
+                return false;
+            }
             IncludeMetaProperties o = (IncludeMetaProperties) other;
             return includeMetaProperties.equals(o.includeMetaProperties);
         }
@@ -95,7 +101,9 @@ public abstract class PartitionStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WritePartition)) return false;
+            if (!(other instanceof WritePartition)) {
+                return false;
+            }
             WritePartition o = (WritePartition) other;
             return writePartition.equals(o.writePartition);
         }
@@ -126,7 +134,9 @@ public abstract class PartitionStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof PartitionKey)) return false;
+            if (!(other instanceof PartitionKey)) {
+                return false;
+            }
             PartitionKey o = (PartitionKey) other;
             return partitionKey.equals(o.partitionKey);
         }
@@ -157,7 +167,9 @@ public abstract class PartitionStrategy {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ReadPartitions)) return false;
+            if (!(other instanceof ReadPartitions)) {
+                return false;
+            }
             ReadPartitions o = (ReadPartitions) other;
             return readPartitions.equals(o.readPartitions);
         }

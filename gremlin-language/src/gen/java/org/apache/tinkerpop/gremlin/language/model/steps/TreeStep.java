@@ -15,7 +15,9 @@ public class TreeStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TreeStep)) return false;
+        if (!(other instanceof TreeStep)) {
+            return false;
+        }
         TreeStep o = (TreeStep) other;
         return sideEffectKey.equals(o.sideEffectKey);
     }

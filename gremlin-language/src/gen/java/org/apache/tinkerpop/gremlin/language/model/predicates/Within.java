@@ -17,7 +17,9 @@ public class Within {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Within)) return false;
+        if (!(other instanceof Within)) {
+            return false;
+        }
         Within o = (Within) other;
         return value.equals(o.value);
     }

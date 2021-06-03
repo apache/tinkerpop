@@ -8,7 +8,9 @@ public class TraversalSackMethod {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TraversalSackMethod)) return false;
+        if (!(other instanceof TraversalSackMethod)) {
+            return false;
+        }
         TraversalSackMethod o = (TraversalSackMethod) other;
         return true;
     }

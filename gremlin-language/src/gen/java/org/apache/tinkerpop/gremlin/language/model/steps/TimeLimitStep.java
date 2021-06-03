@@ -15,7 +15,9 @@ public class TimeLimitStep {
     
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof TimeLimitStep)) return false;
+        if (!(other instanceof TimeLimitStep)) {
+            return false;
+        }
         TimeLimitStep o = (TimeLimitStep) other;
         return timeLimit.equals(o.timeLimit);
     }

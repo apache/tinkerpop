@@ -10,8 +10,14 @@ public abstract class SelectStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class TraversalValue {
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/traversal.TraversalPop
+         */
         public final java.util.Optional<TraversalPop> pop;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public final NestedTraversal traversal;
         
         /**
@@ -24,7 +30,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof TraversalValue)) return false;
+            if (!(other instanceof TraversalValue)) {
+                return false;
+            }
             TraversalValue o = (TraversalValue) other;
             return pop.equals(o.pop)
                 && traversal.equals(o.traversal);
@@ -52,12 +60,24 @@ public abstract class SelectStep {
     }
     
     public static class KeysValue {
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/traversal.TraversalPop
+         */
         public final java.util.Optional<TraversalPop> pop;
         
+        /**
+         * @type string
+         */
         public final String selectKey1;
         
+        /**
+         * @type string
+         */
         public final String selectKey2;
         
+        /**
+         * @type list: string
+         */
         public final java.util.List<String> otherSelectKeys;
         
         /**
@@ -72,7 +92,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof KeysValue)) return false;
+            if (!(other instanceof KeysValue)) {
+                return false;
+            }
             KeysValue o = (KeysValue) other;
             return pop.equals(o.pop)
                 && selectKey1.equals(o.selectKey1)
@@ -118,8 +140,14 @@ public abstract class SelectStep {
     }
     
     public static class KeyValue {
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/traversal.TraversalPop
+         */
         public final java.util.Optional<TraversalPop> pop;
         
+        /**
+         * @type string
+         */
         public final String selectKey;
         
         /**
@@ -132,7 +160,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof KeyValue)) return false;
+            if (!(other instanceof KeyValue)) {
+                return false;
+            }
             KeyValue o = (KeyValue) other;
             return pop.equals(o.pop)
                 && selectKey.equals(o.selectKey);
@@ -181,18 +211,22 @@ public abstract class SelectStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(Column instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Key instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Keys instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(Traversal instance) {
             return otherwise(instance);
         }
@@ -218,7 +252,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Column)) return false;
+            if (!(other instanceof Column)) {
+                return false;
+            }
             Column o = (Column) other;
             return column.equals(o.column);
         }
@@ -246,7 +282,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Key)) return false;
+            if (!(other instanceof Key)) {
+                return false;
+            }
             Key o = (Key) other;
             return key.equals(o.key);
         }
@@ -274,7 +312,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Keys)) return false;
+            if (!(other instanceof Keys)) {
+                return false;
+            }
             Keys o = (Keys) other;
             return keys.equals(o.keys);
         }
@@ -302,7 +342,9 @@ public abstract class SelectStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Traversal)) return false;
+            if (!(other instanceof Traversal)) {
+                return false;
+            }
             Traversal o = (Traversal) other;
             return traversal.equals(o.traversal);
         }

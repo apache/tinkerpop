@@ -9,10 +9,19 @@ public abstract class ChooseStep {
     public abstract <R> R accept(Visitor<R> visitor) ;
     
     public static class WithPredicateValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final TraversalPredicate traversalPredicate;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final TraversalPredicate trueChoice;
         
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final java.util.Optional<TraversalPredicate> falseChoice;
         
         /**
@@ -26,7 +35,9 @@ public abstract class ChooseStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPredicateValue)) return false;
+            if (!(other instanceof WithPredicateValue)) {
+                return false;
+            }
             WithPredicateValue o = (WithPredicateValue) other;
             return traversalPredicate.equals(o.traversalPredicate)
                 && trueChoice.equals(o.trueChoice)
@@ -63,10 +74,19 @@ public abstract class ChooseStep {
     }
     
     public static class WithTraversalValue {
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/traversal.NestedTraversal
+         */
         public final NestedTraversal traversalPredicate;
         
+        /**
+         * @type org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final TraversalPredicate trueChoice;
         
+        /**
+         * @type optional: org/apache/tinkerpop/gremlin/language/model/predicates.TraversalPredicate
+         */
         public final java.util.Optional<TraversalPredicate> falseChoice;
         
         /**
@@ -80,7 +100,9 @@ public abstract class ChooseStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithTraversalValue)) return false;
+            if (!(other instanceof WithTraversalValue)) {
+                return false;
+            }
             WithTraversalValue o = (WithTraversalValue) other;
             return traversalPredicate.equals(o.traversalPredicate)
                 && trueChoice.equals(o.trueChoice)
@@ -136,14 +158,17 @@ public abstract class ChooseStep {
             throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
         }
         
+        @Override
         default R visit(ChoiceTraversal instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithTraversal instance) {
             return otherwise(instance);
         }
         
+        @Override
         default R visit(WithPredicate instance) {
             return otherwise(instance);
         }
@@ -169,7 +194,9 @@ public abstract class ChooseStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof ChoiceTraversal)) return false;
+            if (!(other instanceof ChoiceTraversal)) {
+                return false;
+            }
             ChoiceTraversal o = (ChoiceTraversal) other;
             return choiceTraversal.equals(o.choiceTraversal);
         }
@@ -197,7 +224,9 @@ public abstract class ChooseStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithTraversal)) return false;
+            if (!(other instanceof WithTraversal)) {
+                return false;
+            }
             WithTraversal o = (WithTraversal) other;
             return withTraversal.equals(o.withTraversal);
         }
@@ -225,7 +254,9 @@ public abstract class ChooseStep {
         
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof WithPredicate)) return false;
+            if (!(other instanceof WithPredicate)) {
+                return false;
+            }
             WithPredicate o = (WithPredicate) other;
             return withPredicate.equals(o.withPredicate);
         }
