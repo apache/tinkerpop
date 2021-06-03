@@ -143,7 +143,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             return IteratorUtils.stream(this.getBaseGraph().allNodes())
                     .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
-            ElementHelper.validateMixedElementIds(Vertex.class, vertexIds);
             return Stream.of(vertexIds)
                     .map(id -> {
                         if (id instanceof Number)
@@ -174,7 +173,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             return IteratorUtils.stream(this.getBaseGraph().allRelationships())
                     .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
-            ElementHelper.validateMixedElementIds(Edge.class, edgeIds);
             return Stream.of(edgeIds)
                     .map(id -> {
                         if (id instanceof Number)

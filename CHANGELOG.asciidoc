@@ -24,6 +24,7 @@ limitations under the License.
 === TinkerPop 3.6.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
+* Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 
@@ -364,6 +365,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Fixed bug in the `vertexLabelKey` validation for `GraphMLWriter` which was inadvertently validating the `edgeLabelKey`.
 * Changed `IndexStep` to make it easier for providers to determine the type of indexer being used.
 

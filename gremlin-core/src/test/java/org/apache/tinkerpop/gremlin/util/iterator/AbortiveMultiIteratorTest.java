@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.iterator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,36 +33,36 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class MultiIteratorTest {
+public class AbortiveMultiIteratorTest {
     @Test
     public void shouldNotHaveNextIfNoIteratorsAreAdded() {
-        final Iterator<String> itty = new MultiIterator<>();
+        final Iterator<String> itty = new AbortiveMultiIterator<>();
         assertThat(itty.hasNext(), is(false));
     }
 
     @Test(expected = FastNoSuchElementException.class)
     public void shouldThrowFastNoSuchElementExceptionIfNoIteratorsAreAdded() {
-        final Iterator<String> itty = new MultiIterator<>();
+        final Iterator<String> itty = new AbortiveMultiIterator<>();
         itty.next();
     }
 
     @Test
     public void shouldNotHaveNextIfEmptyIteratorIsAdded() {
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         itty.addIterator(EmptyIterator.instance());
         assertThat(itty.hasNext(), is(false));
     }
 
     @Test(expected = FastNoSuchElementException.class)
     public void shouldThrowFastNoSuchElementExceptionIfEmptyIteratorIsAdded() {
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         itty.addIterator(EmptyIterator.instance());
         itty.next();
     }
 
     @Test
     public void shouldNotHaveNextIfEmptyIteratorsAreAdded() {
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(EmptyIterator.instance());
@@ -71,7 +72,7 @@ public class MultiIteratorTest {
 
     @Test(expected = FastNoSuchElementException.class)
     public void shouldThrowFastNoSuchElementExceptionIfEmptyIteratorsAreAdded() {
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(EmptyIterator.instance());
@@ -86,7 +87,7 @@ public class MultiIteratorTest {
         list.add("test2");
         list.add("test3");
 
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(list.iterator());
 
@@ -98,13 +99,64 @@ public class MultiIteratorTest {
     }
 
     @Test
+    public void shouldAbortIteration() {
+        final List<String> list1 = new ArrayList<>();
+        list1.add("test1");
+        list1.add("test2");
+        list1.add("test3");
+
+        final List<String> list2 = new ArrayList<>();
+        list2.add("test4");
+        list2.add("test5");
+        list2.add("test6");
+
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
+        itty.addIterator(EmptyIterator.instance());
+        itty.addIterator(list1.iterator());
+        itty.addIterator(list2.iterator(), c -> c != 3);
+
+        assertThat(itty.hasNext(), is(true));
+        assertEquals("test1", itty.next());
+        assertEquals("test2", itty.next());
+        assertEquals("test3", itty.next());
+        assertThat(itty.hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldAllowFullIteration() {
+        final List<String> list1 = new ArrayList<>();
+        list1.add("test1");
+        list1.add("test2");
+        list1.add("test3");
+
+        final List<String> list2 = new ArrayList<>();
+        list2.add("test4");
+        list2.add("test5");
+        list2.add("test6");
+
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
+        itty.addIterator(EmptyIterator.instance());
+        itty.addIterator(list1.iterator());
+        itty.addIterator(list2.iterator(), c -> c == 3);
+
+        assertThat(itty.hasNext(), is(true));
+        assertEquals("test1", itty.next());
+        assertEquals("test2", itty.next());
+        assertEquals("test3", itty.next());
+        assertEquals("test4", itty.next());
+        assertEquals("test5", itty.next());
+        assertEquals("test6", itty.next());
+        assertThat(itty.hasNext(), is(false));
+    }
+
+    @Test
     public void shouldClearIterators() {
         final List<String> list = new ArrayList<>();
         list.add("test1");
         list.add("test2");
         list.add("test3");
 
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         itty.addIterator(list.iterator());
 
         itty.clear();
@@ -115,7 +167,7 @@ public class MultiIteratorTest {
     @Test
     public void shouldCloseIterators() {
 
-        final MultiIterator<String> itty = new MultiIterator<>();
+        final AbortiveMultiIterator<String> itty = new AbortiveMultiIterator<>();
         final DummyAutoCloseableIterator<String> inner1 = new DummyAutoCloseableIterator<>();
         final DummyAutoCloseableIterator<String> inner2 = new DummyAutoCloseableIterator<>();
         itty.addIterator(inner1);

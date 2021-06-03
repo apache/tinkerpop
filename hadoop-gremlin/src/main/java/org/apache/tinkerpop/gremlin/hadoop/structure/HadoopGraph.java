@@ -35,14 +35,20 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.AbortiveMultiIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -257,22 +263,18 @@ public final class HadoopGraph implements Graph {
             if (0 == vertexIds.length) {
                 return new HadoopVertexIterator(this);
             } else {
-                // base the conversion function on the first item in the id list as the expectation is that these
-                // id values will be a uniform list
-                if (vertexIds[0] instanceof Vertex) {
-                    // based on the first item assume all vertices in the argument list
-                    if (!Stream.of(vertexIds).allMatch(id -> id instanceof Vertex))
-                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+                final Stream<Vertex> idsThatWereVertices = Stream.of(vertexIds).
+                        filter(id -> id instanceof Vertex).map(id -> (Vertex) id);
+                final Stream<Vertex> verticesFromHadoopGraph = StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+                        IteratorUtils.filter(new HadoopVertexIterator(this),
+                                vertex -> ElementHelper.idExists(vertex.id(), vertexIds)), Spliterator.ORDERED), false);
 
-                    // no need to get the vertices again, so just flip it back - some implementation may want to treat this
-                    // as a refresh operation. that's not necessary for hadoopgraph.
-                    return Stream.of(vertexIds).map(id -> (Vertex) id).iterator();
-                } else {
-                    final Class<?> firstClass = vertexIds[0].getClass();
-                    if (!Stream.of(vertexIds).map(Object::getClass).allMatch(firstClass::equals))
-                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
-                    return IteratorUtils.filter(new HadoopVertexIterator(this), vertex -> ElementHelper.idExists(vertex.id(), vertexIds));
-                }
+                // if the vertexIds are all Vertex objects then abort the iteration of the full HadoopGraph as there
+                // is no need to refresh the data in this use case as other graphs might
+                final AbortiveMultiIterator<Vertex> iterator = new AbortiveMultiIterator<>();
+                iterator.addIterator(idsThatWereVertices.iterator());
+                iterator.addIterator(verticesFromHadoopGraph.iterator(), c -> c != vertexIds.length);
+                return iterator;
             }
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -285,22 +287,18 @@ public final class HadoopGraph implements Graph {
             if (0 == edgeIds.length) {
                 return new HadoopEdgeIterator(this);
             } else {
-                // base the conversion function on the first item in the id list as the expectation is that these
-                // id values will be a uniform list
-                if (edgeIds[0] instanceof Edge) {
-                    // based on the first item assume all Edges in the argument list
-                    if (!Stream.of(edgeIds).allMatch(id -> id instanceof Edge))
-                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+                final Stream<Edge> idsThatWereEdges = Stream.of(edgeIds).
+                        filter(id -> id instanceof Edge).map(id -> (Edge) id);
+                final Stream<Edge> edgesFromHadoopGraph = StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+                        IteratorUtils.filter(new HadoopEdgeIterator(this),
+                                edge -> ElementHelper.idExists(edge.id(), edgeIds)), Spliterator.ORDERED), false);
 
-                    // no need to get the vertices again, so just flip it back - some implementation may want to treat this
-                    // as a refresh operation. that's not necessary for hadoopgraph.
-                    return Stream.of(edgeIds).map(id -> (Edge) id).iterator();
-                } else {
-                    final Class<?> firstClass = edgeIds[0].getClass();
-                    if (!Stream.of(edgeIds).map(Object::getClass).allMatch(firstClass::equals))
-                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
-                    return IteratorUtils.filter(new HadoopEdgeIterator(this), vertex -> ElementHelper.idExists(vertex.id(), edgeIds));
-                }
+                // if the edgeIds are all Edge objects then abort the iteration of the full HadoopGraph as there
+                // is no need to refresh the data in this use case as other graphs might
+                final AbortiveMultiIterator<Edge> iterator = new AbortiveMultiIterator<>();
+                iterator.addIterator(idsThatWereEdges.iterator());
+                iterator.addIterator(edgesFromHadoopGraph.iterator(), c -> c != edgeIds.length);
+                return iterator;
             }
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);

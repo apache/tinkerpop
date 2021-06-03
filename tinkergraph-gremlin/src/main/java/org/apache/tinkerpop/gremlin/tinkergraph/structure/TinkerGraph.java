@@ -305,18 +305,18 @@ public final class TinkerGraph implements Graph {
                                                                   final Object... ids) {
         final Iterator<T> iterator;
         if (0 == ids.length) {
-            iterator = new TinkerGraphIterator<T>(elements.values().iterator());
+            iterator = new TinkerGraphIterator<>(elements.values().iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
-            validateHomogenousIds(idList);
 
-            // if the type is of Element - have to look each up because it might be an Attachable instance or
-            // other implementation. the assumption is that id conversion is not required for detached
-            // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
-            // vertex to be findable in OrientDB
-            return clazz.isAssignableFrom(ids[0].getClass()) ?
-                    new TinkerGraphIterator<T>(IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull))
-                    : new TinkerGraphIterator<T>(IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull));
+            // TinkerGraph can take a Vertex/Edge or any object as an "id". If it is an Element then we just cast
+            // to that type and pop off the identifier. there is no need to pass that through the IdManager since
+            // the assumption is that if it's already an Element, its identifier must be valid to the Graph and to
+            // its associated IdManager. All other objects are passed to the IdManager for conversion.
+            return new TinkerGraphIterator<>(IteratorUtils.filter(IteratorUtils.map(idList, id -> {
+                final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
+                return elements.get(idManager.convert(iid));
+            }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
                 (Iterator<T>) (clazz.equals(Vertex.class) ?
@@ -334,19 +334,6 @@ public final class TinkerGraph implements Graph {
     @Override
     public Features features() {
         return features;
-    }
-
-    private void validateHomogenousIds(final List<Object> ids) {
-        final Iterator<Object> iterator = ids.iterator();
-        Object id = iterator.next();
-        if (id == null)
-            throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-        final Class firstClass = id.getClass();
-        while (iterator.hasNext()) {
-            id = iterator.next();
-            if (id == null || !id.getClass().equals(firstClass))
-                throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-        }
     }
 
     public class TinkerGraphFeatures implements Features {
