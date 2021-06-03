@@ -1,6 +1,6 @@
 {
   "name": "gremlint",
-  "version": "1.0.0",
+  "version": "3.5.1-alpha1",
   "description": "Linter/code formatter for Gremlin",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -23,6 +23,8 @@
     "code",
     "formatter",
     "graph",
+    "graphdb",
+    "tinkerpop",
     "gremlin",
     "query"
   ],
@@ -43,5 +45,8 @@
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "engines": {
+    "node": ">=10"
+  }
 }

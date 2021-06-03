@@ -21,7 +21,7 @@
 
 ### What is Gremlint?
 
-Gremlint is a code formatter which parses Gremlin queries and rewrites them to adhere to certain styling rules. It does so by parsing the query to an abstract syntax tree, and reprinting it from scratch.
+Gremlint is a code formatter, from [Apache TinkerPop™][tk] which parses Gremlin queries and rewrites them to adhere to certain styling rules. It does so by parsing the query to an abstract syntax tree, and reprinting it from scratch.
 
 ### But why?
 
@@ -31,10 +31,8 @@ Gremlint is a code formatter which parses Gremlin queries and rewrites them to a
 
 ### Install Gremlint as a JavaScript / TypeScript package
 
-Since Gremlint is not yet "published", it has to be installed from its GitHub repo:
-
 ```bash
-npm install OyvindSabo/gremlint#master
+npm install gremlint
 ```
 
 ### Basic example
@@ -114,28 +112,4 @@ console.log(formattedQuery);
 https://gremlint.com is a website which utilizes the Gremlint library to give users an online "living" style guide for Gremlin queries. It also serves as a platform for showcasing the features of Gremlint. Its source code is available [here](https://github.com/apache/tinkerpop/tree/master/docs/site/home/gremlint).
 ![Gremlint V2 Screenshot](https://user-images.githubusercontent.com/25663729/88488518-f078ac00-cf8d-11ea-9e1c-01edec285751.png)
 
-### For contributors
-
-**Install dependencies**
-
-`npm install`
-
-**Lint source files**
-
-`npm run lint`
-
-**Format source files**
-
-`npm run format`
-
-**Run tests**
-
-`npm test`
-
-**Compile the TypeScript source code**
-
-`npm run build`
-
-**Bump version**
-
-`npm version [major | minor | patch]`
+[tk]: https://tinkerpop.apache.org

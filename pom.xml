@@ -140,6 +140,7 @@ limitations under the License.
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
+        <module>gremlint</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -380,9 +381,14 @@ limitations under the License.
                         <exclude>**/.settings/**</exclude>
                         <exclude>**/.idea/**</exclude>
                         <exclude>.repository/**</exclude>
-                        <exclude>docs/static/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
+                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>docs/static/**</exclude>
+                        <exclude>docs/site/home/css/**</exclude>
+                        <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/gremlint/build/**</exclude>
+                        <exclude>docs/gremlint/public/CNAME</exclude>
                         <exclude>**/*.kryo</exclude>
                         <exclude>**/*.gbin</exclude>
                         <exclude>**/*.iml</exclude>
@@ -403,14 +409,6 @@ limitations under the License.
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                         <exclude>**/.glv</exclude>
-                        <exclude>bin/gremlin.sh</exclude>
-                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
-                        <exclude>docs/site/home/css/**</exclude>
-                        <exclude>docs/site/home/js/**</exclude>
-                        <exclude>docs/gremlint/build/**</exclude>
-                        <exclude>docs/gremlint/node_modules/**</exclude>
-                        <exclude>docs/gremlint/public/CNAME</exclude>
-                        <exclude>docs/gremlint/.prettierrc</exclude>
                         <exclude>**/Debug/**</exclude>
                         <exclude>**/Release/**</exclude>
                         <exclude>**/obj/**</exclude>
@@ -421,17 +419,17 @@ limitations under the License.
                         <exclude>**/NuGet.Config</exclude>
                         <exclude>**/*.nuspec</exclude>
                         <exclude>**/BenchmarkDotNet.Artifacts/**</exclude>
-                        <exclude>**/gremlin-javascript/node_modules/**</exclude>
-                        <exclude>**/gremlin-javascript/doc/**</exclude>
                         <exclude>**/node/**</exclude>
+                        <exclude>**/node_modules/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
+                        <!-- javascript docs/lib -->
+                        <exclude>**/doc/**</exclude>
+                        <exclude>**/lib/**</exclude>
+                        <exclude>**/.prettierrc</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
-                        <exclude>**/gremlint/lib/**</exclude>
-                        <exclude>**/gremlint/node_modules/**</exclude>
-                        <exclude>**/gremlint/.prettierrc</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
