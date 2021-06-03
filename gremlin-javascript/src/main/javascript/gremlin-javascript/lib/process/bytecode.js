@@ -80,8 +80,8 @@ class Bytecode {
     for (let i = 1; i < length; i++) {
       const val = values[i - 1];
       if (val instanceof Traversal && val.graph != null)
-        throw new Error("The child traversal of ${val} was not spawned anonymously - use " +
-            "the __ class rather than a TraversalSource to construct the child traversal");
+        throw new Error(`The child traversal of ${val} was not spawned anonymously - use ` +
+            `the __ class rather than a TraversalSource to construct the child traversal`);
       instruction[i] = val;
     }
     return instruction;

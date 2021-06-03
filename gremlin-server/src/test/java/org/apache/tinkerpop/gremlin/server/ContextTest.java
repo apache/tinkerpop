@@ -104,48 +104,57 @@ public class ContextTest {
     @Test
     public void shouldAllowMultipleNonFinalResponses() {
         writeInvoker.apply(context, ResponseStatusCode.AUTHENTICATE);
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
-        Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(2)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(2)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
-        Mockito.verify(ctx, Mockito.times(3)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(3)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(3)).flush();
     }
 
     @Test
     public void shouldAllowAtMostOneFinalResponse() {
         writeInvoker.apply(context, ResponseStatusCode.AUTHENTICATE);
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.SUCCESS);
-        Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(2)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(2)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
         assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + "$"));
 
         // ensure there were no other writes to the channel
-        Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(2)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(2)).flush();
     }
 
     @Test
     public void shouldNotAllowNonFinalMessagesAfterFinalResponse() {
         writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
         assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.PARTIAL_CONTENT + "$"));
 
         // ensure there were no other writes to the channel
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).flush();
     }
 
     @Test
     public void shouldReleaseIgnoredFrames() {
         writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).flush();
 
         Frame frame = Mockito.mock(Frame.class);
         context.writeAndFlush(ResponseStatusCode.SUCCESS, frame);
@@ -154,9 +163,11 @@ public class ContextTest {
         assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SUCCESS + "$"));
 
         // ensure there were no other writes to the channel
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
+        Mockito.verify(ctx, Mockito.times(1)).flush();
 
         // ensure the frame was released
         Mockito.verify(frame, Mockito.times(1)).tryRelease();
+        Mockito.verify(ctx, Mockito.times(1)).flush();
     }
 }

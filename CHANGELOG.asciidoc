@@ -23,6 +23,7 @@ limitations under the License.
 [[release-3-6-0]]
 === TinkerPop 3.6.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 
@@ -31,7 +32,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+This release also includes changes from <<release-3-4-12, 3.4.12>>.
 
+* Fixed bug in Javascript error message related to validating anonymous traversal spawns.
+* Removed sending of deprecated session close message from Gremlin.Net driver.
 
 [[release-3-5-0]]
 === TinkerPop 3.5.0 (Release Date: May 3, 2021)
@@ -360,6 +364,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed bug in the `vertexLabelKey` validation for `GraphMLWriter` which was inadvertently validating the `edgeLabelKey`.
+* Changed `IndexStep` to make it easier for providers to determine the type of indexer being used.
 
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)
