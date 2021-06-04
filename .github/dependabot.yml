@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/gremlin-dotnet"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - ".NET"
+      - "dependencies"
