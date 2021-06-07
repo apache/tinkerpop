@@ -928,10 +928,6 @@ WARNING: As explained throughout the documentation, when possible <<a-note-on-la
 [[gremlin-python-scripts]]
 === Submitting Scripts
 
-WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
-for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
-consider using bytecode-based requests instead when possible.
-
 The `Client` class implementation/interface is based on the Java Driver, with some restrictions. Most notably,
 Gremlin-Python does not yet implement the `Cluster` class. Instead, `Client` is instantiated directly.
 Usage is as follows:
@@ -1287,10 +1283,6 @@ instance created, it will help to fully define the closure in the lambda express
 [[gremlin-dotnet-scripts]]
 === Submitting Scripts
 
-WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
-for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
-consider using bytecode-based requests instead when possible.
-
 Gremlin scripts are sent to the server from a `IGremlinClient` instance.  A `IGremlinClient` is created as follows:
 
 [source,csharp]
@@ -1587,10 +1579,6 @@ WARNING: As explained throughout the documentation, when possible <<a-note-on-la
 
 [[gremlin-javascript-scripts]]
 === Submitting Scripts
-
-WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
-for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
-consider using bytecode-based requests instead when possible.
 
 It is possible to submit parametrized Gremlin scripts to the server as strings, using the `Client` class:
 
