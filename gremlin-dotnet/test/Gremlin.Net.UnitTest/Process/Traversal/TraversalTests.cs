@@ -42,7 +42,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             Assert.Equal(traverserObj, actualObj);
 
-            Assert.Equal(null, traversal.Next());
+            Assert.Null(traversal.Next());
         }
         [Theory]
         [InlineData(1)]
@@ -51,14 +51,14 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             var traversal = new TestTraversal(new List<object> {traverserObj});
 
-            Assert.Equal(true, traversal.HasNext());
-            Assert.Equal(true, traversal.HasNext());
+            Assert.True(traversal.HasNext());
+            Assert.True(traversal.HasNext());
             
             var actualObj = traversal.Next();
             Assert.Equal(traverserObj, actualObj);
             
-            Assert.Equal(false, traversal.HasNext());
-            Assert.Equal(false, traversal.HasNext());
+            Assert.False(traversal.HasNext());
+            Assert.False(traversal.HasNext());
         }
 
         [Theory]

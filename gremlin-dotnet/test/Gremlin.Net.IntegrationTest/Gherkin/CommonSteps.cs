@@ -186,7 +186,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             switch (characterizedAs)
             {
                 case "empty":
-                    Assert.Equal(0, _result.Length);
+                    Assert.Empty(_result);
                     return;
                 case "ordered":
                 case "unordered":
