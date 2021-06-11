@@ -18,17 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import nl.altindag.log.LogCaptor;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -43,28 +45,28 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class WebSocketClientBehaviorIntegrateTest {
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketClientBehaviorIntegrateTest.class);
+
     @Rule
     public TestName name = new TestName();
 
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketClientBehaviorIntegrateTest.class);
-    private Log4jRecordingAppender recordingAppender = null;
-    private Level previousLogLevel;
+    private static LogCaptor logCaptor;
+
     private SimpleSocketServer server;
+
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forRoot();
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        logCaptor.close();
+    }
 
     @Before
     public void setUp() throws InterruptedException {
-        recordingAppender = new Log4jRecordingAppender();
-        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-        if (name.getMethodName().equals("shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests") ||
-                name.getMethodName().equals("shouldNotCreateReplacementConnectionWhenClientClosesConnection")) {
-            final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
-            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
-            previousLogLevel = connectionPoolLogger.getLevel();
-            connectionPoolLogger.setLevel(Level.DEBUG);
-            connectionLogger.setLevel(Level.DEBUG);
-        }
-
-        rootLogger.addAppender(recordingAppender);
+        logCaptor.clearLogs();
 
         server = new SimpleSocketServer();
         server.start(new TestWSGremlinInitializer());
@@ -73,19 +75,6 @@ public class WebSocketClientBehaviorIntegrateTest {
     @After
     public void shutdown() {
         server.stop();
-
-        // reset logger
-        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-
-        if (name.getMethodName().equals("shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests") ||
-                name.getMethodName().equals("shouldNotCreateReplacementConnectionWhenClientClosesConnection")) {
-            final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
-            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
-            connectionPoolLogger.setLevel(previousLogLevel);
-            connectionLogger.setLevel(previousLogLevel);
-        }
-
-        rootLogger.removeAppender(recordingAppender);
     }
 
     /**
@@ -226,7 +215,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         Thread.sleep(2000);
 
         // Assert that we should consider creating a connection only once, since only one connection is being closed.
-        assertEquals(1, recordingAppender.getMessages().stream().filter(str -> str.contains("Considering new connection on")).count());
+        assertEquals(1, logCaptor.getLogs().stream().filter(str -> str.contains("Considering new connection on")).count());
 
         // assert sanity after connection replacement
         final Vertex v = client.submit("1",
@@ -262,13 +251,9 @@ public class WebSocketClientBehaviorIntegrateTest {
         Thread.sleep(2000);
 
         assertEquals("OnClose callback should be called but only once", 1,
-                recordingAppender.getMessages().stream()
-                        .filter(str -> str.contains("OnChannelClose callback called for channel"))
-                        .count());
+                logCaptor.getLogs().stream().filter(str -> str.contains("OnChannelClose callback called for channel")).count());
 
         assertEquals("No new connection creation should be started", 0,
-                recordingAppender.getMessages().stream()
-                        .filter(str -> str.contains("Considering new connection on"))
-                        .count());
+                logCaptor.getLogs().stream().filter(str -> str.contains("Considering new connection on")).count());
     }
 }

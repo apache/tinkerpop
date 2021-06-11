@@ -35,9 +35,9 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -72,7 +72,7 @@ limitations under the License.
                 <version>2.22.0</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <log4j.configuration>file:conf/log4j-test.properties</log4j.configuration>
+                        <logback.configurationFile>file:conf/logback-test.properties</logback.configurationFile>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

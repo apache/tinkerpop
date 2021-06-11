@@ -102,8 +102,8 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>io.github.hakky54</groupId>
+            <artifactId>logcaptor</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -18,9 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -28,23 +26,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -58,22 +53,21 @@ public class ReservedKeysVerificationStrategyTest {
             ".*that is setting a property key to a reserved word.*")
             .asPredicate();
 
-    private TestLogAppender logAppender;
-    private Level previousLogLevel;
+    private static LogCaptor logCaptor;
 
-    @Before
-    public void setupForEachTest() {
-        final Logger strategyLogger = Logger.getLogger(AbstractWarningVerificationStrategy.class);
-        previousLogLevel = strategyLogger.getLevel();
-        strategyLogger.setLevel(Level.WARN);
-        Logger.getRootLogger().addAppender(logAppender = new TestLogAppender());
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forClass(AbstractWarningVerificationStrategy.class);
     }
 
-    @After
-    public void teardownForEachTest() {
-        final Logger strategyLogger = Logger.getLogger(AbstractWarningVerificationStrategy.class);
-        strategyLogger.setLevel(previousLogLevel);
-        Logger.getRootLogger().removeAppender(logAppender);
+    @Before
+    public void resetLogs() {
+        logCaptor.clearLogs();
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        logCaptor.close();
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -105,7 +99,7 @@ public class ReservedKeysVerificationStrategyTest {
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
-        assertThat(repr, logAppender.isEmpty(), is(true));
+        assertEquals(0, logCaptor.getLogs().size());
     }
 
     @Test
@@ -128,7 +122,7 @@ public class ReservedKeysVerificationStrategyTest {
                 assertThat(repr, MSG_PREDICATE.test(ise.getMessage()));
             }
         }
-        assertThat(repr, logAppender.isEmpty());
+        assertEquals(0, logCaptor.getLogs().size());
     }
 
     @Test
@@ -143,8 +137,8 @@ public class ReservedKeysVerificationStrategyTest {
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
         if (!allow) {
-            assertThat(String.format("Expected log entry not found in %s for %s", logAppender.messages, repr),
-                    logAppender.messages().anyMatch(MSG_PREDICATE));
+            assertThat(String.format("Expected log entry not found in %s for %s", logCaptor.getLogs(), repr),
+                    logCaptor.getLogs().stream().anyMatch(MSG_PREDICATE));
         }
     }
 
@@ -161,7 +155,7 @@ public class ReservedKeysVerificationStrategyTest {
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {
             traversal.asAdmin().applyStrategies();
-            assertThat(repr, logAppender.isEmpty());
+            assertEquals(0, logCaptor.getLogs().size());
         } else {
             try {
                 traversal.asAdmin().applyStrategies();
@@ -169,36 +163,8 @@ public class ReservedKeysVerificationStrategyTest {
             } catch (VerificationException ise) {
                 assertThat(repr, MSG_PREDICATE.test(ise.getMessage()));
             }
-            assertTrue(String.format("Expected log entry not found in %s for %s", logAppender.messages, repr),
-                    logAppender.messages().anyMatch(MSG_PREDICATE));
-        }
-    }
-
-    class TestLogAppender extends AppenderSkeleton {
-
-        private List<String> messages = new ArrayList<>();
-
-        boolean isEmpty() {
-            return messages.isEmpty();
-        }
-
-        Stream<String> messages() {
-            return messages.stream();
-        }
-
-        @Override
-        protected void append(org.apache.log4j.spi.LoggingEvent loggingEvent) {
-            messages.add(loggingEvent.getMessage().toString());
-        }
-
-        @Override
-        public void close() {
-
-        }
-
-        @Override
-        public boolean requiresLayout() {
-            return false;
+            assertThat(String.format("Expected log entry not found in %s for %s", logCaptor.getLogs(), repr),
+                    logCaptor.getLogs().stream().anyMatch(MSG_PREDICATE));
         }
     }
 }

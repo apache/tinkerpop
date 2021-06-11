@@ -67,7 +67,7 @@ else
     JAVA="$JAVA_HOME/bin/java -server"
 fi
 
-# Set default message threshold for Log4j Gremlin's console appender
+# Set default message threshold for logging in Gremlin's console appender
 if [ -z "${GREMLIN_LOG_LEVEL:-}" ]; then
     GREMLIN_LOG_LEVEL=WARN
 fi
@@ -97,7 +97,7 @@ if [ ! -z "${JAVA_OPTIONS}" ]; then
     JVM_OPTS+=( "${JAVA_OPTIONS}" )
 fi
 
-JVM_OPTS+=( "-Duser.working_dir=${USER_DIR}" "-Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" "-Dlog4j.configuration=conf/log4j-console.properties" "-Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL" )
+JVM_OPTS+=( "-Duser.working_dir=${USER_DIR}" "-Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" "-Dlogback.configurationFile=conf/logback.xml" "-Dgremlin.logback.level=$GREMLIN_LOG_LEVEL" )
 JVM_OPTS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JVM_OPTS}" | grep -v '^$' | paste -sd ' ' -)
 
 if [ -n "$SCRIPT_DEBUG" ]; then

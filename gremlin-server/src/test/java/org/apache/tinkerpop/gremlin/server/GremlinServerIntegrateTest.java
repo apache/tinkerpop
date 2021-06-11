@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -40,29 +41,29 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -104,7 +105,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     private Level previousLogLevel;
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerIntegrateTest.class);
 
-    private Log4jRecordingAppender recordingAppender = null;
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph("graph");
     private final Configuration conf = new BaseConfiguration() {{
         setProperty(Graph.GRAPH, RemoteGraph.class.getName());
@@ -115,36 +115,42 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         setProperty("clusterConfiguration.hosts", "localhost");
     }};
 
+    private static LogCaptor logCaptor;
+
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forRoot();
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        logCaptor.close();
+    }
+
     @Before
     public void setupForEachTest() {
-        recordingAppender = new Log4jRecordingAppender();
-        final Logger rootLogger = Logger.getRootLogger();
 
         if (name.getMethodName().equals("shouldPingChannelIfClientDies") ||
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
-            final org.apache.log4j.Logger opSelectorHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
-            final org.apache.log4j.Logger unifiedHandlerLogger = org.apache.log4j.Logger.getLogger(UnifiedHandler.class);
+            final Logger opSelectorHandlerLogger = (Logger) LoggerFactory.getLogger(OpSelectorHandler.class);
+            final Logger unifiedHandlerLogger = (Logger) LoggerFactory.getLogger(UnifiedHandler.class);
             previousLogLevel = opSelectorHandlerLogger.getLevel();
             opSelectorHandlerLogger.setLevel(Level.INFO);
             unifiedHandlerLogger.setLevel(Level.INFO);
         }
 
-        rootLogger.addAppender(recordingAppender);
+        logCaptor.clearLogs();
     }
 
     @After
     public void teardownForEachTest() {
-        final Logger rootLogger = Logger.getRootLogger();
-
         if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
-            final org.apache.log4j.Logger opSelectorHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
+            final Logger opSelectorHandlerLogger = (Logger) LoggerFactory.getLogger(OpSelectorHandler.class);
             opSelectorHandlerLogger.setLevel(previousLogLevel);
-            final org.apache.log4j.Logger unifiedHandlerLogger = org.apache.log4j.Logger.getLogger(UnifiedHandler.class);
+            final Logger unifiedHandlerLogger = (Logger) LoggerFactory.getLogger(UnifiedHandler.class);
             unifiedHandlerLogger.setLevel(previousLogLevel);
         }
-
-        rootLogger.removeAppender(recordingAppender);
     }
 
     /**
@@ -330,7 +336,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // will autoclose the channel
         Thread.sleep(2000);
 
-        assertThat(recordingAppender.logContainsAny(".*Closing channel - client is disconnected after idle period of .*$"), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                ".*Closing channel - client is disconnected after idle period of .*$")), is(true));
 
         client.close();
     }
@@ -350,7 +357,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // stop the server to be sure that logs flush
         stopServer();
 
-        assertThat(recordingAppender.logContainsAny(".*Checking channel - sending ping to client after idle period of .*$"), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                ".*Checking channel - sending ping to client after idle period of .*$")), is(true));
     }
 
     @Test
@@ -561,7 +569,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(faulty.get(), is(false));
             assertThat(expected.get(), is(true));
 
-            assertThat(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
+            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.contains(
+                    "Pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
         } catch (Exception ex) {
             fail("Shouldn't have tossed an exception");
         } finally {

@@ -157,7 +157,7 @@ limitations under the License.
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
-        <log4j.version>1.2.17</log4j.version>
+        <logback.version>1.2.3</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.1.61.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
@@ -171,12 +171,12 @@ limitations under the License.
         <suresafeArgs> </suresafeArgs>
 
         <!--
-        This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
-        turn off all logging possible while still allowing tests to pass. log4j-test.properties will be more verbose
+        This file will come from the root of each modules test/resources/ directories. logback-silent.xml will
+        turn off all logging possible while still allowing tests to pass. logback-test.xml will be more verbose
         in its output.
         -->
-        <log4j-test.properties>file:target/test-classes/log4j-test.properties</log4j-test.properties>
-        <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
+        <logback-test.properties>file:target/test-classes/logback-test.xml</logback-test.properties>
+        <logback-silent.properties>file:target/test-classes/logback-silent.xml</logback-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -488,7 +488,8 @@ limitations under the License.
                     <version>2.21.0</version>
                     <configuration>
                         <argLine>
-                            -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                            -Dlogback.configurationFile=${logback-test.properties} -Dbuild.dir=${project.build.directory}
+                            -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <excludes>
@@ -512,7 +513,9 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>
-                                    -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                                    -Dlogback.configuration=${logback-test.properties} -Dhost=localhost -Dport=8182
+                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                                    -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                                 </argLine>
                                 <forkCount>1</forkCount>
                                 <reuseForks>false</reuseForks>
@@ -733,11 +736,6 @@ limitations under the License.
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.13.1</version>
@@ -804,9 +802,14 @@ limitations under the License.
                 <version>2.2</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j.version}</version>
+                <groupId>io.github.hakky54</groupId>
+                <artifactId>logcaptor</artifactId>
+                <version>2.6.1</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -1536,7 +1539,10 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                            <argLine>
+                                -Dlogback.configurationFile=${logback-silent.properties}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                                -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1633,7 +1639,9 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlogback.configuration=${logback-test.properties}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
+                                -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
@@ -1641,7 +1649,9 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlogback.configuration=${logback-test.properties} -Dhost=localhost -Dport=8182
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
+                                -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>

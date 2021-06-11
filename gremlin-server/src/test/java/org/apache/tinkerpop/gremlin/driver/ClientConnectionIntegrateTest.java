@@ -18,16 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import io.netty.handler.codec.CorruptedFrameException;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
+import org.hamcrest.core.Is;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,33 +39,33 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private Log4jRecordingAppender recordingAppender = null;
-    private Level previousLogLevel;
+
+    private static LogCaptor logCaptor;
+    private Level previousLevel;
+
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forClass(Connection.class);
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        logCaptor.close();
+    }
 
     @Before
     public void setupForEachTest() {
-        recordingAppender = new Log4jRecordingAppender();
-        final Logger rootLogger = Logger.getRootLogger();
+        final Logger lc = (Logger) LoggerFactory.getLogger(Connection.class);
+        previousLevel = lc.getLevel();
+        lc.setLevel(Level.DEBUG);
 
-        if (name.getMethodName().equals("shouldCloseConnectionDeadDueToUnRecoverableError")) {
-            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
-            previousLogLevel = connectionLogger.getLevel();
-            connectionLogger.setLevel(Level.DEBUG);
-        }
-
-        rootLogger.addAppender(recordingAppender);
+        logCaptor.clearLogs();
     }
 
     @After
-    public void teardownForEachTest() {
-        final Logger rootLogger = Logger.getRootLogger();
-
-        if (name.getMethodName().equals("shouldCloseConnectionDeadDueToUnRecoverableError")) {
-            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
-            connectionLogger.setLevel(previousLogLevel);
-        }
-
-        rootLogger.removeAppender(recordingAppender);
+    public void afterEachTest() {
+        final Logger lc = (Logger) LoggerFactory.getLogger(Connection.class);
+        lc.setLevel(previousLevel);
     }
 
     /**
@@ -106,7 +110,8 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
 
         // Assert that the connection has been destroyed. Specifically check for the string with
         // isDead=true indicating the connection that was closed due to CorruptedFrameException.
-        assertThat(recordingAppender.logContainsAny("^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$"), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$")), Is.is(true));
 
     }
 }

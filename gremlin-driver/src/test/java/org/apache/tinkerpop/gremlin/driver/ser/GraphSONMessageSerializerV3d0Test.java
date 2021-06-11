@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -360,14 +358,8 @@ public class GraphSONMessageSerializerV3d0Test {
 
     @Test
     public void shouldFailOnMessageSerializerWithMapperIfNoGremlinServerModule() {
-        Logger logger = Logger.getLogger(AbstractGraphSONMessageSerializerV2d0.class);
-        Level previousLevel = logger.getLevel();
-
-        // Disable temporarily logging for this test
-        logger.setLevel(Level.OFF);
-
-        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3d0.build().create(false));
-        GraphSONMessageSerializerV3d0 graphSONMessageSerializerV3d0 = new GraphSONMessageSerializerV3d0(builder.create());
+        final GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3d0.build().create(false));
+        final GraphSONMessageSerializerV3d0 graphSONMessageSerializerV3d0 = new GraphSONMessageSerializerV3d0(builder.create());
 
         try {
             convert("hello", graphSONMessageSerializerV3d0);
@@ -377,9 +369,6 @@ public class GraphSONMessageSerializerV3d0Test {
             assertTrue(e.getCause() instanceof JsonMappingException);
             assertTrue(e.getCause().getCause() instanceof IllegalArgumentException);
         }
-
-        // Put logger level back to its original value
-        logger.setLevel(previousLevel);
     }
 
     private void assertCommon(final ResponseMessage response) {
