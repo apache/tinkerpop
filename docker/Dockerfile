@@ -43,7 +43,11 @@ RUN cd /opt/Python-3.6.9 && ./configure && make && make install
 RUN ln -sf /usr/bin/python3.6.9 /usr/bin/python3
 # pip drops support of Python 2 starting from version 21.0
 RUN pip install --upgrade "pip<21.0"
-RUN pip install virtualenv virtualenvwrapper
+RUN pip install virtualenv
+# pin bpr to 5.5.1 since 5.6.0 hassles virtualenvwrapper - maybe can remove after full drop of 3.4.x support with
+# no further need for python 2 at all
+RUN pip install pbr==5.5.1
+RUN pip install virtualenvwrapper --no-deps
 
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-11-jdk
