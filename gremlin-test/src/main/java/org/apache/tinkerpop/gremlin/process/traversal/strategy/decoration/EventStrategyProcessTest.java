@@ -46,6 +46,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.addV;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -1958,6 +1960,31 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertVertexEdgeCounts(graph, 1, 0);
         assertThat(triggered.get(), is(true));
         assertEquals(v, eventedVertex.get());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @org.junit.Ignore("TINKERPOP-2579")
+    public void shouldTriggerAddVertexAndPropertyUpdateWithCoalescePattern() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final GraphTraversalSource gts = create(eventStrategy);
+        gts.V().has("some","thing").fold().coalesce(unfold(), addV()).property("some", "thing").iterate();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("some", "thing"))));
+        assertEquals(1, listener1.addVertexEventRecorded());
+        assertEquals(1, listener2.addVertexEventRecorded());
+        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
     }
 
     private GraphTraversalSource create(final EventStrategy strategy) {
