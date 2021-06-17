@@ -1964,6 +1964,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @org.junit.Ignore("TINKERPOP-2579")
     public void shouldTriggerAddVertexAndPropertyUpdateWithCoalescePattern() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
