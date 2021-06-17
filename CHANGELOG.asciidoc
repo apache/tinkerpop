@@ -366,6 +366,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
+* Coerced single `set` arguments to `P.within` and `P.without` to `list` in Python which serializes to a more expected form for `P` instances.
 * Fixed bug in the `vertexLabelKey` validation for `GraphMLWriter` which was inadvertently validating the `edgeLabelKey`.
 * Changed `IndexStep` to make it easier for providers to determine the type of indexer being used.
 

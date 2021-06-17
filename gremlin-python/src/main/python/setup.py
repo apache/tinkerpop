@@ -49,12 +49,11 @@ install_requires = [
     'aiohttp>=3.7.0,<=3.7.4',
     'aenum>=1.4.5,<3.0.0',
     'six>=1.10.0,<2.0.0',
-    'isodate>=0.6.0,<1.0.0',
-    'pyparsing>=2.4.7,<3.0.0'
+    'isodate>=0.6.0,<1.0.0'
 ]
 
 if sys.version_info < (3, 5):
-    install_requires += ['pyparsing>=2.4.6,<3.0.0']
+    install_requires += ['pyparsing>=2.4.7,<3.0.0']
 
 setup(
     name='gremlinpython',
