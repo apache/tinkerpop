@@ -54,7 +54,8 @@ public class TinkerGraphIdManagerTest {
                     {"coerceInt", 100, 200, 300},
                     {"coerceDouble", 100d, 200d, 300d},
                     {"coerceFloat", 100f, 200f, 300f},
-                    {"coerceString", "100", "200", "300"}});
+                    {"coerceString", "100", "200", "300"},
+                    {"coerceMixed", 100d, 200f, "300"}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -120,7 +121,8 @@ public class TinkerGraphIdManagerTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"coerceUuid", vertexId, edgeId, vertexPropertyId},
-                    {"coerceString", vertexId.toString(), edgeId.toString(), vertexPropertyId.toString()}});
+                    {"coerceString", vertexId.toString(), edgeId.toString(), vertexPropertyId.toString()},
+                    {"coerceMixed", vertexId, edgeId, vertexPropertyId.toString()}});
         }
 
         @Parameterized.Parameter(value = 0)

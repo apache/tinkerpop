@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -877,6 +878,24 @@ public class TinkerGraphTest {
         // adds two persons by way of the strategy one for the parent and one for the child
         g.inject(0).sideEffect(__.addV()).iterate();
         assertEquals(3, traversal().withEmbedded(graph).V().hasLabel("person").count().next().intValue());
+    }
+
+    @Test
+    public void shouldAllowHeterogeneousIdsWithAnyManager() {
+        final Configuration anyManagerConfig = new BaseConfiguration();
+        anyManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.ANY.name());
+        anyManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.ANY.name());
+        anyManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.ANY.name());
+        final Graph graph = TinkerGraph.open(anyManagerConfig);
+        final GraphTraversalSource g = traversal().withEmbedded(graph);
+
+        final UUID uuid = UUID.fromString("0E939658-ADD2-4598-A722-2FC178E9B741");
+        g.addV("person").property(T.id, 100).
+                addV("person").property(T.id, "1000").
+                addV("person").property(T.id, "1001").
+                addV("person").property(T.id, uuid).iterate();
+
+        assertEquals(3, g.V(100, "1000", uuid).count().next().intValue());
     }
 
     /**

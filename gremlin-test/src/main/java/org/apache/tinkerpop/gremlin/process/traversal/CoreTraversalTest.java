@@ -169,13 +169,10 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldThrowExceptionWhenIdsMixed() {
+    public void shouldAllowIdsOfMixedTypes() {
         final List<Vertex> vertices = g.V().toList();
-        try {
-            g.V(vertices.get(0), vertices.get(1).id()).toList();
-        } catch (Exception ex) {
-            validateException(Graph.Exceptions.idArgsMustBeEitherIdOrElement(), ex);
-        }
+        assertEquals(2, g.V(vertices.get(0), vertices.get(1).id()).count().next().intValue());
+        assertEquals(2, g.V(vertices.get(0).id(), vertices.get(1)).count().next().intValue());
     }
 
     @Test

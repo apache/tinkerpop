@@ -1228,10 +1228,6 @@ public interface Graph extends AutoCloseable, Host {
             return new IllegalArgumentException(String.format("Edge with id already exists: %s", id));
         }
 
-        public static IllegalArgumentException idArgsMustBeEitherIdOrElement() {
-            return new IllegalArgumentException("id arguments must be either ids or Elements");
-        }
-
         public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
         }
