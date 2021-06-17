@@ -260,6 +260,8 @@ class P(object):
     def within(*args):
         if len(args) == 1 and type(args[0]) == list:
             return P("within", args[0])
+        elif len(args) == 1 and type(args[0]) == set:
+            return P("within", list(args[0]))
         else:
             return P("within", list(args))
         
@@ -267,6 +269,8 @@ class P(object):
     def without(*args):
         if len(args) == 1 and type(args[0]) == list:
             return P("without", args[0])
+        elif len(args) == 1 and type(args[0]) == set:
+            return P("without", list(args[0]))
         else:
             return P("without", list(args))
 
