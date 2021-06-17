@@ -60,8 +60,7 @@ public class EventStrategyTest {
                 {new DefaultGraphTraversal<>(EmptyGraph.instance()).out("test").drop(), 1},
                 {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().drop(), 1},
                 {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().properties().drop(), 1},
-                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1},
-                {new DefaultGraphTraversal<>(EmptyGraph.instance()).V().has("p","a").fold().coalesce(unfold(), addV("person")).property("p", "a"), 2},
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1}
         });
     }
 
