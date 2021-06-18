@@ -102,6 +102,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest",
         method = "*",
         reason = "The io() step is not supported generally by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
+        method = "g_V_hasXk_withinXcXX_valuesXkX",
+        reason = "Requires some test data initialization with addV()")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GryoRemoteGraphGroovyTranslatorComputerProvider extends GryoRemoteGraphGroovyTranslatorProvider {
     private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
