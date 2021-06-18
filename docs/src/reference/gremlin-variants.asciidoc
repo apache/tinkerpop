@@ -569,6 +569,10 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
         super(graph);
     }
 
+    public SocialTraversalSourceDsl(RemoteConnection connection) {
+        super(connection);
+    }
+
     public GraphTraversal<Vertex, Vertex> persons(String... names) {
         GraphTraversalSource clone = this.clone();
 
