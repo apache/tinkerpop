@@ -715,3 +715,20 @@ Feature: Step - has()
       | result |
       | v[marko] |
       | v[vadas] |
+
+  Scenario: g_V_hasXk_withinXcXX_valuesXkX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property("k", "轉注").addV().property("k", "✦").addV().property("k", "♠").addV().property("k", "A")
+      """
+    And the traversal of
+      """
+      g.V().has("k", P.within("轉注", "✦", "♠")).values("k")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | 轉注 |
+      | ✦ |
+      | ♠ |
