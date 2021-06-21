@@ -19,6 +19,7 @@
 'use strict';
 
 const Traversal = require('./traversal').Traversal;
+const Bytecode = require('./bytecode');
 
 /**
  * Class to translate glv bytecode steps into executable Gremlin-Groovy script
@@ -42,12 +43,14 @@ class Translator {
 
   /**
    * Returns a script representation of the given bytecode instructions.
-   * @param {Object} bytecode The bytecode object containing step instructions.
+   * @param {Object} bytecodeOrTraversal The traversal or bytecode of a traversal containing step instructions.
    * @returns {string} Gremlin-Groovy script
    */
-  translate(bytecode, child = false) {
+  translate(bytecodeOrTraversal, child = false) {
     let script = child ? "__" : this._traversalSource;
-    let instructions = bytecode.stepInstructions;
+    const bc = bytecodeOrTraversal instanceof Bytecode ? bytecodeOrTraversal : bytecodeOrTraversal.getBytecode();
+
+    let instructions = bc.stepInstructions;
 
     // build the script from the glv instructions.
     for (let i = 0; i < instructions.length; i++) {
