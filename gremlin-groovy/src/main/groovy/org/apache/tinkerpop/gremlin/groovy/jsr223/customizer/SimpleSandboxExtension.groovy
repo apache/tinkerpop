@@ -24,7 +24,9 @@ import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
 
 /**
- * Blacklists the {@code System} class to ensure that one can't call {@code System.exit()}.
+ * Blocks the {@code System} class to ensure that one can't call {@code System.exit()}. This implementation is for
+ * example only and will perhaps inspire users and providers to build their own more secure and production-ready
+ * sandboxing features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

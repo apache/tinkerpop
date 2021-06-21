@@ -26,7 +26,8 @@ import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
 
 /**
  * A base class for building sandboxes for the {@code ScriptEngine}. Uses a "white list" method to validate what
- * variables and methods can be used in scripts.
+ * variables and methods can be used in scripts. This implementation is for example only and will perhaps inspire
+ * users and providers to build their own more secure and production-ready sandboxing features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
