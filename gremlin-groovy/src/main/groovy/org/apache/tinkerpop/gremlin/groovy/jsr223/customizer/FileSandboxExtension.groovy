@@ -25,8 +25,8 @@ import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 
 /**
- * A sandbox implementation that uses an external file to control the settings of the sandbox. The file is yaml based
- * and looks like:
+ * An example sandbox implementation that uses an external file to control the settings of the sandbox. The file is
+ * yaml based and looks like:
  *
  * <pre>
  * {@code
@@ -40,7 +40,10 @@ import org.yaml.snakeyaml.constructor.Constructor
  * </pre>
  *
  * The file is assumed to be at the root of execution and should be called {@code sandbox.yaml}.  Its location can be
- * overriden by a system property called {@code gremlinServerSandbox}.
+ * overridden by a system property called {@code gremlinServerSandbox}.
+ * <p/>
+ * This implementation is for example only and will perhaps inspire users and providers to build their own more secure
+ * and production-ready sandboxing features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
