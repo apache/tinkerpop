@@ -37,6 +37,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-4-12, 3.4.12>>.
 
 * Fixed bug in Javascript error message related to validating anonymous traversal spawns.
+* Changed close of Python and Javascript connections to no longer send a "close message" as the server no longer acknowledges it as of 3.5.0.
 * Removed sending of deprecated session close message from Gremlin.Net driver.
 
 [[release-3-5-0]]
