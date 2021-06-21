@@ -25,7 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph
  * This is an example class showing how one might use the {@link AbstractSandboxExtension}.  It uses a static method
  * white list and variable type mappings. It also prevents assigning non-typed variables the type of {@code Object}.
  * It is doubtful that this class would be useful for production applications and it simply serves as an example
- * on which users can extend and learn from.
+ * on which users can extend and learn from. This implementation is for example only and will perhaps inspire
+ * users and providers to build their own more secure and production-ready sandboxing features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

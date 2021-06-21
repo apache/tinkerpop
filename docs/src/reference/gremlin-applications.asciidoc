@@ -1938,10 +1938,19 @@ The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 |=========================================================
 
 NOTE: Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation]
-for information on the differences. It is important to understand the impact that these configuration will have on
-submitted scripts before enabling this feature.
+for information on the differences on the various compilation options. It is important to understand the impact that
+these configuration will have on submitted scripts before enabling this feature.
 
-To provide some basic out-of-the-box protections against troublesome scripts, the following configuration can be used:
+IMPORTANT: TinkerPop does not offer an end-to-end out-of-the-box solution to perfectly protect against bad actors
+submitting nefarious scripts. The configurations to follow which discuss the `SimpleSandboxExtension` and
+`FileSandboxExtension` are meant to represent example implementations that users and providers can gain some
+inspiration from in developing their own solutions. Please consult the documentation of your TinkerPop implementation
+to determine how scripts are "secured" as many providers have taken their own approaches to solving this problem.
+
+Securing scripts (i.e. preventing access to certain methods) is a bit more complicated of a story. As an example,
+TinkerPop implemented some basic "sandbox" implementations as described in this
+link:https://melix.github.io/blog/2015/03/sandboxing.html[blog post] to try to demonstrate a method by which script
+security could be achieved. Consider the following configuration of the `GroovyCompilerGremlinPlugin`:
 
 [source,yaml]
 ----
@@ -1954,8 +1963,8 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]}}}}
 ----
 
-This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class,
-thereby preventing someone from remotely killing the server:
+This configuration uses the `SimpleSandboxExtension`, which blocks calls to methods on the `System` class, thereby
+preventing someone from remotely killing the server:
 
 [source,groovy]
 ----
@@ -1969,8 +1978,8 @@ Script8.groovy: 1: [Static type checking] - Not authorized to call this method: 
 ----
 
 The `SimpleSandboxExtension` is by no means a "complete" implementation protecting against all manner of nefarious
-scripts, but it does provide an example for how such a capability might be implemented.  A more complete implementation
-is offered in the `FileSandboxExtension` which uses a configuration file to white list certain classes and methods.
+scripts, but it does provide an example for how such a capability might be implemented.  A slightly more advanced
+example is offered in the `FileSandboxExtension` which uses a configuration file to allow certain classes and methods.
 The configuration file is YAML-based and an example is presented as follows:
 
 [source,yaml]
@@ -2029,10 +2038,6 @@ always known.  In the above example, the variable "graph" will always be bound t
 At Gremlin Server startup, the `FileSandboxExtension` looks in the root of Gremlin Server installation directory for a
 file called `sandbox.yaml` and configures itself.  To use a file in a different location set the
 `gremlinServerSandbox` system property to the location of the file (e.g. `-DgremlinServerSandbox=conf/my-sandbox.yaml`).
-
-The `FileSandboxExtension` provides for a basic configurable security function in Gremlin Server. More complex
-sandboxing implementations can be developed by using this white listing model and extending from the
-`AbstractSandboxExtension`.
 
 A final thought on the topic of `GroovyCompilerGremlinPlugin` implementation is that it is not just for
 "security" (though it is demonstrated in that capacity here).  It can be used for a variety of features that
