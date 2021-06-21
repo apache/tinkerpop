@@ -98,5 +98,12 @@ describe('Translator', function () {
       assert.ok(script);
       assert.strictEqual(script, 'g.V().has(\'male\', true)');
     });
+
+    it('should produce valid script representation from a traversal object', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V().has('male', true));
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V().has(\'male\', true)');
+    });
   });
 });
