@@ -229,6 +229,12 @@ The Apache TinkerPop project bundles the following components under the MIT Lice
      SLF4J API Module (org.slf4j:slf4j-api:1.7.25 - http://www.slf4j.org)
        - shaded to org.shaded.slf4j
        - for details, see licenses/slf4j
-     SLF4J LOG4J-12 Binding (org.slf4j:slf4j-log4j12:1.7.25 - http://www.slf4j.org)
-       - shaded to org.shaded.slf4j
-       - for details, see licenses/slf4j
+
+========================================================================
+Other Licenses
+========================================================================
+
+The Apache TinkerPop project bundles the following components under the Eclipse Public License 1.0:
+
+     logback-core (ch.qos.logback:logback-core:1.2.3 - https://logback.qos.ch) - for details, see licenses/logback
+     logback-classic (ch.qos.logback:logback-classic:1.2.3 - https://logback.qos.ch) - for details, see licenses/logback

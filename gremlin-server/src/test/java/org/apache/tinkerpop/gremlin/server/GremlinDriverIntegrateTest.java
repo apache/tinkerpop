@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import nl.altindag.log.LogCaptor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -47,18 +49,18 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
@@ -107,44 +109,47 @@ import static org.mockito.Mockito.verify;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
 
-    private Log4jRecordingAppender recordingAppender = null;
+    private static LogCaptor logCaptor;
     private Level previousLogLevel;
+
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forRoot();
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        logCaptor.close();
+    }
 
     @Before
     public void setupForEachTest() {
-        recordingAppender = new Log4jRecordingAppender();
-        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets") ||
                 name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
-            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(WebSocketClientHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(Level.DEBUG);
         } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
-            final org.apache.log4j.Logger opExecutorHandlerLogger = org.apache.log4j.Logger.getLogger(OpExecutorHandler.class);
+            final Logger opExecutorHandlerLogger = (Logger) LoggerFactory.getLogger(OpExecutorHandler.class);
             previousLogLevel = opExecutorHandlerLogger.getLevel();
             opExecutorHandlerLogger.setLevel(Level.ERROR);
         }
 
-        rootLogger.addAppender(recordingAppender);
+        logCaptor.clearLogs();
     }
 
     @After
-    public void teardownForEachTest() {
-        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-
+    public void afterEachTest() {
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets") ||
                 name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
-            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(WebSocketClientHandler.class);
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
         } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
-            final org.apache.log4j.Logger opExecutorHandlerLogger = org.apache.log4j.Logger.getLogger(OpExecutorHandler.class);
+            final Logger opExecutorHandlerLogger = (Logger) LoggerFactory.getLogger(OpExecutorHandler.class);
             opExecutorHandlerLogger.setLevel(previousLogLevel);
         }
-
-        rootLogger.removeAppender(recordingAppender);
     }
 
     /**
@@ -310,7 +315,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             }
 
             // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
+            final long messages = logCaptor.getLogs().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
             assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
         } finally {
             cluster.close();
@@ -341,7 +346,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             }
 
             // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
+            final long messages = logCaptor.getLogs().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
             assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
         } finally {
             cluster.close();

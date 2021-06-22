@@ -43,7 +43,7 @@ java -version
 /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-secure.yaml &
 
 java -cp /opt/gremlin-test/gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
-     -Dlog4j.configuration="file:/opt/gremlin-server/conf/log4j-server.properties" \
+     -Dlogback.configurationFile="file:/opt/gremlin-server/conf/logback.xml" \
      org.apache.tinkerpop.gremlin.server.KdcFixture /opt/gremlin-server &
 
 export JAVA_OPTIONS="-Xms512m -Xmx4096m -Djava.security.krb5.conf=/opt/gremlin-server/target/kdc/krb5.conf"

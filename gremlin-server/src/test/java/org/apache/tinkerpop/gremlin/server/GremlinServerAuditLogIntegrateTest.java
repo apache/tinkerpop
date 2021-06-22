@@ -18,13 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import nl.altindag.log.LogCaptor;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
@@ -37,19 +36,18 @@ import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
-import static org.apache.log4j.Level.INFO;
 import static org.apache.tinkerpop.gremlin.server.GremlinServer.AUDIT_LOGGER_NAME;
 import static org.apache.tinkerpop.gremlin.server.GremlinServerAuthKrb5IntegrateTest.TESTCONSOLE;
 import static org.junit.Assert.assertEquals;
@@ -64,7 +62,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuditLogIntegrateTest.class);
-    private Log4jRecordingAppender recordingAppender = null;
+
+    private static LogCaptor logCaptor;
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final Base64.Encoder encoder = Base64.getUrlEncoder();
@@ -75,12 +74,23 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     private KdcFixture kdcServer;
 
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forName(AUDIT_LOGGER_NAME);
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        logCaptor.close();
+    }
+
+    @Before
+    public void setupForEachTest() {
+        logCaptor.clearLogs();
+    }
+
     @Override
     public void setUp() throws Exception {
-        recordingAppender = new Log4jRecordingAppender();
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.addAppender(recordingAppender);
-
         try {
             final String moduleBaseDir = System.getProperty("basedir", ".");
             final String authConfigName = moduleBaseDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf";
@@ -95,8 +105,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     @Override
     public void tearDown() throws Exception {
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.removeAppender(recordingAppender);
         kdcServer.close();
         System.clearProperty("java.security.auth.login.config");
         super.tearDown();
@@ -166,12 +174,12 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
         // WebSocketChannelizer does not add SaslAuthenticationHandler for AllowAllAuthenticator,
         // so no authenticated user log line available
-        assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, String.format(
-                "User %s with address .+? requested: 1\\+1", AuthenticatedUser.ANONYMOUS_USERNAME)));
-        assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, String.format(
-                "User %s with address .+? requested: 1\\+2", AuthenticatedUser.ANONYMOUS_USERNAME)));
-        assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, String.format(
-                "User %s with address .+? requested: 1\\+3", AuthenticatedUser.ANONYMOUS_USERNAME)));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(String.format(
+                "User %s with address .+? requested: 1\\+1", AuthenticatedUser.ANONYMOUS_USERNAME))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(String.format(
+                "User %s with address .+? requested: 1\\+2", AuthenticatedUser.ANONYMOUS_USERNAME))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(String.format(
+                "User %s with address .+? requested: 1\\+3", AuthenticatedUser.ANONYMOUS_USERNAME))));
     }
 
     @Test
@@ -196,20 +204,14 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         Thread.sleep(1000);
 
         final String simpleAuthenticatorName = SimpleAuthenticator.class.getSimpleName();
-
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
-        final LoggingEvent authEvent = auditEvents
-                .filter(event -> event.getMessage().toString().contains(simpleAuthenticatorName)).iterator().next();
-        final String authMsg = authEvent.getMessage().toString();
-        assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName)));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .+? requested: 1\\+1")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .+? requested: 1\\+2")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .+? requested: 1\\+3")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User stephen with address .+? requested: 1\\+1")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User stephen with address .+? requested: 1\\+2")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User stephen with address .+? requested: 1\\+3")));
     }
 
     @Test
@@ -228,19 +230,15 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         stopServer();
         Thread.sleep(1000);
 
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
-        final LoggingEvent authEvent = auditEvents
-                .filter(event -> event.getMessage().toString().contains("Krb5Authenticator")).iterator().next();
-        final String authMsg = authEvent.getMessage().toString();
-        assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .+? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+1")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+2")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+3")));
+        final String authenticatorName = Krb5Authenticator.class.getSimpleName();
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User %s with address .+? authenticated by %s", kdcServer.clientPrincipalName, authenticatorName))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User drankye with address .+? requested: 1\\+1")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User drankye with address .+? requested: 1\\+2")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User drankye with address .+? requested: 1\\+3")));
     }
 
     @Test
@@ -259,15 +257,15 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         stopServer();
         Thread.sleep(1000);
 
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? authenticated by Krb5Authenticator")));
-        assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+1")));
-        assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+2")));
-        assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-            item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+3")));
+        final String authenticatorName = Krb5Authenticator.class.getSimpleName();
+        assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User %s with address .+? authenticated by %s", kdcServer.clientPrincipalName, authenticatorName))));
+        assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User drankye with address .+? requested: 1\\+1")));
+        assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User drankye with address .+? requested: 1\\+2")));
+        assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User drankye with address .+? requested: 1\\+3")));
     }
 
     @Test
@@ -288,17 +286,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         stopServer();
         Thread.sleep(1000);
 
-        final String simpleAuthenticatorName = SimpleAuthenticator.class.getSimpleName();
-
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
-        final LoggingEvent authEvent = auditEvents
-                .filter(event -> event.getMessage().toString().contains(simpleAuthenticatorName)).iterator().next();
-        final String authMsg = authEvent.getMessage().toString();
-        assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User stephen with address .+? authenticated by %s", simpleAuthenticatorName)));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User stephen with address .+? requested: 2-1")));
+        final String authenticatorName = SimpleAuthenticator.class.getSimpleName();
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User stephen with address .+? authenticated by %s", authenticatorName))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User stephen with address .+? requested: 2-1")));
     }
 
     @Test
@@ -320,17 +312,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         stopServer();
         Thread.sleep(1000);
 
-        final String simpleAuthenticatorName = SimpleAuthenticator.class.getSimpleName();
-
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
-        final LoggingEvent authEvent = auditEvents
-                .filter(event -> event.getMessage().toString().contains(simpleAuthenticatorName)).iterator().next();
-        final String authMsg = authEvent.getMessage().toString();
-        assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName)));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User .+? with address .+? requested: \\[\\[], \\[V\\(\\), count\\(\\)]]")));
+        final String authenticatorName = SimpleAuthenticator.class.getSimpleName();
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User %s with address .+? authenticated by %s", username, authenticatorName))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User .+? with address .+? requested: \\[\\[], \\[V\\(\\), count\\(\\)]]")));
     }
 
     @Test
@@ -362,27 +348,23 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         stopServer();
         Thread.sleep(1000);
 
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
-        final LoggingEvent authEvent = auditEvents
-                .filter(event -> event.getMessage().toString().contains("Krb5Authenticator")).iterator().next();
-        final String authMsg = authEvent.getMessage().toString();
-        assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .+? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+1")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+2")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye with address .+? requested: 1\\+3")));
+        final String authenticatorName = Krb5Authenticator.class.getSimpleName();
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User %s with address .+? authenticated by %s", kdcServer.clientPrincipalName, authenticatorName))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User drankye with address .+? requested: 1\\+1")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User drankye with address .+? requested: 1\\+2")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User drankye with address .+? requested: 1\\+3")));
 
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches(String.format("User %s with address .+? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName2))));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+11")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+12")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User drankye2 with address .+? requested: 11\\+13")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                String.format("User %s with address .+? authenticated by %s", kdcServer.clientPrincipalName2, authenticatorName))));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User drankye2 with address .+? requested: 11\\+11")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User drankye2 with address .+? requested: 11\\+12")));
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("User drankye2 with address .+? requested: 11\\+13")));
     }
 }

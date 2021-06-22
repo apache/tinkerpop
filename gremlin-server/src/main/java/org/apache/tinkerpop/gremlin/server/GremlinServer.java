@@ -339,7 +339,7 @@ public class GremlinServer {
     }
 
     public static void main(final String[] args) throws Exception {
-        // add to vm options: -Dlog4j.configuration=file:conf/log4j.properties
+        // add to vm options: -Dlogback.configurationFile=file:conf/logback.xml
         printHeader();
         final String file;
         if (args.length > 0)
