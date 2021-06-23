@@ -344,7 +344,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal("path[v[5]]", readPath.ToString());
             Assert.Equal(new Vertex(5L), readPath[0]);
             Assert.Equal(new Vertex(5L), readPath["z"]);
-            Assert.Equal(1, readPath.Count);
+            Assert.Single(readPath);
         }
         
         [Theory, MemberData(nameof(Versions))]

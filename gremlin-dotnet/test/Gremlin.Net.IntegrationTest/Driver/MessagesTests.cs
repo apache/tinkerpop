@@ -56,7 +56,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
                 var result = await gremlinClient.SubmitWithSingleResultAsync<long>(requestMsg);
 
-                Assert.NotNull(result);
+                Assert.InRange(result, 0, long.MaxValue);
             }
         }
 

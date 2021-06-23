@@ -38,8 +38,8 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             g.V().Has("someKey", "someValue").Drop();
 
-            Assert.Equal(0, g.Bytecode.StepInstructions.Count);
-            Assert.Equal(0, g.Bytecode.SourceInstructions.Count);
+            Assert.Empty(g.Bytecode.StepInstructions);
+            Assert.Empty(g.Bytecode.SourceInstructions);
         }
 
         [Fact]
@@ -49,9 +49,9 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             var g2 = g1.WithSideEffect("someSideEffectKey", "someSideEffectValue");
 
-            Assert.Equal(0, g1.Bytecode.SourceInstructions.Count);
-            Assert.Equal(0, g1.Bytecode.StepInstructions.Count);
-            Assert.Equal(1, g2.Bytecode.SourceInstructions.Count);
+            Assert.Empty(g1.Bytecode.SourceInstructions);
+            Assert.Empty(g1.Bytecode.StepInstructions);
+            Assert.Single(g2.Bytecode.SourceInstructions);
         }
 
         [Fact]
