@@ -35,7 +35,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 
             var bytecode = g.V().HasLabel("firstLabel", "secondLabel", "thirdLabel").Bytecode;
 
-            Assert.Equal(0, bytecode.SourceInstructions.Count);
+            Assert.Empty(bytecode.SourceInstructions);
             Assert.Equal(2, bytecode.StepInstructions.Count);
             Assert.Equal(3, bytecode.StepInstructions[1].Arguments.Length);
         }
@@ -47,12 +47,12 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 
             var bytecode = g.V().Out("created").Bytecode;
 
-            Assert.Equal(0, bytecode.SourceInstructions.Count);
+            Assert.Empty(bytecode.SourceInstructions);
             Assert.Equal(2, bytecode.StepInstructions.Count);
             Assert.Equal("V", bytecode.StepInstructions[0].OperatorName);
             Assert.Equal("out", bytecode.StepInstructions[1].OperatorName);
             Assert.Equal("created", bytecode.StepInstructions[1].Arguments[0]);
-            Assert.Equal(1, bytecode.StepInstructions[1].Arguments.Length);
+            Assert.Single(bytecode.StepInstructions[1].Arguments);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 
             var bytecode = g.WithSack(1).E().GroupCount<double>().By("weight").Bytecode;
 
-            Assert.Equal(1, bytecode.SourceInstructions.Count);
+            Assert.Single(bytecode.SourceInstructions);
             Assert.Equal("withSack", bytecode.SourceInstructions[0].OperatorName);
             Assert.Equal(1, bytecode.SourceInstructions[0].Arguments[0]);
             Assert.Equal(3, bytecode.StepInstructions.Count);
@@ -70,9 +70,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             Assert.Equal("groupCount", bytecode.StepInstructions[1].OperatorName);
             Assert.Equal("by", bytecode.StepInstructions[2].OperatorName);
             Assert.Equal("weight", bytecode.StepInstructions[2].Arguments[0]);
-            Assert.Equal(0, bytecode.StepInstructions[0].Arguments.Length);
-            Assert.Equal(0, bytecode.StepInstructions[1].Arguments.Length);
-            Assert.Equal(1, bytecode.StepInstructions[2].Arguments.Length);
+            Assert.Empty(bytecode.StepInstructions[0].Arguments);
+            Assert.Empty(bytecode.StepInstructions[1].Arguments);
+            Assert.Single(bytecode.StepInstructions[2].Arguments);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 
             var bytecode = g.Inject(1, 2, 3).Bytecode;
 
-            Assert.Equal(1, bytecode.StepInstructions.Count);
+            Assert.Single(bytecode.StepInstructions);
             Assert.Equal("inject", bytecode.StepInstructions[0].OperatorName);
             Assert.Equal(3, bytecode.StepInstructions[0].Arguments.Length);
         }
@@ -92,8 +92,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var bytecode = __.Start().Bytecode;
 
-            Assert.Equal(0, bytecode.SourceInstructions.Count);
-            Assert.Equal(0, bytecode.StepInstructions.Count);
+            Assert.Empty(bytecode.SourceInstructions);
+            Assert.Empty(bytecode.StepInstructions);
         }
     }
 }
