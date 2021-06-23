@@ -41,9 +41,9 @@ namespace Gremlin.Net.Driver
             webSocketConfiguration?.Invoke(_client.Options);
         }
 
-        public async Task ConnectAsync(Uri uri)
+        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
-            await _client.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
+            await _client.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CloseAsync()

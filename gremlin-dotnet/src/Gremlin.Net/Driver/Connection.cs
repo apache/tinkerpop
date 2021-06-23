@@ -72,9 +72,9 @@ namespace Gremlin.Net.Driver
             _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
         }
 
-        public async Task ConnectAsync()
+        public async Task ConnectAsync(CancellationToken cancellationToken)
         {
-            await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
+            await _webSocketConnection.ConnectAsync(_uri, cancellationToken).ConfigureAwait(false);
             BeginReceiving();
         }
 
