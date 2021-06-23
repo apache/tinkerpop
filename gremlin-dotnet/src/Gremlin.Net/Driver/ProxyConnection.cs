@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
@@ -39,9 +40,9 @@ namespace Gremlin.Net.Driver
             _releaseAction = releaseAction;
         }
 
-        public async Task ConnectAsync()
+        public async Task ConnectAsync(CancellationToken cancellationToken)
         {
-            await ProxiedConnection.ConnectAsync().ConfigureAwait(false);
+            await ProxiedConnection.ConnectAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)

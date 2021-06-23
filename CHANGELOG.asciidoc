@@ -380,6 +380,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `NullPointerException` in `ResponseMessage` deserialization for GraphSON.
 * Enabled the Gremlin.Net driver to repair its connection pool after the server was temporarily unavailable.
 * Added the ability to supply a `HandshakeInterceptor` to a `Cluster` which will provide access to the initial HTTP request that establishes the websocket.
+* Fixed a possible leakage of connections in the Gremlin.NET driver that could happen if `Dispose()` was called while the pool was creating connections.
 
 ==== Bugs
 
