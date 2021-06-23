@@ -94,6 +94,29 @@ class Bytecode {
   toString() {
     return JSON.stringify([this.sourceInstructions, this.stepInstructions]);
   }
+
+  /**
+   * Adds a new source instructions
+   * @param {String} name
+   * @param {Array} values
+   * @returns {Bytecode}
+   */
+  static _createGraphOp(name, values) {
+    const bc = new Bytecode();
+    bc.addSource(name, values);
+    return bc;
+  }
+
+  /**
+   * Gets the <code>Bytecode</code> that is meant to be sent as "graph operations" to the server.
+   * @returns {{rollback: Bytecode, commit: Bytecode}}
+   */
+  static get GraphOp() {
+    return {
+      commit: Bytecode._createGraphOp("tx", ["commit"]),
+      rollback: Bytecode._createGraphOp("tx", ["rollback"])
+    };
+  }
 }
 
 module.exports = Bytecode;

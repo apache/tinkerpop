@@ -48,7 +48,7 @@ class Client {
     this._options = options;
     if (this._options.processor === 'session') {
       // compatibility with old 'session' processor setting
-      this._options.session = options.session || utils.getUuid()
+      this._options.session = options.session || utils.getUuid();
     }
     if (this._options.session) {
       // re-assign processor to 'session' when in session mode
@@ -93,16 +93,20 @@ class Client {
       aliases: { 'g': this._options.traversalSource || 'g' }
     }, requestOptions)
 
+    if (this._options.session && this._options.processor === 'session') {
+      args['session'] = this._options.session;
+    }
+
     if (message instanceof Bytecode) {
-      return this._connection.submit('traversal','bytecode', args, requestIdOverride);
+      if (this._options.session && this._options.processor === 'session') {
+        return this._connection.submit('session', 'bytecode', args, requestIdOverride);
+      } else {
+        return this._connection.submit('traversal', 'bytecode', args, requestIdOverride);
+      }
     } else if (typeof message === 'string') {
       args['bindings'] = bindings;
       args['language'] = 'gremlin-groovy';
       args['accept'] = this._connection.mimeType;
-
-      if (this._options.session && this._options.processor === 'session') {
-        args['session'] = this._options.session;
-      }
       return this._connection.submit(this._options.processor || '','eval', args, requestIdOverride);
     } else {
       throw new TypeError("message must be of type Bytecode or string");

@@ -34,8 +34,20 @@ import org.apache.tinkerpop.gremlin.server.Settings
 ////////////////////////////////////////////////////////////////////////////////
 
 if (Boolean.parseBoolean(skipTests)) return
+def testTransactions = System.getProperty("includeNeo4j") != null
+
+if (testTransactions) {
+    // clean up prior neo4j instances
+    def tempNeo4jDir = new java.io.File("/tmp/neo4j")
+    if (tempNeo4jDir.exists()) {
+        log.info("Cleaning up prior Neo4j test instances for ${executionName}")
+        org.apache.commons.io.FileUtils.deleteDirectory(tempNeo4jDir)
+    }
+}
 
 log.info("Starting Gremlin Server instances for native testing of ${executionName}")
+log.info("Transactions validated (enabled with -DincludeNeo4j and only available on port 45940): " + testTransactions)
+
 def settings = Settings.read("${settingsFile}")
 settings.graphs.graph = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
@@ -43,6 +55,7 @@ settings.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty
 settings.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.sink = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+if (testTransactions) settings.graphs.tx = gremlinServerDir + "/src/test/scripts/neo4j-empty.properties"
 settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
 settings.port = 45940
 
