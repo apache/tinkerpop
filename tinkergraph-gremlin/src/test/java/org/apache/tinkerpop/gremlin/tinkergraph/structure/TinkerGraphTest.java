@@ -865,7 +865,7 @@ public class TinkerGraphTest {
         final GraphTraversalSource g = traversal().withEmbedded(graph).withStrategies(new TraversalStrategy.ProviderOptimizationStrategy() {
             @Override
             public void apply(final Traversal.Admin<?, ?> traversal) {
-                final Graph graph = TraversalHelper.getRootTraversal(traversal).getGraph().get();
+                final Graph graph = traversal.getGraph().get();
                 graph.addVertex("person");
             }
         });
