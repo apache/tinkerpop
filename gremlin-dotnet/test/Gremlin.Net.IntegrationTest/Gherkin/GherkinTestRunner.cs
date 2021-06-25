@@ -109,8 +109,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 var resultFeature = new ResultFeature(feature);
                 results.Add(resultFeature);
-                foreach (var scenario in feature.Children)
+                foreach (var child in feature.Children)
                 {
+                    var scenario = (Scenario) child;
                     var failedSteps = new Dictionary<Step, Exception>();
                     resultFeature.Scenarios[scenario] = failedSteps;
                     if (IgnoredScenarios.TryGetValue(scenario.Name, out var reason))
@@ -237,12 +238,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             public Feature Feature { get;}
 
-            public IDictionary<ScenarioDefinition, IDictionary<Step, Exception>> Scenarios { get; }
+            public IDictionary<Scenario, IDictionary<Step, Exception>> Scenarios { get; }
 
             public ResultFeature(Feature feature)
             {
                 Feature = feature;
-                Scenarios = new Dictionary<ScenarioDefinition, IDictionary<Step, Exception>>();
+                Scenarios = new Dictionary<Scenario, IDictionary<Step, Exception>>();
             }
         }
 

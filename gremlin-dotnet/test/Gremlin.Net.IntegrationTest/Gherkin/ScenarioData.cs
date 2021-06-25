@@ -49,7 +49,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         
         private readonly RemoteConnectionFactory _connectionFactory;
 
-        public ScenarioDefinition CurrentScenario;
+        public Scenario CurrentScenario;
 
         public ScenarioDataPerGraph GetByGraphName(string name)
         {
