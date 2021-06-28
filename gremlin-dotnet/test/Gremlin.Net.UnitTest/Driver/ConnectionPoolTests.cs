@@ -237,15 +237,18 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public void ShouldNotLeakConnectionsIfDisposeIsCalledWhilePoolIsPopulating()
+        public async Task ShouldNotLeakConnectionsIfDisposeIsCalledWhilePoolIsPopulating()
         {
             var fakeConnectionFactory = new Mock<IConnectionFactory>();
             fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
             var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1);
             var mockedConnectionToBeDisposed = new Mock<IConnection>();
             var poolWasDisposedSignal = new SemaphoreSlim(0, 1);
-            mockedConnectionToBeDisposed.Setup(f => f.ConnectAsync(It.IsAny<CancellationToken>()))
+            mockedConnectionToBeDisposed.Setup(m => m.ConnectAsync(It.IsAny<CancellationToken>()))
                 .Returns((CancellationToken _) => poolWasDisposedSignal.WaitAsync(CancellationToken.None));
+            var connectionWasSuccessfullyDisposed = new SemaphoreSlim(0, 1);
+            mockedConnectionToBeDisposed.Setup(m => m.Dispose())
+                .Callback(() => connectionWasSuccessfullyDisposed.Release());
             // We don't use the `CancellationToken` here as the connection should also be disposed if it did not
             //  react on the cancellation. This can happen if the task is cancelled just before `ConnectAsync` returns.
             fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnectionToBeDisposed.Object);
@@ -261,13 +264,14 @@ namespace Gremlin.Net.UnitTest.Driver
             pool.Dispose();
             poolWasDisposedSignal.Release();
             
+            await connectionWasSuccessfullyDisposed.WaitAsync(TimeSpan.FromSeconds(2));
             Assert.Equal(0, pool.NrConnections);
             mockedConnectionToBeDisposed.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
             mockedConnectionToBeDisposed.Verify(m => m.Dispose(), Times.Once);
         }
 
         [Fact]
-        public void DisposeShouldCancelConnectionEstablishment()
+        public async Task DisposeShouldCancelConnectionEstablishment()
         {
             var fakeConnectionFactory = new Mock<IConnectionFactory>();
             fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
@@ -275,6 +279,9 @@ namespace Gremlin.Net.UnitTest.Driver
             var mockedConnectionToBeDisposed = new Mock<IConnection>();
             mockedConnectionToBeDisposed.Setup(f => f.ConnectAsync(It.IsAny<CancellationToken>()))
                 .Returns((CancellationToken ct) => Task.Delay(-1, ct));
+            var connectionWasSuccessfullyDisposed = new SemaphoreSlim(0, 1);
+            mockedConnectionToBeDisposed.Setup(m => m.Dispose())
+                .Callback(() => connectionWasSuccessfullyDisposed.Release());
             fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnectionToBeDisposed.Object);
             try
             {
@@ -286,7 +293,8 @@ namespace Gremlin.Net.UnitTest.Driver
             }
             
             pool.Dispose();
-            
+
+            await connectionWasSuccessfullyDisposed.WaitAsync(TimeSpan.FromSeconds(2));
             Assert.Equal(0, pool.NrConnections);
             mockedConnectionToBeDisposed.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()));
             mockedConnectionToBeDisposed.Verify(m => m.Dispose(), Times.Once);
