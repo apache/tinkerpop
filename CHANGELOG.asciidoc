@@ -28,6 +28,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `IndexStep` to make it easier for providers to determine the type of indexer being used.
 * Allowed Javascript `Translator` to take `Bytecode` or a `Traversal`.
 * Addressed CVE-2021-32640 for gremlin-javascript.
+* Allowed construction of `DriverRemoteConnection` in .NET to use host and port specification similar to Java syntax.
+* Defaulted `DriverRemoteConnection` to "g" if it the `TraversalSource` binding isn't supplied in Python.
 
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)
