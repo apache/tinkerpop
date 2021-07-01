@@ -28,7 +28,7 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 class DriverRemoteConnection(RemoteConnection):
 
-    def __init__(self, url, traversal_source, protocol_factory=None,
+    def __init__(self, url, traversal_source = "g", protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  username="", password="", kerberized_service='',
                  message_serializer=None, graphson_reader=None,

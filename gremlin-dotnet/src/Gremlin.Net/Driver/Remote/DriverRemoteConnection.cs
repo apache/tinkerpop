@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
@@ -47,6 +48,27 @@ namespace Gremlin.Net.Driver.Remote
         private readonly List<String> _allowedKeys = new List<string> 
                     {Tokens.ArgsEvalTimeout, "scriptEvaluationTimeout", Tokens.ArgsBatchSize, 
                      Tokens.RequestId, Tokens.ArgsUserAgent};
+
+        /// <summary>
+        ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
+        /// </summary>
+        /// <param name="host">The host to connect to.</param>
+        /// <param name="port">The port to connect to.</param>
+        /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
+        public DriverRemoteConnection(string host, int port):this(host, port, "g")
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
+        /// </summary>
+        /// <param name="host">The host to connect to.</param>
+        /// <param name="port">The port to connect to.</param>
+        /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
+        /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
+        public DriverRemoteConnection(string host, int port, string traversalSource):this(new GremlinClient(new GremlinServer(host, port)), traversalSource)
+        {
+        }
 
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.

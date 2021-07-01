@@ -150,7 +150,7 @@ def remote_connection_authenticated(request):
 @pytest.fixture
 def remote_connection_graphsonV2(request):
     try:
-        remote_conn = DriverRemoteConnection(anonymous_url, 'g',
+        remote_conn = DriverRemoteConnection(anonymous_url,
                                              message_serializer=serializer.GraphSONSerializersV2d0())
     except OSError:
         pytest.skip('Gremlin Server is not running')
