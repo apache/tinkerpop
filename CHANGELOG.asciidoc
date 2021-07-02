@@ -23,6 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed bug where `RepeatUnrollStrategy`, `InlineFilterStrategy` and `MessagePassingReductionStrategy` were all being applied more than necessary.
+* Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 
