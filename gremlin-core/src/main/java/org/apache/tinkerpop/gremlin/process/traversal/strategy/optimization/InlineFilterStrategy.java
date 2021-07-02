@@ -74,7 +74,8 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     private static final InlineFilterStrategy INSTANCE = new InlineFilterStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> POSTS = new HashSet<>(Arrays.asList(
             GraphFilterStrategy.class,
-            AdjacentToIncidentStrategy.class));
+            AdjacentToIncidentStrategy.class,
+            PathRetractionStrategy.class));
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             FilterRankingStrategy.class,
             IdentityRemovalStrategy.class,
