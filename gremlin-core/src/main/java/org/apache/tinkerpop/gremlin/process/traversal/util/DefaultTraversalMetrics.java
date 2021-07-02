@@ -133,10 +133,13 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     }
 
     /**
-     * Extracts metrics from the provided {@code traversal} and computes metrics. Calling this method finalizes the
+     * Extracts metrics from the provided {@link Traversal} and computes metrics. Calling this method finalizes the
      * metrics such that their values can no longer be modified.
      */
     public synchronized void setMetrics(final Traversal.Admin traversal, final boolean onGraphComputer) {
+        // this is meant to be called on a traversal that is locked so that the metrics can get initialized
+        // properly in all the ProfileStep instances
+        if (!traversal.isLocked()) throw new IllegalStateException("Metrics cannot be computed when the traversal is not locked");
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         finalized = true;
         handleNestedTraversals(traversal, null, onGraphComputer);
@@ -151,8 +154,8 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
 
         for (int ii = 0; ii < profileSteps.size(); ii++) {
             // The index is necessary to ensure that step order is preserved after a merge.
-            final ProfileStep step = profileSteps.get(ii);
-            final MutableMetrics stepMetrics = onGraphComputer ? traversal.getSideEffects().get(step.getId()) : step.getMetrics();
+            final ProfileStep<?> step = profileSteps.get(ii);
+            final MutableMetrics stepMetrics = onGraphComputer ? traversal.getSideEffects().get(step.getId()) : step.getMetrics().get();
 
             this.totalStepDuration += stepMetrics.getDuration(MutableMetrics.SOURCE_UNIT);
             tempMetrics.add(Pair.with(ii, stepMetrics.clone()));
@@ -178,7 +181,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
 
             final MutableMetrics metrics = onGraphComputer ?
                     traversal.getSideEffects().get(step.getId()) :
-                    ((ProfileStep) step).getMetrics();
+                    ((ProfileStep<?>) step).getMetrics().get();
 
             if (null != metrics) { // this happens when a particular branch never received a .next() call (the metrics were never initialized)
                 if (!onGraphComputer) {
