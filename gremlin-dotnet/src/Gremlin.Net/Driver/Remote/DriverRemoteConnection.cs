@@ -60,7 +60,7 @@ namespace Gremlin.Net.Driver.Remote
         }
 
         /// <summary>
-        ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
+        ///     Initializes a new <see cref="IRemoteConnection" />.
         /// </summary>
         /// <param name="host">The host to connect to.</param>
         /// <param name="port">The port to connect to.</param>
