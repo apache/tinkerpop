@@ -42,7 +42,11 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
         super(traversal);
     }
 
+    /**
+     * Returns {@code null} if traversal is not iterated or if not locked after strategy application.
+     */
     public MutableMetrics getMetrics() {
+        if (this.traversal.isLocked()) this.initializeIfNeeded();
         return metrics;
     }
 
