@@ -1,0 +1,186 @@
+description: "Basic Property Graph data model"
+status: development
+
+definitions:
+
+  - name: AtomicValue
+    description: "A simple value like a boolean, number, or string"
+    type:
+      union:
+        - name: boolean
+          description: "A boolean (true/false) value"
+          type: boolean
+
+        - name: byte
+          description: "A byte (8-bit integer) value"
+          type:
+            integer:
+              precision:
+                bits: 8
+
+        - name: double
+          description: "A double-precision (64-bit) floating point value"
+          type:
+            float:
+              precision:
+                bits: 64
+
+        - name: float
+          description: "A single-precision (32-bit) floating point value"
+          type:
+            float:
+              precision:
+                bits: 32
+
+        - name: integer
+          description: "A 32-bit integer value"
+          type:
+            integer:
+              precision:
+                bits: 32
+
+        - name: long
+          description: "A 64-bit integer value"
+          type:
+            integer:
+              precision:
+                bits: 64
+
+        - name: string
+          description: "A string value"
+          type: string
+
+  - name: Edge
+    description: "A edge, or binary relationship connecting two vertices"
+    type:
+      record:
+        - name: id
+          description: "The unique id of the edge; no two edges in a graph may share the same id"
+          type: EdgeId
+          unique: true
+
+        - name: label
+          description: "The label of the edge, sometimes indicating its type"
+          type: EdgeLabel
+
+        - name: properties
+          description: "Any properties (key/value pairs) of the edge"
+          type:
+            set: Property
+
+        - name: outVertexId
+          description: "The id of the edge's out-vertex (tail)"
+          type: VertexId
+
+        - name: inVertexId
+          description: "The id if the edge's in-vertex (head)"
+          type: VertexId
+
+  - name: EdgeId
+    description: "The unique id of an edge"
+    type: AtomicValue
+
+  - name: EdgeLabel
+    description: "The label of an edge, sometimes indicating its type"
+    type: string
+
+  - name: Graph
+    description: "A graph, consisting of a set of vertices and a set of edges"
+    comments:
+      - >
+        As a basic integrity constraint, the out- and in- vertex ids of the graph's edges must be among
+        the ids of the graph's vertices.
+    type:
+      record:
+        - name: vertices
+          description: "The set of all vertices in the graph"
+          type:
+            set: Vertex
+
+        - name: edge
+          description: "The set of all edges in the graph"
+          type:
+            set: Edge
+
+  - name: Property
+    description: >
+      A property, or key/value pair which may be attached to vertices, edges, and occasionally other properties.
+    type:
+      record:
+        - name: key
+          description: "The property's key"
+          type: PropertyKey
+
+        - name: value
+          description: "The property's value"
+          type: Value
+
+        - name: metaproperties
+          description: "Any metaproperties (properties of a property)"
+          type:
+            set: Property
+
+  - name: PropertyKey
+    description: "The key of a property. Property keys are part of a graph's schema, like vertex and edge labels."
+    type: string
+
+  - name: Value
+    description: "An id or property value; either an atomic (simple) value, or a list, map, or set value"
+    type:
+      union:
+        - name: atomic
+          description: "An atomic (simple) value"
+          type: AtomicValue
+
+        - name: list
+          description: "An ordered list value"
+          type:
+            list: Value
+
+        - name: array
+          description: "An array value. Like a list, but also supporting efficient random access"
+          type:
+            list: Value
+
+        - name: map
+          description: "A map of arbitrary string keys to arbitrary values"
+          type:
+            map:
+              keys: string
+              values: Value
+
+        - name: set
+          description: "A set of unique values"
+          type:
+            set: Value
+
+        - name: serialized
+          description: "A serialized object which the application should be capable of decoding"
+          type: string
+
+  - name: Vertex
+    description: "A vertex, or simple element in a graph; vertices are typically connected by edges"
+    type:
+      record:
+        - name: id
+          description: "The unique id of the vertex; no two vertices in a graph may share the same id"
+          type: VertexId
+          unique: true
+
+        - name: label
+          description: "The optional label of the vertex, sometimes indicating its type"
+          type:
+            optional: VertexLabel
+
+        - name: properties
+          description: "Any properties (key/value pairs) of the vertex"
+          type:
+            set: Property
+
+  - name: VertexId
+    description: "The unique id of a vertex"
+    type: AtomicValue
+
+  - name: VertexLabel
+    description: "The label of a vertex, sometimes indicating its type"
+    type: string
