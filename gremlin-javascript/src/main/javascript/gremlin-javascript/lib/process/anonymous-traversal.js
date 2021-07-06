@@ -52,7 +52,7 @@ class AnonymousTraversalSource {
   /**
    * Creates a {@link GraphTraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
    * reference so that traversals spawned from it will execute over that reference.
-   * @param {GraphTraversalSource} remoteConnection
+   * @param {RemoteConnection} remoteConnection
    * @return {GraphTraversalSource}
    */
   withRemote(remoteConnection) {

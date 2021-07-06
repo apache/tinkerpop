@@ -65,6 +65,16 @@ limitations under the License.
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>neo4j-gremlin</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>commons-io</groupId>
+                        <artifactId>commons-io</artifactId>
+                        <version>${commons.io.version}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>ch.qos.logback</groupId>
                         <artifactId>logback-classic</artifactId>
                         <version>${logback.version}</version>
@@ -243,6 +253,17 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
                     <nodeVersion>${node.version}</nodeVersion>
                     <npmVersion>${npm.version}</npmVersion>
+
+                    <!--
+                    transaction testing is disabled unless the -DincludeNeo4j flag enables the include-neo4j
+                    maven profile which is a standard profile we use to add neo4j to testing explicitly - for
+                    npm we set this TEST_TRANSACTIONS environment variable that can be accessed in tests to
+                    determine if we skip transaction oriented tests or not. without neo4j we can't test tx()
+                    so this is disabled by default and enabled in the include-neo4j profile below
+                    -->
+                    <environmentVariables>
+                        <TEST_TRANSACTIONS>false</TEST_TRANSACTIONS>
+                    </environmentVariables>
                 </configuration>
             </plugin>
             <!--
@@ -279,6 +300,126 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
         </plugins>
     </build>
     <profiles>
+        <!--
+          This profile will include neo4j for purposes of transactional testing within Gremlin Server.
+          Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
+        -->
+        <profile>
+            <id>include-neo4j</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>includeNeo4j</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- with neo4j present we can enable transaction testing -->
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables combine.children="override">
+                                <TEST_TRANSACTIONS>true</TEST_TRANSACTIONS>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.neo4j</groupId>
+                                <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+                                <version>0.9-3.4.0</version>
+                                <exclusions>
+                                    <exclusion>
+                                        <groupId>org.neo4j</groupId>
+                                        <artifactId>neo4j-kernel</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-lang3</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-text</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>com.github.ben-manes.caffeine</groupId>
+                                        <artifactId>caffeine</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.scala-lang</groupId>
+                                        <artifactId>scala-library</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.scala-lang</groupId>
+                                        <artifactId>scala-reflect</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-api</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-nop</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.apache.lucene</groupId>
+                                        <artifactId>lucene-core</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>io.dropwizard.metrics</groupId>
+                                        <artifactId>metrics-core</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-all</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm</artifactId>
+                                    </exclusion>
+                                </exclusions>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.scala-lang</groupId>
+                                <artifactId>scala-library</artifactId>
+                                <version>2.11.8</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.scala-lang</groupId>
+                                <artifactId>scala-reflect</artifactId>
+                                <version>2.11.8</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.lucene</groupId>
+                                <artifactId>lucene-core</artifactId>
+                                <version>5.5.0</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>io.dropwizard.metrics</groupId>
+                                <artifactId>metrics-core</artifactId>
+                                <version>4.0.2</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.neo4j</groupId>
+                                <artifactId>neo4j-kernel</artifactId>
+                                <version>3.4.11</version>
+                                <exclusions>
+                                    <exclusion>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-all</artifactId>
+                                    </exclusion>
+                                </exclusions>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!--
         Provides a way to deploy the gremlin-javascript GLV to npm. This cannot be part of the standard maven execution
         because npm does not have a staging environment like sonatype for releases. As soon as the release is
