@@ -45,6 +45,16 @@ class TraversalStrategies {
     this.strategies.push(strategy);
   }
 
+  /** @param {TraversalStrategy} strategy */
+  removeStrategy(strategy) {
+    const idx = this.strategies.findIndex(s => s.fqcn === strategy.fqcn);
+    if (idx !== -1) {
+      return this.strategies.splice(idx, 1)[0];
+    }
+
+    return undefined;
+  }
+
   /**
    * @param {Traversal} traversal
    * @returns {Promise}

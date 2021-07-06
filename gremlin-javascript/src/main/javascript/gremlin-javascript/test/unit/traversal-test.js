@@ -32,6 +32,7 @@ const V = gt.statics.V;
 const P = t.P;
 const Bytecode = require('../../lib/process/bytecode');
 const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
+const RemoteConnection = require('../../lib/driver/remote-connection').RemoteConnection;
 
 describe('Traversal', function () {
 
@@ -245,4 +246,44 @@ describe('Traversal', function () {
       });
     })
   });
+
+  describe('child transactions', function() {
+    it('should not support child transactions', function() {
+      const g = anon.traversal().withRemote(new MockRemoteConnection());
+      const tx = g.tx();
+      assert.throws(function() {
+        tx.begin().tx();
+      });
+    });
+  });
+
+  describe('tx#begin()', function() {
+    it("should not allow a transaction to begin more than once", function() {
+      const g = anon.traversal().withRemote(new MockRemoteConnection());
+      const tx = g.tx();
+      tx.begin();
+      assert.throws(function () {
+        tx.begin();
+      });
+    });
+  });
 });
+
+class MockRemoteConnection extends RemoteConnection {
+  constructor(bound = false) {
+    super('ws://localhost:9998/gremlin');
+    this._bound = bound;
+  }
+
+  get isSessionBound() {
+    return this._bound;
+  }
+
+  submit(bytecode) {
+    return Promise.resolve(undefined);
+  }
+
+  createSession() {
+    return new MockRemoteConnection(true);
+  }
+}

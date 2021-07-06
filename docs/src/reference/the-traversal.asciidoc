@@ -106,7 +106,7 @@ GraphTraversalSource gtx2 = tx2.begin();
 ----
 
 In remote cases, `GraphTraversalSource` instances spawned from `begin()` are safe to use in multiple threads though
-they on the server side they will be processed serially as they arrive. The default behavior of `close()` on a
+on the server side they will be processed serially as they arrive. The default behavior of `close()` on a
 `Transaction` for remote cases is to `commit()`, so the following re-write of the earlier example is also valid:
 
 [source,java]
@@ -122,6 +122,10 @@ try {
     tx.rollback();
 }
 ----
+
+IMPORTANT: Transactions with non-JVM languages are always "remote". For specific transaction syntax in a particular
+language, please see the "Transactions" sub-section of your language of interest in the
+<<gremlin-drivers-variants,Gremlin Drivers and Variants>> section.
 
 In embedded cases, that initial recommended model for defining transactions holds, but users have more options here
 on deeper inspection. For embedded use cases (and perhaps even in configuration of a graph instance in Gremlin Server),
