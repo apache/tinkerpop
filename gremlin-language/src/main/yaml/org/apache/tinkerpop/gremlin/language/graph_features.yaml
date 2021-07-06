@@ -1,0 +1,114 @@
+description: "TinkerPop graph features"
+status: development
+comments:
+  - >
+    Note: many graph features have to do with writes (i.e. whether adds or removals of a given kind are allowed).
+          These are excluded from the current data types, though noted below.
+          Also note that these types rearrange the features somewhat, preserving information.
+  - >
+    Excluded ElementFeatures (vertex and edge):
+      FEATURE_ADD_PROPERTY, FEATURE_REMOVE_PROPERTY, FEATURE_CUSTOM_IDS, FEATURE_USER_SUPPLIED_IDS
+  - >
+    Excluded EdgeFeatures:
+      FEATURE_ADD_EDGES, FEATURE_REMOVE_EDGES
+  - >
+    Excluded VertexFeatures:
+      FEATURE_ADD_VERTICES, FEATURE_REMOVE_VERTICES
+  - >
+    Excluded DataTypeFeatures: none
+  - >
+    Excluded GraphFeatures: all of them, i.e.
+      FEATURE_COMPUTER, FEATURE_CONCURRENT_ACCESS, FEATURE_PERSISTENCE, FEATURE_THREADED_TRANSACTIONS, FEATURE_TRANSACTIONS
+
+definitions:
+
+  - name: AtomicType
+    description: "Any of a set of atomic types specifically supported as a graph feature in TinkerPop"
+    type:
+      enum:
+        - boolean
+        - byte
+        - double
+        - float
+        - integer
+        - long
+        - string
+
+  - name: DataType
+    description: "A data type for property values"
+    type:
+      union:
+        - name: atomic
+          description: >
+            The type of an atomic value
+          type: AtomicType
+
+        - name: array
+          description: >
+            The type of an array of values
+          type: DataType
+
+        - name: map
+          description: >
+            The type of map values. The map can contain arbitrary serializable values
+            that may or may not be defined as features themselves.
+
+        - name: mixedList
+          description: >
+            The type of a mixed list; as such lists are "mixed", they may contain objects of different types.
+            These objects may be arbitrary serializable values that may or may not be defined as features themselves.
+
+        - name: serializable
+          description: "The type of a Java serializable value"
+
+        - name: uniformList
+          description: >
+            The type of a uniform list; as such lists are "uniform", they must contain objects of the same type.
+            These objects may be arbitrary serializable values that may or may not be defined as features themselves.
+
+  - name: Feature
+    description: "A supported feature"
+    type:
+      union:
+        - name: supportsVertexIds
+          description: "All supported id types for vertices"
+          type:
+            set: IdType
+
+        - name: supportsEdgeIds
+          description: "All supported id types for edges"
+          type:
+            set: IdType
+
+        - name: supportsVertexProperties
+          description: >
+            Determines whether a Vertex allows for the processing of at least one data type defined by the features.
+            In this case "processing" refers to at least "reading" the data type.
+
+        - name: supportsEdgeProperties
+          description: >
+            Determines whether an Edge allows for the processing of at least one data type defined by the features.
+            In this case "processing" refers to at least "reading" the data type.
+
+        - name: supportsVertexMetaProperties
+          description: >
+            Determines whether a Vertex can support properties on vertex properties.
+
+        - name: supportsVertexMultiProperties
+          description: >
+            Determines whether a Vertex can support multiple properties with the same key.
+
+        - name: supportsDataTypes
+          description: >
+            This bundles together individual features relating to supported property value types.
+          type:
+            set: DataType
+
+  - name: IdType
+    description: "A supported id type"
+    type:
+      enum:
+        - any
+        - numeric
+        - string
+        - uuid
