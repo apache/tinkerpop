@@ -97,7 +97,7 @@ definitions:
           type:
             set: Vertex
 
-        - name: edge
+        - name: edges
           description: "The set of all edges in the graph"
           type:
             set: Edge

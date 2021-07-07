@@ -1,0 +1,5 @@
+jvm:
+  # Java package names will begin with this prefix. For example, if a schema has the name "foo/bar", the
+  # corresponding Java package name in Thrift will be "org.example.foo.bar".
+  namespacePrefix: ""
+

@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+//    id 'application'
+}
+
+apply plugin : 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'src/gen/java']
+        }
+    }
+}
+
+//ext {
+//    javaMainClass = "org.apache.tinkerpop.gremlin.language.examples.thrift.ExampleGraphServer"
+//}
+//
+//application {
+//    mainClassName = javaMainClass
+//}
+
+dependencies {
+    implementation 'org.apache.thrift:libthrift:0.14.0'
+    implementation 'org.apache.tinkerpop:tinkergraph-gremlin:3.5.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+task(runClient, dependsOn: 'classes', type: JavaExec) {
+    main = 'org.apache.tinkerpop.gremlin.language.examples.thrift.ExampleGraphClient'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task(runServer, dependsOn: 'classes', type: JavaExec) {
+    main = 'org.apache.tinkerpop.gremlin.language.examples.thrift.ExampleGraphServer'
+    classpath = sourceSets.main.runtimeClasspath
+}
