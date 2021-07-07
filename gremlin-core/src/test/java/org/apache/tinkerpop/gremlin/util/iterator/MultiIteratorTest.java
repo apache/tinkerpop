@@ -27,7 +27,6 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -37,7 +36,7 @@ public class MultiIteratorTest {
     @Test
     public void shouldNotHaveNextIfNoIteratorsAreAdded() {
         final Iterator<String> itty = new MultiIterator<>();
-        assertFalse(itty.hasNext());
+        assertThat(itty.hasNext(), is(false));
     }
 
     @Test(expected = FastNoSuchElementException.class)
@@ -50,7 +49,7 @@ public class MultiIteratorTest {
     public void shouldNotHaveNextIfEmptyIteratorIsAdded() {
         final MultiIterator<String> itty = new MultiIterator<>();
         itty.addIterator(EmptyIterator.instance());
-        assertFalse(itty.hasNext());
+        assertThat(itty.hasNext(), is(false));
     }
 
     @Test(expected = FastNoSuchElementException.class)
@@ -67,7 +66,7 @@ public class MultiIteratorTest {
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(EmptyIterator.instance());
-        assertFalse(itty.hasNext());
+        assertThat(itty.hasNext(), is(false));
     }
 
     @Test(expected = FastNoSuchElementException.class)
@@ -95,7 +94,7 @@ public class MultiIteratorTest {
         assertEquals("test1", itty.next());
         assertEquals("test2", itty.next());
         assertEquals("test3", itty.next());
-        assertFalse(itty.hasNext());
+        assertThat(itty.hasNext(), is(false));
     }
 
     @Test
@@ -110,7 +109,7 @@ public class MultiIteratorTest {
 
         itty.clear();
 
-        assertFalse(itty.hasNext());
+        assertThat(itty.hasNext(), is(false));
     }
 
     @Test

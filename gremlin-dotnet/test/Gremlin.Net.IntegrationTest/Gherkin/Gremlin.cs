@@ -222,6 +222,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasXp_neqXvXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("p",P.Neq("v"))}}, 
                {"g_V_hasXage_gtX18X_andXltX30XXorXgtx35XXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Gt(18).And(P.Lt(30)).Or(P.Gt(35)))}}, 
                {"g_V_hasXage_gtX18X_andXltX30XXorXltx35XXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Gt(18).And(P.Lt(30)).And(P.Lt(35)))}}, 
+               {"g_V_hasXk_withinXcXX_valuesXkX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV().Property("k","\u8F49\u6CE8").AddV().Property("k","\u2726").AddV().Property("k","\u2660").AddV().Property("k","A"), (g,p) =>g.V().Has("k",P.Within(new List<object> {"\u8F49\u6CE8", "\u2726", "\u2660"})).Values<object>("k")}}, 
                {"g_V_valuesXageX_isX32X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("age").Is(32)}}, 
                {"g_V_valuesXageX_isXlte_30X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("age").Is(P.Lte(30))}}, 
                {"g_V_valuesXageX_isXgte_29X_isXlt_34X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("age").Is(P.Gte(29)).Is(P.Lt(34))}}, 

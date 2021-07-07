@@ -106,7 +106,7 @@ GraphTraversalSource gtx2 = tx2.begin();
 ----
 
 In remote cases, `GraphTraversalSource` instances spawned from `begin()` are safe to use in multiple threads though
-they on the server side they will be processed serially as they arrive. The default behavior of `close()` on a
+on the server side they will be processed serially as they arrive. The default behavior of `close()` on a
 `Transaction` for remote cases is to `commit()`, so the following re-write of the earlier example is also valid:
 
 [source,java]
@@ -122,6 +122,10 @@ try {
     tx.rollback();
 }
 ----
+
+IMPORTANT: Transactions with non-JVM languages are always "remote". For specific transaction syntax in a particular
+language, please see the "Transactions" sub-section of your language of interest in the
+<<gremlin-drivers-variants,Gremlin Drivers and Variants>> section.
 
 In embedded cases, that initial recommended model for defining transactions holds, but users have more options here
 on deeper inspection. For embedded use cases (and perhaps even in configuration of a graph instance in Gremlin Server),
@@ -4271,6 +4275,44 @@ g.V().hasLabel('person'). <1>
 <8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
 <9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
+=== EdgeLabelVerificationStrategy
+
+`EdgeLabelVerificationStrategy` prevents traversals from writing traversals that do not explicitly specify and edge
+label when using steps like `out()`, 'in()', 'both()' and their related `E` oriented steps, providing the
+option to throw an exception, log a warning or do both when one of these keys is encountered in a mutating step.
+
+[source,java,tab]
+----
+EdgeLabelVerificationStrategy verificationStrategy = EdgeLabelVerificationStrategy.build()
+                                                                                  .throwException().create()
+// results in VerificationException - as out() does not have a label specified
+g.withStrategies(verificationStrategy).V(1).out().iterate();
+----
+[source,groovy]
+----
+// results in VerificationException - as out() does not have a label specified
+g.withStrategies(new EdgeLabelVerificationStrategy(throwException: true))
+     .V(1).out().iterate()
+----
+[source,csharp]
+----
+// results in VerificationException - as out() does not have a label specified
+g.WithStrategies(new EdgeLabelVerificationStrategy(throwException: true))
+     .V(1).Out().Iterate();
+----
+[source,javascript]
+----
+// results in Error - as out() does not have a label specified
+g.withStrategies(new EdgeLabelVerificationStrategy(throwException: true))
+     .V(1).out().iterate();
+----
+[source,python]
+----
+// results in Error - as out() does not have a label specified
+g.withStrategies(EdgeLabelVerificationStrategy(throwException=true))
+     .V(1).out().iterate()
+----
+
 === ElementIdStrategy
 
 `ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as TinkerGraph,
@@ -4380,14 +4422,38 @@ The best way to understand `PartitionStrategy` is via example.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").readPartitions("a").create()
-strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").readPartitions("b").create()
+strategyA = new PartitionStrategy(partitionKey: "_partition", writePartition: "a", readPartitions: ["a"])
+strategyB = new PartitionStrategy(partitionKey: "_partition", writePartition: "b", readPartitions: ["b"])
 gA = traversal().withEmbedded(graph).withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
 gB = traversal().withEmbedded(graph).withStrategies(strategyB)
 gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
+----
+
+The following examples demonstrate the above `PartitionStrategy` definition for "strategyA" in other programming
+languages:
+
+[source,java,tab]
+----
+PartitionStrategy strategyA = PartitionStrategy.build().partitionKey("_partition")
+                                                       .writePartition("a")
+                                                       .readPartitions("a").create();
+----
+[source,csharp]
+----
+PartitionStrategy strategyA = new PartitionStrategy(
+                                      partitionKey: "_partition", writePartition: "a",
+                                      readPartitions: new List<string>(){"a"});
+----
+[source,javascript]
+----
+const strategyA = new PartitionStrategy(partitionKey: "_partition", writePartition: "a", readPartitions: ["a"])
+----
+[source,python]
+----
+strategyA = PartitionStrategy(partitionKey="_partition", writePartition="a", readPartitions=["a"])
 ----
 
 Partitions may also extend to `VertexProperty` elements if the `Graph` can support meta-properties and if the
@@ -4406,14 +4472,70 @@ to merge those multiple graphs (i.e. join partitions).
 `ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an
 `IllegalStateException` if the `Traversal` has any mutating steps within it.
 
-[source,text]
+[source,java,tab]
 ----
-gremlin> readonly = g.withStrategies(ReadOnlyStrategy.instance())
-==>graphtraversalsource[tinkergraph[vertices:5 edges:7], standard]
-gremlin> readonly.addV('person')
-The provided traversal has a mutating step and thus is not read only: AddVertexStartStep({label=[person]})
-Type ':help' or ':h' for help.
-Display stack trace? [yN]
+ReadOnlyStrategy verificationStrategy = ReadOnlyStrategy.instance();
+// results in VerificationException
+g.withStrategies(verificationStrategy).addV('person').iterate();
+----
+[source,groovy]
+----
+// results in VerificationException
+g.withStrategies(ReadOnlyStrategy).addV('person').iterate();
+----
+[source,csharp]
+----
+// results in VerificationException
+g.WithStrategies(new ReadOnlyStrategy()).addV("person").Iterate();
+----
+[source,javascript]
+----
+// results in Error
+g.withStrategies(new ReadOnlyStrategy()).addV("person").iterate();
+----
+[source,python]
+----
+// results in Error
+g.withStrategies(ReadOnlyStrategy).addV("person").iterate()
+----
+
+=== ReservedKeysVerificationStrategy
+
+`ReservedKeysVerificationStrategy` prevents traversals from adding property keys that are protected, providing the
+option to throw an exception, log a warning or do both when one of these keys is encountered in a mutating step. By
+default "id" and "label" are considered "reserved" but the default can be changed by building with the
+`reservedKeys()` options and supply a `Set` of keys to trigger the `VerificationException`.
+
+[source,java,tab]
+----
+ReservedKeysVerificationStrategy verificationStrategy = ReservedKeysVerificationStrategy.build()
+                                                                                        .throwException().create()
+// results in VerificationException
+g.withStrategies(verificationStrategy).addV('person').property("id",123).iterate();
+----
+[source,groovy]
+----
+// results in VerificationException
+g.withStrategies(new ReservedKeysVerificationStrategy(throwException: true))
+     .addV('person').property("id",123).iterate()
+----
+[source,csharp]
+----
+// results in VerificationException
+g.WithStrategies(new ReservedKeysVerificationStrategy(throwException: true))
+     .AddV('person').Property("id",123).Iterate();
+----
+[source,javascript]
+----
+// results in Error
+g.withStrategies(new ReservedKeysVerificationStrategy(throwException: true))
+     .addV('person').property("id",123).iterate();
+----
+[source,python]
+----
+// results in Error
+g.withStrategies(ReservedKeysVerificationStrategy(throwException=true))
+     .addV('person').property("id",123).iterate()
 ----
 
 === SeedStrategy
@@ -4466,7 +4588,7 @@ graph = TinkerFactory.createTheCrew()
 g = traversal().withEmbedded(graph)
 g.V().as('a').values('location').as('b').  <1>
   select('a','b').by('name').by()
-g = g.withStrategies(SubgraphStrategy.build().vertexProperties(hasNot('endTime')).create()) <2>
+g = g.withStrategies(new SubgraphStrategy(vertexProperties: hasNot('endTime'))) <2>
 g.V().as('a').values('location').as('b').  <3>
   select('a','b').by('name').by()
 g.V().as('a').values('location').as('b').
@@ -4477,11 +4599,31 @@ g.V().as('a').values('location').as('b').
 <2> Create a `SubgraphStrategy` where vertex properties must not have an `endTime`-property (thus, the current location).
 <3> Get all vertices and their current vertex property locations.
 
-IMPORTANT: This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the vertex criterion
-(if present) in order for the `Edge` to be considered a part of the subgraph.
+The following examples demonstrate the above `SubgraphStrategy` definition in other programming languages:
 
-The example below uses all three filters: vertex, edge, and vertex property. People vertices must have lived in more than three places,
-edges must be labeled "develops," and vertex properties must be the persons current location or a non-location property.
+[source,java,tab]
+----
+g.withStrategies(SubgraphStrategy.build().vertexProperties(hasNot("endTime")).create());
+----
+[source,csharp]
+----
+g.WithStrategies(new SubgraphStrategy(vertexProperties: HasNot("endTime")));
+----
+[source,javascript]
+----
+g.withStrategies(new SubgraphStrategy(vertexProperties: hasNot("endTime")));
+----
+[source,python]
+----
+g.withStrategies(new SubgraphStrategy(vertexProperties=hasNot("endTime")))
+----
+
+IMPORTANT: This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the vertex
+criterion (if present) in order for the `Edge` to be considered a part of the subgraph.
+
+The example below uses all three filters: vertex, edge, and vertex property. People vertices must have lived in more
+than three places, edges must be labeled "develops," and vertex properties must be the persons current location or a
+non-location property.
 
 [gremlin-groovy]
 ----
@@ -4655,7 +4797,7 @@ t = (g.V().has('person','name','marko').
 # Groovy
 translator = Translator().of('g');
 print(translator.translate(t.bytecode));
-# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age') 
+# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
 ----
 
 The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to

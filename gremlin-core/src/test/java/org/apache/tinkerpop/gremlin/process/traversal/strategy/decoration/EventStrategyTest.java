@@ -33,6 +33,8 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.addV;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -58,7 +60,8 @@ public class EventStrategyTest {
                 {new DefaultGraphTraversal<>(EmptyGraph.instance()).out("test").drop(), 1},
                 {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().drop(), 1},
                 {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().properties().drop(), 1},
-                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1}});
+                {new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1}
+        });
     }
 
     @Parameterized.Parameter(value = 0)

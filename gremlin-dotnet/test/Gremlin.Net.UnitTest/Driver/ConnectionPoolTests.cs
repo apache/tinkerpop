@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -46,7 +47,7 @@ namespace Gremlin.Net.UnitTest.Driver
             
             Assert.Equal(poolSize, pool.NrConnections);
             mockedConnectionFactory.Verify(m => m.CreateConnection(), Times.Exactly(poolSize));
-            mockedConnection.Verify(m => m.ConnectAsync(), Times.Exactly(poolSize));
+            mockedConnection.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Exactly(poolSize));
         }
 
         [Fact]
@@ -235,34 +236,153 @@ namespace Gremlin.Net.UnitTest.Driver
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
         }
 
-        private static IConnection OpenConnection
+        [Fact]
+        public async Task ShouldNotLeakConnectionsIfDisposeIsCalledWhilePoolIsPopulating()
+        {
+            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1);
+            var mockedConnectionToBeDisposed = new Mock<IConnection>();
+            var poolWasDisposedSignal = new SemaphoreSlim(0, 1);
+            mockedConnectionToBeDisposed.Setup(m => m.ConnectAsync(It.IsAny<CancellationToken>()))
+                .Returns((CancellationToken _) => poolWasDisposedSignal.WaitAsync(CancellationToken.None));
+            var connectionWasSuccessfullyDisposed = new SemaphoreSlim(0, 1);
+            mockedConnectionToBeDisposed.Setup(m => m.Dispose())
+                .Callback(() => connectionWasSuccessfullyDisposed.Release());
+            // We don't use the `CancellationToken` here as the connection should also be disposed if it did not
+            //  react on the cancellation. This can happen if the task is cancelled just before `ConnectAsync` returns.
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnectionToBeDisposed.Object);
+            try
+            {
+                pool.GetAvailableConnection();
+            }
+            catch (ServerUnavailableException)
+            {
+                // expected as the pool only contains a closed connection at this point
+            }
+            
+            pool.Dispose();
+            poolWasDisposedSignal.Release();
+            
+            await connectionWasSuccessfullyDisposed.WaitAsync(TimeSpan.FromSeconds(2));
+            Assert.Equal(0, pool.NrConnections);
+            mockedConnectionToBeDisposed.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockedConnectionToBeDisposed.Verify(m => m.Dispose(), Times.Once);
+        }
+
+        [Fact]
+        public async Task DisposeShouldCancelConnectionEstablishment()
+        {
+            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1, 0);
+            var mockedConnectionToBeDisposed = new Mock<IConnection>();
+            mockedConnectionToBeDisposed.Setup(f => f.ConnectAsync(It.IsAny<CancellationToken>()))
+                .Returns((CancellationToken ct) => Task.Delay(-1, ct));
+            var connectionWasSuccessfullyDisposed = new SemaphoreSlim(0, 1);
+            mockedConnectionToBeDisposed.Setup(m => m.Dispose())
+                .Callback(() => connectionWasSuccessfullyDisposed.Release());
+            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnectionToBeDisposed.Object);
+            try
+            {
+                pool.GetAvailableConnection();
+            }
+            catch (ServerUnavailableException)
+            {
+                // expected as the pool only contains a closed connection at this point
+            }
+            
+            pool.Dispose();
+
+            await connectionWasSuccessfullyDisposed.WaitAsync(TimeSpan.FromSeconds(2));
+            Assert.Equal(0, pool.NrConnections);
+            mockedConnectionToBeDisposed.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()));
+            mockedConnectionToBeDisposed.Verify(m => m.Dispose(), Times.Once);
+        }
+        
+        [Fact]
+        public async Task ConnectionsEstablishedInParallelShouldAllBeDisposedIfOneThrowsDuringCreation()
+        {
+            // This test unfortunately needs a lot of knowledge about the inner working of the ConnectionPool to 
+            //  adequately test that connections established in parallel will all be disposed if one throws an
+            //  exception.
+            
+            // First create a pool with only closed connections that we can then let the pool replace:
+            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            fakeConnectionFactory.SetupSequence(m => m.CreateConnection())
+                .Returns(ClosedConnection) // We need to do it like this as we use a dictionary of dead connections in 
+                .Returns(ClosedConnection) //   ConnectionPool and the three connections need to be different objects
+                .Returns(ClosedConnection);//   for this to work.
+            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3, 0);
+            var startEstablishingProblematicConnections = new SemaphoreSlim(0, 1);
+            // Let the pool get one connection that is so slow to open that the pool will afterwards try to create two
+            //  more connections in parallel.
+            var fakedSlowToEstablishConnection = new Mock<IConnection>();
+            fakedSlowToEstablishConnection.Setup(m => m.ConnectAsync(It.IsAny<CancellationToken>()))
+                .Returns(startEstablishingProblematicConnections.WaitAsync);
+            fakeConnectionFactory.Setup(m => m.CreateConnection())
+                .Returns(fakedSlowToEstablishConnection.Object);
+            // Trigger replacement of closed connections
+            try
+            {
+                pool.GetAvailableConnection();
+            }
+            catch (ServerUnavailableException)
+            {
+                // expected as the pool only contain closed connections at this point
+            }
+            
+            var fakedOpenConnection = FakedOpenConnection;
+            var fakedCannotConnectConnection = FakedCannotConnectConnection;
+            fakeConnectionFactory.SetupSequence(m => m.CreateConnection())
+                .Returns(fakedOpenConnection.Object)
+                .Returns(fakedCannotConnectConnection.Object);
+            // Let the slow to establish connection finish so the pool can try to establish the other two connections
+            startEstablishingProblematicConnections.Release();
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
+            
+            // Verify that the pool tried to establish both connections and then also disposed both, even though one throw an exception
+            fakedOpenConnection.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once());
+            fakedOpenConnection.Verify(m => m.Dispose(), Times.Once);
+            fakedCannotConnectConnection.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
+            fakedCannotConnectConnection.Verify(m => m.Dispose(), Times.Once);
+        }
+
+        private static IConnection OpenConnection => FakedOpenConnection.Object;
+
+        private static Mock<IConnection> FakedOpenConnection
         {
             get
             {
                 var fakedConnection = new Mock<IConnection>();
                 fakedConnection.Setup(f => f.IsOpen).Returns(true);
-                return fakedConnection.Object;
+                return fakedConnection;
             }
         }
+
+        private static IConnection ClosedConnection => FakedClosedConnection.Object;
         
-        private static IConnection ClosedConnection
+        private static Mock<IConnection> FakedClosedConnection
         {
             get
             {
                 var fakedConnection = new Mock<IConnection>();
                 fakedConnection.Setup(f => f.IsOpen).Returns(false);
-                return fakedConnection.Object;
+                return fakedConnection;
             }
         }
+
+        private static IConnection CannotConnectConnection => FakedCannotConnectConnection.Object;
         
-        private static IConnection CannotConnectConnection
+        private static Mock<IConnection> FakedCannotConnectConnection
         {
             get
             {
                 var fakedConnection = new Mock<IConnection>();
                 fakedConnection.Setup(f => f.IsOpen).Returns(false);
-                fakedConnection.Setup(f => f.ConnectAsync()).Throws(new Exception("Cannot connect to server."));
-                return fakedConnection.Object;
+                fakedConnection.Setup(f => f.ConnectAsync(It.IsAny<CancellationToken>()))
+                    .Throws(new Exception("Cannot connect to server."));
+                return fakedConnection;
             }
         }
 

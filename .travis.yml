@@ -47,7 +47,7 @@ jobs:
       name: ".net"
     - script: "touch gremlin-python/.glv && mvn clean install -q -DskipTests -Dci && mvn verify -pl gremlin-python"
       name: "python"
-    - script: "mvn clean install -q -DskipTests -Dci && mvn verify -pl :gremlin-javascript"
+    - script: "mvn clean install -q -DskipTests -Dci && mvn verify -pl :gremlin-javascript,:gremlint"
       name: "javascript"
     - script:
         - "mvn -version"

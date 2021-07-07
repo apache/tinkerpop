@@ -225,7 +225,6 @@ The Apache TinkerPop project bundles the following components under the MIT Lice
 
      JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
      SLF4J API Module (org.slf4j:slf4j-api:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
-     SLF4J LOG4J-12 Binding (org.slf4j:slf4j-log4j12:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
      Foundation stylesheet for CodeRay (http://foundation.zurb.com) - for details, see licenses/foundation
      normalize.css 2.1.2 (http://necolas.github.io/normalize.css/) - for details, see licenses/normalize
 
@@ -236,3 +235,8 @@ Other Licenses
 The Apache TinkerPop project bundles the following components under the ISC License:
 
      jBCrypt (org.mindrot:jbcrypt:0.4 - https://github.com/djmdjm/jBCrypt) - for details, see licenses/jbcrypt
+
+The Apache TinkerPop project bundles the following components under the Eclipse Public License 1.0:
+
+     logback-core (ch.qos.logback:logback-core:1.2.3 - https://logback.qos.ch) - for details, see licenses/logback
+     logback-classic (ch.qos.logback:logback-classic:1.2.3 - https://logback.qos.ch) - for details, see licenses/logback

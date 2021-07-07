@@ -379,15 +379,25 @@ the location of the Gremlin Server to connect to:
 
 [source,java,tab]
 ----
+// gremlin-driver module
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+
+// gremlin-core module
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-GraphTraversalSource g = traversal().withRemote("conf/remote-graph.properties");
+GraphTraversalSource g = traversal().withRemote(
+                DriverRemoteConnection.using("localhost", 8182));
 ----
 [source,groovy]
 ----
+// gremlin-driver module
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+
+// gremlin-core module
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-def g = traversal().withRemote('conf/remote-graph.properties')
+def g = traversal().withRemote(
+                DriverRemoteConnection.using('localhost', 8182))
 ----
 [source,csharp]
 ----
@@ -407,7 +417,7 @@ const g = traversal().withRemote(
 from gremlin_python.process.anonymous_traversal_source import traversal
 
 g = traversal().withRemote(
-          DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+          DriverRemoteConnection('ws://localhost:8182/gremlin'))
 ----
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and

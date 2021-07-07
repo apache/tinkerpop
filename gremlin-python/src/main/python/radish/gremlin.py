@@ -196,6 +196,7 @@ world.gremlins = {
     'g_V_hasXp_neqXvXX': [(lambda g:g.V().has('p',P.neq('v')))], 
     'g_V_hasXage_gtX18X_andXltX30XXorXgtx35XXX': [(lambda g:g.V().has('age',P.gt(18).and_(P.lt(30)).or_(P.gt(35))))], 
     'g_V_hasXage_gtX18X_andXltX30XXorXltx35XXX': [(lambda g:g.V().has('age',P.gt(18).and_(P.lt(30)).and_(P.lt(35))))], 
+    'g_V_hasXk_withinXcXX_valuesXkX': [(lambda g:g.addV().property('k','轉注').addV().property('k','✦').addV().property('k','♠').addV().property('k','A')), (lambda g:g.V().has('k',P.within(['轉注','✦','♠'])).k)], 
     'g_V_valuesXageX_isX32X': [(lambda g:g.V().age.is_(32))], 
     'g_V_valuesXageX_isXlte_30X': [(lambda g:g.V().age.is_(P.lte(30)))], 
     'g_V_valuesXageX_isXgte_29X_isXlt_34X': [(lambda g:g.V().age.is_(P.gte(29)).is_(P.lt(34)))], 

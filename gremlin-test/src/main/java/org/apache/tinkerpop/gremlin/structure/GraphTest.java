@@ -701,38 +701,6 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ANY_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
-    public void shouldNotMixTypesForGettingSpecificVerticesWithVertexFirst() {
-        final Vertex v1 = graph.addVertex();
-        try {
-            graph.vertices(v1, graphProvider.convertId("1", Vertex.class));
-            fail("Should have thrown an exception because id arguments were mixed.");
-        } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-            assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ANY_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
-    public void shouldNotMixTypesForGettingSpecificVerticesWithStringFirst() {
-        final Vertex v1 = graph.addVertex();
-        try {
-            graph.vertices(graphProvider.convertId("1", Vertex.class), v1);
-            fail("Should have thrown an exception because id arguments were mixed.");
-        } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-            assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
     public void shouldIterateVerticesWithStringIdSupportUsingVertex() {
         // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
@@ -1640,42 +1608,6 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(graph, graph -> {
             assertEquals(2, IteratorUtils.count(graph.edges(e1.id().toString(), e2.id().toString())));
         });
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ANY_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_STRING_IDS)
-    public void shouldNotMixTypesForGettingSpecificEdgesWithEdgeFirst() {
-        final Vertex v = graph.addVertex();
-        final Edge e1 = v.addEdge("self", v);
-        try {
-            graph.edges(e1, graphProvider.convertId("1", Edge.class));
-            fail("Should have thrown an exception because id arguments were mixed.");
-        } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-            assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ANY_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_STRING_IDS)
-    public void shouldNotMixTypesForGettingSpecificEdgesWithStringFirst() {
-        final Vertex v = graph.addVertex();
-        final Edge e1 = v.addEdge("self", v);
-        try {
-            graph.edges(graphProvider.convertId("1", Edge.class), e1);
-            fail("Should have thrown an exception because id arguments were mixed.");
-        } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-            assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
-        }
     }
 
     @Test

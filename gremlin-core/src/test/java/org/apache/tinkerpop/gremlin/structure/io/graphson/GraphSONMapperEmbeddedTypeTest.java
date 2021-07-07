@@ -48,6 +48,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -385,7 +386,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     }
 
     @Test
-    public void shouldHandlePMultiValueAsCollection() throws Exception  {
+    public void shouldHandlePMultiValueAsList() throws Exception  {
         assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = P.within(Arrays.asList(1,2,3));
@@ -393,8 +394,24 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     }
 
     @Test
+    public void shouldHandlePMultiValueAsSet() throws Exception  {
+        assumeThat(version, startsWith("v3"));
+
+        final P o = P.within(new HashSet<>(Arrays.asList(1,2,3)));
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldHandlePBetween() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.between(1, 100);
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
     public void shouldReadPWithJsonArray() throws Exception {
-        // for some reason v3 is forgiving about the naked json array - leaving this here for backward compaitiblity,
+        // for some reason v3 is forgiving about the naked json array - leaving this here for backward compatibility,
         // but should be a g:List (i think)
         assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 

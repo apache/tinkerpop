@@ -19,15 +19,14 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -37,10 +36,28 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
 @RunWith(Parameterized.class)
 public class ContextTest {
+
+    private static LogCaptor logCaptor;
+
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forRoot();
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        logCaptor.close();
+    }
+
+    @Before
+    public void setupForEachTest() {
+        logCaptor.clearLogs();
+    }
 
     @Parameterized.Parameter(value = 0)
     public BiFunction<Context, ResponseStatusCode, Void> writeInvoker;
@@ -49,9 +66,6 @@ public class ContextTest {
     private final RequestMessage request = RequestMessage.build("test").create();
     private final Settings settings = new Settings();
     private final Context context = new Context(request, ctx, settings, null, null, null);
-    private final Log4jRecordingAppender recordingAppender = new Log4jRecordingAppender();
-
-    private Level originalLogLevel;
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -86,21 +100,6 @@ public class ContextTest {
         });
     }
 
-    @Before
-    public void addRecordingAppender() {
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.addAppender(recordingAppender);
-        originalLogLevel = rootLogger.getLevel();
-        rootLogger.setLevel(Level.ALL);
-    }
-
-    @After
-    public void removeRecordingAppender() {
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.setLevel(originalLogLevel);
-        rootLogger.removeAppender(recordingAppender);
-    }
-
     @Test
     public void shouldAllowMultipleNonFinalResponses() {
         writeInvoker.apply(context, ResponseStatusCode.AUTHENTICATE);
@@ -127,8 +126,10 @@ public class ContextTest {
         Mockito.verify(ctx, Mockito.times(2)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
-        assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
-        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + "$"));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches(".*" + request.getRequestId() + ".*")), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + "$")), is(true));
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(2)).write(Mockito.any());
@@ -142,8 +143,10 @@ public class ContextTest {
         Mockito.verify(ctx, Mockito.times(1)).flush();
 
         writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
-        assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
-        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.PARTIAL_CONTENT + "$"));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches(".*" + request.getRequestId() + ".*")), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches(".*" + ResponseStatusCode.PARTIAL_CONTENT + "$")), is(true));
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());
@@ -159,8 +162,10 @@ public class ContextTest {
         Frame frame = Mockito.mock(Frame.class);
         context.writeAndFlush(ResponseStatusCode.SUCCESS, frame);
 
-        assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
-        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SUCCESS + "$"));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches(".*" + request.getRequestId() + ".*")), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches(".*" + ResponseStatusCode.SUCCESS + "$")), is(true));
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(1)).write(Mockito.any());

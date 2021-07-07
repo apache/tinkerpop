@@ -25,7 +25,6 @@
 const Mocha = require('mocha');
 const assert = require('assert');
 const { AssertionError } = require('assert');
-const expect = require('chai').expect;
 const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
@@ -37,6 +36,7 @@ const helper = require('../helper');
 const __ = statics;
 
 let connection;
+let txConnection;
 
 class SocialTraversal extends GraphTraversal {
   constructor(graph, traversalStrategies, bytecode) {
@@ -209,6 +209,86 @@ describe('Traversal', function () {
     it('should allow with_(evaluationTimeout,10)', function() {
       const g = traversal().withRemote(connection).with_('x').with_('evaluationTimeout', 10);
       return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 598));
+    });
+  });
+  describe('support remote transactions - commit', function() {
+    before(function () {
+      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
+
+      txConnection = helper.getConnection('gtx');
+      return txConnection.open();
+    });
+    after(function () {
+      if (process.env.TEST_TRANSACTIONS === "true") {
+        // neo4j gets re-used and has to be cleaned up per test that uses it
+        const g = traversal().withRemote(txConnection);
+        return g.V().drop().iterate().then(() => {
+          return txConnection.close()
+        });
+      }
+    });
+    it('should commit a simple transaction', function () {
+      const g = traversal().withRemote(txConnection);
+      const tx = g.tx();
+      const gtx = tx.begin();
+      return Promise.all([
+        gtx.addV("person").property("name", "jorge").iterate(),
+        gtx.addV("person").property("name", "josh").iterate()
+      ]).then(() => {
+        return gtx.V().count().next();
+      }).then(function (r) {
+        // assert within the transaction....
+        assert.ok(r);
+        assert.strictEqual(r.value, 2);
+
+        // now commit changes to test outside of the transaction
+        return tx.commit();
+      }).then(() => {
+        return g.V().count().next();
+      }).then(function (r) {
+        assert.ok(r);
+        assert.strictEqual(r.value, 2);
+      });
+    });
+  });
+  describe('support remote transactions - rollback', function() {
+    before(function () {
+      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
+
+      txConnection = helper.getConnection('gtx');
+      return txConnection.open();
+    });
+    after(function () {
+      if (process.env.TEST_TRANSACTIONS === "true") {
+        // neo4j gets re-used and has to be cleaned up per test that uses it
+        const g = traversal().withRemote(txConnection);
+        return g.V().drop().iterate().then(() => {
+          return txConnection.close()
+        });
+      }
+    });
+    it('should rollback a simple transaction', function() {
+      const g = traversal().withRemote(txConnection);
+      const tx = g.tx();
+      const gtx = tx.begin();
+      return Promise.all([
+        gtx.addV("person").property("name", "jorge").iterate(),
+        gtx.addV("person").property("name", "josh").iterate()
+      ]).then(() => {
+        return gtx.V().count().next();
+      }).then(function (r) {
+        // assert within the transaction....
+        assert.ok(r);
+        assert.strictEqual(r.value, 2);
+
+        // now rollback changes to test outside of the transaction
+        return tx.rollback();
+      }).then(() => {
+        return g.V().count().next();
+      }).then(function (r) {
+        assert.ok(r);
+        assert.strictEqual(r.value, 0);
+      });
     });
   });
 });

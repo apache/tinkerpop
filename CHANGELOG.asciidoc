@@ -23,7 +23,11 @@ limitations under the License.
 [[release-3-6-0]]
 === TinkerPop 3.6.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
+* Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
+* Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
+* Prevented metrics computation unless the traversal is in a locked state.
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 
@@ -34,7 +38,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-12, 3.4.12>>.
 
+* Added support for `g.tx()` in Javascript.
 * Fixed bug in Javascript error message related to validating anonymous traversal spawns.
+* Changed close of Python and Javascript connections to no longer send a "close message" as the server no longer acknowledges it as of 3.5.0.
+* Fixed bug where the `Graph` instance was not being assigned to child traversals.
 * Removed sending of deprecated session close message from Gremlin.Net driver.
 
 [[release-3-5-0]]
@@ -364,8 +371,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Coerced single `set` arguments to `P.within` and `P.without` to `list` in Python which serializes to a more expected form for `P` instances.
 * Fixed bug in the `vertexLabelKey` validation for `GraphMLWriter` which was inadvertently validating the `edgeLabelKey`.
 * Changed `IndexStep` to make it easier for providers to determine the type of indexer being used.
+* Allowed Javascript `Translator` to take `Bytecode` or a `Traversal`.
+* Addressed CVE-2021-32640 for gremlin-javascript.
+* Allowed construction of `DriverRemoteConnection` in .NET to use host and port specification similar to Java syntax.
+* Defaulted `DriverRemoteConnection` to "g" if it the `TraversalSource` binding isn't supplied in Python.
+* Initialized metrics in `ProfileStep` even if the step hasn't iterated.
 
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)
@@ -386,6 +399,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `NullPointerException` in `ResponseMessage` deserialization for GraphSON.
 * Enabled the Gremlin.Net driver to repair its connection pool after the server was temporarily unavailable.
 * Added the ability to supply a `HandshakeInterceptor` to a `Cluster` which will provide access to the initial HTTP request that establishes the websocket.
+* Fixed a possible leakage of connections in the Gremlin.NET driver that could happen if `Dispose()` was called while the pool was creating connections.
 
 ==== Bugs
 

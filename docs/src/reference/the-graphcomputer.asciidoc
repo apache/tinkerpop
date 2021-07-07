@@ -499,7 +499,7 @@ being where the traversal is submitted.
 
 NOTE: This model of graph traversal in a BSP system was first implemented by the
 link:https://github.com/thinkaurelius/faunus/wiki[Faunus] graph analytics engine and originally described in
-link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+link:https://dzone.com/articles/local-and-distributed-graph[Local and Distributed Traversal Engines].
 
 [gremlin-groovy,modern]
 ----

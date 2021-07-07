@@ -30,8 +30,14 @@ const TraversalStrategy = require('../process/traversal-strategy').TraversalStra
  * returning results.
  */
 class RemoteConnection {
-  constructor(url) {
+
+  /**
+   * @param {String} url The resource uri.
+   * @param {Object} [options] The connection options.
+   */
+  constructor(url, options = {}) {
     this.url = url;
+    this.options = options;
   }
 
   /**
@@ -51,6 +57,15 @@ class RemoteConnection {
   }
 
   /**
+   * Determines if the connection is already bound to a session. If so, this indicates that the
+   * <code>#createSession()</code> cannot be called so as to produce child sessions.
+   * @returns {boolean}
+   */
+  get isSessionBound() {
+    return false;
+  }
+
+  /**
    * Submits the <code>Bytecode</code> provided and returns a <code>RemoteTraversal</code>.
    * @abstract
    * @param {Bytecode} bytecode
@@ -61,7 +76,31 @@ class RemoteConnection {
   };
 
   /**
-   * Closes the connection, if its not already opened.
+   * Create a new <code>RemoteConnection</code> that is bound to a session using the configuration from this one.
+   * If the connection is already session bound then this function should throw an exception.
+   * @returns {RemoteConnection}
+   */
+  createSession() {
+    throw new Error('createSession() must be implemented');
+  }
+
+  /**
+   * Submits a <code>Bytecode.GraphOp.commit</code> to the server and closes the connection.
+   * @returns {Promise}
+   */
+  commit() {
+    throw new Error('commit() must be implemented');
+  }
+  /**
+   * Submits a <code>Bytecode.GraphOp.rollback</code> to the server and closes the connection.
+   * @returns {Promise}
+   */
+  rollback() {
+    throw new Error('rollback() must be implemented');
+  }
+
+  /**
+   * Closes the connection where open transactions will close according to the features of the graph provider.
    * @returns {Promise}
    */
   close() {
@@ -86,7 +125,10 @@ class RemoteStrategy extends TraversalStrategy {
    * @param {RemoteConnection} connection
    */
   constructor(connection) {
-    super();
+    // gave this a fqcn that has a local "js:" prefix since this strategy isn't sent as bytecode to the server.
+    // this is a sort of local-only strategy that actually executes client side. not sure if this prefix is the
+    // right way to name this or not, but it should have a name to identify it.
+    super("js:RemoteStrategy");
     this.connection = connection;
   }
 

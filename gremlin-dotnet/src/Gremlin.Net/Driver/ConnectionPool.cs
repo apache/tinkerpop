@@ -46,6 +46,7 @@ namespace Gremlin.Net.Driver
         private int _poolState;
         private const int PoolIdle = 0;
         private const int PoolPopulationInProgress = 1;
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         public ConnectionPool(IConnectionFactory connectionFactory, ConnectionPoolSettings settings)
         {
@@ -132,21 +133,34 @@ namespace Gremlin.Net.Driver
             }
             catch (Exception)
             {
-                // Dispose created connections if the connection establishment failed
+                // Dispose all connections that were already created
                 foreach (var creationTask in connectionCreationTasks)
                 {
-                    if (!creationTask.IsFaulted)
+                    if (creationTask.IsCompleted)
                         creationTask.Result?.Dispose();
                 }
-
                 throw;
+            }
+            
+            if (_disposed)
+            {
+                await CloseAndRemoveAllConnectionsAsync().ConfigureAwait(false);
             }
         }
 
         private async Task<IConnection> CreateNewConnectionAsync()
         {
             var newConnection = _connectionFactory.CreateConnection();
-            await newConnection.ConnectAsync().ConfigureAwait(false);
+            try
+            {
+                await newConnection.ConnectAsync(_cts.Token).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Dispose created connection if the connection establishment failed
+                newConnection.Dispose();
+                throw;
+            }
             return newConnection;
         }
 
@@ -216,7 +230,7 @@ namespace Gremlin.Net.Driver
         {
             var poolWasPopulated = await EnsurePoolIsHealthyAsync().ConfigureAwait(false);
             // Another connection could have been removed already, check if another population is necessary
-            if (poolWasPopulated)
+            if (poolWasPopulated && !_disposed)
                 await ReplaceClosedConnectionsAsync().ConfigureAwait(false);
         }
 
@@ -260,7 +274,11 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
+                {
+                    _cts.Cancel();
                     CloseAndRemoveAllConnectionsAsync().WaitUnwrap();
+                    _cts.Dispose();
+                }
                 _disposed = true;
             }
         }

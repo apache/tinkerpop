@@ -62,10 +62,10 @@ emulate its structure as best as possible given the constructs of the host langu
 variants ensures that the general Gremlin reference documentation is applicable to all variants and that users moving
 between development languages can easily adopt the Gremlin variant for that language.
 
-image::gremlin-variant-architecture.png[width=650,float=left]
+image::gremlin-variant-architecture.png[width=650]
 
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
-provided more detailed information about usage, configuration and known limitations.
+providing more detailed information about usage, configuration and known limitations.
 
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]
@@ -299,6 +299,12 @@ The following table describes the various configuration options for the Gremlin 
 |=========================================================
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
+
+[[gremlin-java-transactions]]
+=== Transactions
+
+Transactions with Java are best described in <<transactions,The Traversal - Transactions>> section of this
+documentation as Java covers both embedded and remote use cases.
 
 [[gremlin-java-serialization]]
 === Serialization
@@ -573,6 +579,10 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
     public SocialTraversalSourceDsl(Graph graph) {
         super(graph);
+    }
+
+    public SocialTraversalSourceDsl(RemoteConnection connection) {
+        super(connection);
     }
 
     public GraphTraversal<Vertex, Vertex> persons(String... names) {
@@ -927,10 +937,6 @@ WARNING: As explained throughout the documentation, when possible <<a-note-on-la
 
 [[gremlin-python-scripts]]
 === Submitting Scripts
-
-WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
-for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
-consider using bytecode-based requests instead when possible.
 
 The `Client` class implementation/interface is based on the Java Driver, with some restrictions. Most notably,
 Gremlin-Python does not yet implement the `Cluster` class. Instead, `Client` is instantiated directly.
@@ -1287,10 +1293,6 @@ instance created, it will help to fully define the closure in the lambda express
 [[gremlin-dotnet-scripts]]
 === Submitting Scripts
 
-WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
-for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
-consider using bytecode-based requests instead when possible.
-
 Gremlin scripts are sent to the server from a `IGremlinClient` instance.  A `IGremlinClient` is created as follows:
 
 [source,csharp]
@@ -1561,6 +1563,35 @@ const { order: { desc } } = gremlin.process;
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
+[[gremlin-javascript-transactions]]
+=== Transactions
+
+To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
+section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
+builds on that content by demonstrating the transactional syntax for Javascript.
+
+[source,javascript]
+----
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const tx = g.tx(); // create a Transaction
+
+// spawn a new GraphTraversalSource binding all traversals established from it to tx
+const gtx = tx.begin();
+
+// execute traversals using gtx occur within the scope of the transaction held by tx. the
+// tx is closed after calls to commit or rollback and cannot be re-used. simply spawn a
+// new Transaction from g.tx() to create a new one as needed. the g context remains
+// accessible through all this as a sessionless connection.
+Promise.all([
+  gtx.addV("person").property("name", "jorge").iterate(),
+  gtx.addV("person").property("name", "josh").iterate()
+]).then(() => {
+  return tx.commit();
+}).catch(() => {
+  return tx.rollback();
+});
+----
+
 [[gremlin-javascript-lambda]]
 === The Lambda Solution
 
@@ -1587,10 +1618,6 @@ WARNING: As explained throughout the documentation, when possible <<a-note-on-la
 
 [[gremlin-javascript-scripts]]
 === Submitting Scripts
-
-WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
-for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
-consider using bytecode-based requests instead when possible.
 
 It is possible to submit parametrized Gremlin scripts to the server as strings, using the `Client` class:
 

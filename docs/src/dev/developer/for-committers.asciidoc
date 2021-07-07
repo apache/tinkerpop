@@ -790,10 +790,10 @@ only happen from that branch.
 [[logging]]
 == Logging
 
-TinkerPop uses SLF4j for logging and typically leans back on Log4j as the implementation. Configuring log outputs
-for debugging purposes within tests can be altered by editing the `log4j-test.properties` file in each module's test
+TinkerPop uses SLF4j for logging and relies on logback as the implementation. Configuring log outputs
+for debugging purposes within tests can be altered by editing the `logback-test.xml` file in each module's test
 resources.  That file gets copied to the `target/test-classes` on build and surefire and failsafe plugins in maven
-are then configured to point at that area of the file system for those configuration files. The properties files
+are then configured to point at that area of the file system for those configuration files. The XML files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
 

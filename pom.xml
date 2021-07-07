@@ -140,6 +140,7 @@ limitations under the License.
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
+        <module>gremlint</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -149,6 +150,7 @@ limitations under the License.
     <properties>
         <commons.configuration.version>2.7</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
+        <commons.io.version>2.8.0</commons.io.version>
         <commons.lang3.version>3.11</commons.lang3.version>
         <commons.text.version>1.9</commons.text.version>
         <groovy.version>2.5.14</groovy.version>
@@ -156,7 +158,7 @@ limitations under the License.
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
-        <log4j.version>1.2.17</log4j.version>
+        <logback.version>1.2.3</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.1.61.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
@@ -170,12 +172,12 @@ limitations under the License.
         <suresafeArgs> </suresafeArgs>
 
         <!--
-        This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
-        turn off all logging possible while still allowing tests to pass. log4j-test.properties will be more verbose
+        This file will come from the root of each modules test/resources/ directories. logback-silent.xml will
+        turn off all logging possible while still allowing tests to pass. logback-test.xml will be more verbose
         in its output.
         -->
-        <log4j-test.properties>file:target/test-classes/log4j-test.properties</log4j-test.properties>
-        <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
+        <logback-test.properties>file:target/test-classes/logback-test.xml</logback-test.properties>
+        <logback-silent.properties>file:target/test-classes/logback-silent.xml</logback-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -374,15 +376,20 @@ limitations under the License.
                         <exclude>.travis.yml</exclude>
                         <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
-                        <exclude>.dependabot/**</exclude>
+                        <exclude>.github/**</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
                         <exclude>**/.idea/**</exclude>
                         <exclude>.repository/**</exclude>
-                        <exclude>docs/static/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
+                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>docs/static/**</exclude>
+                        <exclude>docs/site/home/css/**</exclude>
+                        <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/gremlint/build/**</exclude>
+                        <exclude>docs/gremlint/public/CNAME</exclude>
                         <exclude>**/*.kryo</exclude>
                         <exclude>**/*.gbin</exclude>
                         <exclude>**/*.iml</exclude>
@@ -403,14 +410,6 @@ limitations under the License.
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                         <exclude>**/.glv</exclude>
-                        <exclude>bin/gremlin.sh</exclude>
-                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
-                        <exclude>docs/site/home/css/**</exclude>
-                        <exclude>docs/site/home/js/**</exclude>
-                        <exclude>docs/gremlint/build/**</exclude>
-                        <exclude>docs/gremlint/node_modules/**</exclude>
-                        <exclude>docs/gremlint/public/CNAME</exclude>
-                        <exclude>docs/gremlint/.prettierrc</exclude>
                         <exclude>**/Debug/**</exclude>
                         <exclude>**/Release/**</exclude>
                         <exclude>**/obj/**</exclude>
@@ -421,17 +420,17 @@ limitations under the License.
                         <exclude>**/NuGet.Config</exclude>
                         <exclude>**/*.nuspec</exclude>
                         <exclude>**/BenchmarkDotNet.Artifacts/**</exclude>
-                        <exclude>**/gremlin-javascript/node_modules/**</exclude>
-                        <exclude>**/gremlin-javascript/doc/**</exclude>
                         <exclude>**/node/**</exclude>
+                        <exclude>**/node_modules/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
+                        <!-- javascript docs/lib -->
+                        <exclude>**/doc/**</exclude>
+                        <exclude>**/lib/**</exclude>
+                        <exclude>**/.prettierrc</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
-                        <exclude>**/gremlint/lib/**</exclude>
-                        <exclude>**/gremlint/node_modules/**</exclude>
-                        <exclude>**/gremlint/.prettierrc</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -490,7 +489,8 @@ limitations under the License.
                     <version>2.21.0</version>
                     <configuration>
                         <argLine>
-                            -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                            -Dlogback.configurationFile=${logback-test.properties} -Dbuild.dir=${project.build.directory}
+                            -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <excludes>
@@ -514,7 +514,9 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>
-                                    -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                                    -Dlogback.configuration=${logback-test.properties} -Dhost=localhost -Dport=8182
+                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                                    -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                                 </argLine>
                                 <forkCount>1</forkCount>
                                 <reuseForks>false</reuseForks>
@@ -735,11 +737,6 @@ limitations under the License.
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.13.1</version>
@@ -806,9 +803,14 @@ limitations under the License.
                 <version>2.2</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j.version}</version>
+                <groupId>io.github.hakky54</groupId>
+                <artifactId>logcaptor</artifactId>
+                <version>2.6.1</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -828,7 +830,7 @@ limitations under the License.
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.8.0</version>
+                <version>${commons.io.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -1538,7 +1540,10 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                            <argLine>
+                                -Dlogback.configurationFile=${logback-silent.properties}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                                -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1635,7 +1640,9 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlogback.configuration=${logback-test.properties}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
+                                -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
@@ -1643,7 +1650,9 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
+                            <argLine>-Dlogback.configuration=${logback-test.properties} -Dhost=localhost -Dport=8182
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
+                                -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>

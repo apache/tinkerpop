@@ -25,7 +25,9 @@
 const rcModule = require('./remote-connection');
 const RemoteConnection = rcModule.RemoteConnection;
 const RemoteTraversal = rcModule.RemoteTraversal;
+const utils = require('../utils');
 const Client = require('./client');
+const Bytecode = require('../process/bytecode');
 const OptionsStrategy = require('../process/traversal-strategy').OptionsStrategy;
 
 /**
@@ -49,8 +51,8 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @constructor
    */
-  constructor(url, options) {
-    super(url);
+  constructor(url, options = {}) {
+    super(url, options);
     this._client = new Client(url, options);
   }
 
@@ -59,6 +61,7 @@ class DriverRemoteConnection extends RemoteConnection {
     return this._client.open();
   }
 
+  /** @override */
   get isOpen() {
     return this._client.isOpen;
   }
@@ -79,7 +82,34 @@ class DriverRemoteConnection extends RemoteConnection {
         }
       }
     }
+
     return this._client.submit(bytecode, null, requestOptions).then(result => new RemoteTraversal(result.toArray()));
+  }
+
+  /** @override */
+  createSession() {
+    if (this.isSessionBound)
+      throw new Error("Connection is already bound to a session - child sessions are not allowed");
+
+    // make sure a fresh session is used when starting a new transaction
+    const copiedOptions = Object.assign({}, this.options);
+    copiedOptions.session = utils.getUuid();
+    return new DriverRemoteConnection(this.url, copiedOptions);
+  }
+
+  /** @override */
+  get isSessionBound() {
+    return this.options.session;
+  }
+
+  /** @override */
+  commit() {
+    return this._client.submit(Bytecode.GraphOp.commit, null)
+  }
+
+  /** @override */
+  rollback() {
+    return this._client.submit(Bytecode.GraphOp.rollback, null)
   }
 
   /** @override */

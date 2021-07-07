@@ -41,6 +41,7 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.Contains.within;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -150,6 +151,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainingXoXXX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXp_neqXvXX();
+
+    public abstract Traversal<Vertex, String> get_g_V_hasXk_withinXcXX_valuesXkX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -701,6 +704,21 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertThat(traversal.hasNext(), is(false));
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_V_hasXk_withinXcXX_valuesXkX() {
+        g.addV().property("k", "轉注").
+                addV().property("k", "✦").
+                addV().property("k", "♠").
+                addV().property("k", "A").iterate();
+
+        final Traversal<Vertex, String> traversal = get_g_V_hasXk_withinXcXX_valuesXkX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("轉注", "✦", "♠"), traversal);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e10Id) {
@@ -940,6 +958,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXp_neqXvXX() {
             return g.V().has("p", P.neq("v"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasXk_withinXcXX_valuesXkX() {
+            return g.V().has("k", P.within("轉注", "✦", "♠")).values("k");
         }
     }
 }

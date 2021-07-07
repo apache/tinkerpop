@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import nl.altindag.log.LogCaptor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -35,10 +35,12 @@ import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -63,31 +65,39 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private Log4jRecordingAppender recordingAppender = null;
+    private static LogCaptor logCaptor;
     private Level originalLevel;
+
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forRoot();
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        logCaptor.close();
+    }
 
     @Before
     public void setupForEachTest() {
-        recordingAppender = new Log4jRecordingAppender();
-        final Logger rootLogger = Logger.getRootLogger();
-        originalLevel = rootLogger.getLevel();
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldCloseSessionOnceOnRequest":
             case "shouldHaveTheSessionTimeout":
             case "shouldCloseSessionOnClientClose":
-                final org.apache.log4j.Logger sessionLogger = org.apache.log4j.Logger.getLogger(Session.class);
+                final Logger sessionLogger = (Logger) LoggerFactory.getLogger(Session.class);
+                originalLevel = sessionLogger.getLevel();
                 sessionLogger.setLevel(Level.DEBUG);
                 break;
         }
-        rootLogger.addAppender(recordingAppender);
+
+        logCaptor.clearLogs();
     }
 
     @After
     public void teardownForEachTest() {
-        final org.apache.log4j.Logger sessionLogger = org.apache.log4j.Logger.getLogger(Session.class);
+        final Logger sessionLogger = (Logger) LoggerFactory.getLogger(Session.class);
         sessionLogger.setLevel(originalLevel);
-        sessionLogger.removeAppender(recordingAppender);
     }
 
     /**
@@ -269,8 +279,8 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         if (isUsingUnifiedChannelizer()) {
             assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
         } else {
-            assertThat(recordingAppender.getMessages(), hasItem("DEBUG - Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced\n"));
-            assertThat(recordingAppender.getMessages(), hasItem("DEBUG - Session shouldCloseSessionOnClientClose closed\n"));
+            assertThat(logCaptor.getLogs(), hasItem("Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced"));
+            assertThat(logCaptor.getLogs(), hasItem("Session shouldCloseSessionOnClientClose closed"));
         }
 
         // try to reconnect to that session and make sure no state is there
@@ -476,8 +486,8 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         if (isUsingUnifiedChannelizer()) {
             assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
         } else {
-            assertEquals(1, recordingAppender.getMessages().stream()
-                    .filter(msg -> msg.equals("DEBUG - Session shouldCloseSessionOnceOnRequest closed\n")).count());
+            assertEquals(1, logCaptor.getLogs().stream()
+                    .filter(msg -> msg.equals("Session shouldCloseSessionOnceOnRequest closed")).count());
         }
     }
 
@@ -530,8 +540,8 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
         } else {
             // there will be one for the timeout and a second for closing the cluster
-            assertEquals(2, recordingAppender.getMessages().stream()
-                    .filter(msg -> msg.equals("DEBUG - Session shouldHaveTheSessionTimeout closed\n")).count());
+            assertEquals(2, logCaptor.getLogs().stream()
+                    .filter(msg -> msg.equals("Session shouldHaveTheSessionTimeout closed")).count());
         }
     }
 

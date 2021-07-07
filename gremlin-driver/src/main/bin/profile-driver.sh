@@ -42,4 +42,4 @@ if [ "$JAVA_OPTIONS" = "" ] ; then
 fi
 
 # Execute the application and return its exit code
-exec $JAVA -Dlog4j.configuration=conf/log4j-driver.properties $JAVA_OPTIONS -cp $CP org.apache.tinkerpop.gremlin.driver.util.ProfilingApplication "$@"
+exec $JAVA -Dlogback.configurationFile=conf/logback.xml $JAVA_OPTIONS -cp $CP org.apache.tinkerpop.gremlin.driver.util.ProfilingApplication "$@"

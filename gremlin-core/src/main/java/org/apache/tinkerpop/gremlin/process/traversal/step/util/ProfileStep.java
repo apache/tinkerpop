@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 
 /**
@@ -42,8 +43,12 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
         super(traversal);
     }
 
-    public MutableMetrics getMetrics() {
-        return metrics;
+    /**
+     * Returns {@code Optional.empty()} if traversal is not iterated or if not locked after strategy application.
+     */
+    public Optional<MutableMetrics> getMetrics() {
+        if (this.traversal.isLocked()) this.initializeIfNeeded();
+        return Optional.ofNullable(metrics);
     }
 
     @Override

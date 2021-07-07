@@ -171,7 +171,7 @@ public final class Bytecode implements Cloneable, Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Bytecode bytecode = (Bytecode) o;
+        final Bytecode bytecode = (Bytecode) o;
         return Objects.equals(sourceInstructions, bytecode.sourceInstructions) &&
                 Objects.equals(stepInstructions, bytecode.stepInstructions);
     }

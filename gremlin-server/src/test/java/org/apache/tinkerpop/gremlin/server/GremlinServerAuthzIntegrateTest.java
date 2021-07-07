@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import nl.altindag.log.LogCaptor;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -31,26 +31,28 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static org.apache.log4j.Level.INFO;
-import static org.apache.tinkerpop.gremlin.server.GremlinServer.AUDIT_LOGGER_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -60,25 +62,24 @@ import static org.junit.Assert.fail;
  * @author Marc de Lignie
  */
 public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static LogCaptor logCaptor;
 
-    private Log4jRecordingAppender recordingAppender;
     private final ObjectMapper mapper = new ObjectMapper();
     private final Base64.Encoder encoder = Base64.getUrlEncoder();
 
-    @Override
-    public void setUp() throws Exception {
-        recordingAppender = new Log4jRecordingAppender();
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.addAppender(recordingAppender);
-        super.setUp();
+    @BeforeClass
+    public static void setupLogCaptor() {
+        logCaptor = LogCaptor.forRoot();
     }
 
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.removeAppender(recordingAppender);
-        super.tearDown();
+    @Before
+    public void resetLogs() {
+        logCaptor.clearLogs();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        logCaptor.close();
     }
 
     /**
@@ -176,9 +177,9 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             stopServer();
             Thread.sleep(1000);
 
-            assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
+            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                     "User stephen with address .+? attempted an unauthorized request for bytecode operation: " +
-                            "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]"));
+                    "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]")), is(true));
         } finally {
             cluster.close();
         }
@@ -237,8 +238,8 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             stopServer();
             Thread.sleep(1000);
 
-            assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
-                    "User stephen with address .+? attempted an unauthorized request for eval operation: 1\\+1"));
+            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                    "User stephen with address .+? attempted an unauthorized request for eval operation: 1\\+1")), is(true));
         } finally {
             cluster.close();
         }
@@ -337,8 +338,8 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         stopServer();
         Thread.sleep(1000);
 
-        assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO,
-                "User stephen with address .+? attempted an unauthorized http request: 3-1"));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User stephen with address .+? attempted an unauthorized http request: 3-1")), is(true));
     }
 
     @Test

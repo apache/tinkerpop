@@ -23,11 +23,10 @@
 'use strict';
 
 const { Traversal } = require('./traversal');
+const { Transaction } = require('./transaction');
 const remote = require('../driver/remote-connection');
-const utils = require('../utils');
 const Bytecode = require('./bytecode');
 const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require('./traversal-strategy');
-
 
 /**
  * Represents the primary DSL of the Gremlin traversal machine.
@@ -48,16 +47,36 @@ class GraphTraversalSource {
     this.bytecode = bytecode || new Bytecode();
     this.graphTraversalSourceClass = graphTraversalSourceClass || GraphTraversalSource;
     this.graphTraversalClass = graphTraversalClass || GraphTraversal;
+
+    // in order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
+    // TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
+    // TODO: refactor this to be nicer in 3.6.0 when we can take a breaking change
+    const strat = traversalStrategies.strategies.find(ts => ts.fqcn === "js:RemoteStrategy");
+    this.remoteConnection = strat !== undefined ? strat.connection : undefined;
   }
 
   /**
-   * @param remoteConnection
+   * @param {RemoteConnection} remoteConnection
    * @returns {GraphTraversalSource}
    */
   withRemote(remoteConnection) {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode), this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode),
+      this.graphTraversalSourceClass, this.graphTraversalClass);
+  }
+
+  /**
+   * Spawn a new <code>Transaction</code> object that can then start and stop a transaction.
+   * @returns {Transaction}
+   */
+  tx() {
+    // you can't do g.tx().begin().tx() - no child transactions
+    if (this.remoteConnection && this.remoteConnection.isSessionBound) {
+      throw new Error("This TraversalSource is already bound to a transaction - child transactions are not supported")
+    }
+
+    return new Transaction(this);
   }
 
   /**

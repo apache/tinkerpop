@@ -48,7 +48,7 @@ describe('Client', function () {
         });
     });
 
-    it('should use golbal cache in session', function () {
+    it('should use global cache in session', function () {
       return client.submit("x = [0, 1, 2, 3, 4, 5]")
         .then(function (result) {
           assert.ok(result);

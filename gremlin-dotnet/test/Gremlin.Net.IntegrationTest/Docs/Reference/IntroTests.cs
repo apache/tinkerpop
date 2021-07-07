@@ -25,10 +25,10 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Traversal;
 // tag::traversalSourceUsing[]
+using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 // end::traversalSourceUsing[]
 using Xunit;
-using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 
 namespace Gremlin.Net.IntegrationTest.Docs.Reference
 {
@@ -41,8 +41,7 @@ namespace Gremlin.Net.IntegrationTest.Docs.Reference
         public void TraversalSourceCreationTest()
         {
 // tag::traversalSourceCreation[]
-var g = Traversal().WithRemote(
-    new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+var g = Traversal().WithRemote(new DriverRemoteConnection("localhost", 8182));
 // end::traversalSourceCreation[]
         }
         
