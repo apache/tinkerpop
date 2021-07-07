@@ -5,11 +5,17 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.tinkerpop.gremlin.language.examples.thrift.mydomain.BoundingBox;
+import org.apache.tinkerpop.gremlin.language.examples.thrift.mydomain.GeoPoint;
+import org.apache.tinkerpop.gremlin.language.examples.thrift.mydomain.MyApplication;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 
+import java.io.IOException;
+
 public class ExampleGraphClient {
+    private static final GraphEncoding encoding = new GraphEncoding(MyApplication.SUPPORTED_ENCODINGS);
 
     public static void main(String[] args) {
         try {
@@ -32,9 +38,19 @@ public class ExampleGraphClient {
     private static void perform(ExampleService.Client client) throws TException {
         Graph graph = TinkerFactory.createClassic();
         GraphTraversalSource g = graph.traversal();
-        g.V(4L).next().property("awesomenessLevel", 1.0);
+        g.V(4L).next().property("awesomeness", 1.0);
+        g.V(4L).next().property("livesIn",
+                new BoundingBox(
+                        new GeoPoint(37.5632261f,-122.1990871f, null),
+                        new GeoPoint(37.5632261f,-122.1990871f, null)));
 
-        AddGraphResponse response = client.addGraph(GraphThriftUtils.fromNativeGraph(graph));
+        AddGraphResponse response;
+        try {
+            response = client.addGraph(encoding.fromNativeGraph(graph));
+        } catch (IOException e) {
+            throw new TException(e);
+        }
+
         System.out.println("resulting graph has " + response.totalVerticesAfterOperation + " vertices and "
             + response.totalEdgesAfterOperation + " edges.");
     }

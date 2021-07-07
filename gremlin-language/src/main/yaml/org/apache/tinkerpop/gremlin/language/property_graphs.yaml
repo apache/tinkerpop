@@ -124,6 +124,24 @@ definitions:
     description: "The key of a property. Property keys are part of a graph's schema, like vertex and edge labels."
     type: string
 
+  - name: SerializedValue
+    description: >
+      A value of a provided type which has been serialized in accordance
+      with an encoding which is understood on the basis of the type.
+    type:
+      record:
+        - name: typeName
+          description: "The unique name of the type of the serialized value"
+          type: TypeName
+
+        - name: encoded
+          description: "The encoded (serialized) value as a string"
+          type: string
+
+  - name: TypeName
+    description: "The unique name of a type used for serialization and deserialization of domain-specific values"
+    type: string
+
   - name: Value
     description: "An id or property value; either an atomic (simple) value, or a list, map, or set value"
     type:
@@ -156,7 +174,7 @@ definitions:
 
         - name: serialized
           description: "A serialized object which the application should be capable of decoding"
-          type: string
+          type: SerializedValue
 
   - name: Vertex
     description: "A vertex, or simple element in a graph; vertices are typically connected by edges"

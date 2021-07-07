@@ -25,7 +25,7 @@ This is a reconstituted version of the graph which is constructed by the client 
 ## Generating sources
 
 Some of the sources in this directory are hand-written, while others are generated.
-Follow the steps below in order to re-created all of the generated sources.
+Follow the steps below in order to re-create all of the generated sources.
 Note: the first step requires Dragon, which is a proprietary tool.
 
 ### Generate property_graphs.thrift:

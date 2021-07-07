@@ -8,6 +8,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,8 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class GraphThriftUtils {
-    public static AtomicValue fromNativeAtomicValue(Object o) {
+public class GraphEncoding {
+    private final ValueEncodingRegistry encodings;
+
+    public GraphEncoding(ValueEncodingRegistry encodings) {
+        this.encodings = encodings;
+    }
+
+    public AtomicValue fromNativeAtomicValue(Object o) {
         if (o instanceof Boolean) {
             return AtomicValue.booleanEsc((Boolean) o);
         } else if (o instanceof Short) {
@@ -35,11 +42,12 @@ public class GraphThriftUtils {
         } else if (o instanceof String) {
             return AtomicValue.stringEsc((String) o);
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("cannot decode object of class " + o.getClass());
         }
     }
 
-    public static org.apache.tinkerpop.gremlin.language.property_graphs.Graph fromNativeGraph(Graph graph) {
+    public org.apache.tinkerpop.gremlin.language.property_graphs.Graph fromNativeGraph(Graph graph)
+            throws IOException {
         Set<org.apache.tinkerpop.gremlin.language.property_graphs.Vertex> vertices0 = new HashSet<>();
         Iterator<Vertex> vertices = graph.vertices();
         while (vertices.hasNext()) {
@@ -90,7 +98,8 @@ public class GraphThriftUtils {
         return graph0;
     }
 
-    public static org.apache.tinkerpop.gremlin.language.property_graphs.Property fromNativeProperty(Property prop) {
+    public org.apache.tinkerpop.gremlin.language.property_graphs.Property fromNativeProperty(Property<Object> prop)
+            throws IOException {
         org.apache.tinkerpop.gremlin.language.property_graphs.Property p0
                 = new org.apache.tinkerpop.gremlin.language.property_graphs.Property();
         p0.setKey(prop.key());
@@ -102,7 +111,7 @@ public class GraphThriftUtils {
         return p0;
     }
 
-    public static Value fromNativeValue(Object o) {
+    public Value fromNativeValue(Object o) throws IOException {
         if (o.getClass().isArray()) {
             List<Value> coll = new ArrayList<>();
             for (Object o1 : (Object[]) o) {
@@ -128,11 +137,11 @@ public class GraphThriftUtils {
             }
             return Value.mapEsc(coll);
         } else {
-            return Value.atomic(fromNativeAtomicValue(o));
+            return encodings.encode(o).map(Value::serialized).orElseGet(() -> Value.atomic(fromNativeAtomicValue(o)));
         }
     }
 
-    public static Object toNativeAtomicValue(AtomicValue v) {
+    public Object toNativeAtomicValue(AtomicValue v) {
         if (v.isSetBooleanEsc()) {
             return v.getBooleanEsc();
         } else if (v.isSetByteEsc()) {
@@ -152,7 +161,7 @@ public class GraphThriftUtils {
         }
     }
 
-    public static Object toNativeValue(Value v) {
+    public Object toNativeValue(Value v) throws IOException {
         if (v.isSetAtomic()) {
             return toNativeAtomicValue(v.getAtomic());
         } else if (v.isSetListEsc()) {
@@ -181,8 +190,7 @@ public class GraphThriftUtils {
             }
             return coll;
         } else if (v.isSetSerialized()) {
-            // Note: an appropriate deserializer should be used here
-            return v.getSerialized();
+            return encodings.decode(v.getSerialized());
         } else {
             throw new IllegalArgumentException();
         }

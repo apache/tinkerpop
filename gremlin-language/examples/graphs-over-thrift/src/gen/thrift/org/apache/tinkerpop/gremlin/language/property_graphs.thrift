@@ -23,6 +23,13 @@ typedef string EdgeLabel
 typedef string PropertyKey
 
 /**
+ * The unique name of a type used for serialization and deserialization of domain-specific values
+ * 
+ * @type string
+ */
+typedef string TypeName
+
+/**
  * The label of a vertex, sometimes indicating its type
  * 
  * @type string
@@ -115,6 +122,25 @@ struct Property {
 }
 
 /**
+ * A value of a provided type which has been serialized in accordance with an encoding which is understood on the basis
+ * of the type.
+ */
+struct SerializedValue {
+    /**
+     * The unique name of the type of the serialized value
+     * 
+     * @type org/apache/tinkerpop/gremlin/language/property_graphs.TypeName
+     */
+    1: required TypeName typeName;
+    /**
+     * The encoded (serialized) value as a string
+     * 
+     * @type string
+     */
+    2: required string encoded;
+}
+
+/**
  * An id or property value; either an atomic (simple) value, or a list, map, or set value
  */
 union Value {
@@ -153,9 +179,9 @@ union Value {
     /**
      * A serialized object which the application should be capable of decoding
      * 
-     * @type string
+     * @type org/apache/tinkerpop/gremlin/language/property_graphs.SerializedValue
      */
-    6: optional string serialized;
+    6: optional SerializedValue serialized;
 }
 
 /**

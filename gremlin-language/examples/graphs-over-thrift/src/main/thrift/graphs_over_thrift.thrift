@@ -9,6 +9,7 @@ exception AddGraphException {
 struct AddGraphResponse {
     1: i64 totalVerticesAfterOperation;
     2: i64 totalEdgesAfterOperation;
+    3: optional string message;
 }
 
 service ExampleService {
