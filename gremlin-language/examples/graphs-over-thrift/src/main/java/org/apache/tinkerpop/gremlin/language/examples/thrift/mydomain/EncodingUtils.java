@@ -11,7 +11,7 @@ public final class EncodingUtils {
     public static ValueEncoding createEncoding(String typeName, Class javaClass) {
         return new ValueEncoding() {
             @Override
-            public String getTypeName() {
+            public String getEncodingName() {
                 return typeName;
             }
 

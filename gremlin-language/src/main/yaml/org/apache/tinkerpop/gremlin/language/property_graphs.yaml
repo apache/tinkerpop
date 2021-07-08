@@ -130,16 +130,18 @@ definitions:
       with an encoding which is understood on the basis of the type.
     type:
       record:
-        - name: typeName
+        - name: encodingName
           description: "The unique name of the type of the serialized value"
-          type: TypeName
+          type: EncodingName
 
         - name: encoded
           description: "The encoded (serialized) value as a string"
           type: string
 
-  - name: TypeName
-    description: "The unique name of a type used for serialization and deserialization of domain-specific values"
+  - name: EncodingName
+    description: >
+      The unique name of an encoding used for serialization and deserialization of domain-specific values
+      of a known type
     type: string
 
   - name: Value

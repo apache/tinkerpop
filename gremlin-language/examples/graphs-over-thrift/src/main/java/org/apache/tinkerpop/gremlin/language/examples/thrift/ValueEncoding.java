@@ -3,7 +3,7 @@ package org.apache.tinkerpop.gremlin.language.examples.thrift;
 import java.io.IOException;
 
 public interface ValueEncoding {
-    String getTypeName();
+    String getEncodingName();
 
     Class getJavaClass();
 

@@ -16,18 +16,18 @@ namespace java org.apache.tinkerpop.gremlin.language.property_graphs
 typedef string EdgeLabel
 
 /**
+ * The unique name of an encoding used for serialization and deserialization of domain-specific values of a known type
+ * 
+ * @type string
+ */
+typedef string EncodingName
+
+/**
  * The key of a property. Property keys are part of a graph's schema, like vertex and edge labels.
  * 
  * @type string
  */
 typedef string PropertyKey
-
-/**
- * The unique name of a type used for serialization and deserialization of domain-specific values
- * 
- * @type string
- */
-typedef string TypeName
 
 /**
  * The label of a vertex, sometimes indicating its type
@@ -129,9 +129,9 @@ struct SerializedValue {
     /**
      * The unique name of the type of the serialized value
      * 
-     * @type org/apache/tinkerpop/gremlin/language/property_graphs.TypeName
+     * @type org/apache/tinkerpop/gremlin/language/property_graphs.EncodingName
      */
-    1: required TypeName typeName;
+    1: required EncodingName encodingName;
     /**
      * The encoded (serialized) value as a string
      * 

@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-//    id 'application'
 }
 
 apply plugin : 'java'
@@ -12,14 +11,6 @@ sourceSets {
         }
     }
 }
-
-//ext {
-//    javaMainClass = "org.apache.tinkerpop.gremlin.language.examples.thrift.ExampleGraphServer"
-//}
-//
-//application {
-//    mainClassName = javaMainClass
-//}
 
 dependencies {
     implementation 'org.apache.thrift:libthrift:0.14.0'

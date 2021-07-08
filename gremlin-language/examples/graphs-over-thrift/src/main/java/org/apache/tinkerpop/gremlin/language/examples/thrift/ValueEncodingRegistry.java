@@ -9,20 +9,20 @@ import java.util.Optional;
 
 public class ValueEncodingRegistry {
     private final Map<Class, ValueEncoding> encodingByClass;
-    private final Map<String, ValueEncoding> encodingByTypeName;
+    private final Map<String, ValueEncoding> encodingByName;
 
     public ValueEncodingRegistry(ValueEncoding... encodings) {
         encodingByClass = new HashMap<>();
-        encodingByTypeName = new HashMap<>();
+        encodingByName = new HashMap<>();
 
         for (ValueEncoding encoding : encodings) {
             encodingByClass.put(encoding.getJavaClass(), encoding);
-            encodingByTypeName.put(encoding.getTypeName(), encoding);
+            encodingByName.put(encoding.getEncodingName(), encoding);
         }
     }
 
     public Object decode(SerializedValue encoded) throws IOException {
-        ValueEncoding encoding = encodingByTypeName.get(encoded.getTypeName());
+        ValueEncoding encoding = encodingByName.get(encoded.getEncodingName());
         if (null == encoding) {
             // If there is no encoding, simply embed the serialized value as an object.
             return encoded;
@@ -44,7 +44,7 @@ public class ValueEncodingRegistry {
                 return Optional.empty();
             } else {
                 String encoded = encoding.encode(decoded);
-                return Optional.of(new SerializedValue(encoding.getTypeName(), encoded));
+                return Optional.of(new SerializedValue(encoding.getEncodingName(), encoded));
             }
         }
     }

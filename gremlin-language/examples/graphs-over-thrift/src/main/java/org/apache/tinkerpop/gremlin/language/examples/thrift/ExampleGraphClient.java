@@ -14,6 +14,15 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 
 import java.io.IOException;
 
+/*
+Inspect the resulting graph in Gremlin Console with:
+
+    graph = TinkerGraph.open();
+    reader = GraphSONReader.build().create()
+    stream = new FileInputStream("/tmp/graphs-over-thrift.json")
+    reader.readGraph(stream, graph);
+    g = graph.traversal()
+ */
 public class ExampleGraphClient {
     private static final GraphEncoding encoding = new GraphEncoding(MyApplication.SUPPORTED_ENCODINGS);
 
@@ -41,8 +50,8 @@ public class ExampleGraphClient {
         g.V(4L).next().property("awesomeness", 1.0);
         g.V(4L).next().property("livesIn",
                 new BoundingBox(
-                        new GeoPoint(37.5632261f,-122.1990871f, null),
-                        new GeoPoint(37.5632261f,-122.1990871f, null)));
+                        new GeoPoint(37.8578475f,-122.5817373f, null),
+                        new GeoPoint(37.1720048f,-121.6200625f, null)));
 
         AddGraphResponse response;
         try {

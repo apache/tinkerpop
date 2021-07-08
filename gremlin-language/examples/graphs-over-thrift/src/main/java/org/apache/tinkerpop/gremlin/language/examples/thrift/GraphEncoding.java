@@ -5,6 +5,7 @@ import org.apache.tinkerpop.gremlin.language.property_graphs.Value;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
@@ -158,6 +159,41 @@ public class GraphEncoding {
             return v.getStringEsc();
         } else {
             throw new IllegalArgumentException();
+        }
+    }
+
+    public void toNativeGraph(Graph graph, org.apache.tinkerpop.gremlin.language.property_graphs.Graph g0)
+            throws IOException {
+        // Add vertices
+        Map<Object, Vertex> vertices = new HashMap<>();
+        for (org.apache.tinkerpop.gremlin.language.property_graphs.Vertex v0 : g0.vertices) {
+            Object id = toNativeAtomicValue(v0.id);
+            Vertex v = graph.addVertex(T.id, id);
+            for (org.apache.tinkerpop.gremlin.language.property_graphs.Property p0 : v0.properties) {
+                v.property(p0.key, toNativeValue(p0.value));
+            }
+
+            vertices.put(id, v);
+        }
+
+        // Add edges
+        for (org.apache.tinkerpop.gremlin.language.property_graphs.Edge e0 : g0.edges) {
+            Object id = toNativeAtomicValue(e0.id);
+            Object outId = toNativeAtomicValue(e0.outVertexId);
+            Object inId = toNativeAtomicValue(e0.inVertexId);
+
+            Vertex out = vertices.get(outId);
+            Vertex in = vertices.get(inId);
+            if (out == null || in == null) {
+                throw new IllegalArgumentException("edge references vertices which are not in the graph");
+            }
+
+            Edge e = out.addEdge(e0.label, in, T.id, id);
+
+            for (org.apache.tinkerpop.gremlin.language.property_graphs.Property p0 : e0.properties) {
+                e.property(p0.key, toNativeValue(p0.value));
+                //System.out.println("Thrift value: " + p0.value + ", native value: " + GraphThriftUtils.toNativeValue(p0.value));
+            }
         }
     }
 
