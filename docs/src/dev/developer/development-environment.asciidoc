@@ -139,6 +139,8 @@ referenced above:
 ----
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
+The link:https://tinkerpop.apache.org/docs/current/recipes/#olap-spark-yarn[YARN recipe] also uses the `zip` program to
+create an archive so that needs to be installed, too, if you don't have it already.
 
 Documentation can be generated locally with:
 
