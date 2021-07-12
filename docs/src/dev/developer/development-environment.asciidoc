@@ -266,6 +266,13 @@ link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
 link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
 using Apache Subversion (SVN).
 
+Maven needs to be configured to deploy maven artifacts. Apache LDAP credentials can be used for this. Release
+managers should encrypt their Apache LDAP password as described
+link:https://maven.apache.org/guides/mini/guide-encryption.html[in the Apache Maven docs].
+The encrypted password can then be configured in the `settings.xml` as described in the section
+link:https://infra.apache.org/publishing-maven-artifacts.html["Set up your development environment" of this Apache Infra article].
+This configuration will be used by `mvn deploy`.
+
 For Python releases, uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically
 installed by the build process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy
 environments and username and password combinations. The file typically looks like this:
@@ -291,7 +298,7 @@ The release manager shall use the project's pypi credentials, which are availabl
 link:https://svn.apache.org/repos/private/pmc/tinkerpop[PMC SVN repository]. The `password` should be left blank so
 the deployment process in Maven will prompt for it at deployment time.
 
-For .NET releases, install link:http://www.mono-project.com/[Mono]. The release process is known to work with 5.0.1,
+For .NET releases, install link:http://www.mono-project.com/[Mono]. The release process is known to work with 6.12.0,
 so it is best to probably install that version. Release managers should probably also do an install of
 link:https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe[nuget 3.4.4] as it will help with environmental setup.
 To get an environment ready to deploy to NuGet, it is necessary to have a NuGet API key. First, create an account with
