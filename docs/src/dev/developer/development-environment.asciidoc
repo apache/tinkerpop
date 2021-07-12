@@ -229,6 +229,13 @@ link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
 link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
 using Apache Subversion (SVN).
 
+Maven needs to be configured to deploy maven artifacts. Apache LDAP credentials can be used for this. Release
+managers should encrypt their Apache LDAP password as described
+link:https://maven.apache.org/guides/mini/guide-encryption.html[in the Apache Maven docs].
+The encrypted password can then be configured in the `settings.xml` as described in the section
+link:https://infra.apache.org/publishing-maven-artifacts.html["Set up your development environment" of this Apache Infra article].
+This configuration will be used by `mvn deploy`.
+
 For Python releases, uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically
 installed by the build process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy
 environments and username and password combinations. The file typically looks like this:
