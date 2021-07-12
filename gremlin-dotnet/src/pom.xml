@@ -123,7 +123,7 @@ limitations under the License.
 
                                                     <else>
                                                         <exec executable="wget" failonerror="true">
-                                                            <arg line="https://github.com/dotnet/docfx/releases/download/v2.40.2/docfx.zip"/>
+                                                            <arg line="https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip"/>
                                                         </exec>
                                                         <mkdir dir="docfx"/>
                                                         <exec executable="unzip" failonerror="true">
@@ -133,7 +133,6 @@ limitations under the License.
                                                         <exec executable="mono" failonerror="true">
                                                             <arg line="${nugetExe} install -OutputDirectory docfx SQLitePCLRaw.core -ExcludeVersion"/>
                                                         </exec>
-                                                        <copy file="docfx/SQLitePCLRaw.core/lib/net45/SQLitePCLRaw.core.dll" todir="docfx"/>
                                                     </else>
                                                 </if>
                                                 <exec executable="mono" failonerror="true">
