@@ -288,8 +288,10 @@ the <<sessions,Considering Sessions>> Section.
 === Remote Gremlin Providers
 
 At this time, transactional patterns for Remote Gremlin Providers are largely in line with Gremlin Server. As most of
-RGPs do not expose a `Graph` instance, access to lower level transactional functions even in a sessionless fashion are
-not typically permitted. The nature of what a "transaction" means will be dependent on the RGP as is the case with any
+RGPs do not expose a `Graph` instance, access to lower level transactional functions available to embedded graphs
+even in a sessionless fashion are not typically permitted. For example, without a `Graph` instance it is not possible
+to link:https://tinkerpop.apache.org/docs/current/reference/#tx-embedded[configure] transaction close or read-write
+behaviors. The nature of what a "transaction" means will be dependent on the RGP as is the case with any
 TinkerPop-enabled graph system, so it is important to consult that systems documentation for more details.
 
 [[configuration-steps]]
