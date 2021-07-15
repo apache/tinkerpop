@@ -1128,7 +1128,7 @@ portion of the Gremlin used for examples in the Reference Documentation. The gra
 ** `fill()` terminator step
 * `Vertex` and `Edge` instance definitions
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2533[https://issues.apache.org/jira/browse/TINKERPOP-2533]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2533[TINKERPOP-2533]
 
 ===== UnifiedChannelizer
 
