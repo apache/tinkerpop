@@ -28,6 +28,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.1/CHANGELOG.asciidoc#release-3.5.1[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== tx() in Javascript
+
+Javascript is now the first non-JVM variant of Gremlin to get support for
+link:https://tinkerpop.apache.org/docs/3.5.1/reference/#transactions[remote transactions]. An example of the `tx()`
+syntax can be found in the Javascript link:https://tinkerpop.apache.org/docs/3.5.1/reference/#gremlin-javascript-transactions[Transaction Section].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2557[TINKERPOP-2557]
+
 == TinkerPop 3.5.0
 
 *Release Date: May 3, 2021*
