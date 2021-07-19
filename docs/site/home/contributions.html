@@ -1,0 +1,205 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="container">
+   <h3>Contributing to Apache TinkerPop</h3>
+   <div class="row">
+      <div class="col-xs-12">
+         <div class="row">
+            <div class="col-xs-8">
+               TinkerPop is an open source project that <a href="https://tinkerpop.apache.org/docs/current/dev/developer#_contributing">welcomes contributions</a>. There are many ways to get involved:
+               <p></p>
+               <ol>
+
+                  <li>
+                     Join the <a href="https://discord.gg/ndMpKZcBEE" target="_blank">Discord</a> Server.
+                        <ul>
+                           <li>Chat with users and developers to get answere to your questions.</li>
+                        </ul>
+                  </li>
+                  <li>
+                     Join the <a href="https://groups.google.com/group/gremlin-users">Gremlin-Users</a> public mailing list.
+                     <ul>
+                        <li>Help users by answering questions and demonstrating your expertise in TinkerPop and graphs.</li>
+                     </ul>
+                  </li>
+                  <li>
+                     Join the <a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">TinkerPop Developer</a> public mailing list.
+                     <ul>
+                        <li>Contribute ideas on how to make the TinkerPop code- and documentation-base better.</li>
+                     </ul>
+                  </li>
+                  <li>Submit bug and feature issues to TinkerPop <a href="https://issues.apache.org/jira/browse/TINKERPOP/">JIRA</a>.</li>
+                  <ul>
+                     <li>Provide easily reproducible bug reports and well articulated feature requests.</li>
+                  </ul>
+                  </li>
+                  <li>
+                     Clone the TinkerPop <a href="https://github.com/apache/tinkerpop">Git repository</a> and provide a <a href="https://help.github.com/articles/using-pull-requests/">pull-request</a>.
+                     <ul>
+                        <li>Focus on a particular area of the codebase and take responsibility for your contribution.</li>
+                     </ul>
+                  </li>
+                  <li>Make significant, long lasting contributions over time.</li>
+                  <ul>
+                     <li>Become a TinkerPop Committer and help determine the evolution of The TinkerPop.</li>
+                  </ul>
+               </li>
+               </ol>
+               <p>To build TinkerPop from source, please review the <a href="https://tinkerpop.apache.org/docs/current/dev/developer/#building-testing">developer documentation</a>.
+            </div>
+            <div class="col-xs-4">
+               <a href="https://tinkerpop.apache.org/docs/current/dev/developer/"><img src="img/gremlin-apache.png" width="250" class="img-responsive" /></a>
+            </div>
+         </div>
+         <h3>Community Contributions</h3>
+         TinkerPop is at the center of a larger development ecosystem that extends on its core interfaces, integration points, and ideas.  The graph systems and libraries below represent both
+         TinkerPop-maintained reference implementations and third-party managed projects. The TinkerPop community is always interested in hearing about projects like these and aiding
+         in their support. Please read our <a href="policy.html">provider listing policy</a> and feel free to promote such projects on the user and developer mailing lists. Information on
+         how to build implementations of the various interfaces that TinkerPop exposes can be found in the <a href="https://tinkerpop.apache.org/docs/current/dev/provider/">Provider Documentation</a>.
+         <p/>
+         <a name="graph-systems"></a>
+         <h4 id="graph-systems">Graph Systems</h4>
+         <small>[<a href="providers.html#data-system-providers">learn more</a>]</small>
+         <ul>
+            <li><a href="https://cn.aliyun.com/product/gdb">Alibaba Graph Database</a> - A real-time, reliable, cloud-native graph database service that supports property graph model.</li>
+            <li><a href="https://aws.amazon.com/neptune/">Amazon Neptune</a> - Fully-managed graph database service.</li>
+            <li><a href="https://github.com/ArangoDB-Community/arangodb-tinkerpop-provider">ArangoDB</a> - OLTP Provider for ArangoDB.</li>
+            <li><a href="https://github.com/lambdazen/bitsy/wiki">Bitsy</a> - A small, fast, embeddable, durable in-memory graph database.</li>
+            <li><a href="https://github.com/blazegraph/tinkerpop3">Blazegraph</a> - RDF graph database with OLTP support.</li>
+            <li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/graph-introduction">CosmosDB</a> - Microsoft's distributed OLTP graph database.</li>
+            <li><a href="https://github.com/Txture/chronos/tree/master/org.chronos.chronograph">ChronoGraph</a> - A versioned graph database.</li>
+            <li><a href="https://www.datastax.com/products/datastax-enterprise-graph">DSEGraph</a> - DataStax graph database with OLTP and OLAP support.</li>
+            <li><a href="https://grakn.ai/">GRAKN.AI</a> - Distributed OLTP/OLAP knowledge graph system.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer">Hadoop (Spark)</a> - OLAP graph processor using Spark.</li>
+            <li><a href="https://github.com/rayokota/hgraphdb">HGraphDB</a> - OLTP graph database running on Apache HBase.</li>
+            <li><a href="https://www.huaweicloud.com/en-us/product/ges.html">Huawei Graph Engine Service</a> - Fully-managed, distributed, at-scale graph query and analysis service that provides a visualized interactive analytics platform.</li>
+            <li><a href="https://github.com/hugegraph/hugegraph">HugeGraph</a> - A high-speed, distributed and scalable OLTP and OLAP graph database with visualized analytics platform.</li>
+            <li><a href="https://console.ng.bluemix.net/catalog/services/ibm-graph/">IBM Graph</a> - OLTP graph database as a service.</li>
+            <li><a href="http://janusgraph.org/">JanusGraph</a> - Distributed OLTP and OLAP graph database with BerkeleyDB, Apache Cassandra and Apache HBase support.</li>
+            <li><a href="https://github.com/awslabs/dynamodb-janusgraph-storage-backend//">JanusGraph (Amazon)</a> - The Amazon DynamoDB Storage Backend for JanusGraph.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#neo4j-gremlin">Neo4j</a> - OLTP graph database (embedded and high availability).</li>
+            <li><a href="https://github.com/SteelBridgeLabs/neo4j-gremlin-bolt">neo4j-gremlin-bolt</a> - OLTP graph database (using Bolt Protocol).</li>
+            <li><a href="https://github.com/orientechnologies/orientdb-gremlin">OrientDB</a> - OLTP graph database</li>
+            <li><a href="https://github.com/ShiftLeftSecurity/overflowdb">OverflowDB</a> - In-memory graph database with low memory footprint</li>
+            <li><a href="https://s2graph.apache.org/">Apache S2Graph</a> - OLTP graph database running on Apache HBase.</li>
+            <li><a href="https://github.com/pietermartin/sqlg">Sqlg</a> - OLTP implementation on SQL databases.</li>
+            <li><a href="https://stardog.com/">Stardog</a> - RDF graph database with OLTP and OLAP support.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#tinkergraph-gremlin">TinkerGraph</a> - In-memory OLTP and OLAP reference implementation.</li>
+            <li><a href="https://thinkaurelius.github.io/titan/">Titan</a> - Distributed OLTP and OLAP graph database with BerkeleyDB, Apache Cassandra and Apache HBase support.</li>
+            <li><a href="https://github.com/awslabs/dynamodb-titan-storage-backend">Titan (Amazon)</a> - The Amazon DynamoDB storage backend for Titan.</li>
+            <li><a href="https://github.com/classmethod/tupl-titan-storage-backend">Titan (Tupl)</a> - The Tupl storage backend for Titan.</li>
+            <li><a href="https://github.com/rmagen/unipop">Unipop</a> - OLTP Elasticsearch and JDBC backed graph.</li>
+         </ul>
+         <a name="language-variants-compilers"></a>
+         <h4 id="language-variants-compilers">Query Languages</h4>
+         <small>[<a href="providers.html#query-language-providers">learn more</a>]</small>
+         <ul>
+            <li><a href="https://github.com/opencypher/cypher-for-gremlin">cypher-for-gremlin</a> - A Cypher-to-Gremlin traversal transpiler.</li>
+            <li><a href="http://syncleus.com/Ferma/">Ferma</a> (java/dsl) - An ORM / OGM for Apache TinkerPop.</li>
+            <li><a href="https://github.com/davebshow/goblin">Goblin</a> (python/dsl) - Goblin OGM for the TinkerPop 3 Gremlin Server.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-DotNet">Gremlin.Net</a> (.NET - C#/variant) - Gremlin hosted in C# for use with any .NET-based VM.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript">gremlin-javascript</a> (js) - Gremlin hosted in JavaScript for use with Node.js.</li>
+            <li><a href="https://github.com/gremlin-orm/gremlin-orm">gremlin-orm</a> (javascript) Gremlin ORM for Node.js.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python">gremlin-python</a> (python/variant) - Gremlin hosted in Python for use with any Python-based VM.</li>
+            <li><a href="https://github.com/emehrkay/gremlinpy">gremlin-py</a> (python/variant) - Write pure Python Gremlin that can be sent to Gremlin Server.</li>
+            <li><a href="https://github.com/wolf4ood/gremlin-rs">gremlin-rs</a> (rust/variant) - A Gremlin Server driver and language variant for Rust.</li>
+            <li><a href="https://github.com/mpollmeier/gremlin-scala">gremlin-scala</a> (scala/variant) - A Scala-based Gremlin language variant for TinkerPop3.</li>
+            <li><a href="https://github.com/karthicks/gremlin-ogm">gremlin-objects</a> (java/dsl) - An Object Graph Mapping Library For Gremlin.</li>
+            <li><a href="https://github.com/jbmusso/gremlin-template-string">gremlin-template-string</a> (js/variant) - A Gremlin language builder.</li>
+            <li><a href="https://github.com/debug-ito/greskell">greskell</a> (haskell/variant) - Haskell binding for Gremlin graph query language.</li>
+            <li><a href="https://github.com/davebshow/ipython-gremlin">ipython-gremlin</a> (python/variant) - Gremlin in IPython and Jupyter.</li>
+            <li><a href="https://github.com/pm-dev/kotlin-gremlin-ogm">kotlin-gremlin-ogm</a> (kotlin/dsl) - An Object Graph Mapping Library for Kotlin and Gremlin.</li>
+            <li><a href="http://ogre.clojurewerkz.org/">ogre</a> (clojure/variant) - A Clojure language wrapper for TinkerPop3.</li>
+            <li><a href="https://bayofmany.github.io/">Peapod</a> (java/dsl) - An object-graph-wrapper.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#sparql-gremlin">sparql-gremlin</a> (sparql/distinct) - A SPARQL to Gremlin traversal compiler.</li>
+            <li><a href="https://github.com/Microsoft/spring-data-gremlin">spring-data-gremlin</a> (java/dsl) - Spring Data support for TinkerPop-enabled graph systems.</li>
+            <li><a href="https://github.com/twilmes/sql-gremlin">sql-gremlin</a> (sql/distinct) - An SQL to Gremlin traversal compiler.</li>
+         </ul>
+         <a name="language-drivers"></a>
+         <h4 id="language-drivers">Language Drivers</h4>
+         <ul>
+            <li><a href="https://github.com/davebshow/gremlinclient">gremlinclient</a> (python) - An asynchronous Python 2/3 client for Gremlin Server that allows for flexible coroutine syntax - Trollius, Tornado, Asyncio.</li>
+            <li><a href="https://github.com/marcelocf/gremlin_client">gremlin_client</a> (ruby) - A Gremlin Server driver for Ruby.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#connecting-via-java">gremlin-driver</a> (java) - A Gremlin Server driver for Java.</li>
+            <li><a href="https://github.com/northwesternmutual/grammes">grammes</a> (go) - A strongly typed Gremlin server driver for Go.</li>
+            <li><a href="https://github.com/qasaur/gremgo">gremgo</a> (go) - A Gremlin Server driver for Go.</li>
+            <li><a href="https://github.com/Revmaker/gremlex">gremlex</a> (elixir) - A Gremlin Server driver for Elixir.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-DotNet">Gremlin.Net</a> (.NET - C#) - Gremlin Server driver for .NET.</li>
+            <li><a href="https://github.com/PommeVerte/gremlin-php">gremlin-php</a> (php) - A Gremlin Server driver for PHP.</li>
+            <li><a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python">gremlin-python</a> (python) - Gremlin Server driver for Python.</li>
+            <li><a href="https://gremlinrestclient.readthedocs.org/en/latest/">gremlinrestclient</a> (python) - Python 2/3 library that uses HTTP to communicate with the Gremlin Server over REST.</li>
+            <li><a href="https://github.com/ExRam/ExRam.Gremlinq">Gremlinq</a> (.NET) - A strongly typed server driver.</li>
+            <li><a href="https://github.com/windj007/python-gremlin-rest">python-gremlin-rest</a> (python) - A REST-based client for Gremlin Server.</li>
+            <li><a href="https://github.com/coreyauger/reactive-gremlin">reactive-gremlin</a> (scala) - An Akka HTTP Websocket Connector.</li>
+            <li><a href="https://github.com/viagraphs/scalajs-gremlin-client">scalajs-gremlin-client</a> (scala) - A Gremlin-Server client with ad-hoc extensible, reactive, typeclass based API.</li>
+            <li><a href="https://github.com/RedSeal-co/ts-tinkerpop">ts-tinkerpop</a> (typescript) - A helper library for Typescript applications via node-java.</li>
+         </ul>
+         <a name="poweredby"></a>
+         <h4 id="poweredby">Powered By</h4>
+         <ul>
+            <li><a href="https://www.exakat.io/">exakat.io</a> - Static analysis engine for PHP, powered by Gremlin.</li>
+            <li><a href="https://bricaud.github.io/graphexp/graphexp.html">Graphexp</a> - Interactive visualization of the Gremlin graph database with D3.js.</li>
+            <li><a href="https://github.com/aws/graph-notebook">Graph Notebook</a> - Library extending Jupyter notebooks to integrate with Apache TinkerPop and RDF SPARQL.</li>
+            <li><a href="https://github.com/bechbd/gremlin-ide">gremlin-ide</a> - An IDE for Apache TinkerPop-enabled databases using React and Electron.</li>
+            <li><a href="https://gremlify.com/">gremlify</a> - A Gremlin workspace for queries and visualization.</li>
+            <li><a href="https://github.com/prabushitha/gremlin-visualizer">Gremlin-Visualizer</a> A visualization tool for the results of gremlin traversals.</li>
+            <li><a href="https://cambridge-intelligence.com/keylines/">KeyLines</a> - A JavaScript SDK for building powerful, custom and scalable graph visualization applications.</li>
+            <li><a href="https://github.com/meltwater/jugri">JUGRI</a> - A Jupyter Gremlin interface.</li>
+            <li><a href="https://linkurio.us/">Linkurious</a> - A browser-based graph visualization software to search, explore and visualize connected data.</li>
+            <li><a href="https://customer.precisely.com/s/article/Spectrum-Technology-Platform-Data-Hub-Module">Precisely Spectrum Data Hub Module</a> - Uses Gremlin OLTP to query Neo4j-powered master data management based graph database.</li>
+            <li><a href="https://www.stackstate.com/">StackState</a> - Monitoring and AIOps allowing users to utilize Gremlin for analytical functions.</li>
+            <li><a href="https://www.tomsawyer.com/perspectives/">Tom Sawyer Perspectives</a> - Advanced graphics-based software for building enterprise-class data relationship visualization and analysis applications.</li>
+         </ul>
+         <a name="committers"></a>
+         <a name="contributors"></a>
+         <h3 id="contributors">Apache TinkerPop Contributors</h3>
+         <img src="img/tinkerpop-logo-small.png" style="float:right" />TinkerPop seeks contributors dedicated to the art of graph computing. TinkerPop contributors bring solid theoretical,
+         development, testing, documentation, etc. skills to the group. These individuals contribute to TinkerPop beyond the ever-changing requirements of their day-to-day jobs and maintain
+         responsibility for their contributions through time.
+         <p/>
+         <h4 id="contributors-active">Active</h4>
+         <ul>
+            <li><a href="https://markorodriguez.com">Marko A. Rodriguez</a> (2009 - Founder): Gremlin language, Gremlin machine, documentation.</li>
+            <li><a href="https://www.linkedin.com/in/joshuashinavier/">Joshua Shinavier</a> (2009 - Founder): Graph data models, semantics, and interoperability</li>
+            <li><a href="https://stephen.genoprime.com/">Stephen Mallette</a> (2011 - PMC Chair): Gremlin Console/Server/Driver, Language Variants and general core development.</li>
+            <li><a href="https://github.com/jorgebay">Jorge Bay</a> (2017 - PMC): GraphBinary serialization, JavaScript and .NET libraries, mailing list support.</li>
+            <li><a href="https://github.com/FlorianHockmann/">Florian Hockmann</a> (2017 - PMC): .NET libraries, mailing list support.</li>
+            <li><a href="https://www.kelvinlawrence.net/">Kelvin Lawrence</a> (2017 - Committer): Documentation and mailing list support.</li>
+            <li><a href="https://www.linkedin.com/in/divijvaidya/">Divij Vaidya</a> (2019 - Committer): Gremlin server-client interaction.</li>
+            <li><a href="https://oyvindsabo.com/">Øyvind Sæbø</a> (2021 - Committer): Gremlint query formatter.</li>
+         </ul>
+         <h4 id="contributors-inactive">Inactive</h4>
+         <ul>
+            <li><a href="https://ketrinadrawsalot.tumblr.com">Ketrina Yim</a> (2009 - Committer): Illustrator, creator of Gremlin and his merry band of robots.</li>
+            <li><a href="https://twitter.com/espeed">James Thornton</a> (2013 - PMC): Promotions, evangelism.</li>
+            <li><a href="http://gremlin.guru">Daniel Kuppitz</a> (2014 - PMC): Gremlin language design, benchmarking, testing, documentation, mailing list support.</li>
+            <li><a href="https://www.linkedin.com/in/hzbarcea">Hadrian Zbarcea</a> (2015 - PMC): Project mentor, provider liason.</li>
+            <li><a href="https://github.com/Humbedooh">Daniel Gruno</a> (2015 - PMC): Project mentor, infrastructure liason.</li>
+            <li><a href="https://github.com/mhfrantz">Matt Frantz</a> (2015 - Committer): Gremlin language design, ts-tinkerpop.</li>
+            <li><a href="https://github.com/pluradj">Jason Plurad</a> (2015 - PMC): Gremlin Console/Server, mailing list support.</li>
+            <li><a href="https://www.linkedin.com/in/dylan-millikin-32567934">Dylan Millikin</a> (2015 - PMC): Gremlin Server/Driver, gremlin-php, GremlinBin, mailing list support.</li>
+            <li><a href="https://github.com/twilmes">Ted Wilmes</a> (2015 - PMC): Promotions, mailing list support, benchmarking, sql-gremlin.</li>
+            <li><a href="https://github.com/pietermartin">Pieter Martin</a> (2016 - Committer): Gremlin language, Sqlg.</li>
+            <li><a href="https://github.com/jbmusso">Jean-Baptiste Musso</a> (2016 - Committer): Gremlin Server testing, Gremlin Driver (Node.js/JavaScript), mailing list support.</li>
+            <li><a href="https://www.michaelpollmeier.com/">Michael Pollmeier</a> (2016 - Committer): Gremlin language, Gremlin-Scala.</li>
+            <li><a href="https://github.com/davebshow">David Brown</a> (2016 - Committer): Python libraries, Gremlin Server testing.</li>
+            <li><a href="https://github.com/robertdale">Robert Dale</a> (2016 - PMC): Gremlin Console/Server, documentation, mailing list support.</li>
+            <li><a href="https://harshthakkar.in/">Harsh Thakkar</a> (2018 - Committer): Gremlin-SPARQL module.</li>
+         </ul>
+      </div>
+   </div>
+</div>
