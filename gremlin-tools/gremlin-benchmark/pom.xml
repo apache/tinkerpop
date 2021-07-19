@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <artifactId>gremlin-tools</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.4.12-SNAPSHOT</version>
+        <version>3.4.12</version>
     </parent>
 
     <artifactId>gremlin-benchmark</artifactId>
