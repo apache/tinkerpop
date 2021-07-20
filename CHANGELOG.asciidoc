@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-1]]
-=== TinkerPop 3.5.1 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.1 (Release Date: July 19, 2021)
 
 This release also includes changes from <<release-3-4-12, 3.4.12>>.
 
@@ -30,6 +30,28 @@ This release also includes changes from <<release-3-4-12, 3.4.12>>.
 * Changed close of Python and Javascript connections to no longer send a "close message" as the server no longer acknowledges it as of 3.5.0.
 * Fixed bug where the `Graph` instance was not being assigned to child traversals.
 * Removed sending of deprecated session close message from Gremlin.Net driver.
+
+==== Bugs
+
+* TINKERPOP-2358 Potential connection leak on client disposing
+* TINKERPOP-2554 Extracting step metrics from ProfileStep throws NPE if the step was not triggered
+* TINKERPOP-2565 GraphMLWriter does not check vertexLabelKey conflict
+* TINKERPOP-2566 Incomplete error message in bytecode step generation
+* TINKERPOP-2568 Graph instance not set for child traversals
+* TINKERPOP-2578 Set arguments to P within/without are wrapped in List
+* TINKERPOP-2579 EventStrategy doesn't work with anonymous traversal
+* TINKERPOP-2580 Update the custom DSL documentation
+
+==== Improvements
+
+* TINKERPOP-2548 Add getter for indexer used in IndexStep
+* TINKERPOP-2551 Setup scripts to publish Gremint to npm
+* TINKERPOP-2557 Support remote transactions in Javascript
+* TINKERPOP-2559 Stop sending the close message for .NET
+* TINKERPOP-2560 Stop sending close message for Python
+* TINKERPOP-2561 Stop sending close message in Javascript
+* TINKERPOP-2576 Setup automatic updates via Dependabot for Gremlin.NET
+* TINKERPOP-2577 Remove unused test coverage dependencies from Gremlin.NET
 
 [[release-3-5-0]]
 === TinkerPop 3.5.0 (Release Date: May 3, 2021)
