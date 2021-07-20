@@ -369,7 +369,7 @@ This release also includes changes from <<release-3-4-11, 3.4.11>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-12]]
-=== TinkerPop 3.4.12 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.12 (Release Date: July 19, 2021)
 
 * Coerced single `set` arguments to `P.within` and `P.without` to `list` in Python which serializes to a more expected form for `P` instances.
 * Fixed bug in the `vertexLabelKey` validation for `GraphMLWriter` which was inadvertently validating the `edgeLabelKey`.
@@ -379,6 +379,19 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Allowed construction of `DriverRemoteConnection` in .NET to use host and port specification similar to Java syntax.
 * Defaulted `DriverRemoteConnection` to "g" if it the `TraversalSource` binding isn't supplied in Python.
 * Initialized metrics in `ProfileStep` even if the step hasn't iterated.
+
+==== Bugs
+
+* TINKERPOP-2358 Potential connection leak on client disposing
+* TINKERPOP-2554 Extracting step metrics from ProfileStep throws NPE if the step was not triggered
+* TINKERPOP-2565 GraphMLWriter does not check vertexLabelKey conflict
+* TINKERPOP-2578 Set arguments to P within/without are wrapped in List
+* TINKERPOP-2580 Update the custom DSL documentation
+
+==== Improvements
+
+* TINKERPOP-2548 Add getter for indexer used in IndexStep
+* TINKERPOP-2577 Remove unused test coverage dependencies from Gremlin.NET
 
 [[release-3-4-11]]
 === TinkerPop 3.4.11 (Release Date: May 3, 2021)
