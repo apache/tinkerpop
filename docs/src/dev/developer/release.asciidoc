@@ -79,23 +79,22 @@ Take care to commit or not commit changes related to that as necessary.
 == Release Manager Requirements
 
 If this is your first time as release manager, you will need to setup keys for signing purposes per the Apache
-release process.  Generally speaking, this will mean that you will need to generate a key-pair and then upload your
-public key to a public keyserver.
+release process. Generally speaking, this will mean that you will need to generate a key-pair and then publish your
+public key.
 
-For a general overview of key basics, refer to link:https://www.apache.org/dev/release-signing.html#key-basics[this].  For detailed
-step-by-step instructions, please follow the instructions link:https://www.apache.org/dev/openpgp.html#generate-key[here].
+For a general overview of key basics, refer to link:https://www.apache.org/dev/release-signing.html#key-basics[this]. 
+For detailed step-by-step instructions, please follow the instructions
+link:https://www.apache.org/dev/openpgp.html#generate-key[here].
 
-After completing the key-pair setup instructions, be sure to add yourself to the `PGP signature` section of `bin/validate-distribution.sh`.
+After completing the key-pair setup instructions, be sure to upload your public key to `keys.openpgp.org` and add it into your
+link:https://id.apache.org[Apache LDAP] entry (under `OpenPGP Public Key Primary Fingerprint`). This ensures that the
+key will be added automatically to this link:https://people.apache.org/keys/committer/[list of committer keys] which
+will be used to validate the distribution.
 
-[source,text]
-----
-echo -n "  * PGP signature ... "
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
-{ echo "failed"; exit 1; }
-echo "OK"
-----
+Your public key also needs to be added to KEYS files in both the
+link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
+link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
+using Apache Subversion (SVN).
 
 == Pre-flight Check
 
