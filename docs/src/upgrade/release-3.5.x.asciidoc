@@ -45,6 +45,14 @@ syntax can be found in the Javascript link:https://tinkerpop.apache.org/docs/3.5
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2557[TINKERPOP-2557]
 
+==== Gremlint Library
+
+The link:https://gremlint.com[Gremlint website] became an official part of the TinkerPop project for 3.5.0. In 3.5.1,
+the javascript library that contains the logic for the site has been made available as a code library that can be used
+independently and has been published to link:https://www.npmjs.com/package/gremlint[npm].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2551[TINKERPOP-2551]
+
 == TinkerPop 3.5.0
 
 *Release Date: May 3, 2021*
