@@ -138,11 +138,63 @@ limitations under the License.
          </tr>
      </table>
     <p><strong>Note</strong> that upgrade documentation was only introduced at 3.1.1-incubating which is why there are no "upgrade" links in versions prior to that one.
+    <p><strong>Note</strong> this page lists official Apache releases only. TinkerPop occasionally produces unofficial binary release candidates (denoted by the suffix "-RC") which are NOT promoted or announced as actual release versions. <i>Such releases are for early development and evaluation purposes only.</i></p>
     <p>As a convenience, TinkerPop also deploys packaged artifacts to the following locations:</p>
-    <p><a href="https://hub.docker.com/u/tinkerpop/">Docker</a> | <a href="https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.tinkerpop%22">Maven Central</a> | <a href="https://pypi.python.org/pypi/gremlinpython/">PyPI</a> | <a href="https://www.npmjs.com/package/gremlin">npm</a> | <a href="https://www.nuget.org/packages/Gremlin.Net/">NuGet</a></p>
-
-     <p><strong>Note</strong> this page lists official Apache releases only. TinkerPop occasionally produces unofficial binary release candidates (denoted by the suffix "-RC") which are NOT promoted or announced as actual release versions. <i>Such releases are for early development and evaluation purposes only.</i></p>
-
+    <table class="table">
+        <tr>
+            <th>Repository</th>
+            <th>Artifacts</th>
+            <th>&nbsp;</th>
+        </tr>
+        <tr>
+            <td><strong>Docker</strong></td>
+            <td>
+                <p><a href="https://hub.docker.com/r/tinkerpop/gremlin-server">Gremlin Server</a></p>
+                <p><a href="https://hub.docker.com/r/tinkerpop/gremlin-console">Gremlin Console</a></p>
+            </td>
+            <td><pre><code>docker pull tinkerpop/gremlin-server
+docker pull tinkerpop/gremlin-console</code></pre></td>
+        </tr>
+        <tr>
+            <td><strong>Maven Central</strong></td>
+            <td><a href="https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.tinkerpop%22">groupId: org.apache.tinkerpop</a></td>
+            <td>
+                <pre><code>&lt;!-- gremlin-driver is a common dependency but there are others --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.tinkerpop&lt;/groupId&gt;
+    &lt;artifactId&gt;gremlin-driver&lt;/artifactId&gt;
+    &lt;version&gt;3.5.1&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>PyPI</strong></td>
+            <td><a href="https://pypi.python.org/pypi/gremlinpython/">gremlinpython</a></td>
+            <td><pre><code>pip install gremlinpython</code></pre></td>
+        </tr>
+        <tr>
+            <td><strong>npm</strong></td>
+            <td>
+                <p><a href="https://www.npmjs.com/package/gremlin">gremlin</a></p>
+                <p><a href="https://www.npmjs.com/package/gremlint">gremlint</a></p>
+            </td>
+            <td>
+                <pre><code>npm i gremlin
+npm i gremlint</code></pre>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>NuGet</strong></td>
+            <td>
+                <p><a href="https://www.nuget.org/packages/Gremlin.Net/">Gremlin.Net</a></p>
+                <p><a href="https://www.nuget.org/packages/Gremlin.Net.Template/">Gremlin.Net.Template</a></p>
+            </td>
+            <td>
+                <pre><code>dotnet add package Gremlin.Net --version 3.5.1
+dotnet add package Gremlin.Net.template --version 3.5.1</code></pre>
+            </td>
+        </tr>
+    </table>
     <a name="verify"></a>
     <h4>Verifying Downloads</h4>
     <p>All downloads have associated PGP and SHA512 signatures to help verify a distribution provided by a mirror. To verify a distribution via PGP or GPG first download the
