@@ -23,6 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-13]]
 === TinkerPop 3.4.13 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Prevented XML External Entity (XXE) style attacks via `GraphMLReader` by disabling DTD and external entities by default.
+
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
 

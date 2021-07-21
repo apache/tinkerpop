@@ -45,10 +45,10 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * GraphMLReader writes the data from a GraphML stream to a graph.  Note that this format is lossy, in the sense that data
- * types and features of Gremlin Structure not supported by GraphML are not serialized.  This format is meant for
- * external export of a graph to tools outside of Gremlin Structure graphs.  Note that GraphML does not support
- * the notion of multi-properties or properties on properties.
+ * {@code GraphMLReader} writes the data from a GraphML stream to a graph.  Note that this format is lossy, in the
+ * sense that data types and features of Gremlin Structure not supported by GraphML are not serialized.  This format
+ * is meant for external export of a graph to tools outside of Gremlin Structure graphs.  Note that GraphML does not
+ * support the notion of multi-properties or properties on properties.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -384,7 +384,10 @@ public final class GraphMLReader implements GraphReader {
         }
 
         /**
-         * the key to use as the inputFactory when a caller wants to pass XMLInputFactory with its own configuration.
+         * A custom {@code XMLInputFactory}. If this value is not set then a default one is constructed. The default
+         * will be configured to disable DTDs and support of external entities to prevent
+         * <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html#xmlinputfactory-a-stax-parser">XXE</a>
+         * style attacks.
          */
         public Builder xmlInputFactory(final XMLInputFactory inputFactory) {
             this.inputFactory = inputFactory;
@@ -394,6 +397,11 @@ public final class GraphMLReader implements GraphReader {
         public GraphMLReader create() {
             if (this.inputFactory == null) {
                 this.inputFactory = XMLInputFactory.newInstance();
+
+                // prevent XXE
+                // https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
+                inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+                inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
             }
             return new GraphMLReader(this);
         }

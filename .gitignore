@@ -36,3 +36,4 @@ NuGet.Config
 nuget*.exe
 /Dockerfile
 docs/gremlint/
+gremlint/
