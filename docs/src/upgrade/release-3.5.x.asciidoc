@@ -32,7 +32,7 @@ complete list of all the modifications that are part of this release.
 
 *Release Date: July 19, 2021*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.5.1/CHANGELOG.asciidoc#release-3.5.1[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.1/CHANGELOG.asciidoc#release-3-5-1[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
