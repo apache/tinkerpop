@@ -182,10 +182,12 @@ words, there is no need to rebuild the `SNAPSHOT` yet another time unless there 
 validity into question.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date - the release date is the date of the vote. Double check the header to be sure that it is
-formatted properly - the easiest way to is to view the `CHANGELOG.asciidoc` to be sure that it produces a link in the
-GitHub viewer. The release date for all versions should be the same as the first release of the set even if the
-release vote does not begin on the same day. In other words if 3.2.x has a vote date of "October, 1 2018" then 3.3.x
-should also have that date even if the vote thread for 3.3.x doesn't start until the day after.
+formatted properly - specifically, ensure that there is an asciidoc anchor of the format `[[release-x-y-z]]` above the
+version/date header. The release date is the intended day of the vote and not necessarily when it happens (usually
+falls on a Monday given the code freeze pattern that starts a week prior on a Friday). The release date for all
+versions should be the same as the first release of the set even if the release vote does not begin on the same day.
+In other words if 3.2.x has a vote date of "October, 1 2018" then 3.3.x should also have that date even if the vote
+thread for 3.3.x doesn't start until the day after.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example:
 `project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 ORDER BY type, Id ASC`.
@@ -199,16 +201,6 @@ current release was under development as this new release will have those change
 . Update "upgrade documentation":
 .. Update the release date.
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
-. Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
-.. This step should only be performed by the release manager for the newest line of code (i.e. if release 3.3.x, 3.2.x and 3.1.x,
-then only do this step for 3.3.x (`3.3-dev` branch), and update the site for all releases).
-.. Update the `template/header-footer.html`.
-.. Update `index.html`.
-.. Update link:https://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
-Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives]
-("contributions" content will be added after VOTE and prior to promotion of the release so that the commit counts are
-as accurate as possible and the release tags are present).
-.. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
@@ -267,7 +259,13 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
-. Update the `site/downloads.html` - provide the contents for the modal that pops up from the "contributors" link.
+. Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
+.. Typically, this need only be done on the `master` branch as we only publish from there.
+.. Update the `template/header-footer.html`.
+.. Update `index.html`.
+.. Update link:https://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+.. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh <username>` to migrate to the latest documentation set for `/current`.
@@ -340,7 +338,7 @@ The online docs can be found here:
 	https://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
 	https://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
 
-The tag in Apache Git can be found here:
+The Git tag can be found here:
 	https://github.com/apache/tinkerpop/tree/xx.yy.zz
 
 The release notes are available here:
