@@ -17,40 +17,28 @@
  * under the License.
  */
 
-import React from 'react';
 import styled from 'styled-components';
 import CenteredContainer from './CenteredContainer';
-import NavigationButton from './NavigationButton';
-import { white } from '../styleVariables';
+import { textColor } from '../styleVariables';
+import { packages } from '../../package-lock.json';
 
-const NavigatorWrapper = styled.div`
-  background: ${white};
-  box-shadow: ${white} 0 0 10px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1;
+const gremlintVersion = packages['node_modules/gremlint'].version;
+
+const FooterContent = styled.div`
+  padding: 10px;
+  color: ${textColor};
+  font-size: 15px;
+  text-align: center;
+  line-height: 20px;
 `;
 
-const Spacer = styled.div`
-  height: 40px;
-`;
-
-type NavigatorProps = {
-  matchedRoute: string;
-};
-
-const Navigator = ({ matchedRoute }: NavigatorProps) => (
-  <div>
-    <NavigatorWrapper>
-      <CenteredContainer>
-        <NavigationButton isSelected={matchedRoute === '/'} label="Query formatter" href="#/" />
-        <NavigationButton isSelected={matchedRoute === '/style-guide'} label="Style guide" href="#/style-guide" />
-      </CenteredContainer>
-    </NavigatorWrapper>
-    <Spacer />
-  </div>
+const Footer = () => (
+  <CenteredContainer>
+    <FooterContent>
+      <p>Gremlint version: {gremlintVersion}</p>
+      <p>Copyright © 2015-2021 The Apache Software Foundation.</p>
+    </FooterContent>
+  </CenteredContainer>
 );
 
-export default Navigator;
+export default Footer;
