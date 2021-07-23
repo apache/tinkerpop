@@ -17,22 +17,11 @@
  * under the License.
  */
 
-import React from 'react';
 import styled from 'styled-components';
-import StyleGuideRule from '../../components/StyleGuideRule';
-import { rules } from './rules';
 
-const StyleGuideWrapper = styled.div`
-  display: grid;
-  grid-row-gap: 20px;
+const CenteredContainer = styled.div`
+  width: min(800px, 100vw);
+  margin-left: calc(50vw - min(400px, 50vw));
 `;
 
-const StyleGuide = () => (
-  <StyleGuideWrapper>
-    {rules.map(({ title, explanation, example }) => (
-      <StyleGuideRule key={title} title={title} explanation={explanation} example={example} />
-    ))}
-  </StyleGuideWrapper>
-);
-
-export default StyleGuide;
+export default CenteredContainer;
