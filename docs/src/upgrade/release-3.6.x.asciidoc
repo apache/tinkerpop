@@ -36,6 +36,21 @@ containers which should work more cleanly out of the box.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2534[TINKERPOP-2534]
 
+==== Groovy in gremlin-driver
+
+The `gremlin-driver` module no longer depends on `groovy` or `groovy-json`. It became an `<optional>` dependency in
+3.5.0 and general deprecation of the serializers for the `JsonBuilder` class from Groovy (which was the only reason the
+dependency existed in the first place) occurred in 3.5.2. As they were made `<optional>` it is likely that users who
+required those packages have already adjusted their dependencies to explicitly include them. As for those who still
+make use of `JsonBuilder` serialization for some reason, the only recourse is to find the code in TinkerPop and
+maintain it independently. The following classes were removed as of this change (links go to their 3.5.1 versions):
+
+* link:https://github.com/apache/tinkerpop/blob/3.5.1/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/ser/JsonBuilderGryoSerializer.java[JsonBuilderGryoSerializer]
+* link:https://github.com/apache/tinkerpop/blob/3.5.1/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/ser/AbstractGraphSONMessageSerializerV1d0.java#L170-L184[AbstractGraphSONMessageSerializerV1d0$JsonBuilderJacksonSerializer]
+* link:https://github.com/apache/tinkerpop/blob/3.5.1/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/ser/AbstractGraphSONMessageSerializerV2d0.java#L168-L182[AbstractGraphSONMessageSerializerV2d0$JsonBuilderJacksonSerializer]
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2593[TINKERPOP-2593]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

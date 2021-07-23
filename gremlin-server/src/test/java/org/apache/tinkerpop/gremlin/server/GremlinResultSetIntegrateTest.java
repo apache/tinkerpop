@@ -84,19 +84,16 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final MessageSerializer<Kryo> gryoMessageSerializerV3d0 = new GryoMessageSerializerV3d0();
         final Map<String,Object> gryoV3d0Config = new HashMap<>();
         gryoV3d0Config.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV3d0.class.getName()));
-        gryoV3d0Config.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
         gryoMessageSerializerV3d0.configure(gryoV3d0Config, null);
 
         final MessageSerializer<Kryo> gryoMessageSerializerV1d0 = new GryoMessageSerializerV1d0();
         final Map<String,Object> gryoV1d0Config = new HashMap<>();
         gryoV1d0Config.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV3d0.class.getName()));
-        gryoV1d0Config.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
         gryoMessageSerializerV1d0.configure(gryoV1d0Config, null);
 
         final MessageSerializer<Kryo> gryoLiteMessageSerializerV1d0 = new GryoLiteMessageSerializerV1d0();
         final Map<String,Object> gryoLiteV1d0Config = new HashMap<>();
         gryoLiteV1d0Config.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV3d0.class.getName()));
-        gryoLiteV1d0Config.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
         gryoLiteMessageSerializerV1d0.configure(gryoLiteV1d0Config, null);
 
         return Arrays.asList(new Object[][]{

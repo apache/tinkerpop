@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
-import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
@@ -31,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
-import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
@@ -155,33 +153,12 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             super("graphson-gremlin-server");
 
             // SERIALIZERS
-            addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
             addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
             addSerializer(RequestMessage.class, new RequestMessageSerializer());
 
             //DESERIALIZERS
             addDeserializer(ResponseMessage.class, new ResponseMessageDeserializer());
             addDeserializer(RequestMessage.class, new RequestMessageDeserializer());
-        }
-    }
-
-    /**
-     * @deprecated As of release 3.5.2, not replaced.
-     */
-    @Deprecated
-    public final static class JsonBuilderJacksonSerializer extends StdSerializer<JsonBuilder> {
-        public JsonBuilderJacksonSerializer() {
-            super(JsonBuilder.class);
-        }
-
-        @Override
-        public void serialize(final JsonBuilder json, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
-            // the JSON from the builder will already be started/ended as array or object...just need to surround it
-            // with appropriate chars to fit into the serialization pattern.
-            jsonGenerator.writeRaw(":");
-            jsonGenerator.writeRaw(json.toString());
-            jsonGenerator.writeRaw(",");
         }
     }
 

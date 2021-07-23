@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
-import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -49,7 +48,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -174,11 +172,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 }
                 break;
             case "shouldFailWithBadClientSideSerialization":
-                final List<String> custom = Arrays.asList(
-                        JsonBuilder.class.getName() + ";" + JsonBuilderGryoSerializer.class.getName(),
-                        java.awt.Color.class.getName());
-                settings.serializers.stream().filter(s -> s.config.containsKey("custom"))
-                        .findFirst().get().config.put("custom", custom);
+                // add custom gryo config for Color
+                final List<String> custom = Collections.singletonList(
+                        Color.class.getName());
+                settings.serializers.stream().filter(s -> s.className.contains("Gryo"))
+                        .forEach(s -> s.config.put("custom", custom));
                 break;
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
@@ -957,42 +955,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final List<Result> results = resultSet.all().join();
             assertEquals(1, results.size());
             assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldDeserializeWithCustomClassesV1() throws Exception {
-        final Map<String, Object> m = new HashMap<>();
-        m.put("custom", Collections.singletonList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderGryoSerializer.class.getCanonicalName())));
-        final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
-        serializer.configure(m, null);
-
-        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
-            assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldDeserializeWithCustomClassesV3() throws Exception {
-        final Map<String, Object> m = new HashMap<>();
-        m.put("custom", Collections.singletonList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderGryoSerializer.class.getCanonicalName())));
-        final GryoMessageSerializerV3d0 serializer = new GryoMessageSerializerV3d0();
-        serializer.configure(m, null);
-
-        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
-            assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
         } finally {
             cluster.close();
         }

@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
@@ -162,28 +161,7 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
     public final static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
-            addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
             addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
-        }
-    }
-
-    /**
-     * @deprecated As of release 3.5.2, not replaced.
-     */
-    @Deprecated
-    public final static class JsonBuilderJacksonSerializer extends StdSerializer<JsonBuilder> {
-        public JsonBuilderJacksonSerializer() {
-            super(JsonBuilder.class);
-        }
-
-        @Override
-        public void serialize(final JsonBuilder json, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
-            // the JSON from the builder will already be started/ended as array or object...just need to surround it
-            // with appropriate chars to fit into the serialization pattern.
-            jsonGenerator.writeRaw(":");
-            jsonGenerator.writeRaw(json.toString());
-            jsonGenerator.writeRaw(",");
         }
     }
 
