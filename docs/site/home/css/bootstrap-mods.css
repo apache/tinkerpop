@@ -59,6 +59,12 @@
   margin-bottom: 50px;
 }
 
+.newfont p {
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 27px;
+}
+
 code[class*="language-"],
 pre[class*="language-"] {
   border-radius: 25px;
@@ -115,6 +121,10 @@ pre[class*="language-"] {
   margin-right: 15px;
   height: 200px;
   border: solid 1px;
+}
+
+.panel-overflow {
+  overflow-y: auto;
 }
 
 .light-panel {
