@@ -25,6 +25,8 @@ limitations under the License.
          <p style="padding-top:40px;"><b><font size="9" face="american typewriter">Apache TinkerPop&trade;</font></b></p>
          <br />
       <p>The most powerful open source graph framework</p>
+      <p></p>
+      <p class="text-center" style="padding-top: 20px;"><a class="btn btn-primary" href="downloads.html" role="button">Download Server/Client</a></p></p>
       </div>
       </div>
 
@@ -95,7 +97,7 @@ limitations under the License.
                <p>
                TinkerPop is a community driven project with a vibrant set of contirbutors from around the world. 
                </p><p class="text-center">
-               <a class="btn" href="contributions.html" role="button">Learn More</a>
+               <a class="btn" href="community.html" role="button">Learn More</a>
             </p>
             </div>
           </div>
@@ -103,8 +105,8 @@ limitations under the License.
          <div class="panel panel-default col-md-4"   style="background-color: transparent;">
             <div class="panel-heading text-center panel-relative light-panel-header"><h4>Providers</h4></div>
             <div class="panel-body light-panel">
-<p>TinkerPop is the most supported open source graph framework with over 27 databases offering support including those from 
-   Amazon, Microsoft, Neo4j, IBM, Alibaba, etc.</p><p class="text-center">
+<p>TinkerPop is the most widely supported open source graph framework with 27+ providers including those from 
+   Amazon, Microsoft, Neo4j, Alibaba, ...</p><p class="text-center">
       <a class="btn" href="providers.html" role="button">Learn More</a>
    </p>
             </div>
@@ -128,8 +130,9 @@ limitations under the License.
          <div class="panel-body">   
             <p>
                1) Start with <a href="https://tinkerpop.apache.org/docs/current/">Tutorials</a><br />
-               2) Read the <a href="https://tinkerpop.apache.org/docs/current/">TinkerPop Documentation</a><br />
-               3) Explore common query patterns in <a href="https://tinkerpop.apache.org/docs/current/">Gremlin Recipes</a>
+               2) Read the <a href="https://tinkerpop.apache.org/docs/current/reference/">TinkerPop Documentation</a><br />
+               3) Learn Gremlin with the free <a href="http://www.kelvinlawrence.net/book/PracticalGremlin.html" target="_blank">Practical Gremlin</a> book<br />
+               4) Explore common query patterns in <a href="https://tinkerpop.apache.org/docs/current/recipes/">Gremlin Recipes</a>
             </p>
          </div>
        </div>
@@ -160,79 +163,68 @@ limitations under the License.
       </p>
 
    </div>
-      <div class="row" style="padding-top: 10px;">
-      <div class="container">
-         
-           <div class="col-md-6">
-                     <div class="panel panel-default ">
-                        <div class="panel-heading">
-                           <h4 class="panel-title">
-                              Active Apache TinkerPop Contributors
-                           </h4>
+         <div class="row">
+            <div class="col-md-12">
+               <div class="panel with-nav-tabs panel-default">
+                  <div>
+                     <ul class="nav nav-tabs">
+                        <li class="active"><a href="#activecontributors" data-toggle="tab">Active Contributors</a></li>
+                        <li><a href="#inactivecontributors" data-toggle="tab">Inactive Contributors</a></li>
+                     </ul>
+                  </div>
+                  <div class="panel-body panel-overflow">
+                     <div class="tab-content">
+                        <div class="tab-pane fade in active panel-overflow" id="activecontributors"><ul>
+                           <li><a href="https://markorodriguez.com">Marko A. Rodriguez</a> (2009 - Founder): Gremlin language, Gremlin machine,
+                              documentation.</li>
+                           <li><a href="https://www.linkedin.com/in/joshuashinavier/">Joshua Shinavier</a> (2009 - Founder): Graph data models,
+                              semantics, and interoperability</li>
+                           <li><a href="https://stephen.genoprime.com/">Stephen Mallette</a> (2011 - PMC Chair): Gremlin Console/Server/Driver,
+                              Language Variants and general core development.</li>
+                           <li><a href="https://github.com/jorgebay">Jorge Bay</a> (2017 - PMC): GraphBinary serialization, JavaScript and .NET
+                              libraries, mailing list support.</li>
+                           <li><a href="https://github.com/FlorianHockmann/">Florian Hockmann</a> (2017 - PMC): .NET libraries, mailing list
+                              support.</li>
+                           <li><a href="https://www.kelvinlawrence.net/">Kelvin Lawrence</a> (2017 - Committer): Documentation and mailing list
+                              support.</li>
+                           <li><a href="https://www.linkedin.com/in/divijvaidya/">Divij Vaidya</a> (2019 - Committer): Gremlin server-client
+                              interaction.</li>
+                           <li><a href="https://oyvindsabo.com/">Øyvind Sæbø</a> (2021 - Committer): Gremlint query formatter.</li>
+                        </ul></div>
+                        <div class="tab-pane fade panel-overflow" id="inactivecontributors">
+                           <ul>
+                              <li><a href="https://ketrinadrawsalot.tumblr.com">Ketrina Yim</a> (2009 - Committer): Illustrator, creator of Gremlin
+                                 and his merry band of robots.</li>
+                              <li><a href="https://twitter.com/espeed">James Thornton</a> (2013 - PMC): Promotions, evangelism.</li>
+                              <li><a href="http://gremlin.guru">Daniel Kuppitz</a> (2014 - PMC): Gremlin language design, benchmarking, testing,
+                                 documentation, mailing list support.</li>
+                              <li><a href="https://www.linkedin.com/in/hzbarcea">Hadrian Zbarcea</a> (2015 - PMC): Project mentor, provider liason.
+                              </li>
+                              <li><a href="https://github.com/Humbedooh">Daniel Gruno</a> (2015 - PMC): Project mentor, infrastructure liason.</li>
+                              <li><a href="https://github.com/mhfrantz">Matt Frantz</a> (2015 - Committer): Gremlin language design, ts-tinkerpop.
+                              </li>
+                              <li><a href="https://github.com/pluradj">Jason Plurad</a> (2015 - PMC): Gremlin Console/Server, mailing list support.
+                              </li>
+                              <li><a href="https://www.linkedin.com/in/dylan-millikin-32567934">Dylan Millikin</a> (2015 - PMC): Gremlin
+                                 Server/Driver, gremlin-php, GremlinBin, mailing list support.</li>
+                              <li><a href="https://github.com/twilmes">Ted Wilmes</a> (2015 - PMC): Promotions, mailing list support, benchmarking,
+                                 sql-gremlin.</li>
+                              <li><a href="https://github.com/pietermartin">Pieter Martin</a> (2016 - Committer): Gremlin language, Sqlg.</li>
+                              <li><a href="https://github.com/jbmusso">Jean-Baptiste Musso</a> (2016 - Committer): Gremlin Server testing, Gremlin
+                                 Driver (Node.js/JavaScript), mailing list support.</li>
+                              <li><a href="https://www.michaelpollmeier.com/">Michael Pollmeier</a> (2016 - Committer): Gremlin language,
+                                 Gremlin-Scala.</li>
+                              <li><a href="https://github.com/davebshow">David Brown</a> (2016 - Committer): Python libraries, Gremlin Server
+                                 testing.</li>
+                              <li><a href="https://github.com/robertdale">Robert Dale</a> (2016 - PMC): Gremlin Console/Server, documentation,
+                                 mailing list support.</li>
+                              <li><a href="https://harshthakkar.in/">Harsh Thakkar</a> (2018 - Committer): Gremlin-SPARQL module.</li>
+                           </ul>
                         </div>
-                     <div class="panel-body panel-overflow">
-                                                <ul>
-                                                   <li><a href="https://markorodriguez.com">Marko A. Rodriguez</a> (2009 - Founder): Gremlin language, Gremlin machine,
-                                                      documentation.</li>
-                                                   <li><a href="https://www.linkedin.com/in/joshuashinavier/">Joshua Shinavier</a> (2009 - Founder): Graph data models,
-                                                      semantics, and interoperability</li>
-                                                   <li><a href="https://stephen.genoprime.com/">Stephen Mallette</a> (2011 - PMC Chair): Gremlin Console/Server/Driver,
-                                                      Language Variants and general core development.</li>
-                                                   <li><a href="https://github.com/jorgebay">Jorge Bay</a> (2017 - PMC): GraphBinary serialization, JavaScript and .NET
-                                                      libraries, mailing list support.</li>
-                                                   <li><a href="https://github.com/FlorianHockmann/">Florian Hockmann</a> (2017 - PMC): .NET libraries, mailing list
-                                                      support.</li>
-                                                   <li><a href="https://www.kelvinlawrence.net/">Kelvin Lawrence</a> (2017 - Committer): Documentation and mailing list
-                                                      support.</li>
-                                                   <li><a href="https://www.linkedin.com/in/divijvaidya/">Divij Vaidya</a> (2019 - Committer): Gremlin server-client
-                                                      interaction.</li>
-                                                   <li><a href="https://oyvindsabo.com/">Øyvind Sæbø</a> (2021 - Committer): Gremlint query formatter.</li>
-                                                </ul>
                      </div>
-               </div>
-            </div>
-         <div class="col-md-6">
-            <div class="panel panel-default">
-               <div class="panel-heading">
-                  <h4 class="panel-title">
-                     Inactive Apache TinkerPop Contributors
-                  </h4>
-               </div>
-               <div class="panel-body panel-overflow">
-  
-                                    <ul>
-                                       <li><a href="https://ketrinadrawsalot.tumblr.com">Ketrina Yim</a> (2009 - Committer): Illustrator, creator of Gremlin
-                                          and his merry band of robots.</li>
-                                       <li><a href="https://twitter.com/espeed">James Thornton</a> (2013 - PMC): Promotions, evangelism.</li>
-                                       <li><a href="http://gremlin.guru">Daniel Kuppitz</a> (2014 - PMC): Gremlin language design, benchmarking, testing,
-                                          documentation, mailing list support.</li>
-                                       <li><a href="https://www.linkedin.com/in/hzbarcea">Hadrian Zbarcea</a> (2015 - PMC): Project mentor, provider liason.
-                                       </li>
-                                       <li><a href="https://github.com/Humbedooh">Daniel Gruno</a> (2015 - PMC): Project mentor, infrastructure liason.</li>
-                                       <li><a href="https://github.com/mhfrantz">Matt Frantz</a> (2015 - Committer): Gremlin language design, ts-tinkerpop.
-                                       </li>
-                                       <li><a href="https://github.com/pluradj">Jason Plurad</a> (2015 - PMC): Gremlin Console/Server, mailing list support.
-                                       </li>
-                                       <li><a href="https://www.linkedin.com/in/dylan-millikin-32567934">Dylan Millikin</a> (2015 - PMC): Gremlin
-                                          Server/Driver, gremlin-php, GremlinBin, mailing list support.</li>
-                                       <li><a href="https://github.com/twilmes">Ted Wilmes</a> (2015 - PMC): Promotions, mailing list support, benchmarking,
-                                          sql-gremlin.</li>
-                                       <li><a href="https://github.com/pietermartin">Pieter Martin</a> (2016 - Committer): Gremlin language, Sqlg.</li>
-                                       <li><a href="https://github.com/jbmusso">Jean-Baptiste Musso</a> (2016 - Committer): Gremlin Server testing, Gremlin
-                                          Driver (Node.js/JavaScript), mailing list support.</li>
-                                       <li><a href="https://www.michaelpollmeier.com/">Michael Pollmeier</a> (2016 - Committer): Gremlin language,
-                                          Gremlin-Scala.</li>
-                                       <li><a href="https://github.com/davebshow">David Brown</a> (2016 - Committer): Python libraries, Gremlin Server
-                                          testing.</li>
-                                       <li><a href="https://github.com/robertdale">Robert Dale</a> (2016 - PMC): Gremlin Console/Server, documentation,
-                                          mailing list support.</li>
-                                       <li><a href="https://harshthakkar.in/">Harsh Thakkar</a> (2018 - Committer): Gremlin-SPARQL module.</li>
-                                    </ul>
+                  </div>
                </div>
             </div>
          </div>
-         </div>
-      
-      </div>
    </div>
 </div>
