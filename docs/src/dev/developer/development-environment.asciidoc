@@ -253,7 +253,6 @@ username = <username>
 password =
 
 [pypi]
-repository = https://pypi.python.org/pypi
 username = <username>
 password =
 ----
