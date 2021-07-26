@@ -422,10 +422,12 @@ https://pypi.python.org/pypi/gremlinpython/xx.yy.zz
 .NET artifacts are available in NuGet:
 
 https://www.nuget.org/packages/Gremlin.Net/xx.yy.zz
+https://www.nuget.org/packages/Gremlin.Net.Template/xx.yy.zz
 
 Javascript artifacts are available in npm:
 
 https://www.npmjs.com/package/gremlin/v/xx.yy.zz
+https://www.npmjs.com/package/gremlint/v/xx.yy.zz
 
 Gremlint is available in npm:
 
