@@ -145,7 +145,7 @@ deployment.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
-.. Review `package.json` in `gremlin-javascript`
+.. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
 . `git diff` and review the updated files
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and `git push`
@@ -154,7 +154,7 @@ deployment.
 . `mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false` to go back to SNAPSHOT
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
-.. Review `package.json` in `gremlin-javascript`
+.. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-SNAPSHOT-standalone/bin/gremlin.sh gremlin.sh; popd`
 . `git commit -a -m "Returned to xx.yy.zz-SNAPSHOT"` and `git push`
 . Announce the release candidate to `dev` mailing list and await feedback
@@ -212,7 +212,7 @@ as accurate as possible and the release tags are present).
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
-.. Review `package.json` in `gremlin-javascript`
+.. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
 . `git diff` and review the updated files
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
@@ -295,7 +295,7 @@ tasks as one individual may simply just handle them all.
 `mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false`.
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
-.. Review `package.json` in `gremlin-javascript`
+.. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
 .. `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-SNAPSHOT-standalone/bin/gremlin.sh gremlin.sh; popd`
 .. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version.
 .. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
@@ -428,6 +428,10 @@ https://www.nuget.org/packages/Gremlin.Net/xx.yy.zz
 Javascript artifacts are available in npm:
 
 https://www.npmjs.com/package/gremlin/v/xx.yy.zz
+
+Gremlint is available in npm:
+
+https://www.npmjs.com/package/gremlint/v/xx.yy.zz
 
 Docker images for Gremlin Console and Gremlin Server can be found on Docker
 Hub:
