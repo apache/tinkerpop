@@ -33,6 +33,9 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
+[[release-3-5-2]]
+=== TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: July 19, 2021)
 
@@ -389,6 +392,9 @@ This release also includes changes from <<release-3-4-11, 3.4.11>>.
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
+
+[[release-3-4-13]]
+=== TinkerPop 3.4.13 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
