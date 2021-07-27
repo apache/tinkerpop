@@ -255,18 +255,22 @@ therefore allow the option for new features to land in `PATCH` versions. Taking 
 of `MINOR` versions considerably which is helpful to graph providers looking for stable long-lived support for a
 particular release line.
 
-With all of the above rules in mind, there are some subtle considerations that have come into play in the past when
-trying to determine where a change should land:
+With all of the above rules in mind, there are some subtle considerations when trying to determine where a change
+should land:
 
-* A `PATCH` has been known to take a breaking change if that breaking change:
-** Is necessary to fix a critical bug
-** Has a limited breaking scope (e.g. a utility class that no one would likely use, a break that affects graph
-providers only)
-* It is preferred that "major" new features go to `MINOR`, but it is sometimes the case that they will make their way
-to `PATCH` if that change provides significant enough value.
-* As `PATCH` release numbers get higher, there is less incentive to push new features there as there is likely new
-focus on the next unreleased `MINOR`.
+* A `PATCH` may take a breaking change if that breaking change:
+** Is necessary to fix a critical bug.
+** Has a highly limited breaking scope (e.g. a utility class that no one would likely use)
+* It is preferred that new features go to `MINOR`, but it is sometimes the case that they will make their way
+to `PATCH` if the features are being added to a language variant to bring it in line with features already in core.
+* The preference is to upgrade dependencies in `MINOR` rather than in `PATCH` though exceptions can be made as in the
+case of a CVE.
 * The preference is to find deprecation paths whenever possible.
+
+Ultimately, the goal is to be able to make it so that any `PATCH` will work with any version of that line on the
+server. In doing so, it is acceptable for the language variants to lag behind core features within a `MINOR` version,
+though we should be diligent in catching up all lagged features within patches before we stop a patch cycle. In other
+words, we should only be content to stop support on a `MINOR` line once all the languages hold the same functionality.
 
 In short, the dev mailing list is open to discussion on where a change will land. The discussion just needs to have
 good reasoning and use the general principles above as a framework for coming to a consensus.
