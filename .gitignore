@@ -37,3 +37,5 @@ NuGet.Config
 nuget*.exe
 BenchmarkDotNet.Artifacts/
 /Dockerfile
+docs/gremlint/
+gremlint/
