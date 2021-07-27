@@ -314,10 +314,11 @@ mono nuget.exe setApiKey [your-api-key]
 This should update `~/.config/NuGet/NuGet.Config` a file with an entry containing the encrypted API key. On
 `mvn deploy`, this file will be referenced on the automated `nuget push`.
 
-To deploy `gremlin-javascript` on the link:https://www.npmjs.com[npm registry], the release manager must set the
-authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser` command. This
-must be done only once, as the auth token doesn't have an expiration date and it's stored on your file system. If
-this account is newly created then request that a PMC member add your account to the "gremlin" package on npm.
+To deploy JavaScript / TypeScript artifacts on the link:https://www.npmjs.com[npm registry], the release manager must
+set the authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser`
+command. This must be done only once, as the auth token doesn't have an expiration date and it's stored on your file
+system. If this account is newly created then request that a PMC member add your account to the "gremlin" package on
+npm.
 
 Deploying Docker images to link:https://hub.docker.com/[Docker Hub] requires an account that is a member of the TinkerPop
 organization. So if you don't already have an account on Docker Hub then create one and request that
