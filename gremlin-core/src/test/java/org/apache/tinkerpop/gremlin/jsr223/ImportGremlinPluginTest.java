@@ -26,7 +26,9 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,8 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -147,12 +147,10 @@ public class ImportGremlinPluginTest {
                 .fieldsImports(Collections.singletonList(Math.class.getCanonicalName() + "#*")).create();
 
         final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
-        assertThat(customizer.getFieldImports(), is(ImmutableSet.of(Math.class.getField("PI"), Math.class.getField("E"))));
+        assertThat(customizer.getFieldImports(), is(new HashSet<>(
+                Arrays.asList(Math.class.getField("PI"), Math.class.getField("E")))));
     }
 
-
-    
-    
     @Test
     public void shouldThrowExceptionIfInvalidEnumDescriptor() throws Exception {
         final String badDescriptor = "T*id";

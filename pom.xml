@@ -125,6 +125,7 @@ limitations under the License.
         <module>gremlin-language</module>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
+        <module>gremlin-annotations</module>
         <module>gremlin-test</module>
         <module>gremlin-groovy</module>
         <module>tinkergraph-gremlin</module>
@@ -461,7 +462,7 @@ limitations under the License.
         </plugins>
         <pluginManagement>
             <plugins>
-                <!-- there is a jdk11 profile that will be enabled if built with that version - these settings will be overriden -->
+                <!-- there is a jdk11 profile that will be enabled if built with that version - these settings will be overridden -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>

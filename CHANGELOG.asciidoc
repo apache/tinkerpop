@@ -26,6 +26,7 @@ limitations under the License.
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 * Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
+* Created `gremlin-annotations` module where the `@GremlinDsl` annotation and related code has been moved.
 * Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
 * Prevented metrics computation unless the traversal is in a locked state.
 

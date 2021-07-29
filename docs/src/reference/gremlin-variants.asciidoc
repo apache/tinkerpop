@@ -497,8 +497,18 @@ to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 [[gremlin-java-dsl]]
 === Domain Specific Languages
 
-Creating a <<dsl,Domain Specific Language>> (DSL) in Java requires the `@GremlinDsl` Java annotation in `gremlin-core`.
-This annotation should be applied to a "DSL interface" that extends `GraphTraversal.Admin`:
+Creating a <<dsl,Domain Specific Language>> (DSL) in Java requires the `@GremlinDsl` Java annotation in the
+`gremlin-annotations` module. This annotation should be applied to a "DSL interface" that extends
+`GraphTraversal.Admin`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.tinkerpop</groupId>
+    <artifactId>gremlin-annotations</artifactId>
+    <version>x.y.z</version>
+</dependency>
+----
 
 [source,java]
 ----
