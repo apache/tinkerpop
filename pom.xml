@@ -154,7 +154,7 @@ limitations under the License.
         <commons.lang3.version>3.11</commons.lang3.version>
         <commons.text.version>1.9</commons.text.version>
         <groovy.version>2.5.14</groovy.version>
-        <hadoop.version>2.7.7</hadoop.version>
+        <hadoop.version>3.3.1</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
@@ -163,7 +163,7 @@ limitations under the License.
         <netty.version>4.1.61.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.27</snakeyaml.version>
-        <spark.version>3.0.0</spark.version>
+        <spark.version>3.1.2</spark.version>
         <powermock.version>2.0.9</powermock.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -178,6 +178,10 @@ limitations under the License.
         -->
         <logback-test.properties>file:target/test-classes/logback-test.xml</logback-test.properties>
         <logback-silent.properties>file:target/test-classes/logback-silent.xml</logback-silent.properties>
+
+        <!-- only needed for hadoop/spark which still are stuck in log4j 1.x - do not depend on these otherwise -->
+        <log4j-test.properties>file:target/test-classes/log4j-test.properties</log4j-test.properties>
+        <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -482,14 +486,27 @@ limitations under the License.
                 <!-- reverted surefire to 2.21.0 for performance reasons. 2.22.2 required forkCount=1 and
                      reuseForks=true which seemed to more the double the build time. there are only milestone
                      releases after 2.22.2 so rather than rely on those at this time, i guess we just stick with
-                     2.21.0 -->
+                     2.21.0
+
+                     the above note was from 3.5.0. for 3.6.0 tried this change as part of bumping to newer
+                     versions of hadoop/spark and didn't see a slow down in execution time. going to newer
+                     versions of surefire/failsafe, the aforementioned milestone releases, however seemed to cause
+                     test failures for spark integration tests. it was not clear why.
+
+                     note that while we got rid of log4j 1.x and have converted to logback, hadoop seems bound
+                     tightly to the former. included the log4j configuration file here so that we didn't have to
+                     copy/paste this entire config into both hadoop-gremlin and spark-gremlin. it is of no cost to
+                     maintain these settings here globally even if they aren't used as such.
+                -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.21.0</version>
+                    <version>2.22.2</version>
                     <configuration>
                         <argLine>
-                            -Dlogback.configurationFile=${logback-test.properties} -Dbuild.dir=${project.build.directory}
+                            -Dlogback.configuration=${logback-test.properties}
+                            -Dlog4j.configuration=${log4j-test.properties}
+                            -Dbuild.dir=${project.build.directory}
                             -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
@@ -514,7 +531,9 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>
-                                    -Dlogback.configuration=${logback-test.properties} -Dhost=localhost -Dport=8182
+                                    -Dlogback.configuration=${logback-test.properties}
+                                    -Dlog4j.configuration=${log4j-test.properties}
+                                    -Dhost=localhost -Dport=8182
                                     -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                     -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                                 </argLine>
@@ -642,32 +661,6 @@ limitations under the License.
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-core</artifactId>
-                <version>1.2.1</version>
-                <exclusions>
-                    <!-- self-conflicts -->
-                    <exclusion>
-                        <groupId>commons-codec</groupId>
-                        <artifactId>commons-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-httpclient</groupId>
-                        <artifactId>commons-httpclient</artifactId>
-                    </exclusion>
-                    <!-- conflict with commons-configuration -->
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <!-- conflict with TinkerPop tests -->
-                    <exclusion>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>
@@ -825,7 +818,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.4</version>
+                <version>0.8.5</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -1541,7 +1534,8 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>
-                                -Dlogback.configurationFile=${logback-silent.properties}
+                                -Dlogback.configuration=${logback-silent.properties}
+                                -Dlog4j.configuration=${log4j-silent.properties}
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                             </argLine>
@@ -1641,6 +1635,7 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>-Dlogback.configuration=${logback-test.properties}
+                                -Dlog4j.configuration=${log4j-test.properties}
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
                                 -Djava.net.preferIPv4Stack=true
                             </argLine>
@@ -1650,7 +1645,8 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlogback.configuration=${logback-test.properties} -Dhost=localhost -Dport=8182
+                            <argLine>-Dlogback.configuration=${logback-test.properties}
+                                -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
                                 -Djava.net.preferIPv4Stack=true
                             </argLine>

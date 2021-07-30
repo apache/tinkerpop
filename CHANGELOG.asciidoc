@@ -28,6 +28,8 @@ limitations under the License.
 * Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
 * Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
 * Prevented metrics computation unless the traversal is in a locked state.
+* Bumped to Apache Hadoop 3.3.1.
+* Bumped to Apache Spark 3.1.2.
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 

@@ -22,7 +22,7 @@ and link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_properties_files[Ha
 distributed, analytical graph queries (OLAP) on a computer cluster. The
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] covers the cases
 where Spark runs locally or where the cluster is managed by a Spark server. However, many users can only run OLAP jobs
-via the http://hadoop.apache.org/[Hadoop 2.x] Resource Manager (YARN), which requires `SparkGraphComputer` to be
+via the http://hadoop.apache.org/[Hadoop 3.x] Resource Manager (YARN), which requires `SparkGraphComputer` to be
 configured differently. This recipe describes this configuration.
 
 === Approach
@@ -45,8 +45,8 @@ for the vanilla Hadoop pseudo-cluster, it has been reported to work on real clus
 from various vendors.
 
 If you want to try the recipe on a local Hadoop pseudo-cluster, the easiest way to install
-it is to look at the install script at https://github.com/apache/tinkerpop/blob/x.y.z/docker/hadoop/install.sh
-and the `start hadoop` section of https://github.com/apache/tinkerpop/blob/x.y.z/docker/scripts/build.sh.
+it is to look at the install script at link:https://github.com/apache/tinkerpop/blob/x.y.z/docker/hadoop/install.sh[install.sh]
+and the `start hadoop` section of link:https://github.com/apache/tinkerpop/blob/x.y.z/docker/scripts/build.sh[build.sh].
 
 This recipe assumes that you installed the Gremlin Console with the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#spark-plugin[Spark plugin] (the
@@ -63,8 +63,8 @@ your particular environment.
 #!/bin/bash
 # Variables to be adapted to the actual environment
 GREMLIN_HOME=/home/yourdir/lib/apache-tinkerpop-gremlin-console-x.y.z-standalone
-export HADOOP_HOME=/usr/local/lib/hadoop-2.7.7
-export HADOOP_CONF_DIR=/usr/local/lib/hadoop-2.7.7/etc/hadoop
+export HADOOP_HOME=/usr/local/lib/hadoop-3.3.1
+export HADOOP_CONF_DIR=/usr/local/lib/hadoop-3.3.1/etc/hadoop
 
 # Have TinkerPop find the hadoop cluster configs and hadoop native libraries
 export CLASSPATH=$HADOOP_CONF_DIR

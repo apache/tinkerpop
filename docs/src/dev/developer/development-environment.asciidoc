@@ -111,8 +111,8 @@ an issue when working with SNAPSHOT dependencies.
 The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
 scripts should work on Mac and Linux.
 
-To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 2.7.x] is running in
-link:https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
+To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 3.3.x] is running in
+link:https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
 link:https://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
 to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
