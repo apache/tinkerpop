@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.junit.Test;
@@ -30,23 +29,24 @@ public class DefaultTraversalMetricsTest {
 
     @Test
     public void shouldPrintIndentationsCorrectly() {
-        List<MutableMetrics> metrics = new ArrayList<>();
-        MutableMetrics rootMetrics = new MutableMetrics("1", "GraphStep");
+        final List<MutableMetrics> metrics = new ArrayList<>();
+        final MutableMetrics rootMetrics = new MutableMetrics("1", "GraphStep");
         metrics.add(rootMetrics);
 
-        MutableMetrics queryMetrics = new MutableMetrics("1.1", "GraphQuery");
+        final MutableMetrics queryMetrics = new MutableMetrics("1.1", "GraphQuery");
         queryMetrics.setAnnotation("condition", "name = Bob");
         rootMetrics.addNested(queryMetrics);
 
-        MutableMetrics childMetrics = new MutableMetrics("1.1.1", "AND-Query");
+        final MutableMetrics childMetrics = new MutableMetrics("1.1.1", "AND-Query");
         childMetrics.setAnnotation("index", "gIndex");
+        childMetrics.setAnnotation("query-hint", "ZSORTED");
         queryMetrics.addNested(childMetrics);
 
-        MutableMetrics backendMetrics = new MutableMetrics("1.1.1.1", "backend-query");
+        final MutableMetrics backendMetrics = new MutableMetrics("1.1.1.1", "backend-query");
         backendMetrics.setAnnotation("query", "gIndex:slice-query");
         childMetrics.addNested(backendMetrics);
 
-        DefaultTraversalMetrics profile = new DefaultTraversalMetrics(100, metrics);
+        final DefaultTraversalMetrics profile = new DefaultTraversalMetrics(100, metrics);
         final String expectedOutput = "Traversal Metrics\n" +
                 "Step                                                               Count  Traversers       Time (ms)    % Dur\n" +
                 "=============================================================================================================\n" +
@@ -55,6 +55,7 @@ public class DefaultTraversalMetricsTest {
                 "    \\_condition=name = Bob\n" +
                 "    AND-Query                                                                                  0.000\n" +
                 "      \\_index=gIndex\n" +
+                "      \\_query-hint=ZSORTED\n" +
                 "      backend-query                                                                            0.000\n" +
                 "        \\_query=gIndex:slice-query\n" +
                 "                                            >TOTAL                     -           -           0.000        -";
