@@ -253,7 +253,11 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
             if (!annotations.isEmpty()) {
                 // ignore the PERCENT_DURATION_KEY as that is a TinkerPop annotation that is displayed by default
                 annotations.entrySet().stream().filter(kv -> !kv.getKey().equals(PERCENT_DURATION_KEY)).forEach(kv -> {
-                    final String prefix = "    \\_";
+                    final StringBuilder prefixBuilder = new StringBuilder("  ");
+                    for (int i = 0; i < indent; i++) {
+                        prefixBuilder.append("  ");
+                    }
+                    final String prefix = prefixBuilder.append("\\_").toString();
                     final String separator = "=";
                     final String k = prefix + StringUtils.abbreviate(kv.getKey(), 30);
                     final int valueIndentLen = separator.length() + k.length() + indent;
