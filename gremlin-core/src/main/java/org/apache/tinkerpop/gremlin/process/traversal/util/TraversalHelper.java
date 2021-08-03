@@ -683,7 +683,13 @@ public final class TraversalHelper {
         return false;
     }
 
-    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> parentTraversal, final Traversal.Admin<?, ?> childTraversal, final Class<? extends TraversalStrategy> stopAfterStrategy) {
+    /**
+     * @deprecated As of release 3.5.2, not replaced as strategies are not applied in this fashion after 3.5.0
+     */
+    @Deprecated
+    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> parentTraversal,
+                                                  final Traversal.Admin<?, ?> childTraversal,
+                                                  final Class<? extends TraversalStrategy> stopAfterStrategy) {
         childTraversal.setStrategies(parentTraversal.getStrategies());
         childTraversal.setSideEffects(parentTraversal.getSideEffects());
         parentTraversal.getGraph().ifPresent(childTraversal::setGraph);

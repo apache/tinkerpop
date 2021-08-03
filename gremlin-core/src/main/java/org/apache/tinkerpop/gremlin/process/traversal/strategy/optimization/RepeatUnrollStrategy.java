@@ -77,9 +77,10 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                         repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0 &&
                         !TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, DedupGlobalStep.class, repeatStep.getRepeatTraversal()) &&
                         !TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEPS, repeatStep.getRepeatTraversal())) {
+
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
                     repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1); // removes the RepeatEndStep
-                    TraversalHelper.applySingleLevelStrategies(traversal, repeatTraversal, RepeatUnrollStrategy.class);
+
                     final int repeatLength = repeatTraversal.getSteps().size();
                     int insertIndex = i;
                     final int loops = (int) ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops();
