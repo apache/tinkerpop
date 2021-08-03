@@ -108,11 +108,15 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
                 {GraphSONCompatibility.V3D0_PARTIAL_3_4_11, mapperV3 },
                 {GraphSONCompatibility.V2D0_PARTIAL_3_4_12, mapperV2 },
                 {GraphSONCompatibility.V3D0_PARTIAL_3_4_12, mapperV3 },
+                {GraphSONCompatibility.V2D0_PARTIAL_3_4_13, mapperV2 },
+                {GraphSONCompatibility.V3D0_PARTIAL_3_4_13, mapperV3 },
 
                 {GraphSONCompatibility.V2D0_PARTIAL_3_5_0, mapperV2 },
                 {GraphSONCompatibility.V3D0_PARTIAL_3_5_0, mapperV3 },
                 {GraphSONCompatibility.V2D0_PARTIAL_3_5_1, mapperV2 },
                 {GraphSONCompatibility.V3D0_PARTIAL_3_5_1, mapperV3 },
+                {GraphSONCompatibility.V2D0_PARTIAL_3_5_2, mapperV2 },
+                {GraphSONCompatibility.V3D0_PARTIAL_3_5_2, mapperV3 },
 
                 {GraphSONCompatibility.V2D0_PARTIAL_3_6_0, mapperV2 },
                 {GraphSONCompatibility.V3D0_PARTIAL_3_6_0, mapperV3 },

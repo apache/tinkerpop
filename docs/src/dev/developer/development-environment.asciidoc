@@ -150,6 +150,11 @@ bin/process-docs.sh
 Documentation is generated to the `target/docs` directory. It is also possible to generate documentation locally with
 Docker. `docker/build.sh -d`.
 
+NOTE: The installation of plugins sometimes fails in this step with the error: `Error grabbing grapes - download
+failed`. It often helps in this case to delete the directories for the dependencies that cannot be downloaded
+in the `.m2` (`~/.m2/`) and in the `grapes` (`~/.groovy/grapes/`) cache. E.g., if the error is about
+`asm#asm;3.2!asm.jar`, then remove the `asm/asm` sub directory in both directories.
+
 To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:
 
@@ -260,11 +265,7 @@ which enables the "docker-images" Maven profile.
 === Release Environment
 
 This section is only useful to TinkerPop release managers and describes prerequisites related to deploying an official
-release of TinkerPop. All Apache releases must be signed. Please see link:http://www.apache.org/dev/release-signing.html[this guide]
-in the Apache documentation for instructions on to set up gpg. Keys should be added to KEYS files in both the
-link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
-link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
-using Apache Subversion (SVN).
+release of TinkerPop.
 
 Maven needs to be configured to deploy maven artifacts. Apache LDAP credentials can be used for this. Release
 managers should encrypt their Apache LDAP password as described
@@ -289,7 +290,6 @@ username = <username>
 password =
 
 [pypi]
-repository = https://pypi.python.org/pypi
 username = <username>
 password =
 ----
@@ -314,10 +314,11 @@ mono nuget.exe setApiKey [your-api-key]
 This should update `~/.config/NuGet/NuGet.Config` a file with an entry containing the encrypted API key. On
 `mvn deploy`, this file will be referenced on the automated `nuget push`.
 
-To deploy `gremlin-javascript` on the link:https://www.npmjs.com[npm registry], the release manager must set the
-authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser` command. This
-must be done only once, as the auth token doesn't have an expiration date and it's stored on your file system. If
-this account is newly created then request that a PMC member add your account to the "gremlin" package on npm.
+To deploy JavaScript / TypeScript artifacts on the link:https://www.npmjs.com[npm registry], the release manager must
+set the authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser`
+command. This must be done only once, as the auth token doesn't have an expiration date and it's stored on your file
+system. If this account is newly created then request that a PMC member add your account to the "gremlin" package on
+npm.
 
 Deploying Docker images to link:https://hub.docker.com/[Docker Hub] requires an account that is a member of the TinkerPop
 organization. So if you don't already have an account on Docker Hub then create one and request that

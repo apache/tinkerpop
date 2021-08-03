@@ -24,11 +24,11 @@ import org.apache.kerby.kerberos.kerb.client.KrbConfig;
 import org.apache.kerby.kerberos.kerb.client.KrbConfigKey;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.Inet4Address;
-
 
 /**
  * This class is derived from the following classes from https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2:
@@ -42,7 +42,7 @@ import java.net.Inet4Address;
  */
 public class KdcFixture {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(KdcFixture.class);
+    private static final Logger logger = LoggerFactory.getLogger(KdcFixture.class);
 
     final String clientPassword = "123456";
     final String clientPassword2 = "1234562";
@@ -132,7 +132,22 @@ public class KdcFixture {
         kdcServer = new TestKdcServer();
         kdcServer.setWorkDir(testDir);
         kdcServer.init();
-        kdcServer.start();
+
+        // we start/stop the Kdc Server with some rapidity in tests. in low resource environments (travis or docker),
+        // it's possible that the socket for the server is left in TIME_WAIT when it comes time to restart. with a
+        // bit of retry and pausing perhaps it will make tests less flaky in those environments
+        for (int ix = 0; ix < 10; ix++) {
+            try {
+                kdcServer.start();
+                break;
+            } catch (Exception ex) {
+                // on the last try ending in failure just toss the exception
+                if (ix == 9) throw ex;
+                final int pause = (ix + 1) * 1500;
+                logger.warn(String.format("Failed to start Kerberos Server - pausing for %s milliseconds and trying again - try #%s", pause, ix + 1), ex);
+                Thread.sleep(pause);
+            }
+        }
     }
 
     private void setUpPrincipals() throws KrbException {

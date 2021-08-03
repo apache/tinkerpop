@@ -73,6 +73,8 @@
                 <exclude>docs/gremlint/package-lock.json</exclude>
                 <exclude>docs/gremlint/node_modules/**</exclude>
                 <exclude>docs/gremlint/build/**</exclude>
+                <exclude>gremlint/node_modules/**</exclude>
+                <exclude>gremlint/node/**</exclude>
                 <exclude>gremlin-dotnet/.glv</exclude>
                 <exclude>gremlin-dotnet/src/docfx/**</exclude>
                 <exclude>gremlin-dotnet/src/target/**</exclude>

@@ -167,6 +167,10 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
         }
     }
 
+    /**
+     * @deprecated As of release 3.5.2, not replaced.
+     */
+    @Deprecated
     public final static class JsonBuilderJacksonSerializer extends StdSerializer<JsonBuilder> {
         public JsonBuilderJacksonSerializer() {
             super(JsonBuilder.class);

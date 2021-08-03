@@ -21,11 +21,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
-== TinkerPop 3.5.1
+== TinkerPop 3.5.2
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.5.1/CHANGELOG.asciidoc#release-3.5.1[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.2/CHANGELOG.asciidoc#release-3-5-2[changelog] for a
+complete list of all the modifications that are part of this release.
+
+== TinkerPop 3.5.1
+
+*Release Date: July 19, 2021*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.1/CHANGELOG.asciidoc#release-3-5-1[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
@@ -37,6 +44,14 @@ link:https://tinkerpop.apache.org/docs/3.5.1/reference/#transactions[remote tran
 syntax can be found in the Javascript link:https://tinkerpop.apache.org/docs/3.5.1/reference/#gremlin-javascript-transactions[Transaction Section].
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2557[TINKERPOP-2557]
+
+==== Gremlint Library
+
+The link:https://gremlint.com[Gremlint website] became an official part of the TinkerPop project for 3.5.0. In 3.5.1,
+the javascript library that contains the logic for the site has been made available as a code library that can be used
+independently and has been published to link:https://www.npmjs.com/package/gremlint[npm].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2551[TINKERPOP-2551]
 
 == TinkerPop 3.5.0
 
