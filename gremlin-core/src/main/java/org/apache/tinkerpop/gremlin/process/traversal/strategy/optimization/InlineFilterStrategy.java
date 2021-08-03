@@ -178,7 +178,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         RangeGlobalStep.class,
                         DedupGlobalStep.class,
                         LambdaHolder.class)) {
-            TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
             final Step<?, ?> finalStep = childTraversal.getEndStep();
             TraversalHelper.insertTraversal((Step) step, childTraversal, traversal);
             TraversalHelper.copyLabels(step, finalStep, false);
@@ -251,7 +250,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             Step<?, ?> finalStep = null;
             for (int i = childTraversals.size() - 1; i >= 0; i--) {
                 final Traversal.Admin<?, ?> childTraversal = childTraversals.get(i);
-                TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
                 if (null == finalStep)
                     finalStep = childTraversal.getEndStep();
                 TraversalHelper.insertTraversal((Step) step, childTraversals.get(i), traversal);
@@ -281,8 +279,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 final String endLabel = ((MatchStep.MatchEndStep) matchTraversal.getEndStep()).getMatchKey().orElse(null); // why would this exist? but just in case
                 matchTraversal.removeStep(0);                                       // remove MatchStartStep
                 matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
-                TraversalHelper.applySingleLevelStrategies(traversal, matchTraversal, InlineFilterStrategy.class);
-
                 matchTraversal.getEndStep().addLabel(startLabel);
                 if (null != endLabel) matchTraversal.getEndStep().addLabel(endLabel);
                 TraversalHelper.insertTraversal((Step) step.getPreviousStep(), matchTraversal, traversal);

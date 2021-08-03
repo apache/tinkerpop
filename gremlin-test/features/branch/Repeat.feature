@@ -47,6 +47,18 @@ Feature: Step - repeat()
       | marko |
       | marko |
 
+  Scenario: g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(__.outE().inV()).times(2).path().by("name").by(T.label);
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[marko,knows,josh,created,lop] |
+      | p[marko,knows,josh,created,ripple] |
+
   Scenario: g_V_repeatXoutX_timesX2X
     Given the modern graph
     And the traversal of
