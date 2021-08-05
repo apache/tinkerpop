@@ -27,6 +27,7 @@ limitations under the License.
 * Fixed query indentation for profile metrics where indent levels were not being respected.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 * Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
+* Created `gremlin-annotations` module where the `@GremlinDsl` annotation and related code has been moved.
 * Removed `groovy` and `groovy-json` dependencies from `gremlin-driver` as well as related `JsonBuilder` serialization support.
 * Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
 * Prevented metrics computation unless the traversal is in a locked state.

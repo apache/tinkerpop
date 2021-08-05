@@ -27,6 +27,28 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== gremlin-annotations
+
+There is a new module called `gremlin-annotations` and it holds the annotations used to construct
+link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-java-dsl[Java-based Gremlin DSLs]. These annotations
+were formerly in `gremlin-core` and therefore it will be necessary to modify dependencies accordingly when upgrading
+to 3.6.0. Package and class names have remained the same and general usage is unchanged.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.tinkerpop</groupId>
+    <artifactId>gremlin-annotations</artifactId>
+    <version>3.6.0</version>
+</dependency>
+----
+
+It is worth noting that `gremlin-groovy` utilized the DSL annotations to construct the
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#credentials-dsl[Credentials DSL] so the `gremlin-annotations`
+package is now explicitly associated to `gremlin-groovy` but as an `<optional>` dependency.
+
+See:link:https://issues.apache.org/jira/browse/TINKERPOP-2411[TINKERPOP-2411]
+
 ==== Logging Changes
 
 In Gremlin Server and Gremlin Console distributions, the default logging implementation of log4j 1.2.x has been
