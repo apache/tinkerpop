@@ -17,22 +17,10 @@
  * under the License.
  */
 
-import React from 'react';
-import styled from 'styled-components';
-import StyleGuideRule from '../../components/StyleGuideRule';
-import { rules } from './rules';
+const { removeModuleScopePlugin, override, babelInclude } = require('customize-cra');
+const path = require('path');
 
-const StyleGuideWrapper = styled.div`
-  display: grid;
-  grid-row-gap: 20px;
-`;
-
-const StyleGuide = () => (
-  <StyleGuideWrapper>
-    {rules.map(({ title, explanation, example }) => (
-      <StyleGuideRule key={title} title={title} explanation={explanation} example={example} />
-    ))}
-  </StyleGuideWrapper>
+module.exports = override(
+  removeModuleScopePlugin(),
+  babelInclude([path.resolve('src'), path.resolve('./package-lock.json')]),
 );
-
-export default StyleGuide;

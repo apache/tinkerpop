@@ -19,38 +19,26 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import QueryFormatter from '../views/QueryFormatter';
+import StyleGuide from '../views/StyleGuide';
 import CenteredContainer from './CenteredContainer';
-import NavigationButton from './NavigationButton';
-import { white } from '../styleVariables';
 
-const NavigatorWrapper = styled.div`
-  background: ${white};
-  box-shadow: ${white} 0 0 10px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1;
+const ViewWrapper = styled.div`
+  flex-grow: 1;
 `;
 
-const Spacer = styled.div`
-  height: 40px;
-`;
-
-type NavigatorProps = {
+type ViewProps = {
   matchedRoute: string;
 };
 
-const Navigator = ({ matchedRoute }: NavigatorProps) => (
-  <div>
-    <NavigatorWrapper>
+const View = ({ matchedRoute }: ViewProps) => {
+  return (
+    <ViewWrapper>
       <CenteredContainer>
-        <NavigationButton isSelected={matchedRoute === '/'} label="Query formatter" href="#/" />
-        <NavigationButton isSelected={matchedRoute === '/style-guide'} label="Style guide" href="#/style-guide" />
+        {matchedRoute === '/' ? <QueryFormatter /> : matchedRoute === '/style-guide' ? <StyleGuide /> : null}
       </CenteredContainer>
-    </NavigatorWrapper>
-    <Spacer />
-  </div>
-);
+    </ViewWrapper>
+  );
+};
 
-export default Navigator;
+export default View;

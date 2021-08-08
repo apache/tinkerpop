@@ -24,13 +24,14 @@ import { useRouter } from 'sharp-router';
 import router from './router';
 import FadeIn from './components/FadeIn';
 import Navigator from './components/Navigator';
-import QueryFormatter from './views/QueryFormatter';
-import StyleGuide from './views/StyleGuide';
+import View from './components/View';
+import Footer from './components/Footer';
 import LoadingAnimation from './components/LoadingAnimation';
 
-const ViewWrapper = styled.div`
-  width: min(800px, 100vw);
-  margin-left: calc(50vw - min(400px, 50vw));
+const AppWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 `;
 
 const App = () => {
@@ -39,14 +40,11 @@ const App = () => {
   if (!loadingComplete) return <LoadingAnimation onLoadingComplete={() => setLoadingComplete(true)} />;
   return (
     <FadeIn>
-      <div>
+      <AppWrapper>
         <Navigator matchedRoute={matchedRoute} />
-        <div>
-          <ViewWrapper>
-            {matchedRoute === '/' ? <QueryFormatter /> : matchedRoute === '/style-guide' ? <StyleGuide /> : null}
-          </ViewWrapper>
-        </div>
-      </div>
+        <View matchedRoute={matchedRoute} />
+        <Footer />
+      </AppWrapper>
     </FadeIn>
   );
 };

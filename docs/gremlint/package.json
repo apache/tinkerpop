@@ -11,8 +11,10 @@
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.53",
     "@types/react-dom": "^16.9.8",
-    "gremlint": "github:OyvindSabo/gremlint#master",
+    "customize-cra": "^1.0.0",
+    "gremlint": "^3.5.1",
     "react": "^17.0.1",
+    "react-app-rewired": "^2.1.8",
     "react-dom": "^17.0.1",
     "react-scripts": "^4.0.3",
     "sharp-router": "^4.1.5",
@@ -23,8 +25,8 @@
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
