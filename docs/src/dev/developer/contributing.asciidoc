@@ -191,15 +191,14 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 . Make changes in the fork
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
-.. Consider which release branch (e.g. `master`, `3.3-dev` - consult the
+.. Consider which release branch (e.g. `master`, `3.5-dev` - consult the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#branches[Branches Section] for more information) to create
 the development branch from in the first place. In other words, is the change to be targeted at a specific TinkerPop
 version (e.g. a patch to an older version)? When in doubt, please ask on dev@tinkerpop.apache.org.
 . Build the project and run tests.
 .. A simple build can be accomplished with maven: `mvn clean install`.
 .. Often, a "simple build" isn't sufficient and integration tests are required:
-`mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`. Note that Hadoop must be running for the integration
-tests to execute.
+`mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`.
 .. Docker can help simplify building and testing: `docker/build.sh -t -i -n`
 .. Please see the <<building-testing,Building and Testing>> section for more building and testing options.
 . Consider whether documentation or tests need to be added or updated as part of the change, and add them as needed.

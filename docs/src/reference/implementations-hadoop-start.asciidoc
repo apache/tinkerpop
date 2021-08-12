@@ -31,9 +31,9 @@ computing framework that is used to process data represented across a multi-mach
 data in the Hadoop cluster represents a TinkerPop graph, then Hadoop-Gremlin can be used to process the graph
 using both TinkerPop's OLTP and OLAP graph computing models.
 
-IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting
+IMPORTANT: This section assumes that the user has a Hadoop 3.x cluster functioning. For more information on getting
 started with Hadoop, please see the
-link:http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
+link:http://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
 tutorial. Moreover, if using `SparkGraphComputer` it is advisable that the reader also
 familiarize their self with and Spark (link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
 
