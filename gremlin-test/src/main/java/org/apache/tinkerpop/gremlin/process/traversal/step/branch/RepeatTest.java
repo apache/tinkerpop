@@ -48,6 +48,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.loops;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIn.oneOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -71,6 +72,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X();
+
+    public abstract Traversal<Vertex, Path> get_g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit();
 
@@ -160,8 +163,28 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             assertTrue(vertex.value("name").equals("lop") || vertex.value("name").equals("ripple"));
+        }
+        assertEquals(2, counter);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label() {
+        final Traversal<Vertex, Path> traversal = get_g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label();
+
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final Path p = traversal.next();
+            assertEquals("marko", p.get(0));
+            assertEquals("knows", p.get(1));
+            assertEquals("josh", p.get(2));
+            assertEquals("created", p.get(3));
+            assertThat(p.get(4), oneOf("ripple", "lop"));
         }
         assertEquals(2, counter);
         assertFalse(traversal.hasNext());
@@ -474,6 +497,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X() {
             return g.V().repeat(out()).times(2);
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label() {
+            return g.V().repeat(outE().inV()).times(2).path().by("name").by(T.label);
         }
 
         @Override
