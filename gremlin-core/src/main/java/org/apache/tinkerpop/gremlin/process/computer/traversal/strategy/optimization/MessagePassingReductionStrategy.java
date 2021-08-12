@@ -92,9 +92,7 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
                 final Traversal.Admin<?, ?> computerTraversal = step.computerTraversal.get().clone();
                 // apply the strategies up to this point
                 final List<TraversalStrategy<?>> strategies = step.getTraversal().getStrategies().toList();
-                final int indexOfStrategy = strategies.indexOf(MessagePassingReductionStrategy.instance());
-                if (indexOfStrategy > 0)
-                    TraversalHelper.applySingleLevelStrategies(step.getTraversal(), computerTraversal, strategies.get(indexOfStrategy - 1).getClass());
+
                 if (computerTraversal.getSteps().size() > 1 &&
                         !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&
                         TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(VertexStep.class, EdgeVertexStep.class), computerTraversal) &&
