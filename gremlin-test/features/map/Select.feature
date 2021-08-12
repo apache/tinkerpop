@@ -125,6 +125,7 @@ Feature: Step - select()
       | m[{"a": "lop", "b": "lop"}] |
       | m[{"a": "peter", "b": "peter"}] |
 
+  @MultiMetaProperties
   Scenario: g_V_hasXname_gremlinX_inEXusesX_order_byXskill_ascX_asXaX_outV_asXbX_selectXa_bX_byXskillX_byXnameX
     Given the crew graph
     And the traversal of

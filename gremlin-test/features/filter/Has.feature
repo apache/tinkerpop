@@ -283,6 +283,7 @@ Feature: Step - has()
       | e[marko-knows->vadas] |
       | e[marko-knows->josh] |
 
+  @MultiMetaProperties
   Scenario: g_E_hasLabelXuses_traversesX
     Given the crew graph
     And the traversal of
@@ -368,6 +369,7 @@ Feature: Step - has()
       | result |
       | e[josh-created->ripple] |
 
+  @MultiMetaProperties
   Scenario: g_V_hasXlocationX
     Given the crew graph
     And the traversal of

@@ -502,25 +502,39 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | v[vadas] |
       | v[josh] |
 
-  # this test deviates from the setup of the java test, but the intent is the same. the java test drops lop and then
-  # tries to query it as part of the group of ids. here, rather than drop, we simply use an id that doesn't exist
-  # which is simulated by an edge identifier.
+
+
+  # the point here is to test g.V() where an id is not present. to do this with the gherkin structure
+  # the test establishes the modern graph, does a drop() of "lop" and then tries to query the 4 vertices
+  # and we assert the count of 3
   Scenario: g_VX1_2_3_4X_name
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid2 defined as "v[vadas].id"
-    And using the parameter vid3 defined as "e[marko-knows->josh].id"
+    And using the parameter vid3 defined as "v[lop].id"
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(vid1, vid2, vid3, vid4).values("name")
+      g.V().has('software','name','lop').drop()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | josh |
+    Then the result should be empty
+    And the graph should return 3 for count of "g.V(vid1, vid2, vid3, vid4)"
 
   Scenario: g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name
     Given the modern graph

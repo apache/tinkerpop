@@ -72,16 +72,16 @@ Feature: Step - tail()
     Given the modern graph
     And the traversal of
       """
-      g.V().repeat(__.both()).times(3).tail(7)
+      g.V().repeat(__.bothE().order().by('weight',Order.asc).otherV()).times(3).tail(7)
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[peter] |
-      | v[peter] |
-      | v[peter] |
-      | v[peter] |
-      | v[marko] |
+      | v[ripple] |
+      | v[ripple] |
+      | v[josh] |
+      | v[josh] |
+      | v[josh] |
       | v[marko] |
       | v[marko] |
 

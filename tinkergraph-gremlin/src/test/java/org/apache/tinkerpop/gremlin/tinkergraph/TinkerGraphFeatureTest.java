@@ -28,6 +28,8 @@ import io.cucumber.guice.InjectorSource;
 import io.cucumber.java.Scenario;
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -63,7 +65,7 @@ public class TinkerGraphFeatureTest {
         @Override
         public GraphTraversalSource getGraphTraversalSource(final GraphData graphData) {
             if (null == graphData)
-                return TinkerGraph.open().traversal();
+                return TinkerGraph.open(getNumberIdManagerConfiguration()).traversal();
             else if (graphData == GraphData.CLASSIC)
                 return classic.traversal();
             else if (graphData == GraphData.CREW)
@@ -86,4 +88,11 @@ public class TinkerGraphFeatureTest {
         }
     }
 
+    private static Configuration getNumberIdManagerConfiguration() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.LONG.name());
+        return conf;
+    }
 }

@@ -187,6 +187,9 @@ public final class StepDefinition {
 
     @Before
     public void beforeEachScenario(final Scenario scenario) throws Exception {
+        if (scenario.getName().equals("g_VX1_2_3_4X_name"))
+            System.out.println("stop!");
+
         world.beforeEachScenario(scenario);
         stringParameters.clear();
         if (traversal != null) {
@@ -200,6 +203,7 @@ public final class StepDefinition {
     @After
     public void afterEachScenario() throws Exception {
         world.afterEachScenario();
+        if (g != null) g.close();
     }
 
     @Given("the {word} graph")

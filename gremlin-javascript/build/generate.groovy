@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformat
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
 import org.codehaus.groovy.control.customizers.CompilationCustomizer
-import org.apache.tinkerpop.gremlin.features.FeatureReader
+import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
 import javax.script.SimpleBindings
 
