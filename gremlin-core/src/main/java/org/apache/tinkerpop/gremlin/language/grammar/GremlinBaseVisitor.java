@@ -1407,4 +1407,57 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	public T visitTraversalMethod_option_Predicate_Traversal(final GremlinParser.TraversalMethod_option_Predicate_TraversalContext ctx) {
 		notImplemented(ctx); return null;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitIoOptionsStringConstants(final GremlinParser.IoOptionsStringConstantsContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGremlinStringConstants_ioOptionsStringConstants_reader(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_readerContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGremlinStringConstants_ioOptionsStringConstants_writer(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_writerContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGremlinStringConstants_ioOptionsStringConstants_gryo(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_gryoContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGremlinStringConstants_ioOptionsStringConstants_graphson(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_graphsonContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	@Override
+	public T visitGremlinStringConstants_ioOptionsStringConstants_graphml(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_graphmlContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitIoOptionsStringConstant(final GremlinParser.IoOptionsStringConstantContext ctx) {
+		notImplemented(ctx); return null;
+	}
 }
