@@ -61,7 +61,6 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
         // start of a closure
         assumeThat("Lambdas are not supported", query.contains("{"), is(false));
         assumeThat("withComputer() step is not supported", query.startsWith("g.withComputer("), is(false));
-        assumeThat("io() step is not supported", query.startsWith("g.io("), is(false));
         assumeThat("Vertex instances are not supported", vertexPattern.matcher(query).matches(), is(false));
         assumeThat("Edge instances are not supported", edgePattern.matcher(query).matches(), is(false));
         assumeThat("fill() terminator is not supported", query.contains("fill("), is(false));
