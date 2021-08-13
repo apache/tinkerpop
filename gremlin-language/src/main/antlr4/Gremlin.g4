@@ -1045,6 +1045,7 @@ gremlinStringConstants
     | shortestPathStringConstants
     | pageRankStringConstants
     | peerPressureStringConstants
+    | ioOptionsStringConstants
     ;
 
 pageRankStringConstants
@@ -1078,6 +1079,14 @@ withOptionsStringConstants
     | gremlinStringConstants_withOptionsStringConstants_indexer
     | gremlinStringConstants_withOptionsStringConstants_list
     | gremlinStringConstants_withOptionsStringConstants_map
+    ;
+
+ioOptionsStringConstants
+    : gremlinStringConstants_ioOptionsStringConstants_reader
+    | gremlinStringConstants_ioOptionsStringConstants_writer
+    | gremlinStringConstants_ioOptionsStringConstants_gryo
+    | gremlinStringConstants_ioOptionsStringConstants_graphson
+    | gremlinStringConstants_ioOptionsStringConstants_graphml
     ;
 
 gremlinStringConstants_pageRankStringConstants_edges
@@ -1164,6 +1173,26 @@ gremlinStringConstants_withOptionsStringConstants_map
     : withOptionsStringConstant DOT 'map'
     ;
 
+gremlinStringConstants_ioOptionsStringConstants_reader
+    : ioOptionsStringConstant DOT 'reader'
+    ;
+
+gremlinStringConstants_ioOptionsStringConstants_writer
+    : ioOptionsStringConstant DOT 'writer'
+    ;
+
+gremlinStringConstants_ioOptionsStringConstants_gryo
+    : ioOptionsStringConstant DOT 'gryo'
+    ;
+
+gremlinStringConstants_ioOptionsStringConstants_graphson
+    : ioOptionsStringConstant DOT 'graphson'
+    ;
+
+gremlinStringConstants_ioOptionsStringConstants_graphml
+    : ioOptionsStringConstant DOT 'graphml'
+    ;
+
 pageRankStringConstant
     : 'PageRank'
     ;
@@ -1178,6 +1207,10 @@ shortestPathStringConstant
 
 withOptionsStringConstant
     : 'WithOptions'
+    ;
+
+ioOptionsStringConstant
+    : 'IO'
     ;
 
 traversalStrategyList

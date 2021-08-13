@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
+import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 
@@ -62,6 +63,11 @@ public class GremlinStringConstantsVisitor extends GremlinBaseVisitor<Object> {
 
     @Override
     public Object visitWithOptionsStringConstants(final GremlinParser.WithOptionsStringConstantsContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Object visitIoOptionsStringConstants(final GremlinParser.IoOptionsStringConstantsContext ctx) {
         return visitChildren(ctx);
     }
 
@@ -170,4 +176,28 @@ public class GremlinStringConstantsVisitor extends GremlinBaseVisitor<Object> {
         return WithOptions.map;
     }
 
+    @Override
+    public Object visitGremlinStringConstants_ioOptionsStringConstants_reader(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_readerContext ctx) {
+        return IO.reader;
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_ioOptionsStringConstants_writer(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_writerContext ctx) {
+        return IO.writer;
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_ioOptionsStringConstants_gryo(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_gryoContext ctx) {
+        return IO.gryo;
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_ioOptionsStringConstants_graphson(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_graphsonContext ctx) {
+        return IO.graphson;
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_ioOptionsStringConstants_graphml(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_graphmlContext ctx) {
+        return IO.graphml;
+    }
 }
