@@ -198,6 +198,7 @@ call out this fact.
 The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
 prudent to schedule them into a release.
 
+[[developing-tests]]
 == Developing Tests
 
 TinkerPop has a wide variety of test types that help validate its internal code as well as external provider code.
@@ -224,9 +225,10 @@ environments without a `GraphProvider` being initialized by a suite. These types
 `Check` instead. Please see link:https://github.com/apache/tinkerpop/blob/e32a4187e4f25e290aabe14007f9087c48a06521/neo4j-gremlin/src/test/java/org/apache/tinkerpop/gremlin/neo4j/structure/NativeNeo4jStructureCheck.java[NativeNeo4jStructureCheck]
 for an example.
 
+[[gremlin-language-test-cases]]
 === Gremlin Language Test Cases
 
-Test cases for the Gremlin Language currently requires that the newly developed test be added in three places:
+Test cases for the Gremlin Language currently requires that the newly developed test be added in two places:
 
 1. As a test written in Java in the `gremlin-test` module within the subpackages of
 `org.apache.tinkerpop.gremlin.process.traversal.step`
@@ -464,6 +466,19 @@ Scenario: g_V_outE_drop
   And the graph should return 2 for count of "g.V()"
   And the graph should return 0 for count of "g.E()"
 ----
+
+[[gherkin-tags]]
+==== Tags
+
+Scenarios have tags associated with them that help identify subsets of tests so that a test runner can selectively
+include or ignore certain tests. The tags enable the practical and necessary ability for providers to ignore tests that
+they simply cannot support. It is important to be aware of the following tags when writing tests as not including a
+tag when one is necessary will cause provider tests to fail:
+
+* *@MultiMetaProperties* - The scenario uses "The Crew" graph as a dataset or otherwise utilizes multi-properties
+or meta-properties for creating or querying data.
+* *@RemoteOnly* - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
+best example of this sort of test would be one that uses the remote `Lambda` syntax.
 
 == Developing Benchmarks
 

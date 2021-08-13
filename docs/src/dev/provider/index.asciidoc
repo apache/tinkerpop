@@ -617,6 +617,29 @@ image:gremlin-edumacated.png[width=225]
 </dependency>
 ----
 
+Providers currently have two approaches to consider when validating their TinkerPop implementations. The first approach
+comes from the wholly JVM oriented original test suite which was developed in the early days of TinkerPop 3.x design
+and development. The second approach is available as of 3.6.0, is Gherkin-based and originates from the Gremlin
+Language Variant test suite which is language agnostic.
+
+The first approach is more complete and more opinionated as to how an implementation should behave and in many ways
+helpful in getting an implementation semantically correct from the ground up (i.e. first getting the `Graph` Structure
+API implemented well by getting the Structure Suite to pass which will almost inevitably ensure that the most of the
+Gremlin language oriented tests in the Process Suite pass early on). On the other hand, the fact that this test suite
+is rigorous also can make it harder to implement especially if your graph already exists and behaves in a certain
+fashion.
+
+The second approach only validates Gremlin semantics which is ultimately what users concern themselves with as that is
+the method by which they will interact with a provider's `Graph`. This test suite is less concerned with how a
+TinkerPop implementation does what it does, so long as it succeeds at processing Gremlin traversals. There is
+significant overlap between this test suite and the aforementioned Process Suite.
+
+At this time, it would be wise for providers to implement both approaches as the goal for TinkerPop is to move away
+from the rigors of the JVM Structure and Process Suites in favor of Gherkin. Over time, the Structure and Process
+Suites will be deprecated and removed.
+
+==== JVM Test Suite
+
 The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. To implement these tests,
 provide test case implementations as shown below, where `XXX` below denotes the name of the graph implementation (e.g.
 TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
@@ -758,7 +781,7 @@ environment variable, depending on your project layout. Some tests require this 
 creating temporary files. The value is typically set to the project build directory. For example using the Maven
 SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${project.build.directory}`.
 
-==== Checking resource leak
+===== Checking Resource Leaks
 
 The TinkerPop query engine retrieves data by interfacing with the provider using iterators. These iterators (depending
 on the provider) may hold up resources in the underlying storage layer and hence, it is critical to close them after
@@ -771,6 +794,95 @@ is provided with TinkerGraph as `TinkerGraphIterator.java`.
 
 Assertions for leak detection are enabled by default when running the test suite. They can be temporarily disabled
 by way of a system property - simply set `-DtestIteratorLeaks=false".
+
+[[gherkin-tests-suite]]
+==== Gherkin Test Suite
+
+The Gherkin Test Suite is a language agnostic set of tests that verify Gremlin semantics. It provides a unified set of
+tests that validate many TinkerPop components internally. The tests themselves can be found in `gremlin-tests/features`
+(link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features[here]) with their syntax described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[TinkerPop Developer Documentation].
+
+TinkerPop provides some infrastructure, for JVM based graphs, to help make it easier for providers to implement these
+tests against their implementations. This infrastructure is built on `cucumber-java` which is a dependency of
+`gremlin-test`. There are two main components to implementing the tests:
+
+1. A `org.apache.tinkerpop.gremlin.features.World` implementation which is a class in `gremlin-test`.
+2. A JUnit test class that will act as the runner for the tests with the appropriate annotations
+
+TIP: It may be helpful to get familiar with link:https://cucumber.io/docs/installation/java/[Cucumber] before
+proceeding with an implementation.
+
+The `World` implementation provides context to the tests and allows providers to intercept test events that might be
+important to proper execution specific to their implementations. The most important part of implementing `World` is
+properly implementing the `GraphTraversalSource getGraphTraversalSource(GraphData)` method which provides to the test
+the `GraphTraversalSource` to execute the test against.
+
+The JUnit test class is really just the test runner. It is a simple class which must include some Cucumber annotations.
+The following is just an example as taken from TinkerGraph:
+
+[source,java]
+----
+@RunWith(Cucumber.class)
+@CucumberOptions(
+        tags = "not @RemoteOnly",
+        glue = { "org.apache.tinkerpop.gremlin.features" },
+        features = { "../gremlin-test/features" },
+        plugin = {"pretty", "junit:target/cucumber.xml",
+        objectFactory = GuiceFactory.class})
+----
+
+The `@CucumberOptions` that are used are mostly implementation specific, so it will be up to the provider to make some
+choices as to what is right for their environment. For TinkerGraph, it needed to ignore Gherkin tests with the
+`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/current/dev/developer/#gherkin-tags[here]),
+as will most providers. The "glue" will be the same for all test implementers as it refers to a package containing
+TinkerPop's test infrastructure in `gremlin-test` (unless of course, a provider needs to develop their own
+infrastructure for some reason). The "features" is the path to the actual Gherkin test files that should be made
+available locally. The "plugin" defines a JUnit style output, which happens to be understood by Maven.
+
+The "objectFactory" is the last component. Cucumber relies on dependency injection to get a `World` implementation into
+the test infrastructure. Providers may choose from multiple available implementations, but TinkerPop chose to use
+Guice. To follow this approach include the following module:
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.google.inject</groupId>
+    <artifactId>guice</artifactId>
+    <version>4.2.3</version>
+    <scope>test</scope>
+</dependency>
+----
+
+Following the TinkerGraph implementation, there are two classes to construct:
+
+[source,java]
+----
+public class ServiceModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(World.class).to(TinkerGraphWorld.class);
+    }
+}
+
+public class WorldInjectorSource implements InjectorSource {
+    @Override
+    public Injector getInjector() {
+        return Guice.createInjector(Stage.PRODUCTION, CucumberModules.createScenarioModule(), new ServiceModule());
+    }
+}
+----
+
+The key here is that the `TinkerGraphWorld` implementation gets bound to `World` in the `ServiceModule` and there is
+a `WorldInjectorSource` that specifies the `ServiceModule` to Cucumber. As a final step, the provider's test resources
+needs a `cucumber.properties` file with an entry that specifies the `InjectorSource` so that Guice can find it. Here
+is the example taken from TinkerGraph where the `WorldInjectorSource` is inner class of `TinkerGraphFeatureTest`
+itself.
+
+[source,text]
+----
+guice.injector-source=org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphFeatureTest$WorldInjectorSource
+----
 
 === Accessibility via GremlinPlugin
 

@@ -77,6 +77,23 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2593[TINKERPOP-2593]
 
 ==== Graph System Providers
 
+===== Gherkin Tests
+
+TinkerPop originally introduced Gherkin-based feature tests when GLVs were first introduced to help provide a language
+agnostic test capability. The Gherkin tests were a near one-to-one copy of the tests of the Gremlin Process Test Suite
+which focus on Gremlin semantics. Unfortunately, having both JVM tests and Gherkin tests meant maintaining two sets
+of tests which were testing identical things.
+
+To simplify the ongoing maintenance of the test suite and to make it even easier to contribute to the enforcement of
+Gremlin semantics, TinkerPop now provides infrastructure in the `gremlin-test` module to run the Gherkin-based tests.
+For 3.6.0, the old test suite remains intact and is not deprecated, but providers are encouraged to implement the
+Gherkin tests as they will include newer tests that may not be in the old test suite and it would be good to gather
+feedback on the new test suite's usage so that when deprecation and removal of the old suite comes to pass the
+transition will not carry as much friction.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2601[TINKERPOP-2601],
+link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#gherkin-tests-suite[Provider Documentation]
+
 ===== Filters with Mixed Id Types
 
 The requirement that "ids" passed to `Graph.vertices` and `Graph.edges` all be of a single type has been removed. This

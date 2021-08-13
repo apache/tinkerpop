@@ -25,7 +25,6 @@ import com.google.inject.Stage;
 import io.cucumber.guice.CucumberModules;
 import io.cucumber.guice.GuiceFactory;
 import io.cucumber.guice.InjectorSource;
-import io.cucumber.java.Scenario;
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.apache.commons.configuration2.BaseConfiguration;
@@ -34,7 +33,6 @@ import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
