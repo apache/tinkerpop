@@ -75,12 +75,13 @@ public final class StepDefinition {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final World world;
+    private World world;
     private GraphTraversalSource g;
     private final Map<String, String> stringParameters = new HashMap<>();
     private Traversal traversal;
     private Object result;
-    private static Pattern edgeTriplet = Pattern.compile("(.+)-(.+)->(.+)");
+    private static final Pattern edgeTripletPattern = Pattern.compile("(.+)-(.+)->(.+)");
+    private static final Pattern ioPattern = Pattern.compile("g\\.io\\(\"(.*)\"\\).*");
     private List<Pair<Pattern, Function<String,String>>> stringMatcherConverters = new ArrayList<Pair<Pattern, Function<String,String>>>() {{
         // expects json so that should port to the Gremlin script form - replace curly json braces with square ones
         // for Gremlin sake.
@@ -228,7 +229,8 @@ public final class StepDefinition {
 
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
-        traversal = parseGremlin(applyParameters(docString));
+        final String gremlin = tryUpdateDataFilePath(docString);
+        traversal = parseGremlin(applyParameters(gremlin));
     }
 
     @When("iterated to list")
@@ -312,11 +314,6 @@ public final class StepDefinition {
     private Traversal parseGremlin(final String script) {
         if (script.contains(".withComputer("))
             throw new AssumptionViolatedException("withComputer() syntax is not supported by gremlin-language at this time");
-
-        // TODO: fix io() data pathing stuff to bind it better to the graph
-        if (script.startsWith("g.io(\"")) {
-            throw new AssumptionViolatedException("io() syntax");
-        }
 
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
@@ -403,7 +400,7 @@ public final class StepDefinition {
     }
 
     private static Triplet<String,String,String> getEdgeTriplet(final String e) {
-        final Matcher m = edgeTriplet.matcher(e);
+        final Matcher m = edgeTripletPattern.matcher(e);
         if (m.matches()) {
             return Triplet.with(m.group(1), m.group(2), m.group(3));
         }
@@ -430,5 +427,12 @@ public final class StepDefinition {
             replaced = replaced.replace(kv.getKey(), kv.getValue());
         }
         return replaced;
+    }
+
+    private String tryUpdateDataFilePath(final String docString) {
+        final Matcher matcher = ioPattern.matcher(docString);
+        final String gremlin = matcher.matches() ?
+                docString.replace(matcher.group(1), world.changePathToDataFile(matcher.group(1))) : docString;
+        return gremlin;
     }
 }

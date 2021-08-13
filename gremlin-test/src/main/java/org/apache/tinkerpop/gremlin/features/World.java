@@ -54,4 +54,16 @@ public interface World {
     public default void afterEachScenario() {
         // do nothing
     }
+
+    /**
+     * Called when {@code g.io()} is encountered in the Gherkin tests and allows the path to the data file to
+     * referenced to be changed. The default path will look something like:  {@code data/file.extension} and will
+     * match one of the standard TinkerPop data files associated with the test framework. If the files need to be
+     * located somewhere else for a particular provider, this method can alter the path as needed.
+     *
+     * @param pathToFileFromGremlin the path to a data file as taken from the Gherkin tests
+     */
+    public default String changePathToDataFile(final String pathToFileFromGremlin) {
+        return pathToFileFromGremlin;
+    }
 }

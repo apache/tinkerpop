@@ -29,11 +29,14 @@ import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
+
+import java.io.File;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
@@ -76,6 +79,11 @@ public class TinkerGraphFeatureTest {
                 return grateful.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public String changePathToDataFile(final String pathToFileFromGremlin) {
+            return ".." + File.separator + pathToFileFromGremlin;
         }
     }
 
