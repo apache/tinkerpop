@@ -91,6 +91,10 @@ Gherkin tests as they will include newer tests that may not be in the old test s
 feedback on the new test suite's usage so that when deprecation and removal of the old suite comes to pass the
 transition will not carry as much friction.
 
+Note that the 3.6.0 release includes a convenience zip distribution for `gremlin-test` that packages both the data
+files and Gherkin features files for a release. This new file can be found on the
+link:https://tinkerpop.apache.org/downloads.html[Downloads page] on the website.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2601[TINKERPOP-2601],
 link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#gherkin-tests-suite[Provider Documentation]
 

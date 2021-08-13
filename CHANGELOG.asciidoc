@@ -32,6 +32,7 @@ limitations under the License.
 * Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
 * Prevented metrics computation unless the traversal is in a locked state.
 * Exposed Gherkin tests as part of the provider test suite.
+* Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.1.2.
 
