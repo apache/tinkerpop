@@ -68,9 +68,9 @@ jobs:
       name: "gremlin console"
     - script:
       - "mvn clean install -q -DskipTests -Dci"
-      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'"
+      - " mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'"
       name: "spark - core"
     - script:
       - "mvn clean install -q -DskipTests -Dci"
-      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest"
+      - " mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest"
       name: "spark - gryo"
