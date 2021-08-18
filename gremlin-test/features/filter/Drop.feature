@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepDrop
 Feature: Step - drop()
 
   Scenario: g_V_drop

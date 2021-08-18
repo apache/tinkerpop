@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMean
 Feature: Step - mean()
 
   Scenario: g_V_age_mean

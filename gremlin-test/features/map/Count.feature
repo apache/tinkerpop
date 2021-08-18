@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepCount
 Feature: Step - count()
 
   Scenario: g_V_count

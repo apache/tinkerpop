@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassBranch @StepRepeat
 Feature: Step - repeat()
 
   Scenario: g_V_repeatXoutX_timesX2X_emit_path

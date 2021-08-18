@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepDedup
 Feature: Step - dedup()
 
   Scenario: g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepStore
 Feature: Step - store()
 
   Scenario: g_V_storeXa_nameX_out_capXaX

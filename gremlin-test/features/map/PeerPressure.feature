@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepPeerPressure
 Feature: Step - peerPressure()
                 
   Scenario: g_V_peerPressure_hasXclusterX

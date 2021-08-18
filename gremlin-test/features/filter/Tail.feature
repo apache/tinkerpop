@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepTail
 Feature: Step - tail()
 
   Scenario: g_V_valuesXnameX_order_tailXglobal_2X

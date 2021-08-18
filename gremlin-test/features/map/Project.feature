@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepProject
 Feature: Step - project()
 
   Scenario: g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX

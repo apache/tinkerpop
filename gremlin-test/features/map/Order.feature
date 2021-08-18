@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepOrder
 Feature: Step - order()
 
   Scenario: g_V_name_order

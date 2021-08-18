@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepInject
 Feature: Step - inject()
 
   Scenario: g_VX1X_out_injectXv2X_name

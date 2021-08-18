@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepCount
 Feature: Step - groupCount()
 
   Scenario: g_V_outXcreatedX_groupCount_byXnameX

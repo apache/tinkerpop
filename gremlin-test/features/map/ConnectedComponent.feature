@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepConnectedComponent
 Feature: Step - connectedComponent()
                 
   Scenario: g_V_connectedComponent_hasXcomponentX

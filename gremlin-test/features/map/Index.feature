@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepIndex
 Feature: Step - index()
 
   Scenario: g_V_hasLabelXsoftwareX_index_unfold

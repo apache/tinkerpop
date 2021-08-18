@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepUnfold
 Feature: Step - unfold()
 
   Scenario: g_V_localXoutE_foldX_unfold

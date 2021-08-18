@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepWrite
 Feature: Step - write()
 
   Scenario: g_io_writeXkryoX

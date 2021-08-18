@@ -470,14 +470,25 @@ Scenario: g_V_outE_drop
 [[gherkin-tags]]
 ==== Tags
 
+Features have tags associated with them to help allow developers to better break up test runs if they desire. There
+are two types of tags:
+
+* `@StepClass*` - Marks the step grouping and is a prefix that precedes and refers to one of the four types of steps:
+`Branch`, `Filter`, `Map`, and `SideEffect` (e.g. `@StepClassBranch`).
+* `@Step*` - Marks testing for a particular step. While this tag is generally unique to the feature
+file itself and test filtering could be accomplished at that level by way of the file, the use of the tag is a
+secondary option and allows filtering to be consistently managed by tags alone. The suffix is the Gremlin step itself
+(e.g. `@StepHas`) in all cases except for `@StepVertex` which covers `V()`, `E()`, `out()`, `in()`, `both()`, `inE()`,
+`outE()`, and `bothE()`.
+
 Scenarios have tags associated with them that help identify subsets of tests so that a test runner can selectively
 include or ignore certain tests. The tags enable the practical and necessary ability for providers to ignore tests that
 they simply cannot support. It is important to be aware of the following tags when writing tests as not including a
 tag when one is necessary will cause provider tests to fail:
 
-* *@MultiMetaProperties* - The scenario uses "The Crew" graph as a dataset or otherwise utilizes multi-properties
+* `@MultiMetaProperties` - The scenario uses "The Crew" graph as a dataset or otherwise utilizes multi-properties
 or meta-properties for creating or querying data.
-* *@RemoteOnly* - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
+* `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
 best example of this sort of test would be one that uses the remote `Lambda` syntax.
 
 == Developing Benchmarks

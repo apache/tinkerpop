@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepAddV
 Feature: Step - addV()
 
   Scenario: g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX

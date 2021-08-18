@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepAddE
 Feature: Step - addE()
 
   Scenario: g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX

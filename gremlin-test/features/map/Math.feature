@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMath
 Feature: Step - math()
 
   Scenario: g_V_outE_mathX0_minus_itX_byXweightX

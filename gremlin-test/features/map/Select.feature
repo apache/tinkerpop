@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepSelect
 Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX

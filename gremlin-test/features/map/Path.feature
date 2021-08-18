@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepPath
 Feature: Step - path()
 
   Scenario: g_VX1X_name_path

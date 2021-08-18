@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepRange
 Feature: Step - range()
 
   Scenario: g_VX1X_out_limitX2X

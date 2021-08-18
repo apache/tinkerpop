@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepElementMap
 Feature: Step - elementMap()
 
   Scenario: g_V_elementMap

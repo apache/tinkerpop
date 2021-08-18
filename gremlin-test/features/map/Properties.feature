@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepProperties
 Feature: Step - properties()
 
   Scenario: g_V_hasXageX_propertiesXnameX

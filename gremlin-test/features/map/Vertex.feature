@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepVertex
 Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VXlistX1_2_3XX_name

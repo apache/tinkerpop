@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMin
 Feature: Step - min()
 
   Scenario: g_V_age_min

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepSack
 Feature: Step - sack()
 
   Scenario: g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack

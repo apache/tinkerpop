@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepRead
 Feature: Step - read()
 
   Scenario: g_io_readXkryoX

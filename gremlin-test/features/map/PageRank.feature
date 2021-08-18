@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepPageRank
 Feature: Step - pageRank()
                 
   Scenario: g_V_pageRank_hasXpageRankX

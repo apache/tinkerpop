@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassBranch @StepChoose
 Feature: Step - choose()
 
   Scenario: g_VX2X_optionalXoutXknowsXX

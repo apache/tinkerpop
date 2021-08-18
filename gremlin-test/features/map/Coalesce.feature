@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepCoalesce
 Feature: Step - coalesce()
 
   Scenario: g_V_coalesceXoutXfooX_outXbarXX

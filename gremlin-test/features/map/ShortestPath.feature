@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepShortestPath
 Feature: Step - shortestPath()
 
   Scenario: g_V_shortestPath

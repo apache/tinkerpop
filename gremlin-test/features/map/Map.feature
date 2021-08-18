@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMap
 Feature: Step - map()
 
   Scenario: g_VX1X_mapXnameX

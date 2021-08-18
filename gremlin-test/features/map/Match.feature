@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMatch
 Feature: Step - match()
 
   Scenario: g_V_valueMap_matchXa_selectXnameX_bX

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepHas
 Feature: Step - has()
 
   Scenario: g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name

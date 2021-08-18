@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepSimplePath
 Feature: Step - simplePath()
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_simplePath

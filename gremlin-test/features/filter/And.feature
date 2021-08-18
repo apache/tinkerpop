@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepAnd
 Feature: Step - and()
 
   Scenario: g_V_andXhasXage_gt_27X__outE_count_gte_2X_name

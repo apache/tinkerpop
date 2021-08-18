@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepSum
 Feature: Step - sum()
 
   Scenario: g_V_age_sum

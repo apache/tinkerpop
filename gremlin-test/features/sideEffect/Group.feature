@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepGroup
 Feature: Step - group()
 
   Scenario: g_V_group_byXnameX

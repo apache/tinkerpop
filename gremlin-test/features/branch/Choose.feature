@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassBranch @StepChoose
 Feature: Step - choose()
 
   Scenario: g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX
