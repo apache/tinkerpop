@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.tinkerpop.gremlin.features.TestFiles;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.RecordReaderWriterTest;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -36,8 +37,8 @@ public class ScriptRecordReaderWriterTest extends RecordReaderWriterTest {
     @Override
     protected Configuration configure(final File outputDirectory) {
         final Configuration configuration = super.configure(outputDirectory);
-        configuration.set(ScriptRecordReader.SCRIPT_FILE, HadoopGraphProvider.PATHS.get("script-input-grateful-dead.groovy"));
-        configuration.set(ScriptRecordWriter.SCRIPT_FILE, HadoopGraphProvider.PATHS.get("script-output-grateful-dead.groovy"));
+        configuration.set(ScriptRecordReader.SCRIPT_FILE, TestFiles.PATHS.get("script-input-grateful-dead.groovy"));
+        configuration.set(ScriptRecordWriter.SCRIPT_FILE, TestFiles.PATHS.get("script-output-grateful-dead.groovy"));
         return configuration;
     }
 

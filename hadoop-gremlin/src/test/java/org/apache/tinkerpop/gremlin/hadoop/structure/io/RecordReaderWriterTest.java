@@ -33,6 +33,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.features.TestFiles;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -70,7 +71,7 @@ public abstract class RecordReaderWriterTest {
     @Test
     public void shouldSplitFileAndWriteProperSplits() throws Exception {
         for (int numberOfSplits = 1; numberOfSplits < 10; numberOfSplits++) {
-            final File testFile = new File(HadoopGraphProvider.PATHS.get(getInputFilename()));
+            final File testFile = new File(TestFiles.PATHS.get(getInputFilename()));
             logger.info("Testing: {}", testFile + " (splits {}", numberOfSplits + ")");
             final List<FileSplit> splits = generateFileSplits(testFile, numberOfSplits);
             final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormatClass = getInputFormat();
