@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -410,7 +411,10 @@ public final class StepDefinition {
 
     private static Edge getEdge(final GraphTraversalSource g, final String e) {
         final Triplet<String,String,String> t = getEdgeTriplet(e);
-        return g.V().has("name", t.getValue0()).outE(t.getValue1()).where(inV().has("name", t.getValue2())).next();
+
+        // make this OLAP proof since you can't leave the star graph
+        return g.V().has("name", t.getValue0()).outE(t.getValue1()).toStream().
+                   filter(edge -> g.V(edge.inVertex().id()).has("name", t.getValue2()).hasNext()).findFirst().get();
     }
 
     private static Object getEdgeId(final GraphTraversalSource g, final String e) {

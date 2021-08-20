@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop;
+package org.apache.tinkerpop.gremlin.spark;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -29,15 +29,19 @@ import io.cucumber.java.Scenario;
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.spark.launcher.SparkLauncher;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.features.TestFiles;
 import org.apache.tinkerpop.gremlin.features.World;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 import org.junit.AssumptionViolatedException;
@@ -45,7 +49,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,13 +64,14 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
         plugin = {"pretty", "junit:target/cucumber.xml"})
-public class HadoopGraphFeatureTest {
-    private static final Logger logger = LoggerFactory.getLogger(HadoopGraphFeatureTest.class);
+public class SparkGraphFeatureTest {
+    private static final Logger logger = LoggerFactory.getLogger(SparkGraphFeatureTest.class);
+    private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
-    private static final String skipReasonLength = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
+    private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
-       add(Pair.with("g_V_both_both_count", skipReasonLength));
+        add(Pair.with("g_V_both_both_count", skipReasonLength));
         add(Pair.with("g_V_repeatXoutX_timesX3X_count", skipReasonLength));
         add(Pair.with("g_V_repeatXoutX_timesX8X_count", skipReasonLength));
         add(Pair.with("g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count", skipReasonLength));
@@ -85,11 +89,11 @@ public class HadoopGraphFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(HadoopGraphWorld.class);
+            bind(World.class).to(SparkGraphWorld.class);
         }
     }
 
-    public static class HadoopGraphWorld implements World {
+    public static class SparkGraphWorld implements World {
 
         private static final HadoopGraph modern = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.MODERN)));
         private static final HadoopGraph classic = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.CLASSIC)));
@@ -110,15 +114,15 @@ public class HadoopGraphFeatureTest {
             if (null == graphData)
                 throw new AssumptionViolatedException("HadoopGraph does not support graph mutations");
             else if (graphData == GraphData.CLASSIC)
-                return classic.traversal();
+                return classic.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
             else if (graphData == GraphData.CREW)
-                return crew.traversal();
+                return crew.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
             else if (graphData == GraphData.MODERN)
-                return modern.traversal();
+                return modern.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
             else if (graphData == GraphData.SINK)
-                return sink.traversal();
+                return sink.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
             else if (graphData == GraphData.GRATEFUL)
-                return grateful.traversal();
+                return grateful.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -136,7 +140,7 @@ public class HadoopGraphFeatureTest {
         }
 
         private static String getWorkingDirectory() {
-            return TestHelper.makeTestDataDirectory(HadoopGraphFeatureTest.class, "graph-provider-data");
+            return TestHelper.makeTestDataDirectory(SparkGraphFeatureTest.class, "graph-provider-data");
         }
 
         private static Map<String, Object> getBaseConfiguration(final GraphData graphData) {
@@ -146,6 +150,14 @@ public class HadoopGraphFeatureTest {
                 put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
                 put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
                 put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
+
+                put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
+
+                put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
+                put(SparkLauncher.SPARK_MASTER, "local[" + AVAILABLE_PROCESSORS + "]");
+                put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
+                put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
+                put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
             }};
         }
     }
