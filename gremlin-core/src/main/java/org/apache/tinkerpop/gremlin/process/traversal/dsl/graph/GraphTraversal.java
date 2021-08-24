@@ -1387,6 +1387,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
+        if (null == accessor)
+            throw new IllegalArgumentException("The T accessor value of has(T,Object) cannot be null");
+
+        // Groovy can get the overload wrong for has(T, null) which should probably go at has(T,Object). users could
+        // explicit cast but a redirect here makes this a bit more seamless
+        if (null == predicate)
+            return has(accessor, (Object) null);
+
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), predicate));
     }
@@ -1421,6 +1429,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
+        if (null == accessor)
+            throw new IllegalArgumentException("The T accessor value of has(T,Object) cannot be null");
+
         if (value instanceof P)
             return this.has(accessor, (P) value);
         else if (value instanceof Traversal)
@@ -1474,6 +1485,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
+        if (null == accessor)
+            throw new IllegalArgumentException("The T accessor value of has(T,Object) cannot be null");
+
+        // Groovy can get the overload wrong for has(T, null) which should probably go at has(T,Object). users could
+        // explicit cast but a redirect here makes this a bit more seamless
+        if (null == propertyTraversal)
+            return has(accessor, (Object) null);
+
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, propertyTraversal);
         switch (accessor) {
             case id:
@@ -1482,8 +1501,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                                 new IdStep<>(propertyTraversal.asAdmin()))));
             case label:
                 return this.asAdmin().addStep(
-                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                                new LabelStep<>(propertyTraversal.asAdmin()))));
+                    new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
+                            new LabelStep<>(propertyTraversal.asAdmin()))));
             default:
                 throw new IllegalArgumentException("has(T,Traversal) can only take id or label as its argument");
         }
@@ -1542,15 +1561,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasLabel(final String label, final String... otherLabels) {
-        final String[] labels = new String[otherLabels.length + 1];
+        this.asAdmin().getBytecode().addStep(Symbols.hasLabel, label, otherLabels);
+
+        // groovy evaluation seems to do strange things with varargs given hasLabel(null, null). odd someone would
+        // do this but the failure is ugly if not handled.
+        final int otherLabelsLength = null == otherLabels ? 0 : otherLabels.length;
+        final String[] labels = new String[otherLabelsLength + 1];
         labels[0] = label;
-        System.arraycopy(otherLabels, 0, labels, 1, otherLabels.length);
-        this.asAdmin().getBytecode().addStep(Symbols.hasLabel, labels);
+        if (otherLabelsLength > 0)
+            System.arraycopy(otherLabels, 0, labels, 1, otherLabelsLength);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their label.
+     * Filters vertices, edges and vertex properties based on their label. Note that calling this step with
+     * {@code null} is the same as calling {@link #hasLabel(String, String...)} with a single {@code null}.
      *
      * @param predicate the filter to apply to the label of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
@@ -1558,8 +1583,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.4
      */
     public default GraphTraversal<S, E> hasLabel(final P<String> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasLabel, predicate);
-        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), predicate));
+        // if calling hasLabel(null), the likely use the caller is going for is not a "no predicate" but a eq(null)
+        if (null == predicate) {
+            return hasLabel((String) null);
+        } else {
+            this.asAdmin().getBytecode().addStep(Symbols.hasLabel, predicate);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), predicate));
+        }
     }
 
     /**

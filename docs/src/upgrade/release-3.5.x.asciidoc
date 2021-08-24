@@ -28,6 +28,20 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.2/CHANGELOG.asciidoc#release-3-5-2[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Refinements to null
+
+Release 3.5.0 introduce the ability for there to be traversers that contained a `null` value. Since that time it has
+been noted that supplying a `null` value as an argument to certain Gremlin steps might cause exception behaviors that
+were either not clear or perhaps even unexpected. The following changes were made to help make these behaviors more
+consistent and to further solidify the semantics of `null` usage in the Gremlin language:
+
+* `hasLabel(null)` and `has(T.label,null)` - Formerly, these methods threw general `NullPointerException` failures,
+but now filter results. As a `T.label` can't be `null`, it will effectively filter all elements.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2605[TINKERPOP-2605]
+
 == TinkerPop 3.5.1
 
 *Release Date: July 19, 2021*

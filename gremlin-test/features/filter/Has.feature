@@ -259,7 +259,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_EX7X_hasXlabelXknowsX
+  Scenario: g_EX7X_hasLabelXknowsX
     Given the modern graph
     And using the parameter eid7 defined as "e[marko-knows->vadas].id"
     And the traversal of
@@ -271,7 +271,7 @@ Feature: Step - has()
       | result |
       | e[marko-knows->vadas] |
 
-  Scenario: g_E_hasXlabelXknowsX
+  Scenario: g_E_hasLabelXknowsX
     Given the modern graph
     And the traversal of
       """
@@ -732,3 +732,89 @@ Feature: Step - has()
       | 轉注 |
       | ✦ |
       | ♠ |
+
+  Scenario: g_V_hasXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_E_hasXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.E().has(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasLabelXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().hasLabel(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasXlabel_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has(T.label, null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasLabelXnull_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().hasLabel(null, null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasLabelXnull_personX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().hasLabel(null, "person")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_E_hasLabelXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.E().hasLabel(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_E_hasXlabel_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.E().has(T.label, null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_properties_hasLabelXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasLabel(null)
+    """
+    When iterated to list
+    Then the result should be empty

@@ -81,24 +81,26 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
         Optional<String> label = hasContainers.stream()
                 .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
                 .filter(hasContainer -> Compare.eq == hasContainer.getBiPredicate())
+                .filter(hasContainer -> hasContainer.getValue() != null)
                 .map(hasContainer -> (String) hasContainer.getValue())
                 .findAny();
         if (!label.isPresent())
             label = hasContainers.stream()
                     .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
                     .filter(hasContainer -> hasContainer.getPredicate() instanceof LabelP)
+                    .filter(hasContainer -> hasContainer.getValue() != null)
                     .map(hasContainer -> (String) hasContainer.getValue())
                     .findAny();
 
         if (label.isPresent()) {
             // find a vertex by label and key/value
-            String labelValue = label.get();
-            Neo4jGraphAPI baseGraph = graph.getBaseGraph();
+            final String labelValue = label.get();
+            final Neo4jGraphAPI baseGraph = graph.getBaseGraph();
             for (final HasContainer hasContainer : hasContainers) {
-                String key = hasContainer.getKey();
-                Object value = hasContainer.getValue();
+                final String key = hasContainer.getKey();
+                final Object value = hasContainer.getValue();
                 if (!key.equals(T.label.getAccessor()) && baseGraph.hasSchemaIndex(labelValue, key)) {
-                    BiPredicate<?, ?> predicate = hasContainer.getBiPredicate();
+                    final BiPredicate<?, ?> predicate = hasContainer.getBiPredicate();
                     Iterable<Neo4jNode> nodes = null;
                     if (Compare.eq == predicate) {
                         nodes = baseGraph.findNodes(labelValue, key, value);
@@ -116,6 +118,7 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
                     }
                 }
             }
+
             // find a vertex by label
             return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get()))
                     .map(node -> (Vertex) new Neo4jVertex(node, graph))

@@ -28,6 +28,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug where `RepeatUnrollStrategy`, `InlineFilterStrategy` and `MessagePassingReductionStrategy` were all being applied more than necessary.
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
+* Allowed `null` string values in the Gremlin grammar.
+* Prevented exception with `hasLabel(null)` and instead filter away traversers as labels can't ever be null.
+* Refined `DotNetTranslator` to be more explicit with `null` arguments to ensure that the right overloads are called.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 
 [[release-3-5-1]]
