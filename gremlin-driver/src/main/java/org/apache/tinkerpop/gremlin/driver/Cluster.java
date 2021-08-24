@@ -713,8 +713,10 @@ public final class Cluster {
         }
 
         /**
-         * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
-         * SSL is enabled, the default {@link TrustManager} will be used.
+         * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided (or
+         * is set to {@code null} and SSL is enabled, the default {@code TrustManager} will be used, which will have
+         * a set of common public certificates installed to it.
+         *
          * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
          */
         @Deprecated
@@ -781,7 +783,8 @@ public final class Cluster {
 
         /**
          * The file location for a SSL Certificate Chain to use when SSL is enabled. If
-         * this value is not provided and SSL is enabled, the default {@link TrustManager} will be used.
+         * this value is not provided and SSL is enabled, the default {@code TrustManager} will be used, which will
+         * have a set of common public certificates installed to it.
          */
         public Builder trustStore(final String trustStore) {
             this.trustStore = trustStore;
