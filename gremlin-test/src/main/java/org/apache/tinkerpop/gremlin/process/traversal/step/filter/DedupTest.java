@@ -64,6 +64,8 @@ import static org.junit.Assert.fail;
 public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_dedup_name();
+    
+    public abstract Traversal<Vertex, String> get_g_V_order_byXname_descX_barrier_dedup_age_name();
 
     public abstract Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
 
@@ -135,6 +137,22 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("vadas"));
         assertTrue(names.contains("lop"));
+        assertTrue(names.contains("josh"));
+        assertTrue(names.contains("ripple"));
+        assertTrue(names.contains("peter"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_order_byXname_descX_barrier_dedup_age_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_order_byXname_descX_barrier_dedup_age_name();
+        printTraversalForm(traversal);
+        final List<String> names = traversal.toList();
+        assertEquals(5, names.size());
+        assertTrue(names.contains("marko"));
+        assertTrue(names.contains("vadas"));
         assertTrue(names.contains("josh"));
         assertTrue(names.contains("ripple"));
         assertTrue(names.contains("peter"));
@@ -381,6 +399,11 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
             return g.V().both().dedup().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_order_byXname_descX_barrier_dedup_age_name() {
+            return g.V().order().by("name", Order.desc).barrier().dedup().by("age").values("name");
         }
 
         @Override
