@@ -103,3 +103,17 @@ Feature: Step - path()
       | result |
       | p[josh,ripple] |
       | p[josh,lop] |
+
+  Scenario: g_VX1X_out_path_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out().path().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[d[29].i,null] |
+      | p[d[29].i,d[27].i] |
+      | p[d[29].i,d[32].i] |
