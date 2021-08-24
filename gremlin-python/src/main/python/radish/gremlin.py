@@ -467,6 +467,7 @@ world.gremlins = {
     'g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX': [(lambda g:g.V().hasLabel('person').project('a','b').by(__.outE().count()).by('age'))], 
     'g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX': [(lambda g:g.V().out('created').project('a','b').by('name').by(__.in_('created').count()).order().by(__.select('b'),Order.desc).select('a'))], 
     'g_V_valueMap_projectXxX_byXselectXnameXX': [(lambda g:g.V().valueMap().project('x').by(__.select('name')))], 
+    'g_V_projectXa_bX_byXinE_countX_byXageX': [(lambda g:g.V().project('a','b').by(__.inE().count()).by('age'))], 
     'g_V_hasXageX_propertiesXnameX': [(lambda g:g.V().has('age').properties('name').value())], 
     'g_V_hasXageX_propertiesXname_ageX_value': [(lambda g:g.V().has('age').properties('name','age').value())], 
     'g_V_hasXageX_propertiesXage_nameX_value': [(lambda g:g.V().has('age').properties('age','name').value())], 
