@@ -2402,9 +2402,16 @@ g.V().groupCount().by(inE().count()).order(local).by(keys, asc) <4>
 
 NOTE: The `values` and `keys` enums are from `Column` which is used to select "columns" from a `Map`, `Map.Entry`, or `Path`.
 
+If a property key does not exist, then it will be treated as `null` which will sort it first for `Order.asc` and last
+for `Order.desc`.
+
+[gremlin-groovy,modern]
+----
+g.V().order().by("age").elementMap()
+----
+
 NOTE: Prior to version 3.3.4, ordering was defined by `Order.incr` for ascending order and `Order.decr` for descending
-order. That approach is now deprecated with the preferred method shown in the examples which uses the more common
-forms for query languages in `Order.asc` and Order.desc.
+order. Those tokens were deprecated and eventually removed in 3.5.0.
 
 *Additional References*
 

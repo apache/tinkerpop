@@ -309,6 +309,22 @@ Feature: Step - order()
       | v[josh]   |
       | v[peter] |
 
+  # tests order().by() where a property isn't present to ensure null comes first
+  Scenario: g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().or(hasLabel("person"),has("software","name","lop")).order().by("age")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[lop] |
+      | v[vadas] |
+      | v[marko] |
+      | v[josh]   |
+      | v[peter] |
+
   Scenario: g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX
     Given the modern graph
     And using the parameter v1 defined as "v[marko]"
