@@ -94,6 +94,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_selectXaX_count();
 
+    public abstract Traversal<Vertex, Object> get_g_V_asXaX_selectXaX_byXageX();
+
     // below are original back()-tests
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id);
@@ -886,6 +888,14 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "marko")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_selectXaX_byXageX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_asXaX_selectXaX_byXageX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29, 27, null, 32, null, 35), traversal);
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -1208,6 +1218,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold() {
             return g.V().has("person","name","marko").path().as("a").union(identity(),identity()).select("a").unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_asXaX_selectXaX_byXageX() {
+            return g.V().as("a").select("a").by("age");
         }
     }
 }

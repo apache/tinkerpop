@@ -549,6 +549,7 @@ const gremlins = {
     g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold: [function({g}) { return g.V().has("person","name","marko").path().as("a").union(__.identity(),__.identity()).select("a").unfold() }], 
     g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX: [function({g, eid11}) { return g.E(eid11).properties("weight").as("a").select("a").by(T.key) }], 
     g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX: [function({g, eid11}) { return g.E(eid11).properties("weight").as("a").select("a").by(T.value) }], 
+    g_V_asXaX_selectXaX_byXageX: [function({g}) { return g.V().as("a").select("a").by("age") }], 
     g_V_shortestPath: [function({g}) { return g.withStrategies(new VertexProgramStrategy(new Map([["graphComputer","org.apache.tinkerpop.gremlin.process.computer.GraphComputer"]]))).V().identity().shortestPath() }], 
     g_V_both_dedup_shortestPath: [function({g}) { return g.withStrategies(new VertexProgramStrategy(new Map([["graphComputer","org.apache.tinkerpop.gremlin.process.computer.GraphComputer"]]))).V().both().dedup().shortestPath() }], 
     g_V_shortestPath_edgesIncluded: [function({g}) { return g.withStrategies(new VertexProgramStrategy(new Map([["graphComputer","org.apache.tinkerpop.gremlin.process.computer.GraphComputer"]]))).V().identity().shortestPath().with_("~tinkerpop.shortestPath.includeEdges") }], 
