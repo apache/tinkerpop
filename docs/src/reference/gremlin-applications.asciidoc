@@ -1024,7 +1024,7 @@ The following table describes the various YAML configuration options that Gremli
 |ssl.needClientAuth | Optional. One of NONE, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
 |ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
-|ssl.trustStore |Required when needClientAuth is REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
+|ssl.trustStore |Required when needClientAuth is REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. If this value is not provided and SSL is enabled, the default `TrustManager` will be used, which will have a set of common public certificates installed to it. |_none_
 |ssl.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
