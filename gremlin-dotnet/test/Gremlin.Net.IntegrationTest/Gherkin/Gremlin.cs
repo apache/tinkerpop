@@ -199,6 +199,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("person").Has("age",P.Gt(10).Or(P.Gte(11).And(P.Lt(20))).And(P.Lt(29).Or(P.Eq(35)))).Values<object>("name")}}, 
                {"g_V_in_hasIdXneqX1XX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().In().HasId(p["xx1"])}}, 
                {"g_V_hasXage_withinX27X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Within(new List<object> {27})).Count()}}, 
+               {"g_V_hasXage_withinX27_nullX_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Within(new List<object> {27, null})).Count()}}, 
                {"g_V_hasXage_withinX27_29X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Within(new List<object> {27, 29})).Count()}}, 
                {"g_V_hasXage_withoutX27X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Without(new List<object> {27})).Count()}}, 
                {"g_V_hasXage_withoutX27_29X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Without(new List<object> {27, 29})).Count()}}, 

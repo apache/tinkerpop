@@ -419,6 +419,17 @@ Feature: Step - has()
       | result |
       | d[1].l |
 
+  Scenario: g_V_hasXage_withinX27_nullX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.within(27,null)).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[1].l |
+
   Scenario: g_V_hasXage_withinX27_29X_count
     Given the modern graph
     And the traversal of

@@ -173,6 +173,7 @@ world.gremlins = {
     'g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name': [(lambda g:g.V().hasLabel('person').has('age',P.gt(10).or_(P.gte(11).and_(P.lt(20))).and_(P.lt(29).or_(P.eq(35)))).name)], 
     'g_V_in_hasIdXneqX1XX': [(lambda g, xx1=None:g.V().in_().hasId(xx1))], 
     'g_V_hasXage_withinX27X_count': [(lambda g:g.V().has('age',P.within([27])).count())], 
+    'g_V_hasXage_withinX27_nullX_count': [(lambda g:g.V().has('age',P.within([27,None])).count())], 
     'g_V_hasXage_withinX27_29X_count': [(lambda g:g.V().has('age',P.within([27,29])).count())], 
     'g_V_hasXage_withoutX27X_count': [(lambda g:g.V().has('age',P.without([27])).count())], 
     'g_V_hasXage_withoutX27_29X_count': [(lambda g:g.V().has('age',P.without([27,29])).count())], 

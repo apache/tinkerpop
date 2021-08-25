@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Allowed `null` string values in the Gremlin grammar.
 * Prevented exception with `hasLabel(null)` and instead filter away traversers as labels can't ever be null.
+* Improved handling of `null` when passed to `P` predicates.
 * Refined `DotNetTranslator` to be more explicit with `null` arguments to ensure that the right overloads are called.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 

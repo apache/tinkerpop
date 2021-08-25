@@ -188,6 +188,7 @@ const gremlins = {
     g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name: [function({g}) { return g.V().hasLabel("person").has("age",P.gt(10).or(P.gte(11).and(P.lt(20))).and(P.lt(29).or(P.eq(35)))).values("name") }], 
     g_V_in_hasIdXneqX1XX: [function({g, xx1}) { return g.V().in_().hasId(xx1) }], 
     g_V_hasXage_withinX27X_count: [function({g}) { return g.V().has("age",P.within([27])).count() }], 
+    g_V_hasXage_withinX27_nullX_count: [function({g}) { return g.V().has("age",P.within([27, null])).count() }], 
     g_V_hasXage_withinX27_29X_count: [function({g}) { return g.V().has("age",P.within([27, 29])).count() }], 
     g_V_hasXage_withoutX27X_count: [function({g}) { return g.V().has("age",P.without([27])).count() }], 
     g_V_hasXage_withoutX27_29X_count: [function({g}) { return g.V().has("age",P.without([27, 29])).count() }], 
