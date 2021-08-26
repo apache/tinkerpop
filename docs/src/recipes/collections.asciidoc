@@ -34,12 +34,12 @@ continued traversal. Executing transformations for either of these types of situ
 patterns described in this section.
 
 The appearance of a `List` as a traverser in Gremlin usually arises as a result of a `fold()` operation, but may also
-appear by way of some side-effect steps like `store()`:
+appear by way of some side-effect steps like `aggregate()`:
 
 [gremlin-groovy,modern]
 ----
 g.V().fold()
-g.V().store('a').cap('a')
+g.V().aggregate(local, 'a').cap('a')
 ----
 
 It is worth noting that while a `Path` is not technically a `List` it does present like one and can be manipulated in
@@ -61,7 +61,7 @@ It may seem simple, but the most obvious choice to modifying what is in a list i
 [gremlin-groovy,modern]
 ----
 g.V().fold().unfold().values('name')
-g.V().store('a').cap('a').unfold().values('name')
+g.V().aggregate(local,'a').cap('a').unfold().values('name')
 ----
 
 The above examples show that `unfold()` works quite well when you don't want to preserve the `List` structure of the
@@ -159,12 +159,12 @@ from that path. Ideally, all three of these traversals should execute as one to 
 traversals, thus incurring additional query execution costs for what amounts to be largely the same underlying data but
 with different transformations applied. The goal here would be to return the results of this data as a `List` with
 three results (i.e. triple) that could then be submitted once by the application. The following example demonstrates
-the use of `store()` to aid in construction of this `List`:
+the use of `aggregate()` to aid in construction of this `List`:
 
 [gremlin-groovy,modern]
 ----
 g.V().has('name','marko').as('v').                             <1>
-  store('a').                                                  <2>
+  aggregate(local,'a').                                        <2>
     by('age').
   repeat(outE().as('e').inV().as('v')).                        <3>
     until(has('lang','java')).
@@ -173,9 +173,9 @@ g.V().has('name','marko').as('v').                             <1>
   aggregate('c').                                              <5>
     by(select(all,'e').unfold().values('weight').mean()).
   fold().                                                      <6>
-  store('a').                                                  <7>
+  aggregate(local,'a').                                        <7>
     by(cap('b')).
-  store('a').                                                  <8>
+  aggregate(local,'a').                                        <8>
     by(cap('c')).
   cap('a')
 ----
@@ -190,10 +190,11 @@ of "java"). Note however that the `by()` modulator overrides that traverser comp
 the list of vertices in "v". Those vertices are unfolded to retrieve the name property from each and then are reduced
 with `fold()` back into a list to be stored in the side-effected named "b".
 <5> A similar use of `aggregate()` as the previous step, though this one turns "e" into a stream of edges to calculate
-the `mean()` to store in a `List` called "c". Note that `aggregate()` was used here instead of `store()`, as
-the former is an eager collection of the elements in the stream (`store()` is lazy) and will force the traversal to be
-iterated up to that point before moving forward. Without that eager collection, "v" and "e" would not contain the
-complete information required for the production of "b" and "c".
+the `mean()` to store in a `List` called "c". Note that `aggregate()` (short form for `aggregate(global)`) was used
+here instead of `aggregate(local)`, as the former is an eager collection of the elements in the stream
+(`aggregate(local)` is lazy) and will force the traversal to be iterated up to that point before moving forward.
+Without that eager collection, "v" and "e" would not contain the complete information required for the production of
+"b" and "c".
 <6> Adding `fold()`-step here is a bit of a trick. To see the trick, copy and paste all lines of Gremlin up to but
 not including this `fold()`-step and run them against the "modern" graph. The output is three vertices and if the
 `profile()`-step was added one would also see that the traversal contained three traversers. These three traversers
@@ -202,15 +203,15 @@ when traversing away from "marko"). The `aggregate()`-steps are side-effects and
 through them unchanged. The `fold()` obviously converts those three traversers to a single `List` to make one
 traverser with a `List` inside. That means that the remaining steps following the `fold()` will only be executed one
 time each instead of three, which, as will be shown, is critical to the proper result.
-<7> The single traverser with the `List` of three vertices in it passes to `store()`. The `by()` modulator presents an
-override telling Gremlin to ignore the `List` of three vertices and simply grab the "b" side effect created earlier and
-stick that into "a" as part of the result. The `List` with three vertices passes out unchanged as `store()` is a
-side-effect step.
-<8> Again, the single traverser with the `List` of three vertices passes to `store()` and again, the `by()` modulator
-presents an override to include "c" into the result.
+<7> The single traverser with the `List` of three vertices in it passes to `aggregate(local)`. The `by()` modulator
+presents an override telling Gremlin to ignore the `List` of three vertices and simply grab the "b" side effect created
+earlier and stick that into "a" as part of the result. The `List` with three vertices passes out unchanged as
+`aggregate(local)` is a side-effect step.
+<8> Again, the single traverser with the `List` of three vertices passes to `aggregate(local)` and again, the `by()`
+modulator presents an override to include "c" into the result.
 
-All of the above code and explanation show that `store()` can be used to construct `List` objects as side-effects
-which can then be used as a result. Note that `aggregate()` can be used to similar effect, should it make sense that
+All of the above code and explanation show that `aggregate()` can be used to construct `List` objects as side-effects
+which can then be used as a result. Note that `aggregate()` can take a `Scope`, should it make sense that
 lazy `List` creation is not acceptable with respect to the nature of the traversal. An interesting sub-pattern that
 emerges here is that the `by()`-step can modulate its step to completely override the current traverser and ignore its
 contents for purpose of that step. This ability to override a traverser acts as a powerful and flexible tool as it
@@ -235,7 +236,7 @@ g.V().
               bothE().count()).
         fold())
 g.V().
-  store('x').
+  aggregate(local, 'x').
     by(union(select('x').count(local),      <2>
              identity(),
              bothE().count()).

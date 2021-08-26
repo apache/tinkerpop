@@ -1139,8 +1139,8 @@ does not support that at a language level. Using GraphSON 3.0 or GraphBinary (af
 such results. In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of
 key.
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
-and then convert those results to something the client can use locally.
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
+`aggregate(local)` and then convert those results to something the client can use locally.
 
 [[gremlin-python-examples]]
 === Application Examples
@@ -1447,8 +1447,8 @@ anchor:gremlin-net-limitations[]
 === Limitations
 
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
-and then convert those results to something the client can use locally.
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
+`aggregate(local)` and then convert those results to something the client can use locally.
 
 anchor:gremlin-dotnet-template[]
 anchor:dotnet-application-examples[]
@@ -1783,5 +1783,5 @@ the possibility of `null`.
 === Limitations
 
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
-and then convert those results to something the client can use locally.
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
+`aggregate(local)` and then convert those results to something the client can use locally.

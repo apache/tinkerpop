@@ -85,7 +85,7 @@ g.V().as("v").                                                                  
                     select("triples").unfold().as("t").
                     select("x","y").where(eq("a")).
                     select("t"),
-                  store("triples")).                                            <5>
+                  aggregate(local,"triples")).                                  <5>
          select("z").as("length").
          select("triple").select("z").where(eq("length"))).                     <6>
   select(all, "v").unfold().                                                    <7>
@@ -124,7 +124,7 @@ g.withSack(1f).V().as("v").                                                     
                     select("triples").unfold().as("t").
                     select("x","y").where(eq("a")).
                     select("t"),
-                  store("triples")).                                            <5>
+                  aggregate(local,"triples")).                                        <5>
          select("z").as("length").
          select("triple").select("z").where(eq("length"))).                     <6>
   group().by(select(first, "v")).                                               <7>

@@ -186,7 +186,7 @@ g.withSideEffect('v', []).                            <1>
   inject(result.toArray()).as('kv').select(values).
   unfold().
   map(unfold().as('v_or_e').
-      coalesce(V().where(eq('v_or_e')).store('v'),
+      coalesce(V().where(eq('v_or_e')).aggregate(local,'v'),
                select('v').tail(local, 1).bothE().where(eq('v_or_e'))).
       values('name','weight').
       fold()).
