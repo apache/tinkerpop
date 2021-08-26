@@ -447,8 +447,8 @@ image:side-effect-lambda.png[width=175,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').sideEffect(System.out.&println) <1>
-g.V().sideEffect(outE().count().store("o")).
-      sideEffect(inE().count().store("i")).cap("o","i") <2>
+g.V().sideEffect(outE().count().aggregate(local,"o")).
+      sideEffect(inE().count().aggregate(local,"i")).cap("o","i") <2>
 ----
 
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
@@ -612,8 +612,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/VertexProperty.Cardinality.html++[`Cardinality`]
 
 [[aggregate-step]]
-[[store-step]]
-=== Aggregate Step
+=== [[store-step]]Aggregate Step
 
 image::aggregate-step.png[width=800]
 
@@ -672,7 +671,7 @@ filter (i.e. `[0..1]`), it passes through `aggregate()` and thus, stored before 
 
 [gremlin-groovy,modern]
 ----
-g.E().store('x').by('weight').cap('x')
+g.E().aggregate(local,'x').by('weight').cap('x')
 ----
 
 *Additional References*
@@ -850,7 +849,6 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<select-step, `select()`>>: select path elements and transform them via `by()`-modulation.
 * <<tree-step, `tree()`>>: get a tree of traversers objects where the objects have been `by()`-modulated.
 * <<aggregate-step, `aggregate()`>>: aggregate all objects into a set but only store their `by()`-modulated values.
-* <<store-step, `store()`>>: store all objects into a set but only store their `by()`-modulated values.
 
 *Additional References*
 

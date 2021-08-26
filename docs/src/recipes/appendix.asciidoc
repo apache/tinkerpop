@@ -142,7 +142,7 @@ The following example assumes that the edges point in the `OUT` direction. Assum
 ----
 g.V().where(without("x")).as("a").
   outE().as("e").inV().as("b").
-  filter(bothE().where(neq("e")).otherV().where(eq("a"))).store("x").
+  filter(bothE().where(neq("e")).otherV().where(eq("a"))).aggregate(local, "x").
   select("a","b").dedup()
 ----
 
