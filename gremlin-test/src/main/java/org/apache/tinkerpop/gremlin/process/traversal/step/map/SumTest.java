@@ -27,12 +27,15 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -42,6 +45,18 @@ import static org.junit.Assert.assertTrue;
 public abstract class SumTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Number> get_g_V_age_sum();
+
+    public abstract Traversal<Vertex, Number> get_g_V_aggregateXaX_byXageX_sumXlocalX();
+
+    public abstract Traversal<Vertex, Number> get_g_V_aggregateXaX_byXfooX_sumXlocalX();
+
+    public abstract Traversal<Vertex, Number> get_g_V_aggregateXaX_byXageX_capXaX_unfold_sum();
+
+    public abstract Traversal<Integer, Number> get_g_injectXnull_10_5_nullX_sum();
+
+    public abstract Traversal<List<Integer>, Number> get_g_injectXlistXnull_10_5_nullXX_sumXlocalX();
+
+    public abstract Traversal<Vertex, Number> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_sum();
 
     public abstract Traversal<Vertex, Number> get_g_V_age_fold_sumXlocalX();
 
@@ -58,6 +73,62 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Number sum = traversal.next();
         assertEquals(123, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    public void g_injectXnull_10_5_nullX_sum() {
+        final Traversal<Integer, Number> traversal = get_g_injectXnull_10_5_nullX_sum();
+        printTraversalForm(traversal);
+        final Number sum = traversal.next();
+        assertEquals(15, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    public void g_injectXlistXnull_10_5_nullXX_sumXlocalX() {
+        final Traversal<List<Integer>, Number> traversal = get_g_injectXlistXnull_10_5_nullXX_sumXlocalX();
+        printTraversalForm(traversal);
+        final Number sum = traversal.next();
+        assertEquals(15, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_sumXlocalX() {
+        final Traversal<Vertex, Number> traversal = get_g_V_aggregateXaX_byXageX_sumXlocalX();
+        printTraversalForm(traversal);
+        final Number sum = traversal.next();
+        assertEquals(123, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_capXaX_unfold_sum() {
+        final Traversal<Vertex, Number> traversal = get_g_V_aggregateXaX_byXageX_capXaX_unfold_sum();
+        printTraversalForm(traversal);
+        final Number sum = traversal.next();
+        assertEquals(123, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_sumXlocalX() {
+        final Traversal<Vertex, Number> traversal = get_g_V_aggregateXaX_byXfooX_sumXlocalX();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_capXaX_unfold_sum() {
+        final Traversal<Vertex, Number> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_sum();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -105,6 +176,35 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Number> get_g_V_age_sum() {
             return g.V().values("age").sum();
+        }
+
+        @Override
+        public Traversal<Integer, Number> get_g_injectXnull_10_5_nullX_sum() {
+            return g.inject(null, 10, 5, null).sum();
+        }
+        @Override
+        public Traversal<List<Integer>, Number> get_g_injectXlistXnull_10_5_nullXX_sumXlocalX() {
+            return g.inject(Arrays.asList(null, 10, 5, null)).sum(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_aggregateXaX_byXageX_sumXlocalX() {
+            return g.V().aggregate("a").by("age").cap("a").sum(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_aggregateXaX_byXageX_capXaX_unfold_sum() {
+            return g.V().aggregate("a").by("age").cap("a").unfold().sum();
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_aggregateXaX_byXfooX_sumXlocalX() {
+            return g.V().aggregate("a").by("foo").cap("a").sum(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_sum() {
+            return g.V().aggregate("a").by("foo").cap("a").unfold().sum();
         }
 
         @Override

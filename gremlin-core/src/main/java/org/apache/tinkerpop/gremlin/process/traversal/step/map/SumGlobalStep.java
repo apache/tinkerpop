@@ -43,8 +43,21 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     public SumGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>((S) Integer.valueOf(0)));
         this.setReducingBiOperator((BinaryOperator) Operator.sum);
+    }
+
+    /**
+     * Advances the starts until a non-null value is found or simply returns {@code null}. In this way, an all
+     * {@code null} stream will result in {@code null}.
+     */
+    @Override
+    protected S generateSeedFromStarts() {
+        S s = null;
+        while (starts.hasNext() && null == s) {
+            s = projectTraverser(this.starts.next());
+        }
+
+        return s;
     }
 
     @Override
@@ -57,7 +70,6 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
     public S projectTraverser(final Traverser.Admin<S> traverser) {
         return (S) mul(traverser.get(), traverser.bulk());
     }
-
 
     @Override
     public Set<TraverserRequirement> getRequirements() {

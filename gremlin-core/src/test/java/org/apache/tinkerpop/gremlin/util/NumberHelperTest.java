@@ -36,6 +36,7 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.min;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.sub;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -50,49 +51,49 @@ public class NumberHelperTest {
     private final static List<Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>> COMMON_NUMBER_CLASSES =
             Arrays.asList(
                     // BYTE
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, (byte) 1, Byte.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, (short) 1, Short.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, 1, Integer.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, 1L, Long.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, 1F, Float.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, 1D, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, BigInteger.ONE, BigInteger.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((byte) 1, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>((byte) 1, (byte) 1, Byte.class, Float.class),
+                    new Quartet<>((byte) 1, (short) 1, Short.class, Float.class),
+                    new Quartet<>((byte) 1, 1, Integer.class, Float.class),
+                    new Quartet<>((byte) 1, 1L, Long.class, Double.class),
+                    new Quartet<>((byte) 1, 1F, Float.class, Float.class),
+                    new Quartet<>((byte) 1, 1D, Double.class, Double.class),
+                    new Quartet<>((byte) 1, BigInteger.ONE, BigInteger.class, BigDecimal.class),
+                    new Quartet<>((byte) 1, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // SHORT
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, (short) 1, Short.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, 1, Integer.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, 1L, Long.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, 1F, Float.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, 1D, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, BigInteger.ONE, BigInteger.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>((short) 1, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>((short) 1, (short) 1, Short.class, Float.class),
+                    new Quartet<>((short) 1, 1, Integer.class, Float.class),
+                    new Quartet<>((short) 1, 1L, Long.class, Double.class),
+                    new Quartet<>((short) 1, 1F, Float.class, Float.class),
+                    new Quartet<>((short) 1, 1D, Double.class, Double.class),
+                    new Quartet<>((short) 1, BigInteger.ONE, BigInteger.class, BigDecimal.class),
+                    new Quartet<>((short) 1, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // INTEGER
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1, 1, Integer.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1, 1L, Long.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1, 1F, Float.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1, 1D, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1, BigInteger.ONE, BigInteger.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(1, 1, Integer.class, Float.class),
+                    new Quartet<>(1, 1L, Long.class, Double.class),
+                    new Quartet<>(1, 1F, Float.class, Float.class),
+                    new Quartet<>(1, 1D, Double.class, Double.class),
+                    new Quartet<>(1, BigInteger.ONE, BigInteger.class, BigDecimal.class),
+                    new Quartet<>(1, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // LONG
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1L, 1L, Long.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1L, 1F, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1L, 1D, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1L, BigInteger.ONE, BigInteger.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1L, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(1L, 1L, Long.class, Double.class),
+                    new Quartet<>(1L, 1F, Double.class, Double.class),
+                    new Quartet<>(1L, 1D, Double.class, Double.class),
+                    new Quartet<>(1L, BigInteger.ONE, BigInteger.class, BigDecimal.class),
+                    new Quartet<>(1L, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // FLOAT
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1F, 1F, Float.class, Float.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1F, 1D, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1F, BigInteger.ONE, BigDecimal.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1F, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(1F, 1F, Float.class, Float.class),
+                    new Quartet<>(1F, 1D, Double.class, Double.class),
+                    new Quartet<>(1F, BigInteger.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(1F, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // DOUBLE
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1D, 1D, Double.class, Double.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1D, BigInteger.ONE, BigDecimal.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(1D, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(1D, 1D, Double.class, Double.class),
+                    new Quartet<>(1D, BigInteger.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(1D, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // BIG INTEGER
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(BigInteger.ONE, BigInteger.ONE, BigInteger.class, BigDecimal.class),
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(BigInteger.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
+                    new Quartet<>(BigInteger.ONE, BigInteger.ONE, BigInteger.class, BigDecimal.class),
+                    new Quartet<>(BigInteger.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class),
                     // BIG DECIMAL
-                    new Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class)
+                    new Quartet<>(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class)
             );
 
     @Test
@@ -113,10 +114,27 @@ public class NumberHelperTest {
     }
 
     @Test
+    public void shouldHandleAllNullInput() {
+        assertNull(add(null, null));
+        assertNull(sub(null, null));
+        assertNull(mul(null, null));
+        assertNull(div(null, null));
+        assertNull(max((Number) null, null));
+        assertNull(max((Comparable) null, null));
+        assertNull(min((Number) null, null));
+        assertNull(min((Comparable) null, null));
+        assertEquals(0, compare(null, null).intValue());
+    }
+
+    @Test
     public void shouldAddAndReturnCorrectType() {
 
         // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
         //       nothing to do with the actual NumberHelper implementation
+
+        // the above NOTE isn't quite true - TINKERPOP-2610
+        assertEquals((byte) 1, add((byte) 1, (Byte) null));
+        assertNull(add((Byte) null, (byte) 1));
 
         // BYTE
         assertEquals(2, add((byte) 1, (byte) 1));
@@ -177,6 +195,10 @@ public class NumberHelperTest {
         // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
         //       nothing to do with the actual NumberHelper implementation
 
+        // the above NOTE isn't quite true - TINKERPOP-2610
+        assertEquals((byte) 1, sub((byte) 1, (Byte) null));
+        assertNull(sub((Byte) null, (byte) 1));
+
         // BYTE
         assertEquals(0, sub((byte) 1, (byte) 1));
         assertEquals(0, sub((byte) 1, (short) 1));
@@ -236,6 +258,10 @@ public class NumberHelperTest {
         // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
         //       nothing to do with the actual NumberHelper implementation
 
+        // the above NOTE isn't quite true - TINKERPOP-2610
+        assertEquals((byte) 1, mul((byte) 1, (Byte) null));
+        assertNull(mul((Byte) null, (byte) 1));
+
         // BYTE
         assertEquals(1, mul((byte) 1, (byte) 1));
         assertEquals(1, mul((byte) 1, (short) 1));
@@ -294,6 +320,10 @@ public class NumberHelperTest {
 
         // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
         //       nothing to do with the actual NumberHelper implementation
+
+        // the above NOTE isn't quite true - TINKERPOP-2610
+        assertEquals((byte) 1, div((byte) 1, (Byte) null));
+        assertNull(div((Byte) null, (byte) 1));
 
         // BYTE
         assertEquals(1, div((byte) 1, (byte) 1));
@@ -424,6 +454,16 @@ public class NumberHelperTest {
                 assertTrue(compare(zero, zero) == 0);
                 assertTrue(compare(one, one) == 0);
             }
+        }
+
+        for (Number one : ones) {
+            assertEquals(1, min(null, one).intValue());
+            assertEquals(1, min(one, null).intValue());
+            assertEquals(1, max(null, one).intValue());
+            assertEquals(1, max(one, null).intValue());
+
+            assertEquals(-1, compare(null, one).intValue());
+            assertEquals(1, compare(one, null).intValue());
         }
     }
 }

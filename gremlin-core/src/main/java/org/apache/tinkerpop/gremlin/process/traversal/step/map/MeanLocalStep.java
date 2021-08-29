@@ -42,15 +42,27 @@ public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extend
     protected Number map(final Traverser.Admin<S> traverser) {
         final Iterator<E> iterator = traverser.get().iterator();
         if (iterator.hasNext()) {
+            // forward the iterator to the first non-null or return null
+            E result = untilNonNull(iterator);
             Long counter = 1L;
-            E result = iterator.next();
             while (iterator.hasNext()) {
-                result = (E) NumberHelper.add(result, iterator.next());
-                counter++;
+                final Number n = iterator.next();
+                if (n != null) {
+                    result = (E) NumberHelper.add(result, n);
+                    counter++;
+                }
             }
             return NumberHelper.div(result, counter, true);
         }
         throw FastNoSuchElementException.instance();
+    }
+
+    private E untilNonNull(final Iterator<E> itty) {
+        E result = null;
+        while (itty.hasNext() && null == result) {
+            result = itty.next();
+        }
+        return result;
     }
 
     @Override

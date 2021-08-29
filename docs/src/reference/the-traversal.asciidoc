@@ -2162,7 +2162,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[max-step]]
 === Max Step
 
-The `max()`-step (*map*) operates on a stream of comparable objects and determines which is the last object according to its natural order in the stream.
+The `max()`-step (*map*) operates on a stream of comparable objects and determines which is the last object according
+to its natural order in the stream.
 
 [gremlin-groovy,modern]
 ----
@@ -2171,8 +2172,22 @@ g.V().repeat(both()).times(3).values('age').max()
 g.V().values('name').max()
 ----
 
-IMPORTANT: `max(local)` determines the max of the current, local object (not the objects in the traversal stream).
-This works for `Collection` and `Comparable`-type objects.
+When called as `max(local)` it determines the maximum value of the current, local object (not the objects in the
+traversal stream). This works for `Collection` and `Comparable`-type objects.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().max(local)
+----
+
+When there are `null` values being evaluated the `null` objects are ignored, but if all values are recognized as `null`
+the return value is `null`.
+
+[gremlin-groovy,modern]
+----
+g.inject(null,10, 9, null).max()
+g.inject([null,null,null]).max(local)
+----
 
 *Additional References*
 
@@ -2195,8 +2210,22 @@ g.V().repeat(both()).times(3).values('age').dedup().mean()
 <1> Realize that traversers are being bulked by `repeat()`. There may be more of a particular number than another,
 thus altering the average.
 
-IMPORTANT: `mean(local)` determines the mean of the current, local object (not the objects in the traversal stream).
-This works for `Collection` and `Number`-type objects.
+When called as `mean(local)` it determines the mean of the current, local object (not the objects in the traversal
+stream). This works for `Collection` and `Number`-type objects.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().mean()
+----
+
+If `mean()` encounters `null` values, they will be ignored (i.e. their traversers not counted toward toward the
+divisor). If all traversers are `null` then the stream will return `null`.
+
+[gremlin-groovy,modern]
+----
+g.inject(null,10, 9, null).mean()
+g.inject([null,null,null]).mean(local)
+----
 
 *Additional References*
 
@@ -2207,7 +2236,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[min-step]]
 === Min Step
 
-The `min()`-step (*map*) operates on a stream of comparable objects and determines which is the first object according to its natural order in the stream.
+The `min()`-step (*map*) operates on a stream of comparable objects and determines which is the first object according
+to its natural order in the stream.
 
 [gremlin-groovy,modern]
 ----
@@ -2216,8 +2246,22 @@ g.V().repeat(both()).times(3).values('age').min()
 g.V().values('name').min()
 ----
 
-IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
-This works for `Collection` and `Comparable`-type objects.
+When called as `min(local)` it determines the minimum value of the current, local object (not the objects in the
+traversal stream). This works for `Collection` and `Comparable`-type objects.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().min(local)
+----
+
+When there are `null` values being evaluated the `null` objects are ignored, but if all values are recognized as `null`
+the return value is `null`.
+
+[gremlin-groovy,modern]
+----
+g.inject(null,10, 9, null).min()
+g.inject([null,null,null]).min(local)
+----
 
 *Additional References*
 
@@ -3457,8 +3501,22 @@ g.V().values('age').sum()
 g.V().repeat(both()).times(3).values('age').sum()
 ----
 
-IMPORTANT: `sum(local)` determines the sum of the current, local object (not the objects in the traversal stream).
-This works for `Collection`-type objects.
+When called as `sum(local)` it determines the sum of the current, local object (not the objects in the traversal
+stream). This works for `Collection`-type objects.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().sum(local)
+----
+
+When there are `null` values being evaluated the `null` objects are ignored, but if all values are recognized as `null`
+the return value is `null`.
+
+[gremlin-groovy,modern]
+----
+g.inject(null,10, 9, null).sum()
+g.inject([null,null,null]).sum(local)
+----
 
 *Additional References*
 

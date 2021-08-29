@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
@@ -335,7 +336,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
             add(GryoTypeReg.of(PartitionStrategy.class, 140, new JavaSerializer()));
             add(GryoTypeReg.of(SubgraphStrategy.class, 141, new JavaSerializer()));
-            add(GryoTypeReg.of(SeedStrategy.class, 192, new JavaSerializer()));          // ***LAST ID***
+            add(GryoTypeReg.of(SeedStrategy.class, 192, new JavaSerializer()));
             add(GryoTypeReg.of(VertexProgramStrategy.class, 142, new JavaSerializer()));
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
@@ -401,6 +402,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
+            add(GryoTypeReg.of(ReducingBarrierStep.NonEmittingSeed.class, 194));           // ***LAST ID***
 
             add(GryoTypeReg.of(B_LP_NL_O_P_S_SE_SL_Traverser.class, 174));
             add(GryoTypeReg.of(B_NL_O_S_SE_SL_Traverser.class, 175));
@@ -516,7 +518,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1d0.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1d0.PSerializer()));
-            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1d0.TextPSerializer())); // ***LAST ID***
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1d0.TextPSerializer()));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1d0.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1d0.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -565,6 +567,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MeanGlobalStep.MeanGlobalBiOperator.class, 110));
             add(GryoTypeReg.of(MeanGlobalStep.MeanNumber.class, 111));
             add(GryoTypeReg.of(TreeStep.TreeBiOperator.class, 112));
+            add(GryoTypeReg.of(ReducingBarrierStep.NonEmittingSeed.class, 194));           // ***LAST ID***
+
             // skip 113
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer()));
@@ -574,7 +578,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
             add(GryoTypeReg.of(PartitionStrategy.class, 140, new JavaSerializer()));
             add(GryoTypeReg.of(SubgraphStrategy.class, 141, new JavaSerializer()));
-            add(GryoTypeReg.of(SeedStrategy.class, 192, new JavaSerializer()));          // ***LAST ID***
+            add(GryoTypeReg.of(SeedStrategy.class, 192, new JavaSerializer()));
             add(GryoTypeReg.of(VertexProgramStrategy.class, 142, new JavaSerializer()));
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
