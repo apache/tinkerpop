@@ -77,31 +77,44 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'from gremlin_python.process.graph_traversal import __\n' +
                     'from gremlin_python.structure.graph import Graph\n' +
                     'from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO, WithOptions\n')
+
+    // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
+    // at runtime. using this approach for now as these are the only such situations encountered so far. a better
+    // solution may become necessary as testing of nulls expands.
+    def staticTranslate = [
+            g_injectXnull_nullX: "    'g_injectXnull_nullX': [(lambda g: g.inject(None,None))], ",
+            g_VX1X_valuesXageX_injectXnull_nullX: "    'g_VX1X_valuesXageX_injectXnull_nullX': [(lambda g, xx1=None: g.V(xx1).values('age').inject(None,None))], "
+    ]
+
     writer.writeLine('world.gremlins = {')
     gremlins.each { k,v ->
-        writer.write("    '")
-        writer.write(k)
-        writer.write("': [")
-        def collected = v.collect{
-            def t = gremlinGroovyScriptEngine.eval(it, bindings)
-            [t, t.bytecode.bindings.keySet()]
-        }
-        def uniqueBindings = collected.collect{it[1]}.flatten().unique()
-        def gremlinItty = collected.iterator()
-        while (gremlinItty.hasNext()) {
-            def t = gremlinItty.next()[0]
-            writer.write("(lambda g")
-            if (!uniqueBindings.isEmpty()) {
-                writer.write(", ")
-                writer.write(uniqueBindings.join("=None,"))
-                writer.write("=None")
+        if (staticTranslate.containsKey(k)) {
+            writer.writeLine(staticTranslate[k])
+        } else {
+            writer.write("    '")
+            writer.write(k)
+            writer.write("': [")
+            def collected = v.collect {
+                def t = gremlinGroovyScriptEngine.eval(it, bindings)
+                [t, t.bytecode.bindings.keySet()]
             }
-            writer.write(":")
-            writer.write(translator.translate(t.bytecode).script)
-            writer.write(")")
-            if (gremlinItty.hasNext()) writer.write(', ')
+            def uniqueBindings = collected.collect { it[1] }.flatten().unique()
+            def gremlinItty = collected.iterator()
+            while (gremlinItty.hasNext()) {
+                def t = gremlinItty.next()[0]
+                writer.write("(lambda g")
+                if (!uniqueBindings.isEmpty()) {
+                    writer.write(", ")
+                    writer.write(uniqueBindings.join("=None,"))
+                    writer.write("=None")
+                }
+                writer.write(":")
+                writer.write(translator.translate(t.bytecode).script)
+                writer.write(")")
+                if (gremlinItty.hasNext()) writer.write(', ')
+            }
+            writer.writeLine('], ')
         }
-        writer.writeLine('], ')
     }
     writer.writeLine('}')
 }

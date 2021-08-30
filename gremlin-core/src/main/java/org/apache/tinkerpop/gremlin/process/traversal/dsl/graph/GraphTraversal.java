@@ -1284,8 +1284,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> inject(final E... injections) {
-        this.asAdmin().getBytecode().addStep(Symbols.inject, injections);
-        return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), injections));
+        // a single null is [null]
+        final E[] s = null == injections ? (E[]) new Object[] { null } : injections;
+        this.asAdmin().getBytecode().addStep(Symbols.inject, s);
+        return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), s));
     }
 
     /**

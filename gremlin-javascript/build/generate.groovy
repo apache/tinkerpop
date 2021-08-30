@@ -93,30 +93,42 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'const TextP = traversalModule.TextP\n' +
                     'const WithOptions = traversalModule.withOptions\n')
 
+    // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
+    // at runtime. using this approach for now as these are the only such situations encountered so far. a better
+    // solution may become necessary as testing of nulls expands.
+    def staticTranslate = [
+            g_injectXnull_nullX: "    g_injectXnull_nullX: [function({g}) { return g.inject(null,null) }], ",
+            g_VX1X_valuesXageX_injectXnull_nullX: "    g_VX1X_valuesXageX_injectXnull_nullX: [function({g, xx1}) { return g.V(xx1).values(\"age\").inject(null,null) }], "
+    ]
+
     writer.writeLine('const gremlins = {')
     gremlins.each { k,v ->
-        writer.write("    ")
-        writer.write(k)
-        writer.write(": [")
-        def collected = v.collect{
-            def t = gremlinGroovyScriptEngine.eval(it, bindings)
-            [t, t.bytecode.bindings.keySet()]
-        }
-        def uniqueBindings = collected.collect{it[1]}.flatten().unique()
-        def gremlinItty = collected.iterator()
-        while (gremlinItty.hasNext()) {
-            def t = gremlinItty.next()[0]
-            writer.write("function({g")
-            if (!uniqueBindings.isEmpty()) {
-                writer.write(", ")
-                writer.write(uniqueBindings.join(", "))
+        if (staticTranslate.containsKey(k)) {
+            writer.writeLine(staticTranslate[k])
+        } else {
+            writer.write("    ")
+            writer.write(k)
+            writer.write(": [")
+            def collected = v.collect {
+                def t = gremlinGroovyScriptEngine.eval(it, bindings)
+                [t, t.bytecode.bindings.keySet()]
             }
-            writer.write("}) { return ")
-            writer.write(translator.translate(t.bytecode).script)
-            writer.write(" }")
-            if (gremlinItty.hasNext()) writer.write(', ')
+            def uniqueBindings = collected.collect { it[1] }.flatten().unique()
+            def gremlinItty = collected.iterator()
+            while (gremlinItty.hasNext()) {
+                def t = gremlinItty.next()[0]
+                writer.write("function({g")
+                if (!uniqueBindings.isEmpty()) {
+                    writer.write(", ")
+                    writer.write(uniqueBindings.join(", "))
+                }
+                writer.write("}) { return ")
+                writer.write(translator.translate(t.bytecode).script)
+                writer.write(" }")
+                if (gremlinItty.hasNext()) writer.write(', ')
+            }
+            writer.writeLine('], ')
         }
-        writer.writeLine('], ')
     }
     writer.writeLine('}\n')
 

@@ -88,8 +88,20 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateInject() {
-        final String script = translator.translate(g.inject(10,20,null,20,10,10).asAdmin().getBytecode()).getScript();
+        String script = translator.translate(g.inject(10,20,null,20,10,10).asAdmin().getBytecode()).getScript();
         assertEquals("g.Inject<object>(10,20,null,20,10,10)", script);
+        script = translator.translate(g.inject().asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject<object>()", script);
+        script = translator.translate(g.inject((Object) null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject<object>(null)", script);
+        script = translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject<object>(null,null)", script);
+        script = translator.translate(g.V().values("age").inject().asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Values<object>(\"age\").Inject()", script);
+        script = translator.translate(g.V().values("age").inject(null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Values<object>(\"age\").Inject(null)", script);
+        script = translator.translate(g.V().values("age").inject(null, null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Values<object>(\"age\").Inject(null,null)", script);
     }
 
     @Test

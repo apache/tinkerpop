@@ -28,6 +28,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -311,21 +314,31 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceScript(final String traversalSource, final Bytecode o) {
+        protected Script produceScript(final String traversalSource, final Bytecode bytecode) {
             script.append(traversalSource);
-            for (final Bytecode.Instruction instruction : o.getInstructions()) {
+            for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 if (0 == instruction.getArguments().length) {
                     script.append(".").append(methodName).append("()");
                 } else {
                     script.append(".").append(methodName).append("(");
 
-                    final Iterator<Object> itty = Arrays.stream(instruction.getArguments()).iterator();
-                    while(itty.hasNext()) {
-                        convertToScript(itty.next());
-                        if (itty.hasNext()) script.append(",");
+                    // special case inject(null, null) or else groovy might guess the JDK collection extension form
+                    if (methodName.equals(GraphTraversal.Symbols.inject)) {
+                        final Iterator<Object> itty = Arrays.stream(instruction.getArguments()).iterator();
+                        while (itty.hasNext()) {
+                            final Object o = itty.next();
+                            if (null == o) script.append("(Object)");
+                            convertToScript(o);
+                            if (itty.hasNext()) script.append(",");
+                        }
+                    } else {
+                        final Iterator<Object> itty = Arrays.stream(instruction.getArguments()).iterator();
+                        while (itty.hasNext()) {
+                            convertToScript(itty.next());
+                            if (itty.hasNext()) script.append(",");
+                        }
                     }
-
                     script.append(")");
                 }
             }

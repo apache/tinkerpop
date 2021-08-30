@@ -304,18 +304,22 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final String traversalSource, final Bytecode o) {
             script.append(traversalSource);
+            int instructionPosition = 0;
             for (final Bytecode.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 // perhaps too many if/then conditions for specifying generics. doesnt' seem like there is a clear
                 // way to refactor this more nicely though.
+                //
+                // inject() only has types when called with it when its used as a start step
                 if (0 == instruction.getArguments().length) {
-                    if (methodName.equals(GraphTraversal.Symbols.fold) && o.getSourceInstructions().size() + o.getStepInstructions().size() > 1)
+                    if (methodName.equals(GraphTraversal.Symbols.fold) && o.getSourceInstructions().size() + o.getStepInstructions().size() > 1 ||
+                            (methodName.equals(GraphTraversal.Symbols.inject) && instructionPosition > 0))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "")).append("()");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("()");
                 } else {
                     if (methodsWithArgsNotNeedingGeneric.contains(methodName) ||
-                            (methodName.equals(GraphTraversal.Symbols.inject) && Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull)))
+                            (methodName.equals(GraphTraversal.Symbols.inject) && (Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull) || instructionPosition > 0)))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "").replace("<object,object>", "")).append("(");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("(");
@@ -359,6 +363,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     }
                     script.setCharAtEnd(')');
                 }
+                instructionPosition++;
             }
             return script;
         }

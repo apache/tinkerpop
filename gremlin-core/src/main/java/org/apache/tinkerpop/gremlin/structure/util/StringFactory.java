@@ -218,7 +218,6 @@ public final class StringFactory {
     public static String stepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         final List<String> strings = Stream.of(arguments)
-                .filter(o -> null != o)
                 .filter(o -> {
                     if (o instanceof TraversalRing)
                         return !((TraversalRing) o).isEmpty();
@@ -227,10 +226,10 @@ public final class StringFactory {
                     else if (o instanceof Map)
                         return !((Map) o).isEmpty();
                     else
-                        return !o.toString().isEmpty();
+                        return !Objects.toString(o).isEmpty();
                 })
                 .map(o -> {
-                    final String string = o.toString();
+                    final String string = Objects.toString(o);
                     return hasLambda(string) ? "lambda" : string;
                 }).collect(Collectors.toList());
         if (!strings.isEmpty()) {
@@ -239,7 +238,6 @@ public final class StringFactory {
             builder.append(')');
         }
         if (!step.getLabels().isEmpty()) builder.append('@').append(step.getLabels());
-        //builder.append("^").append(step.getId());
         return builder.toString();
     }
 

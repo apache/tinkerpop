@@ -104,52 +104,64 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             '            new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
             '            {')
 
-    gremlins.each { k,v ->
-        writer.write("               {\"")
-        writer.write(k)
-        writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
-        def collected = v.collect{
-            def t = gremlinGroovyScriptEngine.eval(it, bindings)
-            [t, t.bytecode.bindings.keySet()]
-        }
+    // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
+    // at runtime. using this approach for now as these are the only such situations encountered so far. a better
+    // solution may become necessary as testing of nulls expands.
+    def staticTranslate = [
+            g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",
+            g_VX1X_valuesXageX_injectXnull_nullX: "               {\"g_VX1X_valuesXageX_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p[\"xx1\"]).Values<object>(\"age\").Inject(null,null)}}, "
+    ]
 
-        def gremlinItty = collected.iterator()
-        while (gremlinItty.hasNext()) {
-            def t = gremlinItty.next()[0]
-            writer.write("(g,p) =>")
-            writer.write(translator.translate(t.bytecode).script.
-                    replace("xx1", "p[\"xx1\"]").
-                    replace("xx2", "p[\"xx2\"]").
-                    replace("xx3", "p[\"xx3\"]").
-                    replace("v1", "(Vertex) p[\"v1\"]").
-                    replace("v2", "(Vertex) p[\"v2\"]").
-                    replace("v3", "(Vertex) p[\"v3\"]").
-                    replace("v4", "(Vertex) p[\"v4\"]").
-                    replace("v5", "(Vertex) p[\"v5\"]").
-                    replace("v6", "(Vertex) p[\"v6\"]").
-                    replace("vid1", "p[\"vid1\"]").
-                    replace("vid2", "p[\"vid2\"]").
-                    replace("vid3", "p[\"vid3\"]").
-                    replace("vid4", "p[\"vid4\"]").
-                    replace("vid5", "p[\"vid5\"]").
-                    replace("vid6", "p[\"vid6\"]").
-                    replace("e7", "p[\"e7\"]").
-                    replace("e10", "p[\"e10\"]").
-                    replace("e11", "p[\"e11\"]").
-                    replace("eid7", "p[\"eid7\"]").
-                    replace("eid10", "p[\"eid10\"]").
-                    replace("eid11", "p[\"eid11\"]").
-                    replace("l1", "(IFunction) p[\"l1\"]").
-                    replace("l2", "(IFunction) p[\"l2\"]").
-                    replace("pred1", "(IPredicate) p[\"pred1\"]").
-                    replace("c1", "(IComparator) p[\"c1\"]").
-                    replace("c2", "(IComparator) p[\"c2\"]"))
-            if (gremlinItty.hasNext())
-                writer.write(', ')
-            else
-                writer.write("}")
+    gremlins.each { k,v ->
+        if (staticTranslate.containsKey(k)) {
+            writer.writeLine(staticTranslate[k])
+        } else {
+            writer.write("               {\"")
+            writer.write(k)
+            writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
+            def collected = v.collect {
+                def t = gremlinGroovyScriptEngine.eval(it, bindings)
+                [t, t.bytecode.bindings.keySet()]
+            }
+
+            def gremlinItty = collected.iterator()
+            while (gremlinItty.hasNext()) {
+                def t = gremlinItty.next()[0]
+                writer.write("(g,p) =>")
+                writer.write(translator.translate(t.bytecode).script.
+                        replace("xx1", "p[\"xx1\"]").
+                        replace("xx2", "p[\"xx2\"]").
+                        replace("xx3", "p[\"xx3\"]").
+                        replace("v1", "(Vertex) p[\"v1\"]").
+                        replace("v2", "(Vertex) p[\"v2\"]").
+                        replace("v3", "(Vertex) p[\"v3\"]").
+                        replace("v4", "(Vertex) p[\"v4\"]").
+                        replace("v5", "(Vertex) p[\"v5\"]").
+                        replace("v6", "(Vertex) p[\"v6\"]").
+                        replace("vid1", "p[\"vid1\"]").
+                        replace("vid2", "p[\"vid2\"]").
+                        replace("vid3", "p[\"vid3\"]").
+                        replace("vid4", "p[\"vid4\"]").
+                        replace("vid5", "p[\"vid5\"]").
+                        replace("vid6", "p[\"vid6\"]").
+                        replace("e7", "p[\"e7\"]").
+                        replace("e10", "p[\"e10\"]").
+                        replace("e11", "p[\"e11\"]").
+                        replace("eid7", "p[\"eid7\"]").
+                        replace("eid10", "p[\"eid10\"]").
+                        replace("eid11", "p[\"eid11\"]").
+                        replace("l1", "(IFunction) p[\"l1\"]").
+                        replace("l2", "(IFunction) p[\"l2\"]").
+                        replace("pred1", "(IPredicate) p[\"pred1\"]").
+                        replace("c1", "(IComparator) p[\"c1\"]").
+                        replace("c2", "(IComparator) p[\"c2\"]"))
+                if (gremlinItty.hasNext())
+                    writer.write(', ')
+                else
+                    writer.write("}")
+            }
+            writer.writeLine('}, ')
         }
-        writer.writeLine('}, ')
     }
     writer.writeLine('            };\n')
 

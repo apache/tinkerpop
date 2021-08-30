@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +51,18 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id);
 
     public abstract Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX();
+
+    public abstract Traversal<Integer, Integer> get_g_injectXnull_nullX();
+
+    public abstract Traversal<Integer, Integer> get_g_injectXnullX();
+
+    public abstract Traversal<Integer, Integer> get_g_inject();
+
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_injectXnull_nullX(final Object vid1);
+
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_injectXnullX(final Object vid1);
+
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_inject(final Object vid1);
 
     public abstract Traversal<Integer, Map<String, Object>> get_g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX();
 
@@ -99,6 +112,51 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    public void g_injectXnull_nullX() {
+        final Traversal<Integer, Integer> traversal = get_g_injectXnull_nullX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(null, null), traversal);
+    }
+
+    @Test
+    public void g_injectXnullX() {
+        final Traversal<Integer, Integer> traversal = get_g_injectXnullX();
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList(null), traversal);
+    }
+
+    @Test
+    public void g_inject() {
+        final Traversal<Integer, Integer> traversal = get_g_inject();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_injectXnull_nullX() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_injectXnull_nullX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29, null, null), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_injectXnullX() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_injectXnullX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29, null), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_inject() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_inject(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
+    @Test
     public void g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX() {
         final Traversal<Integer, Map<String, Object>> traversal = get_g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX();
         printTraversalForm(traversal);
@@ -143,6 +201,36 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX() {
             return g.inject(null, 1, 3, null);
+        }
+
+        @Override
+        public Traversal<Integer, Integer> get_g_injectXnull_nullX() {
+            return g.inject(null, null);
+        }
+
+        @Override
+        public Traversal<Integer, Integer> get_g_injectXnullX() {
+            return g.inject(null);
+        }
+
+        @Override
+        public Traversal<Integer, Integer> get_g_inject() {
+            return g.inject();
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_injectXnull_nullX(final Object vid1) {
+            return g.V(vid1).values("age").inject(null, null);
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_injectXnullX(final Object vid1) {
+            return g.V(vid1).values("age").inject(null);
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_inject(final Object vid1) {
+            return g.V(vid1).values("age").inject();
         }
 
         @Override
