@@ -109,6 +109,33 @@ data to the graph.
 
 NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
 
+=== Data Types
+
+TinkerGraph can store any Java `Object` for a property value. It is therefore important to take note of the types of
+the values that are being used and it is often best to be explicit in terms of exactly what type is being used,
+especially in the case of numbers.
+
+[[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().withEmbedded(graph)
+g.addV().property('vp2',0.65780294)
+g.addV().property('vp2',0.65780294f)
+g.addV().property('vp2',0.65780294d)
+g.V().has('vp2',0.65780294)     <1>
+g.V().has('vp2',0.65780294f)    <2>
+g.V().has('vp2',0.65780294d)    <3>
+----
+
+<1> In Gremlin Console, `0.65780294` actually evaluates to a `BigDecimal`, which won't match the specifically typed
+`float` property value.
+<2> The explicit `float` will only match the `float` property value.
+<3> The explicit `double` will only match the `double` and `BigDecimal` values.
+
+Unlike other graphs, the above demonstration shows that TinkerGraph does not do any form of type coercion (except for
+type coercion related to element identifiers as described in the <<next section,tinkergraph-configuration>>).
+
+[[tinkergraph-configuration]]
 === Configuration
 
 TinkerGraph has several settings that can be provided on creation via `Configuration` object:
