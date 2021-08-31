@@ -22,6 +22,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.netty.handler.codec.CorruptedFrameException;
 import nl.altindag.log.LogCaptor;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
@@ -33,10 +34,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
@@ -113,5 +121,104 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                 "^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$")), Is.is(true));
 
+    }
+
+    @Test
+    public void shouldBalanceConcurrentRequestsAcrossConnections() throws InterruptedException {
+        final int connPoolSize = 16;
+        final Cluster cluster = TestClientFactory.build()
+                .minConnectionPoolSize(connPoolSize)
+                .maxConnectionPoolSize(connPoolSize)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+        client.init();
+        final ExecutorService executorServiceForTesting = cluster.executor();
+
+        try {
+            final RequestMessage.Builder request = client.buildMessage(RequestMessage.build(Tokens.OPS_EVAL))
+                    .add(Tokens.ARGS_GREMLIN, "Thread.sleep(5000)");
+            final Callable<Connection> sendQueryCallable = () -> client.chooseConnection(request.create());
+            final List<Callable<Connection>> listOfTasks = new ArrayList<>();
+            for (int i = 0; i < connPoolSize; i++) {
+                listOfTasks.add(sendQueryCallable);
+            }
+
+            HashMap<String, Integer> channelsSize = new HashMap<>();
+
+            final List<Future<Connection>> executorSubmitFutures = executorServiceForTesting.invokeAll(listOfTasks);
+            executorSubmitFutures.parallelStream().map(fut -> {
+                try {
+                    return fut.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    fail(e.getMessage());
+                    return null;
+                }
+            }).forEach(conn -> {
+                String id = conn.getChannelId();
+                channelsSize.put(id, channelsSize.getOrDefault(id, 0) + 1);
+            });
+
+            assertNotEquals(channelsSize.entrySet().size(), 0);
+            channelsSize.entrySet().forEach(entry -> {
+                assertEquals(1, (entry.getValue()).intValue());
+            });
+
+        } finally {
+            executorServiceForTesting.shutdown();
+            client.close();
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void overLimitOperationsShouldDelegateToSingleNewConnection() throws InterruptedException {
+        final int operations = 6;
+        final int usagePerConnection = 3;
+        final Cluster cluster = TestClientFactory.build()
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(operations)
+                .minSimultaneousUsagePerConnection(1)
+                .maxSimultaneousUsagePerConnection(usagePerConnection)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+        client.init();
+        final ExecutorService executorServiceForTesting = cluster.executor();
+
+        try {
+            final RequestMessage.Builder request = client.buildMessage(RequestMessage.build(Tokens.OPS_EVAL))
+                    .add(Tokens.ARGS_GREMLIN, "Thread.sleep(5000)");
+            final Callable<Connection> sendQueryCallable = () -> client.chooseConnection(request.create());
+            final List<Callable<Connection>> listOfTasks = new ArrayList<>();
+            for (int i = 0; i < operations; i++) {
+                listOfTasks.add(sendQueryCallable);
+            }
+
+            HashMap<String, Integer> connectionBorrowCount = new HashMap<>();
+
+            final List<Future<Connection>> executorSubmitFutures = executorServiceForTesting.invokeAll(listOfTasks);
+            executorSubmitFutures.parallelStream().map(fut -> {
+                try {
+                    return fut.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    fail(e.getMessage());
+                    return null;
+                }
+            }).forEach(conn -> {
+                synchronized (this) {
+                    String id = conn.getChannelId();
+                    connectionBorrowCount.put(id, connectionBorrowCount.getOrDefault(id, 0) + 1);
+                }
+            });
+
+            assertEquals(2, connectionBorrowCount.size());
+            for (int finalBorrowCount : connectionBorrowCount.values()) {
+                assertEquals(usagePerConnection, finalBorrowCount);
+            }
+
+        } finally {
+            executorServiceForTesting.shutdown();
+            client.close();
+            cluster.close();
+        }
     }
 }
