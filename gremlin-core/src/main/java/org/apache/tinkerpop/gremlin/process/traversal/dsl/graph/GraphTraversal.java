@@ -1622,10 +1622,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their key.
+     * Filters {@link Property} objects based on their key. It is not meant to test key existence on an {@link Edge} or
+     * a {@link Vertex}. In that case, prefer {@link #has(String)}.
      *
-     * @param label       the key of the {@link Element}
-     * @param otherLabels additional key of the {@link Element}
+     * @param label       the key of the {@link Property}
+     * @param otherLabels additional key of the {@link Property}
      * @return the traversal with an appended {@link HasStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.2.2
@@ -1639,9 +1640,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their key.
+     * Filters {@link Property} objects based on their key. It is not meant to test key existence on an {@link Edge} or
+     * a {@link Vertex}. In that case, prefer {@link #has(String)}.
      *
-     * @param predicate the filter to apply to the key of the {@link Element}
+     * @param predicate the filter to apply to the key of the {@link Property}
      * @return the traversal with an appended {@link HasStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.2.4
@@ -1652,7 +1654,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their value.
+     * Filters {@link Property} objects based on their value.
      *
      * @param value       the value of the {@link Element}
      * @param otherValues additional values of the {@link Element}
@@ -1680,7 +1682,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their value.
+     * Filters {@link Property} objects based on their value.
      *
      * @param predicate the filter to apply to the value of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
