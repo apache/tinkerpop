@@ -1097,8 +1097,8 @@ It is possible to filter vertices, edges, and vertex properties based on their p
   * `has(key,predicate)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate. For more information on predicates, please read <<a-note-on-predicates,A Note on Predicates>>.
   * `hasLabel(labels...)`: Remove the traverser if its element does not have any of the labels.
   * `hasId(ids...)`: Remove the traverser if its element does not have any of the ids.
-  * `hasKey(keys...)`: Remove the traverser if the property does not have all of the provided keys.
-  * `hasValue(values...)`: Remove the traverser if its property does not have all of the provided values.
+  * `hasKey(keys...)`: Remove the `Property` traverser if it does not match one of the provided keys.
+  * `hasValue(values...)`: Remove the `Property` traverser if it does not match one of the provided values.
   * `has(key)`: Remove the traverser if its element does not have a value for the key.
   * `hasNot(key)`: Remove the traverser if its element has a value for the key.
   * `has(key, traversal)`: Remove the traverser if its object does not yield a result through the traversal off the property value.
