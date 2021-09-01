@@ -836,19 +836,23 @@ g.V().group().by(bothE().count()).by(count())  <3>
 The following steps all support `by()`-modulation. Note that the semantics of such modulation should be understood
 on a step-by-step level and thus, as discussed in their respective section of the documentation.
 
-* <<dedup-step, `dedup()`>>: dedup on the results of a `by()`-modulation.
+* <<aggregate-step, `aggregate()`>>: aggregate all objects into a set but only store their `by()`-modulated values.
 * <<cyclicpath-step, `cyclicPath()`>>: filter if the traverser's path is cyclic given `by()`-modulation.
-* <<simplepath-step, `simplePath()`>>: filter if the traverser's path is simple given `by()`-modulation.
-* <<sample-step, `sample()`>>: sample using the value returned by `by()`-modulation.
-* <<where-step, `where()`>>: determine the predicate given the testing of the results of `by()`-modulation.
-* <<groupcount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
+* <<dedup-step, `dedup()`>>: dedup on the results of a `by()`-modulation.
 * <<group-step, `group()`>>: create group keys and values according to `by()`-modulation.
-* <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
+* <<groupcount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
+* <<math-step, `math()`>>: transform a traverser provided to the step by way of the `by()` modulator before it processed by it.
 * <<path-step, `path()`>>: get the path of the traverser where each path element is `by()`-modulated.
 * <<project-step, `project()`>>: project a map of results given various `by()`-modulations off the current object.
+* <<propertymap-step, `propertyMap()`>>: transform the result of the values in the resulting `Map` using the `by()` modulator.
+* <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
+* <<sack-step, `sack()`>>: provides the transformation for a traverser to a value to be stored in the sack.
+* <<sample-step, `sample()`>>: sample using the value returned by `by()`-modulation.
 * <<select-step, `select()`>>: select path elements and transform them via `by()`-modulation.
+* <<simplepath-step, `simplePath()`>>: filter if the traverser's path is simple given `by()`-modulation.
 * <<tree-step, `tree()`>>: get a tree of traversers objects where the objects have been `by()`-modulated.
-* <<aggregate-step, `aggregate()`>>: aggregate all objects into a set but only store their `by()`-modulated values.
+* <<valuemap-step, `valueMap()`>>: transform the result of the values in the resulting `Map` using the `by()` modulator.
+* <<where-step, `where()`>>: determine the predicate given the testing of the results of `by()`-modulation.
 
 *Additional References*
 
@@ -864,7 +868,6 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by-org.apache.tinkerpop.gremlin.process.traversal.Traversal-java.util.Comparator-++[`by(Traversal,Comparator)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`]
-
 
 [[cap-step]]
 === Cap Step
