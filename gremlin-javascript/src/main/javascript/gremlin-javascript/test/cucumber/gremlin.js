@@ -230,7 +230,7 @@ const gremlins = {
     g_E_properties_hasKeyXnullX: [function({g}) { return g.E().properties().hasKey(null) }], 
     g_E_properties_hasKeyXnull_nullX: [function({g}) { return g.E().properties().hasKey(null,null) }], 
     g_E_properties_hasKeyXnull_weightX_value: [function({g}) { return g.E().properties().hasKey(null,"weight").value() }], 
-    g_V_properties_hasValueXnullX: [function({g}) { return g.V().properties().hasKey(null) }], 
+    g_V_properties_hasValueXnullX: [function({g}) { return g.V().properties().hasValue(null) }], 
     g_V_properties_hasValueXnull_nullX: [function({g}) { return g.V().properties().hasValue(null,null) }], 
     g_V_properties_hasValueXnull_joshX_value: [function({g}) { return g.V().properties().hasValue(null,"josh").value() }], 
     g_V_valuesXageX_isX32X: [function({g}) { return g.V().values("age").is(32) }], 

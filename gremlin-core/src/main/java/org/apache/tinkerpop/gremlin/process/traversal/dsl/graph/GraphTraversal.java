@@ -1744,7 +1744,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
         // if calling hasValue(null), the likely use the caller is going for is not a "no predicate" but a eq(null)
         if (null == predicate) {
-            return hasKey((String) null);
+            return hasValue((String) null);
         } else {
             this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));

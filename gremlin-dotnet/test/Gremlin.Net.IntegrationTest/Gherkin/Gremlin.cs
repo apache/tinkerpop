@@ -241,7 +241,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_E_properties_hasKeyXnullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E().Properties<object>().HasKey((string) null)}}, 
                {"g_E_properties_hasKeyXnull_nullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E().Properties<object>().HasKey((string) null,(string) null)}}, 
                {"g_E_properties_hasKeyXnull_weightX_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E().Properties<object>().HasKey((string) null,"weight").Value<object>()}}, 
-               {"g_V_properties_hasValueXnullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Properties<object>().HasKey((string) null)}}, 
+               {"g_V_properties_hasValueXnullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Properties<object>().HasValue((object) null)}}, 
                {"g_V_properties_hasValueXnull_nullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Properties<object>().HasValue((object) null,(object) null)}}, 
                {"g_V_properties_hasValueXnull_joshX_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Properties<object>().HasValue((object) null,"josh").Value<object>()}}, 
                {"g_V_valuesXageX_isX32X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("age").Is(32)}}, 

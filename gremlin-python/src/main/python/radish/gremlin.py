@@ -215,7 +215,7 @@ world.gremlins = {
     'g_E_properties_hasKeyXnullX': [(lambda g:g.E().properties().hasKey(None))], 
     'g_E_properties_hasKeyXnull_nullX': [(lambda g:g.E().properties().hasKey(None,None))], 
     'g_E_properties_hasKeyXnull_weightX_value': [(lambda g:g.E().properties().hasKey(None,'weight').value())], 
-    'g_V_properties_hasValueXnullX': [(lambda g:g.V().properties().hasKey(None))], 
+    'g_V_properties_hasValueXnullX': [(lambda g:g.V().properties().hasValue(None))], 
     'g_V_properties_hasValueXnull_nullX': [(lambda g:g.V().properties().hasValue(None,None))], 
     'g_V_properties_hasValueXnull_joshX_value': [(lambda g:g.V().properties().hasValue(None,'josh').value())], 
     'g_V_valuesXageX_isX32X': [(lambda g:g.V().age.is_(32))], 
