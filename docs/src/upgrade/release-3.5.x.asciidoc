@@ -37,8 +37,11 @@ been noted that supplying a `null` value as an argument to certain Gremlin steps
 were either not clear or perhaps even unexpected. The following changes were made to help make these behaviors more
 consistent and to further solidify the semantics of `null` usage in the Gremlin language:
 
-* `hasLabel(null)` and `has(T.label,null)` - These methods used to throw general `NullPointerException` failures,
-but now filter results. As a `T.label` can't be `null`, it will effectively filter all elements.
+* `hasKey(null)`, `hasLabel(null)` and `has(T.label,null)` - These methods used to throw general `NullPointerException`
+failures, but now filter results. As these structural elements of the graph can't be `null`, it will effectively
+filter all elements.
+* `hasValue(null)` - Formerly this method would throw a general `NullPointerException`, but now it will filter as
+expected.
 * `sum()`, `mean()`, `max()` and `min()` - These methods used to throw general `NullPointerException` failures, but
 now ignore `null` values when other numbers are present. If all of the values in the stream are `null` then `hasNext()`
 return `false`.

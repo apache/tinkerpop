@@ -1664,16 +1664,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasKey(final String label, final String... otherLabels) {
-        final String[] labels = new String[otherLabels.length + 1];
+        this.asAdmin().getBytecode().addStep(Symbols.hasKey, label, otherLabels);
+
+        // groovy evaluation seems to do strange things with varargs given hasLabel(null, null). odd someone would
+        // do this but the failure is ugly if not handled.
+        final int otherLabelsLength = null == otherLabels ? 0 : otherLabels.length;
+        final String[] labels = new String[otherLabelsLength + 1];
         labels[0] = label;
-        System.arraycopy(otherLabels, 0, labels, 1, otherLabels.length);
-        this.asAdmin().getBytecode().addStep(Symbols.hasKey, labels);
+        if (otherLabelsLength > 0)
+            System.arraycopy(otherLabels, 0, labels, 1, otherLabelsLength);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
     }
 
     /**
      * Filters {@link Property} objects based on their key. It is not meant to test key existence on an {@link Edge} or
-     * a {@link Vertex}. In that case, prefer {@link #has(String)}.
+     * a {@link Vertex}. In that case, prefer {@link #has(String)}. Note that calling this step with {@code null} is
+     * the same as calling {@link #hasKey(String, String...)} with a single {@code null}.
      *
      * @param predicate the filter to apply to the key of the {@link Property}
      * @return the traversal with an appended {@link HasStep}
@@ -1681,8 +1687,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.4
      */
     public default GraphTraversal<S, E> hasKey(final P<String> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasKey, predicate);
-        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), predicate));
+        // if calling hasKey(null), the likely use the caller is going for is not a "no predicate" but a eq(null)
+        if (null == predicate) {
+            return hasKey((String) null);
+        } else {
+            this.asAdmin().getBytecode().addStep(Symbols.hasKey, predicate);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), predicate));
+        }
     }
 
     /**
@@ -1694,27 +1705,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasValue(final Object value, final Object... otherValues) {
+        this.asAdmin().getBytecode().addStep(Symbols.hasValue, value, otherValues);
+
         if (value instanceof P)
             return this.hasValue((P) value);
         else {
             final List<Object> values = new ArrayList<>();
             if (value instanceof Object[]) {
                 Collections.addAll(values, (Object[]) value);
-            } else
+            } else {
                 values.add(value);
-            for (final Object v : otherValues) {
-                if (v instanceof Object[]) {
-                    Collections.addAll(values, (Object[]) v);
-                } else
-                    values.add(v);
             }
-            this.asAdmin().getBytecode().addStep(Symbols.hasValue, values.toArray());
+
+            if (null == otherValues) {
+                values.add(null);
+            } else {
+                for (final Object v : otherValues) {
+                    if (v instanceof Object[]) {
+                        Collections.addAll(values, (Object[]) v);
+                    } else
+                        values.add(v);
+                }
+            }
+
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), values.size() == 1 ? P.eq(values.get(0)) : P.within(values)));
         }
     }
 
     /**
-     * Filters {@link Property} objects based on their value.
+     * Filters {@link Property} objects based on their value.Note that calling this step with {@code null} is the same
+     * as calling {@link #hasValue(Object, Object...)} with a single {@code null}.
      *
      * @param predicate the filter to apply to the value of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
@@ -1722,8 +1742,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.4
      */
     public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
-        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
+        // if calling hasValue(null), the likely use the caller is going for is not a "no predicate" but a eq(null)
+        if (null == predicate) {
+            return hasKey((String) null);
+        } else {
+            this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
+        }
     }
 
     /**

@@ -351,8 +351,11 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                             // them i guess
                             if (null == instArg) {
                                 if ((methodName.equals(GraphTraversal.Symbols.addV) && idx % 2 == 0) ||
-                                     methodName.equals(GraphTraversal.Symbols.hasLabel)) {
+                                     methodName.equals(GraphTraversal.Symbols.hasLabel)||
+                                     methodName.equals(GraphTraversal.Symbols.hasKey)) {
                                     script.append("(string) ");
+                                } else if (methodName.equals(GraphTraversal.Symbols.hasValue)) {
+                                    script.append("(object) ");
                                 } else if (methodName.equals(GraphTraversal.Symbols.has)) {
                                     if (instArgs[0] instanceof T && idx > 0) script.append("(object) ");
                                 }

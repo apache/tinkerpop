@@ -829,3 +829,98 @@ Feature: Step - has()
     """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_properties_hasKeyXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasKey(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_properties_hasKeyXnull_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasKey(null,null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_properties_hasKeyXnull_ageX_value
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasKey(null, "age").value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_E_properties_hasKeyXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.E().properties().hasKey(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_E_properties_hasKeyXnull_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.E().properties().hasKey(null,null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_E_properties_hasKeyXnull_weightX_value
+    Given the modern graph
+    And the traversal of
+    """
+    g.E().properties().hasKey(null, "weight").value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+      | d[1.0].d |
+      | d[1.0].d |
+      | d[0.4].d |
+      | d[0.4].d |
+      | d[0.2].d |
+
+  Scenario: g_V_properties_hasValueXnullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasValue(null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_properties_hasValueXnull_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasValue(null,null)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_properties_hasValueXnull_joshX_value
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().properties().hasValue(null, "josh").value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
