@@ -123,6 +123,14 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
         method = "g_V_hasXk_withinXcXX_valuesXkX",
         reason = "Requires some test data initialization with addV()")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
+        method = "g_injectX1_null_nullX_path",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
+        method = "g_injectX1_null_nullX_path_dedup",
+        reason = "The inject() step is not supported by GraphComputer")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphBinaryRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
 

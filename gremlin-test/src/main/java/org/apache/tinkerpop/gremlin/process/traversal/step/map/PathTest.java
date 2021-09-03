@@ -64,6 +64,10 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX();
 
+    public abstract Traversal<Integer, Path> get_g_injectX1_null_nullX_path();
+
+    public abstract Traversal<Integer, Path> get_g_injectX1_null_nullX_path_dedup();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_name_path() {
@@ -192,6 +196,27 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
                 MutablePath.make().extend("josh", Collections.singleton("b")).extend("ripple", Collections.singleton("c"))), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectX1_null_nullX_path() {
+        final Traversal<Integer, Path> traversal = get_g_injectX1_null_nullX_path();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(
+                MutablePath.make().extend(1, Collections.emptySet()),
+                MutablePath.make().extend(null, Collections.emptySet()),
+                MutablePath.make().extend(null, Collections.emptySet())), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectX1_null_nullX_path_dedup() {
+        final Traversal<Integer, Path> traversal = get_g_injectX1_null_nullX_path_dedup();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(
+                MutablePath.make().extend(1, Collections.emptySet()),
+                MutablePath.make().extend(null, Collections.emptySet())), traversal);
+    }
+
     public static class Traversals extends PathTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
@@ -231,6 +256,16 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX() {
             return g.V().as("a").out().as("b").out().as("c").path().from("b").to("c").by("name");
+        }
+
+        @Override
+        public Traversal<Integer, Path> get_g_injectX1_null_nullX_path() {
+            return g.inject(1, null, null).path();
+        }
+
+        @Override
+        public Traversal<Integer, Path> get_g_injectX1_null_nullX_path_dedup() {
+            return g.inject(1, null, null).path().dedup();
         }
     }
 }

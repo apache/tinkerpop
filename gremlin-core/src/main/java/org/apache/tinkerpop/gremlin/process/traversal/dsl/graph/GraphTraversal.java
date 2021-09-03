@@ -1705,11 +1705,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasValue(final Object value, final Object... otherValues) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasValue, value, otherValues);
-
         if (value instanceof P)
             return this.hasValue((P) value);
         else {
+            this.asAdmin().getBytecode().addStep(Symbols.hasValue, value, otherValues);
             final List<Object> values = new ArrayList<>();
             if (value instanceof Object[]) {
                 Collections.addAll(values, (Object[]) value);

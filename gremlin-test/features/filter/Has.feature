@@ -477,7 +477,7 @@ Feature: Step - has()
       | d[32].i |
       | d[35].i |
 
-  Scenario: g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value
+  Scenario: g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value
     Given the modern graph
     And the traversal of
     """

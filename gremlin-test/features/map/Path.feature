@@ -117,3 +117,28 @@ Feature: Step - path()
       | p[d[29].i,null] |
       | p[d[29].i,d[27].i] |
       | p[d[29].i,d[32].i] |
+
+  Scenario: g_injectX1_null_nullX_path
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1, null, null).path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[d[1].i] |
+      | p[null] |
+      | p[null] |
+
+  Scenario: g_injectX1_null_nullX_path_dedup
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1, null, null).path().dedup()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[d[1].i] |
+      | p[null] |

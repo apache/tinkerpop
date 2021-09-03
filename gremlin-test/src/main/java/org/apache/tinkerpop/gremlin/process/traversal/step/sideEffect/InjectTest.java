@@ -68,6 +68,8 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Map<String,Object>, Map<String, Object>> get_g_injectXname_marko_age_nullX_selectXname_ageX();
 
+    public abstract Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX_asXaX_selectXaX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_injectXv2X_name() {
@@ -181,6 +183,13 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("ripple", "lop", "lop", "vadas", "josh"), traversal);
     }
 
+    @Test
+    public void g_injectXnull_1_3_nullX_asXaX_selectXaX() {
+        final Traversal<Integer, Integer> traversal = get_g_injectXnull_1_3_nullX_asXaX_selectXaX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(null, 1, 3, null), traversal);
+    }
+
     public static class Traversals extends InjectTest {
 
         @Override
@@ -248,6 +257,11 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
             m.put("name", "marko");
             m.put("age", null);
             return g.inject(m).select("name","age");
+        }
+
+        @Override
+        public Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX_asXaX_selectXaX() {
+            return g.inject(null, 1, 3, null).as("a").select("a");
         }
     }
 }

@@ -573,7 +573,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value() {
+    public void g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value() {
         final Traversal<Vertex, Integer> traversal = get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(32, 35), traversal);

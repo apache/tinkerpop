@@ -178,3 +178,17 @@ Feature: Step - inject()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  Scenario: g_injectXnull_1_3_nullX_asXaX_selectXaX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null, 1, 3, null).as("a").select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+      | d[1].i |
+      | d[3].i |
+      | null |
