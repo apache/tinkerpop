@@ -42,6 +42,7 @@ failures, but now filter results. As these structural elements of the graph can'
 filter all elements.
 * `hasValue(null)` - Formerly this method would throw a general `NullPointerException`, but now it will filter as
 expected.
+* `withSideEffect()` - This configuration step can now take a `null` for its value.
 * `sum()`, `mean()`, `max()` and `min()` - These methods used to throw general `NullPointerException` failures, but
 now ignore `null` values when other numbers are present. If all of the values in the stream are `null` then `hasNext()`
 return `false`.

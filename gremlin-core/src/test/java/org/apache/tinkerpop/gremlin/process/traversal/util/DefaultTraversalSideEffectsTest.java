@@ -26,8 +26,11 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -35,6 +38,29 @@ import static org.junit.Assert.fail;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DefaultTraversalSideEffectsTest {
+
+    @Test
+    public void shouldAllowNulls() {
+        final TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
+        sideEffects.register("k", new ConstantSupplier<>(null), null);
+        assertNull(sideEffects.get("k"));
+
+        sideEffects.set("k", "x");
+        assertEquals("x", sideEffects.get("k"));
+
+        sideEffects.set("k", null);
+        assertNull(sideEffects.get("k"));
+
+        sideEffects.add("k", null);
+        assertNull(sideEffects.get("k"));
+
+        sideEffects.register("kand", new ConstantSupplier<>(null), Operator.and);
+        sideEffects.add("kand", null);
+        assertNull(sideEffects.get("kand"));
+
+        sideEffects.add("kand", true);
+        assertThat(sideEffects.get("kand"), is(true));
+    }
 
     @Test
     public void shouldOperateCorrectly() {

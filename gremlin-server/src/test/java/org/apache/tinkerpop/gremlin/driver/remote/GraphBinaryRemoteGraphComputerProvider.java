@@ -104,6 +104,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         method = "g_injectXlistXnull_10_20_nullXX_meanXlocalX",
         reason = "The inject() step is not supported by GraphComputer")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest",
+        method = "g_withSideEffectXk_nullX_injectXxX_selectXkX",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest",
         method = "g_injectXnull_10_20_nullX_mean",
         reason = "The inject() step is not supported by GraphComputer")

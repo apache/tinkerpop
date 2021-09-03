@@ -60,7 +60,7 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
             strategy = cloneStrategy;
             traversalStrategies.addStrategies(strategy);
         }
-        strategy.sideEffects.add(new Triplet<>(key, null == value ? null : value instanceof Supplier ? (Supplier) value : new ConstantSupplier<>(value), reducer));
+        strategy.sideEffects.add(new Triplet<>(key, value instanceof Supplier ? (Supplier) value : new ConstantSupplier<>(value), reducer));
     }
 
     public boolean contains(final String sideEffectKey) {
