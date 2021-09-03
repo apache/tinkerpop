@@ -157,6 +157,10 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         return MemoryComputeKey.of(this.getId(), this.getBiOperator(), false, true);
     }
 
+    /**
+     * A class that represents a value that is not be to be emitted which helps with flow control internal to the class
+     * and is serializable in Gryo for use in OLAP.
+     */
     public static final class NonEmittingSeed implements Serializable {
         public static final NonEmittingSeed INSTANCE = new NonEmittingSeed();
         private NonEmittingSeed() {}

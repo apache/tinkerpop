@@ -144,6 +144,5 @@ public final class TinkerMemory implements Memory.Admin {
     protected void checkKeyValue(final String key, final Object value) {
         if (!this.memoryKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
-        //MemoryHelper.validateValue(value);
     }
 }
