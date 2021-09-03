@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -46,12 +47,23 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
         /// </summary>
+        /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for serialization.</param>
+        public GraphBinaryMessageSerializer(TypeSerializerRegistry registry = null)
+        {
+            _reader = new GraphBinaryReader(registry);
+            _writer = new GraphBinaryWriter(registry);
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
+        /// </summary>
         /// <param name="reader">The <see cref="GraphBinaryReader"/> used to deserialize from GraphBinary.</param>
         /// <param name="writer">The <see cref="GraphBinaryWriter"/> used to serialize to GraphBinary.</param>
-        public GraphBinaryMessageSerializer(GraphBinaryReader reader = null, GraphBinaryWriter writer = null)
+        [Obsolete("Use the constructor that takes a TypeSerializerRegistry instead.")]
+        public GraphBinaryMessageSerializer(GraphBinaryReader reader, GraphBinaryWriter writer)
         {
-            _reader = reader ?? new GraphBinaryReader();
-            _writer = writer ?? new GraphBinaryWriter();
+            _reader = reader;
+            _writer = writer;
         }
 
         /// <inheritdoc />

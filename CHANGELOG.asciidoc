@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 * Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
+* Added support for custom GraphBinary types in .NET.
 
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: July 19, 2021)
