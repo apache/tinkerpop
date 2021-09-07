@@ -47,6 +47,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
+* Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
 
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: July 19, 2021)

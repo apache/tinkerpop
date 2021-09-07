@@ -51,6 +51,10 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
         this.bypassTraversal = bypassTraversal;
     }
 
+    public Traversal.Admin<S, E> getBypassTraversal() {
+        return this.bypassTraversal;
+    }
+
     @Override
     public List<Step> getSteps() {
         return null == this.bypassTraversal ? Collections.emptyList() : this.bypassTraversal.getSteps();
