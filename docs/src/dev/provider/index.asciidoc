@@ -854,14 +854,14 @@ Guice. To follow this approach include the following module:
 </dependency>
 ----
 
-Following the TinkerGraph implementation, there are two classes to construct:
+Following the Neo4jGraph implementation, there are two classes to construct:
 
 [source,java]
 ----
 public class ServiceModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(World.class).to(TinkerGraphWorld.class);
+        bind(World.class).to(Neo4jGraphWorld.class);
     }
 }
 
@@ -873,7 +873,7 @@ public class WorldInjectorSource implements InjectorSource {
 }
 ----
 
-The key here is that the `TinkerGraphWorld` implementation gets bound to `World` in the `ServiceModule` and there is
+The key here is that the `Neo4jGraphWorld` implementation gets bound to `World` in the `ServiceModule` and there is
 a `WorldInjectorSource` that specifies the `ServiceModule` to Cucumber. As a final step, the provider's test resources
 needs a `cucumber.properties` file with an entry that specifies the `InjectorSource` so that Guice can find it. Here
 is the example taken from TinkerGraph where the `WorldInjectorSource` is inner class of `TinkerGraphFeatureTest`
@@ -881,8 +881,15 @@ itself.
 
 [source,text]
 ----
-guice.injector-source=org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphFeatureTest$WorldInjectorSource
+guice.injector-source=org.apache.tinkerpop.gremlin.neo4j.Neo4jGraphFeatureTest$WorldInjectorSource
 ----
+
+In the event that a single `World` configuration is insufficient, it may be necessary to develop a custom
+`ObjectFactory`. An easy way to do this is to create a class that extends from the `AbstractGuiceFactory` in
+`gremlin-test` and provide that class to the `@CucumberOptions`. This approach does rely on the `ServiceLoader` which
+means it will be important to include a `io.cucumber.core.backend.ObjectFactory` file in `META-INF/services` and an
+entry that registers the custom implementation. Please see the TinkerGraph test code for further information on this
+approach.
 
 === Accessibility via GremlinPlugin
 
