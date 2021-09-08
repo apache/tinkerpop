@@ -81,7 +81,6 @@ def translate_traversal(step):
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
     localg = step.context.g
     tagset = [ tag.name for tag in step.all_tags ]
-    print(str(tagset))
     if "GraphComputerOnly" in tagset:
         localg = step.context.g.withComputer()
     p['g'] = localg
