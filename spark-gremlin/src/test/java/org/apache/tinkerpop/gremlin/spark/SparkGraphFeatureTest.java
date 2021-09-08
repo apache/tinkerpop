@@ -88,7 +88,6 @@ public class SparkGraphFeatureTest {
     private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
             "@StepDrop",
             "@StepV",
-            "@StepConnectedComponent", // need to implement this in the grammar
             "@StepIndex", // doesn't look like this works with Spark atm - doesn't serialize (IndexTest not in the ProcessComputerSuite)
             "@GraphComputerVerificationOneBulk",
             "@GraphComputerVerificationMidVNotSupported",
