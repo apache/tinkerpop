@@ -42,6 +42,7 @@ Feature: Step - and()
       | josh |
       | peter  |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name
     Given the modern graph
     And the traversal of

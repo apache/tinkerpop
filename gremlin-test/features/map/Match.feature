@@ -124,6 +124,7 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[ripple]","d":"v[vadas]"}] |
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]","d":"v[vadas]"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_matchXa_created_lop_b__b_0created_29_c__c_whereXrepeatXoutX_timesX2XXX
     Given the modern graph
     And the traversal of
@@ -162,6 +163,7 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[vadas]"}] |
       | m[{"a":"v[marko]","b":"v[josh]"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXa_b_cX
     Given the modern graph
     And the traversal of
@@ -336,6 +338,7 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[vadas]","c":"v[lop]"}] |
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_matchXwhereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX
     Given the modern graph
     And the traversal of
@@ -366,6 +369,7 @@ Feature: Step - match()
       | m[{"a":"josh","b":"ripple"}] |
       | m[{"a":"peter","b":"lop"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_matchXa_both_b__b_both_cX_dedupXa_bX_byXlabelX
     Given the modern graph
     And the traversal of

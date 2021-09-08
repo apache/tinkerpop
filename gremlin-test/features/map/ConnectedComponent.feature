@@ -15,14 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @StepConnectedComponent
+@GraphComputerOnly @StepClassMap @StepConnectedComponent
 Feature: Step - connectedComponent()
-                
+
   Scenario: g_V_connectedComponent_hasXcomponentX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().connectedComponent().has("gremlin.connectedComponentVertexProgram.component")
+      g.V().connectedComponent().has("gremlin.connectedComponentVertexProgram.component")
       """
     When iterated to list
     Then the result should be unordered
@@ -38,7 +38,7 @@ Feature: Step - connectedComponent()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().dedup().connectedComponent().has("gremlin.connectedComponentVertexProgram.component")
+      g.V().dedup().connectedComponent().has("gremlin.connectedComponentVertexProgram.component")
       """
     When iterated to list
     Then the result should be unordered
@@ -54,7 +54,7 @@ Feature: Step - connectedComponent()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().hasLabel("software").connectedComponent().project("name","component").by("name").by("gremlin.connectedComponentVertexProgram.component")
+      g.V().hasLabel("software").connectedComponent().project("name","component").by("name").by("gremlin.connectedComponentVertexProgram.component")
       """
     When iterated to list
     Then the result should be unordered
@@ -66,7 +66,7 @@ Feature: Step - connectedComponent()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().hasLabel("person").connectedComponent().with("~tinkerpop.connectedComponent.edges", __.bothE("knows")).with("~tinkerpop.connectedComponent.propertyName", "cluster").project("name","cluster").by("name").by("cluster")
+      g.V().hasLabel("person").connectedComponent().with("~tinkerpop.connectedComponent.edges", __.bothE("knows")).with("~tinkerpop.connectedComponent.propertyName", "cluster").project("name","cluster").by("name").by("cluster")
       """
     When iterated to list
     Then the result should be unordered

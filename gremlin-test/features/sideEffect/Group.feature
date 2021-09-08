@@ -99,12 +99,12 @@ Feature: Step - group()
     Given the modern graph
     And the traversal of
       """
-      g.V().group().by(__.outE().count()).by("name")
+      g.V().order().by("name").group().by(__.outE().count()).by("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[0].l":["vadas","lop","ripple"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["lop","ripple","vadas"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
 
   Scenario: g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX
     Given the modern graph
@@ -218,6 +218,7 @@ Feature: Step - group()
       | result |
       | m[{"cover":{"followedBy":"d[777982].l"}, "":{"followedBy":"d[179350].l"}, "original":{"followedBy":"d[2185613].l"}}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX
     Given the modern graph
     And the traversal of
@@ -253,6 +254,7 @@ Feature: Step - group()
       | result |
       | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":["666", "created", "knows", "knows"]}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX
     Given the modern graph
     And the traversal of
@@ -264,6 +266,7 @@ Feature: Step - group()
       | result |
       | m[{"ripple":"d[32].l", "lop":"d[96].l"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_groupXaX_byXnameX_byXselectXpX_valuesXageX_sumX_capXaX
     Given the modern graph
     And the traversal of

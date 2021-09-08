@@ -168,6 +168,7 @@ Feature: Step - local()
       | marko |
       | marko |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX
     Given the modern graph
     And the traversal of

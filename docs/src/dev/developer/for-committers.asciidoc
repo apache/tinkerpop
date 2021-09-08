@@ -486,6 +486,16 @@ include or ignore certain tests. The tags enable the practical and necessary abi
 they simply cannot support. It is important to be aware of the following tags when writing tests as not including a
 tag when one is necessary will cause provider tests to fail:
 
+* `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
+`inject()` step is not supported.
+* `@GraphComputerVerificationMidVNotSupported` - The scenario will not work on with `GraphComputer` because the
+mid-`V()` step is not supported.
+* `@GraphComputerVerificationOneBulk` - The scenario will not work because `withBulk(false)` is configured and that
+is not compatible with `GraphComputer`
+* `@GraphComputerVerificationReferenceOnly` - The scenario itself is not written to support `GraphComputer` because it
+tries to reference inaccessible properties that are on elements only available by "reference" (i.e `T.id` only).
+* `@GraphComputerVerificationStarGraphExceeded` - The scenario itself is not written to support `GraphComputer` because
+the traversal does not mind the star graph limitation.
 * `@MultiMetaProperties` - The scenario uses "The Crew" graph as a dataset or otherwise utilizes multi-properties
 or meta-properties for creating or querying data.
 * `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The

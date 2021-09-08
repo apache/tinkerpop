@@ -30,12 +30,12 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @GraphComputerOnly",
+        tags = "not @RemoteOnly",
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        objectFactory = TinkerGraphFeatureTest.TinkerGraphGuiceFactory.class,
+        objectFactory = TinkerGraphComputerFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "../gremlin-test/features" },
         plugin = {"pretty", "junit:target/cucumber.xml"})
-public class TinkerGraphFeatureTest {
+public class TinkerGraphComputerFeatureTest {
 
     public static class TinkerGraphGuiceFactory extends AbstractGuiceFactory {
         public TinkerGraphGuiceFactory() {
@@ -46,7 +46,7 @@ public class TinkerGraphFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerGraphWorld.class);
+            bind(World.class).to(TinkerGraphWorld.ComputerWorld.class);
         }
     }
 }

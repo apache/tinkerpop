@@ -38,6 +38,7 @@ function TinkerPopWorld(){
   this.cache = null;
   this.graphName = null;
   this.parameters = {};
+  this.isGraphComputer = false;
 }
 
 TinkerPopWorld.prototype.getData = function () {
@@ -94,6 +95,10 @@ Before(function (info) {
   this.scenario = info.pickle.name;
   this.cache = cache;
 });
+
+Before({tags: "@GraphComputerOnly"}, function() {
+  this.isGraphComputer = true;
+})
 
 function getVertices(connection) {
   const g = traversal().withRemote(connection);

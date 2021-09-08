@@ -70,9 +70,10 @@ Feature: Step - dedup()
       g.V().both().has(T.label, "software").dedup().by("lang").values("name")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | lop |
+      | ripple |
 
   Scenario: g_V_both_name_order_byXa_bX_dedup_value
     Given the modern graph
@@ -143,6 +144,7 @@ Feature: Step - dedup()
       | result |
       | m[{"software":[0.2,0.4,1.0],"person":[0.2,0.4,0.5,1.0]}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX
     Given the modern graph
     And the traversal of
@@ -246,6 +248,7 @@ Feature: Step - dedup()
       | d[0].l |
 
   # https://issues.apache.org/jira/browse/TINKERPOP-2529
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX
     Given the modern graph
     And the traversal of

@@ -50,6 +50,7 @@ Feature: Step - elementMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": "lop"}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": "ripple"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_EX11X_elementMap
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"

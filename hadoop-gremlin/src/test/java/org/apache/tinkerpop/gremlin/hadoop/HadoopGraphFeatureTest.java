@@ -29,8 +29,6 @@ import io.cucumber.java.Scenario;
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.features.TestFiles;
 import org.apache.tinkerpop.gremlin.features.World;
@@ -42,10 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,14 +51,12 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @MultiMetaProperties",
+        tags = "not @RemoteOnly and not @GraphComputerOnly",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
         plugin = {"pretty", "junit:target/cucumber.xml"})
 public class HadoopGraphFeatureTest {
-    private static final Logger logger = LoggerFactory.getLogger(HadoopGraphFeatureTest.class);
-
     private static final String skipReasonLength = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{

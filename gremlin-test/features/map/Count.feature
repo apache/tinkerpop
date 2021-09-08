@@ -73,6 +73,7 @@ Feature: Step - count()
       | result |
       | d[0].l |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_whereXinXkknowsX_outXcreatedX_count_is_0XX_name
     Given the modern graph
     And the traversal of

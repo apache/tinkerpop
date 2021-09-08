@@ -537,6 +537,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Then the result should be empty
     And the graph should return 3 for count of "g.V(vid1, vid2, vid3, vid4)"
 
+  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name
     Given the modern graph
     And the traversal of

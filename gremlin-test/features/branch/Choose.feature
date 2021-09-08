@@ -141,6 +141,7 @@ Feature: Step - choose()
       | result |
       | m[{"young":"d[1].l", "old":"d[3].l"}] |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
     And using the parameter xx1 defined as "d[10].i"
@@ -154,6 +155,7 @@ Feature: Step - choose()
       | result |
       | l[d[10].i] |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX2X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
     And using the parameter xx1 defined as "d[10].i"

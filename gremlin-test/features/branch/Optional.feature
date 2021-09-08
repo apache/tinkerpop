@@ -42,6 +42,7 @@ Feature: Step - choose()
       | result |
       | v[marko] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path
     Given the modern graph
     And the traversal of
@@ -60,7 +61,8 @@ Feature: Step - choose()
       | p[v[vadas]] |
       | p[v[josh]] |
       | p[v[peter]] |
-    
+
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_optionalXout_optionalXoutXX_path
     Given the modern graph
     And the traversal of
@@ -81,6 +83,7 @@ Feature: Step - choose()
       | p[v[ripple]] |
       | p[v[peter],v[lop]] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_VX1X_optionalXaddVXdogXX_label
     Given the empty graph
     And the graph initializer of

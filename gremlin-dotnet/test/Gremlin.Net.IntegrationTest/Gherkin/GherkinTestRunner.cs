@@ -143,6 +143,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         }
 
                         scenarioData.CurrentScenario = scenario;
+                        scenarioData.CurrentFeature = feature;
+
                         var result = ExecuteStep(stepDefinition, currentStep.Value, step);
                         if (result != null)
                         {

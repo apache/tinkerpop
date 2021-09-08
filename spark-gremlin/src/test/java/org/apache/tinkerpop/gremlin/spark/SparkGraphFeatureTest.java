@@ -46,26 +46,25 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @MultiMetaProperties",
+        tags = "not @RemoteOnly",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
         plugin = {"pretty", "junit:target/cucumber.xml"})
 public class SparkGraphFeatureTest {
-    private static final Logger logger = LoggerFactory.getLogger(SparkGraphFeatureTest.class);
     private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
@@ -85,6 +84,27 @@ public class SparkGraphFeatureTest {
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX", skipReasonLength));
         add(Pair.with("g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count", skipReasonLength));
     }};
+
+    private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
+            "@StepDrop",
+            "@StepV",
+            "@StepConnectedComponent", // need to implement this in the grammar
+            "@StepIndex", // doesn't look like this works with Spark atm - doesn't serialize (IndexTest not in the ProcessComputerSuite)
+            "@GraphComputerVerificationOneBulk",
+            "@GraphComputerVerificationMidVNotSupported",
+            "@GraphComputerVerificationInjectionNotSupported",
+            "@GraphComputerVerificationStarGraphExceeded",
+            "@GraphComputerVerificationReferenceOnly");
+
+    private static final List<String> SCENARIOS_TO_IGNORE = Arrays.asList(
+            "g_V_group_byXoutE_countX_byXnameX",
+            "g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX",
+            "g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX",
+            "g_V_group_byXageX",
+            "g_V_order_byXoutE_count_descX",
+            "g_V_both_both_dedup_byXoutE_countX_name",
+            "g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX",
+            "g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX");
 
     public static final class ServiceModule extends AbstractModule {
         @Override
@@ -114,15 +134,15 @@ public class SparkGraphFeatureTest {
             if (null == graphData)
                 throw new AssumptionViolatedException("HadoopGraph does not support graph mutations");
             else if (graphData == GraphData.CLASSIC)
-                return classic.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
+                return classic.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else if (graphData == GraphData.CREW)
-                return crew.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
+                return crew.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else if (graphData == GraphData.MODERN)
-                return modern.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
+                return modern.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else if (graphData == GraphData.SINK)
-                return sink.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
+                return sink.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else if (graphData == GraphData.GRATEFUL)
-                return grateful.traversal().withComputer(Computer.compute(SparkGraphComputer.class));
+                return grateful.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -133,6 +153,16 @@ public class SparkGraphFeatureTest {
                     filter(s -> s.getValue0().equals(scenario.getName())).findFirst();
             if (skipped.isPresent())
                 throw new AssumptionViolatedException(skipped.get().getValue1());
+
+            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
+            if (!ignores.isEmpty())
+                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
+
+            // the following needs some further investigation.........may need to improve the definition of result
+            // equality with map<list>
+            final String scenarioName = scenario.getName();
+            if (SCENARIOS_TO_IGNORE.contains(scenarioName))
+                throw new AssumptionViolatedException("There are some internal ordering issues with result where equality is not required but is being enforced");
         }
 
         private static void readIntoGraph(final Graph graph, final GraphData graphData) {

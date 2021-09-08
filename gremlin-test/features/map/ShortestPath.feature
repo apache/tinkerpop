@@ -15,14 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @StepShortestPath
+@GraphComputerOnly @StepClassMap @StepShortestPath
 Feature: Step - shortestPath()
 
   Scenario: g_V_shortestPath
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath()
+      g.V().shortestPath()
       """
     When iterated to list
     Then the result should be unordered
@@ -68,7 +68,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().both().dedup().shortestPath()
+      g.V().both().dedup().shortestPath()
       """
     When iterated to list
     Then the result should be unordered
@@ -114,7 +114,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.includeEdges")
+      g.V().shortestPath().with("~tinkerpop.shortestPath.includeEdges")
       """
     When iterated to list
     Then the result should be unordered
@@ -160,7 +160,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.edges", Direction.IN)
+      g.V().shortestPath().with("~tinkerpop.shortestPath.edges", Direction.IN)
       """
     When iterated to list
     Then the result should be unordered
@@ -183,7 +183,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.edges", __.outE())
+      g.V().shortestPath().with("~tinkerpop.shortestPath.edges", __.outE())
       """
     When iterated to list
     Then the result should be unordered
@@ -206,7 +206,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().
+      g.V().shortestPath().
           with("~tinkerpop.shortestPath.includeEdges").
           with("~tinkerpop.shortestPath.edges", __.outE())
       """
@@ -231,7 +231,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().has("name","marko").shortestPath()
+      g.V().has("name","marko").shortestPath()
       """
     When iterated to list
     Then the result should be unordered
@@ -247,7 +247,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.target", __.has("name","marko"))
+      g.V().shortestPath().with("~tinkerpop.shortestPath.target", __.has("name","marko"))
       """
     When iterated to list
     Then the result should be unordered
@@ -263,7 +263,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.target", __.values("name").is("marko"))
+      g.V().shortestPath().with("~tinkerpop.shortestPath.target", __.values("name").is("marko"))
       """
     When iterated to list
     Then the result should be unordered
@@ -279,7 +279,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().has("name","marko").shortestPath().with("~tinkerpop.shortestPath.target", __.hasLabel("software"))
+      g.V().has("name","marko").shortestPath().with("~tinkerpop.shortestPath.target", __.hasLabel("software"))
       """
     When iterated to list
     Then the result should be unordered
@@ -291,7 +291,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().has("name","marko").shortestPath().
+      g.V().has("name","marko").shortestPath().
           with("~tinkerpop.shortestPath.target", __.has("name","josh")).
           with("~tinkerpop.shortestPath.distance", "weight")
       """
@@ -305,7 +305,7 @@ Feature: Step - shortestPath()
     Given the crew graph
     And the traversal of
       """
-      g.withComputer().V().has("name","daniel").shortestPath().
+      g.V().has("name","daniel").shortestPath().
           with("~tinkerpop.shortestPath.target", __.has("name","stephen")).
           with("~tinkerpop.shortestPath.edges", __.bothE("uses"))
       """
@@ -319,7 +319,7 @@ Feature: Step - shortestPath()
     Given the grateful graph
     And the traversal of
       """
-      g.withComputer().V().has("song","name","MIGHT AS WELL").
+      g.V().has("song","name","MIGHT AS WELL").
         shortestPath().
           with("~tinkerpop.shortestPath.target", __.has("song","name","MAYBE YOU KNOW HOW I FEEL")).
           with("~tinkerpop.shortestPath.edges", __.outE("followedBy")).
@@ -335,7 +335,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().has("name","marko").shortestPath().with("~tinkerpop.shortestPath.maxDistance", 1)
+      g.V().has("name","marko").shortestPath().with("~tinkerpop.shortestPath.maxDistance", 1)
       """
     When iterated to list
     Then the result should be unordered
@@ -349,7 +349,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().has("name","vadas").shortestPath().
+      g.V().has("name","vadas").shortestPath().
           with("~tinkerpop.shortestPath.distance", "weight").
           with("~tinkerpop.shortestPath.maxDistance", 1.3)
       """

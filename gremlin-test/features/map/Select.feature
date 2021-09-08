@@ -342,6 +342,7 @@ Feature: Step - select()
       | result |
       | m[{"ripple":"d[1].l", "lop":"d[6].l"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX
     Given the modern graph
     And the traversal of
@@ -371,6 +372,7 @@ Feature: Step - select()
       | d[0.4].d |
       | d[0.2].d |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX
     Given the modern graph
     And the traversal of
@@ -412,6 +414,7 @@ Feature: Step - select()
       | d[2].l |
       | d[1].l |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX
     Given the modern graph
     And the traversal of
@@ -462,6 +465,7 @@ Feature: Step - select()
       | v[marko] |
       | v[marko] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX
     Given the modern graph
     And the traversal of
@@ -522,6 +526,7 @@ Feature: Step - select()
       | d[2].l |
       | d[2].l |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_groupXmX_by_byXbothE_countX_barrier_selectXmX_selectXselectXaXX
     Given the modern graph
     And the traversal of
@@ -538,6 +543,7 @@ Feature: Step - select()
       | d[1].l |
       | d[1].l |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_groupXmX_by_byXbothE_countX_barrier_selectXmX_selectXselectXaXX_byXmathX_plus_XX
     Given the modern graph
     And the traversal of
@@ -554,6 +560,7 @@ Feature: Step - select()
       | d[2].d |
       | d[2].d |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXknowsX_asXaX_selectXall_constantXaXX
     Given the modern graph
     And the traversal of

@@ -114,6 +114,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException("g should be a traversal source");
             }
+
+            if (ScenarioData.CurrentFeature.Tags.Select(t => t.Name).ToList().Contains("@GraphComputerOnly"))
+            {
+                _g = _g.WithComputer();
+            }
             
             _traversal =
                 Gremlin.UseTraversal(ScenarioData.CurrentScenario.Name, _g, _parameters);

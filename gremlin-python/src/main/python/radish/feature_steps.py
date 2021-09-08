@@ -79,7 +79,12 @@ def add_parameter(step, param_name, param):
 def translate_traversal(step):
     step.context.ignore = step.text in ignores
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
-    p['g'] = step.context.g
+    localg = step.context.g
+    tagset = [ tag.name for tag in step.all_tags ]
+    print(str(tagset))
+    if "GraphComputerOnly" in tagset:
+        localg = step.context.g.withComputer()
+    p['g'] = localg
     step.context.traversal = step.context.traversals.pop(0)(**p)
 
 

@@ -117,6 +117,7 @@ Feature: Step - where()
       | josh |
       | peter |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -209,6 +210,7 @@ Feature: Step - where()
       | lop |
       | ripple |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX
     Given the modern graph
     And the traversal of
@@ -234,6 +236,7 @@ Feature: Step - where()
       | vadas |
       | josh |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_selectXa_bX
     Given the modern graph
     And the traversal of
@@ -258,6 +261,7 @@ Feature: Step - where()
       | m[{"a": "v[marko]", "b": "v[lop]", "c": "v[josh]", "d": "v[vadas]"}] |
       | m[{"a": "v[peter]", "b": "v[lop]", "c": "v[josh]", "d": "v[vadas]"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_selectXa_bX
     Given the modern graph
     And the traversal of
@@ -272,6 +276,7 @@ Feature: Step - where()
       | m[{"a": "v[josh]", "b": "v[lop]"}] |
       | m[{"a": "v[peter]", "b": "v[lop]"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_gtXbXX_byXageX_selectXa_bX_byXnameX
     Given the modern graph
     And the traversal of
@@ -285,6 +290,7 @@ Feature: Step - where()
       | m[{"a": "peter", "b": "marko"}] |
       | m[{"a": "peter", "b": "josh"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_whereXa_gtXbX_orXeqXbXXX_byXageX_byXweightX_byXweightX_selectXa_cX_byXnameX
     Given the modern graph
     And the traversal of
@@ -299,6 +305,7 @@ Feature: Step - where()
       | m[{"a": "josh", "c": "lop"}] |
       | m[{"a": "peter", "c": "lop"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX
     Given the modern graph
     And the traversal of
@@ -313,6 +320,7 @@ Feature: Step - where()
       | m[{"a": "peter", "c": "lop", "d": "marko"}] |
       | m[{"a": "peter", "c": "lop", "d": "josh"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

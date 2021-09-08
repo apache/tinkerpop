@@ -48,6 +48,7 @@ Feature: Step - repeat()
       | marko |
       | marko |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label
     Given the modern graph
     And the traversal of
@@ -223,6 +224,7 @@ Feature: Step - repeat()
       | result |
       | m[{"ripple":"d[3].l","vadas":"d[3].l","josh":"d[4].l","lop":"d[10].l","marko":"d[4].l"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX
     Given the modern graph
     And the traversal of
@@ -238,6 +240,7 @@ Feature: Step - repeat()
       | created |
       | ripple  |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name
     Given the sink graph
     And the traversal of
@@ -254,6 +257,7 @@ Feature: Step - repeat()
       | loop  |
       | loop  |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name
       Given the modern graph
       And the traversal of
@@ -266,7 +270,7 @@ Feature: Step - repeat()
         | marko |
         | josh |
         | ripple |
-
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX
       Given the modern graph
       And the traversal of
@@ -314,6 +318,7 @@ Feature: Step - repeat()
       | java |
       | java |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values
       Given the modern graph
       And using the parameter vid3 defined as "v[lop].id"
@@ -353,6 +358,7 @@ Feature: Step - repeat()
       | java |
       | java |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name
     Given the modern graph
     And using the parameter vid6 defined as "v[peter].id"

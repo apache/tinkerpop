@@ -57,6 +57,7 @@ Feature: Step - unfold()
       | name   |
       | age    |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

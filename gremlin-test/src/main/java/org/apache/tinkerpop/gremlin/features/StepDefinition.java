@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -47,7 +46,6 @@ import org.javatuples.Triplet;
 import org.junit.AssumptionViolatedException;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inV;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIn.in;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -313,13 +311,10 @@ public final class StepDefinition {
     //////////////////////////////////////////////
 
     private Traversal parseGremlin(final String script) {
-        if (script.contains(".withComputer("))
-            throw new AssumptionViolatedException("withComputer() syntax is not supported by gremlin-language at this time");
-
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.QueryContext ctx = parser.query();
-        return (Traversal) new GremlinAntlrToJava(g.getGraph()).visitQuery(ctx);
+        return (Traversal) new GremlinAntlrToJava(g).visitQuery(ctx);
     }
 
     private List<Object> translateResultsToActual() {

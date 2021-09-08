@@ -57,6 +57,7 @@ Feature: Step - sack()
       | d[2.0].m |
       | d[1.4].m |
 
+  @GraphComputerVerificationOneBulk
   Scenario: g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -69,6 +70,7 @@ Feature: Step - sack()
       | result |
       | d[1.0].m |
 
+  @GraphComputerVerificationOneBulk
   Scenario: g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack
     Given the modern graph
     And the traversal of
