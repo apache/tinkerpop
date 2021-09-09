@@ -1246,6 +1246,8 @@ public interface Graph extends AutoCloseable, Host {
         public static String SUITE_STRUCTURE_INTEGRATE = "org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite";
         public static String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
         public static String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
+        public static String SUITE_PROCESS_LIMITED_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessLimitedComputerSuite";
+        public static String SUITE_PROCESS_LIMITED_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessLimitedStandardSuite";
 
         /**
          * The test suite class to opt in to.

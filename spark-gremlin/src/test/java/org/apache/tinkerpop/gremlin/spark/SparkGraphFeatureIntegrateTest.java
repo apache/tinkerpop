@@ -64,7 +64,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
         plugin = {"pretty", "junit:target/cucumber.xml"})
-public class SparkGraphFeatureTest {
+public class SparkGraphFeatureIntegrateTest {
     private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
@@ -169,7 +169,7 @@ public class SparkGraphFeatureTest {
         }
 
         private static String getWorkingDirectory() {
-            return TestHelper.makeTestDataDirectory(SparkGraphFeatureTest.class, "graph-provider-data");
+            return TestHelper.makeTestDataDirectory(SparkGraphFeatureIntegrateTest.class, "graph-provider-data");
         }
 
         private static Map<String, Object> getBaseConfiguration(final GraphData graphData) {

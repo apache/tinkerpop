@@ -891,6 +891,15 @@ means it will be important to include a `io.cucumber.core.backend.ObjectFactory`
 entry that registers the custom implementation. Please see the TinkerGraph test code for further information on this
 approach.
 
+If implementing the Gherkin tests, providers can choose to opt-in to the slimmed down version of the normal JVM process
+test suite to help alleviate test duplication between the two frameworks:
+
+[source,java]
+----
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_COMPUTER)
+----
+
 === Accessibility via GremlinPlugin
 
 image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop do not distribute with

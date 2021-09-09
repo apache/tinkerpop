@@ -50,7 +50,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @MultiMetaProperties",
+        tags = "not @RemoteOnly and not @MultiMetaProperties and not @GraphComputerOnly",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
@@ -102,6 +102,11 @@ public class Neo4jGraphFeatureTest {
         @Override
         public void beforeEachScenario(final Scenario scenario) {
             cleanEmpty();
+        }
+
+        @Override
+        public String changePathToDataFile(final String pathToFileFromGremlin) {
+            return ".." + File.separator + pathToFileFromGremlin;
         }
 
         private static void createIndices() {

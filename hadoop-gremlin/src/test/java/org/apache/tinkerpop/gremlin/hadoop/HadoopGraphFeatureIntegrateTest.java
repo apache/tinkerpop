@@ -56,7 +56,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
         plugin = {"pretty", "junit:target/cucumber.xml"})
-public class HadoopGraphFeatureTest {
+public class HadoopGraphFeatureIntegrateTest {
     private static final String skipReasonLength = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
@@ -129,7 +129,7 @@ public class HadoopGraphFeatureTest {
         }
 
         private static String getWorkingDirectory() {
-            return TestHelper.makeTestDataDirectory(HadoopGraphFeatureTest.class, "graph-provider-data");
+            return TestHelper.makeTestDataDirectory(HadoopGraphFeatureIntegrateTest.class, "graph-provider-data");
         }
 
         private static Map<String, Object> getBaseConfiguration(final GraphData graphData) {
