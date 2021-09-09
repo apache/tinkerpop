@@ -93,6 +93,7 @@ final class ConnectionPool {
         this.minInProcess = settings.minInProcessPerConnection;
 
         this.connections = new CopyOnWriteArrayList<>();
+        this.open = new AtomicInteger();
 
         try {
             final List<CompletableFuture<Void>> connectionCreationFutures = new ArrayList<>();
@@ -100,6 +101,7 @@ final class ConnectionPool {
                 connectionCreationFutures.add(CompletableFuture.runAsync(() -> {
                     try {
                         this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+                        this.open.incrementAndGet();
                     } catch (ConnectionException e) {
                         throw new CompletionException(e);
                     }
@@ -127,8 +129,6 @@ final class ConnectionPool {
 
             throw new CompletionException(errMsg, result);
         }
-
-        this.open = new AtomicInteger(connections.size());
 
         logger.info("Opening connection pool on {} with core size of {}", host, minPoolSize);
     }
