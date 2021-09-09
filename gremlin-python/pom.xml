@@ -133,6 +133,15 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>
                                         </exec>
+                                        <!-- pin setuptools before the breaking change at
+                                             https://github.com/pypa/setuptools/issues/2086 with removal of lib2to3.
+                                             not sure if this our code that is causing this problem though. the error
+                                             in travis shows as:
+                                             Setup script exited with error in radish-parse_type setup command: use_2to3 is invalid.-->
+                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install setuptools&lt;58.0.0"/>
+                                        </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install wheel radish-bdd PyHamcrest aenum isodate kerberos six"/>
