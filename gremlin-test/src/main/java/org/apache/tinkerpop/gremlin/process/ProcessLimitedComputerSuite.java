@@ -151,68 +151,10 @@ public class ProcessLimitedComputerSuite extends AbstractGremlinSuite {
      * A list of the minimum set of base tests that Gremlin flavors should implement to be compliant with Gremlin.
      */
     private static final Class<?>[] testsToEnforce = new Class<?>[]{
-            // branch
-            BranchTest.class,
-            ChooseTest.class,
-            OptionalTest.class,
-            LocalTest.class,
-            RepeatTest.class,
-            UnionTest.class,
-
-            // filter
-            AndTest.class,
-            CoinTest.class,
-            CyclicPathTest.class,
-            DedupTest.class,
-            FilterTest.class,
-            HasTest.class,
-            IsTest.class,
-            OrTest.class,
-            RangeTest.class,
-            SampleTest.class,
-            SimplePathTest.class,
-            TailTest.class,
-            WhereTest.class,
-
-            // map
-            CoalesceTest.class,
-            ConstantTest.class,
-            CountTest.class,
-            FlatMapTest.class,
-            ElementMapTest.class,
-            FoldTest.class,
             MatchTest.class,
-            MathTest.class,
-            MapTest.class,
-            MaxTest.class,
-            MeanTest.class,
-            MinTest.class,
-            SumTest.class,
-            MatchTest.class,
-            OrderTest.class,
-            PageRankTest.class,
-            // PeerPressureTest.class,
-            PathTest.class,
             ProfileTest.class,
-            ProjectTest.class,
             ProgramTest.class,
-            PropertiesTest.class,
-            ShortestPathTest.class,
-            SelectTest.class,
-            UnfoldTest.class,
-            ValueMapTest.class,
-            VertexTest.class,
-
-            // sideEffect
-            AddEdgeTest.class,
-            AggregateTest.class,
-            GroupTest.class,
-            GroupCountTest.class,
-            InjectTest.class,
-            SackTest.class,
-            SideEffectCapTest.class,
             SideEffectTest.class,
-            StoreTest.class,
             SubgraphTest.class,
             TreeTest.class
     };

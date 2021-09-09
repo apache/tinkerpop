@@ -21,12 +21,13 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.apache.tinkerpop.gremlin.process.ProcessLimitedStandardSuite;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessComputerSuite.class)
+@RunWith(ProcessLimitedStandardSuite.class)
 @GraphProviderClass(provider = SparkHadoopGraphProvider.class, graph = HadoopGraph.class)
 public class SparkGraphComputerProcessIntegrateTest {
 }
