@@ -47,8 +47,11 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.identity;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.apache.tinkerpop.gremlin.structure.Column.values;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -93,6 +96,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, List<Vertex>> get_g_V_asXaX_outXknowsX_asXaX_selectXall_constantXaXX();
 
     public abstract Traversal<Vertex, Long> get_g_V_selectXaX_count();
+
+    public abstract Traversal<Vertex, Object> get_g_V_asXaX_selectXaX_byXageX();
 
     // below are original back()-tests
 
@@ -159,6 +164,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Edge, Object> get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX(final Object e11Id);
 
     public abstract Traversal<Edge, Object> get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX(final Object e11Id);
+
+    public abstract Traversal<String, Object> get_g_withSideEffectXk_nullX_injectXxX_selectXkX();
 
     // when labels don't exist
 
@@ -886,6 +893,22 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "marko")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_selectXaX_byXageX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_asXaX_selectXaX_byXageX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29, 27, null, 32, null, 35), traversal);
+    }
+
+    @Test
+    public void g_withSideEffectXk_nullX_injectXxX_selectXkX() {
+        final Traversal<String, Object> traversal = get_g_withSideEffectXk_nullX_injectXxX_selectXkX();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertThat(traversal.hasNext(), is(false));
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -1208,6 +1231,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold() {
             return g.V().has("person","name","marko").path().as("a").union(identity(),identity()).select("a").unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_asXaX_selectXaX_byXageX() {
+            return g.V().as("a").select("a").by("age");
+        }
+
+        @Override
+        public Traversal<String, Object> get_g_withSideEffectXk_nullX_injectXxX_selectXkX() {
+            return g.withSideEffect("k",null).inject("x").select("k");
         }
     }
 }

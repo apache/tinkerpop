@@ -173,8 +173,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
                     found = (A) currentPath.currentObject;
                 currentPath = currentPath.previousPath;
             }
-            if (null == found)
-                throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+
             return found;
         }
     }
@@ -258,7 +257,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
             for (int i = otherLabels.size() - 1; i >= 0; i--) {
                 if (currentPath.isTail())
                     return true;
-                else if (!currentPath.currentObject.equals(otherObjects.get(i)) ||
+                else if ((!(currentPath.currentObject == null && otherObjects.get(i) == null) && (currentPath.currentObject != null && !currentPath.currentObject.equals(otherObjects.get(i)))) ||
                         !currentPath.currentLabels.equals(otherLabels.get(i)))
                     return false;
                 else
@@ -278,8 +277,11 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
             if (currentPath.isTail())
                 break;
             for (final String label : currentPath.currentLabels) {
-                if (!otherPath.hasLabel(label) || !this.get(pop, label).equals(otherPath.get(pop, label)))
-                    return false;
+                if (!otherPath.hasLabel(label)) return false;
+
+                final Object o1 = this.get(pop, label);
+                final Object o2 = otherPath.get(pop, label);
+                if (o1 != null && !o1.equals(o2)) return false;
             }
             currentPath = currentPath.previousPath;
         }

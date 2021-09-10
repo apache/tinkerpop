@@ -373,7 +373,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandlePMultiValue() throws Exception  {
         assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
-        final P o = P.within(1,2,3);
+        final P o = P.within(1,2,3,null);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
     }
 
@@ -389,7 +389,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandlePMultiValueAsList() throws Exception  {
         assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
-        final P o = P.within(Arrays.asList(1,2,3));
+        final P o = P.within(Arrays.asList(1,2,3,null));
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
     }
 

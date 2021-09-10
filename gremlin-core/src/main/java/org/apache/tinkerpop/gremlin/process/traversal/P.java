@@ -204,38 +204,46 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
-     * Determines if a value is within the specified list of values.
+     * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
-        return P.within(Arrays.asList(values));
+        final V[] v = null == values ? (V[]) new Object[] { null } : values;
+        return P.within(Arrays.asList(v));
     }
 
     /**
-     * Determines if a value is within the specified list of values.
+     * Determines if a value is within the specified list of values. Calling this with {@code null} is the same as
+     * calling {@link #within(Object[])} using {@code null}.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final Collection<V> value) {
+        if (null == value) return P.within((V) null);
         return new P(Contains.within, value);
     }
 
     /**
-     * Determines if a value is not within the specified list of values.
+     * Determines if a value is not within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> without(final V... values) {
-        return P.without(Arrays.asList(values));
+        final V[] v = null == values ? (V[]) new Object[] { null } : values;
+        return P.without(Arrays.asList(v));
     }
 
     /**
-     * Deermines if a value is not within the specified list of values.
+     * Determines if a value is not within the specified list of values. Calling this with {@code null} is the same as
+     * calling {@link #within(Object[])} using {@code null}.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> without(final Collection<V> value) {
+        if (null == value) return P.without((V) null);
         return new P(Contains.without, value);
     }
 

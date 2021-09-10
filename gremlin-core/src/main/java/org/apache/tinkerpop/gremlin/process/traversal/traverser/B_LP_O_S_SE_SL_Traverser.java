@@ -82,7 +82,7 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public void addLabels(final Set<String> labels) {
         if (!labels.isEmpty())
-            this.path = this.path.isEmpty() || !this.t.equals(this.path.head()) ?
+            this.path = this.path.isEmpty() || (null == this.t && this.path.head() == null) || !this.t.equals(this.path.head()) ?
                     this.path.extend(this.t, labels) :
                     this.path.extend(labels);
     }

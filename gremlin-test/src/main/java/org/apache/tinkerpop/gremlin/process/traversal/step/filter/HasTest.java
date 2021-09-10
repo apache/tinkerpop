@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
@@ -41,7 +42,6 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.Contains.within;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -68,6 +68,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXnullX();
+
+    public abstract Traversal<Edge, Edge> get_g_E_hasXnullX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXnullX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXnull_personX();
+
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VXv1X_hasXage_gt_30X(final Object v1Id);
@@ -87,6 +95,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id);
 
     public abstract Traversal<Edge, Edge> get_g_E_hasLabelXknowsX();
+
+    public abstract Traversal<Edge, Edge> get_g_E_hasLabelXnullX();
+
+    public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasLabelXnullX();
 
     public abstract Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id);
 
@@ -153,6 +165,24 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXp_neqXvXX();
 
     public abstract Traversal<Vertex, String> get_g_V_hasXk_withinXcXX_valuesXkX();
+
+    public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasKeyXnullX();
+
+    public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasKeyXnull_nullX();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_properties_hasKeyXnull_ageX_value();
+
+    public abstract Traversal<Edge, ? extends Property<Object>> get_g_E_properties_hasKeyXnullX();
+
+    public abstract Traversal<Edge, ? extends Property<Object>> get_g_E_properties_hasKeyXnull_nullX();
+
+    public abstract Traversal<Edge, Double> get_g_E_properties_hasKeyXnull_weightX_value();
+
+    public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasValueXnullX();
+
+    public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasValueXnull_nullX();
+
+    public abstract Traversal<Vertex, String> get_g_V_properties_hasValueXnull_joshX_value();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -339,7 +369,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id2), is(id3)));
         assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id2), is(id3)));
-        assertFalse(traversal.hasNext());
+        assertThat(traversal.hasNext(), is(false));
     }
 
     @Test
@@ -347,13 +377,46 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public void g_V_hasXblahX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXblahX();
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        assertThat(traversal.hasNext(), is(false));
     }
-
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_EX7X_hasXlabelXknowsX() {
+    public void g_V_hasXnullX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_E_hasXnullX() {
+        final Traversal<Edge, Edge> traversal = get_g_E_hasXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXnullX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXnull_personX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXnull_personX();
+        printTraversalForm(traversal);
+        final List<Vertex> vertices = traversal.toList();
+        assertEquals(4, vertices.size());
+        assertThat(vertices.stream().allMatch(v -> v.label().equals("person")), is(true));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX7X_hasLabelXknowsX() {
         final Traversal<Edge, Edge> traversal = get_g_EX7X_hasLabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
         printTraversalForm(traversal);
         int counter = 0;
@@ -366,7 +429,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_E_hasXlabelXknowsX() {
+    public void g_E_hasLabelXknowsX() {
         final Traversal<Edge, Edge> traversal = get_g_E_hasLabelXknowsX();
         printTraversalForm(traversal);
         int counter = 0;
@@ -375,6 +438,22 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             assertEquals("knows", traversal.next().label());
         }
         assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_E_hasLabelXnullX() {
+        final Traversal<Edge, Edge> traversal = get_g_E_hasLabelXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasLabelXnullX() {
+        final Traversal<Vertex, ? extends Property> traversal = get_g_V_properties_hasLabelXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
     }
 
     @Test
@@ -494,7 +573,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value() {
+    public void g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value() {
         final Traversal<Vertex, Integer> traversal = get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(32, 35), traversal);
@@ -719,6 +798,82 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasKeyXnullX() {
+        final Traversal<Vertex, ? extends Property<Object>> traversal = get_g_V_properties_hasKeyXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasKeyXnull_nullX() {
+        final Traversal<Vertex, ? extends Property<Object>> traversal = get_g_V_properties_hasKeyXnull_nullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasKeyXnull_ageX_value() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_properties_hasKeyXnull_ageX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(27, 29, 32, 35), traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_E_properties_hasKeyXnullX() {
+        final Traversal<Edge, ? extends Property<Object>> traversal = get_g_E_properties_hasKeyXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_E_properties_hasKeyXnull_nullX() {
+        final Traversal<Edge, ? extends Property<Object>> traversal = get_g_E_properties_hasKeyXnull_nullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_E_properties_hasKeyXnull_weightX_value() {
+        final Traversal<Edge, Double> traversal = get_g_E_properties_hasKeyXnull_weightX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0.5, 1.0, 1.0, 0.4, 0.4, 0.2), traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasValueXnullX() {
+        final Traversal<Vertex, ? extends Property<Object>> traversal = get_g_V_properties_hasValueXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasValueXnull_nullX() {
+        final Traversal<Vertex, ? extends Property<Object>> traversal = get_g_V_properties_hasValueXnull_nullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_hasValueXnull_joshX_value() {
+        final Traversal<Vertex, String> traversal = get_g_V_properties_hasValueXnull_joshX_value();
+        printTraversalForm(traversal);
+        assertEquals("josh", traversal.next());
+        assertThat(traversal.hasNext(), is(false));
+    }
+
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e10Id) {
@@ -753,6 +908,31 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
             return g.V().has("blah");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXnullX() {
+            return g.V().has(null);
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_E_hasXnullX() {
+            return g.E().has(null);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXnullX() {
+            return g.V().hasLabel(null);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXnull_personX() {
+            return g.V().hasLabel(null, "person");
+        }
+
+        @Override
+        public Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasLabelXnullX() {
+            return g.V().properties().hasLabel(null);
         }
 
         @Override
@@ -803,6 +983,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Edge, Edge> get_g_E_hasLabelXknowsX() {
             return g.E().hasLabel("knows");
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_E_hasLabelXnullX() {
+            return g.E().hasLabel(null);
         }
 
         @Override
@@ -963,6 +1148,51 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasXk_withinXcXX_valuesXkX() {
             return g.V().has("k", P.within("轉注", "✦", "♠")).values("k");
+        }
+
+        @Override
+        public Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasKeyXnullX() {
+            return g.V().properties().hasKey(null);
+        }
+
+        @Override
+        public Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasKeyXnull_nullX() {
+            return g.V().properties().hasKey(null,null);
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_properties_hasKeyXnull_ageX_value() {
+            return g.V().properties().hasKey(null, "age").value();
+        }
+
+        @Override
+        public Traversal<Edge, ? extends Property<Object>> get_g_E_properties_hasKeyXnullX() {
+            return g.E().properties().hasKey(null);
+        }
+
+        @Override
+        public Traversal<Edge, ? extends Property<Object>> get_g_E_properties_hasKeyXnull_nullX() {
+            return g.E().properties().hasKey(null,null);
+        }
+
+        @Override
+        public Traversal<Edge, Double> get_g_E_properties_hasKeyXnull_weightX_value() {
+            return g.E().properties().hasKey(null, "weight").value();
+        }
+
+        @Override
+        public Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasValueXnullX() {
+            return g.V().properties().hasValue(null);
+        }
+
+        @Override
+        public Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasValueXnull_nullX() {
+            return g.V().properties().hasValue(null,null);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_properties_hasValueXnull_joshX_value() {
+            return g.V().properties().hasValue(null, "josh").value();
         }
     }
 }

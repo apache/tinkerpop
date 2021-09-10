@@ -35,6 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -46,6 +47,14 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Integer> get_g_V_age_max();
 
     public abstract Traversal<Vertex, Integer> get_g_V_age_fold_maxXlocalX();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_maxXlocalX();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_unfold_max();
+
+    public abstract Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_maxXlocalX();
+
+    public abstract Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_max();
 
     public abstract Traversal<Vertex, Comparable> get_g_V_foo_max();
 
@@ -73,6 +82,40 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Integer> traversal = get_g_V_age_fold_maxXlocalX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_capXaX_maxXlocalX() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_aggregateXaX_byXageX_capXaX_maxXlocalX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_capXaX_unfold_max() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_aggregateXaX_byXageX_capXaX_unfold_max();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_capXaX_maxXlocalX() {
+        final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_maxXlocalX();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_capXaX_unfold_max() {
+        final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_max();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -136,8 +179,28 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_maxXlocalX() {
+            return g.V().aggregate("a").by("foo").cap("a").max(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_max() {
+            return g.V().aggregate("a").by("foo").cap("a").unfold().max();
+        }
+
+        @Override
         public Traversal<Vertex, Integer> get_g_V_age_fold_maxXlocalX() {
             return g.V().values("age").fold().max(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_maxXlocalX() {
+            return g.V().aggregate("a").by("age").cap("a").max(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_unfold_max() {
+            return g.V().aggregate("aaazzz").by("age").cap("aaazzz").unfold().max();
         }
 
         @Override

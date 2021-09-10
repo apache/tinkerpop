@@ -46,11 +46,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 // Add here the name of scenarios to ignore and the reason, e.g.:
                 {"g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
 
-                // expect to fix the following before 3.5.0 release. they are not failing as a result of the Gremlin
-                // itself - they are failing because of shortcomings in the test suite.
+                // they are not failing as a result of the Gremlin itself - they are failing because of shortcomings in
+                // the test suite.
                 // https://issues.apache.org/jira/browse/TINKERPOP-2518
                 {"g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.NoReason},
+                {"g_V_aggregateXaX_byXageX_capXaX_unfold_sum", IgnoreReason.NoReason},
                 {"g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack", IgnoreReason.NoReason},
+                {"g_injectXlistXnull_10_20_nullXX_meanXlocalX", IgnoreReason.NoReason},
+                {"g_injectXnull_10_20_nullX_mean", IgnoreReason.NoReason},
+                {"g_injectXnull_10_5_nullX_sum", IgnoreReason.NoReason},
+                {"g_injectXlistXnull_10_5_nullXX_sumXlocalX", IgnoreReason.NoReason},
                 {
                     "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack",
                     IgnoreReason.NoReason

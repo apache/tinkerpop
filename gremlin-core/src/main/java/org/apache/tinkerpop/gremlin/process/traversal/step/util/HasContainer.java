@@ -104,23 +104,23 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         return false;
     }
 
-    protected boolean testId(Element element) {
+    protected boolean testId(final Element element) {
         return this.predicate.test(element.id());
     }
 
-    protected boolean testIdAsString(Element element) {
+    protected boolean testIdAsString(final Element element) {
         return this.predicate.test(element.id().toString());
     }
 
-    protected boolean testLabel(Element element) {
+    protected boolean testLabel(final Element element) {
         return this.predicate.test(element.label());
     }
 
-    protected boolean testValue(Property property) {
+    protected boolean testValue(final Property property) {
         return this.predicate.test(property.value());
     }
 
-    protected boolean testKey(Property property) {
+    protected boolean testKey(final Property property) {
         return this.predicate.test(property.key());
     }
 

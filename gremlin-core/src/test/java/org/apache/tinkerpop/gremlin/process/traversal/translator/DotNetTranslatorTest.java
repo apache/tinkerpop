@@ -88,8 +88,20 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateInject() {
-        final String script = translator.translate(g.inject(10,20,null,20,10,10).asAdmin().getBytecode()).getScript();
+        String script = translator.translate(g.inject(10,20,null,20,10,10).asAdmin().getBytecode()).getScript();
         assertEquals("g.Inject<object>(10,20,null,20,10,10)", script);
+        script = translator.translate(g.inject().asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject<object>()", script);
+        script = translator.translate(g.inject((Object) null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject<object>(null)", script);
+        script = translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject<object>(null,null)", script);
+        script = translator.translate(g.V().values("age").inject().asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Values<object>(\"age\").Inject()", script);
+        script = translator.translate(g.V().values("age").inject(null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Values<object>(\"age\").Inject(null)", script);
+        script = translator.translate(g.V().values("age").inject(null, null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Values<object>(\"age\").Inject(null,null)", script);
     }
 
     @Test
@@ -151,6 +163,20 @@ public class DotNetTranslatorTest {
     @Test
     public void shouldHaveValidToString() {
         assertEquals("translator[h:gremlin-dotnet]", DotNetTranslator.of("h").toString());
+    }
+
+    @Test
+    public void shouldTranslateHasLabelNull() {
+        String script = translator.translate(g.V().hasLabel(null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().HasLabel((string) null)", script);
+        script = translator.translate(g.V().hasLabel(null, null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().HasLabel((string) null,(string) null)", script);
+        script = translator.translate(g.V().hasLabel(null, "person").asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().HasLabel((string) null,\"person\")", script);
+        script = translator.translate(g.V().hasLabel(null, "person", null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().HasLabel((string) null,\"person\",(string) null)", script);
+        script = translator.translate(g.V().has(T.label, (Object) null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Has(T.Label,(object) null)", script);
     }
 
     @Test

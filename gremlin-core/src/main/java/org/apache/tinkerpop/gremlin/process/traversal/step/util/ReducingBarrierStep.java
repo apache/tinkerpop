@@ -24,8 +24,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Generating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
+import java.io.Serializable;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
@@ -34,10 +37,21 @@ import java.util.function.Supplier;
  */
 public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier<E>, Generating<E, E> {
 
-    protected Supplier<E> seedSupplier;
+    /**
+     * A seed value not to be emitted from the {@code ReducingBarrierStep} helping with flow control within this step.
+     */
+    public static final Object NON_EMITTING_SEED = NonEmittingSeed.INSTANCE;
+
+    /**
+     * If the {@code seedSupplier} is {@code null} then the default behavior is to generate the seed from the starts.
+     * This supplier must be callable as a constant and not rely on state from the class. Prefer overriding
+     * {@link #generateSeedFromStarts()} otherwise.
+     */
+    protected Supplier<E> seedSupplier = null;
     protected BinaryOperator<E> reducingBiOperator;
-    private boolean hasProcessedOnce = false;
-    private E seed = null;
+    protected boolean hasProcessedOnce = false;
+
+    private E seed = (E) NON_EMITTING_SEED;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -47,8 +61,18 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         this.seedSupplier = seedSupplier;
     }
 
+    /**
+     * Gets the provided seed supplier or provides {@link #generateSeedFromStarts()}.
+     */
     public Supplier<E> getSeedSupplier() {
-        return this.seedSupplier;
+        return Optional.ofNullable(this.seedSupplier).orElse(this::generateSeedFromStarts);
+    }
+
+    /**
+     * If the {@code seedSupplier} is {@code null} then this method is called.
+     */
+    protected E generateSeedFromStarts() {
+        return starts.hasNext() ? projectTraverser(this.starts.next()) : null;
     }
 
     public abstract E projectTraverser(final Traverser.Admin<S> traverser);
@@ -64,13 +88,13 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     public void reset() {
         super.reset();
         this.hasProcessedOnce = false;
-        this.seed = null;
+        this.seed = (E) NON_EMITTING_SEED;
     }
 
     @Override
     public void done() {
         this.hasProcessedOnce = true;
-        this.seed = null;
+        this.seed = (E) NON_EMITTING_SEED;
     }
 
     @Override
@@ -78,7 +102,11 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         if (this.hasProcessedOnce && !this.starts.hasNext())
             return;
         this.hasProcessedOnce = true;
-        if (this.seed == null) this.seed = this.seedSupplier.get();
+
+        if (this.seed == NON_EMITTING_SEED) {
+            this.seed = getSeedSupplier().get();
+        }
+
         while (this.starts.hasNext())
             this.seed = this.reducingBiOperator.apply(this.seed, this.projectTraverser(this.starts.next()));
     }
@@ -86,7 +114,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     @Override
     public boolean hasNextBarrier() {
         this.processAllStarts();
-        return null != this.seed;
+        return NON_EMITTING_SEED != this.seed;
     }
 
     @Override
@@ -95,14 +123,14 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             throw FastNoSuchElementException.instance();
         else {
             final E temp = this.seed;
-            this.seed = null;
+            this.seed = (E) NON_EMITTING_SEED;
             return temp;
         }
     }
 
     @Override
     public void addBarrier(final E barrier) {
-        this.seed = null == this.seed ?
+        this.seed = NON_EMITTING_SEED == this.seed ?
                 barrier :
                 this.reducingBiOperator.apply(this.seed, barrier);
     }
@@ -110,10 +138,9 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     @Override
     public Traverser.Admin<E> processNextStart() {
         this.processAllStarts();
-        if (this.seed == null)
-            throw FastNoSuchElementException.instance();
+        if (this.seed == NON_EMITTING_SEED) throw FastNoSuchElementException.instance();
         final Traverser.Admin<E> traverser = this.getTraversal().getTraverserGenerator().generate(this.generateFinalResult(this.seed), (Step<E, E>) this, 1l);
-        this.seed = null;
+        this.seed = (E) NON_EMITTING_SEED;
         return traverser;
     }
 
@@ -121,7 +148,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     public ReducingBarrierStep<S, E> clone() {
         final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
         clone.hasProcessedOnce = false;
-        clone.seed = null;
+        clone.seed = (E) NON_EMITTING_SEED;
         return clone;
     }
 
@@ -130,4 +157,12 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         return MemoryComputeKey.of(this.getId(), this.getBiOperator(), false, true);
     }
 
+    /**
+     * A class that represents a value that is not be to be emitted which helps with flow control internal to the class
+     * and is serializable in Gryo for use in OLAP.
+     */
+    public static final class NonEmittingSeed implements Serializable {
+        public static final NonEmittingSeed INSTANCE = new NonEmittingSeed();
+        private NonEmittingSeed() {}
+    }
 }

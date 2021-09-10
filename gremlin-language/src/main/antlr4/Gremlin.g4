@@ -1293,6 +1293,7 @@ booleanLiteral
 stringLiteral
     : NonEmptyStringLiteral
     | EmptyStringLiteral
+    | NullLiteral
     | gremlinStringConstants
     ;
 

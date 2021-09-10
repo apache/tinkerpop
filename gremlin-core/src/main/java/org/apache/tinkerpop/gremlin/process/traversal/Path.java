@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
@@ -105,24 +106,25 @@ public interface Path extends Cloneable, Iterable<Object> {
     public default <A> A get(final String label) throws IllegalArgumentException {
         final List<Object> objects = this.objects();
         final List<Set<String>> labels = this.labels();
-        Object object = null;
+        Optional<Object> object = null;
         for (int i = 0; i < labels.size(); i++) {
             if (labels.get(i).contains(label)) {
                 if (null == object) {
-                    object = objects.get(i);
-                } else if (object instanceof List) {
-                    ((List) object).add(objects.get(i));
+                    object = Optional.ofNullable(objects.get(i));
+                } else if (object.get() instanceof List) {
+                    ((List) object.get()).add(objects.get(i));
                 } else {
-                    final List list = new ArrayList(2);
-                    list.add(object);
+                    final List<Object> list = new ArrayList<>(2);
+                    list.add(object.get());
                     list.add(objects.get(i));
-                    object = list;
+                    object = Optional.of(list);
                 }
             }
         }
-        if (null == object)
-            throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
-        return (A) object;
+
+        if (null == object) throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+
+        return (A) object.orElse(null);
     }
 
     /**
@@ -234,11 +236,14 @@ public interface Path extends Cloneable, Iterable<Object> {
         if (!(other instanceof Path))
             return false;
         final Path otherPath = (Path) other;
-        return !this.labels().stream().
+        return this.labels().stream().
                 flatMap(Set::stream).
-                filter(label -> !otherPath.hasLabel(label) || !otherPath.get(pop, label).equals(this.get(pop, label))).
-                findAny().
-                isPresent();
+                noneMatch(label -> {
+                    if (!otherPath.hasLabel(label)) return true;
+                    final Object o1 = otherPath.get(pop, label);
+                    final Object o2 = this.get(pop, label);
+                    return !((null == o1 && null == o2) || (o1 != null && o1.equals(o2)));
+                });
     }
 
     /**

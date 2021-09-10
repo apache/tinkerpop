@@ -36,7 +36,6 @@ public final class MinGlobalStep<S extends Comparable> extends ReducingBarrierSt
 
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>((S) Double.valueOf(Double.NaN)));
         this.setReducingBiOperator((BinaryOperator) Operator.min);
     }
 

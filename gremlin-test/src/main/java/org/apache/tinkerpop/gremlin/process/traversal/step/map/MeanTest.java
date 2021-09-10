@@ -28,12 +28,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -51,6 +53,18 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Number> get_g_V_foo_fold_meanXlocalX();
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX();
+
+    public abstract Traversal<Vertex, Double> get_g_V_aggregateXaX_byXageX_meanXlocalX();
+
+    public abstract Traversal<Vertex, Double> get_g_V_aggregateXaX_byXageX_capXaX_unfold_mean();
+
+    public abstract Traversal<Vertex, Double> get_g_V_aggregateXaX_byXfooX_meanXlocalX();
+
+    public abstract Traversal<Vertex, Double> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_mean();
+
+    public abstract Traversal<Integer, Double> get_g_injectXnull_10_20_nullX_mean();
+
+    public abstract Traversal<List<Integer>, Double> get_g_injectXlistXnull_10_20_nullXX_meanXlocalX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -74,6 +88,24 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_meanXlocalX() {
+        final Traversal<Vertex, Double> traversal = get_g_V_aggregateXaX_byXfooX_meanXlocalX();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_capXaX_unfold_mean() {
+        final Traversal<Vertex, Double> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_mean();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX() {
         final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX();
         printTraversalForm(traversal);
@@ -85,11 +117,52 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
         assertEquals(1.0 / 3, map.get("lop"));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_meanXlocalX() {
+        for (final Traversal<Vertex, Double> traversal : Arrays.asList(get_g_V_aggregateXaX_byXageX_capXaX_unfold_mean(), get_g_V_aggregateXaX_byXageX_meanXlocalX())) {
+            printTraversalForm(traversal);
+            final Double mean = traversal.next();
+            assertEquals(30.75, mean, 0.05);
+            assertFalse(traversal.hasNext());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectXnull_10_20_nullX_mean() {
+        final Traversal<Integer, Double> traversal = get_g_injectXnull_10_20_nullX_mean();
+        printTraversalForm(traversal);
+        final Double mean = traversal.next();
+        assertEquals(15.00, mean, 0.05);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectXlistXnull_10_20_nullXX_meanXlocalX() {
+        final Traversal<List<Integer>, Double> traversal = get_g_injectXlistXnull_10_20_nullXX_meanXlocalX();
+        printTraversalForm(traversal);
+        final Double mean = traversal.next();
+        assertEquals(15.00, mean, 0.05);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends MeanTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
             return g.V().values("age").mean();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_aggregateXaX_byXfooX_meanXlocalX() {
+            return g.V().aggregate("a").by("foo").cap("a").mean(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_mean() {
+            return g.V().aggregate("a").by("foo").cap("a").unfold().mean();
         }
 
         @Override
@@ -110,6 +183,26 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX() {
             return g.V().hasLabel("software").<String, Number>group().by("name").by(bothE().values("weight").mean());
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_aggregateXaX_byXageX_meanXlocalX() {
+            return g.V().aggregate("a").by("age").cap("a").mean(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_aggregateXaX_byXageX_capXaX_unfold_mean() {
+            return g.V().aggregate("a").by("age").cap("a").unfold().mean();
+        }
+
+        @Override
+        public Traversal<Integer, Double> get_g_injectXnull_10_20_nullX_mean() {
+            return g.inject(null, 10, 20, null).mean();
+        }
+
+        @Override
+        public Traversal<List<Integer>, Double> get_g_injectXlistXnull_10_20_nullXX_meanXlocalX() {
+            return g.inject(Arrays.asList(null, 10, 20, null)).mean(Scope.local);
         }
     }
 }

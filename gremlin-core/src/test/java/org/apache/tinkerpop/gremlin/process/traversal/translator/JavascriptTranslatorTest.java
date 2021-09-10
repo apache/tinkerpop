@@ -115,6 +115,11 @@ public class JavascriptTranslatorTest {
     }
 
     @Test
+    public void shouldHaveNull() {
+        translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript();
+    }
+
+    @Test
     public void shouldEscapeStrings() {
         final String script = translator.translate(g.addV("customer")
                 .property("customer_id", 501L)

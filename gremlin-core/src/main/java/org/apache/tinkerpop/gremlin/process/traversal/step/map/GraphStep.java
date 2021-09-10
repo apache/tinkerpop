@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -177,7 +178,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         int result = super.hashCode() ^ this.returnClass.hashCode();
         if (null != this.ids) {
             for (final Object id : this.ids) {
-                result ^= id.hashCode();
+                result ^= Objects.hashCode(id);
             }
         }
         return result;

@@ -304,18 +304,22 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final String traversalSource, final Bytecode o) {
             script.append(traversalSource);
+            int instructionPosition = 0;
             for (final Bytecode.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 // perhaps too many if/then conditions for specifying generics. doesnt' seem like there is a clear
                 // way to refactor this more nicely though.
+                //
+                // inject() only has types when called with it when its used as a start step
                 if (0 == instruction.getArguments().length) {
-                    if (methodName.equals(GraphTraversal.Symbols.fold) && o.getSourceInstructions().size() + o.getStepInstructions().size() > 1)
+                    if (methodName.equals(GraphTraversal.Symbols.fold) && o.getSourceInstructions().size() + o.getStepInstructions().size() > 1 ||
+                            (methodName.equals(GraphTraversal.Symbols.inject) && instructionPosition > 0))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "")).append("()");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("()");
                 } else {
                     if (methodsWithArgsNotNeedingGeneric.contains(methodName) ||
-                            (methodName.equals(GraphTraversal.Symbols.inject) && Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull)))
+                            (methodName.equals(GraphTraversal.Symbols.inject) && (Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull) || instructionPosition > 0)))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "").replace("<object,object>", "")).append("(");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("(");
@@ -340,16 +344,29 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         convertToScript(instruction.getArguments()[1]);
                         script.append(",");
                     } else {
-                        for (final Object object : instruction.getArguments()) {
-                            // overloads might have trouble with null. add more as we find them i guess
-                            if (null == object && methodName.equals(GraphTraversal.Symbols.addV))
-                                script.append("(string) ");
-                            convertToScript(object);
+                        final Object[] instArgs = instruction.getArguments();
+                        for (int idx = 0; idx < instArgs.length; idx++) {
+                            final Object instArg = instArgs[idx];
+                            // overloads might have trouble with null in calling the right one. add more as we find
+                            // them i guess
+                            if (null == instArg) {
+                                if ((methodName.equals(GraphTraversal.Symbols.addV) && idx % 2 == 0) ||
+                                     methodName.equals(GraphTraversal.Symbols.hasLabel)||
+                                     methodName.equals(GraphTraversal.Symbols.hasKey)) {
+                                    script.append("(string) ");
+                                } else if (methodName.equals(GraphTraversal.Symbols.hasValue)) {
+                                    script.append("(object) ");
+                                } else if (methodName.equals(GraphTraversal.Symbols.has)) {
+                                    if (instArgs[0] instanceof T && idx > 0) script.append("(object) ");
+                                }
+                            }
+                            convertToScript(instArg);
                             script.append(",");
                         }
                     }
                     script.setCharAtEnd(')');
                 }
+                instructionPosition++;
             }
             return script;
         }

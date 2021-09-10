@@ -69,3 +69,21 @@ Feature: Step - project()
       | m[{"x":["peter"]}] |
       | m[{"x":["lop"]}] |
       | m[{"x":["ripple"]}] |
+
+  Scenario: g_V_projectXa_bX_byXinE_countX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().project("a", "b").
+          by(__.inE().count()).
+          by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"d[1].l", "b":null}] |
+      | m[{"a":"d[3].l", "b":null}] |
+      | m[{"a":"d[0].l", "b":"d[29].i"}] |
+      | m[{"a":"d[1].l", "b":"d[27].i"}] |
+      | m[{"a":"d[1].l", "b":"d[32].i"}] |
+      | m[{"a":"d[0].l", "b":"d[35].i"}] |

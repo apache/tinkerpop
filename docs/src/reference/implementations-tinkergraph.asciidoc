@@ -148,7 +148,7 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.edgeIdManager |The `IdManager` implementation to use for edges.
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
 |gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
-|gremlin.tinkergraph.allowNullPropertyValues |A boolean value that determines whether or not `null` property values are allowed and defaults to `true`.
+|gremlin.tinkergraph.allowNullPropertyValues |A boolean value that determines whether or not `null` property values are allowed and defaults to `false`.
 |gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a
 value is specified here, the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
 included (default), then the graph will stay in-memory and not be loaded/persisted to disk.

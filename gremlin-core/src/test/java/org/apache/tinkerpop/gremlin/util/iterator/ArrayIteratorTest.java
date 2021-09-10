@@ -78,4 +78,36 @@ public class ArrayIteratorTest {
         final Iterator<String> itty = new ArrayIterator<>(arr);
         assertEquals("[test1, test2, test3]", itty.toString());
     }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldNotAllowNullConstruction() {
+        new ArrayIterator<>(null);
+    }
+
+    @Test
+    public void shouldAllowNullInArray() {
+        final String[] arr = new String[3];
+        arr[0] = "test1";
+        arr[1] = null;
+        arr[2] = "test3";
+
+        final Iterator<String> itty = new ArrayIterator<>(arr);
+        assertEquals("[test1, null, test3]", itty.toString());
+    }
+
+    @Test
+    public void shouldAllowSingleNullInArray() {
+        final String[] arr = new String[1];
+
+        final Iterator<String> itty = new ArrayIterator<>(arr);
+        assertEquals("[null]", itty.toString());
+    }
+
+    @Test
+    public void shouldAllowZeroNullInArray() {
+        final String[] arr = new String[0];
+
+        final Iterator<String> itty = new ArrayIterator<>(arr);
+        assertEquals("[]", itty.toString());
+    }
 }

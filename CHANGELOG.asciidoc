@@ -28,6 +28,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug where `RepeatUnrollStrategy`, `InlineFilterStrategy` and `MessagePassingReductionStrategy` were all being applied more than necessary.
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
+* Allowed `null` string values in the Gremlin grammar.
+* Prevented exception with `hasLabel(null)` and `hasKey(null)` and instead filter away traversers as these structural components can't ever be null.
+* Improved handling of `null` when passed to `P` predicates.
+* Handled `null` for mathematical reducing operations of `sum()`, `mean()`, `max()` and `min()`.
+* Allowed `null` values in `Memory` for `GraphComputer`.
+* Allowed `null` assignment in `withSideEffect()`.
+* Allowed labelling of steps that emit a traverser carrying `null`.
+* Fixed problems with `inject(null)` variations where `null` was the only value being submitted.
+* Fixed problem with `GroovyTranslator` and `inject(null,null)` which could be interpreted as the Groovy JDK extension `inject(Object,Closure).
+* Fixed error where certain variants of `inject()` with `null` might not properly construct a traversal in .NET.
+* Prevented exception with  `hasValue(null)` and allowed filtering as expected.
+* Refined `DotNetTranslator` to be more explicit with `null` arguments to ensure that the right overloads are called.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 * Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
 

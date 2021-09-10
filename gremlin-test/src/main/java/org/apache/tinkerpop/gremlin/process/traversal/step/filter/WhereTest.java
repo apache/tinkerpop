@@ -123,6 +123,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(final Object v1Id);
 
+    public abstract Traversal<Vertex, String> get_g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name(final Object v3Id);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_selectXa_bX_whereXa_eqXbXX() {
@@ -406,6 +408,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name(convertToVertexId(graph, "lop"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("lop", "lop", "lop", "ripple"), traversal);
+    }
+
 
     public static class Traversals extends WhereTest {
 
@@ -534,6 +544,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(final Object v1Id) {
             return g.V(v1Id).as("a").out().has("age").where(gt("a")).by("age").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name(final Object v3Id) {
+            return g.V(v3Id).as("a").in().out().as("b").where("a", eq("b")).by("age").values("name");
         }
     }
 }

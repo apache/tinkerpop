@@ -44,8 +44,21 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     public MeanGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier((Supplier) MeanNumberSupplier.instance());
         this.setReducingBiOperator(MeanGlobalBiOperator.INSTANCE);
+    }
+
+    /**
+     * Advances the starts until a non-null value is found or simply returns {@code null}. In this way, an all
+     * {@code null} stream will result in {@code null}.
+     */
+    @Override
+    protected E generateSeedFromStarts() {
+        E e = null;
+        while (starts.hasNext() && null == e) {
+            e = projectTraverser(this.starts.next());
+        }
+
+        return e;
     }
 
     @Override
@@ -56,7 +69,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     @Override
     public E projectTraverser(final Traverser.Admin<S> traverser) {
-        return (E) new MeanNumber(traverser.get(), traverser.bulk());
+        return null == traverser.get() ? null : (E) new MeanNumber(traverser.get(), traverser.bulk());
     }
 
     @Override
@@ -66,7 +79,8 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     @Override
     public E generateFinalResult(final E meanNumber) {
-        return (E) ((MeanNumber) meanNumber).getFinal();
+        // if the meanNumber is null it means the whole stream was null
+        return null == meanNumber ? (E) null : (E) ((MeanNumber) meanNumber).getFinal();
     }
 
     /////
@@ -77,6 +91,8 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
         @Override
         public S apply(final S mutatingSeed, final S number) {
+            if (null == mutatingSeed || null == number) return mutatingSeed;
+
             if (mutatingSeed instanceof MeanNumber) {
                 return (number instanceof MeanNumber) ?
                         (S) ((MeanNumber) mutatingSeed).add((MeanNumber) number) :

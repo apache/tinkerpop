@@ -50,6 +50,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id);
 
+    public abstract Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX(final Object v1Id);
+
     public abstract Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX_byXnameX(final Object v1Id);
 
     public abstract Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX();
@@ -62,6 +64,10 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX();
 
+    public abstract Traversal<Integer, Path> get_g_injectX1_null_nullX_path();
+
+    public abstract Traversal<Integer, Path> get_g_injectX1_null_nullX_path_dedup();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_name_path() {
@@ -73,6 +79,24 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).<String>id());
         assertEquals("marko", path.<String>get(1));
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_out_path_byXageX() {
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_out_path_byXageX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<Object> ages = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            final Path path = traversal.next();
+            assertEquals(Integer.valueOf(29), path.<Integer>get(0));
+            assertTrue(path.get(1) == null || path.get(1).equals(27) || path.get(1).equals(32));
+            ages.add(path.get(1));
+        }
+        assertEquals(3, counter);
+        assertEquals(3, ages.size());
     }
 
     @Test
@@ -165,17 +189,43 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX() {
-        final Traversal<Vertex, Path> traveral = get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX();
-        printTraversalForm(traveral);
+        final Traversal<Vertex, Path> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX();
+        printTraversalForm(traversal);
         checkResults(Arrays.asList(
                 MutablePath.make().extend("josh", Collections.singleton("b")).extend("lop", Collections.singleton("c")),
-                MutablePath.make().extend("josh", Collections.singleton("b")).extend("ripple", Collections.singleton("c"))), traveral);
+                MutablePath.make().extend("josh", Collections.singleton("b")).extend("ripple", Collections.singleton("c"))), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectX1_null_nullX_path() {
+        final Traversal<Integer, Path> traversal = get_g_injectX1_null_nullX_path();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(
+                MutablePath.make().extend(1, Collections.emptySet()),
+                MutablePath.make().extend(null, Collections.emptySet()),
+                MutablePath.make().extend(null, Collections.emptySet())), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectX1_null_nullX_path_dedup() {
+        final Traversal<Integer, Path> traversal = get_g_injectX1_null_nullX_path_dedup();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(
+                MutablePath.make().extend(1, Collections.emptySet()),
+                MutablePath.make().extend(null, Collections.emptySet())), traversal);
     }
 
     public static class Traversals extends PathTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
             return g.V(v1Id).values("name").path();
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX(final Object v1Id) {
+            return g.V(v1Id).out().path().by("age");
         }
 
         @Override
@@ -206,6 +256,16 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX() {
             return g.V().as("a").out().as("b").out().as("c").path().from("b").to("c").by("name");
+        }
+
+        @Override
+        public Traversal<Integer, Path> get_g_injectX1_null_nullX_path() {
+            return g.inject(1, null, null).path();
+        }
+
+        @Override
+        public Traversal<Integer, Path> get_g_injectX1_null_nullX_path_dedup() {
+            return g.inject(1, null, null).path().dedup();
         }
     }
 }
