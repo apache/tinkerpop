@@ -670,6 +670,18 @@ In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not all
 statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
 `+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
 
+Since Groovy has access to the full JVM as Java does, it is possible to construct `Date`-like objects directly, but
+the Gremlin language does offer a `datetime()` function that is exposed in the Gremlin Console and as a function for
+Gremlin scripts sent to Gremlin Server. The function accepts the following forms of dates and times using a default
+time zone offset of UTC(+00:00):
+
+* `2018-03-22`
+* `2018-03-22T00:35:44`
+* `2018-03-22T00:35:44Z`
+* `2018-03-22T00:35:44.741`
+* `2018-03-22T00:35:44.741Z`
+* `2018-03-22T00:35:44.741+1600`
+
 [[gremlin-python]]
 == Gremlin-Python
 

@@ -865,4 +865,18 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).asInt());
         }
     }
+
+    @Test
+    public void should200OnGETWithGremlinQueryStringArgumentCallingDatetimeFunction() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=datetime%28%272018-03-22T00%3A35%3A44.741%2B1600%27%29"));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(1521621344741L, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).longValue());
+        }
+    }
 }

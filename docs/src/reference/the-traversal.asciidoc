@@ -4886,4 +4886,9 @@ System.out.println(s.parameters);
 // OUTPUT: Optional[{_args_0=person, _args_2=marko, _args_1=name, _args_4=age, _args_3=knows}]
 ----
 
+Finally, the `GroovyTranslator` can take a `TypeTranslator` argument which allows some customization of how types get
+converted to script form. The `DefaultTypeTranslator` is used if a specific implementation is not specified. A built-in
+alternative to this implementation is the `LanguageTypeTranslator` which will prefer use of the Gremlin language
+`datetime()` function rather than the JVM specific `Date` and `Timestamp` conversions. This translator can be helpful
+when generating scripts that will be sent to Gremlin Server or Remote Graph Providers supporting the `datetime()` form.
 
