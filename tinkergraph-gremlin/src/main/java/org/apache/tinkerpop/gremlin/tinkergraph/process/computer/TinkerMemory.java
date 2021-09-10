@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,13 +42,14 @@ import java.util.stream.Collectors;
 public final class TinkerMemory implements Memory.Admin {
 
     public final Map<String, MemoryComputeKey> memoryKeys = new HashMap<>();
-    public Map<String, Object> previousMap;
-    public Map<String, Object> currentMap;
+    public Map<String, Optional<Object>> previousMap;
+    public Map<String, Optional<Object>> currentMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
     private boolean inExecute = false;
 
     public TinkerMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers) {
+        // ConcurrentHashMap makes us use Optional since you cant store null in them as values (or keys)
         this.currentMap = new ConcurrentHashMap<>();
         this.previousMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {
@@ -108,10 +110,11 @@ public final class TinkerMemory implements Memory.Admin {
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        final R r = (R) this.previousMap.get(key);
-        if (null == r)
-            throw Memory.Exceptions.memoryDoesNotExist(key);
-        else if (this.inExecute && !this.memoryKeys.get(key).isBroadcast())
+        if (!this.previousMap.containsKey(key)) throw Memory.Exceptions.memoryDoesNotExist(key);
+
+        final Optional<Object> o = this.previousMap.get(key);
+        final R r = (R) o.orElse(null);
+        if (this.inExecute && !this.memoryKeys.get(key).isBroadcast())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
             return r;
@@ -122,7 +125,7 @@ public final class TinkerMemory implements Memory.Admin {
         checkKeyValue(key, value);
         if (this.inExecute)
             throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
-        this.currentMap.put(key, value);
+        this.currentMap.put(key, Optional.ofNullable(value));
     }
 
     @Override
@@ -130,7 +133,7 @@ public final class TinkerMemory implements Memory.Admin {
         checkKeyValue(key, value);
         if (!this.inExecute)
             throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
-        this.currentMap.compute(key, (k, v) -> null == v ? value : this.memoryKeys.get(key).getReducer().apply(v, value));
+        this.currentMap.compute(key, (k, v) -> Optional.ofNullable(null == v || !v.isPresent() ? value : this.memoryKeys.get(key).getReducer().apply(v.get(), value)));
     }
 
     @Override
@@ -141,6 +144,5 @@ public final class TinkerMemory implements Memory.Admin {
     protected void checkKeyValue(final String key, final Object value) {
         if (!this.memoryKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
-        MemoryHelper.validateValue(value);
     }
 }

@@ -188,7 +188,10 @@ public class MutablePath implements Path, Serializable {
         final List<Object> otherPathObjects = otherPath.objects();
         final List<Set<String>> otherPathLabels = otherPath.labels();
         for (int i = this.objects.size() - 1; i >= 0; i--) {
-            if (!this.objects.get(i).equals(otherPathObjects.get(i)))
+            final Object o1 = this.objects.get(i);
+            final Object o2 = otherPathObjects.get(i);
+
+            if (!(o1 == null && o2 == null) && ((o1 != null) && !o1.equals(o2)))
                 return false;
             if (!this.labels.get(i).equals(otherPathLabels.get(i)))
                 return false;

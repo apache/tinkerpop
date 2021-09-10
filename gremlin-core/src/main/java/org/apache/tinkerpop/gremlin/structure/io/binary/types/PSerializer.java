@@ -60,7 +60,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
         final Class<?>[] argumentClasses = new Class[length];
         for (int i = 0; i < length; i++) {
             args[i] = context.read(buffer);
-            argumentClasses[i] = args[i].getClass();
+            argumentClasses[i] = null == args[i] ? Object.class : args[i].getClass();
         }
                     
         if ("and".equals(predicateName))

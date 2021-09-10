@@ -312,7 +312,7 @@ public final class GryoSerializersV3d0 {
             final boolean isCollection = input.readByte() == (byte) 0;
             final Object value;
             if (isCollection) {
-                value = new ArrayList();
+                value = new ArrayList<>();
                 final int size = input.readInt();
                 for (int ix = 0; ix < size; ix++) {
                     ((List) value).add(kryo.readClassAndObject(input));

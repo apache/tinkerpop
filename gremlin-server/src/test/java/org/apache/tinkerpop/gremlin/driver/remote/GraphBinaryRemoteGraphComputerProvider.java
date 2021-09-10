@@ -90,7 +90,27 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest",
         method = "g_injectXg_VX1X_propertiesXnameX_nextX_value",
-        reason = "Needs investigation")
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest",
+        method = "g_injectXnull_10_5_nullX_sum",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest",
+        method = "g_injectXlistXnull_10_5_nullXX_sumXlocalX",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest",
+        method = "g_injectXlistXnull_10_20_nullXX_meanXlocalX",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest",
+        method = "g_withSideEffectXk_nullX_injectXxX_selectXkX",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest",
+        method = "g_injectXnull_10_20_nullX_mean",
+        reason = "The inject() step is not supported by GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest",
         method = "*",
@@ -103,6 +123,14 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
         method = "g_V_hasXk_withinXcXX_valuesXkX",
         reason = "Requires some test data initialization with addV()")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
+        method = "g_injectX1_null_nullX_path",
+        reason = "The inject() step is not supported by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
+        method = "g_injectX1_null_nullX_path_dedup",
+        reason = "The inject() step is not supported by GraphComputer")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphBinaryRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
 

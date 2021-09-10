@@ -36,7 +36,6 @@ public final class MaxGlobalStep<S extends Comparable> extends ReducingBarrierSt
 
     public MaxGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>((S) Double.valueOf(Double.NaN)));
         this.setReducingBiOperator((BinaryOperator) Operator.max);
     }
 

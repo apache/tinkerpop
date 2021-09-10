@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,7 +34,7 @@ public final class ArrayIterator<T> implements Iterator<T>, Serializable {
     private int current = 0;
 
     public ArrayIterator(final T[] array) {
-        this.array = array;
+        this.array = Objects.requireNonNull(array);
     }
 
     @Override
@@ -53,6 +54,6 @@ public final class ArrayIterator<T> implements Iterator<T>, Serializable {
 
     @Override
     public String toString() {
-        return Arrays.asList(array).toString();
+        return array.length == 1 && null == array[0] ? "[null]" : Arrays.asList(array).toString();
     }
 }

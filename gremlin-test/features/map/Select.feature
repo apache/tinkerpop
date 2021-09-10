@@ -17,7 +17,7 @@
 
 Feature: Step - select()
 
-  Scenario: get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
+  Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
@@ -436,19 +436,6 @@ Feature: Step - select()
       | d[2].l |
       | d[1].l |
 
-  Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(vid1).as("a").out("knows").as("b").select("a", "b")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"a":"v[marko]","b":"v[vadas]"}] |
-      | m[{"a":"v[marko]","b":"v[josh]"}] |
-
   Scenario: g_V_asXaX_whereXoutXknowsXX_selectXaX
     Given the modern graph
     And the traversal of
@@ -815,3 +802,30 @@ Feature: Step - select()
     Then the result should be unordered
       | result |
       | d[0.4].d |
+
+  Scenario: g_V_asXaX_selectXaX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").select("a").by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | null |
+      | d[32].i |
+      | null |
+      | d[35].i |
+
+  Scenario: g_withSideEffectXk_nullX_injectXxX_selectXkX
+    Given the empty graph
+    And the traversal of
+      """
+      g.withSideEffect("k",null).inject("x").select("k")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |

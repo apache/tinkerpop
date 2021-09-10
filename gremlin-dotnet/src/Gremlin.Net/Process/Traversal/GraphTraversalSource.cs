@@ -351,9 +351,19 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<S, S> Inject<S>(params S[] starts)
         {
             var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + starts.Length) {};
-            args.AddRange(starts.Cast<object>());
-            traversal.Bytecode.AddStep("inject", args.ToArray());
+
+            // null starts is treated as g.inject(null) meaning inject a single null traverser
+            if (starts == null)
+            {
+                traversal.Bytecode.AddStep("inject", new object[1] { null });
+            }
+            else
+            {
+                var args = new List<object>(0 + starts.Length) {};
+                args.AddRange(starts.Cast<object>());
+                traversal.Bytecode.AddStep("inject", args.ToArray());
+            }
+
             return traversal;
         }
 

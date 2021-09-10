@@ -34,6 +34,7 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * An addition function.
      *
+     * @see NumberHelper#add(Number, Number)
      * @since 3.0.0-incubating
      */
     sum {
@@ -45,6 +46,7 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * A subtraction function.
      *
+     * @see NumberHelper#sub(Number, Number)
      * @since 3.0.0-incubating
      */
     minus {
@@ -56,6 +58,7 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * A multiplication function.
      *
+     * @see NumberHelper#mul(Number, Number)
      * @since 3.0.0-incubating
      */
     mult {
@@ -67,6 +70,7 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * A division function.
      *
+     * @see NumberHelper#div(Number, Number)
      * @since 3.0.0-incubating
      */
     div {
@@ -78,6 +82,7 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * Selects the smaller of the values.
      *
+     * @see NumberHelper#min(Number, Number)
      * @since 3.0.0-incubating
      */
     min {
@@ -89,6 +94,7 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * Selects the larger of the values.
      *
+     * @see NumberHelper#max(Number, Number)
      * @since 3.0.0-incubating
      */
     max {
@@ -112,10 +118,24 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * Applies "and" to boolean values.
      *
+     * <pre>
+     *     a = true, b = null -> true
+     *     a = false, b = null -> false
+     *     a = null, b = true -> true
+     *     a = null, b = false -> false
+     *     a = null, b = null -> null
+     * </pre>
+     *
      * @since 3.2.0-incubating
      */
     and {
         public Object apply(final Object a, final Object b) {
+            if (null == a || null == b) {
+                if (null == a && null == b)
+                    return null;
+                else
+                    return null == b ? a : b;
+            }
             return ((boolean) a) && ((boolean) b);
         }
     },
@@ -123,25 +143,52 @@ public enum Operator implements BinaryOperator<Object> {
     /**
      * Applies "or" to boolean values.
      *
+     * <pre>
+     *     a = true, b = null -> true
+     *     a = false, b = null -> false
+     *     a = null, b = true -> true
+     *     a = null, b = false -> false
+     *     a = null, b = null -> null
+     * </pre>
+     *
      * @since 3.2.0-incubating
      */
     or {
         public Object apply(final Object a, final Object b) {
+            if (null == a || null == b) {
+                if (null == a && null == b)
+                    return null;
+                else
+                    return null == b ? a : b;
+            }
             return ((boolean) a) || ((boolean) b);
         }
     },
 
     /**
-     * Takes all objects in the second {@code Collection} and adds them to the first.
+     * Takes all objects in the second {@code Collection} and adds them to the first. If the first is {@code null},
+     * then the second {@code Collection} is returned and if the second is {@code null} then the first is returned.
+     * If both are {@code null} then {@code null} is returned. Arguments must be of type {@code Map} or
+     * {@code Collection}.
      *
      * @since 3.2.0-incubating
      */
     addAll {
         public Object apply(final Object a, final Object b) {
-            if (a instanceof Map)
+            if (null == a || null == b) {
+                if (null == a && null == b)
+                    return null;
+                else
+                    return null == b ? a : b;
+            }
+
+            if (a instanceof Map && b instanceof Map)
                 ((Map<?,?>) a).putAll((Map) b);
-            else
+            else if (a instanceof Collection && a instanceof Collection)
                 ((Collection<?>) a).addAll((Collection) b);
+            else
+                throw new IllegalArgumentException(String.format("Objects must be both of Map or Collection: a=%s b=%s",
+                        a.getClass().getSimpleName(), b.getClass().getSimpleName()));
             return a;
         }
     },

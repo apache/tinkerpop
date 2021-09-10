@@ -342,7 +342,8 @@ edge identifier or the `.sid` suffix which gets a string representation of the e
 * Lambda - *c[_xxx_]* - The "xxx" should contain a lambda written in Groovy.
 * List - *l[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the list should be added to
 between the square brackets. These values respect the type system thus allowing for creation of lists of vertices,
-edges, maps, and any other available type.
+edges, maps, and any other available type. Spaces are taken literally, therefore it is important to avoid spaces unless
+they are required for the test.
 * Map - *m[_xxx_]* - The "xxx" should be replaced with a JSON string. Note that keys and values will be parsed using
 the type notation system so that it is possible to have maps containing arbitrary keys and values.
 * Numeric - *d[_xxx_]._y_* - The "xxx" should be replaced with a number. The suffix denoted by "y" should always be

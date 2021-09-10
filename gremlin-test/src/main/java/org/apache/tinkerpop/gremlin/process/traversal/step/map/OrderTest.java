@@ -44,6 +44,8 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.hamcrest.core.Is.is;
@@ -86,6 +88,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_order_byXageX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX();
 
     public abstract Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX();
 
@@ -300,6 +304,14 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXpersonX_order_byXageX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(convertToVertex(graph, "vadas"), convertToVertex(graph, "marko"), convertToVertex(graph, "josh"), convertToVertex(graph, "peter")), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(convertToVertex(graph, "lop"), convertToVertex(graph, "vadas"), convertToVertex(graph, "marko"), convertToVertex(graph, "josh"), convertToVertex(graph, "peter")), traversal);
     }
 
     @Test
@@ -567,6 +579,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_order_byXageX() {
             return g.V().hasLabel("person").order().by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX() {
+            return g.V().or(hasLabel("person"), has("software","name","lop")).order().by("age");
         }
 
         @Override

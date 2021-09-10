@@ -35,6 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -46,6 +47,14 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Integer> get_g_V_age_min();
 
     public abstract Traversal<Vertex, Integer> get_g_V_age_fold_minXlocalX();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_minXlocalX();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_unfold_min();
+
+    public abstract Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_minXlocalX();
+
+    public abstract Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_min();
 
     public abstract Traversal<Vertex, Comparable> get_g_V_foo_min();
 
@@ -79,6 +88,22 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_capXaX_minXlocalX() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_aggregateXaX_byXageX_capXaX_minXlocalX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(27), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXageX_capXaX_unfold_min() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_aggregateXaX_byXageX_capXaX_unfold_min();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(27), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_foo_min() {
         final Traversal<Vertex, Comparable> traversal = get_g_V_foo_min();
         printTraversalForm(traversal);
@@ -99,6 +124,24 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_name_min();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_capXaX_minXlocalX() {
+        final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_minXlocalX();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXaX_byXfooX_capXaX_unfold_min() {
+        final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_min();
+        printTraversalForm(traversal);
+        assertNull(traversal.next());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -148,6 +191,16 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_minXlocalX() {
+            return g.V().aggregate("a").by("foo").cap("a").min(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Comparable> get_g_V_aggregateXaX_byXfooX_capXaX_unfold_min() {
+            return g.V().aggregate("a").by("foo").cap("a").unfold().min();
+        }
+
+        @Override
         public Traversal<Vertex, Integer> get_g_V_age_fold_minXlocalX() {
             return g.V().values("age").fold().min(Scope.local);
         }
@@ -170,6 +223,16 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_name_fold_minXlocalX() {
             return g.V().values("name").fold().min(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_minXlocalX() {
+            return g.V().aggregate("a").by("age").cap("a").min(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_aggregateXaX_byXageX_capXaX_unfold_min() {
+            return g.V().aggregate("a").by("age").cap("a").unfold().min();
         }
 
         @Override

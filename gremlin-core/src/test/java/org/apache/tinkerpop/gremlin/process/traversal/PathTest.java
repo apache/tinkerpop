@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -188,15 +189,18 @@ public class PathTest {
             Path path = supplier.get();
             path = path.extend("marko", new LinkedHashSet<String>(Arrays.asList("a", "b")));
             path = path.extend("stephen", new LinkedHashSet<>(Arrays.asList("a", "c")));
+            path = path.extend(null, new LinkedHashSet<>(Arrays.asList("x", "x")));
             path = path.extend("matthias", new LinkedHashSet<>(Arrays.asList("c", "d")));
-            assertEquals(3, path.size());
+            assertEquals(4, path.size());
             assertEquals("marko", path.get(Pop.first, "a"));
             assertEquals("marko", path.get(Pop.first, "b"));
             assertEquals("stephen", path.get(Pop.first, "c"));
+            assertNull(path.get(Pop.first, "x"));
             assertEquals("matthias", path.get(Pop.first, "d"));
             ///
             assertEquals("marko", path.get(Pop.last, "b"));
             assertEquals("stephen", path.get(Pop.last, "a"));
+            assertNull(path.get(Pop.last, "x"));
             assertEquals("matthias", path.get(Pop.last, "c"));
             assertEquals("matthias", path.get(Pop.last, "d"));
         });
@@ -253,6 +257,15 @@ public class PathTest {
             pathA2 = pathA2.extend("daniel", new LinkedHashSet<>(Arrays.asList("aa", "aaa")));
             pathB1 = pathB1.extend("stephen", new LinkedHashSet<>(Arrays.asList("bb", "bbb")));
             pathB2 = pathB2.extend("stephen", Collections.singleton("bb"));
+            assertEquals(pathA1, pathA2);
+            assertEquals(pathA1.hashCode(), pathA2.hashCode());
+            assertNotEquals(pathA2, pathB1);
+            assertNotEquals(pathB1, pathB2);
+            ///
+            pathA1 = pathA1.extend(null, new LinkedHashSet<>(Arrays.asList("aa", "aaa")));
+            pathA2 = pathA2.extend(null, new LinkedHashSet<>(Arrays.asList("aa", "aaa")));
+            pathB1 = pathB1.extend(null, new LinkedHashSet<>(Arrays.asList("bb", "bbb")));
+            pathB2 = pathB2.extend(null, Collections.singleton("bb"));
             assertEquals(pathA1, pathA2);
             assertEquals(pathA1.hashCode(), pathA2.hashCode());
             assertNotEquals(pathA2, pathB1);
@@ -335,6 +348,21 @@ public class PathTest {
             pathA2 = pathA2.extend("stephen", Collections.singleton("b"));
             pathB1 = pathB1.extend("stephen", Collections.singleton("b"));
             pathB2 = pathB2.extend("stephen", Collections.singleton("b"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertTrue(pathB1.popEquals(Pop.all, pathB2));
+            assertTrue(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertTrue(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathA1.popEquals(Pop.last, pathA2));
+            assertTrue(pathA2.popEquals(Pop.last, pathB1));
+            assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend(null, Collections.singleton("x"));
+            pathA2 = pathA2.extend(null, Collections.singleton("x"));
+            pathB1 = pathB1.extend(null, Collections.singleton("x"));
+            pathB2 = pathB2.extend(null, Collections.singleton("x"));
             assertTrue(pathA1.popEquals(Pop.all, pathA2));
             assertFalse(pathA2.popEquals(Pop.all, pathB1));
             assertTrue(pathB1.popEquals(Pop.all, pathB2));

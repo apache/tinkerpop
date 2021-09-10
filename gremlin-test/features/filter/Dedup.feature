@@ -284,3 +284,22 @@ Feature: Step - dedup()
     Then the result should be unordered
       | result |
       | d[21].l |
+
+  # ensures that dedup() returns the first item encountered. the ordering supplied will put "ripple" in front of
+  # "lop" and make it the first to hit dedup() and as "age" is not a property of either of those only "ripple" will
+  # win. the barrier() is required to trick out FilterRankingStrategy which will optimize the traversal placing the
+  # dedup() prior to the order() and sorta ruin the test semantics
+  Scenario: g_V_order_byXname_descX_barrier_dedup_age_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by("name",desc).barrier().dedup().by("age").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | ripple |
+      | peter |
+      | marko |
+      | josh  |

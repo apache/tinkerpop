@@ -352,10 +352,12 @@ public class GraphTraversalSource implements TraversalSource {
      * Spawns a {@link GraphTraversal} starting it with arbitrary values.
      */
     public <S> GraphTraversal<S, S> inject(S... starts) {
+        // a single null is [null]
+        final S[] s = null == starts ? (S[]) new Object[] { null } : starts;
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.inject, starts);
+        clone.bytecode.addStep(GraphTraversal.Symbols.inject, s);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new InjectStep<S>(traversal, starts));
+        return traversal.addStep(new InjectStep<S>(traversal, s));
     }
 
     /**

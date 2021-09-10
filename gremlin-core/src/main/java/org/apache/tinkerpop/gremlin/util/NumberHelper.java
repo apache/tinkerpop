@@ -316,36 +316,127 @@ public final class NumberHelper {
         return determineNumberClass(bits, fp);
     }
 
+    /**
+     * Adds two numbers returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 1, b = 1 -> 2
+     *     a = null, b = 1 -> null
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     *
+     * @param a should be thought of as the seed to be modified by {@code b}
+     * @param b the modifier to {code a}
+     */
     public static Number add(final Number a, final Number b) {
+        if (null == a || null == b) return a;
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).add.apply(a, b);
     }
 
+
+    /**
+     * Subtracts two numbers returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 1, b = 1 -> 0
+     *     a = null, b = 1 -> null
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     *
+     * @param a should be thought of as the seed to be modified by {@code b}
+     * @param b the modifier to {code a}
+     */
     public static Number sub(final Number a, final Number b) {
+        if (null == a || null == b) return a;
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).sub.apply(a, b);
     }
 
+    /**
+     * Multiplies two numbers returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 1, b = 2 -> 2
+     *     a = null, b = 1 -> null
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     *
+     * @param a should be thought of as the seed to be modified by {@code b}
+     * @param b the modifier to {code a}
+     */
     public static Number mul(final Number a, final Number b) {
+        if (null == a || null == b) return a;
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).mul.apply(a, b);
     }
 
+    /**
+     * Divides two numbers returning the highest common number class between them calling
+     * {@link #div(Number, Number, boolean)} with a {@code false}.
+     */
     public static Number div(final Number a, final Number b) {
+        if (null == a || null == b) return a;
         return div(a, b, false);
     }
 
+    /**
+     * Divides two numbers returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 4, b = 2 -> 2
+     *     a = null, b = 1 -> null
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     *
+     * @param a should be thought of as the seed to be modified by {@code b}
+     * @param b the modifier to {code a}
+     * @param forceFloatingPoint when set to {@code true} ensures that the return value is the highest common floating number class
+     */
     public static Number div(final Number a, final Number b, final boolean forceFloatingPoint) {
+        if (null == a || null == b) return null;
         final Class<? extends Number> clazz = getHighestCommonNumberClass(forceFloatingPoint, a, b);
         return getHelper(clazz).div.apply(a, b);
     }
 
+    /**
+     * Gets the smaller number of the two provided returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 4, b = 2 -> 2
+     *     a = null, b = 1 -> 1
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     */
     public static Number min(final Number a, final Number b) {
+        if (null == a && null == b) return null;
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).min.apply(a, b);
     }
 
+    /**
+     * Gets the smaller number of the two provided returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 4, b = 2 -> 2
+     *     a = null, b = 1 -> 1
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     */
     public static Comparable min(final Comparable a, final Comparable b) {
+        if (null == a || null == b) {
+            if (null == a && null == b)
+                return null;
+            else
+                return null == a ? b : a;
+        }
+
         if (a instanceof Number && b instanceof Number && !a.equals(Double.NaN) && !b.equals(Double.NaN)) {
             final Number an = (Number) a, bn = (Number) b;
             final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
@@ -356,12 +447,40 @@ public final class NumberHelper {
                         a.compareTo(b) < 0 ? a : b;
     }
 
+    /**
+     * Gets the larger number of the two provided returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 4, b = 2 -> 4
+     *     a = null, b = 1 -> 1
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     */
     public static Number max(final Number a, final Number b) {
+        if (null == a && null == b) return null;
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).max.apply(a, b);
     }
 
+    /**
+     * Gets the larger number of the two provided returning the highest common number class between them.
+     *
+     * <pre>
+     *     a = 4, b = 2 -> 4
+     *     a = null, b = 1 -> 1
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> null
+     * </pre>
+     */
     public static Comparable max(final Comparable a, final Comparable b) {
+        if (null == a || null == b) {
+            if (null == a && null == b)
+                return null;
+            else
+                return null == a ? b : a;
+        }
+
         if (a instanceof Number && b instanceof Number && !a.equals(Double.NaN) && !b.equals(Double.NaN)) {
             final Number an = (Number) a, bn = (Number) b;
             final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
@@ -372,7 +491,24 @@ public final class NumberHelper {
                         a.compareTo(b) > 0 ? a : b;
     }
 
+    /**
+     * Compares two numbers.
+     *
+     * <pre>
+     *     a = 4, b = 2 -> 1
+     *     a = 2, b = 4 -> -1
+     *     a = null, b = 1 -> -1
+     *     a = 1, b = null -> 1
+     *     a = null, b = null -> 0
+     * </pre>
+     */
     public static Integer compare(final Number a, final Number b) {
+        if (null == a || null == b) {
+            if (a == b)
+                return 0;
+            else
+                return null == a ? -1 : 1;
+        }
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).cmp.apply(a, b);
     }

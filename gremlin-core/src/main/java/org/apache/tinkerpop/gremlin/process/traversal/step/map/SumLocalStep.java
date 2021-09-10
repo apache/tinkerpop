@@ -42,13 +42,22 @@ public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends
     protected E map(final Traverser.Admin<S> traverser) {
         final Iterator<E> iterator = traverser.get().iterator();
         if (iterator.hasNext()) {
-            Number result = iterator.next();
+            // forward the iterator to the first non-null or return null
+            Number result = untilNonNull(iterator);
             while (iterator.hasNext()) {
                 result = NumberHelper.add(result, iterator.next());
             }
             return (E) result;
         }
         throw FastNoSuchElementException.instance();
+    }
+
+    private E untilNonNull(final Iterator<E> itty) {
+        E result = null;
+        while (itty.hasNext() && null == result) {
+            result = itty.next();
+        }
+        return result;
     }
 
     @Override

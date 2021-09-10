@@ -41,6 +41,8 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX();
 
+    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_projectXa_bX_byXinE_countX_byXageX();
+
     public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_projectXxX_byXselectXnameXX();
@@ -51,10 +53,24 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
-                "a", 3l, "b", 29,
-                "a", 0l, "b", 27,
-                "a", 2l, "b", 32,
-                "a", 1l, "b", 35), traversal);
+                "a", 3L, "b", 29,
+                "a", 0L, "b", 27,
+                "a", 2L, "b", 32,
+                "a", 1L, "b", 35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_projectXa_bX_byXinE_countX_byXageX() {
+        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_projectXa_bX_byXinE_countX_byXageX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a", 3l, "b", null,
+                "a", 1L, "b", null,
+                "a", 0L, "b", 29,
+                "a", 1L, "b", 27,
+                "a", 1L, "b", 32,
+                "a", 0L, "b", 35), traversal);
     }
 
     @Test
@@ -89,6 +105,11 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX() {
             return g.V().hasLabel("person").<Number>project("a", "b").by(__.outE().count()).by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_projectXa_bX_byXinE_countX_byXageX() {
+            return g.V().<Number>project("a", "b").by(__.inE().count()).by("age");
         }
 
         @Override

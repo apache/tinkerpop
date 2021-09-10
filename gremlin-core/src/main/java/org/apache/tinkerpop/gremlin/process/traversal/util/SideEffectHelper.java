@@ -35,11 +35,21 @@ public final class SideEffectHelper {
             throw TraversalSideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
     }
 
+    /**
+     * @deprecated As of release 3.5.3, not replaced as there is really no general validation anymore for values since
+     * {@code null} is now accepted.
+     */
+    @Deprecated
     public static void validateSideEffectValue(final Object value) throws IllegalArgumentException {
         if (null == value)
             throw TraversalSideEffects.Exceptions.sideEffectValueCanNotBeNull();
     }
 
+    /**
+     * @deprecated As of release 3.5.3, not replaced as there is really no general validation anymore for values since
+     * {@code null} is now accepted.
+     */
+    @Deprecated
     public static void validateSideEffectKeyValue(final String key, final Object value) throws IllegalArgumentException {
         SideEffectHelper.validateSideEffectKey(key);
         SideEffectHelper.validateSideEffectValue(value);
