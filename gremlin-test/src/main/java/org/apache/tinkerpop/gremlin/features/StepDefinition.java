@@ -127,6 +127,7 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
         }));
+        add(Pair.with(Pattern.compile("(null)"), s -> "null"));
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
@@ -146,6 +147,8 @@ public final class StepDefinition {
             final String[] items = s.split(",");
             return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toList());
         }));
+
+        add(Pair.with(Pattern.compile("(null)"), s -> null));
 
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
@@ -176,8 +179,6 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
         }));
-
-        add(Pair.with(Pattern.compile("(null)"), s -> null));
     }};
 
     @Inject
@@ -228,6 +229,8 @@ public final class StepDefinition {
 
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
+        if (docString.equals("g.inject(10,20,null,20,10,10).groupCount(\"x\").dedup().as(\"y\").project(\"a\",\"b\").by().by(__.select(\"x\").select(__.select(\"y\")))"))
+            System.out.println("CMON");
         final String gremlin = tryUpdateDataFilePath(docString);
         traversal = parseGremlin(applyParameters(gremlin));
     }
@@ -343,7 +346,6 @@ public final class StepDefinition {
             final Matcher matcher = pattern.matcher(pvalue);
             if (matcher.find()) {
                 final Function<String,String> converter = matcherConverter.getValue1();
-
                 // when there are no groups there is a direct match
                 return converter.apply(matcher.groupCount() == 0 ? "" : matcher.group(1));
             }
@@ -360,7 +362,9 @@ public final class StepDefinition {
         // we may get some json stuff if it's a m[]
         if (pvalue instanceof JsonNode) {
             final JsonNode n = (JsonNode) pvalue;
-            if (n.isArray()) {
+            if (n.isNull()) {
+                v = null;
+            } else if (n.isArray()) {
                 v = IteratorUtils.stream(n.elements()).map(this::convertToObject).collect(Collectors.toList());
             } else if (n.isObject()) {
                 final Map<Object,Object> m = new HashMap<>(n.size());

@@ -109,6 +109,7 @@ Feature: Step - path()
       | p[josh,ripple] |
       | p[josh,lop] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_out_path_byXageX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

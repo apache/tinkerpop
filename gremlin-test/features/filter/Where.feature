@@ -334,6 +334,7 @@ Feature: Step - where()
       | josh |
 
   # comparison of null "age" values in where()
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name
     Given the modern graph
     And using the parameter vid3 defined as "v[lop].id"

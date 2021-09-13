@@ -117,6 +117,7 @@ Feature: Step - sum()
       | result |
       | null |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_10_5_nullX_sum
     Given the modern graph
     And using the parameter xx1 defined as "d[10].i"
@@ -130,6 +131,7 @@ Feature: Step - sum()
       | result |
       | d[15].l |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXlistXnull_10_5_nullXX_sumXlocalX
     Given the modern graph
     And using the parameter xx1 defined as "l[null,d[10].i,d[5].i,null]"

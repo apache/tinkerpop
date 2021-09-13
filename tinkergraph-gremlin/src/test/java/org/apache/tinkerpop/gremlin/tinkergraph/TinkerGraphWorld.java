@@ -90,6 +90,7 @@ public class TinkerGraphWorld implements World {
 
         private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
                 "@StepDrop",
+                "@StepInject",
                 "@StepV",
                 "@GraphComputerVerificationOneBulk",
                 "@GraphComputerVerificationMidVNotSupported",
@@ -105,7 +106,8 @@ public class TinkerGraphWorld implements World {
                 "g_V_order_byXoutE_count_descX",
                 "g_V_both_both_dedup_byXoutE_countX_name",
                 "g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX",
-                "g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX");
+                "g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX",
+                "g_V_order_byXname_descX_barrier_dedup_age_name");
 
         @Override
         public void beforeEachScenario(final Scenario scenario) {
