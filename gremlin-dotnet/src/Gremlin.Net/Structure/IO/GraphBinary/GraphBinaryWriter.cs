@@ -23,6 +23,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Gremlin.Net.Structure.IO.GraphBinary.Types;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary
 {
@@ -40,9 +41,19 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         public const byte VersionByte = 0x81;
 
         private static readonly byte[] UnspecifiedNullBytes = {DataType.UnspecifiedNull.TypeCode, 0x01};
+        private static readonly byte[] CustomTypeCodeBytes = { DataType.Custom.TypeCode };
 
-        private readonly TypeSerializerRegistry _registry = new TypeSerializerRegistry();
+        private readonly TypeSerializerRegistry _registry;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GraphBinaryWriter" /> class.
+        /// </summary>
+        /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for serialization.</param>
+        public GraphBinaryWriter(TypeSerializerRegistry registry = null)
+        {
+            _registry = registry ?? TypeSerializerRegistry.Instance;
+        }
+        
         /// <summary>
         /// Writes a value without including type information.
         /// </summary>
@@ -84,6 +95,15 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
 
             var valueType = value.GetType();
             var serializer = _registry.GetSerializerFor(valueType);
+
+            if (serializer is CustomTypeSerializer customTypeSerializer)
+            {
+                await stream.WriteAsync(CustomTypeCodeBytes).ConfigureAwait(false);
+                await WriteValueAsync(customTypeSerializer.TypeName, stream, false).ConfigureAwait(false);
+                await customTypeSerializer.WriteAsync(value, stream, this).ConfigureAwait(false);
+                return;
+            }
+            
             await stream.WriteByteAsync(serializer.DataType.TypeCode).ConfigureAwait(false);
             await serializer.WriteAsync(value, stream, this).ConfigureAwait(false);
         }
