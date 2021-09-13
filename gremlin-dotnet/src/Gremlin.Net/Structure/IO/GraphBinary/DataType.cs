@@ -79,6 +79,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
 #pragma warning restore 1591
 
         /// <summary>
+        /// A custom type, represented as a blob value.
+        /// </summary>
+        public static readonly DataType Custom = new DataType(0);
+        
+        /// <summary>
         /// A null value for an unspecified Object value.
         /// </summary>
         public static readonly DataType UnspecifiedNull = new DataType(0xFE);

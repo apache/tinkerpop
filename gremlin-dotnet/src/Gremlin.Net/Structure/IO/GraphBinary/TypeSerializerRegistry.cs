@@ -36,7 +36,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
     /// </summary>
     public class TypeSerializerRegistry
     {
-        private static readonly Dictionary<Type, ITypeSerializer> SerializerByType =
+        private readonly Dictionary<Type, ITypeSerializer> _serializerByType =
             new Dictionary<Type, ITypeSerializer>
             {
                 {typeof(int), SingleTypeSerializers.IntSerializer},
@@ -81,7 +81,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {typeof(TimeSpan), new DurationSerializer()},
             };
 
-        private static readonly Dictionary<DataType, ITypeSerializer> SerializerByDataType =
+        private readonly Dictionary<DataType, ITypeSerializer> _serializerByDataType =
             new Dictionary<DataType, ITypeSerializer>
             {
                 {DataType.Int, SingleTypeSerializers.IntSerializer},
@@ -129,6 +129,28 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {DataType.Duration, new DurationSerializer()},
             };
 
+        private readonly Dictionary<string, CustomTypeSerializer> _serializerByCustomTypeName =
+            new Dictionary<string, CustomTypeSerializer>();
+
+        private TypeSerializerRegistry(List<CustomTypeRegistryEntry> customTypeEntries)
+        {
+            foreach (var entry in customTypeEntries)
+            {
+                _serializerByType[entry.Type] = entry.TypeSerializer;
+                _serializerByCustomTypeName[entry.CustomTypeName] = entry.TypeSerializer;
+            }
+        }
+
+        /// <summary>
+        /// Provides a default <see cref="TypeSerializerRegistry"/> instance.
+        /// </summary>
+        public static readonly TypeSerializerRegistry Instance = Build().Create();
+
+        /// <summary>
+        /// Builds a <see cref="TypeSerializerRegistry"/>.
+        /// </summary>
+        public static Builder Build() => new Builder();
+
         /// <summary>
         /// Gets a serializer for the given type of the value to be serialized.
         /// </summary>
@@ -137,9 +159,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <exception cref="InvalidOperationException">Thrown when no serializer can be found for the type.</exception>
         public ITypeSerializer GetSerializerFor(Type valueType)
         {
-            if (SerializerByType.ContainsKey(valueType))
+            if (_serializerByType.ContainsKey(valueType))
             {
-                return SerializerByType[valueType];
+                return _serializerByType[valueType];
             }
             
             if (IsDictionaryType(valueType))
@@ -148,7 +170,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 var dictValueType = valueType.GetGenericArguments()[1];
                 var serializerType = typeof(MapSerializer<,>).MakeGenericType(dictKeyType, dictValueType);
                 var serializer = (ITypeSerializer) Activator.CreateInstance(serializerType);
-                SerializerByType[valueType] = serializer;
+                _serializerByType[valueType] = serializer;
                 return serializer;
             }
 
@@ -157,7 +179,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 var memberType = valueType.GetGenericArguments()[0];
                 var serializerType = typeof(SetSerializer<,>).MakeGenericType(valueType, memberType);
                 var serializer = (ITypeSerializer) Activator.CreateInstance(serializerType);
-                SerializerByType[valueType] = serializer;
+                _serializerByType[valueType] = serializer;
                 return serializer;
             }
 
@@ -166,7 +188,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 var memberType = valueType.GetElementType();
                 var serializerType = typeof(ArraySerializer<>).MakeGenericType(memberType);
                 var serializer = (ITypeSerializer) Activator.CreateInstance(serializerType);
-                SerializerByType[valueType] = serializer;
+                _serializerByType[valueType] = serializer;
                 return serializer;
             }
 
@@ -175,16 +197,16 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 var memberType = valueType.GetGenericArguments()[0];
                 var serializerType = typeof(ListSerializer<>).MakeGenericType(memberType);
                 var serializer = (ITypeSerializer) Activator.CreateInstance(serializerType);
-                SerializerByType[valueType] = serializer;
+                _serializerByType[valueType] = serializer;
                 return serializer;
             }
 
-            foreach (var supportedType in SerializerByType.Keys)
+            foreach (var supportedType in _serializerByType.Keys)
             {
                 if (supportedType.IsAssignableFrom(valueType))
                 {
-                    var serializer = SerializerByType[supportedType];
-                    SerializerByType[valueType] = serializer;
+                    var serializer = _serializerByType[supportedType];
+                    _serializerByType[valueType] = serializer;
                     return serializer;
                 }
             }
@@ -218,7 +240,61 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <returns>A serializer for the provided GraphBinary type.</returns>
         public ITypeSerializer GetSerializerFor(DataType type)
         {
-            return SerializerByDataType[type];
+            if (type == DataType.Custom)
+                throw new ArgumentException("Custom type serializers can not be retrieved using this method");
+            
+            return _serializerByDataType[type];
+        }
+        
+        /// <summary>
+        /// Gets a serializer for the given custom type name.
+        /// </summary>
+        /// <param name="typeName">The custom type name.</param>
+        /// <returns>A serializer for the provided custom type name.</returns>
+        public CustomTypeSerializer GetSerializerForCustomType(string typeName)
+        {
+            return _serializerByCustomTypeName[typeName];
+        }
+        
+        /// <summary>
+        /// The builder of a <see cref="TypeSerializerRegistry"/>.
+        /// </summary>
+        public class Builder
+        {
+            private readonly List<CustomTypeRegistryEntry> _list = new List<CustomTypeRegistryEntry>();
+        
+            /// <summary>
+            /// Creates the <see cref="TypeSerializerRegistry"/>.
+            /// </summary>
+            public TypeSerializerRegistry Create() => new TypeSerializerRegistry(_list);
+
+            /// <summary>
+            /// Adds a serializer for a custom type.
+            /// </summary>
+            /// <param name="type">The custom type supported by the serializer.</param>
+            /// <param name="serializer">The serializer for the custom type.</param>
+            public Builder AddCustomType(Type type, CustomTypeSerializer serializer)
+            {
+                if (serializer == null) throw new ArgumentNullException(nameof(serializer));
+                if (serializer.TypeName == null)
+                    throw new ArgumentException("serializer custom type name can not be null");
+                
+                _list.Add(new CustomTypeRegistryEntry(type, serializer));
+                return this;
+            }
+        }
+
+        private class CustomTypeRegistryEntry
+        {
+            public Type Type { get; }
+            public CustomTypeSerializer TypeSerializer { get; }
+
+            public CustomTypeRegistryEntry(Type type, CustomTypeSerializer typeSerializer)
+            {
+                Type = type;
+                TypeSerializer = typeSerializer;
+            }
+            public string CustomTypeName => TypeSerializer.TypeName;
         }
     }
 }

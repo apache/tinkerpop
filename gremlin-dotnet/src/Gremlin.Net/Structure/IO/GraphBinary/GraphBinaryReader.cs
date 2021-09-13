@@ -31,7 +31,16 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
     /// </summary>
     public class GraphBinaryReader
     {
-        private readonly TypeSerializerRegistry _registry = new TypeSerializerRegistry();
+        private readonly TypeSerializerRegistry _registry;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GraphBinaryReader" /> class.
+        /// </summary>
+        /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for deserialization.</param>
+        public GraphBinaryReader(TypeSerializerRegistry registry = null)
+        {
+            _registry = registry ?? TypeSerializerRegistry.Instance;
+        }
         
         /// <summary>
         /// Reads only the value for a specific type <typeparamref name="T"/>.
@@ -61,8 +70,18 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 return default; // should be null (TODO?)
             }
 
-            var typedSerializer = _registry.GetSerializerFor(type);
-            return await typedSerializer.ReadAsync(stream, this).ConfigureAwait(false);
+            ITypeSerializer typeSerializer;
+            if (type != DataType.Custom)
+            {
+                typeSerializer = _registry.GetSerializerFor(type);
+            }
+            else
+            {
+                var customTypeName = (string)await ReadValueAsync<string>(stream, false).ConfigureAwait(false);
+                typeSerializer = _registry.GetSerializerForCustomType(customTypeName);
+            }
+            
+            return await typeSerializer.ReadAsync(stream, this).ConfigureAwait(false);
         }
     }
 }
