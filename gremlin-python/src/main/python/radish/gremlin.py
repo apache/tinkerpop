@@ -178,7 +178,7 @@ world.gremlins = {
     'g_V_hasXage_withoutX27X_count': [(lambda g:g.V().has('age',P.without([27])).count())], 
     'g_V_hasXage_withoutX27_29X_count': [(lambda g:g.V().has('age',P.without([27,29])).count())], 
     'g_V_both_dedup_properties_hasKeyXageX_value': [(lambda g:g.V().both().properties().dedup().hasKey('age').value())], 
-    'g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value': [(lambda g:g.V().both().properties().dedup().hasKey('age').hasValue(P.gt(30)).value())], 
+    'g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value': [(lambda g:g.V().both().properties().dedup().hasKey('age').hasValue(P.gt(30)).value())], 
     'g_V_bothE_properties_dedup_hasKeyXweightX_value': [(lambda g:g.V().bothE().properties().dedup().hasKey('weight').value())], 
     'g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value': [(lambda g:g.V().bothE().properties().dedup().hasKey('weight').hasValue(P.lt(float(0.3))).value())], 
     'g_V_hasNotXageX_name': [(lambda g:g.V().hasNot('age').name)], 

@@ -396,6 +396,11 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         if (ctx.gremlinStringConstants() != null) {
             return GremlinStringConstantsVisitor.getInstance().visitChildren(ctx);
         }
+
+        if (ctx.NullLiteral() != null) {
+            return GremlinStringConstantsVisitor.getInstance().visitChildren(ctx);
+        }
+
         return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
     }
 

@@ -109,7 +109,6 @@ traversalSourceSpawnMethod_addE
 traversalSourceSpawnMethod_addV
 	: 'addV' LPAREN RPAREN
 	| 'addV' LPAREN stringLiteral RPAREN
-	| 'addV' LPAREN nullLiteral RPAREN          // null means use the default vertex label
 	| 'addV' LPAREN nestedTraversal RPAREN
 	;
 
@@ -269,7 +268,6 @@ traversalMethod_addE
 traversalMethod_addV
 	: 'addV' LPAREN RPAREN #traversalMethod_addV_Empty
 	| 'addV' LPAREN stringLiteral RPAREN #traversalMethod_addV_String
-	| 'addV' LPAREN nullLiteral RPAREN #traversalMethod_addV_String        // null means use the default vertex label
 	| 'addV' LPAREN nestedTraversal RPAREN #traversalMethod_addV_Traversal
 	;
 
