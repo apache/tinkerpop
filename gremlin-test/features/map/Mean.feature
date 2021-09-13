@@ -127,7 +127,7 @@ Feature: Step - mean()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[15].i |
+      | d[15].d |
 
   Scenario: g_injectXlistXnull_10_20_nullXX_meanXlocalX
     Given the modern graph
@@ -139,4 +139,4 @@ Feature: Step - mean()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[15].i |
+      | d[15].d |

@@ -90,7 +90,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123].i |
+      | d[123].l |
 
   # if all values are null then the result is null
   Scenario: g_V_aggregateXaX_byXfooX_sumXlocalX
@@ -127,7 +127,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[15].i |
+      | d[15].l |
 
   Scenario: g_injectXlistXnull_10_5_nullXX_sumXlocalX
     Given the modern graph
