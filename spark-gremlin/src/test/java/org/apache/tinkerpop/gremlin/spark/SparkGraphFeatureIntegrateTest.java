@@ -69,6 +69,11 @@ public class SparkGraphFeatureIntegrateTest {
 
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 
+    /**
+     * May need to improve the definition of result equality with map<list>
+     */
+    private static final String skipReasonOrdering = "There are some internal ordering issues with result where equality is not required but is being enforced";
+
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
         add(Pair.with("g_V_both_both_count", skipReasonLength));
         add(Pair.with("g_V_repeatXoutX_timesX3X_count", skipReasonLength));
@@ -83,6 +88,15 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX", skipReasonLength));
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX", skipReasonLength));
         add(Pair.with("g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count", skipReasonLength));
+        add(Pair.with("g_V_order_byXname_descX_barrier_dedup_age_name", skipReasonOrdering));
+        add(Pair.with("g_V_group_byXoutE_countX_byXnameX", skipReasonOrdering));
+        add(Pair.with("g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX", skipReasonOrdering));
+        add(Pair.with("g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX", skipReasonOrdering));
+        add(Pair.with("g_V_group_byXageX", skipReasonOrdering));
+        add(Pair.with("g_V_order_byXoutE_count_descX", skipReasonOrdering));
+        add(Pair.with("g_V_both_both_dedup_byXoutE_countX_name", skipReasonOrdering));
+        add(Pair.with("g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX", skipReasonOrdering));
+        add(Pair.with("g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX", skipReasonOrdering));
     }};
 
     private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
@@ -94,17 +108,6 @@ public class SparkGraphFeatureIntegrateTest {
             "@GraphComputerVerificationInjectionNotSupported",
             "@GraphComputerVerificationStarGraphExceeded",
             "@GraphComputerVerificationReferenceOnly");
-
-    private static final List<String> SCENARIOS_TO_IGNORE = Arrays.asList(
-            "g_V_order_byXname_descX_barrier_dedup_age_name",
-            "g_V_group_byXoutE_countX_byXnameX",
-            "g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX",
-            "g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX",
-            "g_V_group_byXageX",
-            "g_V_order_byXoutE_count_descX",
-            "g_V_both_both_dedup_byXoutE_countX_name",
-            "g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX",
-            "g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX");
 
     public static final class ServiceModule extends AbstractModule {
         @Override
@@ -157,12 +160,6 @@ public class SparkGraphFeatureIntegrateTest {
             final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
             if (!ignores.isEmpty())
                 throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
-
-            // the following needs some further investigation.........may need to improve the definition of result
-            // equality with map<list>
-            final String scenarioName = scenario.getName();
-            if (SCENARIOS_TO_IGNORE.contains(scenarioName))
-                throw new AssumptionViolatedException("There are some internal ordering issues with result where equality is not required but is being enforced");
         }
 
         private static void readIntoGraph(final Graph graph, final GraphData graphData) {
