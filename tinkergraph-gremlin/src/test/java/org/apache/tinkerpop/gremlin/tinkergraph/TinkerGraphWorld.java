@@ -83,6 +83,22 @@ public class TinkerGraphWorld implements World {
     }
 
     /**
+     * Enables the storing of {@code null} property values when testing.
+     */
+    public static class NullWorld extends TinkerGraphWorld {
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            if (graphData != null)
+                throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+
+            final Configuration conf = TinkerGraphWorld.getNumberIdManagerConfiguration();
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+            return TinkerGraph.open(conf).traversal();
+        }
+    }
+
+    /**
      * Turns on {@link GraphComputer} when testing.
      */
     public static class ComputerWorld extends TinkerGraphWorld {

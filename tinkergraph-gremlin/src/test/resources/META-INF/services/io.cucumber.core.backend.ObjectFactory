@@ -1,2 +1,3 @@
 org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphFeatureTest$TinkerGraphGuiceFactory
 org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphComputerFeatureTest$TinkerGraphGuiceFactory
+org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphAllowNullFeatureTest$TinkerGraphGuiceFactory

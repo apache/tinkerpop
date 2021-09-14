@@ -486,6 +486,8 @@ include or ignore certain tests. The tags enable the practical and necessary abi
 they simply cannot support. It is important to be aware of the following tags when writing tests as not including a
 tag when one is necessary will cause provider tests to fail:
 
+* `@AllowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
+`true` (meaning that it can store `null` values).
 * `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
 `inject()` step is not supported.
 * `@GraphComputerVerificationMidVNotSupported` - The scenario will not work on with `GraphComputer` because the

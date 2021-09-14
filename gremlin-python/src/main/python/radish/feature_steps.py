@@ -81,6 +81,10 @@ def translate_traversal(step):
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
     localg = step.context.g
     tagset = [ tag.name for tag in step.all_tags ]
+
+    if not step.context.ignore:
+        step.context.ignore = "AllowNullPropertyValues" in tagset
+
     if "GraphComputerOnly" in tagset:
         localg = step.context.g.withComputer()
     p['g'] = localg
@@ -134,6 +138,9 @@ def assert_side_effects(step, count, traversal_string):
 
 @then("the result should have a count of {count:d}")
 def assert_count(step, count):
+    if step.context.ignore:
+        return
+
     assert_that(len(list(step.context.result)), equal_to(count))
 
 

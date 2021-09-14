@@ -100,6 +100,10 @@ Before({tags: "@GraphComputerOnly"}, function() {
   this.isGraphComputer = true;
 })
 
+Before({tags: "@AllowNullPropertyValues"}, function() {
+  return 'skipped'
+})
+
 function getVertices(connection) {
   const g = traversal().withRemote(connection);
   return g.V().group().by('name').by(__.tail()).next().then(it => it.value);

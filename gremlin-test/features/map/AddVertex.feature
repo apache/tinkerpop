@@ -438,3 +438,27 @@ Feature: Step - addV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
+
+  @AllowNullPropertyValues
+  Scenario: g_addVXpersonX_propertyXname_joshX_propertyXage_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("person").property("name", "josh").property("age", null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"age\",null)"
+
+  @AllowNullPropertyValues @MultiMetaProperties
+  Scenario: g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("person").property("name", "marko").property("friendWeight", null, "acl", null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"friendWeight\", null)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",null)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
