@@ -96,6 +96,7 @@ public class SparkGraphFeatureIntegrateTest {
             "@GraphComputerVerificationReferenceOnly");
 
     private static final List<String> SCENARIOS_TO_IGNORE = Arrays.asList(
+            "g_V_order_byXname_descX_barrier_dedup_age_name",
             "g_V_group_byXoutE_countX_byXnameX",
             "g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX",
             "g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX",

@@ -140,6 +140,7 @@ Feature: Step - inject()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_valuesXageX_injectXnull_nullX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"
@@ -154,6 +155,7 @@ Feature: Step - inject()
       | null |
       | null |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_valuesXageX_injectXnullX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"
@@ -167,7 +169,7 @@ Feature: Step - inject()
       | d[29].i |
       | null |
 
-
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_valuesXageX_inject
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"

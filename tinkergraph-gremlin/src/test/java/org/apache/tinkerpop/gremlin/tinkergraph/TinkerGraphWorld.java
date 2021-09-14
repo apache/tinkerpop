@@ -106,7 +106,6 @@ public class TinkerGraphWorld implements World {
 
         private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
                 "@StepDrop",
-                "@StepInject",
                 "@StepV",
                 "@GraphComputerVerificationOneBulk",
                 "@GraphComputerVerificationMidVNotSupported",
