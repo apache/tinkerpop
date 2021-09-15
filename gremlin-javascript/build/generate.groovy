@@ -42,7 +42,7 @@ gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(new GroovyCustomizer()
     }
 })
 translator = JavascriptTranslator.of('g')
-g = traversal().withGraph(EmptyGraph.instance())
+g = traversal().withEmbedded(EmptyGraph.instance())
 bindings = new SimpleBindings()
 bindings.put('g', g)
 
