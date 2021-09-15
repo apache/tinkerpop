@@ -357,7 +357,17 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                                 } else if (methodName.equals(GraphTraversal.Symbols.hasValue)) {
                                     script.append("(object) ");
                                 } else if (methodName.equals(GraphTraversal.Symbols.has)) {
-                                    if (instArgs[0] instanceof T && idx > 0) script.append("(object) ");
+                                    if (instArgs.length == 2) {
+                                        if ((instArgs[0] instanceof T || instArgs[0] instanceof String) && idx == 1) {
+                                            script.append("(object) ");
+                                        }
+                                    } else if (instArgs.length == 3) {
+                                        if ((instArgs[0] instanceof T || instArgs[0] instanceof String) && idx == 1) {
+                                            script.append("(string) ");
+                                        } else if ((instArgs[0] instanceof T || instArgs[0] instanceof String) && idx == 2) {
+                                            script.append("(object) ");
+                                        }
+                                    }
                                 }
                             }
                             convertToScript(instArg);

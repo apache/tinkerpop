@@ -180,6 +180,14 @@ public class DotNetTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateHasNull() {
+        String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Has(\"k\",(object) null)", script);
+        script = translator.translate(g.V().has("l", "k", (Object) null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Has(\"l\",\"k\",(object) null)", script);
+    }
+
+    @Test
     public void shouldEscapeStrings() {
         final String script = translator.translate(g.addV("customer")
                 .property("customer_id", 501L)
