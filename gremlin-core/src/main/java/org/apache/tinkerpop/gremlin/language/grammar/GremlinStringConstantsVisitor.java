@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
@@ -47,6 +48,11 @@ public class GremlinStringConstantsVisitor extends GremlinBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitConnectedComponentStringConstant(final GremlinParser.ConnectedComponentStringConstantContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Object visitPageRankStringConstants(final GremlinParser.PageRankStringConstantsContext ctx) {
         return visitChildren(ctx);
     }
@@ -69,6 +75,21 @@ public class GremlinStringConstantsVisitor extends GremlinBaseVisitor<Object> {
     @Override
     public Object visitIoOptionsStringConstants(final GremlinParser.IoOptionsStringConstantsContext ctx) {
         return visitChildren(ctx);
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_connectedComponentStringConstants_edges(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_edgesContext ctx) {
+        return ConnectedComponent.edges;
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_connectedComponentStringConstants_component(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_componentContext ctx) {
+        return ConnectedComponent.component;
+    }
+
+    @Override
+    public Object visitGremlinStringConstants_connectedComponentStringConstants_propertyName(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_propertyNameContext ctx) {
+        return ConnectedComponent.propertyName;
     }
 
     @Override
