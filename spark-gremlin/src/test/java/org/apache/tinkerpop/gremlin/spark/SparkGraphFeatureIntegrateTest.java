@@ -70,7 +70,7 @@ public class SparkGraphFeatureIntegrateTest {
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 
     /**
-     * May need to improve the definition of result equality with map<list>
+     * May need to improve the definition of result equality with map&lt;list&gt; - TINKERPOP-2622
      */
     private static final String skipReasonOrdering = "There are some internal ordering issues with result where equality is not required but is being enforced";
 

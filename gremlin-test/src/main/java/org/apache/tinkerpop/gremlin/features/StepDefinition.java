@@ -229,8 +229,6 @@ public final class StepDefinition {
 
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
-        if (docString.equals("g.inject(10,20,null,20,10,10).groupCount(\"x\").dedup().as(\"y\").project(\"a\",\"b\").by().by(__.select(\"x\").select(__.select(\"y\")))"))
-            System.out.println("CMON");
         final String gremlin = tryUpdateDataFilePath(docString);
         traversal = parseGremlin(applyParameters(gremlin));
     }
