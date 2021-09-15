@@ -588,7 +588,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             try {
                 results.all().join();
-                fail("Should have thrown exception over bad serialization");
+                fail("Should have thrown exception over division by zero");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionUtils.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
@@ -597,7 +597,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final ResponseException rex = (ResponseException) inner;
                 assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
                 assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-                assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java"));
+                assertThat(rex.getRemoteStackTrace().get(), containsString("Division by zero"));
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -1082,12 +1082,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final Instant now = Instant.now();
-            final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
             assertEquals(1, r.size());
 
             final Instant then = r.get(0).get(Instant.class);
-            assertEquals(now, then);
+            assertEquals(Instant.EPOCH, then);
         } finally {
             cluster.close();
         }
@@ -1120,12 +1119,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final Instant now = Instant.now();
-            final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
             assertEquals(1, r.size());
 
             final Instant then = r.get(0).get(Instant.class);
-            assertEquals(now, then);
+            assertEquals(Instant.EPOCH, then);
         } finally {
             cluster.close();
         }
