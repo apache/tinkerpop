@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added support for `with()` constant options to `io()`.
 * Fixed bug in the processing of the `io()` step when constructing a `Traversal` from the grammar.
+* Added the `ConnectedComponent` tokens required to properly process the `with()` of the `connectedComponent()` step.
 * Fixed bug where `RepeatUnrollStrategy`, `InlineFilterStrategy` and `MessagePassingReductionStrategy` were all being applied more than necessary.
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.

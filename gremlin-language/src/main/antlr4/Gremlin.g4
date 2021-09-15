@@ -736,9 +736,6 @@ traversalMethod_write
 	: 'write' LPAREN RPAREN
 	;
 
-
-
-
 /*********************************************
     ARGUMENT AND TERMINAL RULES
 **********************************************/
@@ -1041,9 +1038,16 @@ traversalSelfMethod_none
 gremlinStringConstants
     : withOptionsStringConstants
     | shortestPathStringConstants
+    | connectedComponentConstants
     | pageRankStringConstants
     | peerPressureStringConstants
     | ioOptionsStringConstants
+    ;
+
+connectedComponentConstants
+    : gremlinStringConstants_connectedComponentStringConstants_component
+    | gremlinStringConstants_connectedComponentStringConstants_edges
+    | gremlinStringConstants_connectedComponentStringConstants_propertyName
     ;
 
 pageRankStringConstants
@@ -1085,6 +1089,18 @@ ioOptionsStringConstants
     | gremlinStringConstants_ioOptionsStringConstants_gryo
     | gremlinStringConstants_ioOptionsStringConstants_graphson
     | gremlinStringConstants_ioOptionsStringConstants_graphml
+    ;
+
+gremlinStringConstants_connectedComponentStringConstants_component
+    : connectedComponentStringConstant DOT 'component'
+    ;
+
+gremlinStringConstants_connectedComponentStringConstants_edges
+    : connectedComponentStringConstant DOT 'edges'
+    ;
+
+gremlinStringConstants_connectedComponentStringConstants_propertyName
+    : connectedComponentStringConstant DOT 'propertyName'
     ;
 
 gremlinStringConstants_pageRankStringConstants_edges
@@ -1189,6 +1205,10 @@ gremlinStringConstants_ioOptionsStringConstants_graphson
 
 gremlinStringConstants_ioOptionsStringConstants_graphml
     : ioOptionsStringConstant DOT 'graphml'
+    ;
+
+connectedComponentStringConstant
+    : 'ConnectedComponent'
     ;
 
 pageRankStringConstant

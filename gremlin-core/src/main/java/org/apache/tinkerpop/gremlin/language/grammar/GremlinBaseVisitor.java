@@ -1453,6 +1453,31 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 		notImplemented(ctx); return null;
 	}
 
+	@Override
+	public T visitConnectedComponentConstants(final GremlinParser.ConnectedComponentConstantsContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	@Override
+	public T visitGremlinStringConstants_connectedComponentStringConstants_component(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_componentContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	@Override
+	public T visitGremlinStringConstants_connectedComponentStringConstants_edges(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_edgesContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	@Override
+	public T visitGremlinStringConstants_connectedComponentStringConstants_propertyName(GremlinParser.GremlinStringConstants_connectedComponentStringConstants_propertyNameContext ctx) {
+		return null;
+	}
+
+	@Override
+	public T visitConnectedComponentStringConstant(final GremlinParser.ConnectedComponentStringConstantContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */

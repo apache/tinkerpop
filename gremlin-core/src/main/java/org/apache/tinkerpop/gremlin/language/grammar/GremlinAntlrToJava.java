@@ -44,6 +44,11 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
     final Graph graph;
 
     /**
+     * The "g" from which to start the traversal.
+     */
+    final GraphTraversalSource g;
+
+    /**
      * A {@link GremlinBaseVisitor} that processes {@link TraversalSource} methods.
      */
     final GremlinBaseVisitor<GraphTraversalSource> gvisitor;
@@ -84,12 +89,28 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
     }
 
     /**
+     * Constructs a new instance that is bound to the specified {@link GraphTraversalSource} and thus spawns the
+     * {@link Traversal} from this "g" rather than from a fresh one constructed from the {@link Graph} instance.
+     */
+    public GremlinAntlrToJava(final GraphTraversalSource g) {
+        this(g, __::start);
+    }
+
+    /**
      * Constructs a new instance that is bound to the specified {@link Graph} instance with an override to using
      * {@link __} for constructing anonymous {@link Traversal} instances. Assumes that "g" is the name of the
      * {@link GraphTraversalSource}.
      */
     protected GremlinAntlrToJava(final Graph graph, final Supplier<GraphTraversal<?,?>> createAnonymous) {
         this(GraphTraversalSourceVisitor.TRAVERSAL_ROOT, graph, createAnonymous);
+    }
+
+    /**
+     * Constructs a new instance that is bound to the specified {@link GraphTraversalSource} and thus spawns the
+     * {@link Traversal} from this "g" rather than from a fresh one constructed from the {@link Graph} instance.
+     */
+    protected GremlinAntlrToJava(final GraphTraversalSource g, final Supplier<GraphTraversal<?,?>> createAnonymous) {
+        this(GraphTraversalSourceVisitor.TRAVERSAL_ROOT, g.getGraph(), createAnonymous, g);
     }
 
     /**
@@ -100,6 +121,20 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
      */
     protected GremlinAntlrToJava(final String traversalSourceName, final Graph graph,
                                  final Supplier<GraphTraversal<?,?>> createAnonymous) {
+        this(traversalSourceName, graph, createAnonymous, null);
+    }
+
+    /**
+     * Constructs a new instance that is bound to the specified {@link Graph} instance with an override to using
+     * {@link __} for constructing anonymous {@link Traversal} instances. If the {@link GraphTraversalSource} is
+     * provided then the {@link Traversal} will spawn from it as opposed to a fresh one from the {@link Graph} instance.
+     *
+     * @param traversalSourceName The name of the traversal source which will be "g" if not specified.
+     */
+    protected GremlinAntlrToJava(final String traversalSourceName, final Graph graph,
+                                 final Supplier<GraphTraversal<?,?>> createAnonymous,
+                                 final GraphTraversalSource g) {
+        this.g = g;
         this.graph = graph;
         this.gvisitor = new GraphTraversalSourceVisitor(
                 null == traversalSourceName ? GraphTraversalSourceVisitor.TRAVERSAL_ROOT : traversalSourceName,this);

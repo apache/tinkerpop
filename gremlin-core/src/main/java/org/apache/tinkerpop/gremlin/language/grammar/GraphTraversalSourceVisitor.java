@@ -29,14 +29,24 @@ public class GraphTraversalSourceVisitor extends GremlinBaseVisitor<GraphTravers
     private final Graph graph;
     private final GremlinAntlrToJava antlr;
     private final String traversalSourceName;
+    private final GraphTraversalSource g;
 
+    /**
+     * Constructs the visitor and if the {@link GremlinAntlrToJava} has a {@link GraphTraversalSource} assigned to it,
+     * the visitor will prefer that "g" rather than creating a new one from the associated {@link Graph} instance.
+     */
     public GraphTraversalSourceVisitor(final GremlinAntlrToJava antlr) {
         this(TRAVERSAL_ROOT, antlr);
     }
 
+    /**
+     * Same as {@link #GraphTraversalSourceVisitor(GremlinAntlrToJava)} but allows the traversal source name to be
+     * configured to something other than "g".
+     */
     public GraphTraversalSourceVisitor(final String traversalSourceName, final GremlinAntlrToJava antlr) {
         this.graph = antlr.graph;
         this.antlr = antlr;
+        this.g = antlr.g;
         this.traversalSourceName = traversalSourceName;
     }
 
@@ -47,13 +57,13 @@ public class GraphTraversalSourceVisitor extends GremlinBaseVisitor<GraphTravers
     public GraphTraversalSource visitTraversalSource(final GremlinParser.TraversalSourceContext ctx) {
         if (ctx.getChildCount() == 1) {
             // handle source method only
-            return graph.traversal();
+            return null == g ? graph.traversal() : g;
         } else {
             final int childIndexOfSelfMethod = 2;
             GraphTraversalSource source;
             if (ctx.getChild(0).getText().equals(traversalSourceName)) {
                 // handle single traversal source
-                source = graph.traversal();
+                source = null == g ? graph.traversal() : g;
             } else {
                 // handle chained self method
                 final int childIndexOfTraversalSource = 0;

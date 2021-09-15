@@ -64,7 +64,6 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
         assumeThat("Vertex instances are not supported", vertexPattern.matcher(query).matches(), is(false));
         assumeThat("Edge instances are not supported", edgePattern.matcher(query).matches(), is(false));
         assumeThat("fill() terminator is not supported", query.contains("fill("), is(false));
-        assumeThat("connectedComponent() is not fully supported - needs tokens", query.contains("connectedComponent("), is(false));
         assumeThat("withoutStrategies() is not supported", query.contains("withoutStrategies("), is(false));
         assumeThat("program() is not supported", query.contains("program("), is(false));
 
