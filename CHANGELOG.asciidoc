@@ -31,6 +31,7 @@ limitations under the License.
 * Removed `groovy` and `groovy-json` dependencies from `gremlin-driver` as well as related `JsonBuilder` serialization support.
 * Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
 * Prevented metrics computation unless the traversal is in a locked state.
+* Created a way to produce a corpus of Gremlin traversals via `FeatureReader` and `DocumentationReader` in `gremlin-language`.
 * Exposed Gherkin tests as part of the provider test suite.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Bumped to Apache Hadoop 3.3.1.

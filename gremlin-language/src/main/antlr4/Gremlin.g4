@@ -1037,7 +1037,6 @@ traversalSelfMethod_none
 
 gremlinStringConstants
     : withOptionsStringConstants
-    | connectedComponentConstants
     | shortestPathStringConstants
     | connectedComponentConstants
     | pageRankStringConstants
