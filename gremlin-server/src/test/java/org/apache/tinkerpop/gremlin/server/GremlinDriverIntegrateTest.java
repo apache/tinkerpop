@@ -568,7 +568,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             try {
                 final ResultSet results = client.submit("1/0");
                 results.all().join();
-                fail("Should have thrown exception over bad serialization");
+                fail("Should have thrown exception over division by zero");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionUtils.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
