@@ -69,9 +69,13 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
 
     QOP_AUTH_BIT = 1
     _kerberos_context = None
-    _max_content_length = 65536
+    _max_content_length = 10 * 1024 * 1024
 
-    def __init__(self, message_serializer, username='', password='', kerberized_service='', max_content_length=65536):
+    def __init__(self,
+                 message_serializer,
+                 username='', password='',
+                 kerberized_service='',
+                 max_content_length=10 * 1024 * 1024):
         self._message_serializer = message_serializer
         self._username = username
         self._password = password

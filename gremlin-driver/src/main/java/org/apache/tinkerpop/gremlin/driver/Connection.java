@@ -60,7 +60,7 @@ final class Connection {
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
-    public static final int MAX_CONTENT_LENGTH = 65536;
+    public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
 
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;

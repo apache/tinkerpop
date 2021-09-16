@@ -36,9 +36,9 @@ Some default value settings were changed to be consistent across different langu
 
 * The default for `PoolSize` is now `8` instead of `4` in .NET.
 * The default for `MaxInProcessPerConnection` is now `32` instead of `16` in .NET.
+* The default for `maxContentLength` is now 10 mb in the Java builder instead of 65536.
 * The default for `pool_size` is now `8` instead of `4` in Python.
-* The default for `max_content_length` in `**transport_kwargs` for the Python client is now 65536 bytes instead of 10 mb.
-* If a `protocol_factory` is not specified, it now adheres to the `max_content_length` specified instead of alway susing 65536.
+* If a `protocol_factory` is not specified, it now adheres to the `max_content_length` specified instead of always using 65536 in Python.
 
 ==== Refinements to null
 

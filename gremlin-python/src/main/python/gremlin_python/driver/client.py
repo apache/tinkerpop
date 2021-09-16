@@ -45,7 +45,7 @@ class Client:
         self._headers = headers
         self._traversal_source = traversal_source
         if "max_content_length" not in transport_kwargs:
-            transport_kwargs["max_content_length"] = 65536
+            transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
             message_serializer = serializer.GraphSONSerializersV3d0()
         self._message_serializer = message_serializer
