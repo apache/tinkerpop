@@ -35,8 +35,8 @@ namespace Gremlin.Net.Driver
         private int _maxInProcessPerConnection = DefaultMaxInProcessPerConnection;
         private int _reconnectionAttempts = DefaultReconnectionAttempts;
         private TimeSpan _reconnectionBaseDelay = DefaultReconnectionBaseDelay;
-        private const int DefaultPoolSize = 4;
-        private const int DefaultMaxInProcessPerConnection = 32;
+        private const int DefaultPoolSize = 8;
+        private const int DefaultMaxInProcessPerConnection = 16;
         private const int DefaultReconnectionAttempts = 4;
         private static readonly TimeSpan DefaultReconnectionBaseDelay = TimeSpan.FromSeconds(1);
 
@@ -45,7 +45,7 @@ namespace Gremlin.Net.Driver
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">The specified pool size is less than or equal to zero.</exception>
         /// <remarks>
-        ///     The default value is 4.
+        ///     The default value is 8.
         /// </remarks>
         public int PoolSize
         {
@@ -63,7 +63,7 @@ namespace Gremlin.Net.Driver
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">The specified number is less than or equal to zero.</exception>
         /// <remarks>
-        ///     The default value is 32. A <see cref="ConnectionPoolBusyException" /> is thrown if this limit is reached
+        ///     The default value is 16. A <see cref="ConnectionPoolBusyException" /> is thrown if this limit is reached
         ///     on all connections when a new request comes in.
         /// </remarks>
         public int MaxInProcessPerConnection

@@ -69,7 +69,8 @@ class Client:
                 self._message_serializer,
                 username=self._username,
                 password=self._password,
-                kerberized_service=kerberized_service)
+                kerberized_service=kerberized_service,
+                max_content_length=transport_kwargs["max_content_length"])
         self._protocol_factory = protocol_factory
         if self._sessionEnabled:
             if pool_size is None:
@@ -77,7 +78,7 @@ class Client:
             elif pool_size != 1:
                 raise Exception("PoolSize must be 1 on session mode!")
         if pool_size is None:
-            pool_size = 4
+            pool_size = 8
         self._pool_size = pool_size
         # This is until concurrent.futures backport 3.1.0 release
         if max_workers is None:

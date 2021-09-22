@@ -67,15 +67,20 @@ class AbstractBaseProtocol:
 
 class GremlinServerWSProtocol(AbstractBaseProtocol):
 
-    MAX_CONTENT_LENGTH = 65536
     QOP_AUTH_BIT = 1
     _kerberos_context = None
+    _max_content_length = 10 * 1024 * 1024
 
-    def __init__(self, message_serializer, username='', password='', kerberized_service=''):
+    def __init__(self,
+                 message_serializer,
+                 username='', password='',
+                 kerberized_service='',
+                 max_content_length=10 * 1024 * 1024):
         self._message_serializer = message_serializer
         self._username = username
         self._password = password
         self._kerberized_service = kerberized_service
+        self._max_content_length = max_content_length
 
     def connection_made(self, transport):
         super(GremlinServerWSProtocol, self).connection_made(transport)
@@ -177,7 +182,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
 
         name_length = len(self._username)
         fmt = '!I' + str(name_length) + 's'
-        word = self.QOP_AUTH_BIT << 24 | self.MAX_CONTENT_LENGTH
+        word = self.QOP_AUTH_BIT << 24 | self._max_content_length
         out = struct.pack(fmt, word, self._username.encode("utf-8"),)
         encoded = base64.b64encode(out).decode('ascii')
         kerberos.authGSSClientWrap(self._kerberos_context, encoded)

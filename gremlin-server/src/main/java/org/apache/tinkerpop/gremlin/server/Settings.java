@@ -143,7 +143,7 @@ public class Settings {
      * return a 413 - Request Entity Too Large status code.  A response exceeding this size will raise an internal
      * exception.
      */
-    public int maxContentLength = 1024 * 64;
+    public int maxContentLength = 1024 * 1024 * 10;
 
     /**
      * Maximum number of request components that can be aggregated for a message.
