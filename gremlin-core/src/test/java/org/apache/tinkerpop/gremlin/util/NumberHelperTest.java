@@ -128,17 +128,12 @@ public class NumberHelperTest {
 
     @Test
     public void shouldAddAndReturnCorrectType() {
-
-        // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
-        //       nothing to do with the actual NumberHelper implementation
-
-        // the above NOTE isn't quite true - TINKERPOP-2610
         assertEquals((byte) 1, add((byte) 1, (Byte) null));
         assertNull(add((Byte) null, (byte) 1));
 
         // BYTE
-        assertEquals(2, add((byte) 1, (byte) 1));
-        assertEquals(2, add((byte) 1, (short) 1));
+        assertEquals((byte) 2, add((byte) 1, (byte) 1));
+        assertEquals((short) 2, add((byte) 1, (short) 1));
         assertEquals(2, add((byte) 1, 1));
         assertEquals(2L, add((byte) 1, 1L));
         assertEquals(2F, add((byte) 1, 1F));
@@ -147,7 +142,7 @@ public class NumberHelperTest {
         assertEquals(BigDecimal.ONE.add(BigDecimal.ONE), add((byte) 1, BigDecimal.ONE));
 
         // SHORT
-        assertEquals(2, add((short) 1, (short) 1));
+        assertEquals((short)2, add((short) 1, (short) 1));
         assertEquals(2, add((short) 1, 1));
         assertEquals(2L, add((short) 1, 1L));
         assertEquals(2F, add((short) 1, 1F));
@@ -191,17 +186,12 @@ public class NumberHelperTest {
 
     @Test
     public void shouldSubtractAndReturnCorrectType() {
-
-        // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
-        //       nothing to do with the actual NumberHelper implementation
-
-        // the above NOTE isn't quite true - TINKERPOP-2610
         assertEquals((byte) 1, sub((byte) 1, (Byte) null));
         assertNull(sub((Byte) null, (byte) 1));
 
         // BYTE
-        assertEquals(0, sub((byte) 1, (byte) 1));
-        assertEquals(0, sub((byte) 1, (short) 1));
+        assertEquals((byte) 0, sub((byte) 1, (byte) 1));
+        assertEquals((short) 0, sub((byte) 1, (short) 1));
         assertEquals(0, sub((byte) 1, 1));
         assertEquals(0L, sub((byte) 1, 1L));
         assertEquals(0F, sub((byte) 1, 1F));
@@ -210,7 +200,7 @@ public class NumberHelperTest {
         assertEquals(BigDecimal.ZERO, sub((byte) 1, BigDecimal.ONE));
 
         // SHORT
-        assertEquals(0, sub((short) 1, (short) 1));
+        assertEquals((short) 0, sub((short) 1, (short) 1));
         assertEquals(0, sub((short) 1, 1));
         assertEquals(0L, sub((short) 1, 1L));
         assertEquals(0F, sub((short) 1, 1F));
@@ -254,17 +244,12 @@ public class NumberHelperTest {
 
     @Test
     public void shouldMultiplyAndReturnCorrectType() {
-
-        // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
-        //       nothing to do with the actual NumberHelper implementation
-
-        // the above NOTE isn't quite true - TINKERPOP-2610
         assertEquals((byte) 1, mul((byte) 1, (Byte) null));
         assertNull(mul((Byte) null, (byte) 1));
 
         // BYTE
-        assertEquals(1, mul((byte) 1, (byte) 1));
-        assertEquals(1, mul((byte) 1, (short) 1));
+        assertEquals((byte) 1, mul((byte) 1, (byte) 1));
+        assertEquals((short) 1, mul((byte) 1, (short) 1));
         assertEquals(1, mul((byte) 1, 1));
         assertEquals(1L, mul((byte) 1, 1L));
         assertEquals(1F, mul((byte) 1, 1F));
@@ -273,7 +258,7 @@ public class NumberHelperTest {
         assertEquals(BigDecimal.ONE, mul((byte) 1, BigDecimal.ONE));
 
         // SHORT
-        assertEquals(1, mul((short) 1, (short) 1));
+        assertEquals((short) 1, mul((short) 1, (short) 1));
         assertEquals(1, mul((short) 1, 1));
         assertEquals(1L, mul((short) 1, 1L));
         assertEquals(1F, mul((short) 1, 1F));
@@ -317,17 +302,12 @@ public class NumberHelperTest {
 
     @Test
     public void shouldDivideAndReturnCorrectType() {
-
-        // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
-        //       nothing to do with the actual NumberHelper implementation
-
-        // the above NOTE isn't quite true - TINKERPOP-2610
         assertEquals((byte) 1, div((byte) 1, (Byte) null));
         assertNull(div((Byte) null, (byte) 1));
 
         // BYTE
-        assertEquals(1, div((byte) 1, (byte) 1));
-        assertEquals(1, div((byte) 1, (short) 1));
+        assertEquals((byte) 1, div((byte) 1, (byte) 1));
+        assertEquals((short) 1, div((byte) 1, (short) 1));
         assertEquals(1, div((byte) 1, 1));
         assertEquals(1L, div((byte) 1, 1L));
         assertEquals(1F, div((byte) 1, 1F));
@@ -336,7 +316,7 @@ public class NumberHelperTest {
         assertEquals(BigDecimal.ONE, div((byte) 1, BigDecimal.ONE));
 
         // SHORT
-        assertEquals(1, div((short) 1, (short) 1));
+        assertEquals((short) 1, div((short) 1, (short) 1));
         assertEquals(1, div((short) 1, 1));
         assertEquals(1L, div((short) 1, 1L));
         assertEquals(1F, div((short) 1, 1F));
@@ -380,10 +360,6 @@ public class NumberHelperTest {
 
     @Test
     public void shouldDivideForceFloatingPointAndReturnCorrectType() {
-
-        // NOTE: The smallest possible number type for return values is Integer; this seems to be a JVM thing and has
-        //       nothing to do with the actual NumberHelper implementation
-
         // BYTE
         assertEquals(1F, div((byte) 1, (byte) 1, true));
         assertEquals(1F, div((byte) 1, (short) 1, true));

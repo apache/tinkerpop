@@ -36,6 +36,7 @@ limitations under the License.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.1.2.
+* Changed `NumberHelper` to properly cast to `byte` and `short` rather than default coercing to `Integer`.
 * Modified some driver defaults (maximum content length, pool size, maximum in process) to be more consistent with one another. 
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)

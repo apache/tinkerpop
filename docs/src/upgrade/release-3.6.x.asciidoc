@@ -58,6 +58,45 @@ containers which should work more cleanly out of the box.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2534[TINKERPOP-2534]
 
+==== Short and Byte
+
+Numeric operations around `short` and `byte` have not behaved quite like `int` and `long`. Here is an example of a
+`sum` operation with `sack()`:
+
+[source,text]
+----
+gremlin> g.withSack((short) 2).inject((short) 1, (int) 2).sack(sum).sack()
+==>3
+==>4
+gremlin> g.withSack((short) 2).inject((short) 1, (int) 2).sack(sum).sack().collect{it.class}
+==>class java.lang.Integer
+==>class java.lang.Integer
+gremlin> g.withSack((short) 2).inject((short) 1, (long) 2).sack(sum).sack().collect{it.class}
+==>class java.lang.Integer
+==>class java.lang.Long
+gremlin> g.withSack((short) 2).inject((short) 1,(byte) 2).sack(sum).sack().collect{it.class}
+==>class java.lang.Integer
+==>class java.lang.Integer
+----
+
+Note that the type returned for the the `sum` should be the largest type encountered in the operation, thus if a
+`long + int` would return `long` or a `byte + int` would return `int`. The last example above shows inconsistency in
+this rule when dealing with types `short` and `byte` which simply promote them to `int`.
+
+For 3.6.0, that inconsistency is resolved and may be a breaking change should code be relying on the integer promotion.
+
+[source,text]
+----
+gremlin> g.withSack((short) 2).inject((short) 1,(byte) 2).sack(sum).sack().collect{it.class}
+==>class java.lang.Short
+==>class java.lang.Short
+gremlin> g.withSack((byte) 2).inject((byte) 1,(byte) 2).sack(sum).sack().collect{it.class}
+==>class java.lang.Byte
+==>class java.lang.Byte
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2610[TINKERPOP-2610]
+
 ==== Groovy in gremlin-driver
 
 The `gremlin-driver` module no longer depends on `groovy` or `groovy-json`. It became an `<optional>` dependency in
