@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepConstant
 Feature: Step - constant()
 
   Scenario: g_V_constantX123X

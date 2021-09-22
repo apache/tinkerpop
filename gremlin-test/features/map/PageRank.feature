@@ -15,13 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@GraphComputerOnly @StepClassMap @StepPageRank
 Feature: Step - pageRank()
-                
+
   Scenario: g_V_pageRank_hasXpageRankX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().has("gremlin.pageRankVertexProgram.pageRank")
+      g.V().pageRank().has("gremlin.pageRankVertexProgram.pageRank")
       """
     When iterated to list
     Then the result should be unordered
@@ -32,13 +33,12 @@ Feature: Step - pageRank()
       | v[josh] |
       | v[ripple] |
       | v[peter] |
-    And the graph should return 6 for count of "g.withComputer().V().pageRank().has(\"gremlin.pageRankVertexProgram.pageRank\")"
 
   Scenario: g_V_outXcreatedX_pageRank_withXedges_bothEX_withXpropertyName_projectRankX_withXtimes_0X_valueMapXname_projectRankX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().out("created").pageRank().with("~tinkerpop.pageRank.edges",__.bothE()).with("~tinkerpop.pageRank.propertyName","projectRank").with("~tinkerpop.pageRank.times",0).valueMap("name", "projectRank")
+      g.V().out("created").pageRank().with("~tinkerpop.pageRank.edges",__.bothE()).with("~tinkerpop.pageRank.propertyName","projectRank").with("~tinkerpop.pageRank.times",0).valueMap("name", "projectRank")
       """
     When iterated to list
     Then the result should be unordered
@@ -52,7 +52,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.desc).by("name").values("name")
+      g.V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.desc).by("name").values("name")
       """
     When iterated to list
     Then the result should be ordered
@@ -68,7 +68,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.desc).values("name").limit(2)
+      g.V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.desc).values("name").limit(2)
       """
     When iterated to list
     Then the result should be ordered
@@ -80,7 +80,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().with("~tinkerpop.pageRank.edges",__.outE("knows")).with("~tinkerpop.pageRank.propertyName","friendRank").project("name", "friendRank").by("name").by(__.values("friendRank").math("ceil(_ * 100)"))
+      g.V().pageRank().with("~tinkerpop.pageRank.edges",__.outE("knows")).with("~tinkerpop.pageRank.propertyName","friendRank").project("name", "friendRank").by("name").by(__.values("friendRank").math("ceil(_ * 100)"))
       """
     When iterated to list
     Then the result should be unordered
@@ -96,7 +96,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().hasLabel("person").pageRank().with("~tinkerpop.pageRank.propertyName","pageRank").project("name", "pageRank").by("name").by(__.values("pageRank").math("ceil(_ * 100)"))
+      g.V().hasLabel("person").pageRank().with("~tinkerpop.pageRank.propertyName","pageRank").project("name", "pageRank").by("name").by(__.values("pageRank").math("ceil(_ * 100)"))
       """
     When iterated to list
     Then the result should be unordered
@@ -110,7 +110,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().with("~tinkerpop.pageRank.propertyName","pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").by().by(__.math("ceil(_ * 100)"))
+      g.V().pageRank().with("~tinkerpop.pageRank.propertyName","pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").by().by(__.math("ceil(_ * 100)"))
       """
     When iterated to list
     Then the result should be unordered
@@ -122,7 +122,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().hasLabel("software").has("name", "ripple").pageRank(1.0).with("~tinkerpop.pageRank.edges",__.inE("created")).with("~tinkerpop.pageRank.times",1).with("~tinkerpop.pageRank.propertyName","priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors")
+      g.V().hasLabel("software").has("name", "ripple").pageRank(1.0).with("~tinkerpop.pageRank.edges",__.inE("created")).with("~tinkerpop.pageRank.times",1).with("~tinkerpop.pageRank.propertyName","priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors")
       """
     When iterated to list
     Then the result should be unordered
@@ -136,7 +136,7 @@ Feature: Step - pageRank()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().out("created").group("m").by(T.label).pageRank(1.0).with("~tinkerpop.pageRank.propertyName", "pageRank").with("~tinkerpop.pageRank.edges",__.inE()).with("~tinkerpop.pageRank.times", 1).in("created").group("m").by("pageRank").cap("m")
+      g.V().out("created").group("m").by(T.label).pageRank(1.0).with("~tinkerpop.pageRank.propertyName", "pageRank").with("~tinkerpop.pageRank.edges",__.inE()).with("~tinkerpop.pageRank.times", 1).in("created").group("m").by("pageRank").cap("m")
       """
     When iterated next
     Then the result should have a count of 3

@@ -80,6 +80,11 @@ Given(/^the (.+) graph$/, function (graphName) {
   this.graphName = graphName;
   const data = this.getData();
   this.g = traversal().withRemote(data.connection);
+
+  if (this.isGraphComputer) {
+    this.g = this.g.withComputer();
+  }
+
   if (graphName === 'empty') {
     return this.cleanEmptyGraph();
   }

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepGroup
 Feature: Step - group()
 
   Scenario: g_V_group_byXnameX
@@ -98,12 +99,12 @@ Feature: Step - group()
     Given the modern graph
     And the traversal of
       """
-      g.V().group().by(__.outE().count()).by("name")
+      g.V().order().by("name").group().by(__.outE().count()).by("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[0].l":["vadas","lop","ripple"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["lop","ripple","vadas"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
 
   Scenario: g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX
     Given the modern graph
@@ -217,6 +218,7 @@ Feature: Step - group()
       | result |
       | m[{"cover":{"followedBy":"d[777982].l"}, "":{"followedBy":"d[179350].l"}, "original":{"followedBy":"d[2185613].l"}}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX
     Given the modern graph
     And the traversal of
@@ -239,18 +241,20 @@ Feature: Step - group()
       | result |
       | m[{"software":"d[2.0].d", "person":"d[5.0].d"}] |
 
+  # The post-ordering really isn't really right but works around TINKERPOP-2600
   Scenario: g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "m[{\"marko\":[666], \"noone\":[\"blah\"]}]"
+    And using the parameter xx1 defined as "m[{\"marko\":[\"666\"], \"noone\":[\"blah\"]}]"
     And the traversal of
       """
-      g.withSideEffect("a", xx1).V().group("a").by("name").by(__.outE().label().fold()).cap("a")
+      g.withSideEffect("a", xx1).V().group("a").by("name").by(__.outE().label().fold()).cap("a").unfold().group().by(keys).by(select(values).order(Scope.local).by(Order.asc))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":[666, "created", "knows", "knows"]}] |
+      | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":["666", "created", "knows", "knows"]}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX
     Given the modern graph
     And the traversal of
@@ -262,6 +266,7 @@ Feature: Step - group()
       | result |
       | m[{"ripple":"d[32].l", "lop":"d[96].l"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_groupXaX_byXnameX_byXselectXpX_valuesXageX_sumX_capXaX
     Given the modern graph
     And the traversal of

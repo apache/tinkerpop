@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepCoalesce
 Feature: Step - coalesce()
 
   Scenario: g_V_coalesceXoutXfooX_outXbarXX
@@ -62,6 +63,7 @@ Feature: Step - coalesce()
       | result |
       | m[{"ripple":"d[1].l", "vadas":"d[1].l", "josh":"d[1].l", "lop":"d[2].l"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX
     Given the modern graph
     And the traversal of
@@ -84,7 +86,7 @@ Feature: Step - coalesce()
       g.V().out("created").order().by("name").coalesce(__.values("name"), __.constant("x"))
       """
     When iterated to list
-    Then the result should be ordered
+    Then the result should be unordered
       | result |
       | lop |
       | lop |

@@ -16,15 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.features;
+package org.apache.tinkerpop.gremlin.language.corpus;
 
+import org.javatuples.Pair;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.Assert.assertEquals;
 
@@ -35,8 +41,19 @@ public class FeatureReaderTest {
         final String projectRoot = "../";
         final Map<String,List<String>> gremlins = FeatureReader.parse(projectRoot);
         assertThat(gremlins.size(), greaterThan(0));
-        assertEquals(gremlins,
-                     FeatureReader.parse(projectRoot));
+        assertEquals(gremlins, FeatureReader.parse(projectRoot));
+    }
 
+    @Test
+    public void shouldParseAndEmbed() throws IOException {
+        final String replaceToken = "****replaced****";
+        final List<Pair<Pattern, BiFunction<String, String, String>>> parameterMatchers = new ArrayList<>();
+        parameterMatchers.add(Pair.with(Pattern.compile("(.*)"), (k, v) -> replaceToken));
+        final String projectRoot = "../";
+        final Map<String,List<String>> gremlins = FeatureReader.parse(projectRoot, parameterMatchers);
+
+        // at least one of these things must have the "replaced" token
+        assertThat(gremlins.values().stream().
+                flatMap(Collection::stream).anyMatch(gremlin -> gremlin.contains(replaceToken)), is(true));
     }
 }

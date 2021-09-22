@@ -18,14 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.language.corpus.DocumentationReader;
+import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader;
+import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
@@ -40,10 +49,31 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
     private static final Pattern vertexPattern = Pattern.compile(".*v\\d.*");
     private static final Pattern edgePattern = Pattern.compile(".*e\\d.*");
 
+    private static final List<Pair<Pattern, BiFunction<String,String,String>>> stringMatcherConverters = new ArrayList<Pair<Pattern, BiFunction<String,String,String>>>() {{
+        add(Pair.with(Pattern.compile("l\\[\\]"), (k,v) -> "[]"));
+        add(Pair.with(Pattern.compile("l\\[(.*)\\]"), (k,v) -> {
+            final String[] items = v.split(",");
+            final String listItems = Stream.of(items).map(String::trim).map(x -> String.format("\"%s\"", x)).collect(Collectors.joining(","));
+            return String.format("[%s]", listItems);
+        }));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]"), (k,v) -> "\"1\""));
+        add(Pair.with(Pattern.compile("e\\[(.+)\\]"), (k,v) -> "\"1\""));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.?.*"), (k,v) -> v));
+        add(Pair.with(Pattern.compile("m\\[(.*)\\]"), (k,v) -> v.replace('{','[').replace('}', ']')));
+        add(Pair.with(Pattern.compile("t\\[(.*)\\]"), (k,v) -> String.format("T.%s", v)));
+        add(Pair.with(Pattern.compile("D\\[(.*)\\]"), (k,v) -> String.format("Direction.%s", v)));
+
+        // the grammar doesn't support all the Gremlin we have in the gherkin set, so try to coerce it into
+        // something that can be parsed so that we get maximum exercise over the parser itself.
+        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), (k,v) -> k.equals("c1") || k.equals("c2") ? "Order.desc" : "__.identity()"));  // closure -> Comparator || Traversal
+        add(Pair.with(Pattern.compile("s\\[\\]"), (k,v) -> "[]"));  // set -> list
+        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), (k,v) -> "[]"));  // set -> list
+    }};
+
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<String> queries() throws IOException {
         final Set<String> gremlins = new LinkedHashSet<>(DocumentationReader.parse("../"));
-        gremlins.addAll(FeatureReader.parse("../"));
+        gremlins.addAll(FeatureReader.parse("../", stringMatcherConverters).values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
         return gremlins;
     }
 
@@ -52,11 +82,6 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
 
     @Test
     public void test_parse() {
-        assumeThat("Lambdas are not supported", query.contains("l1"), is(false));
-        assumeThat("Lambdas are not supported", query.contains("l2"), is(false));
-        assumeThat("Lambdas are not supported", query.contains("pred1"), is(false));
-        assumeThat("Lambdas are not supported", query.contains("c1"), is(false));
-        assumeThat("Lambdas are not supported", query.contains("c2"), is(false));
         assumeThat("Lambdas are not supported", query.contains("Lambda.function("), is(false));
         // start of a closure
         assumeThat("Lambdas are not supported", query.contains("{"), is(false));

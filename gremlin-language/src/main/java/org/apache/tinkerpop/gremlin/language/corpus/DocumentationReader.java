@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.language.grammar;
-
-import org.apache.commons.text.StringEscapeUtils;
+package org.apache.tinkerpop.gremlin.language.corpus;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

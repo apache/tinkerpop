@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepFold
 Feature: Step - fold()
 
   Scenario: g_V_fold

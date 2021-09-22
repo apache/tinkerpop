@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepUnfold
 Feature: Step - unfold()
 
   Scenario: g_V_localXoutE_foldX_unfold
@@ -56,6 +57,7 @@ Feature: Step - unfold()
       | name   |
       | age    |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

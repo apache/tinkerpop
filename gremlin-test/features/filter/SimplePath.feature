@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepSimplePath
 Feature: Step - simplePath()
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_simplePath
@@ -58,6 +59,7 @@ Feature: Step - simplePath()
       | p[v[peter],v[lop],v[josh],v[ripple]] |
       | p[v[peter],v[lop],v[josh],v[marko]] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXbX_out_asXcX_simplePath_byXlabelX_fromXbX_toXcX_path_byXnameX
     Given the modern graph
     And the traversal of

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMax
 Feature: Step - max()
 
   Scenario: g_V_age_max

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepRange
 Feature: Step - range()
 
   Scenario: g_VX1X_out_limitX2X
@@ -170,6 +171,7 @@ Feature: Step - range()
       | m[{"b":"josh"}] |
       | m[{"b":"josh"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X
     Given the modern graph
     And the traversal of
@@ -182,6 +184,7 @@ Feature: Step - range()
       | l[josh,ripple] |
       | l[josh,lop] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X
     Given the modern graph
     And the traversal of
@@ -207,6 +210,7 @@ Feature: Step - range()
       | josh |
       | peter |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X
     Given the modern graph
     And the traversal of
@@ -227,6 +231,7 @@ Feature: Step - range()
       | result |
       | l[d[0.4].d,d[0.5].d,d[1.0].d,d[1.0].d] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X
     Given the modern graph
     And the traversal of
@@ -239,6 +244,7 @@ Feature: Step - range()
       | lop    |
       | ripple |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X
     Given the modern graph
     And the traversal of

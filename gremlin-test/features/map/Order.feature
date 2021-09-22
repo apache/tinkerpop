@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepOrder
 Feature: Step - order()
 
   Scenario: g_V_name_order
@@ -198,14 +199,14 @@ Feature: Step - order()
     Given the modern graph
     And the traversal of
       """
-      g.V().map(__.bothE().values("weight").fold()).order().by(__.sum(Scope.local), Order.desc)
+      g.V().map(__.bothE().values("weight").order().by(Order.asc).fold()).order().by(__.sum(Scope.local), Order.desc)
       """
     When iterated to list
     Then the result should be ordered
       | result |
-      | l[d[1.0].d,d[0.4].d,d[1.0].d] |
+      | l[d[0.4].d,d[1.0].d,d[1.0].d] |
       | l[d[0.4].d,d[0.5].d,d[1.0].d] |
-      | l[d[0.4].d,d[0.4].d,d[0.2].d] |
+      | l[d[0.2].d,d[0.4].d,d[0.4].d] |
       | l[d[1.0].d]                   |
       | l[d[0.5].d]                   |
       | l[d[0.2].d]                   |

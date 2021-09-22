@@ -15,8 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepLoops
 Feature: Step - loops()
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX3XX_hasXname_peterX_path_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -30,6 +32,7 @@ Feature: Step - loops()
       | p[marko,lop,peter] |
       | p[marko,josh,lop,peter] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX2XX_hasXname_peterX_path_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -42,6 +45,7 @@ Feature: Step - loops()
       | result |
       | p[marko,lop,peter] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_and_loops_isX3XX_hasXname_peterX_path_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

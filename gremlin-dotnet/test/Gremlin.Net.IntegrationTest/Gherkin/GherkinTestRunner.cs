@@ -57,6 +57,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_injectXnull_10_5_nullX_sum", IgnoreReason.NoReason},
                 {"g_injectXlistXnull_10_5_nullXX_sumXlocalX", IgnoreReason.NoReason},
                 {
+                    "g_addVXpersonX_propertyXname_joshX_propertyXage_nullX",
+                    IgnoreReason.NoReason
+                },
+                {
+                    "g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX",
+                    IgnoreReason.NoReason
+                },
+                {
+                    "g_addEXknowsXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX",
+                    IgnoreReason.NoReason
+                },
+                {
                     "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack",
                     IgnoreReason.NoReason
                 },
@@ -125,6 +137,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
+                    if (feature.Tags.Select(t => t.Name).ToList().Contains("@AllowNullPropertyValues"))
+                    {
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.NullPropertyValuesNotSupportedOnTestGraph));
+                        continue;
+                    }
+
                     StepBlock? currentStep = null;
                     StepDefinition stepDefinition = null;
                     foreach (var step in scenario.Steps)
@@ -143,6 +161,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         }
 
                         scenarioData.CurrentScenario = scenario;
+                        scenarioData.CurrentFeature = feature;
+
                         var result = ExecuteStep(stepDefinition, currentStep.Value, step);
                         if (result != null)
                         {

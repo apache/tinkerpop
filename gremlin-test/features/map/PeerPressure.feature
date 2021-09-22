@@ -15,13 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@GraphComputerOnly @StepClassMap @StepPeerPressure
 Feature: Step - peerPressure()
                 
   Scenario: g_V_peerPressure_hasXclusterX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().peerPressure().has("gremlin.peerPressureVertexProgram.cluster")
+      g.V().peerPressure().has("gremlin.peerPressureVertexProgram.cluster")
       """
     When iterated to list
     Then the result should be unordered
@@ -32,13 +33,12 @@ Feature: Step - peerPressure()
       | v[josh] |
       | v[ripple] |
       | v[peter] |
-    And the graph should return 6 for count of "g.withComputer().V().peerPressure().has(\"gremlin.peerPressureVertexProgram.cluster\")"
 
   Scenario: g_V_peerPressure_withXpropertyName_clusterX_withXedges_outEXknowsXX_pageRankX1X_byXrankX_withXedges_outEXknowsX_withXtimes_2X_group_byXclusterX_byXrank_sumX_limitX100X
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().peerPressure().with("~tinkerpop.peerPressure.propertyName","cluster").with("~tinkerpop.peerPressure.edges",__.outE("knows")).pageRank(1.0).with("~tinkerpop.pageRank.propertyName", "rank").with("~tinkerpop.pageRank.edges", __.outE("knows")).with("~tinkerpop.pageRank.times", 1).group().by("cluster").by(__.values("rank").sum()).limit(100)
+      g.V().peerPressure().with("~tinkerpop.peerPressure.propertyName","cluster").with("~tinkerpop.peerPressure.edges",__.outE("knows")).pageRank(1.0).with("~tinkerpop.pageRank.propertyName", "rank").with("~tinkerpop.pageRank.edges", __.outE("knows")).with("~tinkerpop.pageRank.times", 1).group().by("cluster").by(__.values("rank").sum()).limit(100)
       """
     When iterated to list
     Then the result should be unordered
@@ -49,7 +49,7 @@ Feature: Step - peerPressure()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().has("name", "ripple").in("created").peerPressure().with("~tinkerpop.peerPressure.edges",__.outE()).with("~tinkerpop.peerPressure.propertyName", "cluster").repeat(__.union(__.identity(), __.both())).times(2).dedup().valueMap("name", "cluster")
+      g.V().has("name", "ripple").in("created").peerPressure().with("~tinkerpop.peerPressure.edges",__.outE()).with("~tinkerpop.peerPressure.propertyName", "cluster").repeat(__.union(__.identity(), __.both())).times(2).dedup().valueMap("name", "cluster")
       """
     When iterated to list
     Then the result should be unordered

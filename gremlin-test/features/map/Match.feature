@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMatch
 Feature: Step - match()
 
   Scenario: g_V_valueMap_matchXa_selectXnameX_bX
@@ -58,12 +59,12 @@ Feature: Step - match()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3].i |
-      | d[2].i |
-      | d[4].i |
-      | d[5].i |
-      | d[3].i |
-      | d[3].i |
+      | v[lop].id |
+      | v[vadas].id |
+      | v[josh].id |
+      | v[ripple].id |
+      | v[lop].id |
+      | v[lop].id |
 
   Scenario: g_V_matchXa_knows_b__b_created_cX
     Given the modern graph
@@ -123,6 +124,7 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[ripple]","d":"v[vadas]"}] |
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]","d":"v[vadas]"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_matchXa_created_lop_b__b_0created_29_c__c_whereXrepeatXoutX_timesX2XXX
     Given the modern graph
     And the traversal of
@@ -161,6 +163,7 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[vadas]"}] |
       | m[{"a":"v[marko]","b":"v[josh]"}] |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXa_b_cX
     Given the modern graph
     And the traversal of
@@ -259,10 +262,10 @@ Feature: Step - match()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a":1,"b":3,"c":4}] |
-      | m[{"a":1,"b":3,"c":6}] |
-      | m[{"a":4,"b":3,"c":1}] |
-      | m[{"a":4,"b":3,"c":6}] |
+      | m[{"a":"v[marko].id","b":"v[lop].id","c":"v[josh].id"}] |
+      | m[{"a":"v[marko].id","b":"v[lop].id","c":"v[peter].id"}] |
+      | m[{"a":"v[josh].id","b":"v[lop].id","c":"v[marko].id"}] |
+      | m[{"a":"v[josh].id","b":"v[lop].id","c":"v[peter].id"}] |
 
   Scenario: g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX
     Given the modern graph
@@ -272,20 +275,38 @@ Feature: Step - match()
                   __.as("b").both().as("c")).dedup("a", "b")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"a":"v[marko]","b":"v[lop]","c":"v[marko]"}] |
+      | m[{"a":"v[marko]","b":"v[lop]","c":"v[josh]"}] |
+      | m[{"a":"v[marko]","b":"v[lop]","c":"v[peter]"}] |
       | m[{"a":"v[marko]","b":"v[vadas]","c":"v[marko]"}] |
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[ripple]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]","c":"v[marko]"}] |
       | m[{"a":"v[vadas]","b":"v[marko]","c":"v[lop]"}] |
+      | m[{"a":"v[vadas]","b":"v[marko]","c":"v[vadas]"}] |
+      | m[{"a":"v[vadas]","b":"v[marko]","c":"v[josh]"}] |
       | m[{"a":"v[lop]","b":"v[marko]","c":"v[lop]"}] |
+      | m[{"a":"v[lop]","b":"v[marko]","c":"v[vadas]"}] |
+      | m[{"a":"v[lop]","b":"v[marko]","c":"v[josh]"}] |
       | m[{"a":"v[lop]","b":"v[josh]","c":"v[ripple]"}] |
+      | m[{"a":"v[lop]","b":"v[josh]","c":"v[lop]"}] |
+      | m[{"a":"v[lop]","b":"v[josh]","c":"v[marko]"}] |
       | m[{"a":"v[lop]","b":"v[peter]","c":"v[lop]"}] |
       | m[{"a":"v[josh]","b":"v[ripple]","c":"v[josh]"}] |
       | m[{"a":"v[josh]","b":"v[lop]","c":"v[marko]"}] |
+      | m[{"a":"v[josh]","b":"v[lop]","c":"v[josh]"}] |
+      | m[{"a":"v[josh]","b":"v[lop]","c":"v[peter]"}] |
       | m[{"a":"v[josh]","b":"v[marko]","c":"v[lop]"}] |
+      | m[{"a":"v[josh]","b":"v[marko]","c":"v[vadas]"}] |
+      | m[{"a":"v[josh]","b":"v[marko]","c":"v[josh]"}] |
       | m[{"a":"v[ripple]","b":"v[josh]","c":"v[ripple]"}] |
+      | m[{"a":"v[ripple]","b":"v[josh]","c":"v[lop]"}] |
+      | m[{"a":"v[ripple]","b":"v[josh]","c":"v[marko]"}] |
       | m[{"a":"v[peter]","b":"v[lop]","c":"v[marko]"}] |
+      | m[{"a":"v[peter]","b":"v[lop]","c":"v[josh]"}] |
+      | m[{"a":"v[peter]","b":"v[lop]","c":"v[peter]"}] |
 
   Scenario: g_V_matchXa_knows_b__b_created_lop__b_matchXb_created_d__d_0created_cX_selectXcX_cX_selectXa_b_cX
     Given the modern graph
@@ -317,6 +338,7 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[vadas]","c":"v[lop]"}] |
       | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_matchXwhereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX
     Given the modern graph
     And the traversal of
@@ -347,6 +369,7 @@ Feature: Step - match()
       | m[{"a":"josh","b":"ripple"}] |
       | m[{"a":"peter","b":"lop"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_matchXa_both_b__b_both_cX_dedupXa_bX_byXlabelX
     Given the modern graph
     And the traversal of
@@ -355,11 +378,38 @@ Feature: Step - match()
                   __.as("b").both().as("c")).dedup("a", "b").by(T.label)
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"a":"v[marko]","b":"v[lop]","c":"v[marko]"}] |
+      | m[{"a":"v[marko]","b":"v[lop]","c":"v[josh]"}] |
+      | m[{"a":"v[marko]","b":"v[lop]","c":"v[peter]"}] |
       | m[{"a":"v[marko]","b":"v[vadas]","c":"v[marko]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]","c":"v[ripple]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]","c":"v[marko]"}] |
+      | m[{"a":"v[vadas]","b":"v[marko]","c":"v[lop]"}] |
+      | m[{"a":"v[vadas]","b":"v[marko]","c":"v[vadas]"}] |
+      | m[{"a":"v[vadas]","b":"v[marko]","c":"v[josh]"}] |
       | m[{"a":"v[lop]","b":"v[marko]","c":"v[lop]"}] |
+      | m[{"a":"v[lop]","b":"v[marko]","c":"v[vadas]"}] |
+      | m[{"a":"v[lop]","b":"v[marko]","c":"v[josh]"}] |
+      | m[{"a":"v[lop]","b":"v[josh]","c":"v[ripple]"}] |
+      | m[{"a":"v[lop]","b":"v[josh]","c":"v[lop]"}] |
+      | m[{"a":"v[lop]","b":"v[josh]","c":"v[marko]"}] |
+      | m[{"a":"v[lop]","b":"v[peter]","c":"v[lop]"}] |
+      | m[{"a":"v[josh]","b":"v[ripple]","c":"v[josh]"}] |
+      | m[{"a":"v[josh]","b":"v[lop]","c":"v[marko]"}] |
+      | m[{"a":"v[josh]","b":"v[lop]","c":"v[josh]"}] |
+      | m[{"a":"v[josh]","b":"v[lop]","c":"v[peter]"}] |
+      | m[{"a":"v[josh]","b":"v[marko]","c":"v[lop]"}] |
+      | m[{"a":"v[josh]","b":"v[marko]","c":"v[vadas]"}] |
+      | m[{"a":"v[josh]","b":"v[marko]","c":"v[josh]"}] |
+      | m[{"a":"v[ripple]","b":"v[josh]","c":"v[ripple]"}] |
+      | m[{"a":"v[ripple]","b":"v[josh]","c":"v[lop]"}] |
+      | m[{"a":"v[ripple]","b":"v[josh]","c":"v[marko]"}] |
+      | m[{"a":"v[peter]","b":"v[lop]","c":"v[marko]"}] |
+      | m[{"a":"v[peter]","b":"v[lop]","c":"v[josh]"}] |
+      | m[{"a":"v[peter]","b":"v[lop]","c":"v[peter]"}] |
 
   Scenario: g_V_matchXa_created_b__b_0created_aX
     Given the modern graph

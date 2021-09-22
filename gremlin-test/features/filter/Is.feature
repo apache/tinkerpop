@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepIs
 Feature: Step - coin()
 
   Scenario: g_V_valuesXageX_isX32X

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepAnd
 Feature: Step - and()
 
   Scenario: g_V_andXhasXage_gt_27X__outE_count_gte_2X_name
@@ -41,6 +42,7 @@ Feature: Step - and()
       | josh |
       | peter  |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name
     Given the modern graph
     And the traversal of

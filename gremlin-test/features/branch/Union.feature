@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassBranch @StepUnion
 Feature: Step - union()
 
   Scenario: g_V_unionXout__inX_name

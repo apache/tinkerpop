@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepDedup
 Feature: Step - dedup()
 
   Scenario: g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold
@@ -69,9 +70,10 @@ Feature: Step - dedup()
       g.V().both().has(T.label, "software").dedup().by("lang").values("name")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | lop |
+      | ripple |
 
   Scenario: g_V_both_name_order_byXa_bX_dedup_value
     Given the modern graph
@@ -135,13 +137,14 @@ Feature: Step - dedup()
     Given the modern graph
     And the traversal of
       """
-      g.V().group().by(T.label).by(__.bothE().values("weight").dedup().fold())
+      g.V().group().by(T.label).by(__.bothE().values("weight").dedup().order().by(Order.asc).fold())
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"software":[1.0,0.4,0.2],"person":[0.5,1.0,0.4,0.2]}] |
+      | m[{"software":[0.2,0.4,1.0],"person":[0.2,0.4,0.5,1.0]}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX
     Given the modern graph
     And the traversal of
@@ -149,11 +152,20 @@ Feature: Step - dedup()
       g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"a":"v[marko]","b":"v[lop]"}] |
       | m[{"a":"v[marko]","b":"v[vadas]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]"}] |
+      | m[{"a":"v[vadas]","b":"v[marko]"}] |
       | m[{"a":"v[lop]","b":"v[marko]"}] |
+      | m[{"a":"v[lop]","b":"v[josh]"}] |
+      | m[{"a":"v[lop]","b":"v[peter]"}] |
+      | m[{"a":"v[josh]","b":"v[ripple]"}] |
+      | m[{"a":"v[josh]","b":"v[lop]"}] |
+      | m[{"a":"v[josh]","b":"v[marko]"}] |
+      | m[{"a":"v[ripple]","b":"v[josh]"}] |
+      | m[{"a":"v[peter]","b":"v[lop]"}] |
 
   Scenario: g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path
     Given the modern graph
@@ -236,6 +248,7 @@ Feature: Step - dedup()
       | d[0].l |
 
   # https://issues.apache.org/jira/browse/TINKERPOP-2529
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_both_group_by_byXout_dedup_foldX_unfold_selectXvaluesX_unfold_out_order_byXnameX_limitX1X_valuesXnameX
     Given the modern graph
     And the traversal of
@@ -274,6 +287,7 @@ Feature: Step - dedup()
       | result |
       | d[12].l |
 
+  @MultiMetaProperties
   Scenario: g_V_both_properties_properties_dedup_count
     Given the crew graph
     And the traversal of

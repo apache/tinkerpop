@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepTail
 Feature: Step - tail()
 
   Scenario: g_V_valuesXnameX_order_tailXglobal_2X
@@ -69,21 +70,11 @@ Feature: Step - tail()
       | vadas  |
 
   Scenario: g_V_repeatXbothX_timesX3X_tailX7X
-    Given the modern graph
-    And the traversal of
+    Given an unsupported test
+    Then nothing should happen because
       """
-      g.V().repeat(__.both()).times(3).tail(7)
+      This test is not easily asserted given limitations on ordering.
       """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[peter] |
-      | v[peter] |
-      | v[peter] |
-      | v[peter] |
-      | v[marko] |
-      | v[marko] |
-      | v[marko] |
 
   Scenario: g_V_repeatXin_outX_timesX3X_tailX7X_count
     Given the modern graph
@@ -96,6 +87,7 @@ Feature: Step - tail()
       | result |
       | d[7].l |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X
     Given the modern graph
     And the traversal of
@@ -108,6 +100,7 @@ Feature: Step - tail()
       | ripple |
       | lop |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX
     Given the modern graph
     And the traversal of
@@ -144,6 +137,7 @@ Feature: Step - tail()
       | m[{"c":"ripple"}] |
       | m[{"c":"lop"}] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X
     Given the modern graph
     And the traversal of
@@ -156,6 +150,7 @@ Feature: Step - tail()
       | ripple |
       | lop |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX
     Given the modern graph
     And the traversal of
@@ -168,6 +163,7 @@ Feature: Step - tail()
       | ripple |
       | lop |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X
     Given the modern graph
     And the traversal of
@@ -177,6 +173,7 @@ Feature: Step - tail()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_2X
     Given the modern graph
     And the traversal of

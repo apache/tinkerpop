@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepFlatMap
 Feature: Step - flatMap()
 
   Scenario: g_V_asXaX_flatMapXselectXaXX

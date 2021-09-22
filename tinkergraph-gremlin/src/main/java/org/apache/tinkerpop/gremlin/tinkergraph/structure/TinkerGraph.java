@@ -65,6 +65,8 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_COMPUTER)
 public final class TinkerGraph implements Graph {
 
     static {

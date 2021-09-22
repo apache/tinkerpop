@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepAggregate
 Feature: Step - aggregate()
 
   Scenario: g_V_valueXnameX_aggregateXxX_capXxX

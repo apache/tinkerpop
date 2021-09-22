@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassFilter @StepSample
 Feature: Step - sample()
 
   Scenario: g_E_sampleX1X

@@ -15,24 +15,25 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepAddV
 Feature: Step - addV()
 
   Scenario: g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
@@ -47,18 +48,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -72,18 +73,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -97,18 +98,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -118,22 +119,23 @@ Feature: Step - addV()
     Then the result should have a count of 4
     And the graph should return 2 for count of "g.V().properties(\"name\")"
 
+  @MultiMetaProperties
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -144,22 +146,23 @@ Feature: Step - addV()
     And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\")"
 
+  @MultiMetaProperties
   Scenario: get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -171,22 +174,23 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
+  @MultiMetaProperties
   Scenario: g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -198,22 +202,23 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",\"private\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
 
+  @MultiMetaProperties
   Scenario: g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -227,18 +232,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -250,22 +255,23 @@ Feature: Step - addV()
       | marko |
     And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
 
+  @MultiMetaProperties
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -277,22 +283,23 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
+  @MultiMetaProperties
   Scenario: g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -311,18 +318,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -338,18 +345,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -365,18 +372,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -390,18 +397,18 @@ Feature: Step - addV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
-        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
-        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
-        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
-        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
-        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
-        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
-        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
-        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
-        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
-        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
-        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
     And the traversal of
       """
@@ -431,3 +438,27 @@ Feature: Step - addV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
+
+  @AllowNullPropertyValues
+  Scenario: g_addVXpersonX_propertyXname_joshX_propertyXage_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("person").property("name", "josh").property("age", null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"age\",null)"
+
+  @AllowNullPropertyValues @MultiMetaProperties
+  Scenario: g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("person").property("name", "marko").property("friendWeight", null, "acl", null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"friendWeight\", null)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",null)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMean
 Feature: Step - mean()
 
   Scenario: g_V_age_mean
@@ -116,6 +117,7 @@ Feature: Step - mean()
       | result |
       | null |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_10_20_nullX_mean
     Given the modern graph
     And using the parameter xx1 defined as "d[10].i"
@@ -129,6 +131,7 @@ Feature: Step - mean()
       | result |
       | d[15].d |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXlistXnull_10_20_nullXX_meanXlocalX
     Given the modern graph
     And using the parameter xx1 defined as "l[null,d[10].i,d[20].i,null]"

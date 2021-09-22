@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepVertex
 Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VXlistX1_2_3XX_name
@@ -135,7 +136,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
-    """
+      """
       g.E(eid11)
       """
     When iterated to list
@@ -147,7 +148,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].sid"
     And the traversal of
-    """
+      """
       g.E(eid11)
       """
     When iterated to list
@@ -159,7 +160,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter e11 defined as "e[josh-created->lop]"
     And the traversal of
-    """
+      """
       g.E(e11)
       """
     When iterated to list
@@ -172,7 +173,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     And using the parameter e7 defined as "e[marko-knows->vadas]"
     And using the parameter e11 defined as "e[josh-created->lop]"
     And the traversal of
-    """
+      """
       g.E(e7,e11)
       """
     When iterated to list
@@ -185,7 +186,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter xx1 defined as "l[e[marko-knows->vadas],e[josh-created->lop]]"
     And the traversal of
-    """
+      """
       g.E(xx1)
       """
     When iterated to list
@@ -198,7 +199,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
-    """
+      """
       g.V(vid1).outE()
       """
     When iterated to list
@@ -212,7 +213,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
-    """
+      """
       g.V(vid2).inE()
       """
     When iterated to list
@@ -224,7 +225,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
-    """
+      """
       g.V(vid4).bothE("created")
       """
     When iterated to list
@@ -237,7 +238,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
-    """
+      """
       g.V(vid4).bothE()
       """
     When iterated to list
@@ -502,26 +503,41 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | v[vadas] |
       | v[josh] |
 
-  # this test deviates from the setup of the java test, but the intent is the same. the java test drops lop and then
-  # tries to query it as part of the group of ids. here, rather than drop, we simply use an id that doesn't exist
-  # which is simulated by an edge identifier.
+
+
+  # the point here is to test g.V() where an id is not present. to do this with the gherkin structure
+  # the test establishes the modern graph, does a drop() of "lop" and then tries to query the 4 vertices
+  # and we assert the count of 3
   Scenario: g_VX1_2_3_4X_name
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid2 defined as "v[vadas].id"
-    And using the parameter vid3 defined as "e[marko-knows->josh].id"
+    And using the parameter vid3 defined as "v[lop].id"
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(vid1, vid2, vid3, vid4).values("name")
+      g.V().has('software','name','lop').drop()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | josh |
+    Then the result should be empty
+    And the graph should return 3 for count of "g.V(vid1, vid2, vid3, vid4)"
 
+  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name
     Given the modern graph
     And the traversal of

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepPath
 Feature: Step - path()
 
   Scenario: g_VX1X_name_path
@@ -29,6 +30,7 @@ Feature: Step - path()
       | result |
       | p[v[marko],marko] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_out_path_byXageX_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -43,6 +45,7 @@ Feature: Step - path()
       | p[d[29].i,vadas] |
       | p[d[29].i,josh] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX
     Given the modern graph
     And the traversal of
@@ -55,6 +58,7 @@ Feature: Step - path()
       | p[v[marko],josh,java] |
       | p[v[marko],josh,java] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_byXageX
     Given the modern graph
     And the traversal of
@@ -92,6 +96,7 @@ Feature: Step - path()
       | p[v[marko],e[marko-created->lop],v[lop],e[josh-created->lop],v[josh]] |
       | p[v[marko],e[marko-created->lop],v[lop],e[peter-created->lop],v[peter]] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX
     Given the modern graph
     And the traversal of
@@ -104,6 +109,7 @@ Feature: Step - path()
       | p[josh,ripple] |
       | p[josh,lop] |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_out_path_byXageX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

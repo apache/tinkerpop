@@ -15,8 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassBranch @StepLocal
 Feature: Step - local()
 
+  @MultiMetaProperties
   Scenario: g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value
     Given the crew graph
     And the traversal of
@@ -44,10 +46,10 @@ Feature: Step - local()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a":"marko","b":"d[3].i"}] |
-      | m[{"a":"josh","b":"d[5].i"}]  |
-      | m[{"a":"josh","b":"d[3].i"}]  |
-      | m[{"a":"peter","b":"d[3].i"}] |
+      | m[{"a":"marko","b":"v[lop].id"}] |
+      | m[{"a":"josh","b":"v[ripple].id"}]  |
+      | m[{"a":"josh","b":"v[lop].id"}]  |
+      | m[{"a":"peter","b":"v[lop].id"}] |
 
   Scenario: g_V_localXoutE_countX
     Given the modern graph
@@ -166,6 +168,7 @@ Feature: Step - local()
       | marko |
       | marko |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX
     Given the modern graph
     And the traversal of

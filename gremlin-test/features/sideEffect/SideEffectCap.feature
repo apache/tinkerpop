@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassSideEffect @StepCap
 Feature: Step - cap()
 
   Scenario: g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX

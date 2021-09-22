@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepValueMap
 Feature: Step - valueMap()
 
   Scenario: g_V_valueMap
@@ -183,6 +184,7 @@ Feature: Step - valueMap()
       | m[{"name": ["josh"], "age": [32], "t[label]":"person", "t[id]":"v[josh].id"}] |
       | m[{"name": ["peter"], "age": [35], "t[label]":"person", "t[id]":"v[peter].id"}] |
 
+  @MultiMetaProperties
   Scenario: g_VX1X_valueMapXname_locationX_byXunfoldX_by
     Given the crew graph
     And using the parameter vid1 defined as "v[marko].id"

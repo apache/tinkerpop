@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+@StepClassMap @StepMath
 Feature: Step - math()
 
   Scenario: g_V_outE_mathX0_minus_itX_byXweightX
@@ -47,6 +48,7 @@ Feature: Step - math()
       | d[54.0].d |
       | d[70.0].d |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX
     Given the modern graph
     And the traversal of
@@ -74,6 +76,7 @@ Feature: Step - math()
       | d[132.0].d |
       | d[135.0].d |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXcreatedX_asXbX_mathXb_plus_aX_byXinXcreatedX_countX_byXageX
     Given the modern graph
     And the traversal of
@@ -88,6 +91,7 @@ Feature: Step - math()
       | d[35.0].d |
       | d[38.0].d |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1X_injectX1X_repeatXsackXsumX_byXconstantX1XXX_timesX5X_emit_mathXsin__X_byXsackX
     Given the modern graph
     And the traversal of
