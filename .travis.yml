@@ -10,10 +10,6 @@ services:
 cache:
   directories:
     - $HOME/mvn-home
-addons:
-  apt:
-    sources:
-      - deadsnakes
 
 install:
   # install maven 3.3.9 if it is not in cache already
@@ -22,7 +18,6 @@ install:
   - export PATH=${HOME}/mvn-home/bin:${PATH}
   # visual check that we have the correct maven/python versions installed
   - mvn -version
-  - python2 --version
   - python3 --version
 
 before_install:
