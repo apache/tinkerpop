@@ -842,10 +842,10 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<group-step, `group()`>>: create group keys and values according to `by()`-modulation.
 * <<groupcount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
 * <<math-step, `math()`>>: transform a traverser provided to the step by way of the `by()` modulator before it processed by it.
+* <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
 * <<path-step, `path()`>>: get the path of the traverser where each path element is `by()`-modulated.
 * <<project-step, `project()`>>: project a map of results given various `by()`-modulations off the current object.
 * <<propertymap-step, `propertyMap()`>>: transform the result of the values in the resulting `Map` using the `by()` modulator.
-* <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
 * <<sack-step, `sack()`>>: provides the transformation for a traverser to a value to be stored in the sack.
 * <<sample-step, `sample()`>>: sample using the value returned by `by()`-modulation.
 * <<select-step, `select()`>>: select path elements and transform them via `by()`-modulation.
