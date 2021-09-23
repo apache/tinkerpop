@@ -65,6 +65,7 @@ public abstract class Client {
 
     protected final Cluster cluster;
     protected volatile boolean initialized;
+    protected volatile boolean noLiveHostAvailable;
     protected final Client.Settings settings;
 
     Client(final Cluster cluster, final Client.Settings settings) {
@@ -199,7 +200,7 @@ public abstract class Client {
      * automatically if it is not called directly and multiple calls will not have effect.
      */
     public synchronized Client init() {
-        if (initialized)
+        if (initialized && !noLiveHostAvailable)
             return this;
 
         logger.debug("Initializing client on cluster [{}]", cluster);
@@ -365,7 +366,7 @@ public abstract class Client {
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
         if (isClosing()) throw new IllegalStateException("Client has been closed");
 
-        if (!initialized)
+        if (!initialized || noLiveHostAvailable)
             init();
 
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
@@ -525,10 +526,12 @@ public abstract class Client {
             final ExecutorService hostExecutor = Executors.newSingleThreadExecutor(threadFactory);
 
             try {
+                noLiveHostAvailable = true;
                 CompletableFuture.allOf(cluster.allHosts().stream()
                         .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
                         .toArray(CompletableFuture[]::new))
                         .join();
+                noLiveHostAvailable = false;
             } catch (CompletionException ex) {
                 Throwable cause;
                 Throwable result = ex;
@@ -566,6 +569,7 @@ public abstract class Client {
 
                 // added a new host to the cluster so let the load-balancer know
                 ClusteredClient.this.cluster.loadBalancingStrategy().onNew(host);
+                noLiveHostAvailable = false;
             } catch (RuntimeException ex) {
                 final String errMsg = "Could not initialize client for " + host;
                 throw new RuntimeException(errMsg, ex);
@@ -750,7 +754,9 @@ public abstract class Client {
             final Host host = hosts.get(0);
 
             try {
+                noLiveHostAvailable = true;
                 connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
+                noLiveHostAvailable = false;
             } catch (RuntimeException ex) {
                 logger.error("Could not initialize client for {}", host, ex);
             }

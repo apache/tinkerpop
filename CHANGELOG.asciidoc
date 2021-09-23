@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Prevented XML External Entity (XXE) style attacks via `GraphMLReader` by disabling DTD and external entities by default.
 * Fixed a `NullPointerException` that could occur during a failed `Connection` initialization due to uninstantiated `AtomicInteger`.
+* Fixed issue with reconnecting to a live host that was initially dead by adding a flag to indicate when no live host is available and client should reinitialize.
 
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
