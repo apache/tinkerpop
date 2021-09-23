@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.slf4j.Logger;
@@ -245,6 +246,18 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                 return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
+
+                                // creating a new SerializationException will clear the cause which will allow the
+                                // future to report a better error message. if the cause is present, then
+                                // GremlinExecutor will prefer the cause and we'll get a low level Jackson sort of
+                                // error in the response.
+                                if (ex instanceof SerializationException) {
+                                    throw new SerializationException(String.format(
+                                            "Could not serialize the result with %s - %s",
+                                            serializer.getValue0(),
+                                            ex.getMessage()));
+                                }
+
                                 throw ex;
                             }
                         }));
