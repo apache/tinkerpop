@@ -39,11 +39,13 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -378,6 +380,33 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return map.entrySet().stream().map(entry ->
                 String.format("%s: %s", entry.getKey().toString(), convertToScript(entry.getValue()))).
                     collect(Collectors.joining(", "));
+        }
+    }
+
+    /**
+     * An extension of the {@link DefaultTypeTranslator} that generates Gremlin that is compliant with
+     * {@code gremlin-language} scripts. Specifically, it will convert {@code Date} and {@code Timestamp} to use the
+     * {@code datetime()} function. Time zone offsets are resolved to where {@code 2018-03-22T00:35:44.741+1600}
+     * would be converted to {@code datetime('2018-03-21T08:35:44.741Z')}. More commonly {@code 2018-03-22} would simply
+     * generate {@code datetime('2018-03-22T00:00:00Z')}.
+     */
+    public static class LanguageTypeTranslator extends DefaultTypeTranslator {
+        public LanguageTypeTranslator(final boolean withParameters) {
+            super(withParameters);
+        }
+
+        @Override
+        protected String getSyntax(final Date o) {
+            return getDatetimeSyntax(o.toInstant());
+        }
+
+        @Override
+        protected String getSyntax(final Timestamp o) {
+            return getDatetimeSyntax(o.toInstant());
+        }
+
+        private static String getDatetimeSyntax(final Instant i) {
+            return String.format("datetime('%s')", DatetimeHelper.format(i));
         }
     }
 }

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -383,6 +384,14 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
     @Override
     public Object visitBooleanLiteral(final GremlinParser.BooleanLiteralContext ctx) {
         return Boolean.valueOf(ctx.getText());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
+        return DatetimeHelper.parse(getStringLiteral(ctx.stringLiteral()));
     }
 
     /**
