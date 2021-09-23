@@ -30,6 +30,36 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== datetime()
+
+Gremlin in native programming languages can all construct a native date and time object. In Java, that would probably
+be a `java.util.Date` object while in Javascript it would likely be the Node.js `Date`. In any of these cases, these
+native objects would be serialized to millisecond-precision offset from the unix epoch to be sent over the wire to the
+server (in embedded mode for Java, it would be up to the graph database to determine how the date is handled).
+
+The gap is in Gremlin scripts which do not have a way to natively construct dates and times other than by using Groovy
+variants. As TinkerPop moves toward a more secure method of processing Gremlin scripts by way of the `gremlin-language`
+model, it was clear that this gap needed to be filled. The new `datetime()` function can take a ISO-8601 formatted
+datetime and internally produce a `Date` with a default time zone offset of UTC (+00:00).
+
+This functionality, while syntax of `gremlin-language`, is also exposed as a component of `gremlin-groovy` so that it
+can be used in the Gremlin Console and through the `GremlinScriptEngine` in Gremlin Server.
+
+[source,text]
+----
+gremlin> datetime('2022-10-02').toGMTString()
+==>2 Oct 2022 00:00:00 GMT
+gremlin> datetime('2022-10-02T00:00:00Z').toGMTString()
+==>2 Oct 2022 00:00:00 GMT
+gremlin> datetime('2022-10-02T00:00:00-0400').toGMTString()
+==>2 Oct 2022 04:00:00 GMT
+----
+
+The above examples use the Java `Date` method `toGMTString()` to properly format the date for demonstration purposes.
+From a Gremlin language perspective there are no functions that can be called on the return value of `datetime()`.
+
+See:link:https://issues.apache.org/jira/browse/TINKERPOP-2596[TINKERPOP-2596]
+
 ==== Refinements to null
 
 Release 3.5.0 introduce the ability for there to be traversers that contained a `null` value. Since that time it has

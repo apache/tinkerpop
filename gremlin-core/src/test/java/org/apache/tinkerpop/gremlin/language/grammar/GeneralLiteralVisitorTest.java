@@ -29,7 +29,12 @@ import org.junit.runners.Parameterized;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -435,6 +440,45 @@ public class GeneralLiteralVisitorTest {
             final Object expectedValue = ctor.newInstance(expected);
 
             assertEquals(expectedValue, GenericLiteralVisitor.getInstance().visitFloatLiteral(ctx));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ValidDatetimeLiteralTest {
+        private static final ZoneId UTC = ZoneId.of("Z");
+
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public Date expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"datetime('2018-03-22T00:35:44.741Z')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
+                    {"datetime('2018-03-22T00:35:44.741-0000')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
+                    {"datetime('2018-03-22T00:35:44.741+0000')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
+                    {"datetime('2018-03-22T00:35:44.741-0300')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, ZoneOffset.ofHours(-3)).toInstant())},
+                    {"datetime('2018-03-22T00:35:44.741+1600')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, ZoneOffset.ofHours(16)).toInstant())},
+                    {"datetime('2018-03-22T00:35:44.741')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
+                    {"datetime('2018-03-22T00:35:44Z')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 0, UTC).toInstant())},
+                    {"datetime('2018-03-22T00:35:44')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 0, UTC).toInstant())},
+                    {"datetime('2018-03-22')", Date.from(ZonedDateTime.of(2018, 03, 22, 0, 0, 0, 0, UTC).toInstant())},
+                    {"datetime('1018-03-22')", Date.from(ZonedDateTime.of(1018, 03, 22, 0, 0, 0, 0, UTC).toInstant())},
+                    {"datetime('9018-03-22')", Date.from(ZonedDateTime.of(9018, 03, 22, 0, 0, 0, 0, UTC).toInstant())},
+                    {"datetime('1000-001')", Date.from(ZonedDateTime.of(1000, 1, 1, 0, 0, 0, 0, UTC).toInstant())},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.DateLiteralContext ctx = parser.dateLiteral();
+
+            final Date dt = (Date) GenericLiteralVisitor.getInstance().visitDateLiteral(ctx);
+            assertEquals(expected, dt);
         }
     }
 
