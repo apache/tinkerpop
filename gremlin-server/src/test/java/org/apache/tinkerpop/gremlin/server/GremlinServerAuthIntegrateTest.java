@@ -88,8 +88,9 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not enable SSL");
         } catch(Exception ex) {
+            assertThat(ex, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(NoHostAvailableException.class, root.getClass());
+            assertThat(root, instanceOf(RuntimeException.class));
         } finally {
             cluster.close();
         }

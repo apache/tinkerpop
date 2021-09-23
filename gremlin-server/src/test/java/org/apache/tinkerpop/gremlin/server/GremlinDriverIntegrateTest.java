@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -63,6 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.io.File;
+import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -449,8 +451,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("1+1").all().join().get(0).getInt();
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
+            assertThat(i, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(NoHostAvailableException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         }
 
         startServer();

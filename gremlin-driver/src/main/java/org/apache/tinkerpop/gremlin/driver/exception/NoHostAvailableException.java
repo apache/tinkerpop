@@ -24,6 +24,10 @@ public class NoHostAvailableException extends RuntimeException {
         super("All hosts are considered unavailable due to previous exceptions. Check the error log to find the actual reason.");
     }
 
+    public NoHostAvailableException(Throwable ex) {
+        super(ex);
+    }
+
     @Override
     public synchronized Throwable fillInStackTrace() {
         return this;

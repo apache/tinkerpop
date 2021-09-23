@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -66,6 +67,7 @@ public abstract class Client {
     protected final Cluster cluster;
     protected volatile boolean initialized;
     protected final Client.Settings settings;
+    protected Throwable initializationFailure = null;
 
     Client(final Cluster cluster, final Client.Settings settings) {
         this.cluster = cluster;
@@ -124,8 +126,8 @@ public abstract class Client {
     public ResultSet submit(final Traversal traversal) {
         try {
             return submitAsync(traversal).get();
-        } catch (UnsupportedOperationException uoe) {
-            throw uoe;
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -149,8 +151,8 @@ public abstract class Client {
     public ResultSet submit(final Bytecode bytecode) {
         try {
             return submitAsync(bytecode).get();
-        } catch (UnsupportedOperationException uoe) {
-            throw uoe;
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -166,8 +168,8 @@ public abstract class Client {
     public ResultSet submit(final Bytecode bytecode, final RequestOptions options) {
         try {
             return submitAsync(bytecode, options).get();
-        } catch (UnsupportedOperationException uoe) {
-            throw uoe;
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -210,7 +212,11 @@ public abstract class Client {
 
         // throw an error if no host is available even after initialization is complete.
         if (cluster.availableHosts().isEmpty()) {
-            throw new NoHostAvailableException();
+            if (this.initializationFailure != null) {
+                throw new NoHostAvailableException(this.initializationFailure);
+            } else {
+                throw new NoHostAvailableException();
+            }
         }
 
         initialized = true;
@@ -239,6 +245,8 @@ public abstract class Client {
     public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
         try {
             return submitAsync(gremlin, parameters).get();
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -254,6 +262,8 @@ public abstract class Client {
     public ResultSet submit(final String gremlin, final RequestOptions options) {
         try {
             return submitAsync(gremlin, options).get();
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -376,11 +386,8 @@ public abstract class Client {
             connection = chooseConnection(msg);
             connection.write(msg, future);
             return future;
-        } catch (TimeoutException toe) {
-            // there was a timeout borrowing a connection
-            throw new RuntimeException(toe);
-        } catch (ConnectionException ce) {
-            throw new RuntimeException(ce);
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
@@ -460,6 +467,8 @@ public abstract class Client {
         public ResultSet submit(final String gremlin, final String graphOrTraversalSource, final Map<String, Object> parameters) {
             try {
                 return submitAsync(gremlin, graphOrTraversalSource, parameters).get();
+            } catch (RuntimeException re) {
+                throw re;
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -501,8 +510,13 @@ public abstract class Client {
 
             // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
             // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
-            if (!possibleHosts.hasNext())
-                throw new NoHostAvailableException();
+            if (!possibleHosts.hasNext()) {
+                if (this.initializationFailure == null) {
+                    throw new NoHostAvailableException();
+                } else {
+                    throw new NoHostAvailableException(this.initializationFailure);
+                }
+            }
 
             final Host bestHost = possibleHosts.next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
@@ -530,13 +544,14 @@ public abstract class Client {
                         .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
-                Throwable cause;
-                Throwable result = ex;
-                if (null != (cause = ex.getCause())) {
-                    result = cause;
+                Throwable cause = ExceptionUtils.getRootCause(ex);
+                if (null != cause) {
+                    logger.error("", cause);
+                    this.initializationFailure = cause;
+                } else {
+                    logger.error("", ex);
+                    this.initializationFailure = ex;
                 }
-
-                logger.error("", result);
             } finally {
                 hostExecutor.shutdown();
             }
@@ -568,7 +583,8 @@ public abstract class Client {
                 ClusteredClient.this.cluster.loadBalancingStrategy().onNew(host);
             } catch (RuntimeException ex) {
                 final String errMsg = "Could not initialize client for " + host;
-                throw new RuntimeException(errMsg, ex);
+                logger.error(errMsg);
+                throw ex;
             }
         };
     }
@@ -609,6 +625,8 @@ public abstract class Client {
                 options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
 
                 return submitAsync(request.create());
+            } catch (RuntimeException re) {
+                throw re;
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -759,6 +777,7 @@ public abstract class Client {
                 connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
             } catch (RuntimeException ex) {
                 logger.error("Could not initialize client for {}", host, ex);
+                this.initializationFailure = ex;
             }
         }
 
