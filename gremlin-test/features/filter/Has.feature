@@ -463,6 +463,30 @@ Feature: Step - has()
       | result |
       | d[2].l |
 
+  Scenario: g_V_hasXperson_age_withinX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person", "age", P.within())
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasXperson_age_withoutX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person", "age", P.without())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+
   Scenario: g_V_both_dedup_properties_hasKeyXageX_value
     Given the modern graph
     And the traversal of

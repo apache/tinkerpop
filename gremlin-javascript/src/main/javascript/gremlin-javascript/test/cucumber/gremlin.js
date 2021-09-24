@@ -192,6 +192,8 @@ const gremlins = {
     g_V_hasXage_withinX27_29X_count: [function({g}) { return g.V().has("age",P.within([27, 29])).count() }], 
     g_V_hasXage_withoutX27X_count: [function({g}) { return g.V().has("age",P.without([27])).count() }], 
     g_V_hasXage_withoutX27_29X_count: [function({g}) { return g.V().has("age",P.without([27, 29])).count() }], 
+    g_V_hasXperson_age_withinX: [function({g}) { return g.V().has("person","age",P.within([])) }], 
+    g_V_hasXperson_age_withoutX: [function({g}) { return g.V().has("person","age",P.without([])) }], 
     g_V_both_dedup_properties_hasKeyXageX_value: [function({g}) { return g.V().both().properties().dedup().hasKey("age").value() }], 
     g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value: [function({g}) { return g.V().both().properties().dedup().hasKey("age").hasValue(P.gt(30)).value() }], 
     g_V_bothE_properties_dedup_hasKeyXweightX_value: [function({g}) { return g.V().bothE().properties().dedup().hasKey("weight").value() }], 
