@@ -29,10 +29,10 @@ import java.util.function.BiFunction;
 public final class NumberHelper {
 
     static final NumberHelper BYTE_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> a.byteValue() + b.byteValue(),
-            (a, b) -> a.byteValue() - b.byteValue(),
-            (a, b) -> a.byteValue() * b.byteValue(),
-            (a, b) -> a.byteValue() / b.byteValue(),
+            (a, b) -> (byte) (a.byteValue() + b.byteValue()),
+            (a, b) -> (byte) (a.byteValue() - b.byteValue()),
+            (a, b) -> (byte) (a.byteValue() * b.byteValue()),
+            (a, b) -> (byte) (a.byteValue() / b.byteValue()),
             (a, b) -> {
                 if (isNumber(a)) {
                     if (isNumber(b)) {
@@ -56,10 +56,10 @@ public final class NumberHelper {
             (a, b) -> Byte.compare(a.byteValue(), b.byteValue()));
 
     static final NumberHelper SHORT_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> a.shortValue() + b.shortValue(),
-            (a, b) -> a.shortValue() - b.shortValue(),
-            (a, b) -> a.shortValue() * b.shortValue(),
-            (a, b) -> a.shortValue() / b.shortValue(),
+            (a, b) -> (short) (a.shortValue() + b.shortValue()),
+            (a, b) -> (short) (a.shortValue() - b.shortValue()),
+            (a, b) -> (short) (a.shortValue() * b.shortValue()),
+            (a, b) -> (short) (a.shortValue() / b.shortValue()),
             (a, b) -> {
                 if (isNumber(a)) {
                     if (isNumber(b)) {
