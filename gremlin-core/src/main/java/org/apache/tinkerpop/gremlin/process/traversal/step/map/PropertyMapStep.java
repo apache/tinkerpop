@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -88,10 +89,11 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
                 if (includeToken(WithOptions.labels)) map.put(T.label, element.label());
             }
         }
+
         final Iterator<? extends Property> properties = null == this.propertyTraversal ?
                 element.properties(this.propertyKeys) :
                 TraversalUtil.applyAll(traverser, this.propertyTraversal);
-        //final Iterator<? extends Property> properties = element.properties(this.propertyKeys);
+
         while (properties.hasNext()) {
             final Property<?> property = properties.next();
             final Object value = this.returnType == PropertyType.VALUE ? property.value() : property;
@@ -183,7 +185,7 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
         if (null != this.propertyTraversal)
             result ^= this.propertyTraversal.hashCode();
         for (final String propertyKey : this.propertyKeys) {
-            result ^= propertyKey.hashCode();
+            result ^= Objects.hashCode(propertyKey);
         }
         return result ^ this.traversalRing.hashCode();
     }

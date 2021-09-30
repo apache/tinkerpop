@@ -35,6 +35,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -573,5 +575,47 @@ public class ElementHelperTest {
         assertEquals("v", newKvs[1]);
         assertEquals("k1", newKvs[2]);
         assertEquals("v0", newKvs[3]);
+    }
+
+    @Test
+    public void shouldIdentifyThatKeyExists() {
+        assertThat(ElementHelper.keyExists("k", "a", "b", "c", "k"), is(true));
+    }
+
+    @Test
+    public void shouldNotIdentifyThatKeyExists() {
+        assertThat(ElementHelper.keyExists("k", "a", "b", "c", "kk"), is(false));
+    }
+
+    @Test
+    public void shouldNotIdentifyHiddenKeyExists() {
+        assertThat(ElementHelper.keyExists(Graph.Hidden.hide("k"), "a", "b", "c", "k"), is(false));
+    }
+
+    @Test
+    public void shouldIdentifyThatKeyExistsWhenNotComparedToAnything() {
+        assertThat(ElementHelper.keyExists("k"), is(true));
+        assertThat(ElementHelper.keyExists("k", (String[]) null), is(true));
+    }
+
+    @Test
+    public void shouldIdentifyThatKeyExistsOnDirectMatch() {
+        assertThat(ElementHelper.keyExists("k", "k"), is(true));
+    }
+
+    @Test
+    public void shouldNotIdentifyThatKeyExistsOnDirectMatch() {
+        assertThat(ElementHelper.keyExists("k", "kk"), is(false));
+    }
+
+    @Test
+    public void shouldIdentifyThatKeyExistsWithNullsMixedIn() {
+        assertThat(ElementHelper.keyExists("k", null, null, "k"), is(true));
+    }
+
+    @Test
+    public void shouldNotIdentifyThatKeyExistsWhenComparedToNull() {
+        assertThat(ElementHelper.keyExists("k", (String) null), is(false));
+        assertThat(ElementHelper.keyExists("k", null, null), is(false));
     }
 }
