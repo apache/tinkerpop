@@ -23,7 +23,7 @@
 'use strict';
 
 const EventEmitter = require('events');
-const WebSocket = require('ws');
+const WebSocket = require('isomorphic-ws');
 const util = require('util');
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
