@@ -157,11 +157,11 @@ jobs:
       - name: Setup virtualenv
         run: |
           python3 -m pip install --upgrade pip
-          pip3 install virtualenv
+          pip install virtualenv
       - name: Build with Maven
         run: |
           touch gremlin-python/.glv
-          mvn clean install -q -DskipTests -Dci
+          mvn clean install -q -DskipTests
           mvn verify -pl gremlin-python
   dotnet:
     name: .NET
