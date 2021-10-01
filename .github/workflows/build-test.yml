@@ -3,6 +3,7 @@ on: [push, pull_request]
 jobs:
   smoke:
     name: smoke
+    timeout-minutes: 600 # 10 minutes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,6 +16,7 @@ jobs:
         run: mvn clean install -DskipTests -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   java-jdk11:
     name: mvn clean install - jdk11
+    timeout-minutes: 2700 # 45 minutes
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -25,9 +27,10 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Build with Maven
-        run: mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean install -pl -:gremlin-javascript -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   java-jdk8:
     name: mvn clean install - jdk8
+    timeout-minutes: 2700 # 45 minutes
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -38,4 +41,143 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Build with Maven
-        run: mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean install -pl -:gremlin-javascript -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+  gremlin-server-default:
+    name: gremlin-server default
+    timeout-minutes: 2700 # 45 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: |
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j
+  gremlin-server-unified:
+    name: gremlin-server unified
+    timeout-minutes: 2700 # 45 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: |
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -DtestUnified=true
+  spark-default:
+    name: spark default
+    timeout-minutes: 2700 # 45 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: |
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'
+  spark-gryo:
+    name: spark gryo
+    timeout-minutes: 2700 # 45 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: |
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest
+  gremlin-console:
+    name: gremlin-console
+    timeout-minutes: 1200 # 20 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: |
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
+  javascript:
+    name: javascript
+    timeout-minutes: 900 # 15 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: |
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :gremlin-javascript,:gremlint
+  python:
+    name: python
+    timeout-minutes: 1200 # 20 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Build with Maven
+        run: |
+          touch gremlin-python/.glv
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl gremlin-python
+  dotnet:
+    name: .NET
+    timeout-minutes: 1200 # 20 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Set up .NET 3.1.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Build with Maven
+        run: |
+          touch gremlin-dotnet/src/.glv
+          touch gremlin-dotnet/test/.glv
+          mvn clean install -q -DskipTests -Dci
+          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
