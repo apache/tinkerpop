@@ -4,7 +4,6 @@ jobs:
   smoke:
     name: smoke
     timeout-minutes: 600 # 10 minutes
-    needs: smoke
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
