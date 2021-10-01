@@ -120,13 +120,16 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
-      - name: Set up Python 2.x/3.x
+      - name: Set up Python 2.x
         uses: actions/setup-python@v2
         with:
-          python-version: '2.7,3.8'
+          python-version: '2.7'
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
       - name: Setup Python requirements
         run: |
-          sudo apt install gcc libkrb5-dev
           python3 -m pip install --upgrade pip
           pip install virtualenv
       - name: Build with Maven
