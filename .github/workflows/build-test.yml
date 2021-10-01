@@ -161,7 +161,7 @@ jobs:
       - name: Build with Maven
         run: |
           touch gremlin-python/.glv
-          mvn clean install -q -DskipTests
+          mvn clean install -DskipTests
           mvn verify -pl gremlin-python
   dotnet:
     name: .NET
