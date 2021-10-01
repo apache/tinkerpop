@@ -176,12 +176,15 @@ public class TraversalPredicateVisitor extends GremlinBaseVisitor<P> {
     @Override public P visitTraversalPredicate_within(final GremlinParser.TraversalPredicate_withinContext ctx) {
         final int childIndexOfParameterValues = 2;
 
+        // called with no args which is valid for java/groovy
+        if (ctx.getChildCount() == 3) return P.within();
+
         final Object arguments = GenericLiteralVisitor.getInstance().visitGenericLiteralList(
                 ParseTreeContextCastHelper.castChildToGenericLiteralList(ctx, childIndexOfParameterValues));
 
         if (arguments instanceof Object[]) {
             // when generic literal list is consist of a comma separated generic literals
-            return P.within((Object [])arguments);
+            return P.within((Object []) arguments);
         } else if (arguments instanceof List || arguments instanceof Set) {
             // when generic literal list is consist of a collection of generic literals, E.g. range
             return P.within((Collection) arguments);
@@ -196,6 +199,9 @@ public class TraversalPredicateVisitor extends GremlinBaseVisitor<P> {
      */
     @Override public P visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
         final int childIndexOfParameterValues = 2;
+
+        // called with no args which is valid for java/groovy
+        if (ctx.getChildCount() == 3) return P.without();
 
         final Object arguments = GenericLiteralVisitor.getInstance().visitGenericLiteralList(
                 ParseTreeContextCastHelper.castChildToGenericLiteralList(ctx, childIndexOfParameterValues));
