@@ -74,8 +74,8 @@ jobs:
         run: |
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
           mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -DtestUnified=true
-  spark-default:
-    name: spark default
+  spark-core:
+    name: spark core
     timeout-minutes: 2700 # 45 minutes
     needs: smoke
     runs-on: ubuntu-latest
