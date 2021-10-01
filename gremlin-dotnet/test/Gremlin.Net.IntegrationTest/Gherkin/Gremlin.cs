@@ -203,6 +203,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasXage_withinX27_29X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Within(new List<object> {27, 29})).Count()}}, 
                {"g_V_hasXage_withoutX27X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Without(new List<object> {27})).Count()}}, 
                {"g_V_hasXage_withoutX27_29X_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Without(new List<object> {27, 29})).Count()}}, 
+               {"g_V_hasXperson_age_withinX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("person","age",P.Within(new List<object> {}))}}, 
+               {"g_V_hasXperson_age_withoutX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("person","age",P.Without(new List<object> {}))}}, 
                {"g_V_both_dedup_properties_hasKeyXageX_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Both().Properties<object>().Dedup().HasKey("age").Value<object>()}}, 
                {"g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Both().Properties<object>().Dedup().HasKey("age").HasValue(P.Gt(30)).Value<object>()}}, 
                {"g_V_bothE_properties_dedup_hasKeyXweightX_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().BothE().Properties<object>().Dedup().HasKey("weight").Value<object>()}}, 

@@ -961,11 +961,13 @@ traversalPredicate_between
     ;
 
 traversalPredicate_within
-    : ('P.within' | 'within') LPAREN genericLiteralList RPAREN
+    : ('P.within' | 'within') LPAREN RPAREN
+    | ('P.within' | 'within') LPAREN genericLiteralList RPAREN
     ;
 
 traversalPredicate_without
-    : ('P.without' | 'without') LPAREN genericLiteralList RPAREN
+    : ('P.without' | 'without') LPAREN RPAREN
+    | ('P.without' | 'without') LPAREN genericLiteralList RPAREN
     ;
 
 traversalPredicate_not
