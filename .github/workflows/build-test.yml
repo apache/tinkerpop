@@ -43,7 +43,7 @@ jobs:
       - name: Build with Maven
         run: |
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
-          mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j
+          mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -Dit.test=\!GremlinServerSslIntegrateTest
   spark-core:
     name: spark core
     timeout-minutes: 2700 # 45 minutes
