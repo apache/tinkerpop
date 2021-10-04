@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -530,15 +531,21 @@ public abstract class Client {
                         .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
-                Throwable cause;
-                Throwable result = ex;
-                if (null != (cause = ex.getCause())) {
-                    result = cause;
-                }
-
-                logger.error("", result);
+                logger.error("", (ex.getCause() == null) ? ex : ex.getCause());
             } finally {
                 hostExecutor.shutdown();
+            }
+
+            // throw an error if there is no host available after initializing connection pool.
+            if (cluster.availableHosts().isEmpty()) {
+                throw new NoHostAvailableException();
+            }
+
+            // try to re-initiate any unavailable hosts in the background.
+            final List<Host> unavailableHosts = cluster.allHosts()
+                    .stream().filter(host -> !host.isAvailable()).collect(Collectors.toList());
+            if (!unavailableHosts.isEmpty()) {
+                CompletableFuture.runAsync(() -> handleUnavailableHosts(unavailableHosts));
             }
         }
 
@@ -561,16 +568,47 @@ public abstract class Client {
 
         private Consumer<Host> initializeConnectionSetupForHost = host -> {
             try {
-                // hosts that don't initialize connection pools will come up as a dead host
+                // hosts that don't initialize connection pools will come up as a dead host.
                 hostConnectionPools.put(host, new ConnectionPool(host, ClusteredClient.this));
 
-                // added a new host to the cluster so let the load-balancer know
+                // hosts are not marked as available at cluster initialization, and are made available here instead.
+                host.makeAvailable();
+
+                // added a new host to the cluster so let the load-balancer know.
                 ClusteredClient.this.cluster.loadBalancingStrategy().onNew(host);
             } catch (RuntimeException ex) {
-                final String errMsg = "Could not initialize client for " + host;
-                throw new RuntimeException(errMsg, ex);
+                throw new RuntimeException(String.format("Could not initialize client for %s.", host), ex);
             }
         };
+
+        private void handleUnavailableHosts(List<Host> unavailableHosts) {
+            // start the re-initialization attempt for each of the unavailable hosts through Host.makeUnavailable().
+            try {
+                CompletableFuture.allOf(unavailableHosts.stream()
+                        .map(host -> CompletableFuture.runAsync(() -> host.makeUnavailable(this::tryReInitializeHost)))
+                        .toArray(CompletableFuture[]::new))
+                        .join();
+            } catch (CompletionException ex) {
+                logger.error("", (ex.getCause() == null) ? ex : ex.getCause());
+            }
+        }
+
+        /**
+         * Attempt to re-initialize the {@link Host} that was previously marked as unavailable.  This method gets called
+         * as part of a schedule in {@link Host} to periodically try to re-initialize.
+         */
+        public boolean tryReInitializeHost(final Host host) {
+            logger.debug("Trying to re-initiate host connection pool on {}", host);
+
+            try {
+                initializeConnectionSetupForHost.accept(host);
+                return true;
+            } catch (Exception ex) {
+                logger.debug("Failed re-initialization attempt on {}", host, ex);
+                return false;
+            }
+        }
+
     }
 
     /**
@@ -742,15 +780,21 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
-            // chooses an available host at random
-            final List<Host> hosts = cluster.allHosts()
-                    .stream().filter(Host::isAvailable).collect(Collectors.toList());
-            if (hosts.isEmpty()) throw new IllegalStateException("No available host in the cluster");
-            Collections.shuffle(hosts);
-            final Host host = hosts.get(0);
+            // chooses a host at random from all hosts
+            if (cluster.allHosts().isEmpty()) {
+                throw new IllegalStateException("No available host in the cluster");
+            }
 
+            final List<Host> hosts = new ArrayList<>(cluster.allHosts());
+            Collections.shuffle(hosts);
+            // if a host has been marked as available, use it instead
+            Optional<Host> host = hosts.stream().filter(Host::isAvailable).findFirst();
+            final Host selectedHost = host.orElse(hosts.get(0));
+
+            // only mark host as available if we can initialize the connection pool successfully
             try {
-                connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
+                connectionPool = new ConnectionPool(selectedHost, this, Optional.of(1), Optional.of(1));
+                selectedHost.makeAvailable();
             } catch (RuntimeException ex) {
                 logger.error("Could not initialize client for {}", host, ex);
             }
