@@ -320,7 +320,6 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Build JavaDocs/JSDoc: `mvn process-resources -Djavadoc`
 ** Javadoc to `target/site/apidocs` directory
 ** JSDoc to the `gremlin-javascript/src/main/javascript/gremlin-javascript/doc/` directory
-* Check for Apache License headers: `mvn apache-rat:check`
 * Specify the seed used for `Random` in tests `mvn clean install -DtestSeed` - useful when a test fails, the seed will be printed in the build output so that the test can run with the same version of random (look for "TestHelper" logger in output)
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
 * Check the effective `pom.xml`: `mvn -pl gremlin-python -Pglv-python help:effective-pom -Doutput=withProfilePom.xml`
