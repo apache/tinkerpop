@@ -104,6 +104,16 @@ independently and has been published to link:https://www.npmjs.com/package/greml
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2551[TINKERPOP-2551]
 
+==== SSL Exceptions
+
+When connecting to an SSL enabled server using Java, errors with that connectivity would result in a `RuntimeException`
+that wrapped an underlying `NoHostAvailableException` which did not surface information about the SSL problem. For
+this sort of failure in 3.5.2, the `RuntimeException` has been replaced with the `NoHostAvailableException` which in
+turn wraps a more specific `SSLException`. While this change represents a small break in exception handling, it seemed
+a worthwhile change to take, so as to help make this error more clear when it arises.
+
+See: link: https://issues.apache.org/jira/browse/TINKERPOP-2616[TINKERPOP-2616]
+
 == TinkerPop 3.5.0
 
 *Release Date: May 3, 2021*
