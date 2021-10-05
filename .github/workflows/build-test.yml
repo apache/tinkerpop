@@ -1,23 +1,9 @@
 name: build-test
 on: [push, pull_request]
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        name: Check Changes
-        uses: fkirc/skip-duplicate-actions@v3.4.1
-        with:
-          concurrent_skipping: 'never'
-          skip_after_successful_duplicate: 'true'
-          paths_ignore: '["**/*.asciidoc", "**/*.html", "docs/**", "**/LICENSE", "**/NOTICE", "docker/**", "**/bin/**", "**/licenses/**"]'
-          do_not_skip: '["workflow_dispatch", "schedule"]'
   smoke:
     name: smoke
     timeout-minutes: 600 # 10 minutes
-    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
