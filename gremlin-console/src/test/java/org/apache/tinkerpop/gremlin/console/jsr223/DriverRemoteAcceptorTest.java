@@ -30,9 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -126,11 +124,9 @@ public class DriverRemoteAcceptorTest {
         acceptor.configure(Arrays.asList("timeout", "-1"));
     }
 
-    @Test
-    public void shouldConnect() throws Exception {
-        // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should
-        // be ok to just validate that a connection is created
-        assertThat(acceptor.connect(Arrays.asList(Storage.toPath(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp")))).toString(),
-                   startsWith("Configured "));
+    @Test(expected = RemoteException.class)
+    public void shouldNotConnectWhenNoHostIsAvailable() throws Exception {
+        // there is no gremlin server running for this test, so this remote should throw due to NoHostAvailable exception thrown by the driver
+        acceptor.connect(Arrays.asList(Storage.toPath(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp"))));
     }
 }
