@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
+import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeoutException;
@@ -261,7 +262,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         } catch (Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
+            assertThat(root, instanceOf(ClosedChannelException.class));
         } finally {
             cluster.close();
         }
