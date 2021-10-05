@@ -943,7 +943,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (RuntimeException re) {
             // Client would have no active connections to the host, hence it would encounter a timeout
             // trying to find an alive connection to the host.
-            assertThat(re.getCause().getCause() instanceof TimeoutException, is(true));
+            assertThat(re.getCause(), instanceOf(TimeoutException.class));
 
             //
             // should recover when the server comes back

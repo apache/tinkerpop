@@ -70,6 +70,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 * Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
 * Added support for custom GraphBinary types in .NET.
+* NoAvailableHostException now describes what caused it and removed some potential unnecessary exception wrapping
 
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: July 19, 2021)
