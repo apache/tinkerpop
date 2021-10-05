@@ -142,8 +142,6 @@ final class ConnectionPool {
 
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-        final Connection leastUsedConn = selectLeastUsed();
-
         if (connections.isEmpty()) {
             logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
             for (int i = 0; i < minPoolSize; i++) {
@@ -158,6 +156,9 @@ final class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
+        // Get the least used valid connection
+        final Connection leastUsedConn = getLeastUsedValidConnection();
+
         if (null == leastUsedConn) {
             if (isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
@@ -165,32 +166,9 @@ final class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
-        // if the number borrowed on the least used connection exceeds the max allowed and the pool size is
-        // not at maximum then consider opening a connection
-        final int currentPoolSize = connections.size();
-        if (leastUsedConn.borrowed.get() >= maxSimultaneousUsagePerConnection && currentPoolSize < maxPoolSize) {
-            if (logger.isDebugEnabled())
-                logger.debug("Least used {} on {} exceeds maxSimultaneousUsagePerConnection but pool size {} < maxPoolSize - consider new connection",
-                        leastUsedConn.getConnectionInfo(), host, currentPoolSize);
-            considerNewConnection();
-        }
-
-        while (true) {
-            final int borrowed = leastUsedConn.borrowed.get();
-            final int availableInProcess = leastUsedConn.availableInProcess();
-
-            if (borrowed >= maxSimultaneousUsagePerConnection && leastUsedConn.availableInProcess() == 0) {
-                logger.debug("Least used connection selected from pool for {} but borrowed [{}] >= availableInProcess [{}] - wait",
-                        host, borrowed, availableInProcess);
-                return waitForConnection(timeout, unit);
-            }
-
-            if (leastUsedConn.borrowed.compareAndSet(borrowed, borrowed + 1)) {
-                if (logger.isDebugEnabled())
-                    logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
-                return leastUsedConn;
-            }
-        }
+        if (logger.isDebugEnabled())
+            logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
+        return leastUsedConn;
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
@@ -342,7 +320,7 @@ final class ConnectionPool {
             return false;
         }
 
-        announceAvailableConnection();
+        announceAllAvailableConnection();
         return true;
     }
 
@@ -393,23 +371,12 @@ final class ConnectionPool {
             if (isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-            final Connection leastUsed = selectLeastUsed();
-            if (leastUsed != null) {
-                while (true) {
-                    final int inFlight = leastUsed.borrowed.get();
-                    final int availableInProcess = leastUsed.availableInProcess();
-                    if (inFlight >= availableInProcess) {
-                        logger.debug("Least used {} on {} has requests borrowed [{}] >= availableInProcess [{}] - may timeout waiting for connection",
-                                leastUsed, host, inFlight, availableInProcess);
-                        break;
-                    }
+            final Connection leastUsed = getLeastUsedValidConnection();
 
-                    if (leastUsed.borrowed.compareAndSet(inFlight, inFlight + 1)) {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
-                        return leastUsed;
-                    }
-                }
+            if (leastUsed != null) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
+                return leastUsed;
             }
 
             remaining = to - TimeUtil.timeSince(start, unit);
@@ -475,16 +442,39 @@ final class ConnectionPool {
         }
     }
 
-    private Connection selectLeastUsed() {
+    /**
+     * Get the least-used connection from the pool. Also triggers consideration of a new connection if the least-used
+     * connection has hit the usage maximum or no valid connection could be retrieved from the pool.
+     *
+     * @return The least-used connection from the pool. Returns null if no valid connection could be retrieved from the
+     * pool.
+     */
+    private synchronized Connection getLeastUsedValidConnection() {
         int minInFlight = Integer.MAX_VALUE;
         Connection leastBusy = null;
         for (Connection connection : connections) {
             final int inFlight = connection.borrowed.get();
-            if (!connection.isDead() && inFlight < minInFlight) {
+            if (!connection.isDead() && inFlight < minInFlight && inFlight < maxSimultaneousUsagePerConnection) {
                 minInFlight = inFlight;
                 leastBusy = connection;
             }
         }
+
+        if (leastBusy != null) {
+            // Increment borrow count and consider making a new connection if least used connection hits usage maximum
+            if (leastBusy.borrowed.incrementAndGet() >= maxSimultaneousUsagePerConnection
+                    && connections.size() < maxPoolSize) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Least used {} on {} reached maxSimultaneousUsagePerConnection but pool size {} < maxPoolSize - consider new connection",
+                            leastBusy.getConnectionInfo(), host, connections.size());
+                considerNewConnection();
+            }
+        } else if (connections.size() < maxPoolSize) {
+            // A safeguard for scenarios where consideration of a new connection was somehow not triggered by an
+            // existing connection hitting the usage maximum
+            considerNewConnection();
+        }
+
         return leastBusy;
     }
 
