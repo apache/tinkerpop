@@ -8,7 +8,7 @@ jobs:
     steps:
       - id: skip_check
         name: Check Changes
-        uses: fkirc/skip-duplicate-actions@master
+        uses: fkirc/skip-duplicate-actions@3.4.1
         with:
           concurrent_skipping: 'never'
           skip_after_successful_duplicate: 'true'
