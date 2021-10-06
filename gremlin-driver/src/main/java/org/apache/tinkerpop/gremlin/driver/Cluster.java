@@ -1177,8 +1177,6 @@ public final class Cluster {
 
             contactPoints.forEach(address -> {
                 final Host host = add(address);
-                if (host != null)
-                    host.makeAvailable();
             });
         }
 
