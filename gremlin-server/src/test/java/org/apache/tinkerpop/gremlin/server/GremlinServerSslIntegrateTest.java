@@ -99,7 +99,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
                 settings.ssl.keyStore = JKS_SERVER_KEY;
                 settings.ssl.keyStorePassword = KEY_PASS;
                 settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                settings.ssl.sslEnabledProtocols = Collections.singletonList("TLSv1.1");
+                settings.ssl.sslEnabledProtocols = Collections.singletonList("TLSv1.2");
                 break;
             case "shouldEnableSslAndFailIfCiphersDontMatch":
                 settings.ssl = new Settings.SslSettings();
@@ -253,7 +253,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void shouldEnableSslAndFailIfProtocolsDontMatch() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .sslSkipCertValidation(true).sslEnabledProtocols(Arrays.asList("TLSv1.2")).create();
+                .sslSkipCertValidation(true).sslEnabledProtocols(Arrays.asList("TLSv1.3")).create();
         final Client client = cluster.connect();
 
         try {
@@ -262,7 +262,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         } catch (Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(ClosedChannelException.class));
+            assertThat(root, instanceOf(SSLException.class));
         } finally {
             cluster.close();
         }
