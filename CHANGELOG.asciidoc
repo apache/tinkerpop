@@ -71,7 +71,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
 * Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
 * Added support for custom GraphBinary types in .NET.
-* NoAvailableHostException now describes what caused it and removed some potential unnecessary exception wrapping
+* Removed some unnecessary exception wrapping around `gremlin-driver` errors now producing a more immediate view of the actual error cause.
 
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: July 19, 2021)
@@ -437,6 +437,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved error message for failed serialization for HTTP-based requests.
 * Fixed a `NullPointerException` that could occur during a failed `Connection` initialization due to uninstantiated `AtomicInteger`.
 * Minor changes to the initialization of Java driver `Cluster` and `Client` such that hosts are marked as available only after successfully initializing connection pools.
+* `NoHostAvailableException` now contains a cause for the failure.
 
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
