@@ -37,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 
+import static org.apache.tinkerpop.gremlin.server.util.ExceptionTestUtils.assertExceptionChainContainsCause;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -88,8 +89,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not enable SSL");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(NoHostAvailableException.class, root.getClass());
+            assertExceptionChainContainsCause(ex, NoHostAvailableException.class);
         } finally {
             cluster.close();
         }

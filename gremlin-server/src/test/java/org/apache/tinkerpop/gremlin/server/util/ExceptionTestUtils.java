@@ -16,20 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.exception;
+package org.apache.tinkerpop.gremlin.server.util;
 
-public class NoHostAvailableException extends RuntimeException {
+import static org.junit.Assert.fail;
 
-    public NoHostAvailableException() {
-        super("All hosts are considered unavailable due to previous exceptions. Check the error log to find the actual reason.");
-    }
+public class ExceptionTestUtils {
 
-    public NoHostAvailableException(Throwable ex) {
-        super(ex);
-    }
-
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
+    static public void assertExceptionChainContainsCause(Throwable e, Class<?> expectedType) {
+        while (e != null) {
+            if (e.getClass() == expectedType) {
+                return;
+            }
+            e = e.getCause();
+        }
+        fail("Should have exception of type " + expectedType.getSimpleName() + " as a cause somewhere in the exception chain");
     }
 }

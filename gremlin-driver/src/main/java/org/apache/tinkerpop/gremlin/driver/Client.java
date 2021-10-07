@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -67,6 +68,7 @@ public abstract class Client {
     protected final Cluster cluster;
     protected volatile boolean initialized;
     protected final Client.Settings settings;
+    protected Throwable initializationFailure = null;
 
     Client(final Cluster cluster, final Client.Settings settings) {
         this.cluster = cluster;
@@ -211,7 +213,11 @@ public abstract class Client {
 
         // throw an error if no host is available even after initialization is complete.
         if (cluster.availableHosts().isEmpty()) {
-            throw new NoHostAvailableException();
+            if (this.initializationFailure != null) {
+                throw new NoHostAvailableException(this.initializationFailure);
+            } else {
+                throw new NoHostAvailableException();
+            }
         }
 
         initialized = true;
@@ -502,8 +508,13 @@ public abstract class Client {
 
             // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
             // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
-            if (!possibleHosts.hasNext())
-                throw new NoHostAvailableException();
+            if (!possibleHosts.hasNext()) {
+                if (this.initializationFailure != null) {
+                    throw new NoHostAvailableException(this.initializationFailure);
+                } else {
+                    throw new NoHostAvailableException();
+                }
+            }
 
             final Host bestHost = possibleHosts.next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
@@ -531,7 +542,8 @@ public abstract class Client {
                         .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
-                logger.error("", (ex.getCause() == null) ? ex : ex.getCause());
+                this.initializationFailure = ExceptionUtils.getRootCause(ex) != null ? ExceptionUtils.getRootCause(ex) : ex;
+                logger.error("", this.initializationFailure);
             } finally {
                 hostExecutor.shutdown();
             }
@@ -797,6 +809,7 @@ public abstract class Client {
                 selectedHost.makeAvailable();
             } catch (RuntimeException ex) {
                 logger.error("Could not initialize client for {}", host, ex);
+                this.initializationFailure = ex;
             }
         }
 

@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.io.File;
+import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +86,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.server.util.ExceptionTestUtils.assertExceptionChainContainsCause;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -432,8 +434,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 client.submit("1+1").all().join().get(0).getInt();
                 fail("Should not have gone through because the server is not running");
             } catch (Exception i) {
-                final Throwable root = ExceptionUtils.getRootCause(i);
-                assertThat(root, instanceOf(NoHostAvailableException.class));
+                assertExceptionChainContainsCause(i, NoHostAvailableException.class);
             }
 
             startServer();
@@ -468,8 +469,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("1+1").all().join().get(0).getInt();
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
-            final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(NoHostAvailableException.class));
+            assertExceptionChainContainsCause(i, NoHostAvailableException.class);
         }
 
         startServer();
