@@ -795,6 +795,7 @@ from gremlin_python.process.traversal import Column
 from gremlin_python.process.traversal import Direction
 from gremlin_python.process.traversal import Operator
 from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import TextP
 from gremlin_python.process.traversal import Pop
 from gremlin_python.process.traversal import Scope
 from gremlin_python.process.traversal import Barrier
