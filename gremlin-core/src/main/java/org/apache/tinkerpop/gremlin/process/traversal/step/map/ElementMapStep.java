@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -113,7 +114,7 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
     public int hashCode() {
         int result = super.hashCode();
         for (final String propertyKey : this.propertyKeys) {
-            result ^= propertyKey.hashCode();
+            result ^= Objects.hashCode(propertyKey);
         }
         return result;
     }

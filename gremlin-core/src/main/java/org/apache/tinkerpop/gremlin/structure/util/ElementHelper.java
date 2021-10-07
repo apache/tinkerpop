@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -539,13 +540,20 @@ public final class ElementHelper {
         return propertyMap;
     }
 
+    /**
+     * Checks if a key exists within a list of provided keys. Returns {@code false} if the key is {@code null} or if
+     * the {@link Graph.Hidden}. Returns {@code true} if no {@code providedKeys} are supplied.
+     *
+     * @param key must not be {@code null}
+     */
     public static boolean keyExists(final String key, final String... providedKeys) {
+        Objects.requireNonNull(key);
         if (Graph.Hidden.isHidden(key)) return false;
-        if (0 == providedKeys.length) return true;
+        if (null == providedKeys || 0 == providedKeys.length) return true;
         if (1 == providedKeys.length) return key.equals(providedKeys[0]);
         else {
             for (final String temp : providedKeys) {
-                if (temp.equals(key))
+                if (key.equals(temp))
                     return true;
             }
             return false;
