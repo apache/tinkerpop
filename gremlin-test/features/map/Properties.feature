@@ -68,6 +68,46 @@ Feature: Step - properties()
       | peter |
       | d[35].i |
 
+  Scenario: g_V_propertiesXname_age_nullX_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("name", "age", null).value()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | d[29].i |
+      | vadas |
+      | d[27].i |
+      | josh  |
+      | d[32].i |
+      | peter |
+      | d[35].i |
+      | lop |
+      | ripple |
+
+  Scenario: g_V_valuesXname_age_nullX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name", "age", null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | d[29].i |
+      | vadas |
+      | d[27].i |
+      | josh  |
+      | d[32].i |
+      | peter |
+      | d[35].i |
+      | lop |
+      | ripple |
+
   Scenario: g_injectXg_VX1X_propertiesXnameX_nextX_value
     Given an unsupported test
     Then nothing should happen because

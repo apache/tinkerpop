@@ -79,17 +79,21 @@ been noted that supplying a `null` value as an argument to certain Gremlin steps
 were either not clear or perhaps even unexpected. The following changes were made to help make these behaviors more
 consistent and to further solidify the semantics of `null` usage in the Gremlin language:
 
-* `hasKey(null)`, `hasLabel(null)` and `has(T.label,null)` - These methods used to throw general `NullPointerException`
+* `hasKey(null)`, `hasLabel(null)` and `has(T.label,null)` - These steps used to throw general `NullPointerException`
 failures, but now filter results. As these structural elements of the graph can't be `null`, it will effectively
 filter all elements.
-* `hasValue(null)` - Formerly this method would throw a general `NullPointerException`, but now it will filter as
+* `hasValue(null)` - Formerly this step would throw a general `NullPointerException`, but now it will filter as
 expected.
+* `elementMap()`, `valueMap()`, `properties()`, and `values()` - These steps used to throw general
+`NullPointerException` failures if a `null` was provided as an argument, but now `null` keys are ignored for purpose
+of the filter.
 * `withSideEffect()` - This configuration step can now take a `null` for its value.
 * `sum()`, `mean()`, `max()` and `min()` - These methods used to throw general `NullPointerException` failures, but
 now ignore `null` values when other numbers are present. If all of the values in the stream are `null` then `hasNext()`
 return `false`.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2605[TINKERPOP-2605]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2605[TINKERPOP-2605],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2620[TINKERPOP-2620]
 
 == TinkerPop 3.5.1
 

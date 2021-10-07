@@ -197,3 +197,18 @@ Feature: Step - valueMap()
       | result |
       | m[{"name": "marko", "location": ["san diego", "santa cruz", "brussels", "santa fe"]}] |
 
+  Scenario: g_V_valueMapXname_age_nullX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap("name", "age", null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name": ["marko"], "age": [29]}] |
+      | m[{"name": ["josh"], "age": [32]}] |
+      | m[{"name": ["peter"], "age": [35]}] |
+      | m[{"name": ["vadas"], "age": [27]}] |
+      | m[{"name": ["lop"]}] |
+      | m[{"name": ["ripple"]}] |
