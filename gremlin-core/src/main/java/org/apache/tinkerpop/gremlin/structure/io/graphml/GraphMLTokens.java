@@ -44,6 +44,7 @@ final class GraphMLTokens {
     public static final String GRAPH = "graph";
     public static final String NODE = "node";
     public static final String EDGE = "edge";
+    public static final String DEFAULT = "default";
     public static final String SOURCE = "source";
     public static final String TARGET = "target";
     public static final String DATA = "data";

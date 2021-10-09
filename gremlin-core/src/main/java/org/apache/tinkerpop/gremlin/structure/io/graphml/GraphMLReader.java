@@ -84,6 +84,10 @@ public final class GraphMLReader implements GraphReader {
             final Map<String, String> keyIdMap = new HashMap<>();
             final Map<String, String> keyTypesMaps = new HashMap<>();
 
+            // Buffered Data
+            String dataId = null;
+            final Map<String, String> defaultValues = new HashMap<>();
+
             // Buffered Vertex Data
             String vertexId = null;
             String vertexLabel = null;
@@ -110,6 +114,7 @@ public final class GraphMLReader implements GraphReader {
                             final String attributeType = reader.getAttributeValue(null, GraphMLTokens.ATTR_TYPE);
                             keyIdMap.put(id, attributeName);
                             keyTypesMaps.put(id, attributeType);
+                            dataId = id;
                             break;
                         case GraphMLTokens.NODE:
                             vertexId = reader.getAttributeValue(null, GraphMLTokens.ID);
@@ -138,9 +143,11 @@ public final class GraphMLReader implements GraphReader {
                         case GraphMLTokens.DATA:
                             final String key = reader.getAttributeValue(null, GraphMLTokens.KEY);
                             final String dataAttributeName = keyIdMap.get(key);
+                            final String defaultValue = defaultValues.get(key);
 
                             if (dataAttributeName != null) {
-                                final String value = reader.getElementText();
+                                String elementValue =  reader.getElementText();
+                                final String value = elementValue.length() == 0 && defaultValue.length() != 0 ? defaultValue : elementValue;
 
                                 if (isInVertex) {
                                     if (key.equals(vertexLabelKey))
@@ -166,10 +173,17 @@ public final class GraphMLReader implements GraphReader {
                             }
 
                             break;
+
+                        case GraphMLTokens.DEFAULT:
+                            //TODO will it throw exception for CDATA etc?
+                            defaultValues.putIfAbsent(dataId, reader.getElementText());
+                            break;
                     }
                 } else if (eventType.equals(XMLEvent.END_ELEMENT)) {
                     final String elementName = reader.getName().getLocalPart();
-
+                    if(elementName.equals(GraphMLTokens.KEY)) {
+                        dataId = null;
+                    }
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
                         final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Vertex.DEFAULT_LABEL);

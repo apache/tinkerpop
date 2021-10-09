@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns    http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+
+   <key id="d1" for="node" attr.name="timestamp" attr.type="string">
+     <default>1997-10-09</default>
+   </key>
+   <key id="d2" for="edge" attr.name="timestamp" attr.type="string">
+     <default>1997-11-09</default>
+   </key>
+   <key id="d_n" for="node" attr.name="modification" attr.type="string">
+     <default>add</default>
+   </key>
+   <key id="d_e" for="edge" attr.name="modification" attr.type="string">
+     <default>upsert</default>
+   </key>
+
+  <graph id="1" edgedefault="directed">
+	<node id="6857"/>
+	<node id="5247"/>
+	<node id="7236"/>
+	<node id="8509"/>
+	<node id="3877"/>
+	<node id="10380">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="6315">
+		<data key="d_n"/>
+	</node>
+	<node id="10604">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="2638">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="689">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="8370">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="8123">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="7101">
+		<data key="d_n">delete</data>
+	</node>
+	<node id="4652">
+		<data key="d_n">delete</data>
+	</node>
+	<edge source="3549" target="3847"/>
+	<edge source="3343" target="6857"/>
+	<edge source="1239" target="6922"/>
+	<edge source="1913" target="3877"/>
+	<edge source="6996" target="6996"/>
+	<edge source="8515" target="6731"/>
+	<edge source="4540" target="4200"/>
+	<edge source="6503" target="7236"/>
+	<edge source="5632" target="5632"/>
+	<edge source="668" target="1"/>
+	<edge source="786" target="297"/>
+	<edge source="6922" target="3354"/>
+	<edge source="6922" target="1239"/>
+	<edge source="3238" target="3238"/>
+	<edge source="3575" target="3561"/>
+	<edge source="4495" target="8239"/>
+	<edge source="577" target="6996"/>
+	<edge source="3230" target="288"/>
+	<edge source="5417" target="5590"/>
+	<edge source="1" target="568"/>
+	<edge source="6659" target="1273"/>
+	<edge source="8499" target="8509"/>
+	<edge source="1800" target="1"/>
+	<edge source="8509" target="8499"/>
+	<edge source="6669" target="5548"/>
+	<edge source="1" target="1800"/>
+	<edge source="3300" target="1755"/>
+	<edge source="8239" target="4495"/>
+	<edge source="3877" target="1913"/>
+	<edge source="3238" target="790"/>
+	<edge source="1755" target="3300"/>
+	<edge source="1" target="668"/>
+	<edge source="790" target="3238"/>
+	<edge source="297" target="786"/>
+	<edge source="1257" target="3300"/>
+	<edge source="1273" target="6659"/>
+	<edge source="6079" target="10303"/>
+	<edge source="3575" target="3575"/>
+	<edge source="3847" target="3549"/>
+	<edge source="6950" target="5033"/>
+	<edge source="3847" target="4565"/>
+	<edge source="1913" target="5247"/>
+	<edge source="5548" target="6669"/>
+	<edge source="3354" target="6922"/>
+	<edge source="6996" target="577"/>
+	<edge source="6922" target="1970"/>
+	<edge source="2611" target="5417"/>
+	<edge source="10303" target="6079"/>
+	<edge source="1" target="2551"/>
+	<edge source="4200" target="4540"/>
+	<edge source="568" target="1"/>
+	<edge source="6784" target="3340"/>
+	<edge source="5033" target="6950"/>
+	<edge source="6684" target="3302"/>
+	<edge source="3761" target="3561"/>
+	<edge source="7236" target="6503"/>
+	<edge source="4565" target="3847"/>
+	<edge source="3300" target="1257"/>
+	<edge source="5413" target="5413"/>
+	<edge source="6857" target="3343"/>
+	<edge source="3302" target="6684"/>
+	<edge source="3340" target="6784"/>
+	<edge source="7982" target="7982"/>
+	<edge source="6731" target="8515"/>
+	<edge source="3561" target="3575"/>
+	<edge source="2551" target="1"/>
+	<edge source="5590" target="5417"/>
+	<edge source="6680" target="6680"/>
+	<edge source="3561" target="3761"/>
+	<edge source="5247" target="1913"/>
+	<edge source="288" target="3230"/>
+	<edge source="5417" target="2611"/>
+	<edge source="1970" target="6922"/>
+	<edge source="10380" target="4565">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="6180" target="3741">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="6996" target="2551">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="5676" target="6604">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3407" target="2551">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3354" target="1761">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4565" target="8123">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4000" target="1849">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="7101" target="3561">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3561" target="5736">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="5548" target="5548">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="174" target="3847">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1890" target="1140">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4652" target="4568">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1800" target="1673">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3549" target="174">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2638" target="7137">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4568" target="4652">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="88" target="97">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="703" target="4515">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="7442" target="4565">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4565" target="7442">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="10604" target="1239">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="6431" target="1">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="689" target="2056">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="5517" target="3320">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2513" target="1237">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4651" target="4652">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="10303" target="174">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3847" target="7960">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3804" target="7734">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1970" target="3354">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="7474" target="701">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="668" target="174">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="5736" target="3561">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1239" target="10604">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="689" target="1673">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="8370" target="3316">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="174" target="3549">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3354" target="1970">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="7734" target="3804">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3354" target="1239">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2548" target="1800">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="7137" target="2638">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3847" target="174">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2551" target="1800">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3561" target="7101">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1673" target="689">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4652" target="4651">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3316" target="8370">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="6187" target="6187">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="174" target="10303">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="6315" target="5650">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1800" target="2548">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="5650" target="6315">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4565" target="10380">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2513" target="2500">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1" target="6431">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1239" target="3354">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="174" target="668">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="97" target="88">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="701" target="7474">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1800" target="2551">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="7960" target="3847">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="8123" target="4565">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1761" target="3354">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1140" target="1890">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="6604" target="5676">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2500" target="2513">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1673" target="1800">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2551" target="6996">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4515" target="703">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1849" target="4000">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="4511" target="297">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3320" target="5517">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="297" target="4511">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2056" target="689">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1237" target="2513">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="3741" target="6180">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="1761" target="1761">
+		<data key="d_e">delete</data>
+	</edge>
+	<edge source="2551" target="3407">
+		<data key="d_e">delete</data>
+	</edge>
+  </graph>
+</graphml>
