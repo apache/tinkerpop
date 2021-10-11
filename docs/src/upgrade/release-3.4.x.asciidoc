@@ -197,7 +197,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2479[TINKERPOP-2479]
 The `withStrategies()` configuration step accepts a variable number of `TraversalStrategy` instances. In Java, those
 instances are typically constructed with `instance()` if it is a singleton or by way of a builder pattern which
 provides a fluent, type safe method to create the object. For Groovy, which is highly applicable to those who use
-Gremlin scripts in their applications or work a lot within tools similar to the Gremlin Cosnole, the builder syntax
+Gremlin scripts in their applications or work a lot within tools similar to the Gremlin Console, the builder syntax
 can work but doesn't really match the nature of the Groovy language. Using a strategy in this script context would
 look something like:
 
