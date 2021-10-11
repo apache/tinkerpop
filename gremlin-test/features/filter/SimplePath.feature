@@ -72,6 +72,7 @@ Feature: Step - simplePath()
       | p[marko,josh,ripple] |
       | p[marko,josh,lop]    |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX0X_V_both_coalesceXhasXname_markoX_both_constantX0XX_simplePath_path
     Given the modern graph
     And the traversal of

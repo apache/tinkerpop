@@ -52,6 +52,7 @@ Feature: Step - cyclicPath()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX0X_V_both_coalesceXhasXname_markoX_both_constantX0XX_cyclicPath_path
     Given the modern graph
     And the traversal of
