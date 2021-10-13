@@ -30,6 +30,14 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== tx() in .NET
+
+After Javascript, .NET is now the second non-JVM variant of Gremlin to get support for
+link:https://tinkerpop.apache.org/docs/3.5.2/reference/#transactions[remote transactions]. An example of the `Tx()`
+syntax can be found in the .NET link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-dotnet-transactions[Transaction Section].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2556[TINKERPOP-2556]
+
 ==== datetime()
 
 Gremlin in native programming languages can all construct a native date and time object. In Java, that would probably

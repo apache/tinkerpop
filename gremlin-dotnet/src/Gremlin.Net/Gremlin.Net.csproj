@@ -21,6 +21,7 @@ limitations under the License.
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Package">

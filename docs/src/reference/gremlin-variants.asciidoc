@@ -1279,6 +1279,18 @@ NOTE: Many of the TraversalStrategy classes in Gremlin.Net are proxies to the re
 JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
 encoded in the Gremlin.Net bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
 
+[[gremlin-dotnet-transactions]]
+=== Transactions
+
+To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
+section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
+builds on that content by demonstrating the transactional syntax for C#.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=transactions]
+----
+
 [[gremlin-dotnet-lambda]]
 === The Lambda Solution
 

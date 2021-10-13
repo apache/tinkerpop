@@ -38,7 +38,7 @@ namespace Gremlin.Net.Process.Traversal
     /// </remarks>
     public class Bytecode
     {
-        private static readonly object[] EmptyArray = new object[0];
+        private static readonly object[] EmptyArray = Array.Empty<object>();
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Bytecode" /> class.

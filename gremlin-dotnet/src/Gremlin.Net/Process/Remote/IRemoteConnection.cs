@@ -38,5 +38,21 @@ namespace Gremlin.Net.Process.Remote
         /// <param name="bytecode">The <see cref="Bytecode" /> to send.</param>
         /// <returns>The <see cref="ITraversal" /> with the results and optional side-effects.</returns>
         Task<ITraversal<S, E>> SubmitAsync<S, E>(Bytecode bytecode);
+
+        /// <summary>
+        ///     Creates a <see cref="RemoteTransaction" /> in the context of a <see cref="GraphTraversalSource" /> designed to work with
+        ///     remote semantics.
+        /// </summary>
+        /// <param name="graphTraversalSource">
+        ///     The <see cref="GraphTraversalSource" /> providing the context for the
+        ///     <see cref="RemoteTransaction" />.
+        /// </param>
+        /// <returns>The created <see cref="RemoteTransaction" />.</returns>
+        RemoteTransaction Tx(GraphTraversalSource graphTraversalSource);
+        
+        /// <summary>
+        ///     Determines if the connection is bound to a session.
+        /// </summary>
+        bool IsSessionBound { get; }
     }
 }
