@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 
 /**
@@ -37,15 +38,14 @@ import java.util.function.BiPredicate;
  * 100 Contains.within [1L, 10L, 100L] == true
  * </pre>
  *
- *
- *
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public enum Contains implements BiPredicate<Object, Collection> {
 
     /**
-     * The first object is within the {@link Collection} provided in the second object.
+     * The first object is within the {@code Collection} provided in the second object. The second object may not be
+     * {@code null}.
      *
      * @since 3.0.0-incubating
      */
@@ -59,7 +59,8 @@ public enum Contains implements BiPredicate<Object, Collection> {
     },
 
     /**
-     * The first object is not within the {@link Collection} provided in the second object.
+     * The first object is not within the {@code Collection} provided in the second object. The second object may not be
+     * {@code null}.
      *
      * @since 3.0.0-incubating
      */

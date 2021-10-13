@@ -40,6 +40,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
 public class PTest {
@@ -84,6 +85,7 @@ public class PTest {
                     {P.outside(1, 10), 1, false},
                     {P.outside(1, 10), 9, false},
                     {P.outside(1, 10), 10, false},
+                    {P.within(), 0, false},
                     {P.within((Object) null), 0, false},
                     {P.within((Object) null), null, true},
                     {P.within((Collection) null), 0, false},
@@ -100,6 +102,7 @@ public class PTest {
                     {P.within(Arrays.asList(1, 2, 3)), 0, false},
                     {P.within(Arrays.asList(1, 2, 3)), 1, true},
                     {P.within(Arrays.asList(1, 2, 3)), 10, false},
+                    {P.without(), 0, true},
                     {P.without((Object) null), 0, true},
                     {P.without((Object) null), null, false},
                     {P.without((Collection) null), 0, true},
@@ -121,6 +124,13 @@ public class PTest {
                     {P.between("m", "n").or(P.eq("daniel")), "marko", true},
                     {P.between("m", "n").or(P.eq("daniel")), "daniel", true},
                     {P.between("m", "n").or(P.eq("daniel")), "stephen", false},
+                    {P.within().and(P.within()), 0, false},
+                    {P.within().and(P.without()), 0, false},
+                    {P.without().and(P.without()), 0, true},
+                    {P.within().and(P.without()), 0, false},
+                    {P.within().or(P.within()), 0, false},
+                    {P.within().or(P.without()), 0, true},
+                    {P.without().or(P.without()), 0, true},
                     // text predicates
                     {TextP.containing("ark"), "marko", true},
                     {TextP.containing("ark"), "josh", false},

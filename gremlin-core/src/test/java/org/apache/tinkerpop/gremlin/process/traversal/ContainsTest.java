@@ -38,6 +38,8 @@ public class ContainsTest {
     @Parameterized.Parameters(name = "{0}({1},{2}) = {3}")
     public static Iterable<Object[]> data() {
         return new ArrayList<>(Arrays.asList(new Object[][]{
+                {Contains.within, 10, Collections.emptyList(), false},
+                {Contains.without, 10, Collections.emptyList(), true},
                 {Contains.within, 10, Arrays.asList(1, 2, 3, 4, 10), true},
                 {Contains.without, 10, Arrays.asList(1, 2, 3, 4, 10), false},
                 {Contains.within, 10, Collections.emptyList(), false},
