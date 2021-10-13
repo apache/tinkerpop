@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Reads the Gherkin feature files of {@code gremlin-test} and extracts Gremlin examples.
@@ -43,26 +45,49 @@ public class FeatureReader {
     private static final Pattern generalParameterPattern = Pattern.compile("And using the parameter (.+) (defined as|of) (.*)");
 
     /**
-     * Parses Gremlin to a {@code Map} structure of the test name as the key with a {@code List} of Gremlin strings
-     * for the value.
-     * @param projectRoot the root directory of the TinkerPop project source code
+     * Parses features to a {@code List} of Gremlin strings.
+     *
+     * @param featureDir The root directory where feature files can be found including subdirectories
      */
-    public static Map<String, List<String>> parse(final String projectRoot) throws IOException {
-        return parse(projectRoot, Collections.emptyList());
+    public static List<String> parseFlat(final String featureDir) throws IOException {
+        return parseFlat(featureDir, Collections.emptyList());
     }
 
     /**
-     * Parses Gremlin to a {@code Map} structure of the test name as the key with a {@code List} of Gremlin strings
-     * for the value.
-     * @param projectRoot the root directory of the TinkerPop project source code
+     * Parses features to a {@code List} of Gremlin strings.
+     *
+     * @param featureDir The root directory where feature files can be found including subdirectories
      * @param parameterMatchers list of pattern/functions that will transform a parameter from its Gherkin form to
      *                          another format triggering that new formatted string to be inserted into the Gremlin
      *                          itself
      */
-    public static Map<String, List<String>> parse(final String projectRoot,
-                                                  final List<Pair<Pattern, BiFunction<String, String, String>>> parameterMatchers) throws IOException {
+    public static List<String> parseFlat(final String featureDir, final List<Pair<Pattern, BiFunction<String, String, String>>> parameterMatchers) throws IOException {
+        return parseGrouped(featureDir, parameterMatchers).values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    /**
+     * Parses features to a {@code Map} structure of the test name as the key with a {@code List} of Gremlin strings
+     * for the value.
+     *
+     * @param featureDir The root directory where feature files can be found including subdirectories
+     */
+    public static Map<String, List<String>> parseGrouped(final String featureDir) throws IOException {
+        return parseGrouped(featureDir, Collections.emptyList());
+    }
+
+    /**
+     * Parses features to a {@code Map} structure of the test name as the key with a {@code List} of Gremlin strings
+     * for the value.
+     *
+     * @param featureDir The root directory where feature files can be found including subdirectories
+     * @param parameterMatchers list of pattern/functions that will transform a parameter from its Gherkin form to
+     *                          another format triggering that new formatted string to be inserted into the Gremlin
+     *                          itself
+     */
+    public static Map<String, List<String>> parseGrouped(final String featureDir,
+                                                         final List<Pair<Pattern, BiFunction<String, String, String>>> parameterMatchers) throws IOException {
         final Map<String, List<String>> gremlins = new LinkedHashMap<>();
-        Files.find(Paths.get(projectRoot, "gremlin-test", "features"),
+        Files.find(Paths.get(featureDir),
                    Integer.MAX_VALUE,
                 (filePath, fileAttr) -> fileAttr.isRegularFile() && filePath.toString().endsWith(".feature")).
                 sorted().

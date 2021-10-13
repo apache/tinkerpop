@@ -27,6 +27,7 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
 import javax.script.SimpleBindings
+import java.nio.file.Paths
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
 
@@ -34,7 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 radishGremlinFile = new File("${projectBaseDir}/gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Gherkin/Gremlin.cs")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
-gremlins = FeatureReader.parse("${projectBaseDir}")
+gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "features").toString())
 
 gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(new GroovyCustomizer() {
     public CompilationCustomizer create() {

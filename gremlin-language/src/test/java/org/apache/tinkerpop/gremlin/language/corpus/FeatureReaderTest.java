@@ -22,6 +22,7 @@ import org.javatuples.Pair;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,24 +37,42 @@ import static org.junit.Assert.assertEquals;
 
 public class FeatureReaderTest {
 
+    private static final String featureDir = Paths.get("..", "gremlin-test", "features").toString();
+
     @Test
-    public void shouldParseInSameOrder() throws IOException {
-        final String projectRoot = "../";
-        final Map<String,List<String>> gremlins = FeatureReader.parse(projectRoot);
+    public void shouldParseGroupedInSameOrder() throws IOException {
+        final Map<String,List<String>> gremlins = FeatureReader.parseGrouped(featureDir);
         assertThat(gremlins.size(), greaterThan(0));
-        assertEquals(gremlins, FeatureReader.parse(projectRoot));
+        assertEquals(gremlins, FeatureReader.parseGrouped(featureDir));
     }
 
     @Test
-    public void shouldParseAndEmbed() throws IOException {
+    public void shouldParseGroupedAndEmbed() throws IOException {
         final String replaceToken = "****replaced****";
         final List<Pair<Pattern, BiFunction<String, String, String>>> parameterMatchers = new ArrayList<>();
         parameterMatchers.add(Pair.with(Pattern.compile("(.*)"), (k, v) -> replaceToken));
-        final String projectRoot = "../";
-        final Map<String,List<String>> gremlins = FeatureReader.parse(projectRoot, parameterMatchers);
+        final Map<String,List<String>> gremlins = FeatureReader.parseGrouped(featureDir, parameterMatchers);
 
         // at least one of these things must have the "replaced" token
         assertThat(gremlins.values().stream().
                 flatMap(Collection::stream).anyMatch(gremlin -> gremlin.contains(replaceToken)), is(true));
+    }
+
+    @Test
+    public void shouldParseFlatInSameOrder() throws IOException {
+        final List<String> gremlins = FeatureReader.parseFlat(featureDir);
+        assertThat(gremlins.size(), greaterThan(0));
+        assertEquals(gremlins, FeatureReader.parseFlat(featureDir));
+    }
+
+    @Test
+    public void shouldParseFlatAndEmbed() throws IOException {
+        final String replaceToken = "****replaced****";
+        final List<Pair<Pattern, BiFunction<String, String, String>>> parameterMatchers = new ArrayList<>();
+        parameterMatchers.add(Pair.with(Pattern.compile("(.*)"), (k, v) -> replaceToken));
+        final List<String> gremlins = FeatureReader.parseFlat(featureDir, parameterMatchers);
+
+        // at least one of these things must have the "replaced" token
+        assertThat(gremlins.stream().anyMatch(gremlin -> gremlin.contains(replaceToken)), is(true));
     }
 }

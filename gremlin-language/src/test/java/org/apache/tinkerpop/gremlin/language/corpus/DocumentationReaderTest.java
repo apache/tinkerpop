@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.language.corpus;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,12 +29,12 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.Assert.assertEquals;
 
 public class DocumentationReaderTest {
+    private static final String docsDir = Paths.get("..", "docs", "src").toString();
 
     @Test
     public void shouldParseInSameOrder() throws IOException {
-        final String projectRoot = "../";
-        final Set<String> gremlins = DocumentationReader.parse(projectRoot);
+        final Set<String> gremlins = DocumentationReader.parse(docsDir);
         assertThat(gremlins.size(), greaterThan(0));
-        assertEquals(gremlins, DocumentationReader.parse(projectRoot));
+        assertEquals(gremlins, DocumentationReader.parse(docsDir));
     }
 }

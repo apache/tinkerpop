@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -45,6 +46,8 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(Parameterized.class)
 public class ReferenceGrammarTest extends AbstractGrammarTest {
+    private static final String featureDir = Paths.get("..", "gremlin-test", "features").toString();
+    private static final String docsDir = Paths.get("..", "docs", "src").toString();
 
     private static final Pattern vertexPattern = Pattern.compile(".*v\\d.*");
     private static final Pattern edgePattern = Pattern.compile(".*e\\d.*");
@@ -72,8 +75,8 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<String> queries() throws IOException {
-        final Set<String> gremlins = new LinkedHashSet<>(DocumentationReader.parse("../"));
-        gremlins.addAll(FeatureReader.parse("../", stringMatcherConverters).values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+        final Set<String> gremlins = new LinkedHashSet<>(DocumentationReader.parse(docsDir));
+        gremlins.addAll(FeatureReader.parseGrouped(featureDir, stringMatcherConverters).values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
         return gremlins;
     }
 

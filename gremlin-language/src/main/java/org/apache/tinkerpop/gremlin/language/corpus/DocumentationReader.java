@@ -37,9 +37,9 @@ public class DocumentationReader {
      */
     private static final Set<String> throwAway = new HashSet<>(Arrays.asList("g.inject(g.withComputer().V().shortestPath().with(ShortestPath.distance, 'weight').with(ShortestPath.includeEdges, true).with(ShortestPath.maxDistance, 1).toList().toArray()).map(unfold().values('name','weight').fold())"));
 
-    public static Set<String> parse(final String projectRoot) throws IOException {
+    public static Set<String> parse(final String documentationDir) throws IOException {
         final Set<String> gremlins = new LinkedHashSet<>();
-        Files.find(Paths.get(projectRoot, "docs", "src"),
+        Files.find(Paths.get(documentationDir),
                 Integer.MAX_VALUE,
                 (filePath, fileAttr) -> fileAttr.isRegularFile() && (filePath.toString().endsWith("traversal.asciidoc") || filePath.toString().contains("recipes"))).
                 sorted().
