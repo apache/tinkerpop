@@ -749,7 +749,7 @@ traversalStrategy
     : 'new' 'PartitionStrategy' LPAREN traversalStrategyArgs_PartitionStrategy? (COMMA traversalStrategyArgs_PartitionStrategy)* RPAREN
 //  | 'RequirementStrategy' - not supported as it's internally relevant only
 //  | 'SackStrategy' - not supported directly as it's internal to withSack()
-    | 'new' 'SeedStrategy' LPAREN integerLiteral RPAREN
+    | 'new' 'SeedStrategy' LPAREN 'seed' COLON integerLiteral RPAREN
 //  | 'SideEffectStrategy' - not supported directly as it's internal to withSideEffect()
     | 'new' 'SubgraphStrategy' LPAREN traversalStrategyArgs_SubgraphStrategy? (COMMA traversalStrategyArgs_SubgraphStrategy)* RPAREN
 //  | 'MatchAlgorithmStrategy' - not supported directly as it's internal to match()

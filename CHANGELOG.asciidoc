@@ -32,6 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Allowed `null` string values in the Gremlin grammar.
+* Fixed support for `SeedStrategy` in the Gremlin Grammar.
 * Prevented exception with `hasLabel(null)` and `hasKey(null)` and instead filter away traversers as these structural components can't ever be null.
 * Improved handling of `null` when passed to `P` predicates.
 * Handled `null` for mathematical reducing operations of `sum()`, `mean()`, `max()` and `min()`.

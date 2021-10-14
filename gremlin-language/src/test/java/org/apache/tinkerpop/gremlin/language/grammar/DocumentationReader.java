@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -94,7 +92,7 @@ public class DocumentationReader {
      * Variables can't be parsed by the grammar so they must be replaced with something concrete.
      */
     private static String replaceVariables(final String gremlin) {
-        // convert lambda vars to closures and they will be ignored by the test suite
+        // convert lambda vars to closures as they will be ignored by the test suite
         return gremlin.replace("relations", "\"relations\"").
                 replace("places.size()", "6").
                 replace("places", "\"places\"").
@@ -113,7 +111,7 @@ public class DocumentationReader {
                 replace("System.out.&println", "{it}").
                 replace("persons", "\"persons\"").
                 replace("marko.value('age')", "11").
-                replace("seedStrategy", "new SeedStrategy(99999)").
+                replace("seedStrategy", "new SeedStrategy(seed: 99999)").
                 replace(".getClass()", "").
                 replace("result.toArray()", "4").
                 replace("vA.value('amount')", "0.0").
