@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
@@ -55,6 +57,8 @@ public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrate
                 return getEdgeLabelVerificationStrategy(ctx.traversalStrategyArgs_EdgeLabelVerificationStrategy());
             else if (strategyName.equals(SubgraphStrategy.class.getSimpleName()))
                 return getSubgraphStrategy(ctx.traversalStrategyArgs_SubgraphStrategy());
+            else if (strategyName.equals(SeedStrategy.class.getSimpleName()))
+                return new SeedStrategy(Long.parseLong(ctx.integerLiteral().getText()));
         }
         throw new IllegalStateException("Unexpected TraversalStrategy specification - " + ctx.getText());
     }
@@ -66,10 +70,10 @@ public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrate
         final EdgeLabelVerificationStrategy.Builder builder = EdgeLabelVerificationStrategy.build();
         ctxs.forEach(ctx -> {
             switch (ctx.getChild(0).getText()) {
-                case "logWarning":
+                case AbstractWarningVerificationStrategy.LOG_WARNING:
                     builder.logWarning(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
                     break;
-                case "throwException":
+                case AbstractWarningVerificationStrategy.THROW_EXCEPTION:
                     builder.throwException(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
                     break;
             }
@@ -85,13 +89,13 @@ public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrate
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build();
         ctxs.forEach(ctx -> {
             switch (ctx.getChild(0).getText()) {
-                case "logWarning":
+                case AbstractWarningVerificationStrategy.LOG_WARNING:
                     builder.logWarning(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
                     break;
-                case "throwException":
+                case AbstractWarningVerificationStrategy.THROW_EXCEPTION:
                     builder.throwException(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
                     break;
-                case "keys":
+                case ReservedKeysVerificationStrategy.KEYS:
                     builder.reservedKeys(new HashSet<>(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList()))));
                     break;
             }
