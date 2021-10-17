@@ -147,7 +147,7 @@ public final class GraphMLReader implements GraphReader {
 
                             if (dataAttributeName != null) {
                                 String elementValue =  reader.getElementText();
-                                final String value = elementValue.length() == 0 && defaultValue.length() != 0 ? defaultValue : elementValue;
+                                final String value = elementValue.length() == 0 && defaultValue != null && defaultValue.length() != 0 ? defaultValue : elementValue;
 
                                 if (isInVertex) {
                                     if (key.equals(vertexLabelKey))
