@@ -29,7 +29,7 @@ const DriverRemoteConnection = require('../../lib/driver/driver-remote-connectio
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
-const { SubgraphStrategy, ReadOnlyStrategy,
+const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy,
         ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');
 const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
@@ -168,6 +168,16 @@ describe('Traversal', function () {
         assert.strictEqual(list[0].objects[2].get('name')[0], "marko");
       });
     });
+  });
+  describe("should allow TraversalStrategy definition", function() {
+    it('should allow SeedStrategy', function () {
+      const g = traversal().withRemote(connection).withStrategies(
+        new SeedStrategy({seed: 999999}));
+      g.V().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 4);
+      }, (err) => assert.fail("tanked: " + err));
+    })
   });
   describe("should allow TraversalStrategy definition", function() {
     it('should allow SubgraphStrategy', function() {

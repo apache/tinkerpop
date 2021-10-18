@@ -266,7 +266,15 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                 return script.append("new " + o.getStrategyClass().getSimpleName() + "()");
             } else {
                 script.append("new " + o.getStrategyClass().getSimpleName() + "(");
-                convertToScript(ConfigurationConverter.getMap(o.getConfiguration()));
+                final Map<Object,Object> conf = ConfigurationConverter.getMap(o.getConfiguration());
+                script.append("{");
+                conf.entrySet().forEach(entry -> {
+                    script.append(entry.getKey().toString());
+                    script.append(":");
+                    convertToScript(entry.getValue()).getScript();
+                    script.append(",");
+                });
+                script.setCharAtEnd('}');
                 return script.append(")");
             }
         }

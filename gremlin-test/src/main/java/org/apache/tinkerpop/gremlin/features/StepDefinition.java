@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -324,8 +325,8 @@ public final class StepDefinition {
         // gotta convert Map.Entry to individual Map coz that how we assert those for GLVs - dah
         final List<Object> actual = r.stream().map(o -> {
             if (o instanceof Map.Entry) {
-                return new HashMap() {{
-                    put(((Entry<?, ?>) o).getKey(), ((Entry<?, ?>) o).getValue());
+                return new LinkedHashMap() {{
+                    put(((Map.Entry<?, ?>) o).getKey(), ((Map.Entry<?, ?>) o).getValue());
                 }};
             } else {
                 return o;

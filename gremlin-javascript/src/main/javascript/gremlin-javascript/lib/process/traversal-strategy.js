@@ -288,6 +288,16 @@ class ReservedKeysVerificationStrategy extends TraversalStrategy {
   }
 }
 
+class SeedStrategy extends TraversalStrategy {
+  /**
+   * @param {Object} [options]
+   * @param {number} [options.seed] the seed to provide to the random number generator for the traversal
+   */
+  constructor(options) {
+    super("org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy",{seed: options.seed});
+  }
+}
+
 module.exports = {
   TraversalStrategies: TraversalStrategies,
   TraversalStrategy: TraversalStrategy,
@@ -297,6 +307,7 @@ module.exports = {
   HaltedTraverserStrategy: HaltedTraverserStrategy,
   OptionsStrategy: OptionsStrategy,
   PartitionStrategy: PartitionStrategy,
+  SeedStrategy: SeedStrategy,
   SubgraphStrategy: SubgraphStrategy,
   VertexProgramStrategy: VertexProgramStrategy,
   // finalization

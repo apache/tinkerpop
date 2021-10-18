@@ -104,6 +104,7 @@ public class SparkGraphFeatureIntegrateTest {
             "@StepV",
             "@StepIndex", // doesn't look like this works with Spark atm - doesn't serialize (IndexTest not in the ProcessComputerSuite)
             "@GraphComputerVerificationOneBulk",
+            "@GraphComputerVerificationStrategyNotSupported",
             "@GraphComputerVerificationMidVNotSupported",
             "@GraphComputerVerificationInjectionNotSupported",
             "@GraphComputerVerificationStarGraphExceeded",

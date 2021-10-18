@@ -74,7 +74,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'const graphTraversalModule = require(\'../../lib/process/graph-traversal\');\n' +
                     'const traversalModule = require(\'../../lib/process/traversal\');\n' +
-                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
+                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, SeedStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +

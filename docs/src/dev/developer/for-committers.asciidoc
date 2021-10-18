@@ -473,8 +473,9 @@ Scenario: g_V_outE_drop
 Features have tags associated with them to help allow developers to better break up test runs if they desire. There
 are two types of tags:
 
-* `@StepClass*` - Marks the step grouping and is a prefix that precedes and refers to one of the four types of steps:
-`Branch`, `Filter`, `Map`, and `SideEffect` (e.g. `@StepClassBranch`).
+* `@StepClass*` - Marks the step grouping and is a prefix that precedes and either refers to one of the four types of
+steps: `Branch`, `Filter`, `Map`, and `SideEffect` (e.g. `@StepClassBranch`) or to an `Integrated` grouping that does
+not fit those individual classifications well.
 * `@Step*` - Marks testing for a particular step. While this tag is generally unique to the feature
 file itself and test filtering could be accomplished at that level by way of the file, the use of the tag is a
 secondary option and allows filtering to be consistently managed by tags alone. The suffix is the Gremlin step itself
@@ -496,6 +497,8 @@ mid-`V()` step is not supported.
 is not compatible with `GraphComputer`
 * `@GraphComputerVerificationReferenceOnly` - The scenario itself is not written to support `GraphComputer` because it
 tries to reference inaccessible properties that are on elements only available by "reference" (i.e `T.id` only).
+* `@GraphComputerVerificationStrategyNotSupported` - The scenario uses a traversal strategy that is not supported by
+`GraphComputer`.
 * `@GraphComputerVerificationStarGraphExceeded` - The scenario itself is not written to support `GraphComputer` because
 the traversal does not mind the star graph limitation.
 * `@MultiMetaProperties` - The scenario uses "The Crew" graph as a dataset or otherwise utilizes multi-properties

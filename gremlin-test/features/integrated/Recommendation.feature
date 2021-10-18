@@ -15,42 +15,31 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassFilter @StepCoin
-Feature: Step - coin()
+@StepClassIntegrated
+Feature: Step - recommendation
 
-  Scenario: g_V_coinX1X
-    Given the modern graph
+  Scenario: g_V_classic_recommendation
+    Given the grateful graph
     And the traversal of
       """
-      g.V().coin(1.0)
+      g.V().has("name", "DARK STAR").as("a").out("followedBy").aggregate("stash").
+        in("followedBy").where(P.neq("a").and(P.not(P.within("stash")))).
+        groupCount().
+        unfold().
+        project("x", "y", "z").
+          by(__.select(keys).values("name")).
+          by(__.select(keys).values("performances")).
+          by(__.select(values)).
+        order().
+          by(__.select("z"), Order.desc).
+          by(__.select("y"), Order.asc).
+        limit(5).aggregate(local,"m").select("x")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[marko] |
-      | v[vadas] |
-      | v[lop] |
-      | v[josh] |
-      | v[ripple] |
-      | v[peter]  |
-
-  Scenario: g_V_coinX0X
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().coin(0.0)
-      """
-    When iterated to list
-    Then the result should be empty
-
-  @GraphComputerVerificationStrategyNotSupported
-  Scenario: g_withStrategiesXSeedStrategyX_V_coinX50X
-    Given the modern graph
-    And the traversal of
-      """
-      g.withStrategies(new SeedStrategy(seed: 999999)).V().coin(0.5)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
+      | LET IT GROW |
+      | UNCLE JOHNS BAND |
+      | I KNOW YOU RIDER |
+      | SHIP OF FOOLS |
+      | GOOD LOVING |
