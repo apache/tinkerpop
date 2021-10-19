@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -40,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -272,7 +274,8 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                 return script.append("new " + o.getStrategyClass().getSimpleName() + "()");
             } else {
                 script.append("new " + o.getStrategyClass().getSimpleName() + "(");
-                final Iterator<String> keys = o.getConfiguration().getKeys();
+                final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).
+                        filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
                 while (keys.hasNext()) {
                     final String k = keys.next();
                     script.append(k);

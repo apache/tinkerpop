@@ -72,6 +72,7 @@ public class SeedStrategy extends AbstractTraversalStrategy<TraversalStrategy.De
     @Override
     public Configuration getConfiguration() {
         final Map<String, Object> map = new HashMap<>();
+        map.put(STRATEGY, SeedStrategy.class.getCanonicalName());
         map.put(ID_SEED, this.seed);
         return new MapConfiguration(map);
     }
