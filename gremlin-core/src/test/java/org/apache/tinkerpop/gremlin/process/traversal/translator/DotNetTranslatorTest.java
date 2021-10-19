@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -59,9 +60,11 @@ public class DotNetTranslatorTest {
     @Test
     public void shouldTranslateStrategies() throws Exception {
         assertEquals("g.WithStrategies(new ReadOnlyStrategy()," +
-                        "new SubgraphStrategy(checkAdjacentVertices: false, vertices: __.HasLabel(\"person\"))).V().Has(\"name\")",
+                        "new SubgraphStrategy(checkAdjacentVertices: false, vertices: __.HasLabel(\"person\"))," +
+                        "new SeedStrategy(seed: 999999)).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
-                        SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
+                        SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
+                        new SeedStrategy(999999)).
                         V().has("name").asAdmin().getBytecode()).getScript());
     }
 

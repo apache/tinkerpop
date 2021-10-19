@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -266,7 +267,15 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                 return script.append("new " + o.getStrategyClass().getSimpleName() + "()");
             } else {
                 script.append("new " + o.getStrategyClass().getSimpleName() + "(");
-                convertToScript(ConfigurationConverter.getMap(o.getConfiguration()));
+                final Map<Object,Object> conf = ConfigurationConverter.getMap(o.getConfiguration());
+                script.append("{");
+                conf.entrySet().stream().filter(entry -> !entry.getKey().equals(TraversalStrategy.STRATEGY)).forEach(entry -> {
+                    script.append(entry.getKey().toString());
+                    script.append(":");
+                    convertToScript(entry.getValue()).getScript();
+                    script.append(",");
+                });
+                script.setCharAtEnd('}');
                 return script.append(")");
             }
         }
