@@ -61,6 +61,36 @@ public class GraphMLReaderTest {
                                     id, "13");
     }
 
+    @Test
+    public void emptyStringAsDefaultValue() throws IOException {
+        Graph graph = getMockedGraph();
+        reader.readGraph(getSample(), graph);
+        assertSingleVertex(graph, "name", "chelsy",
+                "email", "",
+                label, "person",
+                id, "15");
+    }
+
+    @Test
+    public void emptyValue() throws IOException {
+        Graph graph = getMockedGraph();
+        reader.readGraph(getSample(), graph);
+        assertSingleVertex(graph, "name", "gwen",
+                "email", "",
+                label, "person",
+                id, "16");
+    }
+
+    @Test
+    public void emptyTagValueReturnsDefault() throws IOException {
+        Graph graph = getMockedGraph();
+        reader.readGraph(getSample(), graph);
+        assertSingleVertex(graph, "name", "greg",
+                "lang", "gremlin",
+                label, "person",
+                id, "17");
+    }
+
     /**
      * Value of a node without specified default value is empty string.
      * @throws IOException
