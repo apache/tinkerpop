@@ -324,6 +324,8 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     if (methodsWithArgsNotNeedingGeneric.contains(methodName) ||
                             (methodName.equals(GraphTraversal.Symbols.inject) && (Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull) || instructionPosition > 0)))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "").replace("<object,object>", "")).append("(");
+                    else if (methodName.equals(GraphTraversal.Symbols.choose) && instruction.getArguments().length == 2)
+                        script.append(".").append(resolveSymbol(methodName).replace("<object>", "").replace("<object,object>", "")).append("(");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("(");
 
@@ -438,20 +440,18 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             TO_CS_MAP.put(GraphTraversal.Symbols.inject, "Inject<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.io, "Io<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.limit, "Limit<object>");
-            TO_CS_MAP.put(GraphTraversal.Symbols.local, "Local<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.match, "Match<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.map, "Map<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.max, "Max<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.min, "Min<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.mean, "Mean<object>");
-            TO_CS_MAP.put(GraphTraversal.Symbols.optional, "Optional<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.project, "Project<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.properties, "Properties<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.range, "Range<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.sack, "Sack<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.select, "Select<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.skip, "Skip<object>");
-            TO_CS_MAP.put(GraphTraversal.Symbols.sum, "Sum<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.sum, "Sum<long>");
             TO_CS_MAP.put(GraphTraversal.Symbols.tail, "Tail<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.unfold, "Unfold<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.union, "Union<object>");

@@ -97,7 +97,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the addE step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, Edge> AddE (ITraversal edgeLabelTraversal)
+        public GraphTraversal<S, Edge> AddE (ITraversal<string> edgeLabelTraversal)
         {
             Bytecode.AddStep("addE", edgeLabelTraversal);
             return Wrap<S, Edge>(this);
@@ -124,7 +124,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the addV step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, Vertex> AddV (ITraversal vertexLabelTraversal)
+        public GraphTraversal<S, Vertex> AddV (ITraversal<string> vertexLabelTraversal)
         {
             Bytecode.AddStep("addV", vertexLabelTraversal);
             return Wrap<S, Vertex>(this);
@@ -359,7 +359,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the choose step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E2> Choose<E2> (IPredicate choosePredicate, ITraversal trueChoice)
+        public GraphTraversal<S, E2> Choose<E2> (IPredicate choosePredicate, ITraversal<E2> trueChoice)
         {
             Bytecode.AddStep("choose", choosePredicate, trueChoice);
             return Wrap<S, E2>(this);
@@ -386,7 +386,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the choose step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E2> Choose<E2> (ITraversal traversalPredicate, ITraversal trueChoice)
+        public GraphTraversal<S, E2> Choose<E2> (ITraversal traversalPredicate, ITraversal<E2> trueChoice)
         {
             Bytecode.AddStep("choose", traversalPredicate, trueChoice);
             return Wrap<S, E2>(this);
@@ -601,7 +601,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E> From (ITraversal fromVertex)
+        public GraphTraversal<S, E> From (ITraversal<Vertex> fromVertex)
         {
             Bytecode.AddStep("from", fromVertex);
             return Wrap<S, E>(this);
@@ -957,7 +957,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the local step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E2> Local<E2> (ITraversal localTraversal)
+        public GraphTraversal<S, E2> Local<E2> (ITraversal<E2> localTraversal)
         {
             Bytecode.AddStep("local", localTraversal);
             return Wrap<S, E2>(this);
@@ -1112,7 +1112,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the optional step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E2> Optional<E2> (ITraversal optionalTraversal)
+        public GraphTraversal<S, E2> Optional<E2> (ITraversal<E2> optionalTraversal)
         {
             Bytecode.AddStep("optional", optionalTraversal);
             return Wrap<S, E2>(this);

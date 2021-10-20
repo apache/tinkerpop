@@ -57,9 +57,10 @@ namespace Gremlin.Net.Process.Traversal
     }
 
     /// <summary>
-    ///     A traversal represents a directed walk over a graph.
+    /// Represents the basic information for a walk over a graph.
     /// </summary>
-    public interface ITraversal<S, E> : ITraversal, IEnumerator<E>
+    /// <seealso cref="ITraversal{SType, EType}"/>
+    public interface ITraversal<E> : ITraversal, IEnumerator<E>
     {
         /// <summary>
         ///     Gets the next result from the traversal.
@@ -79,13 +80,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="amount">The number of results to get.</param>
         /// <returns>The n-results.</returns>
         IEnumerable<E> Next(int amount);
-
-        /// <summary>
-        ///     Iterates all <see cref="Traverser" /> instances in the traversal.
-        /// </summary>
-        /// <returns>The fully drained traversal.</returns>
-        new ITraversal<S, E> Iterate();
-
+        
         /// <summary>
         ///     Gets the next <see cref="Traverser" />.
         /// </summary>
@@ -103,6 +98,18 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <returns>The results in a set.</returns>
         ISet<E> ToSet();
+    }
+
+    /// <summary>
+    ///     A traversal represents a directed walk over a graph.
+    /// </summary>
+    public interface ITraversal<S, E> : ITraversal<E>
+    {
+        /// <summary>
+        ///     Iterates all <see cref="Traverser" /> instances in the traversal.
+        /// </summary>
+        /// <returns>The fully drained traversal.</returns>
+        new ITraversal<S, E> Iterate();
 
         /// <summary>
         ///     Starts a promise to execute a function on the current traversal that will be completed in the future.

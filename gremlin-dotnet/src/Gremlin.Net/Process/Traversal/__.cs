@@ -60,7 +60,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> AddE(ITraversal edgeLabelTraversal)
+        public static GraphTraversal<object, Edge> AddE(ITraversal<string> edgeLabelTraversal)
         {
             return new GraphTraversal<object, Edge>().AddE(edgeLabelTraversal);            
         }
@@ -84,7 +84,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(ITraversal vertexLabelTraversal)
+        public static GraphTraversal<object, Vertex> AddV(ITraversal<string> vertexLabelTraversal)
         {
             return new GraphTraversal<object, Vertex>().AddV(vertexLabelTraversal);            
         }
@@ -214,9 +214,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Choose<E2>(IPredicate choosePredicate, ITraversal trueChoice)
+        public static GraphTraversal<object, E2> Choose<E2>(IPredicate choosePredicate, ITraversal<E2> trueChoice)
         {
-            return new GraphTraversal<object, E2>().Choose<E2>(choosePredicate, trueChoice);            
+            return new GraphTraversal<object, E2>().Choose(choosePredicate, trueChoice);            
         }
 
         /// <summary>
@@ -238,9 +238,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Choose<E2>(ITraversal traversalPredicate, ITraversal trueChoice)
+        public static GraphTraversal<object, E2> Choose<E2>(ITraversal traversalPredicate, ITraversal<E2> trueChoice)
         {
-            return new GraphTraversal<object, E2>().Choose<E2>(traversalPredicate, trueChoice);            
+            return new GraphTraversal<object, E2>().Choose(traversalPredicate, trueChoice);            
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public static GraphTraversal<object, E2> Constant<E2>(E2 a)
         {
-            return new GraphTraversal<object, E2>().Constant<E2>(a);            
+            return new GraphTraversal<object, E2>().Constant(a);            
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dedup step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Dedup(Scope scope, params string[] dedupLabels)
+        public static GraphTraversal<object, object> Dedup<A>(Scope scope, params string[] dedupLabels)
         {
             return dedupLabels.Length == 0
                 ? new GraphTraversal<object, object>().Dedup(scope)
@@ -408,7 +408,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public static GraphTraversal<object, E2> Fold<E2>(E2 seed, IBiFunction foldFunction)
         {
-            return new GraphTraversal<object, E2>().Fold<E2>(seed, foldFunction);            
+            return new GraphTraversal<object, E2>().Fold(seed, foldFunction);            
         }
 
         /// <summary>
@@ -708,9 +708,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the local step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Local<E2>(ITraversal localTraversal)
+        public static GraphTraversal<object, E2> Local<E2>(ITraversal<E2> localTraversal)
         {
-            return new GraphTraversal<object, E2>().Local<E2>(localTraversal);            
+            return new GraphTraversal<object, E2>().Local(localTraversal);            
         }
 
         /// <summary>
@@ -822,9 +822,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the optional step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Optional<E2>(ITraversal optionalTraversal)
+        public static GraphTraversal<object, E2> Optional<E2>(ITraversal<E2> optionalTraversal)
         {
-            return new GraphTraversal<object, E2>().Optional<E2>(optionalTraversal);            
+            return new GraphTraversal<object, E2>().Optional(optionalTraversal);            
         }
 
         /// <summary>
@@ -966,17 +966,17 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the repeat step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Repeat(string loopName, ITraversal traversal)
+        public static GraphTraversal<A, A> Repeat<A>(string loopName, ITraversal<A> traversal)
         {
-            return new GraphTraversal<object, object>().Repeat(loopName, traversal);            
+            return new GraphTraversal<A, A>().Repeat(loopName, traversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the repeat step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Repeat(ITraversal traversal)
+        public static GraphTraversal<A, A> Repeat<A>(ITraversal<A> traversal)
         {
-            return new GraphTraversal<object, object>().Repeat(traversal);            
+            return new GraphTraversal<A, A>().Repeat(traversal);            
         }
 
         /// <summary>

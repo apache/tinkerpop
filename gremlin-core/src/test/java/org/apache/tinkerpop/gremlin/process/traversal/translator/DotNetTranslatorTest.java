@@ -183,6 +183,16 @@ public class DotNetTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateChooseCorrectly() {
+        String script = translator.translate(g.V().choose(__.hasLabel("person")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Choose<object>(__.HasLabel(\"person\"))", script);
+        script = translator.translate(g.V().choose(__.hasLabel("person"), __.values("name")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Choose(__.HasLabel(\"person\"),__.Values<object>(\"name\"))", script);
+        script = translator.translate(g.V().choose(__.hasLabel("person"), __.values("name"), __.constant("inhuman")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().Choose<object>(__.HasLabel(\"person\"),__.Values<object>(\"name\"),__.Constant<object>(\"inhuman\"))", script);
+    }
+
+    @Test
     public void shouldTranslateHasNull() {
         String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Has(\"k\",(object) null)", script);
