@@ -185,7 +185,7 @@ jobs:
           touch gremlin-dotnet/src/.glv
           touch gremlin-dotnet/test/.glv
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
+          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet -DincludeNeo4j
   neo4j-gremlin:
     name: neo4j-gremlin
     timeout-minutes: 1200 # 20 minutes

@@ -48,6 +48,12 @@ namespace Gremlin.Net.Driver.Remote
                     {Tokens.ArgsEvalTimeout, "scriptEvaluationTimeout", Tokens.ArgsBatchSize, 
                      Tokens.RequestId, Tokens.ArgsUserAgent};
 
+        private readonly string _sessionId;
+        private string Processor => IsSessionBound ? Tokens.ProcessorSession : Tokens.ProcessorTraversal;
+
+        /// <inheritdoc />
+        public bool IsSessionBound => _sessionId != null;
+
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
         /// </summary>
@@ -90,6 +96,12 @@ namespace Gremlin.Net.Driver.Remote
             _traversalSource = traversalSource ?? throw new ArgumentNullException(nameof(traversalSource));
         }
 
+        private DriverRemoteConnection(IGremlinClient client, string traversalSource, Guid sessionId)
+            : this(client, traversalSource)
+        {
+            _sessionId = sessionId.ToString();
+        }
+
         /// <summary>
         ///     Submits <see cref="Bytecode" /> for evaluation to a remote Gremlin Server.
         /// </summary>
@@ -106,10 +118,15 @@ namespace Gremlin.Net.Driver.Remote
         {
             var requestMsg =
                 RequestMessage.Build(Tokens.OpsBytecode)
-                    .Processor(Tokens.ProcessorTraversal)
+                    .Processor(Processor)
                     .OverrideRequestId(requestid)
                     .AddArgument(Tokens.ArgsGremlin, bytecode)
                     .AddArgument(Tokens.ArgsAliases, new Dictionary<string, string> {{"g", _traversalSource}});
+
+            if (IsSessionBound)
+            {
+                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId);
+            }
 
             var optionsStrategyInst = bytecode.SourceInstructions.Find(
                 s => s.OperatorName == "withStrategies" && s.Arguments[0] is OptionsStrategy);
@@ -126,6 +143,13 @@ namespace Gremlin.Net.Driver.Remote
             }
             
             return await _client.SubmitAsync<Traverser>(requestMsg.Create()).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public RemoteTransaction Tx(GraphTraversalSource g)
+        {
+            var session = new DriverRemoteConnection(_client, _traversalSource, Guid.NewGuid());
+            return new RemoteTransaction(session, g);
         }
 
         /// <inheritdoc />
