@@ -1,4 +1,4 @@
-﻿﻿#region License
+﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,10 +21,8 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Process.Traversal.Strategy.Verification;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection

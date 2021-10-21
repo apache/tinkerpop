@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
@@ -107,11 +108,10 @@ edgeValueMaps = g.V().OutE().ValueMap<object, object>().With(WithOptions.Tokens)
         {
 // tag::submittingScripts[]
 var gremlinServer = new GremlinServer("localhost", 8182);
-using (var gremlinClient = new GremlinClient(gremlinServer))
-{
-    var response =
-        await gremlinClient.SubmitWithSingleResultAsync<string>("g.V().has('person','name','marko')");
-}
+using var gremlinClient = new GremlinClient(gremlinServer);
+
+var response =
+    await gremlinClient.SubmitWithSingleResultAsync<string>("g.V().has('person','name','marko')");
 // end::submittingScripts[]
         }
         
@@ -120,15 +120,14 @@ using (var gremlinClient = new GremlinClient(gremlinServer))
         {
 // tag::submittingScriptsWithTimeout[]
 var gremlinServer = new GremlinServer("localhost", 8182);
-using (var gremlinClient = new GremlinClient(gremlinServer))
-{
-    var response =
-        await gremlinClient.SubmitWithSingleResultAsync<string>(
-            RequestMessage.Build(Tokens.OpsEval).
-                AddArgument(Tokens.ArgsGremlin, "g.V().count()").
-                AddArgument(Tokens.ArgsEvalTimeout, 500).
-                Create());
-}
+using var gremlinClient = new GremlinClient(gremlinServer);
+
+var response =
+    await gremlinClient.SubmitWithSingleResultAsync<string>(
+        RequestMessage.Build(Tokens.OpsEval).
+            AddArgument(Tokens.ArgsGremlin, "g.V().count()").
+            AddArgument(Tokens.ArgsEvalTimeout, 500).
+            Create());
 // end::submittingScriptsWithTimeout[]
         }
 
@@ -140,6 +139,35 @@ var username = "username";
 var password = "password";
 var gremlinServer = new GremlinServer("localhost", 8182, true, username, password);
 // end::submittingScriptsWithAuthentication[]
+        }
+        
+        [Fact(Skip = "No Server under localhost")]
+        public async Task TransactionsTest()
+        {
+// tag::transactions[]
+using var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182));
+var g = Traversal().WithRemote(new DriverRemoteConnection(gremlinClient));
+var tx = g.Tx();    // create a transaction
+
+// spawn a new GraphTraversalSource binding all traversals established from it to tx
+var gtx = tx.Begin();
+
+// execute traversals using gtx occur within the scope of the transaction held by tx. the
+// tx is closed after calls to CommitAsync or RollbackAsync and cannot be re-used. simply spawn a
+// new Transaction from g.Tx() to create a new one as needed. the g context remains
+// accessible through all this as a sessionless connection.
+try
+{
+    await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
+    await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
+    
+    await tx.CommitAsync();
+}
+catch (Exception)
+{
+    await tx.RollbackAsync();
+}
+// end::transactions[]
         }
     }
 }

@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added support for `g.Tx()` in .NET.
 * Added support for `with()` constant options to `io()`.
 * Fixed bug in the processing of the `io()` step when constructing a `Traversal` from the grammar.
 * Added the `ConnectedComponent` tokens required to properly process the `with()` of the `connectedComponent()` step.
