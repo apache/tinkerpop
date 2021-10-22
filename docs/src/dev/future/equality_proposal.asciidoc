@@ -1,0 +1,682 @@
+= Proposal for equality, equivalance, comparability and orderability semantics for TinkerPop
+
+== Motivation
+
+How values compare to each other is crucial to the behavior of a query language. While comparison semantics may sound like a trivial question at first, when looking under the surface many interesting questions arise, including aspects around equality and comparability in the context of type casting (e.g., over numerics of different types), slightly different variants of equality being used in different context (e.g. predicates vs. deduplication), questions around comparability and ordering across different logical types, as well as around the identity of elements (such as vertex and edge properties). 
+
+TinkerPop / Gremlin is written in and (partially) relies upon Java / JVM, and there is no clear semantics defined and published for the different types of equality and comparison operations as of today. Rather, what equals what and how values compare is often implicitly defined by the semantics of the underlying Java data structures that are being used, and hence may vary from context to context. We believe that a concise definition of these concepts is critical for both TinkerPop customers — who need to be able to reason about the outcome of their queries — as well as custom implementations of the TinkerPop API, who would benefit from a concise definition to follow. Therefore, TinkerPop should provide a complete and cohesive semantics for equality / comparison such that all Graph providers can easily ensure that their query processing approach aligns with the TinkerPop implementation. Helping customers and implementers alike, this will help increase the adoption of Gremlin as a query language. 
+
+This documentation is a proposal that shall serve as a basis for a community discussion on how TinkerPop should handle equality / comparison in different contexts. Motivated by different examples of the status today, we formalize different notions of equality and comparability and describe the contexts in which they apply. While the semantics that we propose is largely aligned with the semantics that is implemented in TinkerPop today, this proposal aims to fill in some existing gaps (such as providing a complete, cross-datatype ordering instead of throwing exceptions) and proposes modifications for a few edge cases, as to make the overall semantics more predictable, coherent, and documentable.    
+
+=== Examples
+
+Below are a couple of example scenarios where defining semantics can help clarify and mitigate inconsistent / undefined behavior in TinkerPop today:
+
+==== The underspecified/undocumented behavior
+
+Consider an equality check such as 
+
+[source]
+----
+gremlin> g.V().has(id, 19)
+----
+
+Without a precise definition, both users and Graph providers don't know whether this query matches only nodes with an ID that is exactly equal to the integer value 19 or, for instance, all numerical values that cast to an Integer value 19. To see that, right now, they need to dig into the TinkerPop code base. While, in the above example, type casting rules apply, in other cases such as
+
+[source]
+----
+gremlin> g.V().property(numericValue).dedup()
+----
+
+the two values above would always be treated as different entities.
+
+==== The behavior that is inherently driven by Java:
+
+Another example is equality over composite type.
+
+[source]
+----
+gremlin> g.V().aggregate("a").out().aggregate("b").cap("a").where(eq("b"))
+----
+
+This query compares two BulkSet objects produced by cap-Step. But the comparison is Java dependent and we don’t have a clear definition of how the comparison works for this kind of types.
+Same as Map, e.g.
+
+[source]
+----
+gremlin> g.V().group().unfold().as("a").V().group().unfold().as("b").where(eq("a", "b"))
+----
+
+and even we have comparison over Map.Entry which is Java dependent type.
+
+[source]
+----
+gremlin> g.V().group().unfold().order() 
+class java.util.HashMap$Node cannot be cast to class java.lang.Comparable (java.util.HashMap$Node and java.lang.Comparable are in module java.base of loader 'bootstrap')
+----
+
+==== Potentially unexpected results due to incompleteness
+
+A query which tries to determine the order across multiple types fails today. 
+
+[source]
+----
+// Propertis have values of Integer and String.
+gremlin> g.V().values("some property").order()
+
+class java.lang.Integer cannot be cast to class java.lang.String (java.lang.Integer and java.lang.String are in module java.base of loader 'bootstrap')
+
+// This query aims to order a heterogeneous result set
+gremlin> g.V().union(out(), outE()).order()
+class org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex cannot be cast to class java.lang.Comparable (org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex is in unnamed module of loader 'app'; java.lang.Comparable is in module java.base of loader 'bootstrap')
+----
+
+It would be more helpful for users to define the complete order across types and returns a result instead of throwing an Exception.
+
+==== Inconsistencies results
+
+Handling for `NaN`, `NULL`, `+0.0`, `-0.0`, `+INF`, `-INF` is tricky, and TinkerPop does not cover all cases consistently at this moment.
+
+[source]
+----
+gremlin> g.V("1").properties("key")
+==>vp[key→0]
+
+// NaN == 0 holds true for this equality check.  
+gremlin> g.V("1").has("key", Double.NaN)
+==>v[1]
+
+gremlin> g.V("1").properties()
+==>vp[key→Infinity]
+
+// 0.0 is interepreted as BigDecial in Groovy and it tries to promote Infinity to BigDecimal as well,
+// then the type casting fails. This is observed when using Java11.
+gremlin> g.V("1").has("key", gt(0.0))
+Character I is neither a decimal digit number, decimal point, nor "e" notation exponential mark.
+----
+
+In the next section, we provide a conceptual proposal to define concepts around how values compare and are ordered, which aims to provide an answer to these and other questions. We seek the feedback from the community to discuss and reach a consensus around the proposal and are open to all other ideas around how these concepts should be defined in TinkerPop / Gremlin.
+
+== Conceptualization of Equality and Comparison
+
+In the above section we used the notions of "equality" and "comparison" in a generalized way. Inspired by the formalization in https://s3.amazonaws.com/artifacts.opencypher.org/openCypher9.pdf[the openCypher specification], we now refine these two notions into four, where we distinguish between equality vs. equivalence and comparability vs. orderability, which constitute two flavors of these concepts tailored to their usage in different concepts.  We summarize and contrast these concepts in the following subsections; more technical details and discussion of edge cases can be found in the technical appendix.
+
+=== Proposed semantics
+
+==== Equality vs. Equivalence
+
+Equality defines when two values are considered equal in the context of database lookups and predicates, while  equivalence defines value collation semantics in the context of, for instance, deduplication. For instance, equivalence over two values `a := Double.NaN` and `b:= Double.NaN` is true, but equality would (in our proposal) be defined as false; the rational here (which is commonly found in query and programming languages) is that comparing two "unknown" numbers — which is a frequent use case for NaN, cannot certainly be identified as equal in comparison, but it typically makes sense to group them together in, for instance, aggregations. 
+
+Both equality and equivalence can be understood as complete, i.e. the result of equality and equivalence checks is always either TRUE or FALSE (in particular, it never returns NULL or throws an exception). The details on equality and equivalence are sketched in the following two subsections, respectively.
+
+===== Equality 
+
+* Used by equality and membership predicates (such as https://github.com/apache/tinkerpop/blob/734f4a8745e797f794c4860962912b04313f312a/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/P.java#L130[P.eq], https://github.com/apache/tinkerpop/blob/734f4a8745e797f794c4860962912b04313f312a/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/P.java#L139[P.neq], and the list membership https://github.com/apache/tinkerpop/blob/72be3549a5e4f99115e9d491e0fc051fff77998a/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/Contains.java#L52[P.within]) in Gremlin. When this eq operator returns TRUE for 2 values (LHS and RHS), by definition LHS and RHS are equal to each other.
+
+* If graph providers need join semantics in query execution, equality should be used to join data over join keys. +
+Example:
+
+[code]
+----
+// equality over 2 ids
+gremlin> g.V().has(id, "some id")
+// equality over vertices
+gremlin> g.V().as("v").out().out().where(eq("v"))
+----
+
+* Equality adheres to type promotion semantics for numerical values, i.e. equality holds for values of different numerical type if they cast into the exactly same same value of the lowest common super type.
+* Other than the type promotion between Numbers, 2 values of different type are always regarded as not equal.
+* Equality checks always return TRUE or FALSE. They never result in NULL output, undefined behavior, nor do they ever throw an error. Detailed behavior is described in
+
+===== Equivalence
+
+* Equivalence defines how TinkerPop deals with 2 values to be grouped or de-duplicated. Specifically it is necessary for the dedup and group steps in Gremlin. +
+Example:
+
+[code]
+----
+// deduplication needs equivalence over 2 property values
+gremlin> g.V().dedup().by("name")
+// grouping by equivalence over 2 property values
+gremlin> g.V().group().by("age") 
+----
+
+* Equivalence ignores type promotion semantics, i.e. two values of different types (e.g. 2^^int vs. 2.0^^float) are always considered to be non-equivalent. (There is an open question whether equivalence takes type promotion into account). +
+
+* For Number, 
+** Because type promotion is not effective, if the types are different then two numbers are never equivalent
+** NaN is not equal to NaN, but equivalent to each other
+
+* Other than the edge case around NaN (and, as of today, Numbers), equivalence in TinkerPop is identical to equality.
+* Like equality, equivalence checks always return TRUE or FALSE. They never result in NULL output, undefined behavior, nor do they ever throw an error.
+
+==== Comparability vs. Orderability
+
+Comparability and orderability can be understood as the "dual" concepts of equality and equivalence for range comparisons (rather than exact comparison). For the 2 values of the same type (except for NaN), comparability is stronger than orderability in the sense that everything that every order between two values that holds TRUE w.r.t. comparability also holds TRUE w.r.t. orderability, but not vice versa. Comparability is what is being used in range predicates. It is restricted to comparison within the same type or, for numerics, class of types; comparability is complete within a given type, but returns NULL if the two types are considered incomparable (e.g., an integer cannot be compared to a string). Orderability fills these gaps, by providing a stable sort order over mixed type results; it is consistent with comparability within a type, and complete both within and across types, i.e. it will never return NULL or throw an exception. +
+More details on comparability and orderability are sketched in the following two subsections, respectively.
+
+===== Comparability
+
+* Used by the comparison operators (https://github.com/apache/tinkerpop/blob/050f66a956ae36ceede55613097cc86e19b8a737/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/Compare.java#L88[P.gt], https://github.com/apache/tinkerpop/blob/050f66a956ae36ceede55613097cc86e19b8a737/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/Compare.java#L138[P.lt], https://github.com/apache/tinkerpop/blob/050f66a956ae36ceede55613097cc86e19b8a737/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/Compare.java#L117[P.gte], https://github.com/apache/tinkerpop/blob/050f66a956ae36ceede55613097cc86e19b8a737/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/Compare.java#L168[P.lte]) in Gremlin and defines how to compare 2 values. +
+Example:
+
+[code]
+----
+// comparison over 2 property values
+gremlin> g.E().has("weight", gt(1))  
+----
+
+* For numbers,
+** it should be aligned to equality conceptually as far as type promotion is concerned. e.g. `1.0 < 2 < 3L`
+* Comparison should not result in undefined behavior, but can return NULL if and only if we are comparing incomparable data types. How this NULL result is handled is Graph provider dependent.
+* Otherwise Comparison does return TRUE or FALSE
+
+===== Orderability
+
+* Used to determine the order. In TinkerPop, the order step follows the notion of orderability.
+* Orderability must not result in NULL / undefined behavior.
+* Orderability must not throw an error. In other words, even if 2 values are incomparable we should still be able to determine the order of those two. This inevitably leads to the requirement to define the order across different data types. For the detailed order across types, see appendix.
+* Orderability determines if 2 values are ordered at the same position or one value is positioned earlier than another.
+* The concept of equivalence is used to determine if the 2 values are at the same position
+* When the position is identical, which value comes first (in other words, whether it should perform stable sort) depends on graph providers' implementation.
+* For values of the same type, comparability can be used to determine which comes first except for NaN in Number. For a different type, we have a dedicated order as described in the section below.
+
+===== Mapping table for TinkerPop operators
+
+Shown as below is a table for which notion proposed above each TinkerPop construct used.
+
+[%header]
+|================
+|Construct|Concept                
+|P.eq     |Equality               
+|P.neq    |Equality               
+|P.within |Equality               
+|P.without|Equality               
+|P.lt     |Comparability          
+|P.gt     |Comparability          
+|P.lte    |Equality, Comparability
+|P.gte    |Equality, Comparability
+|P.inside |Comparability          
+|P.outside|Comparability          
+|P.between|Equality, Comparability
+|================
+
+== What would change ?
+
+=== Semantics
+
+In terms of Semantics, right now TinkerPop does not have formal semantics to define these characteristics introduced in this proposal. Therefore this semantics should be published on the official TinkerPop doc.
+
+=== Behavioral changes
+==== Equality
+
+* NaN +
+JDK11 seems to produce a different error from JDK8 when it comes to BigDecimal comparisons that hit NaN and such. For JDK8 they seem to produce NumberFormatException but for JDK11 you get stuff like:
+
+[code]
+----
+gremlin> g.V().has("key", Float.NaN)
+Character N is neither a decimal digit number, decimal point, nor "e" notation exponential mark.
+----
+When Double / Float Number is stored, it always throws. With the proposed change, it wouldn't throw but because NaN is not equal to any numbers this returns empty result.
+
+* BigDecimal +
+Equality around BigDecimal and special values which cannot be parsed as Integer such as NaN, INF should not produce exceptions and should filter.
+
+[code]
+----
+gremlin> g.addV().property('key',Float.NaN)
+==>v[0]
+gremlin> g.addV().property('key',1.0f)
+==>v[2]
+gremlin> g.V().has('key',Float.NaN)
+==>v[0]
+gremlin> g.V().has('key',1.0f)
+==>v[2]
+gremlin> g.V().values("key").is(eq(1.0f)) // 3.5.x
+==>1.0
+gremlin> g.V().has('key',1.0) // 3.5.x - likely due to Groovy going to BigDecimal for "1.0"
+java.lang.NumberFormatException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().values("key").is(eq(new BigDecimal(1.0f))) // 3.5.x
+java.lang.NumberFormatException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.V().has('key',1.0) // proposed
+==>v[2]
+gremlin> g.V().values("key").is(eq(1.0)) // proposed
+==>1.0
+----
+
+==== Comparability
+
+* NaN +
+Comparing on NaN should return no results.
+
+[code]
+----
+gremlin> g.addV().property('key',-5)
+==>v[0]
+gremlin> g.addV().property('key',0)
+==>v[2]
+gremlin> g.addV().property('key',5)
+==>v[4]
+gremlin> g.addV().property('key',Double.NaN)
+==>v[6]
+gremlin> g.V().values("key").is(lte(Double.NaN)) // 3.5.x
+==>-5
+==>0
+==>NaN
+gremlin> g.V().values("key").is(gte(Double.NaN)) // 3.5.x
+==>0
+==>5
+==>NaN
+gremlin> g.V().values("key").is(lt(Double.NaN)) // 3.5.x
+==>-5
+gremlin> g.V().values("key").is(gt(Double.NaN)) // 3.5.x
+==>5
+gremlin> g.V().values("key").is(lte(Double.NaN)) // proposed
+==>NaN
+gremlin> g.V().values("key").is(gte(Double.NaN)) // proposed
+==>NaN
+gremlin> g.V().values("key").is(lte(Double.NaN)) // proposed
+gremlin> g.V().values("key").is(gte(Double.NaN)) // proposed
+----
+
+* Comparability throws exception today but based on the proposal, it returns NULL when comparing incompatibile types.
+  ** When Vertex / Edge / VertexProperty  is compared, today it throws but it should return NULL.
+  ** When NULL is compared, today it throws an exception but it should return NULL. 
+
+==== Equivalence
+
+TinkerPop today uses a hash value for original values for grouping and the behavior is unchanged.
+
+==== Orderability
+
+- Currently, TinkerPop follows comparability for orderability, thus non-comparable and mixed-type values will fail in ordering. The proposed change is to be able to order any types.
+
+[code]
+----
+gremlin> g.V().order(). // 3.5.x
+org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex cannot be cast to java.lang.Comparable
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.V(1).values('name').union(identity(),V(2)).order() // 3.5.x
+org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex cannot be cast to java.lang.Comparable
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().order()  // proposed
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+gremlin> g.V(1).values('name').union(identity(),V(2)).order() // proposed
+==>v[2]
+==>marko
+gremlin> g.addV().property("key", 100)
+==>v[0]
+gremlin> g.addV().property("key", "100000")
+==>v[2]
+gremlin> g.V().values('key').order() // 3.5.x
+java.lang.Integer cannot be cast to java.lang.String
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.V().values('key').order() // proposed
+==>100
+==>100000
+----
+
+== Open Questions
+
+* Should we take type-promotion into account in terms of equivalence ? +
+[code]
+----
+// In this case below,
+gremlin> g.V().property()
+==>[key:1.0]
+==>[key:1]
+
+// which is more natural, whether we don't de-duplicate them
+gremlin> g.V().property().dedup()
+==>[key:1.0]
+==>[key:1]
+
+// or de-dup them
+gremlin> g.V().property().dedup()
+==>[key:1.0]
+----
+        
+If de-duping, there is another question which value we should filter out. We need to define priority over types in Number. 
+Also note that TinkerPop is Java based and we have Double.NaN and Float.NaN, ±Double.INF and ±Float.INF. Not adhering type casting means, for example, Double.NaN and Float.NaN is not de-duplicated / grouped according to the semantics.
+        
+* Map.Entry is Java dependent type. Instead of defining semantics for Map.Entry, do we introduce a concept of like key-value tuple for it to generalize ?
+* Today we have Date type but don’t we need timezone aware DateTime type as well ?
+* Some graph providers may not support BigDecimal. Do we leave how TP deals with BigDecimal to Graph providers ?
+* Which should be more reasonable, NULL eq NULL is true or false ?
+  ** If it is true, it may be respected in JOIN operation
+* There are a number of situations where the Gremlin grammar won’t support some of the examples - to what extent do these sorts of constructs need to exist in the grammar? Not having them would impact the ability to supply tests that enforce the behaviors that we’ve outlined. 
+* Should UUID be a different type to be taken into account ?
+
+== Technical Appendix
+
+=== Types
+First we need to define which data types the TinkerPop query execution runtime needs to handle. It is JVM based so as a primitive type, we are using the following types:
+
+* Byte: 8-bit signed two's complement integer
+* Boolean: true or false
+* Short: 16-bit signed two's complement integer
+* Integer: 32-bit signed two's complement integer.
+* Long: 64-bit signed two's complement integer.
+* Float: https://en.wikipedia.org/wiki/Single-precision_floating-point_format[single-precision 32-bit IEEE 754 floating point]
+* Double: https://en.wikipedia.org/wiki/Double-precision_floating-point_format[double-precision 64-bit IEEE 754 floating point]
+* BigInteger
+* BigDecimal
+* String / Char
+* UUID (String based equality / comparison, so identical to String)
+* Date
+
+Note that in Double or Float, we have a concept of INFINITY / https://en.wikipedia.org/wiki/Signed_zero[signed-zero], and NaN.
+In addition to these, there are composite types as follows:
+
+* Vertex
+* Edge
+* VertexProperty
+* Property
+    ** Edge property
+    ** Vertex meta property
+* PropertyKey
+* PropertyValue
+* Label
+* ID
+* Path
+* List
+* Map
+* Set / BulkSet
+* Map.Entry (obtained from unfolding a Map)
+
+=== Type Casting
+
+We do type casting a.k.a type promotion for Numbers. Numbers are  Byte, Short, Integer, Long, Float, Double, BigInteger, and BigDecimal. Here is the rule how types are promoted:
+
+* If at least one is BigDecimal then compare as BigDecimal
+* If at least one is BigInteger then compare as BigInteger
+* If at least one is Double then compare as Double
+* If one of them is a Float, then convert both to floating type of highest common bit denomination
+  ** If another value is Long or Double, we need 64bit so convert both to Double 
+  ** Otherwise convert both to Float
+* If at least one is Long then compare as Long
+* If at least one is Integer then compare as Integer
+* If at least one is Short then compare as Short
+* If at least one is Byte then compare as Byte
+
+BigDecimal and BigInteger may not be supported depending on the language and Storage, therefore the behavior of type casting for these 2 types can vary depending on a Graph provider. 
+
+=== Equality
+
+==== Primitive types
+===== Number
+
+Number consists of Byte, Short, Integer, Long, Float, Double, BigInteger, and BigDecimal.
+
+* If either one of LHS or RHS is Number and another isn't, eq returns FALSE.
+* If both LHS and RHS are Number, it follows the type casting described above and then check the equality.
+* Example for edge cases:
+    ** -0.0 eq 0.0  = TRUE
+    ** +0.0 eq 0.0 = TRUE
+    **  -0.0 eq +0.0 = TRUE
+    ** NaN eq NaN  = FALSE
+    ** +INF eq +INF = TRUE
+    **  -INF eq -INF = TRUE
+    **  -INF eq +INF = FALSE
+* TinkerPop is JVM based so there can be ±INF^^float and ±INF^^double, NaN^^float and NaN^^double. They also adhere the type promotion.
+
+===== Boolean
+
+* If either one of LHS or RHS is Boolean and another isn't, return FALSE
+* True != False, True == True, False == False
+
+===== String
+
+* If either one of LHS or RHS is String and another isn't, return FALSE
+* We assume the common graphical order over unicode strings.
+* LHS and RHS needs to be lexicographically equal for LHS eq RHS == TRUE for String.
+
+===== Date
+
+* If either one of LHS or RHS is Date and another isn't, return FALSE
+* LHS eq RHS == TRUE when both LHS and RHS value are numerically identical in Unix Epoch time.
+
+===== NULL
+
+* If either one of LHS or RHS is null and another isn't, return FALSE
+* If both LHS and RHS are null, return TRUE 
+
+==== Composite types
+
+For all of them, if LHS and RHS is not of the same data type, equality returns FALSE. The following semantics applied when both LHS and RHS has the data type.
+
+===== Vertex / Edge / VertexProperty
+
+They are considered as Element family in TinkerPop and if 2 elements have the same type and have the same ID, they are considered as equal.
+
+===== Property
+
+If key and value are same, 2 properties are equal.
+
+===== PropertyKey
+
+key is String type so Equality for String type applies.
+
+===== PropertyValue
+
+Any type, so Equality for a corresponding type applies.
+
+===== ID
+
+Any type, so Equality for a corresponding type applies.
+
+===== Label
+
+label is String type so Equality for String type applies.
+
+===== Path
+
+2 Paths are equal when their path elements are equal (using equality of List), and the corresponding path labels are also equal. 
+
+===== List
+
+* If either one of LHS or RHS is List and another isn't, return FALSE
+* When both are List, then
+    ** if the size of them are different, return FALSE
+    ** L(n) denotes n-th element in list L. 
+        *** For 2 lists L1 and L2 to be equal (L1 is equal to L2), for all 0 <= x < n (n is length of L1 and L2) L1(n) eq L2(n) must return TRUE.
+        *** For 2 lists L1 and L2 to be not equal (L1 eq L2 returns FALSE), for any 0 <= x < n (n is length of L1 and L2) L1(n) eq L2(n) must return FALSE.
+
+===== Map
+
+* If either one of LHS or RHS is Map and another isn't, return FALSE
+* For 2 Maps M1 and M2 to be equal,
+    ** All keys in M1 should be within keys in M2
+    ** All keys in M2 should be within keys in M1
+    ** M1 and M2 should have the same number of  keys
+    ** For all keys k(1), k(2), ...k(n) in M1, M1[k] eq M2[k] should return TRUE
+    ** In Gremlin key order is not respected when determining equality
+
+=== Equivalence
+
+Equivalence is identical to Equality, except for the cases listed below.
+
+==== Primitive types
+===== Number
+
+* Unlike Equality, we *don't do* type casting for Equivalence.
+    ** If the type is different, they are not equivalent.
+        *** +INF^^double is not equivalent to +INF^^float
+        *** NaN^^double is not equivalent to NaN^^float
+    ** 123 and 123.0 are equal but not equivalent to each other
+* -0.0, 0.0, and +0.0 are not equivalent to each other
+    ** -0.0 is equivalent to -0.0
+    ** 0.0 is equivalent to 0.0
+    ** +0.0 is equivalent to +0.0
+* -INF and +INF are not equivalent to each other
+    ** -INF is equivalent to -INF
+    ** +INF is equivalent to +INF
+    ** They are equialavlent to each other irrespective to its underlying type, so in Java, for example, Double.POSITIVE_INFINITY is equivalent to Float.POSITIVE_INFINITY.
+* NaN is not equivalent to any other numbers
+    ** NaN *is equivalent to* NaN irrespective to its underlying type, so in Java, for example, Double.NaN is equivalent to Float.NaN.
+
+===== NULL
+* NULL is not equivalent to any other values
+* NULL is equivalent to NULL
+
+=== Comparability
+
+==== Primitive types
+===== Number
+
+* If either one of LHS or RHS is Numbers and another isn’t, throw an Exception. This comes first before the handling for each type.
+* If both LHS and RHS are Numbers, try the type casting, and then compare 2 values.
+* For -0.0, 0.0, +0.0, lt and gt returns FALSE and lte, gte returns TRUE because they are "equal" in this semantics.
+* -INF < +INF
+* Any comparison between NaN and any numbers (including NaN) should return FALSE +
+https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2.3
+* IF null and NaN is compared it should throw as their “type” is different
+
+===== Boolean
+* If either one of LHS or RHS is Boolean and another isn’t, throws an Exception
+* False < True
+
+===== String
+* If either one of LHS or RHS is String and another isn’t, returns NULL.
+* We assume the common lexicographical order over unicode strings
+* LHS and RHS are compared lexicographically
+
+===== Date
+* If either one of LHS or RHS is Date and another isn’t, throw an Exception
+* Compare LHS and RHS based on chronological order, i.e. numerical order in timestamp.
+
+===== NULL
+* NULL is not comparable, if the LHS or RHS is NULL then the comparison result is NULL.
+
+==== Composite types
+
+For all of them, if LHS and RHS is not of the same data type, equality returns FALSE. The following semantics applied when both LHS and RHS has the data type.
+
+===== Vertex / Edge / VertexProperty
+They are not comparable, return NULL.
+
+===== Property
+It it not comparable, return NULL.
+
+===== PropertyKey
+Comparability of String applies.
+
+===== PropertyValue
+Property values are of any primitive types defined, so Comparability for a corresponding type applies.
+
+===== ID
+IDs are of any primitive types defined, so Comparability for a corresponding type applies.
+
+===== Label
+Comparability of String applies.
+
+===== Path
+It it not comparable, throw an Exception.
+
+===== List
+It it not comparable, throw an Exception.
+
+===== Map
+It it not comparable, throw an Exception.
+
+===== Map.Entry
+It it not comparable, throw an Exception.
+
+===== Set
+It it not comparable, throw an Exception.
+
+=== Orderability
+To sort across any types of values, we define the order between each type as follows:
+(In this order, ID, label, property key and property value are considered as a part of primitive types)
+
+* NULL
+* Boolean
+* Number
+* Date
+* String
+* Vertex
+* Edge
+* VertexProperty
+* Property
+* Path
+* List
+* Map
+
+==== Primitive types
+===== Number
+* Same applies as Comparability. Exceptions are as below:
+    ** NaN is ordered at a larger index among all Numbers. i.e. after +INF.
+* We do type promotion for orderability as we do for comparability.
+
+===== Boolean
+* False < True
+
+===== String
+* String value is ordered lexicographically
+
+===== Date
+* Date value is ordered chronologically
+
+===== NULL
+* NULL is after all value types
+
+==== Composite types
+===== Vertex / Edge / VertexProperty
+
+They are ordered by their ID. The ID is chosen internally by the implementation, so ordering is implementation specific, but is guaranteed to be stable.
+
+===== Property
+They are ordered by property key. If the key is equal, then property value is used as the 2nd key.
+
+===== PropertyKey
+Comparability of String applies.
+
+===== PropertyValue
+Property values are of any primitive types defined, so orderability for a corresponding type applies.
+
+===== ID
+IDs are of any primitive types defined, so orderability for a corresponding type applies.
+
+===== Label
+Comparability of String applies.
+
+===== Path
+* Orderability of the 1st element in the Path applies. Empty Path should come first.
+* If the 1st element is tie, then check the next element, and so on.
+* If one Path exhausts the element fast then it comes earlier in the order.
+
+===== List
+* Orderability of the 1st element in the List applies.
+* Empty List should come first.
+* If the 1st element is tie, then check the next element, and so on.
+* If one List exhausts the element fast then it comes earlier in the order.
+
+===== Map
+
+* For 2 maps, get the 1st entry (a key-value pair) from both, the orderability between them decides the order of the maps.
+* If the 1st entry is tie, then we pick the 2nd one and repeat the process until we determine the order.
+    ** So the orderability of Map depends on in which order they return an entry. It is implementation dependent and undefined in this semantics.
+* If one Map exhausts an entry earlier than another, then it comes earlier in the order.
+
+===== Map.Entry
+* First check the orderability of their key.
+* If the key ties, then check the orderability of their value.
+
+===== Set
+* For 2 sets, get the 1st item from both, the orderbaility between them decides the order of the sets.
+* If the 1st item is tie, we pick the 2nd one and so on until we determine the order.
+    ** So the orderability of Set depends on in which order they return an item. It is implementation dependent and undefined in this semantics.
+* If one Set exhausts an item earlier than another, then it comes earlier in the order.
