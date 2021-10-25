@@ -1160,6 +1160,11 @@ $ curl -H "Accept:application/vnd.gremlin-v3.0+json" -X POST -d "{\"gremlin\":\"
 {"requestId":"9fdf0892-d86c-41f2-94b5-092785c473eb","status":{"message":"","code":200,"attributes":{"@type":"g:Map","@value":[]}},"result":{"data":{"@type":"g:List","@value":[{"@type":"g:Int32","@value":99}]},"meta":{"@type":"g:Map","@value":[]}}
 ----
 
+IMPORTANT: `GraphSONMessageSerializerGremlinV1d0` configures `application/vnd.gremlin-v1.0+json`, but this mime type does
+not support text serialization (i.e. `MessageTextSerializer`) which means that it cannot be used for the serializing
+results to the HTTP endpoint in Gremlin Server. GraphSON 1.0 must be configured with `application/json` using the
+`GraphSONMessageSerializerV1d0` as demonstrated above.
+
 ===== Gryo
 
 WARNING: Gryo is no longer the recommended serialization format for Gremlin Server. Consider using
