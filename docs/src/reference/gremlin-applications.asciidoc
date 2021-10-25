@@ -812,6 +812,7 @@ the one in `conf/remote.yaml` should perform better.
 NOTE: Console commands, those that begin with a colon (e.g. `:x`, `:remote`) do not execute remotely when in this mode.
 They are all still evaluated locally.
 
+[[connecting-via-http]]
 === Connecting via HTTP
 
 image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a
@@ -1514,32 +1515,51 @@ link:https://tinkerpop.apache.org/docs/current/dev/io/#graphson[IO Documentation
 
 [source,yaml]
 ----
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0 }
 ----
 
-The above configuration represents the default serialization under the `application/json` MIME type and produces JSON
-consistent with standard JSON data types.  It has the following configuration option:
+Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has the following configuration option:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |=========================================================
+
+It is worth noting that GraphSON 1.0 still has some appeal for some users as it can be configured to produce an untyped
+JSON format which is a bit easier to consume than its successors which embed data types into the output. This version
+of GraphSON tends to be the one that users like to utilize when <<connecting-via-http,connecting via HTTP>> and is still
+used by some <<connecting-rgp, Remote Gremlin Providers>> for this purpose.
+
+To configure Gremlin Server this way, the `GraphSONMessageSerializerV1d0` must be included:
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0 }
+----
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0 }
+----
 
-When the standard JSON data types are not enough (e.g. need to identify the difference between `double` and `float`
-data types), the above configuration will embed types into the JSON itself.  The type embedding uses standard Java
-type names, so interpretation from non-JVM languages will be required.  It has the MIME type of
-`application/vnd.gremlin-v1.0+json` and the following configuration options:
+In the above situation, both `GraphSONMessageSerializerV1d0` and `GraphSONMessageSerializerV3d0` each bind to the
+`application/json` mime type. When such conflicts arise, Gremlin Server will use the order of the serializers to
+determine priority such that the first serializer to bind to a type will be used and the others ignored. The following
+log message will indicate how the server is ultimately configured:
 
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Key |Description |Default
-|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
-|=========================================================
+[source,text]
+----
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
+[INFO] AbstractChannelizer - application/json already has org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 configured - it will not be replaced by org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0, change order of serialization configuration if this is not desired.
+----
+
+Given the above, using GraphSON 3.0 under this configuration will require that the user specific the type:
+
+[source,text]
+----
+$ curl -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
+{"requestId":"f8720ad9-2c8b-4eef-babe-21792a3e3157","status":{"message":"","code":200,"attributes":{}},"result":{"data":[99],"meta":{}}}
+$ curl -H "Accept:application/vnd.gremlin-v3.0+json" -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
+{"requestId":"9fdf0892-d86c-41f2-94b5-092785c473eb","status":{"message":"","code":200,"attributes":{"@type":"g:Map","@value":[]}},"result":{"data":{"@type":"g:List","@value":[{"@type":"g:Int32","@value":99}]},"meta":{"@type":"g:Map","@value":[]}}
+----
 
 ===== Gryo
 
