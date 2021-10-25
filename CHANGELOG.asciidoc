@@ -28,6 +28,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a `NullPointerException` that could occur during a failed `Connection` initialization due to uninstantiated `AtomicInteger`.
 * Minor changes to the initialization of Java driver `Cluster` and `Client` such that hosts are marked as available only after successfully initializing connection pools.
 * `NoHostAvailableException` now contains a cause for the failure.
+* Bumped to Netty 4.1.68.
 
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
