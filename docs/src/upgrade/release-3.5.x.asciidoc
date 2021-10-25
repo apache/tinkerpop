@@ -239,10 +239,10 @@ to
 org.apache.commons.configuration2.*
 ----
 
-It is also worth noting that default list handling in configurations is treated differently. TinkerPop largely
-disabled the default list handling approach in `Configuration` 1.x, but if that functionality is still needed, it can
-be reclaimed by setting the `LegacyListDelimiterHandler` - details for doing taking this step and other relevant
-upgrade information can be found in the link:https://commons.apache.org/proper/commons-configuration/userguide/upgradeto2_0.html[2.x Upgrade Documentation].
+It is also worth noting that default list handling in configurations is treated differently. TinkerPop disabled the
+default list handling approach in `Configuration` 1.x, but if that functionality is still needed, it can be reclaimed
+by setting the `LegacyListDelimiterHandler` - details for doing taking this step and other relevant upgrade information
+can be found in the link:https://commons.apache.org/proper/commons-configuration/userguide/upgradeto2_0.html[2.x Upgrade Documentation].
 
 *Neo4j*
 
