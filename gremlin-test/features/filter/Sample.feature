@@ -45,31 +45,26 @@ Feature: Step - sample()
     When iterated to list
     Then the result should have a count of 3
 
-  Scenario: g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX
+  Scenario: g_withStrategiesXSeedStrategyX_V_group_byXlabelX_byXbothE_weight_order_sampleX2X_foldXunfold
     Given the modern graph
     And the traversal of
       """
-      g.V().group().by(T.label).by(__.bothE().values("weight").sample(2).fold())
+      g.withStrategies(new SeedStrategy(seed: 999999)).V().group().by(T.label).by(__.bothE().values("weight").order().sample(2).fold()).unfold()
       """
     When iterated to list
-    Then nothing should happen because
-      """
-      The return value of this traversal is a map of samples weights in a list for each key which makes it
-      especially hard to assert with the current test language established and the non-deterministic outcomes
-      of sample().
-      """
+    Then the result should be unordered
+      | result |
+      | m[{"software":"l[d[1.0].d,d[0.4].d]"}] |
+      | m[{"person":"l[d[0.5].d,d[1.0].d]"}] |
 
-  Scenario: g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX
+  Scenario: g_withStrategiesXSeedStrategyX_V_group_byXlabelX_byXbothE_weight_order_fold_sampleXlocal_5XXunfold
     Given the modern graph
     And the traversal of
       """
-      g.V().group().by(T.label).by(__.bothE().values("weight").fold().sample(Scope.local, 5))
+      g.withStrategies(new SeedStrategy(seed: 999999)).V().group().by(T.label).by(__.bothE().values("weight").order().fold().sample(Scope.local, 5)).unfold()
       """
     When iterated to list
-    Then nothing should happen because
-      """
-      The return value of this traversal is a map of samples weights in a list for each key which makes it
-      especially hard to assert with the current test language established and the non-deterministic outcomes
-      of sample().
-      """
-
+    Then the result should be unordered
+      | result |
+      | m[{"software":"l[d[0.2].d,d[0.4].d,d[0.4].d,d[1.0].d]"}] |
+      | m[{"person":"l[d[0.5].d,d[1.0].d,d[0.4].d,d[0.2].d,d[1.0].d]"}] |

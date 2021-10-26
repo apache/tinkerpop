@@ -98,6 +98,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@org.junit.Ignore("Don't think we need to keep these in sync anymore, but not quite ready to delete this all together")
 public class FeatureCoverageTest {
 
     private static Pattern scenarioName = Pattern.compile("^\\s*Scenario:\\s*(.*)$");

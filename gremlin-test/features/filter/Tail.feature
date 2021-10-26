@@ -70,11 +70,13 @@ Feature: Step - tail()
       | vadas  |
 
   Scenario: g_V_repeatXbothX_timesX3X_tailX7X
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      This test is not easily asserted given limitations on ordering.
+      g.V().repeat(both()).times(3).tail(7)
       """
+    When iterated to list
+    Then the result should have a count of 7
 
   Scenario: g_V_repeatXin_outX_timesX3X_tailX7X_count
     Given the modern graph
