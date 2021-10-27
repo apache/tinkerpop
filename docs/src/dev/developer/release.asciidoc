@@ -304,6 +304,8 @@ tasks as one individual may simply just handle them all.
 . Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Set up the IO tests for the current `SNAPSHOT` as discussed in the <<io,IO Documentation and Testing Section>>
 
+Apache provides access to download statistics for release link:https://logging1-he-de.apache.org/stats/[here].
+
 [[email-templates]]
 == Email Templates
 

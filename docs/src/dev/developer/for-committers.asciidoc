@@ -171,11 +171,10 @@ be adjusted accordingly to not auto-wildcard the imports.
 
 == Build Server
 
-TinkerPop uses link:https://travis-ci.com/[Travis] for link:https://en.wikipedia.org/wiki/Continuous_integration[CI]
-services. The build status can be found link:https://travis-ci.org/apache/tinkerpop[here].  Note that the CI process
-does not run all possible tests (e.g. Neo4j-related tests) as a full execution would likely exceed the allowable times
-for builds on these servers. Instead Travis runs a basic cross-section of tests selected to provide a reasonably high
-degree of confidence in the branch built.
+TinkerPop uses link:https://docs.github.com/en/actions[GitHub Actions] for link:https://en.wikipedia.org/wiki/Continuous_integration[CI]
+services. The build status can be found link:https://github.com/apache/tinkerpop/actions[here]. There is a single
+"build-test" workflow that runs a number of jobs that break the test execution into a series of smaller test executions.
+Taken together, they provide a solid cross section of coverage of the code base
 
 == Deprecation
 
