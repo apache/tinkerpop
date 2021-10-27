@@ -159,3 +159,19 @@ jobs:
           touch gremlin-dotnet/test/.glv
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python -q -DskipTests -Dci
           mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
+  neo4j-gremlin:
+    name: neo4j-gremlin
+    timeout-minutes: 1200 # 20 minutes
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: Build with Maven
+        run: |
+          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
+          mvn verify -pl :neo4j-gremlin -DincludeNeo4j
