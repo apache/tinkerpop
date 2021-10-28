@@ -515,13 +515,11 @@ label is String type so Equality for String type applies.
 
 ===== Map
 
-* If either one of LHS or RHS is Map and another isn't, return FALSE
-* For 2 Maps M1 and M2 to be equal,
-    ** All keys in M1 should be within keys in M2
-    ** All keys in M2 should be within keys in M1
-    ** M1 and M2 should have the same number of  keys
-    ** For all keys k(1), k(2), ...k(n) in M1, M1[k] eq M2[k] should return TRUE
-    ** In Gremlin key order is not respected when determining equality
+* Two maps are equal when a Set of key-value pairs from those 2 maps are equal to each other. A key-value pair is equal to another pair if and only if both its key and value are equal to each other.
+
+===== Set
+
+* Two sets are equal if they contain the same (equal to each other) elements.
 
 === Equivalence
 
