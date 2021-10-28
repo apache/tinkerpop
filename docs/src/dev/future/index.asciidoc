@@ -16,32 +16,56 @@ limitations under the License.
 ////
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-*4.0.0*
-
 :toc-position: left
 
-= TinkerPop 4.x Design Ideas
+= TinkerPop Future
 
-NOTE: This document has not been updated in a significant way since 2018. The ideas presented here do not necessarily
-reflect the project direction going forward currently. We will revisit this document when there is greater focus on
-TinkerPop 4.x design discussions.
+This document offers a rough view at what features can be expected from future releases and catalogs proposals for
+changes that might be better written and understood in a document form as opposed to a dev list post.
 
-Apache TinkerPop™ 4.x is not a version considered on the immediate horizon, but there are often points in the day to
-day development of TinkerPop 3.x where there are changes of importance, novelty and usefulness that are so big that
-they could only be implemented under a major new version. This document is meant to track these concepts as they
-develop, so that at some point in the future they can be referenced in a single place.
+This document is meant to change and restructure frequently and should serve more as a guide rather than directions set
+in stone. As this document represents a future look, the current version is always on the `master` branch and therefore
+the only one that need be maintained.
 
-There is no particular layout or style to this document. Simple bullet points, open questions posed as single
-sentences, or fully structured document headers and content are all acceptable. The main point is to capture ideas
-for future consideration when 4.x becomes the agenda of the day for The TinkerPop.
+[[roadmap]]
+== Roadmap
 
-If adding comments sections, please "sign" comments with initials and reference those initials here:
+image:gremlin-explorer-old-photo.png[width=250,float=left]This section provides some expectations as to what features
+might be provided in future link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_versioning[major versions]. It
+is not a guarantee of a feature landing in a particular version, but it yields some sense of what core developers have
+some focus on. The most up-to-date version of this document will always be in the
+link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/developer/index.asciidoc[git repository].
 
-* *spm* - Stephen Mallette
-* *as* - Ashwini Singh
-* *dk* - Daniel Kuppitz
+The sub-sections that follow only outline those release lines that expect to include significant new features. Other
+release lines may continue to be active with maintenance work and bug fixes, but won't be listed here.
 
-image:tp4-think.png[]
+=== 3.5.x
+
+This initial release of this line was produced in May 2021.
+
+* Support for bytecode based sessions with `tx()` for Python and .NET.
+
+=== 3.6.x
+
+The development of the 3.6.x release line is currently under way.
+
+* Unify the Gremlin testing model by providing support for the Gherkin tests in Java so that they can be used by
+providers to validate their implementations.
+
+=== 3.7.x
+
+Development has not yet started on the 3.7.x release line.
+
+== Proposals
+
+This section tracks and details future ideas. While the dev list is the primary place to talk about new ideas, complex
+topics can be initiated from and/or promoted to this space. While it is fine to include smaller bits of content directly
+in `future/index.asciidoc`, longer, more developed proposals and ideas would be better added as individual asciidoc
+files which would then be included in the `index.asciidoc` (i.e. `include::good-idea.asciidoc[]`).
+
+== Appendix
+
+=== 4.x Branching Methodology
 
 Development of 4.x occurs on the `4.0-dev` branch. This branch was created as an orphan branch and therefore has no
 history tied to any other branch in the repo including master. As such, there is no need to merge/rebase `4.0-dev`. When
@@ -55,187 +79,3 @@ it comes time to promote `4.0-dev` to `master` the procedure for doing so will b
 From this point 3.x development will occur on `3.x-master` and 4.x development occurs on `master` (with the same version
 branching as we have now, e.g `3.3-dev`, `4.1-dev`, etc.) The `3.x-master` branch changes will likely still merge to
 `master`, but will all merge as no-op changes.
-
-== The Main Features
-
-TinkerPop 4.x should focus on the most successful aspects of TinkerPop 3.x and it should avoid the traps realized in
-TinkerPop 3.x. These items include:
-
-* The concept of Gremlin as both a virtual machine and language.
-** A standard bytecode specification should be provided.
-** A standard machine architecture should be provided.
-* The concept of Gremlin language variants.
-** It should be easy to create Gremlin variants in every major programming language.
-** A standard template should be followed for all languages.
-** Apache TinkerPop should provide variants in all major programming languges.
-* The concept of `Traversal` as the sole means of interacting with the graph.
-** The role of Blueprints should be significantly reduced.
-** The role of Gremlin should be significantly increased.
-* Provide better methods of versioning Gremlin itself - being bound to JVM releases and forcing local and remote
-versions of Gremlin to be the same isn't ideal.
-
-== Hiding Blueprints
-
-Originally from the link:https://lists.apache.org/thread.html/b4d80072ad36849b4e9cd3308f87115660574e3e7a4abb7ee68e959b@%3Cdev.tinkerpop.apache.org%3E[mailing list]:
-
-Throughout our documentation we show uses of the “Blueprints API” (i.e. Graph/Vertex/Edge/etc. classes & methods) as
-well as the use of the Traversal API (i.e. Gremlin).
-
-Enabling users to have two ways of interacting with the graph system has its problems:
-
-1. The DetachedXXX problem — how much data should a returned vertex/edge/etc. have associated with it?
-2. `graph.addVertex()` and `g.addV()` — which should I use? The first is faster but is not recommended.
-3. `SubgraphStrategy` leaking — I get subgraphs with Gremlin, but can then directly interact with the vertex objects to see more than I should.
-4. `VertexProgram` model — I write traversals with Traversal API, but then develop VertexPrograms with the Blueprints API. That’s weird.
-5. GremlinServer returning fat objects — Serializers are created property-rich vertices and edges. The awkward HaltedTraversalStrategy solution.
-6. … various permutations of these source problems.
-
-In TinkerPop4 the solution might be as follows:
-
-There should be two “Graph APIs.”
-
-1. Provider Graph API: This is the current Blueprints API with `Graph.addVertex()`, `Vertex.edges()`, `Edge.inVertex()`, etc.
-2. User Graph API: This is a ReferenceXXX API.
-
-The first API is well known, but the second bears further discussion. `ReferenceGraph` is simply a reference/dummy/proxy
-to the provider Graph API. `ReferenceGraph` has the following API:
-
-* `ReferenceGraph.open()`
-* `ReferenceGraph.close()`
-* `ReferenceGraph.tx()` // assuming we like the current transaction model (??)
-* `ReferenceGraph.traversal()`
-
-That is it. What does this entail? Assume the following traversal:
-
-[source,java]
-----
-g = ReferenceGraph.open(config).traversal()
-g.V(1).out(‘knows’)
-----
-
-`ReferenceGraph` is almost like a `RemoteGraph` (`RemoteStrategy`) in that it makes a connection (remote or inter-JVM)
-to the provider Graph API. When `g.V(1).out(‘knows’)` executes, it is really sending the bytecode to the provider Graph
-for execution (as specified by the config of `ReferenceGraph.open()`). Thus, once it hits the provider's graph,
-`ProviderVertex`, `ProviderEdge`, etc. are the objects being processed. However, what the traversal’s `Iterator<Vertex>`
-returns is `ReferenceVertex`! That is, it never returns `ProviderVertex`. In this way, regardless if the user is
-going “over the wire” or within the same JVM or against a different provider’s graph database or from
-Gremlin-Python/C#/etc., all the vertices are simply ‘reference vertices’ (id + label). This makes it so that users
-never interact with the graph element objects themselves directly. They can ONLY interact with the graph via
-traversals! At most they can `ReferenceVertex.id()` and `ReferenceVertex.label()`. Thats it, — no mutations, not
-walking edges, nada! And moreover, since ReferenceXXX has enough information to re-attach to the source graph, they
-can always do the following to get more information:
-
-[source,java]
-----
-v = g.V(1).out(‘knows’).next()
-g.V(v).values(‘name’)
-----
-
-This split into two Graph APIs will enables us to make a hard boundary between what the provider (vendor) needs to
-implement and what the user (developer) gets to access.
-
-=== Comments [spm]
-
-There is a question mark next to `ReferenceGraph.tx()` - Transactions are a bit of an open question for future versions
-of TinkerPop and likely deserve their own section in this document. The model used for last three version of TinkerPop
-now is rooted in the Neo4j approach to transactions and is often more trouble than it should be for us and providers.
-Distributed transactions are a challenge and don't apply to every provider. Transactions are further complicated by
-GLVs. The idea of local subgraphs for mutations and transaction management might be good but that goes against having
-just `ReferenceGraph`.
-
-In "hiding blueprints" we should probably consider what relevance certain components of the Structure API still have:
-
-* `io()` - this sorta fell short a few ways: API was a bit clunky, no integration with loading via OLAP, etc.
-* `variables()` - one of the problems with variables is that they were not persisted by `io()` which was generally a
-problem for TinkerGraph which relied on `io()` for flushing to file storage. This topic was discussed a bit on
-link:https://issues.apache.org/jira/browse/TINKERPOP-892[TINKERPOP-892]
-* `tx()` - as discussed in the earlier paragraph
-
-[[gremlin-language-subset]]
-== Gremlin Language Subset
-
-On link:https://issues.apache.org/jira/browse/TINKERPOP-1417[TINKERPOP-1417], it was suggested that we "Create a
-Gremlin language subset that is easy to implement on any VM". Implementing the Gremlin VM in another language is
-pretty straightforward. However, its a lot of code.. all these steps implementations. One thing we could do to make
-it easy for database providers not on the JVM (e.g. ArangoDB and C) is to create "Gremlito" (Gremlin--). This language
-subset wouldn't support side-effects, sacks, match, etc. Basically, just simple traversal steps and reducing barrier
-terminals.
-
-Thus:
-
-* out, in, both, values, outE, inV, id, label, etc.
-* repeat
-* select, project
-* where, has, limit, range, is, dedup
-* path, simplePath, cyclicPath
-* groupCount, sum, group, count, max, min, etc. (reducing barriers)
-
-=== Comments [spm]
-
-This has an interesting potential impact on GLVs because "Little Gremlin" could be implemented within them for
-client-side traversals over remote subgraphs, where the subgraph is like a remote transaction. All graph mutations
-essentially build a subgraph which is merged into the primary graph. That subgraph is effectively the "transaction".
-Build it locally then submit it remotely and have the server sort out the merging. It's perhaps the most natural way
-to load data. With "Gremlinito" you then get the added power of being able to traverse a local subgraph.
-
-[[serialization]]
-== Serialization
-
-Have we yet found the appropriate serialization model? We didn't have it in 2.x at all. In 3.x we went with a use case
-based approach that made a lot of sense in the first few releases of 3.x, but the use cases couldn't have conceived
-of what was to come with the development of GLVs. GLVs rendered Gryo, the decided "network option" from the use cases,
-to be pretty useless given that it is of the JVM only and GraphSON has gone through three versions now trying to find
-the appropriate format to cover the various features we've attempted to support. While GraphSON 3.0 seems to have met
-the mark for supporting our needs, it seems bloated with Java types and doesn't perform terribly well in some cases.
-
-An ideal serialization format would be:
-
-* Compact for network transport
-* Human readable (which competes with "compact" at some level)
-* Language agnostic
-* Exposes a small set of types that makes the format easy to maintain and test
-* Extendable or perhaps built in such a way that graph providers could coerce their types to and from the types
-that TinkerPop exposes
-* Upgrade friendly so that it is possible to easily detect the version of a format and have the system act
-transparently so as to avoid the heavy configuration that users currently have to do to be sure their versions of
-TinkerPop and their version of their serializers align
-
-== Uniform Object Model
-
-On link:https://issues.apache.org/jira/browse/TINKERPOP-1909[TINKERPOP-1909], it was suggested that we are going to
-use reference (id/label) based object model. And, the direction is move towards more tidy object model contracts going
-forward. Reference model definitely provides big performance improvements especially with multi-property
-vertices/edges.  One thing that we can consider is to provide a configurable object model. Enabling users to
-configure the object model (OutputFormat) as server settings (Exposing server setting is being discussed here
-link:https://issues.apache.org/jira/browse/TINKERPOP-1636[TINKERPOP-1636]). There will three types of output format.
-
-* Reference: includes id and label
-* GraphSONCompact: object reference along with properties
-* GraphSON: object reference, properties and edge details(inE/outE).
-
-=== Comments [as]
-
-This will enable the clients model based on their needs and avoid multiple query if they are sure what is expected 
-from a gremlin query. If we need more details like edges/property as part of response, we can override the server 
-configuration as part of the gremlin request arguments as hint.
-
-=== Comments [spm]
-
-A more full object model may be necessary as we consider implementing the options of the
-<<gremlin-language-subset,Gremlin Language Subset>>. A more robust object model, or at least the option to open up a
-more robust object model, could be necessary to support features there. We should also consider that the future is not
-necessarily a GraphSON format and could be something else as described in the <<serialization,Serialization>> section.
-
-== Testing Framework
-
-Consider a testing framework based on the Gherkin tests from 3.x and a `gremlin-test` parent module for all the test
-framework modules that will potentially be needed. In 3.x, we found situation where having test modules beyond
-`gremlin-test` would have been helpful, so a parent module that held all those would probably be smart.
-
-== Elements and IDs
-
-In link:https://issues.apache.org/jira/browse/TINKERPOP-2051[TINKERPOP-2051] we tried to make vertex property ids local to their vertex. Several approaches were leading nowhere, in most cases we just broke the Gryo compatibility test suite. The basic idea was to remember the parent element (at least its id) and use it in property equality comparisons. This way, the property `[name->marko]` would only match another `[name->marko]` property if the parent elements were the same. In the end it was questioned if that's even the right approach / what users expect. From a user perspective it would probably make more sense if two properties would match if the keys and values match. That said, we should question whether we actually need ids on properties and thus whether properties are actually ``Element``s.
-
-=== Comments [dk]
-
-In my opinion, only vertices should have globally unique ids. Edge ids should be local to the out-vertex (that requires that we "remember" the out-vertex id, even if the edge is detached) and properties should have no ids at all, they can be simply identified by their key (or key and value if we decide to keep multi-properties).
