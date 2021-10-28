@@ -127,7 +127,7 @@ In the above section we used the notions of "equality" and "comparison" in a gen
 
 Equality defines when two values are considered equal in the context of database lookups and predicates, while  equivalence defines value collation semantics in the context of, for instance, deduplication. For instance, equivalence over two values `a := Double.NaN` and `b:= Double.NaN` is true, but equality would (in our proposal) be defined as false; the rational here (which is commonly found in query and programming languages) is that comparing two "unknown" numbers — which is a frequent use case for NaN, cannot certainly be identified as equal in comparison, but it typically makes sense to group them together in, for instance, aggregations. 
 
-Both equality and equivalence can be understood as complete, i.e. the result of equality and equivalence checks is always either TRUE or FALSE (in particular, it never returns NULL or throws an exception). The details on equality and equivalence are sketched in the following two subsections, respectively.
+Both equality and equivalence can be understood as complete, i.e. the result of equality and equivalence checks is always either TRUE or FALSE (in particular, it never returns NULLTYPE or throws an exception). The details on equality and equivalence are sketched in the following two subsections, respectively.
 
 ===== Equality 
 
@@ -146,7 +146,7 @@ gremlin> g.V().as("v").out().out().where(eq("v"))
 
 * Equality adheres to type promotion semantics for numerical values, i.e. equality holds for values of different numerical type if they cast into the exactly same same value of the lowest common super type.
 * Other than the type promotion between Numbers, 2 values of different type are always regarded as not equal.
-* Equality checks always return TRUE or FALSE. They never result in NULL output, undefined behavior, nor do they ever throw an error. Detailed behavior is described in
+* Equality checks always return TRUE or FALSE. They never result in NULLTYPE output, undefined behavior, nor do they ever throw an error. Detailed behavior is described in
 
 ===== Equivalence
 
@@ -168,11 +168,11 @@ gremlin> g.V().group().by("age")
 ** NaN is not equal to NaN, but equivalent to each other
 
 * Other than the edge case around NaN (and, as of today, Numbers), equivalence in TinkerPop is identical to equality.
-* Like equality, equivalence checks always return TRUE or FALSE. They never result in NULL output, undefined behavior, nor do they ever throw an error.
+* Like equality, equivalence checks always return TRUE or FALSE. They never result in NULLTYPE output, undefined behavior, nor do they ever throw an error.
 
 ==== Comparability vs. Orderability
 
-Comparability and orderability can be understood as the "dual" concepts of equality and equivalence for range comparisons (rather than exact comparison). For the 2 values of the same type (except for NaN), comparability is stronger than orderability in the sense that everything that every order between two values that holds TRUE w.r.t. comparability also holds TRUE w.r.t. orderability, but not vice versa. Comparability is what is being used in range predicates. It is restricted to comparison within the same type or, for numerics, class of types; comparability is complete within a given type, but returns NULL if the two types are considered incomparable (e.g., an integer cannot be compared to a string). Orderability fills these gaps, by providing a stable sort order over mixed type results; it is consistent with comparability within a type, and complete both within and across types, i.e. it will never return NULL or throw an exception. +
+Comparability and orderability can be understood as the "dual" concepts of equality and equivalence for range comparisons (rather than exact comparison). For the 2 values of the same type (except for NaN), comparability is stronger than orderability in the sense that everything that every order between two values that holds TRUE w.r.t. comparability also holds TRUE w.r.t. orderability, but not vice versa. Comparability is what is being used in range predicates. It is restricted to comparison within the same type or, for numerics, class of types; comparability is complete within a given type, but returns NULLTYPE if the two types are considered incomparable (e.g., an integer cannot be compared to a string). Orderability fills these gaps, by providing a stable sort order over mixed type results; it is consistent with comparability within a type, and complete both within and across types, i.e. it will never return NULLTYPE or throw an exception. +
 More details on comparability and orderability are sketched in the following two subsections, respectively.
 
 ===== Comparability
@@ -188,13 +188,13 @@ gremlin> g.E().has("weight", gt(1))
 
 * For numbers,
 ** it should be aligned to equality conceptually as far as type promotion is concerned. e.g. `1.0 < 2 < 3L`
-* Comparison should not result in undefined behavior, but can return NULL if and only if we are comparing incomparable data types. How this NULL result is handled is Graph provider dependent.
+* Comparison should not result in undefined behavior, but can return NULLTYPE if and only if we are comparing incomparable data types. How this NULLTYPE result is handled is Graph provider dependent.
 * Otherwise Comparison does return TRUE or FALSE
 
 ===== Orderability
 
 * Used to determine the order. In TinkerPop, the order step follows the notion of orderability.
-* Orderability must not result in NULL / undefined behavior.
+* Orderability must not result in NULLTYPE / undefined behavior.
 * Orderability must not throw an error. In other words, even if 2 values are incomparable we should still be able to determine the order of those two. This inevitably leads to the requirement to define the order across different data types. For the detailed order across types, see appendix.
 * Orderability determines if 2 values are ordered at the same position or one value is positioned earlier than another.
 * The concept of equivalence is used to determine if the 2 values are at the same position
@@ -304,9 +304,9 @@ gremlin> g.V().values("key").is(lte(Double.NaN)) // proposed
 gremlin> g.V().values("key").is(gte(Double.NaN)) // proposed
 ----
 
-* Comparability throws exception today but based on the proposal, it returns NULL when comparing incompatibile types.
-  ** When Vertex / Edge / VertexProperty  is compared, today it throws but it should return NULL.
-  ** When NULL is compared, today it throws an exception but it should return NULL. 
+* Comparability throws exception today but based on the proposal, it returns NULLTYPE when comparing incompatibile types.
+  ** When Vertex / Edge / VertexProperty  is compared, today it throws but it should return NULLTYPE.
+  ** When NULLTYPE is compared, today it throws an exception but it should return NULLTYPE. 
 
 ==== Equivalence
 
@@ -375,7 +375,7 @@ Also note that TinkerPop is Java based and we have Double.NaN and Float.NaN, ±D
 * Map.Entry is Java dependent type. Instead of defining semantics for Map.Entry, do we introduce a concept of like key-value tuple for it to generalize ?
 * Today we have Date type but don’t we need timezone aware DateTime type as well ?
 * Some graph providers may not support BigDecimal. Do we leave how TP deals with BigDecimal to Graph providers ?
-* Which should be more reasonable, NULL eq NULL is true or false ?
+* Which should be more reasonable, NULLTYPE eq NULLTYPE is true or false ?
   ** If it is true, it may be respected in JOIN operation
 * There are a number of situations where the Gremlin grammar won’t support some of the examples - to what extent do these sorts of constructs need to exist in the grammar? Not having them would impact the ability to supply tests that enforce the behaviors that we’ve outlined. 
 
@@ -403,6 +403,8 @@ First we need to define which data types the TinkerPop query execution runtime n
 * String / Char
 * UUID
 * Date
+* NULLTYPE
+  ** It denotes the "undefined" value.
 
 Graph providers may not support all of these types depending on the architecture and implementation. Therefore TinkerPop must provide a way for Graph providers to override the behavior while it has its own default behavior. Also when some types are not supported Graph providers needs to map unsupported types into supported types internally. This mapping can be done in either information-preserving manner or non-preserving manner. Graph providers must tell which mapping they support through `Graph.Feartures` as well as which types they support.
 
@@ -490,10 +492,10 @@ Number consists of Byte, Short, Integer, Long, Float, Double, BigInteger, and Bi
 * If either one of LHS or RHS is Date and another isn't, return FALSE
 * LHS eq RHS == TRUE when both LHS and RHS value are numerically identical in Unix Epoch time.
 
-===== NULL
+===== NULLTYPE
 
-* If either one of LHS or RHS is null and another isn't, return FALSE
-* If both LHS and RHS are null, return TRUE 
+* If either one of LHS or RHS is NULLTYPE and another isn't, return FALSE
+* If both LHS and RHS are NULLTYPE, return TRUE 
 
 ==== Composite types
 
@@ -562,9 +564,9 @@ Equivalence is identical to Equality, except for the cases listed below.
 * NaN is not equivalent to any other numbers
     ** NaN *is equivalent to* NaN irrespective to its underlying type, so in Java, for example, Double.NaN is equivalent to Float.NaN.
 
-===== NULL
-* NULL is not equivalent to any other values
-* NULL is equivalent to NULL
+===== NULLTYPE
+* NULLTYPE is not equivalent to any other values
+* NULLTYPE is equivalent to NULLTYPE
 
 === Comparability
 
@@ -577,38 +579,38 @@ Equivalence is identical to Equality, except for the cases listed below.
 * -INF < +INF
 * Any comparison between NaN and any numbers (including NaN) should return FALSE +
 https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2.3
-* IF null and NaN is compared it should throw as their “type” is different
+* IF NULLTYPE and NaN is compared it should return NULLTYPE as their "type" is different and they are not comparable.
 
 ===== Boolean
 * If either one of LHS or RHS is Boolean and another isn’t, throws an Exception
 * False < True
 
 ===== String
-* If either one of LHS or RHS is String and another isn’t, returns NULL.
+* If either one of LHS or RHS is String and another isn’t, returns NULLTYPE.
 * We assume the common lexicographical order over unicode strings
 * LHS and RHS are compared lexicographically
 * UUID is evaluated based on its String representation.
 
 ===== UUID
 * UUID is evaluated based on its String representation.
-* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50" cannot be compared with each other, hence comparing them returns NULL.
+* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50" cannot be compared with each other, hence comparing them returns NULLTYPE.
 
 ===== Date
 * If either one of LHS or RHS is Date and another isn’t, throw an Exception
 * Compare LHS and RHS based on chronological order, i.e. numerical order in timestamp.
 
-===== NULL
-* NULL is not comparable, if the LHS or RHS is NULL then the comparison result is NULL.
+===== NULLTYPE
+* NULLTYPE is not comparable, if the LHS or RHS is NULLTYPE then the comparison result is NULLTYPE.
 
 ==== Composite types
 
 For all of them, if LHS and RHS is not of the same data type, equality returns FALSE. The following semantics applied when both LHS and RHS has the data type.
 
 ===== Vertex / Edge / VertexProperty
-They are not comparable, return NULL.
+They are not comparable, return NULLTYPE.
 
 ===== Property
-It it not comparable, return NULL.
+It it not comparable, return NULLTYPE.
 
 ===== PropertyKey
 Comparability of String applies.
@@ -641,7 +643,7 @@ It it not comparable, throw an Exception.
 To sort across any types of values, we define the order between each type as follows:
 (In this order, ID, label, property key and property value are considered as a part of primitive types)
 
-* NULL
+* NULLTYPE
 * Boolean
 * Number
 * Date
@@ -672,8 +674,8 @@ To sort across any types of values, we define the order between each type as fol
 ===== Date
 * Date value is ordered chronologically
 
-===== NULL
-* NULL is after all value types
+===== NULLTYPE
+* NULLTYPE is before all value types
 
 ==== Composite types
 ===== Vertex / Edge / VertexProperty
