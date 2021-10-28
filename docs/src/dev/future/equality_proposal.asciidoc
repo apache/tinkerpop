@@ -384,20 +384,38 @@ Also note that TinkerPop is Java based and we have Double.NaN and Float.NaN, ±D
 === Types
 First we need to define which data types the TinkerPop query execution runtime needs to handle. It is JVM based so as a primitive type, we are using the following types:
 
-* Byte: 8-bit signed two's complement integer
 * Boolean: true or false
-* Short: 16-bit signed two's complement integer
-* Integer: 32-bit signed two's complement integer.
-* Long: 64-bit signed two's complement integer.
-* Float: https://en.wikipedia.org/wiki/Single-precision_floating-point_format[single-precision 32-bit IEEE 754 floating point]
-* Double: https://en.wikipedia.org/wiki/Double-precision_floating-point_format[double-precision 64-bit IEEE 754 floating point]
-* BigInteger
-* BigDecimal
+* Integer
+  ** int8
+  ** int16 (short)
+  ** int32
+  ** int64 (long)
+  ** uint8 (byte)
+  ** uint16
+  ** uint32
+  ** uint64
+  ** BigInt
+* Float
+  ** float32
+  ** float64 (double)
+  *** In Double and Float, we have a concept of INFINITY / https://en.wikipedia.org/wiki/Signed_zero[signed-zero], and NaN.
+  ** BigFloat
 * String / Char
 * UUID
 * Date
 
-Note that in Double or Float, we have a concept of INFINITY / https://en.wikipedia.org/wiki/Signed_zero[signed-zero], and NaN.
+Graph providers may not support all of these types depending on the architecture and implementation. Therefore TinkerPop must provide a way for Graph providers to override the behavior while it has its own default behavior. Also when some types are not supported Graph providers needs to map unsupported types into supported types internally. This mapping can be done in either information-preserving manner or non-preserving manner. Graph providers must tell which mapping they support through `Graph.Feartures` as well as which types they support.
+
+* Which atomic types are supported
+  ** Boolean, Integer, Float, String, UUID and Date
+  ** TinkerPop by default supports all of them
+* Which integer types are supported
+  ** int8, int16, int32, int64, uint8, uint16, uint32, uint64, BigInt
+  ** TinkerPop by default supports uint8 (byte), int16 (short), int32 (int), int64 (long) and BigInt
+* Which float types are supported
+  ** float32, float64 and BigFloat
+  ** TinkerPop by defualt supports all as float, double, and BigDecimal in Java
+
 In addition to these, there are composite types as follows:
 
 * Vertex
