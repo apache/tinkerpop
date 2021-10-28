@@ -378,7 +378,6 @@ Also note that TinkerPop is Java based and we have Double.NaN and Float.NaN, ±D
 * Which should be more reasonable, NULL eq NULL is true or false ?
   ** If it is true, it may be respected in JOIN operation
 * There are a number of situations where the Gremlin grammar won’t support some of the examples - to what extent do these sorts of constructs need to exist in the grammar? Not having them would impact the ability to supply tests that enforce the behaviors that we’ve outlined. 
-* Should UUID be a different type to be taken into account ?
 
 == Technical Appendix
 
@@ -395,7 +394,7 @@ First we need to define which data types the TinkerPop query execution runtime n
 * BigInteger
 * BigDecimal
 * String / Char
-* UUID (String based equality / comparison, so identical to String)
+* UUID
 * Date
 
 Note that in Double or Float, we have a concept of INFINITY / https://en.wikipedia.org/wiki/Signed_zero[signed-zero], and NaN.
@@ -463,6 +462,10 @@ Number consists of Byte, Short, Integer, Long, Float, Double, BigInteger, and Bi
 * If either one of LHS or RHS is String and another isn't, return FALSE
 * We assume the common graphical order over unicode strings.
 * LHS and RHS needs to be lexicographically equal for LHS eq RHS == TRUE for String.
+
+===== UUID
+* UUID is evaluated based on its String representation.
+* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50" are not equal to oeach other.
 
 ===== Date
 
@@ -573,6 +576,11 @@ https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2.3
 * If either one of LHS or RHS is String and another isn’t, returns NULL.
 * We assume the common lexicographical order over unicode strings
 * LHS and RHS are compared lexicographically
+* UUID is evaluated based on its String representation.
+
+===== UUID
+* UUID is evaluated based on its String representation.
+* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50" cannot be compared with each other, hence comparing them returns NULL.
 
 ===== Date
 * If either one of LHS or RHS is Date and another isn’t, throw an Exception
@@ -646,6 +654,9 @@ To sort across any types of values, we define the order between each type as fol
 
 ===== String
 * String value is ordered lexicographically
+
+===== UUID
+* UUID is ordered lexicographically based on its String representation
 
 ===== Date
 * Date value is ordered chronologically
