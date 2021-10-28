@@ -511,12 +511,7 @@ label is String type so Equality for String type applies.
 
 ===== List
 
-* If either one of LHS or RHS is List and another isn't, return FALSE
-* When both are List, then
-    ** if the size of them are different, return FALSE
-    ** L(n) denotes n-th element in list L. 
-        *** For 2 lists L1 and L2 to be equal (L1 is equal to L2), for all 0 <= x < n (n is length of L1 and L2) L1(n) eq L2(n) must return TRUE.
-        *** For 2 lists L1 and L2 to be not equal (L1 eq L2 returns FALSE), for any 0 <= x < n (n is length of L1 and L2) L1(n) eq L2(n) must return FALSE.
+* Two lists are equal if they contain the same (equal to each other) elements in the same order.
 
 ===== Map
 
