@@ -398,49 +398,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore("This test had some bad semantics that allowed it to pass even though it was technically failing")
-    public void shouldEventuallySucceedOnSameServerWithDefault() throws Exception {
-        stopServer();
-
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        try {
-            try {
-                client.submit("1+1").all().join().get(0).getInt();
-                fail("Should not have gone through because the server is not running");
-            } catch (Exception i) {
-                final Throwable root = ExceptionUtils.getRootCause(i);
-                assertThat(root, instanceOf(NoHostAvailableException.class));
-            }
-
-            startServer();
-
-            boolean succeedAtLeastOnce = false;
-
-            // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
-            // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
-            // waiting for Gremlin Server to pop back up
-            for (int ix = 3; ix < 13; ix++) {
-                TimeUnit.SECONDS.sleep(ix);
-                try {
-                    final int result = client.submit("1+1").all().join().get(0).getInt();
-                    assertEquals(2, result);
-                    succeedAtLeastOnce = true;
-                    break;
-                } catch (Exception ignored) {
-                    logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithDefault", ix);
-                }
-            }
-
-            assertThat(succeedAtLeastOnce, is(true));
-
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldEventuallySucceedOnSameServerWithScript() throws Exception {
         stopServer();
 
@@ -1192,6 +1149,19 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldEvalInGremlinLang() {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").create();
+            assertEquals(111, client.submit("g.inject(111)", ro).one().getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldCloseSession() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect(name.getMethodName());
@@ -1863,10 +1833,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     /**
      * Client created on an initially dead host should fail initially, and recover after the dead host has restarted
-     * @param testClusterClient - boolean flag set to test clustered client if true and sessioned client if false
-     * @throws Exception
+     * @param testClusterClient - boolean flag set to test clustered client if true and sessioned client if false.
      */
-    public void testShouldFailOnInitiallyDeadHost(final boolean testClusterClient) throws Exception {
+    private void testShouldFailOnInitiallyDeadHost(final boolean testClusterClient) throws Exception {
         logger.info("Stopping server.");
         this.stopServer();
 

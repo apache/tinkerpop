@@ -27,6 +27,7 @@ graphs: {
   sink: conf/tinkergraph-empty.properties
 }
 scriptEngines: {
+  gremlin-lang : {},
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},

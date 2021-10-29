@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinLangScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinLangScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
@@ -142,10 +144,15 @@ public class ServerGremlinExecutor {
         // runs the init scripts when the GremlinScriptEngine is created.
         settings.scriptEngines.keySet().forEach(engineName -> {
             try {
-                // use no timeout on the engine initialization - perhaps this can be a configuration later
-                final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
-                        evaluationTimeoutOverride(0L).create();
-                gremlinExecutor.eval("1+1", engineName, new SimpleBindings(Collections.emptyMap()), lifeCycle).join();
+                // gremlin-lang does not need to be initialized. not so nice, but gremlin-lang is the only exception
+                // and ultimately, gremlin-lang will likely end up the only choice in gremlin-server.
+                if (!engineName.equals("gremlin-lang")) {
+                    // use no timeout on the engine initialization - perhaps this can be a configuration later
+                    final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
+                            evaluationTimeoutOverride(0L).create();
+                    gremlinExecutor.eval("1+1", engineName, new SimpleBindings(Collections.emptyMap()), lifeCycle).join();
+                }
+
                 registerMetrics(engineName);
                 logger.info("Initialized {} GremlinScriptEngine and registered metrics", engineName);
             } catch (Exception ex) {
