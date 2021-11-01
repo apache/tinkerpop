@@ -237,40 +237,34 @@ the changes brings extensive conflict between branches.
 
 On successful review, the *pull request will be merged* to the main repository and the JIRA issue will be closed.
 
+[[versioning]]
 == Versioning
 
-TinkerPop version numbers follow a format of `MAJOR.MINOR.PATCH`, where:
+TinkerPop version numbers follow a format of `EPOCH.MAJOR.MINOR.PATCH`, where:
 
-* `MAJOR` version is incremented for epochs of thinking around TinkerPop and its relation to the graph ecosystem.
-* `MINOR` version is incremented when incompatible changes cannot be avoided.
-* `PATCH` version is incremented when changes are backward compatible.
+* `EPOCH` version is incremented for epochs of thinking around TinkerPop and its relation to the graph ecosystem and is part of a complete release.
+* `MAJOR` version is incremented for incompatible changes and is part of a complete release.
+* `MINOR` version is incremented for backward compatible changes and is part of a complete release.
+* `PATCH` version is incremented for backward compatible bug fixes and typically only applied to client modules for partial release.
 
-The number for `MAJOR` rarely changes and when it does, it typically represents a complete re-write of the software
-and thus massive changes can be expected. As a result of the definition for `MAJOR`, we tend to focus on the other
-two numbers when considering where changes will land.
+The above definitions refer to notions of "complete" and "partial" releases. A complete release is one that releases
+all TinkerPop components across all languages. A partial release is one that releases just a single module of a
+driver/client. A partial release is helpful in that it decouples the release of client/driver modules from what are
+typically server modules. In this way, for example, a small fix can be applied and released around .NET without having
+to release all the other components which may not have experienced any real change.
 
-The driving question for determining if a change is suitable for `MINOR` or `PATCH` versions is whether or not the
-change introduces some form of incompatibility. As the focus for making the determination is "breaking change", we
-therefore allow the option for new features to land in `PATCH` versions. Taking this approach, lengthens the life span
-of `MINOR` versions considerably which is helpful to graph providers looking for stable long-lived support for a
-particular release line.
+The number for `EPOCH` rarely changes and when it does, it typically represents a complete re-write of the software
+and thus massive changes can be expected. As a result of the definition for `EPOCH`, there is greater focus on the other
+three numbers when considering where changes will land:
 
-With all of the above rules in mind, there are some subtle considerations when trying to determine where a change
-should land:
+1. A client with a specific `EPOCH.MAJOR.MINOR` will be backward compatible with user application code written for
+`EPOCH.MAJOR.MINOR`.
+1. A client with specific `EPOCH.MAJOR` will be backward compatible with the `EPOCH.MAJOR` version of the server.
 
-* A `PATCH` may take a breaking change if that breaking change:
-** Is necessary to fix a critical bug.
-** Has a highly limited breaking scope (e.g. a utility class that no one would likely use)
-* It is preferred that new features go to `MINOR`, but it is sometimes the case that they will make their way
-to `PATCH` if the features are being added to a language variant to bring it in line with features already in core.
-* The preference is to upgrade dependencies in `MINOR` rather than in `PATCH` though exceptions can be made as in the
-case of a CVE.
-* The preference is to find deprecation paths whenever possible.
-
-Ultimately, the goal is to be able to make it so that any `PATCH` will work with any version of that line on the
-server. In doing so, it is acceptable for the language variants to lag behind core features within a `MINOR` version,
-though we should be diligent in catching up all lagged features within patches before we stop a patch cycle. In other
-words, we should only be content to stop support on a `MINOR` line once all the languages hold the same functionality.
+A complete release is always just `EPOCH.MAJOR.MINOR` where the `PATCH` is inferred as "0", thus 3.6.x line would
+initially release all components as `3.6.0`. A `PATCH` number must start with "1" within a release because of how
+link:https://github.com/NuGet/Home/issues/7376[Nuget treats "0"]. If it was determined that `gremlin-python` needed a
+special release then it could be released independently of the other modules as `3.6.0.1`.
 
 In short, the dev mailing list is open to discussion on where a change will land. The discussion just needs to have
 good reasoning and use the general principles above as a framework for coming to a consensus.
