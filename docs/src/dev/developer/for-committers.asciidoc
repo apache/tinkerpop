@@ -116,6 +116,10 @@ Changes to earlier branches should merge forward toward `master` (e.g. `3.5-dev`
 more about this process in the <<pull-requests, Pull Requests>> section. Note that `4.0-dev` is rebased on `master`
 and currently behaves as a fresh repository as all 3.x content was removed.
 
+As described in <<versioning,versioning>>, it is possible to do a "partial" release which will utilize a four-digit
+version that starts with a "1" (e.g. `3.6.0.1`). The branching strategy for a partial release requires that a `-dev`
+branch be created with the three digit prefix.
+
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
 way to account for the branch lifecycle, i.e. "Who's branch is this, and can I delete it?"
@@ -127,8 +131,12 @@ Developers should remove their own branches when they are no longer needed.
 
 == Tags
 
-Tags are used for milestones, release candidates, and approved releases.  Please refrain from creating arbitrary
-tags, as they produce permanent clutter.
+Tags are used for milestones, release candidates, and approved <<versioning,partial and complete releases>>. Tags for a
+complete release are simply defined by the three-digit version number. Tags for a partial release, should be prefixed
+by the individual language relevant to that release. For example, if there is an initial partial release for `3.6.0`
+on `gremlin-python` then the tag should be `3.6.0.1-python`.
+
+Please refrain from creating arbitrary tags, as they produce permanent clutter.
 
 == Issue Tracker Conventions
 
