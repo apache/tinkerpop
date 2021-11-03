@@ -33,7 +33,7 @@ This document attempts to address the needs of the different providers that have
 ** Graph Database Provider
 ** Graph Processor Provider
 * Graph Driver Provider
-* Graph Language Provider
+* Graph Language Provider
 * Graph Plugin Provider
 
 [[graph-system-provider-requirements]]
@@ -660,10 +660,6 @@ public class XXXProcessComputerTest {}
 @GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXProcessStandardTest {}
 ----
-
-The above set of tests represent the minimum test suite set to implement.  There are other "integration" and
-"performance" tests that should be considered optional.  Implementing those tests requires the same pattern as shown
-above.
 
 IMPORTANT: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test`
 suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test
