@@ -172,11 +172,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                     auditLogger.info("User {} with address {} requested: {}", user.getName(), address, requestArguments.getValue0());
                 }
-                if (settings.authentication.enableAuditLog) {
-                    String address = ctx.channel().remoteAddress().toString();
-                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-                    auditLogger.info("User with address {} requested: {}", address, requestArguments.getValue0());
-                }
                 final ChannelPromise promise = ctx.channel().newPromise();
                 final AtomicReference<Object> resultHolder = new AtomicReference<>();
                 promise.addListener(future -> {

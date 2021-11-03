@@ -397,15 +397,7 @@ public class Settings {
 
         final Constructor constructor = createDefaultYamlConstructor();
         final Yaml yaml = new Yaml(constructor);
-        final Settings settings = yaml.loadAs(stream, Settings.class);
-        if (settings.authentication.enableAuditLog && settings.enableAuditLog) {
-            logger.warn("Both authentication.enableAuditLog and settings.enableAuditLog " +
-                        "are enabled, so auditable events are logged twice.");
-        }
-        if (settings.authentication.enableAuditLog && !settings.enableAuditLog) {
-            logger.warn("Configuration property 'authentication.enableAuditLog' is deprecated, use 'enableAuditLog' instead.");
-        }
-        return settings;
+        return yaml.loadAs(stream, Settings.class);
     }
 
     /**
@@ -503,14 +495,6 @@ public class Settings {
          * Defaults to null when not specified.
          */
         public String authenticationHandler = null;
-
-        /**
-         * Enable audit logging of authenticated users and gremlin evaluation requests.
-         * @deprecated As of release 3.5.0, replaced by {@link Settings#enableAuditLog} with slight changes in the
-         * log message format.
-         */
-        @Deprecated
-        public boolean enableAuditLog = false;
 
         /**
          * A {@link Map} containing {@link Authenticator} specific configurations. Consult the

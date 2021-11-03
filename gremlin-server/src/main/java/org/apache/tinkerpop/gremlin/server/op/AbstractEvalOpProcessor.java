@@ -253,11 +253,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                         if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                         auditLogger.info("User {} with address {} requested: {}", user.getName(), address, script);
                     }
-                    if (settings.authentication.enableAuditLog) {
-                        String address = ctx.getChannelHandlerContext().channel().remoteAddress().toString();
-                        if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-                        auditLogger.info("User with address {} requested: {}", address, script);
-                    }
 
                     try {
                         handleIterator(ctx, itty);

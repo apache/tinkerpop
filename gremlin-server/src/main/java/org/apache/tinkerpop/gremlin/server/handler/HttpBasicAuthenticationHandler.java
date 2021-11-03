@@ -115,7 +115,7 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
                 ctx.channel().attr(StateKey.AUTHENTICATED_USER).set(user);
                 ctx.fireChannelRead(request);
                 // User name logged with the remote socket address and authenticator classname for audit logging
-                if (settings.enableAuditLog || settings.authentication.enableAuditLog) {
+                if (settings.enableAuditLog) {
                     final String[] authClassParts = authenticator.getClass().toString().split("[.]");
                     auditLogger.info("User {} with address {} authenticated by {}",
                             credentials.get(PROPERTY_USERNAME), address, authClassParts[authClassParts.length - 1]);
