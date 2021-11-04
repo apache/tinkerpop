@@ -28,7 +28,7 @@ in stone. As this document represents a future look, the current version is alwa
 the only one that need be maintained.
 
 [[roadmap]]
-== Roadmap
+= Roadmap
 
 image:gremlin-explorer-old-photo.png[width=250,float=left]This section provides some expectations as to what features
 might be provided in future link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_versioning[major versions]. It
@@ -39,33 +39,62 @@ link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/developer/inde
 The sub-sections that follow only outline those release lines that expect to include significant new features. Other
 release lines may continue to be active with maintenance work and bug fixes, but won't be listed here.
 
-=== 3.5.x
+== 3.5.x
 
 This initial release of this line was produced in May 2021.
 
 * Support for bytecode based sessions with `tx()` for Python and .NET.
 
-=== 3.6.x
+== 3.6.x
 
 The development of the 3.6.x release line is currently under way.
 
 * Unify the Gremlin testing model by providing support for the Gherkin tests in Java so that they can be used by
 providers to validate their implementations.
+* Equality, Equivalence, Comparability and Orderability
+** Document Gremlin semantics in this area and develop additional tests to enforce existing behaviors.
+** Allow orderability on any type (link:https://issues.apache.org/jira/browse/TINKERPOP-2641[TINKERPOP-2641])
+** Modify comparability around `NaN` and `nulltype` (link:https://issues.apache.org/jira/browse/TINKERPOP-2642[TINKERPOP-2642])
+** Modify equality around `NaN` and `BigDecimal` (link:https://issues.apache.org/jira/browse/TINKERPOP-2643[TINKERPOP-2643])
 
-=== 3.7.x
+== 3.7.x
 
 Development has not yet started on the 3.7.x release line.
 
-== Proposals
+= Proposals
 
 This section tracks and details future ideas. While the dev list is the primary place to talk about new ideas, complex
 topics can be initiated from and/or promoted to this space. While it is fine to include smaller bits of content directly
 in `future/index.asciidoc`, longer, more developed proposals and ideas would be better added as individual asciidoc
-files which would then be included in the `index.asciidoc` (i.e. `include::good-idea.asciidoc[]`).
+files which would then be included as links to the GitHub repository where they will be viewable in a formatted state.
+In this way, this section is more just a list of links to proposals rather than an expansion of text. Proposals should
+be named according to this pattern "proposal-<name>-<number>" where the "name" is just a logical title to help identify
+the proposal and the "number" is the incremented proposal count.
 
-== Appendix
+The general structure of a proposal is fairly open but should include an initial "Status" section which would describe
+the current state of the proposal. A new proposal would likely hae a status like "Open for discussion". From there,
+the proposal should include something about the "motivation" for the change which describes a bit about what the issue
+is and why a change is needed. Finally, it should explain the details of the change itself.
 
-=== 4.x Branching Methodology
+At this stage, the proposal can then be submitted as a pull request for comment. As part of that pull request, the
+proposal should be added to the table below. Proposals always target the `master` branch.
+
+The table below lists various proposals and their disposition. The *Targets* column identifies the release or releases
+to which the proposal applies and the *Resolved* column helps clarify the state of the proposal itself. Generally
+speaking, the proposal is "resolved" when the core tenants of its contents are established. For some proposals that
+might mean "fully implemented", but it might also mean "scheduled and scoped with open issues set aside". In that sense,
+the meaning is somewhat subjective. Consulting the "Status" section of the proposal itself will provide the complete
+story.
+
+[width="100%",cols="3,10,2,^1",options="header"]
+|=========================================================
+|Proposal |Description |Targets |Resolved
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |N
+|=========================================================
+
+= Appendix
+
+== 4.x Branching Methodology
 
 Development of 4.x occurs on the `4.0-dev` branch. This branch was created as an orphan branch and therefore has no
 history tied to any other branch in the repo including master. As such, there is no need to merge/rebase `4.0-dev`. When

@@ -388,6 +388,9 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 Gremlin steps are chained together to produce the actual traversal and are triggered by way of <<start-steps,start steps>>
 on the `GraphTraversalSource`.
 
+IMPORTANT: More details about the Gremlin language can be found in the Provider Documentation within the
+<<gremlin-semantics,Gremlin Semantics Section>>.
+
 [[general-steps]]
 === General Steps
 

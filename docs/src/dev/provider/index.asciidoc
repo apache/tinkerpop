@@ -20,6 +20,15 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 :toc-position: left
 
+= Introduction
+
+This document discusses TinkerPop implementation details that are most useful to developers who implement TinkerPop
+interfaces and the Gremlin language. This document may also be helpful to Gremlin users who simply want a deeper
+understanding of how TinkerPop works and what the behavioral semantics of Gremlin are. The <<providers,Provider Section>>
+outlines the various integration and extension points that TinkerPop has while the <<gremlin-semantics,Gremlin Semantics Section>>
+documents the Gremlin language itself.
+
+[[providers]]
 = Provider Documentation
 
 Apache TinkerPop™ exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build
@@ -1454,3 +1463,5 @@ The `RemoteAcceptor` can be bound to a `GremlinPlugin` by adding a `ConsoleCusto
 in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the
 `ConsoleCustomizer.getRemoteAcceptor(GremlinShellEnvironment)` method.  Generally speaking, each call to
 `getRemoteAcceptor(GremlinShellEnvironment)` should produce a new instance of a `RemoteAcceptor`.
+
+include::gremlin-semantics.asciidoc[]
