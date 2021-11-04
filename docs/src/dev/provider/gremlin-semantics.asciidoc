@@ -19,7 +19,11 @@ limitations under the License.
 
 This section provides details on Gremlin language operational semantics. Describing these semantics and reinforcing
 them with tests in the Gremlin test suite makes it easier for providers to implement the language and for the
-TinkerPop Community to have better consistency in their user experiences.
+TinkerPop Community to have better consistency in their user experiences. While the general Gremlin test suite offers
+an integrated approach to testing Gremlin queries, the `@StepClassSemantics` oriented tests found
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features[here] are especially focused to the
+definitions found in this section. References to the location of specific tests can be found throughout the
+sub-sections below.
 
 == Types
 
@@ -71,8 +75,8 @@ In addition to these, there are composite types as follows:
 * Edge
 * VertexProperty
 * Property
-    ** Edge property
-    ** Vertex meta property
+** Edge property
+** Vertex meta property
 * PropertyKey
 * PropertyValue
 * Label
@@ -92,8 +96,8 @@ Double, BigInteger, and BigDecimal. Here is the rule how types are promoted:
 * If at least one is BigInteger then compare as BigInteger
 * If at least one is Double then compare as Double
 * If one of them is a Float, then convert both to floating type of highest common bit denomination
-  ** If another value is Long or Double, we need 64bit so convert both to Double
-  ** Otherwise convert both to Float
+** If another value is Long or Double, we need 64bit so convert both to Double
+** Otherwise convert both to Float
 * If at least one is Long then compare as Long
 * If at least one is Integer then compare as Integer
 * If at least one is Short then compare as Short
@@ -115,6 +119,7 @@ Both equality and equivalence can be understood as complete, i.e. the result of 
 always either `true` or `false` (in particular, it never returns nulltype` or throws an exception). The details on
 equality and equivalence are sketched in the following two subsections, respectively.
 
+[[gremlin-semantics-equality]]
 === Equality
 
 * Used by equality and membership predicates (such as `P.eq, `P.neq`, and the list membership `P.within`) in Gremlin.
@@ -136,6 +141,8 @@ numerical type if they cast into the exactly same same value of the lowest commo
 * Equality checks always return `true` or `false`. They never result in `nulltype` output, undefined behavior, nor do
 they ever throw an error.
 
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests]
+
 ==== Primitive types
 
 ===== Number
@@ -154,6 +161,8 @@ Number consists of Byte, Short, Integer, Long, Float, Double, BigInteger, and Bi
     ** -INF eq +INF = `false`
 * TinkerPop is JVM based so there can be ±INF^^float and ±INF^^double, NaN^^float and NaN^^double. They also adhere to
 the type promotion rules.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives - Number"]
 
 ===== Boolean
 
