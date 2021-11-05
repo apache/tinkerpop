@@ -368,6 +368,7 @@ public abstract class Client {
         options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
         options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
+        options.getLanguage().ifPresent(lang -> request.addArg(Tokens.ARGS_LANGUAGE, lang));
 
         return submitAsync(request.create());
     }

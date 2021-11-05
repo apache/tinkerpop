@@ -40,6 +40,7 @@ public final class RequestOptions {
     private final Long timeout;
     private final UUID overrideRequestId;
     private final String userAgent;
+    private final String language;
 
     private RequestOptions(final Builder builder) {
         this.aliases = builder.aliases;
@@ -48,6 +49,7 @@ public final class RequestOptions {
         this.timeout = builder.timeout;
         this.overrideRequestId = builder.overrideRequestId;
         this.userAgent = builder.userAgent;
+        this.language = builder.language;
     }
 
     public Optional<UUID> getOverrideRequestId() {
@@ -74,6 +76,10 @@ public final class RequestOptions {
         return Optional.ofNullable(userAgent);
     }
 
+    public Optional<String> getLanguage() {
+        return Optional.ofNullable(language);
+    }
+
     public static Builder build() {
         return new Builder();
     }
@@ -85,6 +91,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private UUID overrideRequestId = null;
         private String userAgent = null;
+        private String language = null;
         private boolean maintainStateAfterException = false;
 
         /**
@@ -141,6 +148,14 @@ public final class RequestOptions {
          */
         public Builder userAgent(final String userAgent) {
             this.userAgent = userAgent;
+            return this;
+        }
+
+        /**
+         * Sets the language identifier to be sent on the request.
+         */
+        public Builder language(final String language) {
+            this.language = language;
             return this;
         }
 
