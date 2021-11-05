@@ -156,8 +156,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                     ctx.writeAndFlush(error);
                 }
             }
-        }
-        else {
+        } else {
             logger.warn("{} only processes RequestMessage instances - received {} - channel closing",
                     this.getClass().getSimpleName(), msg.getClass());
             ctx.close();

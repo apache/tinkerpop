@@ -1362,7 +1362,7 @@ OctalIntegerLiteral
 
 fragment
 IntegerTypeSuffix
-	:	[lL]
+	:	[bBsSnNiIlL]
 	;
 
 fragment
@@ -1489,7 +1489,7 @@ Sign
 
 fragment
 FloatTypeSuffix
-	:	[fFdD]
+	:	[fFdDmM]
 	;
 
 // Boolean Literals

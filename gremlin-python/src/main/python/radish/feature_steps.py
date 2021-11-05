@@ -162,7 +162,7 @@ def _convert(val, ctx):
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match(r"^s\[.*\]$", val):           # parse set
         return set() if val == "s[]" else set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
-    elif isinstance(val, str) and re.match(r"^d\[.*\]\.[ilfdm]$", val):  # parse numeric
+    elif isinstance(val, str) and re.match(r"^d\[.*\]\.[bsilfdmn]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
     elif isinstance(val, str) and re.match(r"^v\[.*\]\.id$", val):       # parse vertex id
         return __find_cached_element(ctx, graph_name, val[2:-4], "v").id

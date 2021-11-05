@@ -357,11 +357,14 @@ they are required for the test.
 the type notation system so that it is possible to have maps containing arbitrary keys and values.
 * Numeric - *d[_xxx_]._y_* - The "xxx" should be replaced with a number. The suffix denoted by "y" should always be
 included to further qualify the type of numeric. The following options are available:
-** *d* - 32-bit Double
-** *f* - 32-bit Float
+** *b* - 8-bit byte
+** *s* - 16-bit Short
 ** *i* - 32-bit Integer
+** *f* - 32-bit Float
 ** *l* - 64-bit Long
-** *m* - Arbitrary-precision signed decimal numbers (i.e. BigDecimal in Java)
+** *d* - 64-bit Double
+** *m* - Arbitrary-precision signed decimal numbers (e.g. `BigDecimal` in Java)
+** *n* - Arbitrary-precision integers (e.g. `BigInteger` in Java)
 * Path - *p[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the `Path` should be added to
 between the square brackets. These values respect the type system thus allowing for creation of `Path` of vertices,
 edges, maps, and any other available type.
