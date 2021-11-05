@@ -295,16 +295,16 @@ public class GraphTraversalSource implements TraversalSource {
 
     //// SPAWNS
 
-
     /**
      * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
      * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      */
-    public GraphTraversal<Vertex, Vertex> addV(final String label) {
+    public GraphTraversal<Vertex, Vertex> addV(final String vertexLabel) {
+        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.addV, label);
+        clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, label));
+        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
     }
 
     /**
@@ -312,6 +312,7 @@ public class GraphTraversalSource implements TraversalSource {
      * {@code vertexLabelTraversal} is {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      */
     public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
+        if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
@@ -325,7 +326,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, (String)null));
+        return traversal.addStep(new AddVertexStartStep(traversal, (String) null));
     }
 
     /**
