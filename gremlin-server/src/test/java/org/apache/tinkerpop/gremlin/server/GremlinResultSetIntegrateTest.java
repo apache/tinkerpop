@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
@@ -91,16 +90,10 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         gryoV1d0Config.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV3d0.class.getName()));
         gryoMessageSerializerV1d0.configure(gryoV1d0Config, null);
 
-        final MessageSerializer<Kryo> gryoLiteMessageSerializerV1d0 = new GryoLiteMessageSerializerV1d0();
-        final Map<String,Object> gryoLiteV1d0Config = new HashMap<>();
-        gryoLiteV1d0Config.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV3d0.class.getName()));
-        gryoLiteMessageSerializerV1d0.configure(gryoLiteV1d0Config, null);
-
         return Arrays.asList(new Object[][]{
                 {Serializers.GRAPHBINARY_V1D0, graphBinaryMessageSerializerV1},
                 {Serializers.GRYO_V3D0, gryoMessageSerializerV3d0},
                 {Serializers.GRYO_V1D0, gryoMessageSerializerV1d0},
-                {Serializers.GRYO_LITE_V1D0, gryoLiteMessageSerializerV1d0}
         });
     }
 
