@@ -675,6 +675,7 @@ const gremlins = {
     g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name: [function({g}) { return g.V().hasLabel("person").V().hasLabel("software").values("name") }], 
     g_V_hasLabelXloopsX_bothEXselfX: [function({g}) { return g.V().hasLabel("loops").bothE("self") }], 
     g_V_hasLabelXloopsX_bothXselfX: [function({g}) { return g.V().hasLabel("loops").both("self") }], 
+    Primitives_Number_eqXintX: [function({g, xx1, xx2}) { return g.inject(xx1).unfold().where(__.is(xx2)) }], 
     g_V_valueXnameX_aggregateXxX_capXxX: [function({g}) { return g.V().values("name").aggregate("x").cap("x") }], 
     g_V_valueXnameX_aggregateXglobal_xX_capXxX: [function({g}) { return g.V().values("name").aggregate(Scope.global,"x").cap("x") }], 
     g_V_aggregateXxX_byXnameX_capXxX: [function({g}) { return g.V().aggregate("x").by("name").cap("x") }], 

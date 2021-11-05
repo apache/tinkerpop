@@ -686,6 +686,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("person").V().HasLabel("software").Values<object>("name")}}, 
                {"g_V_hasLabelXloopsX_bothEXselfX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("loops").BothE("self")}}, 
                {"g_V_hasLabelXloopsX_bothXselfX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("loops").Both("self")}}, 
+               {"Primitives_Number_eqXintX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Unfold<object>().Where(__.Is(p["xx2"]))}}, 
                {"g_V_valueXnameX_aggregateXxX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("name").Aggregate("x").Cap<object>("x")}}, 
                {"g_V_valueXnameX_aggregateXglobal_xX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("name").Aggregate(Scope.Global,"x").Cap<object>("x")}}, 
                {"g_V_aggregateXxX_byXnameX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Aggregate("x").By("name").Cap<object>("x")}}, 

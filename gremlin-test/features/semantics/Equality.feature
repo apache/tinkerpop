@@ -19,13 +19,14 @@
 Feature: Equality
 
   # TODO: TINKERPOP-2524 to support all the number types (and others required for semantics checks)
-  Scenario: Primitives - Number - eq(int)
-    Given the modern graph
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: Primitives_Number_eqXintX
+    Given the empty graph
     And using the parameter xx1 defined as "l[d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i]"
     And using the parameter xx2 defined as "d[1].i"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(P.eq(xx2)))
+      g.inject(xx1).unfold().where(__.is(xx2))
       """
     When iterated to list
     Then the result should be unordered

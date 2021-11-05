@@ -162,7 +162,7 @@ Number consists of Byte, Short, Integer, Long, Float, Double, BigInteger, and Bi
 * TinkerPop is JVM based so there can be ±INF^^float and ±INF^^double, NaN^^float and NaN^^double. They also adhere to
 the type promotion rules.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives - Number"]
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
 ===== Boolean
 

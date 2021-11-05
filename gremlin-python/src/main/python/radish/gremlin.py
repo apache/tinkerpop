@@ -660,6 +660,7 @@ world.gremlins = {
     'g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name': [(lambda g:g.V().hasLabel('person').V().hasLabel('software').name)], 
     'g_V_hasLabelXloopsX_bothEXselfX': [(lambda g:g.V().hasLabel('loops').bothE('self'))], 
     'g_V_hasLabelXloopsX_bothXselfX': [(lambda g:g.V().hasLabel('loops').both('self'))], 
+    'Primitives_Number_eqXintX': [(lambda g, xx1=None,xx2=None:g.inject(xx1).unfold().where(__.is_(xx2)))], 
     'g_V_valueXnameX_aggregateXxX_capXxX': [(lambda g:g.V().name.aggregate('x').cap('x'))], 
     'g_V_valueXnameX_aggregateXglobal_xX_capXxX': [(lambda g:g.V().name.aggregate(Scope.global_,'x').cap('x'))], 
     'g_V_aggregateXxX_byXnameX_capXxX': [(lambda g:g.V().aggregate('x').by('name').cap('x'))], 
