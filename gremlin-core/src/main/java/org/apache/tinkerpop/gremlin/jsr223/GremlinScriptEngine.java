@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -46,6 +47,14 @@ public interface GremlinScriptEngine extends ScriptEngine {
      */
     public default Traversal.Admin eval(final Bytecode bytecode, final String traversalSource) throws ScriptException {
         final Bindings bindings = this.createBindings();
+        final ScriptContext ctx = this.getContext();
+
+        final Bindings gbindings = ctx.getBindings(ScriptContext.GLOBAL_SCOPE);
+        if (gbindings != null) bindings.putAll(gbindings);
+
+        final Bindings ebindings = ctx.getBindings(ScriptContext.ENGINE_SCOPE);
+        if (ebindings != null) bindings.putAll(ebindings);
+
         bindings.putAll(bytecode.getBindings());
         return eval(bytecode, bindings, traversalSource);
     }
