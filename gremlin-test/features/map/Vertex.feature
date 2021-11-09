@@ -18,6 +18,37 @@
 @StepClassMap @StepVertex
 Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
+  Scenario: g_VXnullX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(null)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_VXlistXnullXX
+    Given the modern graph
+    And using the parameter xx1 defined as "l[null]"
+    And the traversal of
+      """
+      g.V(xx1)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_VX1_nullX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1,null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
   Scenario: g_VXlistX1_2_3XX_name
     Given the modern graph
     And using the parameter xx1 defined as "l[v[marko].id,v[vadas].id,v[lop].id]"
@@ -193,6 +224,37 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     Then the result should be unordered
       | result |
       | e[marko-knows->vadas] |
+      | e[josh-created->lop] |
+
+  Scenario: g_EXnullX
+    Given the modern graph
+    And the traversal of
+      """
+      g.E(null)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_EXlistXnullXX
+    Given the modern graph
+    And using the parameter xx1 defined as "l[null]"
+    And the traversal of
+      """
+      g.E(xx1)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_EX11_nullX
+    Given the modern graph
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
+    And the traversal of
+      """
+      g.E(eid11,null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
       | e[josh-created->lop] |
 
   Scenario: g_VX1X_outE
@@ -579,3 +641,26 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | v[loop] |
       | v[loop] |
+
+  @GraphComputerVerificationInjectionNotSupported @GraphComputerVerificationMidVNotSupported
+  Scenario: g_injectX1X_VXnullX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(1).V(null)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported @GraphComputerVerificationMidVNotSupported
+  Scenario: g_injectX1X_VX1_nullX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.inject(1).V(vid1,null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |

@@ -315,8 +315,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
-        this.asAdmin().getBytecode().addStep(Symbols.V, vertexIdsOrElements);
-        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, vertexIdsOrElements));
+        // a single null is [null]
+        final Object[] ids = null == vertexIdsOrElements ? new Object[] { null } : vertexIdsOrElements;
+        this.asAdmin().getBytecode().addStep(Symbols.V, ids);
+        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, ids));
     }
 
     /**
@@ -1608,8 +1610,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
         if (id instanceof P) {
             return this.hasId((P) id);
-        }
-        else {
+        } else {
             Object[] ids;
             if (id instanceof Object[]) {
                 ids = (Object[]) id;

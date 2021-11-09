@@ -150,12 +150,16 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Vertex) {
+                        else if (id instanceof Vertex)
                             return (Long) ((Vertex) id).id();
-                        } else
+                        else if (null == id)
+                            return null;
+                        else
                             throw new IllegalArgumentException("Unknown vertex id type: " + id);
                     })
                     .flatMap(id -> {
+                        // can't have a null id so just filter
+                        if (null == id) return Stream.empty();
                         try {
                             return Stream.of(this.baseGraph.getNodeById(id));
                         } catch (final RuntimeException e) {
@@ -180,12 +184,16 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Edge) {
+                        else if (id instanceof Edge)
                             return (Long) ((Edge) id).id();
-                        } else
+                        else if (null == id)
+                            return null;
+                        else
                             throw new IllegalArgumentException("Unknown edge id type: " + id);
                     })
                     .flatMap(id -> {
+                        // can't have a null id so just filter
+                        if (null == id) return Stream.empty();
                         try {
                             return Stream.of(this.baseGraph.getRelationshipById(id));
                         } catch (final RuntimeException e) {
