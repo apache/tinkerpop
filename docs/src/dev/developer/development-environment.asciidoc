@@ -261,6 +261,15 @@ mvn clean install -pl gremlin-server,gremlin-console -DdockerImages
 
 which enables the "docker-images" Maven profile.
 
+If confronted with "Permission denied" errors on Linux, it may be necessary to do the following:
+
+[source,text]
+----
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+----
+
 [[release-environment]]
 === Release Environment
 
