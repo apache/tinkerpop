@@ -52,6 +52,16 @@ limitations under the License.
                     <groupId>org.apache.kerby</groupId>
                     <artifactId>kerb-simplekdc</artifactId>
                 </exclusion>
+                <!-- prefer spark snappy -->
+                <exclusion>
+                    <groupId>org.xerial.snappy</groupId>
+                    <artifactId>snappy-java</artifactId>
+                </exclusion>
+                <!-- prefer spark gson -->
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.apache.kerby</groupId>
                     <artifactId>kerb-core</artifactId>
@@ -73,10 +83,6 @@ limitations under the License.
                     <artifactId>avro</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>jsr305</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
@@ -88,19 +94,20 @@ limitations under the License.
             <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
             <exclusions>
+                <!-- prefer hadoop protobuf -->
                 <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-client</artifactId>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
                 </exclusion>
-                <!-- prefer hadoop-gremlins jackson databind -->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <!-- prefer hadoop-gremlin guava -->
+                <!-- prefer hadoop guava -->
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+                <!-- prefer hadoop/gremlin-core commons-logging -->
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -109,6 +116,10 @@ limitations under the License.
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -122,7 +133,12 @@ limitations under the License.
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-math3</artifactId>
                 </exclusion>
-                <!-- prefer hadoop-gremlin commons-net -->
+                <!-- prefer the hadoop findbugs -->
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
+                </exclusion>
+                <!-- prefer hadoop commons-net -->
                 <exclusion>
                     <groupId>commons-net</groupId>
                     <artifactId>commons-net</artifactId>
@@ -170,6 +186,11 @@ limitations under the License.
                     <groupId>com.thoughtworks.paranamer</groupId>
                     <artifactId>paranamer</artifactId>
                 </exclusion>
+                <!-- prefer sparks xz -->
+                <exclusion>
+                    <groupId>org.tukaani</groupId>
+                    <artifactId>xz</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -185,12 +206,17 @@ limitations under the License.
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.10.5</version>
+            <version>2.12.3</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.10.5</version>
+            <version>2.12.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.12.3</version>
         </dependency>
         <!-- TEST -->
         <dependency>

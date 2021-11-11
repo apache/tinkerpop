@@ -35,7 +35,7 @@ limitations under the License.
 * Exposed Gherkin tests as part of the provider test suite.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Bumped to Apache Hadoop 3.3.1.
-* Bumped to Apache Spark 3.1.2.
+* Bumped to Apache Spark 3.2.0.
 * Changed `NumberHelper` to properly cast to `byte` and `short` rather than default coercing to `Integer`.
 * Modified some driver defaults (maximum content length, pool size, maximum in process) to be more consistent with one another.
 * Fixed a potential connection load balancing issue due to a race condition not updating the usage count.

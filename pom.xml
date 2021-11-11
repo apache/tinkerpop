@@ -164,7 +164,7 @@ limitations under the License.
         <netty.version>4.1.68.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.27</snakeyaml.version>
-        <spark.version>3.1.2</spark.version>
+        <spark.version>3.2.0</spark.version>
         <powermock.version>2.0.9</powermock.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
