@@ -123,24 +123,71 @@ referenced above:
 [source,xml]
 ----
 <configuration>
-    <property>
-        <name>yarn.nodemanager.aux-services</name>
-        <value>mapreduce_shuffle</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.vmem-check-enabled</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.vmem-pmem-ratio</name>
-        <value>4</value>
-    </property>
+  <property>
+    <name>yarn.nodemanager.aux-services</name>
+    <value>mapreduce_shuffle</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.vmem-check-enabled</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.vmem-pmem-ratio</name>
+    <value>4</value>
+  </property>
+</configuration>
+----
+
+The `/etc/hadoop/mapred-site.xml` file prefers the following configuration:
+
+[source,xml]
+----
+<configuration>
+  <property>
+    <name>mapreduce.framework.name</name>
+    <value>yarn</value>
+  </property>
+  <property>
+    <name>mapred.map.tasks</name>
+    <value>4</value>
+  </property>
+  <property>
+    <name>mapred.reduce.tasks</name>
+    <value>4</value>
+  </property>
+  <property>
+    <name>mapreduce.job.counters.limit</name>
+    <value>1000</value>
+  </property>
+  <property>
+    <name>mapreduce.jobtracker.address</name>
+    <value>localhost:9001</value>
+  </property>
+  <property>
+    <name>mapreduce.map.memory.mb</name>
+    <value>2048</value>
+  </property>
+  <property>
+    <name>mapreduce.reduce.memory.mb</name>
+    <value>4096</value>
+  </property>
+  <property>
+    <name>mapreduce.map.java.opts</name>
+    <value>-Xmx2048m</value>
+  </property>
+  <property>
+    <name>mapreduce.reduce.java.opts</name>
+    <value>-Xmx4096m</value>
+  </property>
 </configuration>
 ----
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
 The link:https://tinkerpop.apache.org/docs/current/recipes/#olap-spark-yarn[YARN recipe] also uses the `zip` program to
 create an archive so that needs to be installed, too, if you don't have it already.
+
+The Hadoop 3.3.x installation instructions call for installing `pdsh` but installing that seems to cause permission
+problems when executing `sbin/start-dfs.sh`. Skipping that prerequisite seems to solve the problem.
 
 Documentation can be generated locally with:
 
@@ -268,6 +315,7 @@ If confronted with "Permission denied" errors on Linux, it may be necessary to d
 sudo groupadd docker
 sudo usermod -aG docker $USER
 newgrp docker
+sudo chmod 666 /var/run/docker.sock
 ----
 
 [[release-environment]]
