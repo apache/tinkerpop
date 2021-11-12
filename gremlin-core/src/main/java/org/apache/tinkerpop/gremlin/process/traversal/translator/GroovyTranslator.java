@@ -144,12 +144,12 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Date o) {
-            return "new Date(" + o.getTime() + ")";
+            return "new Date(" + o.getTime() + "L)";
         }
 
         @Override
         protected String getSyntax(final Timestamp o) {
-            return "new Timestamp(" + o.getTime() + ")";
+            return "new Timestamp(" + o.getTime() + "L)";
         }
 
         @Override
