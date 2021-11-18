@@ -106,4 +106,22 @@ public class TextP extends P<String> {
     public static TextP notContaining(final String value) {
         return new TextP(Text.notContaining, value);
     }
+    
+    /**           
+     * Determines if String has a match with the given REGEX pattern. 
+     *
+     * @since 3.6.0
+     */
+    public static TextP regex(final String value) {
+        return new TextP(Text.regex, value);
+    }
+
+    /**           
+     * Determines if String has no match with the given REGEX pattern. 
+     *
+     * @since 3.6.0
+     */
+    public static TextP notRegex(final String value) {
+        return new TextP(Text.notRegex, value);
+    }
 }

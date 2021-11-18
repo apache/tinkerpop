@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added parser support for `NaN` and `Infinity`.
 * Implemented comparability/orderability semantics defined in the Graph Provider documentation.
+* Added `TextP.regex` and `TextP.notRegex`.
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
 * Added `fail()` step.

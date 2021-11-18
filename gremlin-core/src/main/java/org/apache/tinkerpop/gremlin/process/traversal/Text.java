@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.util.function.BiPredicate;
+import java.util.regex.Pattern; 
+import java.util.regex.Matcher; 
 
 /**
  * {@link Text} is a {@link java.util.function.BiPredicate} that determines whether the first string starts with, starts
@@ -29,6 +31,46 @@ import java.util.function.BiPredicate;
  */
 public enum Text implements BiPredicate<String, String> {
 
+    /**
+     * Evaluates if the first string has a regex match with the second (pattern).
+     *
+     * @since 3.6.0
+     */
+    regex {
+        @Override
+        public boolean test(final String value, final String expression) {
+            final Pattern pattern = Pattern.compile(expression);
+            final Matcher matcher = pattern.matcher(value);
+            return matcher.find();   
+        }
+
+        /**
+         * The negative of {@code regex} is {@link #notRegex}.
+         */
+        @Override
+        public Text negate() {
+            return notRegex;
+        }
+    },
+    /**
+     * Evaluates if the first string does not have a regex match with the second (pattern).
+     *
+     * @since 3.6.0
+     */
+    notRegex {
+        @Override
+        public boolean test(final String value, final String expression) {
+	    return !regex.test(value,expression);   
+        }
+
+        /**
+         * The negative of {@code notRegex} is {@link #regex}.
+         */
+        @Override
+        public Text negate() {
+            return regex;
+        }
+    },
     /**
      * Evaluates if the first string starts with the second.
      *

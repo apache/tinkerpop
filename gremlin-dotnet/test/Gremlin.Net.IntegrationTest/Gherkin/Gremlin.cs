@@ -215,6 +215,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasXname_not_containingXarkXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name",TextP.NotContaining("ark"))}}, 
                {"g_V_hasXname_not_startingWithXmarXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name",TextP.NotStartingWith("mar"))}}, 
                {"g_V_hasXname_not_endingWithXasXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name",TextP.NotEndingWith("as"))}}, 
+               {"g_V_hasXname_regexXrMarXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name",TextP.Regex("^mar"))}}, 
+               {"g_V_hasXname_notRegexXrMarXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name",TextP.NotRegex("^mar"))}}, 
                {"g_V_hasXp_neqXvXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("p",P.Neq("v"))}}, 
                {"g_V_hasXage_gtX18X_andXltX30XXorXgtx35XXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Gt(18).And(P.Lt(30)).Or(P.Gt(35)))}}, 
                {"g_V_hasXage_gtX18X_andXltX30XXorXltx35XXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age",P.Gt(18).And(P.Lt(30)).And(P.Lt(35)))}}, 

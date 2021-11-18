@@ -1002,6 +1002,14 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalPredicate_regex(final GremlinParser.TraversalPredicate_regexContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalPredicate_notRegex(final GremlinParser.TraversalPredicate_notRegexContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalTerminalMethod_iterate(final GremlinParser.TraversalTerminalMethod_iterateContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}

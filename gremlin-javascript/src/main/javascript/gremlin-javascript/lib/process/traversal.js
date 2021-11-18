@@ -427,6 +427,15 @@ class TextP {
     return createTextP('startingWith', args);
   }
 
+  /** @param {...Object} args */
+  static regex(...args) {
+    return createTextP('regex', args);
+  }
+
+  /** @param {...Object} args */
+  static notRegex(...args) {
+    return createTextP('notRegex', args);
+  }
 }
 
 function createTextP(operator, args) {
