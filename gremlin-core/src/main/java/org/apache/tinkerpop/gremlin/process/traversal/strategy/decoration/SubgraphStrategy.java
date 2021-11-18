@@ -180,8 +180,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, (Traversal) this.vertexCriterion.clone()), step, traversal);
             } else {
                 final VertexStep<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
-                final boolean addsPathRequirement;
-                final Step<Edge, Vertex> someVStep = (addsPathRequirement = step.getDirection() == Direction.BOTH) ?
+                final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());
 

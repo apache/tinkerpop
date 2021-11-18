@@ -364,7 +364,7 @@ for more details on how this configuration works.
 === WithoutStrategies Configuration
 
 The `withoutStrategies()` configuration removes a particular `TraversalStrategy` from those to be applied to traversals
-spawned from the configured source. Please see the <<traversal-strategy,Traversal Strategy Section>> for more details
+spawned from the configured source. Please see the <<traversalstrategy,Traversal Strategy Section>> for more details
 on how this configuration works.
 
 [[start-steps]]

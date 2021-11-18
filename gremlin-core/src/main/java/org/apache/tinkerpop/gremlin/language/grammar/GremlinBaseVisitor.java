@@ -1098,6 +1098,11 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
+	public T visitTraversalStrategyArgs_ProductiveByStrategy(GremlinParser.TraversalStrategyArgs_ProductiveByStrategyContext ctx) { return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}

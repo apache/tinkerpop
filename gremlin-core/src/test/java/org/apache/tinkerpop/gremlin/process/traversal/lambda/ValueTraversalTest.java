@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -29,13 +31,48 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ValueTraversalTest {
+    private static final Traversal.Admin<Vertex,Integer> ageValueTraversal = new ValueTraversal<>("age");
+    private static final Traversal.Admin<Vertex,Integer> nameValueTraversal = new ValueTraversal<>("name");
+    private static final Traversal.Admin<Vertex,Integer> nullTraversal = new ConstantTraversal<>(null);
+
+    @Test
+    public void shouldHaveSameHashCode() {
+        final ValueTraversal<Vertex, Integer> t1 = new ValueTraversal<>("age");
+        final ValueTraversal<Vertex, Integer> t2 = new ValueTraversal<>("age");
+        assertEquals(t1.hashCode(), t2.hashCode());
+    }
+
+    @Test
+    public void shouldNotHaveSameHashCode() {
+        final ValueTraversal<Vertex, Integer> t1 = new ValueTraversal<>("age");
+        final ValueTraversal<Vertex, Integer> t2 = new ValueTraversal<>("name");
+        assertNotEquals(t1.hashCode(), t2.hashCode());
+    }
+
+    @Test
+    public void shouldHaveSameHashCodeWhenBypassTraversalIsUsed() {
+        final ValueTraversal<Object, Integer> t1 = new ValueTraversal<>("age", __.coalesce(ageValueTraversal, nullTraversal).asAdmin());
+        final ValueTraversal<Object, Integer> t2 = new ValueTraversal<>("age", __.coalesce(ageValueTraversal, nullTraversal).asAdmin());
+        assertEquals(t1.hashCode(), t2.hashCode());
+    }
+
+    @Test
+    public void shouldNotHaveSameHashCodeWhenBypassTraversalIsUsed() {
+        final ValueTraversal<Object, Integer> t1 = new ValueTraversal<>("age", __.coalesce(ageValueTraversal, nullTraversal).asAdmin());
+        final ValueTraversal<Object, Integer> t2 = new ValueTraversal<>("name", __.coalesce(nameValueTraversal, nullTraversal).asAdmin());
+        final int t1Hc = t1.hashCode();
+        final int t2Hc = t2.hashCode();
+        assertNotEquals(t1.hashCode(), t2.hashCode());
+    }
 
     @Test
     public void shouldWorkOnVertex() {
@@ -46,13 +83,13 @@ public class ValueTraversalTest {
         assertEquals(29, t.next().intValue());
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void shouldWorkOnVertexWithMissingKey() {
         final ValueTraversal<Vertex, Integer> t = new ValueTraversal<>("age");
         final Vertex v = mock(Vertex.class);
         when(v.property("age")).thenReturn(VertexProperty.empty());
         t.addStart(new B_O_Traverser<>(v, 1).asAdmin());
-        assertNull(t.next());
+        t.next();
     }
 
     @Test
@@ -64,13 +101,13 @@ public class ValueTraversalTest {
         assertEquals(1.0d, t.next(), 0.00001d);
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void shouldWorkOnEdgeWithMissingKey() {
         final ValueTraversal<Edge, Double> t = new ValueTraversal<>("weight");
         final Edge e = mock(Edge.class);
         when(e.property("weight")).thenReturn(Property.empty());
         t.addStart(new B_O_Traverser<>(e, 1).asAdmin());
-        assertNull(t.next());
+        t.next();
     }
 
     @Test
@@ -82,13 +119,13 @@ public class ValueTraversalTest {
         assertEquals(29, t.next().intValue());
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void shouldWorkOnVertexPropertyWithMissingKey() {
         final ValueTraversal<VertexProperty, Integer> t = new ValueTraversal<>("age");
         final VertexProperty vp = mock(VertexProperty.class);
         when(vp.property("age")).thenReturn(Property.empty());
         t.addStart(new B_O_Traverser<>(vp, 1).asAdmin());
-        assertNull(t.next());
+        t.next();
     }
 
     @Test

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEf
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -44,6 +45,7 @@ public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerPr
             CountStrategy.class,
             ComputerVerificationStrategy.class,
             ProfileStrategy.class,
+            ProductiveByStrategy.class, // this strategy is required to maintain 3.5.x null behaviors defined in tests
             FilterRankingStrategy.class,
             ConnectiveStrategy.class,
             SideEffectStrategy.class));
