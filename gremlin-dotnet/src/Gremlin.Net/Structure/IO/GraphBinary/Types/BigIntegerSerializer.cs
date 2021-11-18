@@ -52,8 +52,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task<BigInteger> ReadValueAsync(Stream stream, GraphBinaryReader reader)
         {
             var length = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
-            var bytes = new byte[length];
-            await stream.ReadAsync(bytes).ConfigureAwait(false);
+            var bytes = await stream.ReadAsync(length).ConfigureAwait(false);
             return new BigInteger(bytes.Reverse().ToArray());
         }
     }
