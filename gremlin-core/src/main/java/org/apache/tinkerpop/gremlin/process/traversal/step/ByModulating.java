@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
@@ -34,9 +35,9 @@ import java.util.Comparator;
 import java.util.function.Function;
 
 /**
- * A {@code ByModulating} step is able to take {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#by} calls.
- * All the methods have default implementations excecpt {@link ByModulating#modulateBy(Traversal.Admin)}.
- * In short, given a traversal, what should the ByModulating step do with it.
+ * A {@code ByModulating} step is able to take {@link GraphTraversal#by} calls. All the methods have default
+ * implementations except {@link ByModulating#modulateBy(Traversal.Admin)}. In short, given a traversal, what should
+ * the {@code ByModulating} step do with it.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

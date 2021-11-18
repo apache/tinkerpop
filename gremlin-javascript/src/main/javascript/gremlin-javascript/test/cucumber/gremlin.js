@@ -26,7 +26,7 @@
 
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
-const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require('../../lib/process/traversal-strategy');
+const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, ProductiveByStrategy } = require('../../lib/process/traversal-strategy');
 const __ = graphTraversalModule.statics;
 const Barrier = traversalModule.barrier
 const Cardinality = traversalModule.cardinality
@@ -675,6 +675,7 @@ const gremlins = {
     g_VX1X_aggregateXlocal_aX_byXnameX_out_aggregateXlocal_aX_byXnameX_name_capXaX: [function({g, vid1}) { return g.V(vid1).aggregate(Scope.local,"a").by("name").out().aggregate(Scope.local,"a").by("name").values("name").cap("a") }], 
     g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX: [function({g, xx1}) { return g.withSideEffect("a",xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a") }], 
     g_V_aggregateXlocal_aX_byXoutEXcreatedX_countX_out_out_aggregateXlocal_aX_byXinEXcreatedX_weight_sumX: [function({g}) { return g.V().aggregate(Scope.local,"a").by(__.outE("created").count()).out().out().aggregate(Scope.local,"a").by(__.inE("created").values("weight").sum()).cap("a") }], 
+    g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX: [function({g}) { return g.V().aggregate("x").by(__.values("age").is(P.gt(29))).cap("x") }], 
     g_V_group_byXnameX: [function({g}) { return g.V().group().by("name") }], 
     g_V_group_byXageX: [function({g}) { return g.V().group().by("age") }], 
     g_V_group_byXnameX_by: [function({g}) { return g.V().group().by("name").by() }], 

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
@@ -45,6 +46,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -165,16 +167,22 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
         }
 
         // process select("a").by(...)
-        final List<SelectOneStep> selectOneSteps = TraversalHelper.getStepsOfClass(SelectOneStep.class, traversal);
-        for (final SelectOneStep<?, ?> selectOneStep : selectOneSteps) {
-            if (selectOneStep.getPop() != Pop.all && selectOneStep.getPop() != Pop.mixed && // TODO: necessary?
-                    selectOneStep.getMaxRequirement().compareTo(PathProcessor.ElementRequirement.ID) > 0 &&
-                    labelCount(selectOneStep.getScopeKeys().iterator().next(), TraversalHelper.getRootTraversal(traversal)) <= 1) {
-                final int index = TraversalHelper.stepIndex(selectOneStep, traversal);
-                final Traversal.Admin<?, ?> localChild = selectOneStep.getLocalChildren().get(0);
-                selectOneStep.removeLocalChild(localChild);
-                final TraversalMapStep<?, ?> mapStep = new TraversalMapStep<>(traversal, localChild.clone());
-                traversal.addStep(index + 1, mapStep);
+        //
+        // unfortunately, this strategy needs to know about ProductiveByStrategy. the ordering of strategies
+        // doesn't have enough flexibility to handle this situation where ProductiveByStrategy can run prior
+        // to this but also after ByModulatorOptimizationStrategy.
+        if (!traversal.getStrategies().getStrategy(ProductiveByStrategy.class).isPresent()) {
+            final List<SelectOneStep> selectOneSteps = TraversalHelper.getStepsOfClass(SelectOneStep.class, traversal);
+            for (final SelectOneStep<?, ?> selectOneStep : selectOneSteps) {
+                if (selectOneStep.getPop() != Pop.all && selectOneStep.getPop() != Pop.mixed && // TODO: necessary?
+                        selectOneStep.getMaxRequirement().compareTo(PathProcessor.ElementRequirement.ID) > 0 &&
+                        labelCount(selectOneStep.getScopeKeys().iterator().next(), TraversalHelper.getRootTraversal(traversal)) <= 1) {
+                    final int index = TraversalHelper.stepIndex(selectOneStep, traversal);
+                    final Traversal.Admin<?, ?> localChild = selectOneStep.getLocalChildren().get(0);
+                    selectOneStep.removeLocalChild(localChild);
+                    final TraversalMapStep<?, ?> mapStep = new TraversalMapStep<>(traversal, localChild.clone());
+                    traversal.addStep(index + 1, mapStep);
+                }
             }
         }
     }

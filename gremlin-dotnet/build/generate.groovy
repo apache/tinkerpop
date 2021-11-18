@@ -78,6 +78,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                      'using System.Collections.Generic;\n' +
                      'using Gremlin.Net.Structure;\n' +
                      'using Gremlin.Net.Process.Traversal;\n' +
+                     'using Gremlin.Net.Process.Traversal.Strategy.Optimization;\n' +
                      'using Gremlin.Net.Process.Traversal.Strategy.Decoration;\n')
     writer.writeLine('namespace Gremlin.Net.IntegrationTest.Gherkin\n' +
             '{\n' +

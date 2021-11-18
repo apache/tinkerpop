@@ -50,7 +50,14 @@ public interface Grouping<S, K, V> {
     public Traversal.Admin<S, V> getValueTraversal();
 
     /**
-     * Determines the first (non-local) barrier step in the provided traversal. This method is used by {@link GroupStep}
+     * Checks if there is a non-local {@link Barrier} in the value traversal.
+     */
+    public default boolean hasBarrierInValueTraversal() {
+        return null != determineBarrierStep(getValueTraversal());
+    }
+
+    /**
+     * Determines the first non-local {@link Barrier} step in the provided traversal. This method is used by {@link GroupStep}
      * and {@link GroupSideEffectStep} to ultimately determine the reducing bi-operator.
      *
      * @param traversal The traversal to inspect.
@@ -85,6 +92,10 @@ public interface Grouping<S, K, V> {
             return valueTraversal;
     }
 
+    /**
+     * When there is a {@link Barrier} detected by {@link #determineBarrierStep(Traversal.Admin)} it is processed
+     * in full up to that point and then the remainder of the traversal that follows it is completed.
+     */
     public default Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<S, V> valueTraversal) {
         final Barrier barrierStep = determineBarrierStep(valueTraversal);
         if (barrierStep != null) {

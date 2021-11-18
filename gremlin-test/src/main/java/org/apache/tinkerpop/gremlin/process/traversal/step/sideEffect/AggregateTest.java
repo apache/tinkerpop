@@ -21,9 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -41,6 +43,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -58,6 +61,10 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     ////// global
 
     public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregateXglobal_xX_capXxX();
+
+    public abstract Traversal<Vertex, List<Integer>> get_g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX();
+
+    public abstract Traversal<Vertex, List<Vertex>> get_g_V_aggregateXxX_byXout_order_byXnameXX_capXxX();
 
     public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX();
 
@@ -228,11 +235,41 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         assertFalse(store.isEmpty());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX() {
+        final Traversal<Vertex, List<Integer>> traversal = get_g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX();
+        printTraversalForm(traversal);
+        final Collection<Integer> ages = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertThat(ages, containsInAnyOrder(null, null, null, null, 32, 35));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_aggregateXxX_byXout_order_byXnameXX_capXxX() {
+        final Traversal<Vertex, List<Vertex>> traversal = get_g_V_aggregateXxX_byXout_order_byXnameXX_capXxX();
+        printTraversalForm(traversal);
+        final Collection<Vertex> ages = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertThat(ages, containsInAnyOrder(null, null, null, convertToVertex("lop"), convertToVertex("josh"), convertToVertex("lop")));
+    }
+
     public static class Traversals extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregateXglobal_xX_capXxX() {
             return g.V().values("name").aggregate(Scope.global, "x").cap("x");
+        }
+
+        @Override
+        public Traversal<Vertex, List<Vertex>> get_g_V_aggregateXxX_byXout_order_byXnameXX_capXxX() {
+            return g.V().aggregate("x").by(__.out().order().by("name")).cap("x");
+        }
+
+        @Override
+        public Traversal<Vertex, List<Integer>> get_g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX() {
+            return g.V().aggregate("x").by(__.values("age").is(P.gt(29))).cap("x");
         }
 
         @Override

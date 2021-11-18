@@ -91,6 +91,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Matc
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
@@ -255,6 +256,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ProfileStrategy.class);
         CLASS_IMPORTS.add(AdjacentToIncidentStrategy.class);
         CLASS_IMPORTS.add(ByModulatorOptimizationStrategy.class);
+        CLASS_IMPORTS.add(ProductiveByStrategy.class);
         CLASS_IMPORTS.add(CountStrategy.class);
         CLASS_IMPORTS.add(FilterRankingStrategy.class);
         CLASS_IMPORTS.add(IdentityRemovalStrategy.class);
