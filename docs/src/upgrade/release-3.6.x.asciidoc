@@ -140,6 +140,27 @@ on Gryo.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2639[TINKERPOP-2639]
 
+==== gremlin-python Deprecation Removal
+
+When gremlin-python was first built, it followed the Gremlin step names perfectly and didn't account well for Python
+keywords that those steps conflicted with. As this conflict led to problems in usage, steps that matched keywords were
+renamed to have an underscore suffix (e.g. `sum()` to `sum_()`) and the old step names were deprecated.
+
+In 3.6.0, those original conflicting steps names have simply been removed. Please change any of the following steps
+that may still be in use to instead prefer the underscore suffixed versions:
+
+* `filter`
+* `id`
+* `max`
+* `min`
+* `range`
+* `sum`
+
+The full list of steps with the suffix naming can be found in the
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#gremlin-python-differences[Reference Documentation].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2650[TINKERPOP-2650]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

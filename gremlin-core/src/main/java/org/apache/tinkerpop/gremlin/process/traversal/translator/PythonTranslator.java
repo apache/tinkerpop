@@ -357,16 +357,22 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
         static {
             TO_PYTHON_MAP.put("global", "global_");
-            TO_PYTHON_MAP.put("as", "as_");
-            TO_PYTHON_MAP.put("in", "in_");
-            TO_PYTHON_MAP.put("and", "and_");
-            TO_PYTHON_MAP.put("or", "or_");
-            TO_PYTHON_MAP.put("is", "is_");
-            TO_PYTHON_MAP.put("not", "not_");
-            TO_PYTHON_MAP.put("from", "from_");
-            TO_PYTHON_MAP.put("list", "list_");
-            TO_PYTHON_MAP.put("set", "set_");
             TO_PYTHON_MAP.put("all", "all_");
+            TO_PYTHON_MAP.put("and", "and_");
+            TO_PYTHON_MAP.put("as", "as_");
+            TO_PYTHON_MAP.put("filter", "filter_");
+            TO_PYTHON_MAP.put("from", "from_");
+            TO_PYTHON_MAP.put("id", "id_");
+            TO_PYTHON_MAP.put("in", "in_");
+            TO_PYTHON_MAP.put("is", "is_");
+            TO_PYTHON_MAP.put("list", "list_");
+            TO_PYTHON_MAP.put("max", "max_");
+            TO_PYTHON_MAP.put("min", "min_");
+            TO_PYTHON_MAP.put("or", "or_");
+            TO_PYTHON_MAP.put("not", "not_");
+            TO_PYTHON_MAP.put("range", "range_");
+            TO_PYTHON_MAP.put("set", "set_");
+            TO_PYTHON_MAP.put("sum", "sum_");
             TO_PYTHON_MAP.put("with", "with_");
             //
             TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
