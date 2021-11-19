@@ -135,7 +135,7 @@ public class GroovyTranslatorTest {
         final Calendar c = Calendar.getInstance();
         c.set(1975, Calendar.SEPTEMBER, 7);
         final Date d = c.getTime();
-        assertTranslation(String.format("new Date(%s)", d.getTime()), d);
+        assertTranslation(String.format("new Date(%sL)", d.getTime()), d);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class GroovyTranslatorTest {
         final Calendar c = Calendar.getInstance();
         c.set(1975, Calendar.SEPTEMBER, 7);
         final Timestamp t = new Timestamp(c.getTime().getTime());
-        assertTranslation(String.format("new Timestamp(%s)", t.getTime()), t);
+        assertTranslation(String.format("new Timestamp(%sL)", t.getTime()), t);
     }
 
     @Test
