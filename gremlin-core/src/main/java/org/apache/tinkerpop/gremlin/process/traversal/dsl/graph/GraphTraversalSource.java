@@ -366,21 +366,25 @@ public class GraphTraversalSource implements TraversalSource {
      * unique identifier.
      */
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
+        // a single null is [null]
+        final Object[] ids = null == vertexIds ? new Object[] { null } : vertexIds;
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.V, vertexIds);
+        clone.bytecode.addStep(GraphTraversal.Symbols.V, ids);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
+        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, ids));
     }
 
     /**
      * Spawns a {@link GraphTraversal} starting with all edges or some subset of edges as specified by their unique
      * identifier.
      */
-    public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
+    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
+        // a single null is [null]
+        final Object[] ids = null == edgeIds ? new Object[] { null } : edgeIds;
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
+        clone.bytecode.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
+        return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, ids));
     }
 
     /**

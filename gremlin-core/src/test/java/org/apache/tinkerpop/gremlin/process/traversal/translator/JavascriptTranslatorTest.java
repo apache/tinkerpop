@@ -119,7 +119,13 @@ public class JavascriptTranslatorTest {
 
     @Test
     public void shouldHaveNull() {
-        translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.inject(null,null)", translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript());
+        assertEquals("g.V()", translator.translate(g.V().asAdmin().getBytecode()).getScript());
+        assertEquals("g.V(null)", translator.translate(g.V(null).asAdmin().getBytecode()).getScript());
+        assertEquals("g.V(null,null)", translator.translate(g.V(null, null).asAdmin().getBytecode()).getScript());
+        assertEquals("g.E()", translator.translate(g.E().asAdmin().getBytecode()).getScript());
+        assertEquals("g.E(null)", translator.translate(g.E(null).asAdmin().getBytecode()).getScript());
+        assertEquals("g.E(null,null)", translator.translate(g.E(null, null).asAdmin().getBytecode()).getScript());
     }
 
     @Test

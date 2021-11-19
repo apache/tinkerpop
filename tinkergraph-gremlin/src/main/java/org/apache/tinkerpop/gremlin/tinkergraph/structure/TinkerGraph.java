@@ -316,6 +316,8 @@ public final class TinkerGraph implements Graph {
             // the assumption is that if it's already an Element, its identifier must be valid to the Graph and to
             // its associated IdManager. All other objects are passed to the IdManager for conversion.
             return new TinkerGraphIterator<>(IteratorUtils.filter(IteratorUtils.map(idList, id -> {
+                // ids cant be null so all of those filter out
+                if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
                 return elements.get(idManager.convert(iid));
             }).iterator(), Objects::nonNull));

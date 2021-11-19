@@ -99,6 +99,10 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // solution may become necessary as testing of nulls expands.
     def staticTranslate = [
             g_injectXnull_nullX: "    g_injectXnull_nullX: [function({g}) { return g.inject(null,null) }], ",
+            g_V_hasIdXnullX: "    g_V_hasIdXnullX: [function({g}) { return g.V().hasId(null) }], ",
+            g_V_hasIdX1_nullX: "    g_V_hasIdX1_nullX: [function({g, vid1}) { return g.V().hasId(vid1,null) }], ",
+            g_injectX1X_VXnullX: "    g_injectX1X_VXnullX: [function({g}) { return g.inject(1).V(null) }], ",
+            g_injectX1X_VX1_nullX: "    g_injectX1X_VX1_nullX: [function({g, vid1}) { return g.inject(1).V(vid1,null) }], ",
             g_VX1X_valuesXageX_injectXnull_nullX: "    g_VX1X_valuesXageX_injectXnull_nullX: [function({g, xx1}) { return g.V(xx1).values(\"age\").inject(null,null) }], "
     ]
 

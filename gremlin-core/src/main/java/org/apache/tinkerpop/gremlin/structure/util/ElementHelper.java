@@ -549,10 +549,10 @@ public final class ElementHelper {
         // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
         // enforces the value of id.()toString() to be a first class representation of the identifier
         if (1 == providedIds.length) {
-            return id.toString().equals(providedIds[0].toString());
+            return id != null && providedIds[0] != null && id.toString().equals(providedIds[0].toString());
         } else {
             for (final Object temp : providedIds) {
-                if (temp.toString().equals(id.toString()))
+                if (id != null && temp != null && temp.toString().equals(id.toString()))
                     return true;
             }
             return false;

@@ -79,8 +79,15 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<S, Vertex> V (params object[] vertexIdsOrElements)
         {
-            var args = new List<object>(0 + vertexIdsOrElements.Length) {};
-            args.AddRange(vertexIdsOrElements);
+            var args = null == vertexIdsOrElements ? new List<object>(1) {} : new List<object>(0 + vertexIdsOrElements.Length) {};
+            if (null == vertexIdsOrElements)
+            {
+                args.Add(null);
+            }
+            else
+            {
+                args.AddRange(vertexIdsOrElements);
+            }
             Bytecode.AddStep("V", args.ToArray());
             return Wrap<S, Vertex>(this);
         }

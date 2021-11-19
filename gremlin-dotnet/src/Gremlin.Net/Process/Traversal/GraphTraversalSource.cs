@@ -296,8 +296,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<Edge, Edge> E(params object[] edgesIds)
         {
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + edgesIds.Length) {};
-            args.AddRange(edgesIds);
+            var args = null == edgesIds ? new List<object>(1) {} : new List<object>(0 + edgesIds.Length) {};
+            if (null == edgesIds)
+            {
+                args.Add(null);
+            }
+            else
+            {
+                args.AddRange(edgesIds);
+            }
             traversal.Bytecode.AddStep("E", args.ToArray());
             return traversal;
         }
@@ -309,8 +316,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<Vertex, Vertex> V(params object[] vertexIds)
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + vertexIds.Length) {};
-            args.AddRange(vertexIds);
+            var args = null == vertexIds ? new List<object>(1) {} : new List<object>(0 + vertexIds.Length) {};
+            if (null == vertexIds)
+            {
+                args.Add(null);
+            }
+            else
+            {
+                args.AddRange(vertexIds);
+            }
             traversal.Bytecode.AddStep("V", args.ToArray());
             return traversal;
         }
