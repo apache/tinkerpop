@@ -193,7 +193,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public boolean hasNext() {
         if (!this.locked) this.applyStrategies();
-        return this.lastTraverser.bulk() > 0L || this.finalEndStep.hasNext();
+        final boolean more = this.lastTraverser.bulk() > 0L || this.finalEndStep.hasNext();
+        if (!more) CloseableIterator.closeIterator(this);
+        return more;
     }
 
     @Override

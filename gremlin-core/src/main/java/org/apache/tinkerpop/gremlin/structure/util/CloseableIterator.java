@@ -51,8 +51,7 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
         if (iterator instanceof AutoCloseable) {
             try {
                 ((AutoCloseable) iterator).close();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
