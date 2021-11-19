@@ -63,9 +63,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         if (this.bypass) return true;
 
         if (this.high != -1 && this.counter.get() >= this.high) {
-            // This is a global step and this place would be the end of the traversal.
-            // Close the traversal to free up resources.
-            CloseableIterator.closeIterator(traversal);
             throw FastNoSuchElementException.instance();
         }
 
