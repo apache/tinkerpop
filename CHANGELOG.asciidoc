@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added support for `g.Tx()` in .NET.
 * Added support for `with()` constant options to `io()`.
+* Changed `GroovyTranslator` to generate code more compatible to Java with `Date` and `Timestamp`.
 * Fixed bug in the processing of the `io()` step when constructing a `Traversal` from the grammar.
 * Added the `ConnectedComponent` tokens required to properly process the `with()` of the `connectedComponent()` step.
 * Fixed `DotNetTranslator` bugs where translations produced Gremlin that failed due to ambiguous step calls to `has()`.
