@@ -26,6 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Gherkin.Ast;
@@ -54,7 +55,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
             {
-                {@"d\[(.*)\]\.([ilfdm])", ToNumber},
+                {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"v\[(.+)\]", ToVertex},
                 {@"v\[(.+)\]\.id", (x, graphName) => ToVertex(x, graphName).Id},
@@ -74,11 +75,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<char, Func<string, object>> NumericParsers =
             new Dictionary<char, Func<string, object>>
             {
+                { 'b', s => Convert.ToByte(s) },
+                { 's', s => Convert.ToInt16(s) },
                 { 'i', s => Convert.ToInt32(s) },
                 { 'l', s => Convert.ToInt64(s) },
                 { 'f', s => Convert.ToSingle(s, CultureInfo.InvariantCulture) },
                 { 'd', s => Convert.ToDouble(s, CultureInfo.InvariantCulture) },
-                { 'm', s => Convert.ToDecimal(s, CultureInfo.InvariantCulture) }
+                { 'm', s => Convert.ToDecimal(s, CultureInfo.InvariantCulture) },
+                { 'n', s => BigInteger.Parse(s) }
             };
 
         [Given("the (\\w+) graph")]

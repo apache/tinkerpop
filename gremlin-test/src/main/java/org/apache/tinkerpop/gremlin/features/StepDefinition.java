@@ -56,6 +56,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -93,11 +94,14 @@ public final class StepDefinition {
             final String listItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
             return String.format("[%s]", listItems);
         }));
-        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.i"), s -> s));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.b"), s -> s + "b"));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.s"), s -> s + "s"));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.i"), s -> s + "i"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.l"), s -> s + "l"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.f"), s -> s + "f"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.d"), s -> s + "d"));
-        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), s -> String.format("new BigDecimal(%s)", s)));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), s -> s + "m"));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), s -> s + "n"));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next().toString()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));
@@ -155,11 +159,14 @@ public final class StepDefinition {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
         }));
 
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.b"), Byte::parseByte));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.s"), Short::parseShort));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.i"), Integer::parseInt));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.l"), Long::parseLong));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.f"), Float::parseFloat));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.d"), Double::parseDouble));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), BigDecimal::new));
+        add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), BigInteger::new));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));

@@ -292,44 +292,54 @@ public class GeneralLiteralVisitorTest {
         public String script;
 
         @Parameterized.Parameter(value = 1)
-        public String expected;
+        public Object expected;
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
                     // decimal format
-                    {"1", "1"},
-                    {"-11", "-11"},
-                    {"0", "0"},
-                    {"1L", "1L"},
-                    {"-1l", "-1l"},
-                    {"1_2_3", "123"},
-                    {"-1_2_3L", "-123L"},
-                    {"9223372036854775807", "9223372036854775807"},
-                    {"-9223372036854775808", "-9223372036854775808"},
-                    {"9223372036854775807L", "9223372036854775807"},
-                    {"-9223372036854775808l", "-9223372036854775808"},
+                    {"1", 1},
+                    {"-11", -11},
+                    {"0", 0},
+                    {"1B", (byte) 1},
+                    {"-1b", (byte) -1},
+                    {"1S", (short) 1},
+                    {"-1s", (short) -1},
+                    {"1I", 1},
+                    {"-1i", -1},
+                    {"1L", 1L},
+                    {"-1l", -1L},
+                    {"1_2_3", 123},
+                    {"-1_2_3L", -123L},
+                    {"1N", new BigInteger("1")},
+                    {"-1n", new BigInteger("-1")},
+                    {"9223372036854775807", 9223372036854775807L},
+                    {"-9223372036854775808", -9223372036854775808L},
+                    {"9223372036854775807L", 9223372036854775807L},
+                    {"-9223372036854775808l", -9223372036854775808L},
+                    {"9999999999999999999999999999999999999999999999999N", new BigInteger("9999999999999999999999999999999999999999999999999")},
+                    {"9999999999999999999999999999999999999999999999999n", new BigInteger("9999999999999999999999999999999999999999999999999")},
                     // hex format
-                    {"0xA", "10"},
-                    {"-0xA", "-10"},
-                    {"0xaL", "10l"},
-                    {"-0xal", "-10l"},
-                    {"-0xA_0L", "-160l"},
-                    {"0x10", "16"},
-                    {"-0x10", "-16"},
-                    {"0x10", "16"},
-                    {"-0x10l", "-16l"},
-                    {"-0x1_0L", "-16l"},
+                    {"0xA", 10},
+                    {"-0xA", -10},
+                    {"0xaL", 10L},
+                    {"-0xal", -10L},
+                    {"-0xA_0L", -160L},
+                    {"0x10", 16},
+                    {"-0x10", -16},
+                    {"0x10", 16},
+                    {"-0x10l", -16L},
+                    {"-0x1_0L", -16L},
                     // oct format
-                    {"01", "1"},
-                    {"-01", "-1"},
-                    {"01L", "1l"},
-                    {"-01l", "-1l"},
-                    {"010", "8"},
-                    {"-010", "-8"},
-                    {"010L", "8l"},
-                    {"-010l", "-8l"},
-                    {"-01_0L", "-8l"},
+                    {"01", 1},
+                    {"-01", -1},
+                    {"01L", 1L},
+                    {"-01l", -1L},
+                    {"010", 8},
+                    {"-010", -8},
+                    {"010L", 8L},
+                    {"-010l", -8L},
+                    {"-01_0L", -8L},
             });
         }
 
@@ -340,19 +350,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser.IntegerLiteralContext ctx = parser.integerLiteral();
 
             final Object actualValue = GenericLiteralVisitor.getInstance().visitIntegerLiteral(ctx);
-
-            // verify suffix L/l
-            if (expected.toUpperCase().charAt(expected.length() - 1) == 'L') {
-                assertEquals(Long.valueOf(expected.substring(0, expected.length() - 1)), actualValue);
-                return;
-            }
-
-            // based on value range verify the value is parsed in correct type
-            try {
-                assertEquals(Integer.valueOf(expected), actualValue);
-            } catch (NumberFormatException ignoredException) {
-                assertEquals(Long.valueOf(expected), actualValue);
-            }
+            assertEquals(expected, actualValue);
         }
     }
 
@@ -398,34 +396,33 @@ public class GeneralLiteralVisitorTest {
         public String script;
 
         @Parameterized.Parameter(value = 1)
-        public String expected;
-
-        @Parameterized.Parameter(value = 2)
-        public String type;
+        public Object expected;
 
         @Parameterized.Parameters()
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
-                    {"1.1", "1.1", "java.math.BigDecimal"},
-                    {"-0.1", "-0.1", "java.math.BigDecimal"},
-                    {"1.0E+12", "1.0E12", "java.math.BigDecimal"},
-                    {"-0.1E-12", "-0.1E-12", "java.math.BigDecimal"},
-                    {"1E12", "1E12", "java.math.BigDecimal"},
+                    {"1.1m", new BigDecimal("1.1")},
+                    {"1.1M", new BigDecimal("1.1")},
+                    {"1.1", new BigDecimal("1.1")},
+                    {"-0.1", new BigDecimal("-0.1")},
+                    {"1.0E+12", new BigDecimal("1.0E12")},
+                    {"-0.1E-12", new BigDecimal("-0.1E-12")},
+                    {"1E12", new BigDecimal("1E12")},
                     // float
-                    {"1.1f", "1.1", "java.lang.Float"},
-                    {"-0.1F", "-0.1", "java.lang.Float"},
-                    {"1.0E+12f", "1.0E12", "java.lang.Float"},
-                    {"-0.1E-12F", "-0.1E-12", "java.lang.Float"},
-                    {"1E12f", "1E12", "java.lang.Float"},
-                    {"1F", "1", "java.lang.Float"},
+                    {"1.1f", 1.1F},
+                    {"-0.1F", -0.1F},
+                    {"1.0E+12f", 1.0E12F},
+                    {"-0.1E-12F", -0.1E-12F},
+                    {"1E12f", 1E12F},
+                    {"1F", 1F},
 
                     // double
-                    {"1.1d", "1.1", "java.lang.Double"},
-                    {"-0.1D", "-0.1", "java.lang.Double"},
-                    {"1.0E+12d", "1.0E12", "java.lang.Double"},
-                    {"-0.1E-12D", "-0.1E-12", "java.lang.Double"},
-                    {"1E12d", "1E12", "java.lang.Double"},
-                    {"1D", "1", "java.lang.Double"}
+                    {"1.1d", 1.1D},
+                    {"-0.1D", -0.1D},
+                    {"1.0E+12d", 1.0E12D},
+                    {"-0.1E-12D", -0.1E-12D},
+                    {"1E12d", 1E12D},
+                    {"1D", 1D}
             });
         }
 
@@ -435,11 +432,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.FloatLiteralContext ctx = parser.floatLiteral();
 
-            final Class<?> clazz = Class.forName(type);
-            final Constructor<?> ctor = clazz.getConstructor(String.class);
-            final Object expectedValue = ctor.newInstance(expected);
-
-            assertEquals(expectedValue, GenericLiteralVisitor.getInstance().visitFloatLiteral(ctx));
+            assertEquals(expected, GenericLiteralVisitor.getInstance().visitFloatLiteral(ctx));
         }
     }
 

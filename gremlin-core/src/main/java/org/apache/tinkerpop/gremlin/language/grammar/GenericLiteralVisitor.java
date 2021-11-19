@@ -308,12 +308,25 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
     @Override
     public Object visitIntegerLiteral(final GremlinParser.IntegerLiteralContext ctx) {
         String integerLiteral = ctx.getText().toLowerCase().replace("_", "");
-        // handle suffix: L/l
+        // handle suffixes for specific types
         final int lastCharIndex = integerLiteral.length() - 1;
-        if (integerLiteral.charAt(lastCharIndex) == 'l') {
-            integerLiteral = integerLiteral.substring(0, lastCharIndex);
-
-            return Long.decode(integerLiteral);
+        final char suffix = integerLiteral.charAt(lastCharIndex);
+        switch (suffix) {
+            case 'b':
+                integerLiteral = integerLiteral.substring(0, lastCharIndex);
+                return Byte.decode(integerLiteral);
+            case 's':
+                integerLiteral = integerLiteral.substring(0, lastCharIndex);
+                return Short.decode(integerLiteral);
+            case 'i':
+                integerLiteral = integerLiteral.substring(0, lastCharIndex);
+                return Integer.decode(integerLiteral);
+            case 'l':
+                integerLiteral = integerLiteral.substring(0, lastCharIndex);
+                return Long.decode(integerLiteral);
+            case 'n':
+                integerLiteral = integerLiteral.substring(0, lastCharIndex);
+                return new BigInteger(integerLiteral);
         }
 
         try {
@@ -363,18 +376,19 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         final String floatLiteral = ctx.getText().toLowerCase();
 
         // check suffix
-        final char lastCharacter = floatLiteral.charAt(floatLiteral.length() - 1);
-        if (Character.isDigit(lastCharacter)) {
-            // if there is no suffix, parse it as BigDecimal
-            return new BigDecimal(floatLiteral);
-        }
-
-        if (lastCharacter == 'f') {
+        final int lastCharIndex = floatLiteral.length() - 1;
+        final char lastCharacter = floatLiteral.charAt(lastCharIndex);
+        if (lastCharacter == 'm') {
+            // parse M/m or whatever which could be a parse exception
+            return new BigDecimal(floatLiteral.substring(0, lastCharIndex));
+        } else if (lastCharacter == 'f') {
             // parse F/f suffix as Float
             return new Float(ctx.getText());
-        } else {
+        } else if (lastCharacter == 'd'){
             // parse D/d suffix as Double
             return new Double(floatLiteral);
+        } else {
+            return new BigDecimal(floatLiteral);
         }
     }
 
