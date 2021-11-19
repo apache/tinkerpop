@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
@@ -81,7 +80,6 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     GraphSONMessageSerializerGremlinV2d0.class,
                     GraphSONMessageSerializerV1d0.class,
                     GraphSONMessageSerializerV2d0.class,
-                    GryoLiteMessageSerializerV1d0.class,
                     GryoMessageSerializerV1d0.class,
                     GryoMessageSerializerV3d0.class,
                     GraphBinaryMessageSerializerV1.class,

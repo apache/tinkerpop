@@ -34,6 +34,7 @@ limitations under the License.
 * Created a way to produce a corpus of Gremlin traversals via `FeatureReader` and `DocumentationReader` in `gremlin-language`.
 * Exposed Gherkin tests as part of the provider test suite.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
+* Removed previously deprecated `application/vnd.gremlin-v1.0+gryo-lite` serialization format.
 * Removed previously deprecated `AuthenticationSettings.enableAuditLog`.
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.2.0.
@@ -2832,7 +2833,7 @@ This release also includes changes from <<release-3-1-3, 3.1.3>>.
 * Updated `VertexComputing.generateProgram()` API to include `Memory`. *(breaking)*
 * `ImmutablePath.TailPath` is now serializable like `ImmutablePath`.
 * Added `ConfigurationCompilerProvider` which allows fine-grained control of some of the internal `GremlinGroovyScriptEngine` settings at the Groovy compilation level.
-* Intoduced the `application/vnd.gremlin-v1.0+gryo-lite` serialization type to Gremlin Server which users "reference" elements rather than "detached".
+* Introduced the `application/vnd.gremlin-v1.0+gryo-lite` serialization type to Gremlin Server which users "reference" elements rather than "detached".
 * `GryoMapper` allows overrides of existing serializers on calls to `addCustom` on the builder.
 * Added a traversal style guide to the recipes cookbook.
 * Fixed a bug in master-traversal traverser propagation.
