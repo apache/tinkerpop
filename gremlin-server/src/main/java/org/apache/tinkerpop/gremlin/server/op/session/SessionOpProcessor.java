@@ -400,11 +400,6 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
             if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
             auditLogger.info("User {} with address {} requested: {}", user.getName(), address, bytecode);
         }
-        if (settings.authentication.enableAuditLog) {
-            String address = context.getChannelHandlerContext().channel().remoteAddress().toString();
-            if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-            auditLogger.info("User with address {} requested: {}", address, bytecode);
-        }
 
         // todo: timer matter???
         // final Timer.Context timerContext = traversalOpTimer.time();

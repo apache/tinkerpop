@@ -122,7 +122,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                             final AuthenticatedUser user = negotiator.get().getAuthenticatedUser();
                             ctx.channel().attr(StateKey.AUTHENTICATED_USER).set(user);
                             // User name logged with the remote socket address and authenticator classname for audit logging
-                            if (settings.enableAuditLog || settings.authentication.enableAuditLog) {
+                            if (settings.enableAuditLog) {
                                 String address = ctx.channel().remoteAddress().toString();
                                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                                 final String[] authClassParts = authenticator.getClass().toString().split("[.]");
