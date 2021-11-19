@@ -46,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -147,9 +148,13 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
     public void g_V_hasLabelXpersonX_propertyXname_nullX() {
+        // when cardinality is single then the vertex property is removed, otherwise it is ignored as the graph
+        // can't store it and it wouldn't be clear which property in the list/set to remove
+        final boolean present = graph.features().vertex().getCardinality("name") == VertexProperty.Cardinality.single;
+
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXpersonX_propertyXname_nullX();
         printTraversalForm(traversal);
-        traversal.forEachRemaining(v -> assertThat(v.properties("name").hasNext(), is(false)));
+        traversal.forEachRemaining(v -> assertThat(v.properties("name").hasNext(), is(!present)));
     }
 
     @Test
