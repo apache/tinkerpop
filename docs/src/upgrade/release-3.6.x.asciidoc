@@ -49,6 +49,19 @@ package is now explicitly associated to `gremlin-groovy` but as an `<optional>` 
 
 See:link:https://issues.apache.org/jira/browse/TINKERPOP-2411[TINKERPOP-2411]
 
+==== Null for T
+
+In 3.5.x, calling `property()` with a key that is of type `T` and a value that is `null` or calling `addV()` with a
+`null` label is processed as a valid traversal and default values are used. That approach allows opportunities for
+unexpected problems should a variable being passed as a parameter end up accidentally shifting to `null` without the
+caller's knowledge. Starting in 3.6.0, such traversals will generate an exception during construction of the traversal.
+
+It is still possible to call `addV()` with no arguments to assume a default `label` and `id` generation remains
+implementation specific with some graphs accepting `id` and others ignoring it to generate their own. Both value of
+`T` remain immutable.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2611[TINKERPOP-2611]
+
 ==== Logging Changes
 
 In Gremlin Server and Gremlin Console distributions, the default logging implementation of log4j 1.2.x has been

@@ -24,6 +24,7 @@ limitations under the License.
 === TinkerPop 3.6.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
+* Prevented values of `T` to `property()` from being `null`.
 * Fixed query indentation for profile metrics where indent levels were not being respected.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 * Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.

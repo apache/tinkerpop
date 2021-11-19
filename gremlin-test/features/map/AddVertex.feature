@@ -419,16 +419,6 @@ Feature: Step - addV()
       | result |
       | name |
 
-  Scenario: g_addVXnullX_propertyXid_nullX
-    Given the empty graph
-    And the traversal of
-      """
-      g.addV(null).property(T.id, null)
-      """
-    When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 1 for count of "g.V().hasLabel(\"vertex\")"
-
   Scenario: g_addV_propertyXlabel_personX
     Given the empty graph
     And the traversal of

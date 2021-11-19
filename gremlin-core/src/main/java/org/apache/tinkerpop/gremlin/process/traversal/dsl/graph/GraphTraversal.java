@@ -1036,6 +1036,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
+        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
         this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabel);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabel));
     }
@@ -1048,8 +1049,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.1
      */
     public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
+        if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
         this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabelTraversal);
-        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), null == vertexLabelTraversal ? null : vertexLabelTraversal.asAdmin()));
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
     }
 
     /**
@@ -2244,13 +2246,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link Graph}
      *                    to use its default settings
      * @param key         the key for the property
-     * @param value       the value for the property
+     * @param value       the value for the property which may not be null if the {@code key} is of type {@link T}
      * @param keyValues   any meta properties to be assigned to this property
      * @return the traversal with the last step modified to add a property
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step" target="_blank">AddProperty Step</a>
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
+        if (key instanceof T && null == value)
+            throw new IllegalArgumentException("Value of T cannot be null");
+
         if (null == cardinality)
             this.asAdmin().getBytecode().addStep(Symbols.property, key, value, keyValues);
         else

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -38,6 +39,9 @@ import static org.mockito.Mockito.verify;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphTraversalSourceTest {
+
+    private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+
     @Test
     public void shouldCloseRemoteConnectionOnWithRemote() throws Exception {
         final RemoteConnection mock = mock(RemoteConnection.class);
@@ -65,5 +69,15 @@ public class GraphTraversalSourceTest {
         assertTrue(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
         g = g.withoutStrategies(ReadOnlyStrategy.class);
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailAddVWithNullVertexLabel() {
+        g.addV((String) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailAddVWithNullVertexLabelTraversal() {
+        g.addV((Traversal<?, String>) null);
     }
 }
