@@ -457,7 +457,7 @@ public final class ElementHelper {
      * @return the hash code of the property
      */
     public static int hashCode(final Property property) {
-        return property.key().hashCode() + property.value().hashCode();
+        return property.key().hashCode() + Objects.hashCode(property.value());
     }
 
     /**

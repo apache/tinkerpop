@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -617,5 +618,10 @@ public class ElementHelperTest {
     public void shouldNotIdentifyThatKeyExistsWhenComparedToNull() {
         assertThat(ElementHelper.keyExists("k", (String) null), is(false));
         assertThat(ElementHelper.keyExists("k", null, null), is(false));
+    }
+
+    @Test
+    public void shouldHandleNullInHashCode() {
+        assertEquals(107, ElementHelper.hashCode(new DetachedProperty("k", null)));
     }
 }
