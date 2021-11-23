@@ -350,6 +350,50 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         }
     }
 
+    /**
+     * Performs translation without for the syntax sugar to Python.
+     */
+    public static class NoSugarTranslator extends DefaultTypeTranslator {
+
+      public NoSugarTranslator(final boolean withParameters) {
+            super(withParameters);
+        }
+
+        @Override
+        protected Script produceScript(final String traversalSource, final Bytecode o) {
+          script.append(traversalSource);
+          for (final Bytecode.Instruction instruction : o.getInstructions()) {
+            final String methodName = instruction.getOperator();
+            final Object[] arguments = instruction.getArguments();
+            if (0 == arguments.length)
+              script.append(".").append(resolveSymbol(methodName)).append("()");
+            else {
+              script.append(".").append(resolveSymbol(methodName)).append("(");
+
+              // python has trouble with java varargs...wrapping in collection seems to solve
+              // the problem
+              final boolean varargsBeware = instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)
+                  || instruction.getOperator().equals(TraversalSource.Symbols.withoutStrategies);
+              if (varargsBeware)
+                script.append("*[");
+
+              final Iterator<?> itty = Stream.of(arguments).iterator();
+              while (itty.hasNext()) {
+                convertToScript(itty.next());
+                if (itty.hasNext())
+                  script.append(",");
+              }
+
+              if (varargsBeware)
+                script.append("]");
+
+              script.append(")");
+            }
+          }
+          return script;
+        }
+
+    }
     static final class SymbolHelper {
 
         private final static Map<String, String> TO_PYTHON_MAP = new HashMap<>();
@@ -368,6 +412,12 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("set", "set_");
             TO_PYTHON_MAP.put("all", "all_");
             TO_PYTHON_MAP.put("with", "with_");
+            TO_PYTHON_MAP.put("range", "range_");
+            TO_PYTHON_MAP.put("filter", "filter_");
+            TO_PYTHON_MAP.put("id", "id_");
+            TO_PYTHON_MAP.put("max", "max_");
+            TO_PYTHON_MAP.put("min", "min_");
+            TO_PYTHON_MAP.put("sum", "sum_");
             //
             TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
         }
