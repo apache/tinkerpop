@@ -340,18 +340,178 @@ Feature: Step - order()
       | m[{"3":"d[87].i","2":"d[58].i","1":"d[29].i","4":"d[29].i"}] |
 
   Scenario: g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the grateful graph
+    And the traversal of
       """
-      TODO
+      g.V().has("song", "name", "OH BOY").out("followedBy").out("followedBy").order().by("performances").by("songType", desc).by("name")
       """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[BARBRY ALLEN] |
+      | v[CHANTING BY THE GYOTO MONKS] |
+      | v[FUNICULI FUNICULA] |
+      | v[GIMME SOME LOVIN] |
+      | v[GOOD TIME BLUES] |
+      | v[LUCY IN THE SKY] |
+      | v[MAYBE YOU KNOW HOW I FEEL] |
+      | v[MOJO] |
+      | v[OLLIN ARRAGEED] |
+      | v[QUINN THE ESKIMO] |
+      | v[SATISFACTION] |
+      | v[SILENT WAY JAM] |
+      | v[SPACE] |
+      | v[STRONGER THAN DIRT] |
+      | v[THE BOXER] |
+      | v[THIS COULD BE THE LAST TIME] |
+      | v[TOM THUMB BLUES] |
+      | v[CHINESE BONES] |
+      | v[LOVE THE ONE YOURE WITH] |
+      | v[BLACK QUEEN] |
+      | v[OH BOY] |
+      | v[BLUES FOR ALLAH] |
+      | v[IF I HAD THE WORLD TO GIVE] |
+      | v[HEY JUDE] |
+      | v[ITS ALL TOO MUCH] |
+      | v[WILLIE AND THE HAND JIVE] |
+      | v[WHY DONT WE DO IT IN THE ROAD] |
+      | v[UNBROKEN CHAIN] |
+      | v[DONT NEED LOVE] |
+      | v[NOBODYS FAULT BUT MINE] |
+      | v[HEAVEN HELP THE FOOL] |
+      | v[BLOW AWAY] |
+      | v[JAM] |
+      | v[SUNSHINE DAYDREAM] |
+      | v[I WILL TAKE YOU HOME] |
+      | v[SAMBA IN THE RAIN] |
+      | v[ON THE ROAD AGAIN] |
+      | v[SPANISH JAM] |
+      | v[EASY TO LOVE YOU] |
+      | v[DEATH DONT HAVE NO MERCY] |
+      | v[SPOONFUL] |
+      | v[CAUTION] |
+      | v[THE RACE IS ON] |
+      | v[SMOKESTACK LIGHTNING] |
+      | v[COMES A TIME] |
+      | v[STANDING ON THE MOON] |
+      | v[KNOCKING ON HEAVENS DOOR] |
+      | v[PICASSO MOON] |
+      | v[FOOLISH HEART] |
+      | v[WAY TO GO HOME] |
+      | v[THE ELEVEN] |
+      | v[VICTIM OR THE CRIME] |
+      | v[PASSENGER] |
+      | v[PASSENGER] |
+      | v[MY BROTHER ESAU] |
+      | v[HELP ON THE WAY] |
+      | v[LAZY LIGHTNING] |
+      | v[CHINA DOLL] |
+      | v[ME AND BOBBY MCGEE] |
+      | v[ALL ALONG THE WATCHTOWER] |
+      | v[CRYPTICAL ENVELOPMENT] |
+      | v[ALABAMA GETAWAY] |
+      | v[CRAZY FINGERS] |
+      | v[CRAZY FINGERS] |
+      | v[WHEN I PAINT MY MASTERPIECE] |
+      | v[LOST SAILOR] |
+      | v[LOST SAILOR] |
+      | v[BLACK THROATED WIND] |
+      | v[IT MUST HAVE BEEN THE ROSES] |
+      | v[IT MUST HAVE BEEN THE ROSES] |
+      | v[BOX OF RAIN] |
+      | v[SHAKEDOWN STREET] |
+      | v[SHAKEDOWN STREET] |
+      | v[IKO IKO] |
+      | v[IKO IKO] |
+      | v[FEEL LIKE A STRANGER] |
+      | v[TOUCH OF GREY] |
+      | v[TOUCH OF GREY] |
+      | v[BROKEDOWN PALACE] |
+      | v[HELL IN A BUCKET] |
+      | v[DARK STAR] |
+      | v[DARK STAR] |
+      | v[FRANKLINS TOWER] |
+      | v[SAINT OF CIRCUMSTANCE] |
+      | v[SAINT OF CIRCUMSTANCE] |
+      | v[THE MUSIC NEVER STOPPED] |
+      | v[COLD RAIN AND SNOW] |
+      | v[FIRE ON THE MOUNTAIN] |
+      | v[MORNING DEW] |
+      | v[THE WHEEL] |
+      | v[THROWING STONES] |
+      | v[I NEED A MIRACLE] |
+      | v[I NEED A MIRACLE] |
+      | v[ALTHEA] |
+      | v[LITTLE RED ROOSTER] |
+      | v[LET IT GROW] |
+      | v[LET IT GROW] |
+      | v[GOING DOWN THE ROAD FEELING BAD] |
+      | v[BIRDSONG] |
+      | v[TERRAPIN STATION] |
+      | v[TERRAPIN STATION] |
+      | v[MAMA TRIED] |
+      | v[FRIEND OF THE DEVIL] |
+      | v[FRIEND OF THE DEVIL] |
+      | v[SCARLET BEGONIAS] |
+      | v[SCARLET BEGONIAS] |
+      | v[BEAT IT ON DOWN THE LINE] |
+      | v[HES GONE] |
+      | v[STELLA BLUE] |
+      | v[UNCLE JOHNS BAND] |
+      | v[UNCLE JOHNS BAND] |
+      | v[CASSIDY] |
+      | v[ONE MORE SATURDAY NIGHT] |
+      | v[BLACK PETER] |
+      | v[BROWN EYED WOMEN] |
+      | v[SUGAREE] |
+      | v[SAMSON AND DELILAH] |
+      | v[SAMSON AND DELILAH] |
+      | v[EYES OF THE WORLD] |
+      | v[EYES OF THE WORLD] |
+      | v[EL PASO] |
+      | v[ESTIMATED PROPHET] |
+      | v[BERTHA] |
+      | v[WHARF RAT] |
+      | v[BIG RIVER] |
+      | v[LOOKS LIKE RAIN] |
+      | v[AROUND AND AROUND] |
+      | v[PROMISED LAND] |
+      | v[GOOD LOVING] |
+      | v[MEXICALI BLUES] |
+      | v[NEW MINGLEWOOD BLUES] |
+      | v[JACK STRAW] |
+      | v[JACK STRAW] |
+      | v[TRUCKING] |
+      | v[TRUCKING] |
+      | v[NOT FADE AWAY] |
+      | v[CHINA CAT SUNFLOWER] |
+      | v[CHINA CAT SUNFLOWER] |
+      | v[PLAYING IN THE BAND] |
+      | v[PLAYING IN THE BAND] |
+      | v[THE OTHER ONE] |
+      | v[SUGAR MAGNOLIA] |
+      | v[SUGAR MAGNOLIA] |
+      | v[ME AND MY UNCLE] |
 
   Scenario: g_V_hasLabelXsongX_order_byXperformances_descX_byXnameX_rangeX110_120X_name
-    Given an unsupported test
-    Then nothing should happen because
+    Given the grateful graph
+    And the traversal of
       """
-      TODO
+      g.V().hasLabel("song").order().by("performances", desc).by("name").range(110, 120).values("name")
       """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | WANG DANG DOODLE |
+      | THE ELEVEN |
+      | WAY TO GO HOME |
+      | FOOLISH HEART |
+      | GIMME SOME LOVING |
+      | DUPREES DIAMOND BLUES |
+      | CORRINA |
+      | PICASSO MOON |
+      | KNOCKING ON HEAVENS DOOR |
+      | MEMPHIS BLUES |
 
   Scenario: g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold
     Given the modern graph

@@ -248,7 +248,11 @@ function parseValue(stringValue) {
 }
 
 function toNumeric(stringValue) {
-  return parseFloat(stringValue);
+  try {
+    return parseFloat(stringValue);
+  } catch (Error) {
+    return BigInt(stringValue);
+  }
 }
 
 function toVertex(name) {
