@@ -80,7 +80,7 @@ class Translator {
             } else if (Array.isArray(params[k])) {
               const parts = [];
               for (const param of params[k]) {
-                parts.push(translate(param.getBytecode(), true));
+                parts.push(this.translate(param.getBytecode(), true));
               }
               script += parts.join(",");
             } else {
