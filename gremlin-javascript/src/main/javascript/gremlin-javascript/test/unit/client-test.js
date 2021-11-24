@@ -36,7 +36,7 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g'});
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
@@ -51,7 +51,7 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor});
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor, connectOnStartup: false});
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
@@ -67,7 +67,7 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor});
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor, connectOnStartup: false});
     customClient._connection = connectionMock;
     customClient.submit(query, null, {"evaluationTimeout": 123})
   });

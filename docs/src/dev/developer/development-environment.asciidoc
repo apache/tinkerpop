@@ -293,6 +293,8 @@ easily serve the generated website locally. This is covered in more detail in th
 TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
 can be used to help run tests.
 
+TIP: Consider installing link:https://github.com/nvm-sh/nvm[nvm-sh] as a convenient way to manage node versions.
+
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[docker-environment]]

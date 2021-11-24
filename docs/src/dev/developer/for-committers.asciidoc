@@ -138,6 +138,18 @@ on `gremlin-python` then the tag should be `3.6.0.1-python`.
 
 Please refrain from creating arbitrary tags, as they produce permanent clutter.
 
+[[runtimes]]
+== Runtimes
+
+Each programming language has a runtime that TinkerPop supports. In general, TinkerPop will attempt to support the
+current LTS version for a particular major version for the lifetime of its minor and patch releases. Part of each
+major release cycle, should include some analysis of the current runtime supported.
+
+* Java - Typically, TinkerPop will find itself bound to the version held by its major dependencies like Apache Spark.
+* Javascript - Consult link:https://github.com/nodejs/Release[nodejs/Release] for the current active LTS of node and link:https://nodejs.org/en/download/releases/[here] for npm compatibility.
+* .NET - Consult link:https://dotnet.microsoft.com/platform/support/policy/dotnet-core[.NET Release Lifecycle] for LTS status.
+* Python - Consult link:https://www.python.org/downloads/[Python.org] for the current LTS status.
+
 == Issue Tracker Conventions
 
 TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP[issue tracker].  JIRA is a

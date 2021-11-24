@@ -43,6 +43,7 @@ limitations under the License.
 * Removed previously deprecated Gremlin steps that conflicted with Python keywords.
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.2.0.
+* Bumped node.js in `gremlin-javascript` to v16.13.0.
 * Changed `NumberHelper` to properly cast to `byte` and `short` rather than default coercing to `Integer`.
 * Modified some driver defaults (maximum content length, pool size, maximum in process) to be more consistent with one another.
 * Fixed a potential connection load balancing issue due to a race condition not updating the usage count.
