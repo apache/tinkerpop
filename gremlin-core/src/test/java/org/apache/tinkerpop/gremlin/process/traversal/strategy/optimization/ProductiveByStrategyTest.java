@@ -41,6 +41,8 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.assign;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.coalesce;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -88,14 +90,14 @@ public class ProductiveByStrategyTest {
                 {__.aggregate(Scope.local,"a").by("name"),
                         __.aggregate(Scope.local,"a").by("name"),
                         keys("name")},
-                {__.aggregate("a").by(__.values("age").is(P.gt(29))),
-                        __.aggregate("a").by(coalesce(__.values("age").is(P.gt(29)), nullTraversal)),
+                {__.aggregate("a").by(values("age").is(P.gt(29))),
+                        __.aggregate("a").by(coalesce(values("age").is(P.gt(29)), nullTraversal)),
                         Collections.emptySet()},
-                {__.aggregate("a").by(__.values("age").fold()),
-                        __.aggregate("a").by(__.values("age").fold()),
+                {__.aggregate("a").by(values("age").fold()),
+                        __.aggregate("a").by(values("age").fold()),
                         Collections.emptySet()},
-                {__.aggregate("a").by(__.values("age").sum()),
-                        __.aggregate("a").by(__.values("age").sum()),
+                {__.aggregate("a").by(values("age").sum()),
+                        __.aggregate("a").by(values("age").sum()),
                         Collections.emptySet()},
                 {__.cyclicPath().by("name"),
                         __.cyclicPath().by(new ValueTraversal<>("name", coalesce(nameValueTraversal, nullTraversal).asAdmin())),
@@ -132,6 +134,9 @@ public class ProductiveByStrategyTest {
                         keys("name","age")},
                 {__.group().by(T.label).by(bothE().values("weight").sample(2).fold()),
                         __.group().by(T.label).by(bothE().values("weight").sample(2).fold()),
+                        Collections.emptySet()},
+                {__.group().by(coalesce(values("age"), constant(null))),
+                        __.group().by(coalesce(values("age"), constant(null))),
                         Collections.emptySet()},
                 {__.groupCount().by("name"),
                         __.groupCount().by(new ValueTraversal<>("name", coalesce(nameValueTraversal, nullTraversal).asAdmin())),

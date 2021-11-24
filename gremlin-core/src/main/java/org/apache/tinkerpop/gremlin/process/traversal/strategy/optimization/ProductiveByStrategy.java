@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Grouping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -114,12 +116,28 @@ public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStr
                     }
                 } else {
                     if (child instanceof ValueTraversal && ((Grouping) parentStep).getKeyTraversal() == child &&
-                            hasKeyNotKnownAsProductive((ValueTraversal) child)) {
+                            hasKeyNotKnownAsProductive((ValueTraversal) child) && !containsValidByPass((ValueTraversal) child)) {
                         wrapValueTraversalInCoalesce(parentStep, child);
                     }
                 }
             });
         });
+    }
+
+    /**
+     * Validate that the {@link ValueTraversal} needs to be wrapped. It can be skipped if a bypass is already in place
+     * or if there isn't a {@link CoalesceStep} at the start or if there isn't a {@code null} in the
+     * {@link CoalesceStep}.
+     */
+    private boolean containsValidByPass(final ValueTraversal vt) {
+        if (null == vt.getBypassTraversal()) return false;
+        if (!(vt.getStartStep() instanceof CoalesceStep)) return false;
+        final CoalesceStep coalesceStep = (CoalesceStep) vt.getStartStep();
+        final List<Traversal> children = coalesceStep.getLocalChildren();
+        final Traversal lastChild = children.get(children.size() - 1);
+        return lastChild == nullTraversal ||
+                (lastChild instanceof ConstantTraversal && ((ConstantTraversal) lastChild).next() == null) ||
+                (lastChild.asAdmin().getEndStep() instanceof ConstantStep && ((ConstantStep) lastChild.asAdmin().getEndStep()).getConstant() == null);
     }
 
     private void wrapValueTraversalInCoalesce(final TraversalParent parentStep, final Traversal.Admin<Object, Object> child) {
