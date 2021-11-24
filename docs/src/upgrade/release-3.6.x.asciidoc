@@ -140,6 +140,14 @@ on Gryo.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2639[TINKERPOP-2639]
 
+==== GroovyTranslator of gremlin-groovy
+
+`GroovyTranslator` has been removed from the `gremlin-groovy` module. Please update any code using that class to
+instead use `org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator` which is found in
+`gremlin-core`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2657[TINKERPOP-2657]
+
 ==== gremlin-python Deprecation Removal
 
 When gremlin-python was first built, it followed the Gremlin step names perfectly and didn't account well for Python

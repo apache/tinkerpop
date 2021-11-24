@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -259,7 +260,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 filter(p -> p instanceof TranslatorCustomizer).
                 map(p -> (TranslatorCustomizer) p).findFirst();
         typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator).
-                orElseGet(() -> new org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.DefaultTypeTranslator(false));
+                orElseGet(() -> new GroovyTranslator.DefaultTypeTranslator(false));
 
         createClassLoader();
     }
@@ -293,7 +294,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         inner.putAll(bindings);
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
-        org.apache.tinkerpop.gremlin.process.traversal.Script script = org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode);
+        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode);
         script.getParameters().ifPresent(inner::putAll);
         return (Traversal.Admin) this.eval(script.getScript(), inner);
     }

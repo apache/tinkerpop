@@ -39,6 +39,7 @@ limitations under the License.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Removed previously deprecated `application/vnd.gremlin-v1.0+gryo-lite` serialization format.
 * Removed previously deprecated `AuthenticationSettings.enableAuditLog`.
+* Removed previously deprecated `GroovyTranslator` from `gremlin-groovy` module.
 * Removed previously deprecated Gremlin steps that conflicted with Python keywords.
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.2.0.
