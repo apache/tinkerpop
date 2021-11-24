@@ -45,7 +45,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in filtering for `null` property key arguments to `valueMap()`, `elementMap()`, `properties()` and `values()`.
 * Modified grammar to allow a call to `within()` and `without()` with no arguments.
 * Fixed problems with `inject(null)` variations where `null` was the only value being submitted.
-* Fixed problem with `GroovyTranslator` and `inject(null,null)` which could be interpreted as the Groovy JDK extension `inject(Object,Closure).
+* Fixed problem with `GroovyTranslator` and `inject(null,null)` which could be interpreted as the Groovy JDK extension `inject(Object,Closure)`.
 * Fixed error where certain variants of `inject()` with `null` might not properly construct a traversal in .NET.
 * Prevented exception with  `hasValue(null)` and allowed filtering as expected.
 * Refined `DotNetTranslator` to be more explicit with `null` arguments to ensure that the right overloads are called.
