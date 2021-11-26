@@ -137,14 +137,14 @@ class GraphTraversal(Traversal):
 
     def __getitem__(self, index):
         if isinstance(index, int):
-            return self.range(long(index), long(index + 1))
+            return self.range_(long(index), long(index + 1))
         elif isinstance(index, slice):
             low = long(0) if index.start is None else long(index.start)
             high = long(sys.maxsize) if index.stop is None else long(index.stop)
             if low == long(0):
                 return self.limit(high)
             else:
-                return self.range(low,high)
+                return self.range_(low,high)
         else:
             raise TypeError("Index must be int or slice")
 
@@ -569,32 +569,6 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("write", *args)
         return self
 
-    # Deprecated - prefer the underscore suffixed versions e.g filter_()
-
-    def filter(self, *args):
-        self.bytecode.add_step("filter", *args)
-        return self
-
-    def id(self, *args):
-        self.bytecode.add_step("id", *args)
-        return self
-
-    def max(self, *args):
-        self.bytecode.add_step("max", *args)
-        return self
-
-    def min(self, *args):
-        self.bytecode.add_step("min", *args)
-        return self
-
-    def range(self, *args):
-        self.bytecode.add_step("range", *args)
-        return self
-
-    def sum(self, *args):
-        self.bytecode.add_step("sum", *args)
-        return self
-
 
 class MagicType(type):
 
@@ -976,32 +950,6 @@ class __(object, metaclass=MagicType):
     def where(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).where(*args)
 
-    # Deprecated - prefer the underscore suffixed versions e.g filter_()
-
-    @classmethod
-    def filter(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).filter_(*args)
-
-    @classmethod
-    def id(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).id_(*args)
-
-    @classmethod
-    def max(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).max_(*args)
-
-    @classmethod
-    def min(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).min_(*args)
-
-    @classmethod
-    def range(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).range_(*args)
-
-    @classmethod
-    def sum(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).sum_(*args)
-
 
 def V(*args):
     return __.V(*args)
@@ -1363,32 +1311,6 @@ def where(*args):
     return __.where(*args)
 
 
-# Deprecated - prefer the underscore suffixed versions e.g filter_()
-
-def filter(*args):
-    return __.filter_(*args)
-
-
-def id(*args):
-    return __.id_(*args)
-
-
-def max(*args):
-    return __.max_(*args)
-
-
-def min(*args):
-    return __.min_(*args)
-
-
-def range(*args):
-    return __.range_(*args)
-
-
-def sum(*args):
-    return __.sum_(*args)
-
-
 statics.add_static('V', V)
 
 statics.add_static('addE', addE)
@@ -1568,13 +1490,3 @@ statics.add_static('valueMap', valueMap)
 statics.add_static('values', values)
 
 statics.add_static('where', where)
-
-
-# Deprecated - prefer the underscore suffixed versions e.g filter_()
-
-statics.add_static('filter', filter)
-statics.add_static('id', id)
-statics.add_static('max', max)
-statics.add_static('min', min)
-statics.add_static('range', range)
-statics.add_static('sum', sum)

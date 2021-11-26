@@ -44,7 +44,7 @@ class TestDriverRemoteConnection(object):
         assert long(6) == g.V().count().toList()[0]
         # #
         assert Vertex(1) == g.V(1).next()
-        assert 1 == g.V(1).id().next()
+        assert 1 == g.V(1).id_().next()
         assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
         assert 1 == len(g.V(1).toList())
         assert isinstance(g.V(1).toList(), list)
@@ -113,11 +113,11 @@ class TestDriverRemoteConnection(object):
         assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
         g = traversal().withRemote(remote_connection)
 
-        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum().next()
-        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum().next()
+        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
 
-        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum().next()
-        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum().next()
+        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
 
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
@@ -166,7 +166,7 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
-        assert 4 == g.V().filter(lambda: ("x -> true", "gremlin-groovy")).count().next()
+        assert 4 == g.V().filter_(lambda: ("x -> true", "gremlin-groovy")).count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().withRemote(remote_connection). \

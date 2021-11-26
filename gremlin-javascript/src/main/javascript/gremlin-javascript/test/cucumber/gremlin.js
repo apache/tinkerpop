@@ -764,7 +764,6 @@ const gremlins = {
     g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack: [function({g, vid1}) { return g.withBulk(false).withSack(1.0,Operator.sum).V(vid1).local(__.outE("knows").barrier(Barrier.normSack).inV()).in_("knows").barrier().sack() }], 
     g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack: [function({g}) { return g.withBulk(false).withSack(1,Operator.sum).V().out().barrier().sack() }], 
     g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack: [function({g, vid1}) { return g.withSack(1.0,Operator.sum).V(vid1).local(__.out("knows").barrier(Barrier.normSack)).in_("knows").barrier().sack() }], 
-    g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack: [function({g, xx1}) { return g.withSack(xx1,Operator.assign).V().local(__.out("knows").barrier(Barrier.normSack)).in_("knows").barrier().sack() }], 
     g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX: [function({g}) { return g.V().has("age").groupCount("a").by("name").out().cap("a") }], 
     g_V_storeXa_nameX_out_capXaX: [function({g}) { return g.V().store("a").by("name").out().cap("a") }], 
     g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX: [function({g, vid1}) { return g.V(vid1).store("a").by("name").out().store("a").by("name").values("name").cap("a") }], 

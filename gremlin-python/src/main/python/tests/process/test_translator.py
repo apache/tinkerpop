@@ -88,13 +88,13 @@ class TestTraversalStrategies(object):
         tests.append([g.V('3').repeat(__.out().simplePath()).until(__.has('code', 'AGR')).path().by('code').limit(5),
                      "g.V('3').repeat(__.out().simplePath()).until(__.has('code','AGR')).path().by('code').limit(5)"])
         # 17
-        tests.append([g.V().hasLabel('airport').order().by(__.id()),
+        tests.append([g.V().hasLabel('airport').order().by(__.id_()),
                      "g.V().hasLabel('airport').order().by(__.id())"])
         # 18
         tests.append([g.V().hasLabel('airport').order().by(T.id),
                      "g.V().hasLabel('airport').order().by(T.id)"])
         # 19
-        tests.append([g.V().hasLabel('airport').order().by(__.id(),Order.desc),
+        tests.append([g.V().hasLabel('airport').order().by(__.id_(),Order.desc),
                      "g.V().hasLabel('airport').order().by(__.id(),Order.desc)"])
         # 20
         tests.append([g.V().hasLabel('airport').order().by('code',Order.desc),
@@ -133,13 +133,13 @@ class TestTraversalStrategies(object):
         tests.append([g.V('1').addE('test').to(__.V('4')),
                      "g.V('1').addE('test').to(__.V('4'))"])
         # 32
-        tests.append([g.V().values('runways').max(),
+        tests.append([g.V().values('runways').max_(),
                      "g.V().values('runways').max()"])
         # 33
-        tests.append([g.V().values('runways').min(),
+        tests.append([g.V().values('runways').min_(),
                      "g.V().values('runways').min()"])
         # 34
-        tests.append([g.V().values('runways').sum(),
+        tests.append([g.V().values('runways').sum_(),
                      "g.V().values('runways').sum()"])
         # 35
         tests.append([g.V().values('runways').mean(),
@@ -148,7 +148,7 @@ class TestTraversalStrategies(object):
         tests.append([g.withSack(0).V('3', '5').sack(Operator.sum).by('runways').sack(),
                      "g.withSack(0).V('3','5').sack(Operator.sum).by('runways').sack()"])
         # 37
-        tests.append([g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V('6').store('x').by(__.constant(1)).select('x').unfold().sum(),
+        tests.append([g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V('6').store('x').by(__.constant(1)).select('x').unfold().sum_(),
                      "g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V('6').store('x').by(__.constant(1)).select('x').unfold().sum()"])
         # 38
         tests.append([g.inject(3, 4, 5),
@@ -219,7 +219,7 @@ class TestTraversalStrategies(object):
                      "g.V().limit(5).order().by(T.label)"])
 
         # 60
-        tests.append([g.V().range(1, 5),
+        tests.append([g.V().range_(1, 5),
                      "g.V().range(1,5)"])
 
         # 61
@@ -260,7 +260,7 @@ class TestTraversalStrategies(object):
                      "g.V().hasLabel('airport').where(__.out().count().is(gt(250))).values('code')"])
 
         # 72
-        tests.append([g.V().hasLabel('airport').filter(__.out().count().is_(gt(250))).values('code'),
+        tests.append([g.V().hasLabel('airport').filter_(__.out().count().is_(gt(250))).values('code'),
                      "g.V().hasLabel('airport').filter(__.out().count().is(gt(250))).values('code')"])
         # 73
         tests.append([g.withSack(0).

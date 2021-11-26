@@ -33,7 +33,7 @@ class SocialTraversal(GraphTraversal):
         return self.out("knows").hasLabel("person").has("name", person_name)
 
     def youngestFriendsAge(self):
-        return self.out("knows").hasLabel("person").values("age").min()
+        return self.out("knows").hasLabel("person").values("age").min_()
 
     def createdAtLeast(self, number):
         return self.outE("created").count().is_(P.gte(number))
@@ -76,4 +76,4 @@ def test_dsl(remote_connection):
     assert social.persons("marko").youngestFriendsAge().next() == 27
     assert social.persons().count().next() == 4
     assert social.persons("marko", "josh").count().next() == 2
-    assert social.persons().filter(__.createdAtLeast(2)).count().next() == 1
+    assert social.persons().filter_(__.createdAtLeast(2)).count().next() == 1

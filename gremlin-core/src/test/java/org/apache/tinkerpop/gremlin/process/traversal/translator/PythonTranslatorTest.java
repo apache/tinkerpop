@@ -103,7 +103,7 @@ public class PythonTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
+        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter_(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
                 translator.translate(bytecode).getScript());
     }
 }
