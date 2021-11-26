@@ -105,5 +105,12 @@ describe('Translator', function () {
       assert.ok(script);
       assert.strictEqual(script, 'g.V().has(\'male\', true)');
     });
+
+    it('should produce valid script representation of array as step arg', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V([1, 2, 3]));
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V([1, 2, 3])');
+    });
   });
 });

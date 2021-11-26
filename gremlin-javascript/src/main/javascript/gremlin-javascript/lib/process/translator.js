@@ -44,6 +44,7 @@ class Translator {
   /**
    * Returns a script representation of the given bytecode instructions.
    * @param {Object} bytecodeOrTraversal The traversal or bytecode of a traversal containing step instructions.
+   * @param {boolean} child Determines if a traversal object should be treated as an anonymous child or if it is a spawn from "g"
    * @returns {string} Gremlin-Groovy script
    */
   translate(bytecodeOrTraversal, child = false) {
@@ -63,42 +64,54 @@ class Translator {
             script += ', ';
           }
 
-          if (Object(params[k]) === params[k]) {
-            if (params[k] instanceof Traversal) {
-              script += this.translate(params[k].getBytecode(), true);
-            } else if (params[k].toString() === '[object Object]') {
-              Object.keys(params[k]).forEach(function (key, index) {
-                if (index > 0) script += ', ';
-                script += '(\'' + key + '\', ';
-                if (params[k][key] instanceof String || typeof params[k][key] === 'string') {
-                  script += '\'' + params[k][key] + '\'';
-                } else {
-                  script += params[k][key];
-                }
-                script += ')';
-              });
-            } else if (Array.isArray(params[k])) {
-              const parts = [];
-              for (const param of params[k]) {
-                parts.push(this.translate(param.getBytecode(), true));
-              }
-              script += parts.join(",");
-            } else {
-              script += params[k].toString();
-            }
-          } else if (params[k] === undefined) {
-            script += '';
-          } else if (typeof params[k] === 'number' || typeof params[k] === 'boolean') {
-            script += params[k];
-          } else {
-            script += '\'' + params[k] + '\'';
-          }
+          script += this.convert(params[k]);
         }
       }
 
       script += ')';
     }
     
+    return script;
+  }
+
+  /**
+   * Converts an object to a Gremlin script representation.
+   * @param {Object} anyObject The object to convert to a script representation
+   * @returns {string} The Gremlin script representation
+   */
+  convert(anyObject) {
+    let script = '';
+    if (Object(anyObject) === anyObject) {
+      if (anyObject instanceof Traversal) {
+        script += this.translate(anyObject.getBytecode(), true);
+      } else if (anyObject.toString() === '[object Object]') {
+        Object.keys(anyObject).forEach(function (key, index) {
+          if (index > 0) script += ', ';
+          script += '(\'' + key + '\', ';
+          if (anyObject[key] instanceof String || typeof anyObject[key] === 'string') {
+            script += '\'' + anyObject[key] + '\'';
+          } else {
+            script += anyObject[key];
+          }
+          script += ')';
+        });
+      } else if (Array.isArray(anyObject)) {
+        const parts = [];
+        for (const item of anyObject) {
+          parts.push(this.convert(item));
+        }
+        script += '[' + parts.join(', ') + ']';
+      } else {
+        script += anyObject.toString();
+      }
+    } else if (anyObject === undefined) {
+      script += '';
+    } else if (typeof anyObject === 'number' || typeof anyObject === 'boolean') {
+      script += anyObject;
+    } else {
+      script += '\'' + anyObject + '\'';
+    }
+
     return script;
   }
 }
