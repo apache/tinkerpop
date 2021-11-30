@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy
 
@@ -64,6 +65,7 @@ class StrategyLoader {
         // # ComputerFinalizationStrategy is singleton/internal
 
         // optimization
+        ProductiveByStrategy.metaClass.constructor << { Map conf -> ProductiveByStrategy.create(new MapConfiguration(conf)) }
         // # AdjacentToIncidentStrategy is singleton/internal
         // # CountStrategy is singleton/internal
         // # EarlyLimitStrategy is singleton/internal

@@ -170,6 +170,15 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
         return null == this.bypassTraversal || this.bypassTraversal.isLocked();
     }
 
+    /**
+     * Implementations of this class can never be a root-level traversal as they are specialized implementations
+     * intended to be child traversals by design.
+     */
+    @Override
+    public boolean isRoot() {
+        return false;
+    }
+
     @Override
     public Optional<Graph> getGraph() {
         return null == this.bypassTraversal ? Optional.empty() : this.bypassTraversal.getGraph();

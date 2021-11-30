@@ -757,6 +757,7 @@ traversalStrategy
 //  | 'ReferenceElementStrategy' - not supported directly as users really can't/shouldn't change this in our context of a remote Gremlin provider
 //  | 'AdjacentToIncidentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'ByModulatorOptimizationStrategy' - not supported as it is a default strategy and we don't allow removal at this time
+    | 'new'? 'ProductiveByStrategy' (LPAREN traversalStrategyArgs_ProductiveByStrategy? RPAREN)?
 //  | 'CountStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'EarlyLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'FilterRankingStrategy' - not supported as it is a default strategy and we don't allow removal at this time
@@ -775,6 +776,10 @@ traversalStrategy
     | 'ReadOnlyStrategy'
     | 'new' 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
 //  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
+    ;
+
+traversalStrategyArgs_ProductiveByStrategy
+    : 'productiveKeys' COLON stringLiteralList
     ;
 
 traversalStrategyArgs_PartitionStrategy

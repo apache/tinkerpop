@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
@@ -712,6 +713,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VX1X_aggregateXlocal_aX_byXnameX_out_aggregateXlocal_aX_byXnameX_name_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Aggregate(Scope.Local,"a").By("name").Out().Aggregate(Scope.Local,"a").By("name").Values<object>("name").Cap<object>("a")}}, 
                {"g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSideEffect("a",p["xx1"]).V().Both().Values<object>("name").Aggregate(Scope.Local,"a").Cap<object>("a")}}, 
                {"g_V_aggregateXlocal_aX_byXoutEXcreatedX_countX_out_out_aggregateXlocal_aX_byXinEXcreatedX_weight_sumX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Aggregate(Scope.Local,"a").By(__.OutE("created").Count()).Out().Out().Aggregate(Scope.Local,"a").By(__.InE("created").Values<object>("weight").Sum<object>()).Cap<object>("a")}}, 
+               {"g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Aggregate("x").By(__.Values<object>("age").Is(P.Gt(29))).Cap<object>("x")}}, 
+               {"g_V_aggregateXxX_byXout_order_byXnameXX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Aggregate("x").By(__.Out().Order().By("name")).Cap<object>("x")}}, 
                {"g_V_group_byXnameX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Group<object,object>().By("name")}}, 
                {"g_V_group_byXageX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Group<object,object>().By("age")}}, 
                {"g_V_group_byXnameX_by", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Group<object,object>().By("name").By()}}, 

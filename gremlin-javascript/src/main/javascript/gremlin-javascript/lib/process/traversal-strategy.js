@@ -151,6 +151,16 @@ class SubgraphStrategy extends TraversalStrategy {
   }
 }
 
+class ProductiveByStrategy extends TraversalStrategy {
+  /**
+   * @param {Object} [options]
+   * @param {Array<String>} [options.productiveKeys] set of keys that will always be productive
+   */
+  constructor(options) {
+    super("org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy", options);
+  }
+}
+
 class VertexProgramStrategy extends TraversalStrategy {
 
   constructor(options) {
@@ -323,6 +333,7 @@ module.exports = {
   OrderLimitStrategy: OrderLimitStrategy,
   PathProcessorStrategy: PathProcessorStrategy,
   PathRetractionStrategy: PathRetractionStrategy,
+  ProductiveByStrategy: ProductiveByStrategy,
   CountStrategy: CountStrategy,
   RepeatUnrollStrategy: RepeatUnrollStrategy,
   GraphFilterStrategy: GraphFilterStrategy,

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -41,7 +42,9 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.coalesce;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -50,6 +53,9 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class PathProcessorStrategyTest {
     private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
+    private static final Collection<TraversalStrategy> withoutProductiveByStrategy =
+            TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList().stream().
+                    filter(s -> s != ProductiveByStrategy.instance()).collect(Collectors.toList());
 
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin original;
@@ -88,9 +94,12 @@ public class PathProcessorStrategyTest {
                 {__.select("a").by(__.outE().count()), __.select("a").map(__.outE().count()), Collections.emptyList()},
                 {__.select("a").by("name"), __.select("a").map(new ValueTraversal<>("name")), Collections.emptyList()},
                 {__.select("a").out(), __.select("a").out(), Collections.emptyList()},
-                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by("name"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by("name"), withoutProductiveByStrategy},
+                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), withoutProductiveByStrategy},
+                {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name")), withoutProductiveByStrategy},
                 // select("a","b")
                 {__.select("a", "b"), __.select("a", "b"), Collections.emptyList()},
                 {__.select("a", "b").by(), __.select("a", "b").by(), Collections.emptyList()},

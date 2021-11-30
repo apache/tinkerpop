@@ -58,6 +58,8 @@ Feature: Step - select()
       | v[marko] |
       | v[marko] |
 
+  # ProductiveBy
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -788,6 +790,9 @@ Feature: Step - select()
       | result |
       | v[marko] |
       | v[marko] |
+
+  # ProductiveBy
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -800,6 +805,8 @@ Feature: Step - select()
       | result |
       | weight |
 
+  # ProductiveBy
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -812,6 +819,8 @@ Feature: Step - select()
       | result |
       | d[0.4].d |
 
+  # ProductiveBy
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_selectXaX_byXageX
     Given the modern graph
     And the traversal of

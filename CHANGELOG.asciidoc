@@ -63,6 +63,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified grammar to accept the `datetime()` function so that Gremlin scripts have a way to natively construct a `Date`.
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
+* Added `ProductiveByStrategy` to ensure consistency of `by()` modulator behaviors when child traversal arguments contained no elements.
 * Allowed `null` string values in the Gremlin grammar.
 * Fixed support for `SeedStrategy` in the Gremlin Grammar.
 * Fixed bugs in `PythonTranslator`, `JavascriptTranslator` and `DotNetTranslator` when translating `TraversalStrategy` objects to Javascript.

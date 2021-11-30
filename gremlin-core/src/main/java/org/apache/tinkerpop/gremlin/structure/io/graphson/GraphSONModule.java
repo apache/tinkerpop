@@ -57,6 +57,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Orde
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
@@ -192,6 +193,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             MatchAlgorithmStrategy.class,
                             AdjacentToIncidentStrategy.class,
                             ByModulatorOptimizationStrategy.class,
+                            ProductiveByStrategy.class,
                             CountStrategy.class,
                             FilterRankingStrategy.class,
                             IdentityRemovalStrategy.class,
@@ -320,6 +322,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     MatchAlgorithmStrategy.class,
                     AdjacentToIncidentStrategy.class,
                     ByModulatorOptimizationStrategy.class,
+                    ProductiveByStrategy.class,
                     CountStrategy.class,
                     FilterRankingStrategy.class,
                     IdentityRemovalStrategy.class,
@@ -428,6 +431,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             MatchAlgorithmStrategy.class,
                             AdjacentToIncidentStrategy.class,
                             ByModulatorOptimizationStrategy.class,
+                            ProductiveByStrategy.class,
                             CountStrategy.class,
                             FilterRankingStrategy.class,
                             IdentityRemovalStrategy.class,

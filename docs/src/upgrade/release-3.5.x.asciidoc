@@ -103,6 +103,60 @@ return `false`.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2605[TINKERPOP-2605],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2620[TINKERPOP-2620]
 
+==== ProductiveByStrategy
+
+Gremlin steps that take a `by()` modulator have had varying behaviors for some time now and depending on the step and
+context of the argument given to the `by()`, the traversal might return a result, throw an exception, produce a `null`
+if no value is present, or filter results. While all of these behaviors cannot be reconciled in 3.5.x without breaking
+changes it is possible to start to deal with the exception behavior in a more consistent way.
+
+When a traversal given to `by()` does not contain a result, the traversal is deemed "unproductive". As mentioned above,
+unproductive arguments to `by()` lead to different results depending on the case:
+
+[source,text]
+----
+gremlin> g.V().aggregate('x').by('age').cap('x')
+==>[29,27,null,null,32,35]
+gremlin> g.V().aggregate('x').by(values('age').is(gt(29))).cap('x')
+The provided traverser does not map to a value: v[1]->[PropertiesStep([age],value), IsStep(gt(29))]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().aggregate('x').by(out()).cap('x')
+The provided traverser does not map to a value: v[2]->[VertexStep(OUT,vertex)]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+With `ProductiveByStrategy` now installed by default in 3.5.2, the exception behavior is changed to follow the `null`
+behavior forcing the unproductive traversal to return something:
+
+[source,text]
+----
+gremlin> g.V().aggregate('x').by('age').cap('x')
+==>[29,27,null,null,32,35]
+gremlin> g.V().aggregate('x').by(values('age').is(gt(29))).cap('x')
+==>[null,null,null,null,32,35]
+gremlin> g.V().aggregate('x').by(out()).cap('x')
+==>[v[3],v[3],null,null,null,v[5]]
+----
+
+Note that `group()` step has some special behaviors that made it virtually impossible for `ProductiveByStrategy` to
+fully retain them, so ultimately the strategy ignores the modulators on that step except for the simple cases where the
+key modulator is a basic `ValueTraversal` (e.g. `by('name')')`. As a result, for `group()` the behavior should be
+unchanged with exceptions retained:
+
+[source,text]
+----
+gremlin> g.V().group().by(values('age'))
+==>[null:[v[3],v[5]],32:[v[4]],35:[v[6]],27:[v[2]],29:[v[1]]]
+gremlin> g.V().group().by(values('age').is(gt(29)))
+The provided traverser does not map to a value: v[1]->[PropertiesStep([age],value), IsStep(gt(29))]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635]
+
 == TinkerPop 3.5.1
 
 *Release Date: July 19, 2021*

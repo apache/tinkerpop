@@ -192,6 +192,8 @@ Feature: Step - match()
       | lop    |
       | lop    |
 
+  # ProductiveBy
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX
     Given the modern graph
     And the traversal of
@@ -476,6 +478,8 @@ Feature: Step - match()
       | m[{"a":"v[Grateful_Dead]","b":"v[CANT COME DOWN]","c":"v[DOWN SO LONG]","d":"v[Garcia]"}] |
       | m[{"a":"v[Grateful_Dead]","b":"v[THE ONLY TIME IS NOW]","c":"v[DOWN SO LONG]","d":"v[Garcia]"}] |
 
+  # ProductiveBy
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX
     Given the grateful graph
     And the traversal of

@@ -67,6 +67,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Orde
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
@@ -342,6 +343,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
             add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));
+            add(GryoTypeReg.of(ProductiveByStrategy.class, 195, new JavaSerializer())); // ***LAST ID***
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
@@ -402,7 +404,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
-            add(GryoTypeReg.of(ReducingBarrierStep.NonEmittingSeed.class, 194));           // ***LAST ID***
+            add(GryoTypeReg.of(ReducingBarrierStep.NonEmittingSeed.class, 194));
 
             add(GryoTypeReg.of(B_LP_NL_O_P_S_SE_SL_Traverser.class, 174));
             add(GryoTypeReg.of(B_NL_O_S_SE_SL_Traverser.class, 175));
@@ -567,7 +569,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MeanGlobalStep.MeanGlobalBiOperator.class, 110));
             add(GryoTypeReg.of(MeanGlobalStep.MeanNumber.class, 111));
             add(GryoTypeReg.of(TreeStep.TreeBiOperator.class, 112));
-            add(GryoTypeReg.of(ReducingBarrierStep.NonEmittingSeed.class, 194));           // ***LAST ID***
+            add(GryoTypeReg.of(ReducingBarrierStep.NonEmittingSeed.class, 194));
 
             // skip 113
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
@@ -584,6 +586,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
             add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));
+            add(GryoTypeReg.of(ProductiveByStrategy.class, 195, new JavaSerializer())); // ***LAST ID***
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
