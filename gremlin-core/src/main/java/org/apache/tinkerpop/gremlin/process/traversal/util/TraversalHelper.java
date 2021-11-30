@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -528,7 +529,9 @@ public final class TraversalHelper {
                     }
                 }
                 for (int i = 0; i < parent.getLocalChildren().size(); i++) {
-                    if (parent.getLocalChildren().get(i) == current) {
+                    final Traversal currentLocalChild = parent.getLocalChildren().get(i);
+                    if (currentLocalChild == current ||
+                            (currentLocalChild instanceof AbstractLambdaTraversal && ((AbstractLambdaTraversal) currentLocalChild).getBypassTraversal() == current)) {
                         stepPosition.z = i + globalChildrenSize;
                     }
                 }

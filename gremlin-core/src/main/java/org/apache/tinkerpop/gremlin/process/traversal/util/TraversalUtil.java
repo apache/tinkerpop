@@ -43,7 +43,9 @@ public final class TraversalUtil {
         try {
             return traversal.next(); // map
         } catch (final NoSuchElementException e) {
-            throw new IllegalArgumentException("The provided traverser does not map to a value: " + split + "->" + traversal);
+            final String clazzOfTraverserValue = null == split.get() ? "null" : split.get().getClass().getSimpleName();
+            throw new IllegalArgumentException(String.format("The provided traverser does not map to a value: %s[%s]->%s[%s] parent[%s]",
+                    split, clazzOfTraverserValue, traversal, traversal.getClass().getSimpleName(), traversal.getParent().asStep().getTraversal()));
         } finally {
             //Close the traversal to release any underlying resources.
             CloseableIterator.closeIterator(traversal);

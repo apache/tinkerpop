@@ -183,6 +183,11 @@ class PathRetractionStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self, fqcn=optimization_namespace + 'PathRetractionStrategy')
 
 
+class ProductiveByStrategy(TraversalStrategy):
+    def __init__(self, productiveKeys=None):
+        TraversalStrategy.__init__(self, fqcn=optimization_namespace + 'ProductiveByStrategy')
+
+
 class CountStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self, fqcn=optimization_namespace + 'CountStrategy')

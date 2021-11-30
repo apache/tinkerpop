@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finaliza
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
@@ -224,6 +225,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
                     ByModulatorOptimizationStrategy.instance(),
+                    ProductiveByStrategy.instance(),
                     FilterRankingStrategy.instance(),
                     MatchPredicateStrategy.instance(),
                     RepeatUnrollStrategy.instance(),
