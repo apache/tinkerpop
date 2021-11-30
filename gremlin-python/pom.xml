@@ -29,6 +29,7 @@ limitations under the License.
         <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
+        <TEST_TRANSACTIONS>false</TEST_TRANSACTIONS>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
     </properties>
     <build>
@@ -216,6 +217,7 @@ limitations under the License.
                                     <target>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python3"
                                               failonerror="true">
+                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="KRB5_CONFIG" value="${project.build.directory}/kdc/krb5.conf"/>
                                             <env key="KRB5CCNAME" value="${project.build.directory}/kdc/test-tkt.cc"/>
@@ -224,12 +226,14 @@ limitations under the License.
                                         <!-- radish seems to like all dependencies in place -->
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python3"
                                               failonerror="true">
+                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py install"/>
                                         </exec>
                                         <!-- run for graphson 3.0 -->
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python3"
                                               failonerror="true">
+                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
                                             <arg line="-f dots -e -t -b ${project.build.directory}/python3/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.gremlin-v3.0+json&quot;"/> <!-- -no-line-jump -->
@@ -237,6 +241,7 @@ limitations under the License.
                                         <!-- run for graphbinary 1.0 -->
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python3"
                                               failonerror="true">
+                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
                                             <arg line="-f dots -e -t -b ${project.build.directory}/python3/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.graphbinary-v1.0&quot;"/> <!-- -no-line-jump -->
@@ -354,6 +359,121 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+
+        <!--
+          This profile will include neo4j for purposes of transactional testing within Gremlin Server.
+          Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
+        -->
+        <profile>
+            <id>include-neo4j</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>includeNeo4j</name>
+                </property>
+            </activation>
+            <properties>
+                <TEST_TRANSACTIONS>true</TEST_TRANSACTIONS>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- with neo4j present we can enable transaction testing -->
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.neo4j</groupId>
+                                <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+                                <version>0.9-3.4.0</version>
+                                <exclusions>
+                                    <exclusion>
+                                        <groupId>org.neo4j</groupId>
+                                        <artifactId>neo4j-kernel</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-lang3</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-text</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>com.github.ben-manes.caffeine</groupId>
+                                        <artifactId>caffeine</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.scala-lang</groupId>
+                                        <artifactId>scala-library</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.scala-lang</groupId>
+                                        <artifactId>scala-reflect</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-api</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-nop</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.apache.lucene</groupId>
+                                        <artifactId>lucene-core</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>io.dropwizard.metrics</groupId>
+                                        <artifactId>metrics-core</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-all</artifactId>
+                                    </exclusion>
+                                    <exclusion>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm</artifactId>
+                                    </exclusion>
+                                </exclusions>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.scala-lang</groupId>
+                                <artifactId>scala-library</artifactId>
+                                <version>2.11.8</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.scala-lang</groupId>
+                                <artifactId>scala-reflect</artifactId>
+                                <version>2.11.8</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.lucene</groupId>
+                                <artifactId>lucene-core</artifactId>
+                                <version>5.5.0</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>io.dropwizard.metrics</groupId>
+                                <artifactId>metrics-core</artifactId>
+                                <version>4.0.2</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.neo4j</groupId>
+                                <artifactId>neo4j-kernel</artifactId>
+                                <version>3.4.11</version>
+                                <exclusions>
+                                    <exclusion>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-all</artifactId>
+                                    </exclusion>
+                                </exclusions>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!--
         Provides a way to deploy the gremlinpython GLV to pypi. This cannot be part of the standard maven execution
         because pypi does not have a staging environment like sonatype for releases. As soon as the release is
