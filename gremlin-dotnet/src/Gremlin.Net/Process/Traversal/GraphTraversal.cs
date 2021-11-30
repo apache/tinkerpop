@@ -543,6 +543,33 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the fail step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Fail ()
+        {
+            Bytecode.AddStep("fail");
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the fail step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Fail (string msg)
+        {
+            Bytecode.AddStep("fail", msg);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the fail step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Fail (string msg, IDictionary<string,object> m)
+        {
+            Bytecode.AddStep("fail", msg, m);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
         ///     Adds the filter step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Filter (IPredicate predicate)

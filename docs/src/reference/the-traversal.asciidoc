@@ -1228,6 +1228,43 @@ g.V().hasLabel('person').outE().identity().inV().count().is(gt(5)).explain()
 
 For traversal profiling information, please see <<profile-step,`profile()`>>-step.
 
+[[fail-step]]
+=== Fail Step
+
+The `fail()`-step provides a way to force a traversal to immediately fail with an exception. This feature is often
+helpful during debugging purposes and for validating certain conditions prior to continuing with traversal execution.
+
+[source,text]
+----
+gremlin> g.V().has('person','name','peter').fold().
+......1>   coalesce(unfold(),
+......2>            fail('peter should exist')).
+......3>   property('k',100)
+==>v[6]
+gremlin> g.V().has('person','name','stephen').fold().
+......1>   coalesce(unfold(),
+......2>            fail('stephen should exist')).
+......3>   property('k',100)
+fail() Step Triggered
+===========================================================================================================================
+Message > stephen should exist
+Traverser> []
+  Bulk   > 1
+Traversal> fail()
+Parent   > CoalesceStep [V().has("person","name","stephen").fold().coalesce(__.unfold(),__.fail()).property("k",(int) 100)]
+Metadata > {}
+===========================================================================================================================
+----
+
+The code example above exemplifies the latter use case where there is essentially an assertion that there is a vertex
+with a particular "name" value prior to updating the property "k" and explicitly failing when that vertex is not found.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail--++[`fail()`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail-java.lang.String-++[`fail(String)`]
+
+
 [[fold-step]]
 === Fold Step
 

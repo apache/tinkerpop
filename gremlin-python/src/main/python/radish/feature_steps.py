@@ -95,8 +95,12 @@ def translate_traversal(step):
 def iterate_the_traversal(step):
     if step.context.ignore:
         return
-    
-    step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
+
+    try:
+        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
+        step.context.failed = False
+    except:
+        step.context.failed = True
 
 
 @when("iterated next")
@@ -104,13 +108,23 @@ def next_the_traversal(step):
     if step.context.ignore:
         return
 
-    step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.next()))
+    try:
+        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.next()))
+        step.context.failed = False
+    except:
+        step.context.failed = True
 
+
+@then("the traversal will raise an error")
+def raise_an_error(step):
+    assert_that(step.context.failed, equal_to(True))
 
 @then("the result should be {characterized_as:w}")
 def assert_result(step, characterized_as):
     if step.context.ignore:
         return
+
+    assert_that(step.context.failed, equal_to(False))
 
     if characterized_as == "empty":        # no results
         assert_that(len(step.context.result), equal_to(0))
@@ -129,6 +143,8 @@ def assert_side_effects(step, count, traversal_string):
     if step.context.ignore:
         return
 
+    assert_that(step.context.failed, equal_to(False))
+
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
     p['g'] = step.context.g
     t = step.context.traversals.pop(0)(**p)
@@ -140,6 +156,8 @@ def assert_side_effects(step, count, traversal_string):
 def assert_count(step, count):
     if step.context.ignore:
         return
+
+    assert_that(step.context.failed, equal_to(False))
 
     assert_that(len(list(step.context.result)), equal_to(count))
 

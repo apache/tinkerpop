@@ -240,6 +240,7 @@ traversalMethod
 	| traversalMethod_subgraph
 	| traversalMethod_sum
 	| traversalMethod_tail
+	| traversalMethod_fail
 	| traversalMethod_timeLimit
 	| traversalMethod_times
 	| traversalMethod_to
@@ -666,6 +667,11 @@ traversalMethod_tail
 	| 'tail' LPAREN traversalScope RPAREN #traversalMethod_tail_Scope
 	| 'tail' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_tail_Scope_long
 	| 'tail' LPAREN integerLiteral RPAREN #traversalMethod_tail_long
+	;
+
+traversalMethod_fail
+	: 'fail' LPAREN RPAREN #traversalMethod_fail_Empty
+	| 'fail' LPAREN stringLiteral RPAREN #traversalMethod_fail_String
 	;
 
 traversalMethod_timeLimit

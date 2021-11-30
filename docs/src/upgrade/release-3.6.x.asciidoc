@@ -47,7 +47,28 @@ It is worth noting that `gremlin-groovy` utilized the DSL annotations to constru
 link:https://tinkerpop.apache.org/docs/3.6.0/reference/#credentials-dsl[Credentials DSL] so the `gremlin-annotations`
 package is now explicitly associated to `gremlin-groovy` but as an `<optional>` dependency.
 
-See:link:https://issues.apache.org/jira/browse/TINKERPOP-2411[TINKERPOP-2411]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2411[TINKERPOP-2411]
+
+==== fail() Step
+
+The new `fail()` step provides a way to immediately terminate a traversal with a runtime exception. In the Gremlin
+Console, the exception will be rendered as follows which helps provide some context to the failure:
+
+[source,text]
+----
+gremlin> g.V().fail("nope!")
+fail() Step Triggered
+=====================
+Message > nope!
+Traverser> v[1]
+  Bulk   > 1
+Traversal> V().fail()
+Metadata > {}
+=====================
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635],
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#fail-step[Reference Documentation]
 
 ==== Null for T
 

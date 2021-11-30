@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Stack;
 
 public class B_LP_NL_O_S_SE_SL_Traverser<T> extends B_LP_O_S_SE_SL_Traverser<T> {
@@ -64,6 +65,10 @@ public class B_LP_NL_O_S_SE_SL_Traverser<T> extends B_LP_O_S_SE_SL_Traverser<T> 
             if (loopName != null)
                 this.loopNames.put(loopName, lc);
         }
+    }
+    @Override
+    public Set<String> getLoopNames() {
+        return loopNames.keySet();
     }
 
     @Override

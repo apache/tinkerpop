@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
@@ -38,13 +39,13 @@ import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
-import org.apache.tinkerpop.gremlin.server.handler.SessionException;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,13 +223,22 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     if (ex instanceof UndeclaredThrowableException)
                         t = t.getCause();
 
-                    // if any exception in the chain is TemporaryException then we should respond with the right error
-                    // code so that the client knows to retry
-                    final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(ex);
-                    if (possibleTemporaryException.isPresent()) {
-                        context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
-                                .statusMessage(possibleTemporaryException.get().getMessage())
-                                .statusAttributeException(possibleTemporaryException.get()).create());
+                    // if any exception in the chain is TemporaryException or Failure then we should respond with the
+                    // right error code so that the client knows to retry
+                    final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                    if (possibleSpecialException.isPresent()) {
+                        final Throwable special = possibleSpecialException.get();
+                        final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
+                                statusMessage(special.getMessage()).
+                                statusAttributeException(special);
+                        if (special instanceof TemporaryException) {
+                            specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_TEMPORARY);
+                        } else if (special instanceof Failure) {
+                            final Failure failure = (Failure) special;
+                            specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
+                                    statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
+                        }
+                        context.writeAndFlush(specialResponseMsg.create());
                     } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
@@ -244,11 +254,22 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     onError(graph, context);
                 }
             } catch (Exception ex) {
-                final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(ex);
-                if (possibleTemporaryException.isPresent()) {
-                    context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
-                            .statusMessage(possibleTemporaryException.get().getMessage())
-                            .statusAttributeException(possibleTemporaryException.get()).create());
+                // if any exception in the chain is TemporaryException or Failure then we should respond with the
+                // right error code so that the client knows to retry
+                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                if (possibleSpecialException.isPresent()) {
+                    final Throwable special = possibleSpecialException.get();
+                    final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
+                            statusMessage(special.getMessage()).
+                            statusAttributeException(special);
+                    if (special instanceof TemporaryException) {
+                        specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_TEMPORARY);
+                    } else if (special instanceof Failure) {
+                        final Failure failure = (Failure) special;
+                        specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
+                                statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
+                    }
+                    context.writeAndFlush(specialResponseMsg.create());
                 } else {
                     logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
                     context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)

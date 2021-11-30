@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -126,6 +127,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.FailStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -1254,6 +1256,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
+     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
+     * that a traversal should be re-written in another form.
+     *
+     * @return the updated traversal with respective {@link NoneStep}.
+     */
+    @Override
+    default GraphTraversal<S, E> none() {
+        return (GraphTraversal<S, E>) Traversal.super.none();
+    }
+
+    /**
      * Ensures that at least one of the provided traversals yield a result.
      *
      * @param orTraversals filter traversals where at least one must be satisfied
@@ -2154,6 +2168,33 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * When triggered, immediately throws a {@code RuntimeException} which implements the {@link Failure} interface.
+     * The traversal will be terminated as a result.
+     *
+     * @return the traversal with an appended {@link FailStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fail-step" target="_blank">Reference Documentation - Fail Step</a>
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, E> fail() {
+        this.asAdmin().getBytecode().addStep(Symbols.fail);
+        return this.asAdmin().addStep(new FailStep<>(this.asAdmin()));
+    }
+
+    /**
+     * When triggered, immediately throws a {@code RuntimeException} which implements the {@link Failure} interface.
+     * The traversal will be terminated as a result.
+     *
+     * @param message the error message to include in the exception
+     * @return the traversal with an appended {@link FailStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fail-step" target="_blank">Reference Documentation - Fail Step</a>
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, E> fail(final String message) {
+        this.asAdmin().getBytecode().addStep(Symbols.fail, message);
+        return this.asAdmin().addStep(new FailStep<>(this.asAdmin(), message));
+    }
+
+    /**
      * Aggregates the emanating paths into a {@link Tree} data structure.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the tree
@@ -2219,18 +2260,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default GraphTraversal<S, TraversalMetrics> profile() {
         return (GraphTraversal<S, TraversalMetrics>) Traversal.super.profile();
-    }
-
-    /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
-     *
-     * @return the updated traversal with respective {@link NoneStep}.
-     */
-    @Override
-    default GraphTraversal<S, E> none() {
-        return (GraphTraversal<S, E>) Traversal.super.none();
     }
 
     /**
@@ -3156,6 +3185,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         @Deprecated
         public static final String store = "store";
         public static final String aggregate = "aggregate";
+        public static final String fail = "fail";
         public static final String subgraph = "subgraph";
         public static final String barrier = "barrier";
         public static final String index = "index";

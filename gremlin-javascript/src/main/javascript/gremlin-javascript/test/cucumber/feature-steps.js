@@ -128,7 +128,7 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
 });
 
 When('iterated to list', function () {
-  return this.traversal.toList().then(list => this.result = list);
+  return this.traversal.toList().then(list => this.result = list).catch(err => this.result = err);
 });
 
 When('iterated next', function () {
@@ -138,10 +138,16 @@ When('iterated next', function () {
       // Compare using the objects array
       this.result = this.result.objects;
     }
-  });
+  }).catch(err => this.result = err);
+});
+
+Then('the traversal will raise an error', function() {
+  expect(this.result).to.be.a.instanceof(Error);
 });
 
 Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resultTable) {
+  expect(this.result).to.not.be.a.instanceof(Error);
+
   if (characterizedAs === 'empty') {
     expect(this.result).to.be.empty;
     if (typeof resultTable === 'function'){
@@ -165,6 +171,8 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
 });
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {
+  expect(this.result).to.not.be.a.instanceof(Error);
+
   const p = Object.assign({}, this.parameters);
   p.g = this.g;
   const traversal = gremlin[this.scenario].shift()(p);
@@ -174,6 +182,8 @@ Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCoun
 });
 
 Then(/^the result should have a count of (\d+)$/, function (stringCount) {
+  expect(this.result).to.not.be.a.instanceof(Error);
+
   const expected = parseInt(stringCount, 10);
   if (!Array.isArray(this.result)) {
     let count = 0;

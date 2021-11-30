@@ -448,6 +448,7 @@ The "Then" options handle the assertion of the result. There are several options
 * "the result should have a count of _xxx_" - assumes a list value in the result and counts the number of values
 in it
 * "the result should be empty" - no results
+* "the traversal will raise an error" - an exception is thrown as a result of traversal iteration
 * "the result should be ordered" - the exact results and should appear in the order presented
 * "the result should be unordered" - the exact results but can appear any order
 * "the result should be of" - results can be any of the specified values and in any order (use when guarantees

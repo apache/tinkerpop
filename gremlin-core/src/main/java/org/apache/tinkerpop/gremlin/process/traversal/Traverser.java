@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -325,5 +327,12 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return the set of tags associated with the traverser.
          */
         public Set<String> getTags();
+
+        /**
+         * If this traverser supports loops then return the loop names if any.
+         */
+        public default Set<String> getLoopNames() {
+            return Collections.emptySet();
+        }
     }
 }

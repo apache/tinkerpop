@@ -500,6 +500,16 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('emit', args);
     return this;
   }
+
+  /**
+   * Graph traversal fa method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  fail(...args) {
+    this.bytecode.addStep('fail', args);
+    return this;
+  }
   
   /**
    * Graph traversal filter method.
@@ -1325,6 +1335,7 @@ const statics = {
   drop: (...args) => callOnEmptyTraversal('drop', args),
   elementMap: (...args) => callOnEmptyTraversal('elementMap', args),
   emit: (...args) => callOnEmptyTraversal('emit', args),
+  fail: (...args) => callOnEmptyTraversal('fail', args),
   filter: (...args) => callOnEmptyTraversal('filter', args),
   flatMap: (...args) => callOnEmptyTraversal('flatMap', args),
   fold: (...args) => callOnEmptyTraversal('fold', args),

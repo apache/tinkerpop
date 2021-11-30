@@ -36,6 +36,13 @@ import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
+import org.apache.tinkerpop.gremlin.process.traversal.Failure
+import org.apache.tinkerpop.gremlin.process.traversal.Step
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_NL_O_P_S_SE_SL_Traverser
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.T
@@ -346,47 +353,54 @@ class Console {
         if (err instanceof Throwable) {
             try {
                 final Throwable e = (Throwable) err
-                String message = e.getMessage()
-                if (null != message) {
-                    message = message.replace("startup failed:", "")
-                    io.err.println(Colorizer.render(Preferences.errorColor, message.trim()))
+
+                // special rendering for Failure
+                if ((err instanceof Failure)) {
+                    def fail = (Failure) err
+                    io.err.println(Colorizer.render(Preferences.errorColor, fail.format()))
                 } else {
-                    io.err.println(Colorizer.render(Preferences.errorColor,e))
-                }
-
-                // provide a hint in the case of a stackoverflow as it can be common when running large Gremlin
-                // scripts and it isn't immediately apparent what the error might mean in this context especially
-                // if the user isn't familiar with the JVM. it really can only be a hint since we can't be completely
-                // sure it arose as a result of a long Gremlin traversal.
-                if (err instanceof StackOverflowError) {
-                    io.err.println(Colorizer.render(Preferences.errorColor,
-                            "A StackOverflowError can indicate that the Gremlin traversal being executed is too long. If " +
-                                    "you have a single Gremlin statement that is \"long\", you may break it up into " +
-                                    "multiple separate commands, re-write the traversal to operate on a stream of " +
-                                    "input via inject() rather than literals, or attempt to increase the -Xss setting" +
-                                    "of the Gremlin Console by modifying gremlin.sh."));
-                }
-
-                if (interactive) {
-                    io.err.println(Colorizer.render(Preferences.infoColor,"Type ':help' or ':h' for help."))
-                    io.err.print(Colorizer.render(Preferences.errorColor, "Display stack trace? [yN]"))
-                    io.err.flush()
-                    String line = new BufferedReader(io.in).readLine()
-                    if (null == line)
-                        line = ""
-                    io.err.print(line.trim())
-                    io.err.println()
-                    if (line.trim().equals("y") || line.trim().equals("Y")) {
-                        if (err instanceof RemoteException && err.remoteStackTrace.isPresent()) {
-                            io.err.print(err.remoteStackTrace.get())
-                            io.err.flush()
-                        } else {
-                            e.printStackTrace(io.err)
-                        }
+                    String message = e.getMessage()
+                    if (null != message) {
+                        message = message.replace("startup failed:", "")
+                        io.err.println(Colorizer.render(Preferences.errorColor, message.trim()))
+                    } else {
+                        io.err.println(Colorizer.render(Preferences.errorColor, e))
                     }
-                } else {
-                    e.printStackTrace(io.err)
-                    System.exit(1)
+
+                    // provide a hint in the case of a stackoverflow as it can be common when running large Gremlin
+                    // scripts and it isn't immediately apparent what the error might mean in this context especially
+                    // if the user isn't familiar with the JVM. it really can only be a hint since we can't be completely
+                    // sure it arose as a result of a long Gremlin traversal.
+                    if (err instanceof StackOverflowError) {
+                        io.err.println(Colorizer.render(Preferences.errorColor,
+                                "A StackOverflowError can indicate that the Gremlin traversal being executed is too long. If " +
+                                        "you have a single Gremlin statement that is \"long\", you may break it up into " +
+                                        "multiple separate commands, re-write the traversal to operate on a stream of " +
+                                        "input via inject() rather than literals, or attempt to increase the -Xss setting" +
+                                        "of the Gremlin Console by modifying gremlin.sh."));
+                    }
+
+                    if (interactive) {
+                        io.err.println(Colorizer.render(Preferences.infoColor, "Type ':help' or ':h' for help."))
+                        io.err.print(Colorizer.render(Preferences.errorColor, "Display stack trace? [yN]"))
+                        io.err.flush()
+                        String line = new BufferedReader(io.in).readLine()
+                        if (null == line)
+                            line = ""
+                        io.err.print(line.trim())
+                        io.err.println()
+                        if (line.trim().equals("y") || line.trim().equals("Y")) {
+                            if (err instanceof RemoteException && err.remoteStackTrace.isPresent()) {
+                                io.err.print(err.remoteStackTrace.get())
+                                io.err.flush()
+                            } else {
+                                e.printStackTrace(io.err)
+                            }
+                        }
+                    } else {
+                        e.printStackTrace(io.err)
+                        System.exit(1)
+                    }
                 }
             } catch (Exception ignored) {
                 io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err))
@@ -400,6 +414,44 @@ class Console {
         groovy.buffers.current().clear()
 
         return null
+    }
+
+    private def writeTraverserToErrorLines(Traverser t, List errorLines) {
+        // every traverser has an object so toString() that. pad with spaces to cover "side-effects" width
+        errorLines << "Traverser> $t"
+
+        def optGenerator = t.asAdmin().generator
+        if (optGenerator.isPresent()) {
+            def width = "Traverser".length()
+            def generator = optGenerator.get()
+            if (generator.providedRequirements.contains(TraverserRequirement.BULK)) {
+                errorLines << "  Bulk".padRight(width) + "> " + t.bulk()
+            }
+
+            if (generator.providedRequirements.contains(TraverserRequirement.SACK)) {
+                errorLines << "  Sack".padRight(width) + "> " + t.sack()
+            }
+
+            if (generator.providedRequirements.contains(TraverserRequirement.PATH)) {
+                errorLines << "  Path".padRight(width) + "> " + t.path()
+            }
+
+            if (generator.providedRequirements.contains(TraverserRequirement.SINGLE_LOOP) ||
+                    generator.providedRequirements.contains(TraverserRequirement.NESTED_LOOP)) {
+                // flatten loops/names if present
+                def loopNames = t.asAdmin().loopNames
+                def loopsLine = loopNames.isEmpty() ? t.loops() : loopNames.collect { [(it): t.loops(it)]}
+                errorLines << "  Loops".padRight(width) + "> " + loopsLine
+            }
+
+            if (generator.providedRequirements.contains(TraverserRequirement.SIDE_EFFECTS)) {
+                // convert side-effects to a map
+                def sideEffects = t.asAdmin().sideEffects
+                def keys = sideEffects.keys()
+                errorLines << "  S/E".padRight(width) + "> " + keys.collectEntries { [(it): sideEffects.get(it)]}
+            }
+
+        }
     }
 
     private static String buildResultPrompt() {

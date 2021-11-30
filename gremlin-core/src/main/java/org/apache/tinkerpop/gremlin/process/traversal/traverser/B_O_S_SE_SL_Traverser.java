@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,6 +71,11 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
             return this.loops;
         else
             throw new IllegalArgumentException("Loop name not defined: " + loopName);
+    }
+
+    @Override
+    public Set<String> getLoopNames() {
+        return Collections.singleton(loopName);
     }
 
     @Override

@@ -912,6 +912,20 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#fail()
+     */
+    public static <A>  GraphTraversal<A, A> fail() {
+        return __.<A>start().fail();
+    }
+
+    /**
+     * @see GraphTraversal#fail(String)
+     */
+    public static <A>  GraphTraversal<A, A> fail(final String message) {
+        return __.<A>start().fail(message);
+    }
+
+    /**
      * @see GraphTraversal#group(String)
      */
     public static <A> GraphTraversal<A, A> group(final String sideEffectKey) {

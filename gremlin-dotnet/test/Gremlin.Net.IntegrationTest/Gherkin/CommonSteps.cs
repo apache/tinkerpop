@@ -47,6 +47,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
         private ITraversal _traversal;
         private object[] _result;
+        private Exception _error = null;
         private static readonly JsonSerializerOptions JsonDeserializingOptions = new JsonSerializerOptions
             {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
         
@@ -157,11 +158,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             ITraversal t = _traversal;
             var list = new List<object>();
-            while (t.MoveNext())
+            try
             {
-                list.Add(t.Current);
+                while (t.MoveNext())
+                {
+                    list.Add(t.Current);
+                }
+                _result = list.ToArray();
             }
-            _result = list.ToArray();
+            catch (Exception ex)
+            {
+                _error = ex;
+            }
         }
 
         [When("iterated next")]
@@ -171,26 +179,44 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException("Traversal should be set before iterating");
             }
-            _traversal.MoveNext();
-            var result = _traversal.Current;
-            switch (result)
+
+            try
             {
-                case null:
-                    _result = null;
-                    return;
-                case object[] arrayResult:
-                    _result = arrayResult;
-                    return;
-                case IEnumerable enumerableResult:
-                    _result = enumerableResult.Cast<object>().ToArray();
-                    return;
+                _traversal.MoveNext();
+                var result = _traversal.Current;
+                switch (result)
+                {
+                    case null:
+                        _result = null;
+                        return;
+                    case object[] arrayResult:
+                        _result = arrayResult;
+                        return;
+                    case IEnumerable enumerableResult:
+                        _result = enumerableResult.Cast<object>().ToArray();
+                        return;
+                }
             }
-            throw new InvalidCastException($"Can not convert instance of {result.GetType()} to object[]");
+            catch (Exception ex)
+            {
+                _error = ex;
+            }
+        }
+
+        [Then("the traversal will raise an error")]
+        public void TraversalWillRaiseError()
+        {
+            Assert.NotNull(_error);
+
+            // consume the error now that it has been asserted
+            _error = null;
         }
 
         [Then("the result should be (\\w+)")]
         public void AssertResult(string characterizedAs, DataTable table = null)
         {
+            assertThatNoErrorWasThrown();
+
             var ordered = characterizedAs == "ordered";
             switch (characterizedAs)
             {
@@ -230,12 +256,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Then("the result should have a count of (\\d+)")]
         public void AssertCount(int count)
         {
+            assertThatNoErrorWasThrown();
+
             Assert.Equal(count, _result.Length);
         }
 
         [Then("the graph should return (\\d+) for count of (.+)")]
         public void AssertTraversalCount(int expectedCount, string traversalText)
         {
+            assertThatNoErrorWasThrown();
+
             if (traversalText.StartsWith("\""))
             {
                 traversalText = traversalText.Substring(1, traversalText.Length - 2);
@@ -256,6 +286,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         public void AssertNothing(string reason)
         {
             
+        }
+
+        private void assertThatNoErrorWasThrown()
+        {
+            if (_error != null) throw _error;
         }
 
         private static object ToMap(string stringMap, string graphName)
