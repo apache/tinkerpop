@@ -4889,9 +4889,36 @@ System.out.println(s.parameters);
 // OUTPUT: Optional[{_args_0=person, _args_2=marko, _args_1=name, _args_4=age, _args_3=knows}]
 ----
 
-Finally, the `GroovyTranslator` can take a `TypeTranslator` argument which allows some customization of how types get
+The `GroovyTranslator` can take a `TypeTranslator` argument which allows some customization of how types get
 converted to script form. The `DefaultTypeTranslator` is used if a specific implementation is not specified. A built-in
 alternative to this implementation is the `LanguageTypeTranslator` which will prefer use of the Gremlin language
 `datetime()` function rather than the JVM specific `Date` and `Timestamp` conversions. This translator can be helpful
 when generating scripts that will be sent to Gremlin Server or Remote Graph Providers supporting the `datetime()` form.
+
+The `PythonTranslator` can take a `TypeTranslator` argument to disable the syntactic sugar which the default translator
+applies to converted queries. The `DefaultTypeTranslator` is used if a specific implementation is not specified.
+
+[source,java]
+----
+Traversal<Vertex,String> t = g.V().range(0, 10).has("person","name","marko").
+                                limit(2).
+                                values("name");
+// default translator
+Translator.ScriptTranslator translator = PythonTranslator.of("g");
+String defaultQueryTranslation = translator.translate(t)
+System.out.println(defaultQueryTranslation);
+// OUTPUT: g.V()[0:10].has('person','name','marko')[0:2].name
+
+// no synantic sugar translator
+Translator.ScriptTranslator noSugarTranslator = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(false));
+String noSugarTranslation = noSugarTranslator.translate(t)
+System.out.println(noSugarTranslation);
+// OUTPUT: g.V().range_(0,10).has('person','name','marko').limit(2).values('name')
+
+// With parameter extraction
+Translator.ScriptTranslator noSugarTranslatorWithParameters = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(true));
+String noSugarTranslationWithParameters = noSugarTranslatorWithParameters.translate(t)
+System.out.println(noSugarTranslationWithParameters);
+// OUTPUT: g.V().range_(0,10).has(_args_0,_args_1,_args_2).limit(2).values(_args_1)
+----
 
