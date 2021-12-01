@@ -40,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 public class PythonTranslatorTest {
     private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
     private static final Translator.ScriptTranslator translator = PythonTranslator.of("g");
+    private static final Translator.ScriptTranslator noSugarTranslator = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(false));
 
     @Test
     public void shouldHaveValidToString() {
@@ -103,7 +104,22 @@ public class PythonTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
+        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter_(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
                 translator.translate(bytecode).getScript());
+    }
+
+    @Test
+    public void shouldTranslateWithSyntaxSugar() {
+      final String gremlinAsPython = translator.translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getBytecode()) 
+          .getScript();
+      assertEquals("g.V()[0:10].has('person','name','marko')[0:2].name", gremlinAsPython);
+    }
+
+    @Test
+    public void shouldTranslateWithoutSyntaxSugar() {
+      final String gremlinAsPython = noSugarTranslator
+          .translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getBytecode())
+          .getScript();
+      assertEquals("g.V().range_(0,10).has('person','name','marko').limit(2).values('name')", gremlinAsPython);
     }
 }
