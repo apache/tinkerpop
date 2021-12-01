@@ -324,7 +324,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
 
         settings.maxContentLength = 1024000;
-        settings.maxChunkSize =1024000;
+        settings.maxChunkSize = 1024000;
 
         server = new GremlinServer(settings);
 
