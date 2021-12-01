@@ -25,6 +25,7 @@ mkdir -p target/site/
 
 pushd docs/gremlint
 
+echo "npm: $(npm -version)"
 npm install
 npm run build
 
