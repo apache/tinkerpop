@@ -102,6 +102,7 @@ The "pre-flight check" is a list of things performed by the release manager duri
 day to release.  These checks will help to ensure that that release day goes smoothly by identifying problems up early
 and communicating with other members of the community.
 
+. If this release cycle includes a major release, ensure that all <<runtimes,upgrades for language runtimes>> have been considered.
 . Fourteen days before release, issue an email to the dev mailing list to remind the community of the pending release.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.

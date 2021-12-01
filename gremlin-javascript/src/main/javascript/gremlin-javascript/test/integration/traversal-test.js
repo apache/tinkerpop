@@ -170,16 +170,6 @@ describe('Traversal', function () {
     });
   });
   describe("should allow TraversalStrategy definition", function() {
-    it('should allow SeedStrategy', function () {
-      const g = traversal().withRemote(connection).withStrategies(
-        new SeedStrategy({seed: 999999}));
-      g.V().count().next().then(function (item1) {
-        assert.ok(item1);
-        assert.strictEqual(item1.value, 4);
-      }, (err) => assert.fail("tanked: " + err));
-    })
-  });
-  describe("should allow TraversalStrategy definition", function() {
     it('should allow SubgraphStrategy', function() {
       const g = traversal().withRemote(connection).withStrategies(
           new SubgraphStrategy({vertices:__.hasLabel("person"), edges:__.hasLabel("created")}));
@@ -219,6 +209,13 @@ describe('Traversal', function () {
     it('should allow with_(evaluationTimeout,10)', function() {
       const g = traversal().withRemote(connection).with_('x').with_('evaluationTimeout', 10);
       return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 598));
+    });
+    it('should allow SeedStrategy', function () {
+      const g = traversal().withRemote(connection).withStrategies(new SeedStrategy({seed: 999999}));
+      return g.V().coin(0.4).count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 1);
+      }, (err) => assert.fail("tanked: " + err));
     });
   });
   describe('support remote transactions - commit', function() {
