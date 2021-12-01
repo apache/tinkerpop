@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -47,6 +48,8 @@ public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrate
             final String strategyName = ctx.getChild(0).getText();
             if (strategyName.equals(ReadOnlyStrategy.class.getSimpleName()))
                 return ReadOnlyStrategy.instance();
+            else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
+                return ProductiveByStrategy.instance();
         } else if (ctx.getChild(0).getText().equals("new")) {
             final String strategyName = ctx.getChild(1).getText();
             if (strategyName.equals(PartitionStrategy.class.getSimpleName()))
@@ -59,6 +62,8 @@ public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrate
                 return getSubgraphStrategy(ctx.traversalStrategyArgs_SubgraphStrategy());
             else if (strategyName.equals(SeedStrategy.class.getSimpleName()))
                 return new SeedStrategy(Long.parseLong(ctx.integerLiteral().getText()));
+            else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
+                return getProductiveByStrategy(ctx.traversalStrategyArgs_ProductiveByStrategy());
         }
         throw new IllegalStateException("Unexpected TraversalStrategy specification - " + ctx.getText());
     }
@@ -145,6 +150,12 @@ public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrate
             }
         });
 
+        return builder.create();
+    }
+
+    private static ProductiveByStrategy getProductiveByStrategy(final GremlinParser.TraversalStrategyArgs_ProductiveByStrategyContext ctx) {
+        final ProductiveByStrategy.Builder builder = ProductiveByStrategy.build();
+        builder.productiveKeys(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
         return builder.create();
     }
 }
