@@ -299,10 +299,6 @@ Feature: Step - dedup()
       | result |
       | d[21].l |
 
-  # ensures that dedup() returns the first item encountered. the ordering supplied will put "ripple" in front of
-  # "lop" and make it the first to hit dedup() and as "age" is not a property of either of those only "ripple" will
-  # win. the barrier() is required to trick out FilterRankingStrategy which will optimize the traversal placing the
-  # dedup() prior to the order() and sorta ruin the test semantics
   Scenario: g_V_order_byXname_descX_barrier_dedup_age_name
     Given the modern graph
     And the traversal of
@@ -313,7 +309,54 @@ Feature: Step - dedup()
     Then the result should be unordered
       | result |
       | vadas |
-      | ripple |
       | peter |
       | marko |
       | josh  |
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_order_byXname_descX_barrier_dedup_age_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().order().by("name",desc).barrier().dedup().by("age").values("name")
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | vadas |
+      | ripple |
+      | lop |
+      | peter |
+      | marko |
+      | josh  |
+    And the result should have a count of 5
+
+  Scenario: g_V_both_dedup_age_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().dedup().by("age").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | peter |
+      | marko |
+      | josh  |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_VX1X_asXaX_both_asXbX_both_asXcX_dedupXa_bX_age_selectXa_b_cX_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").both().as("b").both().as("c").dedup("a","b").by("age").select("a","b","c").by("name")
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | m[{"a":"marko", "b":"vadas", "c":"marko"}] |
+      | m[{"a":"marko", "b":"josh", "c":"ripple"}] |
+      | m[{"a":"marko", "b":"josh", "c":"lop"}] |
+      | m[{"a":"marko", "b":"josh", "c":"marko"}] |
+    And the result should have a count of 2

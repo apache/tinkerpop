@@ -119,7 +119,6 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_sumXlocalX() {
         final Traversal<Vertex, Number> traversal = get_g_V_aggregateXaX_byXfooX_sumXlocalX();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -127,8 +126,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_aggregateXaX_byXfooX_capXaX_unfold_sum() {
         final Traversal<Vertex, Number> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_sum();
-        printTraversalForm(traversal);
-        assertNull(traversal.next());
+        printTraversalForm(traversal);;
         assertFalse(traversal.hasNext());
     }
 

@@ -363,7 +363,6 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
         final TraversalSource g = graphManager.getTraversalSource(traversalSourceName);
 
-        // todo: should session be grabbed here???
         final Session session = getSession(context, msg);
 
         // handle bytecode based graph operations like commit/rollback commands
@@ -504,6 +503,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         if (graph.features().graph().supportsTransactions()) {
             if (TX_COMMIT.equals(bytecode) || TX_ROLLBACK.equals(bytecode)) {
                 final boolean commit = TX_COMMIT.equals(bytecode);
+
+                // there is no timeout on a commit/rollback
                 submitToGremlinExecutor(context, 0, session, new FutureTask<>(() -> {
                     try {
                         if (graph.tx().isOpen()) {
@@ -540,7 +541,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                             }
                             context.writeAndFlush(specialResponseMsg.create());
                         } else {
-                            logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                            logger.warn(String.format("Exception processing a Traversal on request [%s] to %s the transaction.",
+                                    msg.getRequestId(), commit ? "commit" : "rollback"), ex);
                             context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                                     .statusMessage(ex.getMessage())
                                     .statusAttributeException(ex).create());

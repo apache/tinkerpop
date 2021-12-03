@@ -333,7 +333,6 @@ Feature: Step - where()
       | result |
       | josh |
 
-  # comparison of null "age" values in where()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name
     Given the modern graph
@@ -341,6 +340,18 @@ Feature: Step - where()
     And the traversal of
       """
       g.V(vid3).as("a").in().out().as("b").where("a", P.eq("b")).by("age").values("name")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # comparison of null "age" values in where()
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_withStrategiesXProductiveByStrategyX_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name
+    Given the modern graph
+    And using the parameter vid3 defined as "v[lop].id"
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V(vid3).as("a").in().out().as("b").where("a", P.eq("b")).by("age").values("name")
       """
     When iterated to list
     Then the result should be unordered

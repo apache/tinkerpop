@@ -82,6 +82,18 @@ Feature: Step - sum()
       | d[123].i |
 
   # null values are ignored in sum() which is similar to sum aggregation works in SQL
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("age").cap("a").sum(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[123].i |
+
+  # null values are ignored in sum() which is similar to sum aggregation works in SQL
   Scenario: g_V_aggregateXaX_byXageX_capXaX_unfold_sum
     Given the modern graph
     And the traversal of
@@ -93,12 +105,33 @@ Feature: Step - sum()
       | result |
       | d[123].l |
 
-  # if all values are null then the result is null
+  # null values are ignored in sum() which is similar to sum aggregation works in SQL
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_unfold_sum
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("age").cap("a").unfold().sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[123].l |
+
   Scenario: g_V_aggregateXaX_byXfooX_sumXlocalX
     Given the modern graph
     And the traversal of
       """
       g.V().aggregate("a").by("foo").cap("a").sum(Scope.local)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # if all values are null then the result is null
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("foo").cap("a").sum(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
@@ -111,6 +144,16 @@ Feature: Step - sum()
     And the traversal of
       """
       g.V().aggregate("a").by("foo").cap("a").unfold().sum()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # if all values are null then the result is null
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_unfold_sum
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("foo").cap("a").unfold().sum()
       """
     When iterated to list
     Then the result should be unordered

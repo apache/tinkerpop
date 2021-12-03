@@ -44,7 +44,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
-                {"g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
+                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
+                {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
 
                 // they are not failing as a result of the Gremlin itself - they are failing because of shortcomings in
                 // the test suite.

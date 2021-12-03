@@ -50,6 +50,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -413,7 +415,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     public void g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name(convertToVertexId(graph, "lop"));
         printTraversalForm(traversal);
-        checkResults(Arrays.asList("lop", "lop", "lop", "ripple"), traversal);
+        assertThat(traversal.hasNext(), is(false));
     }
 
 

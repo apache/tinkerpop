@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -74,11 +75,21 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         }
     }
 
-    private void setPredicateValues(final P<Object> predicate, final Traverser.Admin<S> traverser, final Iterator<String> selectKeysIterator) {
-        if (predicate instanceof ConnectiveP)
-            ((ConnectiveP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
-        else
-            predicate.setValue(TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next()));
+    private boolean setPredicateValues(final P<Object> predicate, final Traverser.Admin<S> traverser, final Iterator<String> selectKeysIterator) {
+        if (predicate instanceof ConnectiveP) {
+            for (P<Object> p : ((ConnectiveP<Object>) predicate).getPredicates()) {
+                if (!this.setPredicateValues(p, traverser, selectKeysIterator))
+                    return false;
+            }
+
+            return true;
+        } else {
+            final TraversalProduct product = TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next());
+            if (product.isProductive())
+                predicate.setValue(product.get());
+
+            return product.isProductive();
+        }
     }
 
     public Optional<P<?>> getPredicate() {
@@ -101,17 +112,18 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        final Object value = null == this.startKey ?
-                TraversalUtil.applyNullable(traverser, this.traversalRing.next()) :
-                TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
-        this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
+        final TraversalProduct product = null == this.startKey ?
+                TraversalUtil.produce(traverser, this.traversalRing.next()) :
+                TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
+
+        final boolean predicateValuesProductive = this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
         this.traversalRing.reset();
-        return this.predicate.test(value);
+
+        return product.isProductive() && predicateValuesProductive && this.predicate.test(product.get());
     }
 
     @Override
     public String toString() {
-        // TODO: revert the predicates to their string form?
         return StringFactory.stepString(this, this.startKey, this.predicate, this.traversalRing);
     }
 

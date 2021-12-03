@@ -39,6 +39,8 @@ limitations under the License.
 * Created a way to produce a corpus of Gremlin traversals via `FeatureReader` and `DocumentationReader` in `gremlin-language`.
 * Exposed Gherkin tests as part of the provider test suite.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
+* Removed `ProductiveByStrategy` as a strategy that is applied by default.
+* Changed `by()` modulator semantics to consistently filter.
 * Removed previously deprecated `application/vnd.gremlin-v1.0+gryo-lite` serialization format.
 * Removed previously deprecated `AuthenticationSettings.enableAuditLog`.
 * Removed previously deprecated `GroovyTranslator` from `gremlin-groovy` module.

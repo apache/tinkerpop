@@ -38,7 +38,29 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
+      | m[{"d[35].i":"l[v[peter]]", "d[27].i":"l[v[vadas]]", "d[32].i": "l[v[josh]]", "d[29].i":"l[v[marko]]"}] |
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_group_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().group().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
       | m[{"null":"l[v[lop],v[ripple]]", "d[35].i":"l[v[peter]]", "d[27].i":"l[v[vadas]]", "d[32].i": "l[v[josh]]", "d[29].i":"l[v[marko]]"}] |
+
+  Scenario: g_V_group_byXnameX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by("name").by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"ripple":[], "peter":"l[d[35].i]", "vadas":"l[d[27].i]", "josh": "l[d[32].i]", "lop":[], "marko":"l[d[29].i]"}] |
 
   Scenario: g_V_group_byXnameX_by
     Given the modern graph

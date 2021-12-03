@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -81,10 +82,13 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
         Tree depth = topTree;
         final Path path = traverser.path();
         for (int i = 0; i < path.size(); i++) {
-            final Object object = TraversalUtil.applyNullable(path.<Object>get(i), this.traversalRing.next());
-            if (!depth.containsKey(object))
-                depth.put(object, new Tree<>());
-            depth = (Tree) depth.get(object);
+            final TraversalProduct product = TraversalUtil.produce(path.<Object>get(i), this.traversalRing.next());
+            if (product.isProductive()) {
+                final Object object = product.get();
+                if (!depth.containsKey(object))
+                    depth.put(object, new Tree<>());
+                depth = (Tree) depth.get(object);
+            }
         }
         this.traversalRing.reset();
         return topTree;

@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrie
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
@@ -42,6 +43,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -79,7 +81,8 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
     @Override
     public void processAllStarts() {
         while (this.starts.hasNext()) {
-            this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
+            // only add the traverser if the comparator traversal was productive
+            this.createProjectedTraverser(this.starts.next()).ifPresent(traverserSet::add);
         }
     }
 
@@ -170,16 +173,20 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.multiComparator, this.random), false, true);
     }
 
-    private final ProjectedTraverser<S, Object> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+    private Optional<ProjectedTraverser<S, Object>> createProjectedTraverser(final Traverser.Admin<S> traverser) {
         // this was ProjectedTraverser<S, C> but the projection may not be C in the case of a lambda where a
         // Comparable may not be expected but rather an object that can be compared in any way given a lambda.
         // not sure why this is suddenly an issue but Intellij would not let certain tests pass without this
         // adjustment here.
         final List<Object> projections = new ArrayList<>(this.comparators.size());
         for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
-            projections.add(TraversalUtil.apply(traverser, pair.getValue0()));
+            final TraversalProduct product = TraversalUtil.produce(traverser, pair.getValue0());
+            if (!product.isProductive()) break;
+            projections.add(product.get());
         }
-        return new ProjectedTraverser(traverser, projections);
+
+        // if a traversal wasn't productive then the sizes wont match and it will filter
+        return projections.size() == comparators.size() ? Optional.of(new ProjectedTraverser(traverser, projections)) : Optional.empty();
     }
 
     private final MultiComparator<C> createMultiComparator() {

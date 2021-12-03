@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -45,7 +47,7 @@ import java.util.regex.Pattern;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MathStep<S> extends ScalarMapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
+public final class MathStep<S> extends MapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
 
     private static final String CURRENT = "_";
     private final String equation;
@@ -61,16 +63,21 @@ public final class MathStep<S> extends ScalarMapStep<S, Double> implements ByMod
 
     @Override
     protected Traverser.Admin<Double> processNextStart() {
-        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
-    }
+        final Traverser.Admin traverser = this.starts.next();
 
-    @Override
-    protected Double map(final Traverser.Admin<S> traverser) {
         final Expression localExpression = new Expression(this.expression.getExpression());
+        boolean productive = true;
         for (final String var : this.expression.getVariables()) {
-            final Object o = var.equals(CURRENT) ?
-                    TraversalUtil.applyNullable(traverser, this.traversalRing.next()) :
-                    TraversalUtil.applyNullable((S) this.getNullableScopeValue(Pop.last, var, traverser), this.traversalRing.next());
+            final TraversalProduct product = var.equals(CURRENT) ?
+                    TraversalUtil.produce(traverser, this.traversalRing.next()) :
+                    TraversalUtil.produce((S) this.getNullableScopeValue(Pop.last, var, traverser), this.traversalRing.next());
+
+            if (!product.isProductive()) {
+                productive = false;
+                break;
+            }
+
+            final Object o = product.get();
 
             // it's possible for ElementValueTraversal to return null or something that is possibly not a Number.
             // worth a check to try to return a nice error message. The TraversalRing<S, Number> is a bit optimistic
@@ -83,7 +90,11 @@ public final class MathStep<S> extends ScalarMapStep<S, Double> implements ByMod
             localExpression.setVariable(var, ((Number) o).doubleValue());
         }
         this.traversalRing.reset();
-        return localExpression.evaluate();
+
+        // if at least one of the traversals wasnt productive it will filter
+        return productive ?
+                PathProcessor.processTraverserPathLabels(traverser.split(localExpression.evaluate(), this), this.keepLabels) :
+                EmptyTraverser.instance();
     }
 
     @Override

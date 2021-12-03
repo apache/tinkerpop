@@ -68,3 +68,18 @@ Feature: Step - sample()
       | result |
       | m[{"software":"l[d[0.2].d,d[0.4].d,d[0.4].d,d[1.0].d]"}] |
       | m[{"person":"l[d[0.5].d,d[1.0].d,d[0.4].d,d[0.2].d,d[1.0].d]"}] |
+
+  Scenario: g_withStrategiesXSeedStrategyX_V_order_byXlabel_descX_sampleX1X_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(new SeedStrategy(seed: 999999)).V().order().by(T.label, Order.desc).sample(1).by("age")
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | v[peter] |
+      | v[marko] |
+      | v[josh] |
+      | v[vadas] |
+    Then the result should have a count of 1

@@ -654,7 +654,10 @@ Finally, `aggregate()`-step can be modulated via `by()`-projection.
 ----
 g.V().out('knows').aggregate('x').cap('x')
 g.V().out('knows').aggregate('x').by('name').cap('x')
+g.V().out('knows').aggregate('x').by('age').cap('x')  <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are not included in the aggregation.
 
 For `local` scope the aggregation will occur in a link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] fashion.
 
@@ -835,6 +838,18 @@ g.V().group().by(bothE().count()).by(count())  <3>
 <1> `by(outE().count())` will group the elements by their edge count (*traversal*).
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count())` will count the number of elements in each group (*traversal*).
+
+When a `by()` modulator does not produce a result, it is deemed "unproductive". An "unproductive" modulator will lead
+to the filtering of the traverser it is currently working with. The filtering will manifest in various ways depending
+on the step.
+
+[gremlin-groovy,modern]
+----
+g.V().sample(1).by('age') <1>
+----
+
+<1> The "age" property key is not present for all vertices, therefore `sample()` will ignore (i.e. filter) such
+vertices for consideration in the sampling.
 
 The following steps all support `by()`-modulation. Note that the semantics of such modulation should be understood
 on a step-by-step level and thus, as discussed in their respective section of the documentation.
@@ -1090,6 +1105,7 @@ traversal computation. If non-cyclic behavior is desired, see <<simplepath-step,
 g.V(1).both().both()
 g.V(1).both().both().cyclicPath()
 g.V(1).both().both().cyclicPath().path()
+g.V(1).both().both().cyclicPath().by('age').path() <1>
 g.V(1).as('a').out('created').as('b').
   in('created').as('c').
   cyclicPath().
@@ -1099,6 +1115,8 @@ g.V(1).as('a').out('created').as('b').
   cyclicPath().from('a').to('b').
   path()
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those traversers are filtered.
 
 *Additional References*
 
@@ -1138,9 +1156,13 @@ to the current traverser object, but to the path history of the traverser.
 ----
 g.V().as('a').out('created').as('b').in('created').as('c').select('a','b','c')
 g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select('a','b','c') <1>
+g.V().as('a').both().as('b').both().as('c').
+  dedup('a','b').by('age').  <2>
+  select('a','b','c').by('name')
 ----
 
 <1> If the current `a` and `b` combination has been seen previously, then filter the traverser.
+<2> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 *Additional References*
 
@@ -1385,6 +1407,16 @@ The two projection parameters available to `group()` via `by()` are:
 . Key-projection: What feature of the object to group on (a function that yields the map key)?
 . Value-projection: What feature of the group to store in the key-list?
 
+[gremlin-groovy,modern]
+----
+g.V().group().by('age').by('name') <1>
+g.V().group().by('name').by('age') <2>
+----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those keys are filtered.
+<2> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
+
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#group--++[`group()`],
@@ -1402,10 +1434,12 @@ When it is important to know how many times a particular object has been at a pa
 ----
 g.V().hasLabel('person').values('age').groupCount()
 g.V().hasLabel('person').groupCount().by('age') <1>
+g.V().groupCount().by('age') <2>
 ----
 
 <1> You can also supply a pre-group projection, where the provided <<by-step,`by()`>>-modulation determines what to
 group the incoming object by.
+<2> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
 
@@ -2170,7 +2204,10 @@ g.V().as('a').out('created').as('b').
     by('age')
 g.withSideEffect('x',10).V().values('age').math('_ / x')
 g.withSack(1).V(1).repeat(sack(sum).by(constant(1))).times(10).emit().sack().math('sin _')
+g.V().math('_+1').by('age') <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 The operators supported by the calculator include: `*`, `+`, `/`, `^`, and `%`. Furthermore, the following built in
 functions are provided:
@@ -2446,7 +2483,10 @@ comparison of their properties.
 g.V().values('name')
 g.V().order().by('name',asc).values('name')
 g.V().order().by('name',desc).values('name')
+g.V().both().order().by('age') <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting.
 In the example below, the primary ordering is based on the outgoing created-edge count. The secondary ordering is
@@ -2559,7 +2599,10 @@ image::path-step.png[width=650]
 ----
 g.V().out().out().values('name')
 g.V().out().out().values('name').path()
+g.V().both().path().by('age') <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 If edges are required in the path, then be sure to traverse those edges explicitly.
 
@@ -2728,7 +2771,10 @@ g.V().out('created').
     by(__.in('created').count()).
   order().by(select('b'),desc).
   select('a')
+g.V().project('n','a').by('name').by('age') <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered and the key not present in the `Map`.
 
 *Additional References*
 
@@ -3047,7 +3093,10 @@ g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2)
 g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2).sack()
 g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2).path().
       by().by('weight')
+g.V().sack(assign).by('age').sack() <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered during the assignment.
 
 image:gremlin-sacks-standing.png[width=100,float=left] When complex objects are used (i.e. non-primitives), then a
 *split operator* should be defined to ensure that each traverser gets a clone of its parent's sack. The first example
@@ -3107,7 +3156,10 @@ The `sample()`-step is useful for sampling some number of traversers previous in
 g.V().outE().sample(1).values('weight')
 g.V().outE().sample(1).by('weight').values('weight')
 g.V().outE().sample(2).by('weight').values('weight')
+g.V().both().sample(2).by('age') <1>
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are not considered when sampling.
 
 One of the more interesting use cases for `sample()` is when it is used in conjunction with <<local-step,`local()`>>.
 The combination of the two steps supports the execution of link:http://en.wikipedia.org/wiki/Random_walk[random walks].
@@ -3176,9 +3228,11 @@ g.V().as('a').out().as('b').out().as('c').select('a','b','c')
 g.V().as('a').out().as('b').out().as('c').select('a','b')
 g.V().as('a').out().as('b').out().as('c').select('a','b').by('name')
 g.V().as('a').out().as('b').out().as('c').select('a') <1>
+g.V(1).as('a').both().as('b').select('a','b').by('age')
 ----
 
 <1> If the selection is one step, no map is returned.
+<2> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 When there is only one label selected, then a single object is returned. This is useful for stepping back in a
 computation and easily moving forward again on the object reverted to.
@@ -3370,6 +3424,7 @@ objects in it, the traverser is filtered. If cyclic behavior is desired, see <<c
 g.V(1).both().both()
 g.V(1).both().both().simplePath()
 g.V(1).both().both().simplePath().path()
+g.V(1).both().both().simplePath().by('age') <1>
 g.V().out().as('a').out().as('b').out().as('c').
   simplePath().by(label).
   path()
@@ -3381,6 +3436,8 @@ g.V().out().as('a').out().as('b').out().as('c').
   path().
     by('name')
 ----
+
+<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 By using the `from()` and `to()` modulators traversers can ensure that only certain sections of the path are acyclic.
 
@@ -3957,6 +4014,8 @@ g.V().as('a').out('knows').as('b').
     by(__.in('knows').values('age')).
   select('a','b').
     by('name') <8>
+g.V().as('a').both().both().as('b').
+  where('a',eq('b')).by('age') <9>
 ----
 
 <1> What are the names of the people who have created a project?
@@ -3967,6 +4026,7 @@ g.V().as('a').out('knows').as('b').
 <6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
 <7> Marko knows josh and vadas but is only older than vadas.
 <8> Marko is younger than josh, but josh knows someone equal in age to marko (which is marko).
+<9> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave

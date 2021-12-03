@@ -898,7 +898,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_selectXaX_byXageX() {
         final Traversal<Vertex, Object> traversal = get_g_V_asXaX_selectXaX_byXageX();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(29, 27, null, 32, null, 35), traversal);
+        checkResults(Arrays.asList(29, 27, 32, 35), traversal);
     }
 
     @Test

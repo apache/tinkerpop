@@ -135,8 +135,13 @@ public class ProductiveByStrategyTest {
                 {__.group().by(T.label).by(bothE().values("weight").sample(2).fold()),
                         __.group().by(T.label).by(bothE().values("weight").sample(2).fold()),
                         Collections.emptySet()},
+                // this double wrapping is unnecessary - guess there is an improvement that could be made here but
+                // there would need to be a good way to generally detect a surely productive coalesce(). something for
+                // later perhaps - this strategy likely won't be used for most production cases in new Gremlin and is
+                // mostly present to bridge functionality back to 3.5.x so perhaps it doesn't need a lot of
+                // optimization at this point
                 {__.group().by(coalesce(values("age"), constant(null))),
-                        __.group().by(coalesce(values("age"), constant(null))),
+                        __.group().by(coalesce((Traversal.Admin) coalesce(values("age"), constant(null)).fold(), (Traversal.Admin) nullTraversal).fold()),
                         Collections.emptySet()},
                 {__.groupCount().by("name"),
                         __.groupCount().by(new ValueTraversal<>("name", coalesce(nameValueTraversal, nullTraversal).asAdmin())),

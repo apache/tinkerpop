@@ -53,7 +53,7 @@ public final class AggregateLocalStep<S> extends SideEffectStep<S> implements Si
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final BulkSet<Object> bulkSet = new BulkSet<>();
-        bulkSet.add(TraversalUtil.applyNullable(traverser, this.storeTraversal), traverser.bulk());
+        TraversalUtil.produce(traverser, this.storeTraversal).ifProductive(p -> bulkSet.add(p, traverser.bulk()));
         this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);
     }
 

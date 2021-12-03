@@ -54,7 +54,7 @@ public class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> i
     @Override
     public Map<E, Long> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<E, Long> map = new HashMap<>(1);
-        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
+        TraversalUtil.produce(traverser, this.keyTraversal).ifProductive(p -> map.put((E) p, traverser.bulk()));
         return map;
     }
 

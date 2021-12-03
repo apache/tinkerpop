@@ -212,3 +212,19 @@ Feature: Step - valueMap()
       | m[{"name": ["vadas"], "age": [27]}] |
       | m[{"name": ["lop"]}] |
       | m[{"name": ["ripple"]}] |
+
+  Scenario: g_V_valueMapXname_ageX_byXisXxXXbyXunfoldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap("name", "age").by(__.is("x")).by(__.unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"age": 29}] |
+      | m[{"age": 32}] |
+      | m[{"age": 35}] |
+      | m[{"age": 27}] |
+      | m[{}] |
+      | m[{}] |

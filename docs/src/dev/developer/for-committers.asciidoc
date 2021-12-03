@@ -530,6 +530,9 @@ or meta-properties for creating or querying data.
 * `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
 best example of this sort of test would be one that uses the remote `Lambda` syntax.
 
+Tag filters can be applied to Intellij at execution time by adding a system properties of
+`-Dcucumber.filter.tags=<step-filter>`.
+
 == Developing Benchmarks
 
 Benchmarks are a useful tool to track performance between TinkerPop versions and also as tools to aid development

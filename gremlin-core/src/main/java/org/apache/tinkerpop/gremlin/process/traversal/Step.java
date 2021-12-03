@@ -41,7 +41,7 @@ import java.util.Set;
 public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, Cloneable {
 
     /**
-     * Add a iterator of {@link Traverser.Admin} objects of type S to the step.
+     * Add an iterator of {@link Traverser.Admin} objects of type S to the step.
      *
      * @param starts The iterator of objects to add
      */

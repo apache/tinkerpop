@@ -23,7 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -35,7 +38,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements TraversalParent, ByModulating, LambdaHolder {
+public final class SackValueStep<S, A, B> extends AbstractStep<S, S> implements TraversalParent, ByModulating, LambdaHolder {
 
     private Traversal.Admin<S, B> sackTraversal = null;
 
@@ -63,8 +66,17 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     }
 
     @Override
-    protected void sideEffect(final Traverser.Admin<S> traverser) {
-        traverser.sack(this.sackFunction.apply(traverser.sack(), null == this.sackTraversal ? (B) traverser.get() : TraversalUtil.apply(traverser, this.sackTraversal)));
+    protected Traverser.Admin<S> processNextStart() {
+        final Traverser.Admin<S> traverser = this.starts.next();
+        if (null == sackTraversal) {
+            traverser.sack(this.sackFunction.apply(traverser.sack(), (B) traverser.get()));
+            return traverser;
+        } else {
+            final TraversalProduct product = TraversalUtil.produce(traverser, this.sackTraversal);
+            if (!product.isProductive()) return EmptyTraverser.instance();
+            traverser.sack(this.sackFunction.apply(traverser.sack(), (B) product.get()));
+            return traverser;
+        }
     }
 
     @Override

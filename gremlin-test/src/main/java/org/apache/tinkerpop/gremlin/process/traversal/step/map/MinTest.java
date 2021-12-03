@@ -131,7 +131,6 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_capXaX_minXlocalX() {
         final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_minXlocalX();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -140,7 +139,6 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_capXaX_unfold_min() {
         final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_min();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 

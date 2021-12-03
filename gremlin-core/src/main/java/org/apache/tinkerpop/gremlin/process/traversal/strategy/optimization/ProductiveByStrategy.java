@@ -91,33 +91,23 @@ public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStr
         TraversalHelper.getStepsOfAssignableClass(ByModulating.class, traversal).stream().
                 filter(bm -> bm instanceof TraversalParent).forEach(bm -> {
             final TraversalParent parentStep = (TraversalParent) bm;
-            final boolean parentStepIsGrouping = parentStep instanceof Grouping;
             parentStep.getLocalChildren().forEach(child -> {
-                // Grouping requires a bit of special handling because of TINKERPOP-2627 which is a bug that has
-                // some unexpected behavior for coalesce() as the value traversal. Grouping also has so inconsistencies
-                // in how null vs filter behavior works and that behavior needs to stay to not break in 3.5.x
-                if (!parentStepIsGrouping) {
-                    if (child instanceof ValueTraversal && hasKeyNotKnownAsProductive((ValueTraversal) child)) {
-                        wrapValueTraversalInCoalesce(parentStep, child);
-                    } else if (!(child.getEndStep() instanceof ReducingBarrierStep)) {
-                        // ending reducing barrier will always return something so seems safe to not bother wrapping
-                        // that up in coalesce().
-                        final Traversal.Admin extractedChildTraversal = new DefaultGraphTraversal<>();
-                        TraversalHelper.removeToTraversal(child.getStartStep(), EmptyStep.instance(), extractedChildTraversal);
-                        child.addStep(new CoalesceStep(child, extractedChildTraversal, nullTraversal));
+                if (child instanceof ValueTraversal && !containsValidByPass((ValueTraversal) child) &&
+                        hasKeyNotKnownAsProductive((ValueTraversal) child)) {
+                    wrapValueTraversalInCoalesce(parentStep, child);
+                } else if (!(child.getEndStep() instanceof ReducingBarrierStep)) {
+                    // ending reducing barrier will always return something so seems safe to not bother wrapping
+                    // that up in coalesce().
+                    final Traversal.Admin extractedChildTraversal = new DefaultGraphTraversal<>();
+                    TraversalHelper.removeToTraversal(child.getStartStep(), EmptyStep.instance(), extractedChildTraversal);
+                    child.addStep(new CoalesceStep(child, extractedChildTraversal, nullTraversal));
 
-                        // replace so that internally the parent step gets to re-initialize the child as it may need to.
-                        try {
-                            parentStep.replaceLocalChild(child, child);
-                        } catch (IllegalStateException ignored) {
-                            // ignore situations where the parent traversal doesn't support replacement. in those cases
-                            // we simply retain whatever the original behavior was even if it is inconsistent
-                        }
-                    }
-                } else {
-                    if (child instanceof ValueTraversal && ((Grouping) parentStep).getKeyTraversal() == child &&
-                            hasKeyNotKnownAsProductive((ValueTraversal) child) && !containsValidByPass((ValueTraversal) child)) {
-                        wrapValueTraversalInCoalesce(parentStep, child);
+                    // replace so that internally the parent step gets to re-initialize the child as it may need to.
+                    try {
+                        parentStep.replaceLocalChild(child, child);
+                    } catch (IllegalStateException ignored) {
+                        // ignore situations where the parent traversal doesn't support replacement. in those cases
+                        // we simply retain whatever the original behavior was even if it is inconsistent
                     }
                 }
             });

@@ -311,7 +311,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(convertToVertex(graph, "lop"), convertToVertex(graph, "vadas"), convertToVertex(graph, "marko"), convertToVertex(graph, "josh"), convertToVertex(graph, "peter")), traversal);
+        checkResults(Arrays.asList(convertToVertex(graph, "vadas"), convertToVertex(graph, "marko"), convertToVertex(graph, "josh"), convertToVertex(graph, "peter")), traversal);
     }
 
     @Test

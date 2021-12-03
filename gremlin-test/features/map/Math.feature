@@ -132,3 +132,31 @@ Feature: Step - math()
       | vadas |
       | lop   |
       | peter |
+
+  Scenario: g_V_mathXit_plus_itXbyXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().math("_+_").by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[64.0].d |
+      | d[58.0].d |
+      | d[54.0].d |
+      | d[70.0].d |
+
+  Scenario: g_V_valueMap_mathXit_plus_itXbyXselectXageX_unfoldXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().math("_+_").by(__.select("age").unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[64.0].d |
+      | d[58.0].d |
+      | d[54.0].d |
+      | d[70.0].d |

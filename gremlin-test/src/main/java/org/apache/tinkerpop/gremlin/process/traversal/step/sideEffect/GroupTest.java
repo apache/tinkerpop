@@ -123,7 +123,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
 
         final Map<Integer, Collection<Vertex>> map = traversal.next();
-        assertEquals(5, map.size());
+        assertEquals(4, map.size());
         map.forEach((key, values) -> {
             if (null == key)
                 assertEquals(2, values.size());

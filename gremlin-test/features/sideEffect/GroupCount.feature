@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassSideEffect @StepCount
+@StepClassSideEffect @StepGroupCount
 Feature: Step - groupCount()
 
   Scenario: g_V_outXcreatedX_groupCount_byXnameX
@@ -28,6 +28,28 @@ Feature: Step - groupCount()
     Then the result should be ordered
       | result |
       | m[{"ripple":"d[1].l", "lop":"d[3].l"}] |
+
+  Scenario: g_V_groupCount_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().groupCount().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"d[27].i":"d[1].l", "d[29].i":"d[1].l", "d[32].i":"d[1].l", "d[35].i":"d[1].l"}] |
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().groupCount().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"null":"d[2].l", "d[27].i":"d[1].l", "d[29].i":"d[1].l", "d[32].i":"d[1].l", "d[35].i":"d[1].l"}] |
 
   Scenario: g_V_outXcreatedX_name_groupCount
     Given the modern graph

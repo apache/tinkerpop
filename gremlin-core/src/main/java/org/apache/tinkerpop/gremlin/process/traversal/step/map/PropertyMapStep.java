@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -39,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -108,8 +110,15 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
             }
         }
         if (!traversalRing.isEmpty()) {
-            for (final Object key : map.keySet()) {
-                map.compute(key, (k, v) -> TraversalUtil.applyNullable(v, (Traversal.Admin) this.traversalRing.next()));
+            // will cop a ConcurrentModification if a key is dropped so need this little copy here
+            final Set<Object> keys = new HashSet<>(map.keySet());
+            for (final Object key : keys) {
+                map.compute(key, (k, v) -> {
+                    final TraversalProduct product = TraversalUtil.produce(v, (Traversal.Admin) this.traversalRing.next());
+
+                    // compute() should take the null and remove the key
+                    return product.isProductive() ? product.get() : null;
+                });
             }
             this.traversalRing.reset();
         }

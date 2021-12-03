@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -73,11 +74,18 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
         if (this.onGraphComputer && !this.executingAtMaster) return true;
         traverser.setBulk(1L);
         if (null == this.dedupLabels) {
-            return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
+            final TraversalProduct product = TraversalUtil.produce(traverser, this.dedupTraversal);
+            return product.isProductive() && this.duplicateSet.add(product.get());
         } else {
             final List<Object> objects = new ArrayList<>(this.dedupLabels.size());
-            this.dedupLabels.forEach(label -> objects.add(TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, label, traverser), this.dedupTraversal)));
-            return this.duplicateSet.add(objects);
+            for (String label : dedupLabels) {
+                final TraversalProduct product = TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, label, traverser), this.dedupTraversal);
+                if (!product.isProductive()) break;
+                objects.add(product.get());
+            }
+
+            // the object sizes must be equal or else it means a by() wasn't productive and that path will be filtered
+            return objects.size() == dedupLabels.size() && duplicateSet.add(objects);
         }
     }
 
@@ -194,42 +202,50 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
         while (this.starts.hasNext()) {
             final Traverser.Admin<S> traverser = this.starts.next();
             final Object object;
+            boolean productive;
             if (null != this.dedupLabels) {
                 object = new ArrayList<>(this.dedupLabels.size());
                 for (final String label : this.dedupLabels) {
-                    ((List) object).add(TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, label, traverser), this.dedupTraversal));
+                    final TraversalProduct product = TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, label, traverser), this.dedupTraversal);
+                    if (!product.isProductive()) break;
+                    ((List) object).add(product.get());
                 }
-            } else {
-                object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);
-            }
-            if (!map.containsKey(object)) {
-                traverser.setBulk(1L);
 
-                // DetachedProperty and DetachedVertexProperty both have a transient for the Host element. that causes
-                // trouble for olap which ends up requiring the Host later. can't change the transient without some
-                // consequences: (1) we break gryo formatting and io tests start failing (2) storing the element with
-                // the property has the potential to bloat detached Element instances as it basically stores that data
-                // twice. Not sure if it's smart to change that at least in 3.4.x and not without some considerable
-                // thought as to what might be major changes. To work around the problem we will detach properties as
-                // references so that the parent element goes with it. Also, given TINKERPOP-2318 property comparisons
-                // have changed in such a way that allows this to work properly
-                if (this.onGraphComputer) {
-                    if (traverser.get() instanceof Property)
-                        traverser.set(ReferenceFactory.detach(traverser.get()));
-                    else
-                        traverser.set(DetachedFactory.detach(traverser.get(), true));
-                } else {
-                    traverser.set(traverser.get());
+                productive = ((List) object).size() == this.dedupLabels.size();
+            } else {
+                final TraversalProduct product = TraversalUtil.produce(traverser, this.dedupTraversal);
+                productive = product.isProductive();
+                object = productive ? product.get() : null;
+            }
+
+            if (productive) {
+                if (!map.containsKey(object)) {
+                    traverser.setBulk(1L);
+
+                    // DetachedProperty and DetachedVertexProperty both have a transient for the Host element. that causes
+                    // trouble for olap which ends up requiring the Host later. can't change the transient without some
+                    // consequences: (1) we break gryo formatting and io tests start failing (2) storing the element with
+                    // the property has the potential to bloat detached Element instances as it basically stores that data
+                    // twice. Not sure if it's smart to change that at least in 3.4.x and not without some considerable
+                    // thought as to what might be major changes. To work around the problem we will detach properties as
+                    // references so that the parent element goes with it. Also, given TINKERPOP-2318 property comparisons
+                    // have changed in such a way that allows this to work properly
+                    if (this.onGraphComputer) {
+                        if (traverser.get() instanceof Property)
+                            traverser.set(ReferenceFactory.detach(traverser.get()));
+                        else
+                            traverser.set(DetachedFactory.detach(traverser.get(), true));
+                    } else {
+                        traverser.set(traverser.get());
+                    }
+                    map.put(object, traverser);
                 }
-                map.put(object, traverser);
             }
         }
+
         this.barrier = null;
         this.barrierIterator = null;
-        if (map.isEmpty())
-            throw FastNoSuchElementException.instance();
-        else
-            return map;
+        return map;
     }
 
     @Override
