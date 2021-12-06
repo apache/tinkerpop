@@ -23,4 +23,4 @@ COPY . /usr/src/tinkerpop
 RUN chmod 744 ./.travis.install-maven.sh
 ENV M2_HOME /root/mvn-home
 ENV PATH ${M2_HOME}/bin:${PATH}
-RUN ./.travis.install-maven.sh 3.3.9 ${M2_HOME}
+RUN ./.travis.install-maven.sh 3.8.4 ${M2_HOME}
