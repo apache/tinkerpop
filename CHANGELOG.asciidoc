@@ -69,6 +69,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `ProductiveByStrategy` to ensure consistency of `by()` modulator behaviors when child traversal arguments contained no elements.
 * Allowed `null` string values in the Gremlin grammar.
 * Fixed support for `SeedStrategy` in the Gremlin Grammar.
+* Fixed bug in `Translator` of `gremlin-javascript` around array translation.
 * Fixed bugs in `PythonTranslator`, `JavascriptTranslator` and `DotNetTranslator` when translating `TraversalStrategy` objects to Javascript.
 * Prevented exception with `hasLabel(null)` and `hasKey(null)` and instead filter away traversers as these structural components can't ever be null.
 * Improved handling of `null` when passed to `P` predicates.
