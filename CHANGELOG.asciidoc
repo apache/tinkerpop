@@ -35,6 +35,7 @@ limitations under the License.
 * Prevented metrics computation unless the traversal is in a locked state.
 * Added syntax to Gremlin grammar to explicitly define `byte`, `short` and `BigInteger`.
 * Created a way to produce a corpus of Gremlin traversals via `FeatureReader` and `DocumentationReader` in `gremlin-language`.
+* Changed mechanism for determining if `id` equality with `toString()` is used by validating that elements of the predicate collection are all `String` rather than enforcing homogenous collections in the process.
 * Exposed Gherkin tests as part of the provider test suite.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Removed previously deprecated `application/vnd.gremlin-v1.0+gryo-lite` serialization format.

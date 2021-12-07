@@ -292,7 +292,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         final Object[] arguments = null == args ? new Object[0] : args;
         final String delegateClassName = delegate != null ? delegate.getClass().getSimpleName() : "";
         return message + ": " + delegateClassName + "." + methodNameNotFound + "(" +
-                Stream.of(arguments).map(Object::getClass).map(Class::getSimpleName).collect(Collectors.joining(", ")) + ")";
+                Stream.of(arguments).map(a -> null == a ? "null" : a.getClass().getSimpleName()).collect(Collectors.joining(", ")) + ")";
     }
 
     private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<ReflectedMethod>> methodCache) {

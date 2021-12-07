@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -45,32 +44,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     public HasContainer(final String key, final P<?> predicate) {
         this.key = key;
         this.predicate = predicate;
-
-        if (!this.key.equals(T.id.getAccessor()))
-            testingIdString = false;
-        else {
-            // the values should be homogenous if a collection is submitted
-            final Object predicateValue = this.predicate.getValue();
-
-            // enforce a homogenous collection of values when testing ids
-            enforceHomogenousCollectionIfPresent(predicateValue);
-
-            // grab an instance of a value which is either the first item in a homogeneous collection or the value itself
-            final Object valueInstance = this.predicate.getValue() instanceof Collection ?
-                    ((Collection) this.predicate.getValue()).isEmpty() ?
-                            new Object() :
-                            ((Collection) this.predicate.getValue()).toArray()[0] :
-                    this.predicate.getValue();
-
-            // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
-            // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
-            // the constructor.  the original value in P is maintained separately
-            this.testingIdString = this.key.equals(T.id.getAccessor()) && valueInstance instanceof String;
-            if (this.testingIdString)
-                this.predicate.setValue(this.predicate.getValue() instanceof Collection ?
-                        IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) :
-                        this.predicate.getValue().toString());
-        }
+        this.testingIdString = isStringTestable();
     }
 
     public final boolean test(final Element element) {
@@ -165,15 +139,24 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     ////////////
 
-    private void enforceHomogenousCollectionIfPresent(final Object predicateValue) {
-        if (predicateValue instanceof Collection) {
-            final Collection collection = (Collection) predicateValue;
-            if (!collection.isEmpty()) {
-                Class<?> first = collection.toArray()[0].getClass();
-                if (!((Collection) predicateValue).stream().map(Object::getClass).allMatch(c -> first.equals(c)))
-                    throw new IllegalArgumentException("Has comparisons on a collection of ids require ids to all be of the same type");
+    /**
+     * Determines if the value of the predicate is testable via {@code toString()} representation of an element which
+     * is only relevant if the has relates to an {@link T#id}.
+     */
+    private boolean isStringTestable() {
+        if (this.key.equals(T.id.getAccessor())) {
+            final Object predicateValue = null == this.predicate ? null : this.predicate.getValue();
+            if (predicateValue instanceof Collection) {
+                final Collection collection = (Collection) predicateValue;
+                if (!collection.isEmpty()) {
+                    return ((Collection) predicateValue).stream().allMatch(c -> null == c || c instanceof String);
+                }
             }
+
+            return predicateValue instanceof String;
         }
+
+        return false;
     }
 
     public static <V> boolean testAll(final Property<V> property, final List<HasContainer> hasContainers) {
