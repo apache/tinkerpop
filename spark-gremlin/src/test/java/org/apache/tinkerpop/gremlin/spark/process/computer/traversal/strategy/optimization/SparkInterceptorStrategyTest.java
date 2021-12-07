@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
@@ -68,7 +69,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         ///
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class);
+
+        // removed ProductiveByStrategy for purpose of the testing semantics which were here prior to it
+        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class, ProductiveByStrategy.class);
         assertFalse(g.getStrategies().getStrategy(SparkSingleIterationStrategy.class).isPresent());
         assertFalse(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
         assertTrue(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());
@@ -96,7 +99,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         ///
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class);
+
+        // removed ProductiveByStrategy for purpose of the testing semantics which were here prior to it
+        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class, ProductiveByStrategy.class);
         assertFalse(g.getStrategies().getStrategy(SparkSingleIterationStrategy.class).isPresent());
         assertFalse(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
         assertTrue(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());

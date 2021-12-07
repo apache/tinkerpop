@@ -42,10 +42,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkMemory;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
@@ -163,7 +163,8 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         final Step<?, ?> startStep = traversal.getStartStep();
         final Step<?, ?> endStep = traversal.getEndStep();
         // right now this is not supported because of how the SparkStarBarrierInterceptor mutates the traversal prior to local evaluation
-        if (traversal.getStrategies().getStrategy(SubgraphStrategy.class).isPresent())
+        if (traversal.getStrategies().getStrategy(SubgraphStrategy.class).isPresent() ||
+                traversal.getStrategies().getStrategy(ProductiveByStrategy.class).isPresent())
             return false;
         if (!startStep.getClass().equals(GraphStep.class) || ((GraphStep) startStep).returnsEdge())
             return false;
