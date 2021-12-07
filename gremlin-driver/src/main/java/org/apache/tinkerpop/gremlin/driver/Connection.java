@@ -37,6 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -299,6 +300,36 @@ final class Connection {
         // the code in here is behind shutdownInitiated the synchronized doesn't seem necessary
         if (shutdownInitiated.compareAndSet(false, true)) {
             final String connectionInfo = this.getConnectionInfo();
+
+            // the session close message was removed in 3.5.0 after deprecation at 3.3.11. That removal was perhaps
+            // a bit hasty as session semantics may still require this message in certain cases. Until we can look
+            // at this in more detail, it seems best to bring back the old functionality to the driver.
+            if (client instanceof Client.SessionedClient) {
+                final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
+                final RequestMessage closeMessage = client.buildMessage(
+                        RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
+
+                final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
+                write(closeMessage, closed);
+
+                try {
+                    // make sure we get a response here to validate that things closed as expected.  on error, we'll let
+                    // the server try to clean up on its own.  the primary error here should probably be related to
+                    // protocol issues which should not be something a user has to fuss with.
+                    closed.join().all().get(cluster.getMaxWaitForClose(), TimeUnit.MILLISECONDS);
+                } catch (TimeoutException ex) {
+                    final String msg = String.format(
+                            "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
+                            ((Client.SessionedClient) client).getSessionId());
+                    logger.warn(msg, ex);
+                } catch (Exception ex) {
+                    final String msg = String.format(
+                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
+                            ((Client.SessionedClient) client).getSessionId());
+                    logger.warn(msg, ex);
+                }
+            }
+
             channelizer.close(channel);
 
             final ChannelPromise promise = channel.newPromise();

@@ -119,6 +119,10 @@ class Client {
    * @returns {Promise}
    */
   close() {
+    if (this._options.session && this._options.processor === 'session') {
+      const args = {'session': this._options.session};
+      return this._connection.submit(this._options.processor, 'close', args, null).then(() => this._connection.close());
+    }
     return this._connection.close();
   }
 
