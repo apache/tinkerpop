@@ -67,6 +67,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Ensured `PathRetractionStrategy` is applied after `InlineFilterStrategy` which prevents an error in traverser mapping in certain conditions.
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Added `ProductiveByStrategy` to ensure consistency of `by()` modulator behaviors when child traversal arguments contained no elements.
+* Changed drivers to once again send the previously deprecated and removed "close" message for sessions.
 * Allowed `null` string values in the Gremlin grammar.
 * Fixed support for `SeedStrategy` in the Gremlin Grammar.
 * Fixed bug in `Translator` of `gremlin-javascript` around array translation.
