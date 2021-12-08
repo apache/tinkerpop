@@ -19,10 +19,9 @@
 import abc
 import six
 
-from gremlin_python.driver import request
 from gremlin_python.process import traversal
 
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+__author__ = 'Marko A. Rodriguez (http://markorodriguez.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -43,6 +42,18 @@ class RemoteConnection(object):
     def submit(self, bytecode):
         pass
 
+    def is_session_bound(self):
+        return False
+
+    def create_session(self):
+        raise Exception('createSession() must be implemented');
+
+    def commit(self):
+        raise Exception('commit() must be implemented')
+
+    def rollback(self):
+        raise Exception('rollback() must be implemented')
+
     def __repr__(self):
         return "remoteconnection[" + self._url + "," + self._traversal_source + "]"
 
@@ -55,7 +66,10 @@ class RemoteTraversal(traversal.Traversal):
 
 class RemoteStrategy(traversal.TraversalStrategy):
     def __init__(self, remote_connection):
-        traversal.TraversalStrategy.__init__(self)
+        # Gave this a fqcn that has a local "py:" prefix since this strategy isn't sent as bytecode to the server.
+        # this is a sort of local-only strategy that actually executes client side. not sure if this prefix is the
+        # right way to name this or not, but it should have a name to identify it.
+        traversal.TraversalStrategy.__init__(self, fqcn="py:RemoteStrategy")
         self.remote_connection = remote_connection
 
     def apply(self, traversal):
@@ -66,5 +80,4 @@ class RemoteStrategy(traversal.TraversalStrategy):
 
     def apply_async(self, traversal):
         if traversal.traversers is None:
-            traversal.remote_results = self.remote_connection.submitAsync(
-                traversal.bytecode)
+            traversal.remote_results = self.remote_connection.submit_async(traversal.bytecode)
