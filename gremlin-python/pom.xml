@@ -266,6 +266,11 @@ limitations under the License.
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>neo4j-gremlin</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
@@ -359,7 +364,6 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
-
         <!--
           This profile will include neo4j for purposes of transactional testing within Gremlin Server.
           Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
@@ -372,12 +376,18 @@ limitations under the License.
                     <name>includeNeo4j</name>
                 </property>
             </activation>
-            <properties>
-                <TEST_TRANSACTIONS>true</TEST_TRANSACTIONS>
-            </properties>
             <build>
                 <plugins>
                     <!-- with neo4j present we can enable transaction testing -->
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables combine.children="override">
+                                <TEST_TRANSACTIONS>true</TEST_TRANSACTIONS>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.codehaus.gmavenplus</groupId>
                         <artifactId>gmavenplus-plugin</artifactId>
