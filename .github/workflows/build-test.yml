@@ -163,7 +163,7 @@ jobs:
         run: |
           touch gremlin-python/.glv
           mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl gremlin-python
+          mvn verify -pl gremlin-python -DincludeNeo4j
   dotnet:
     name: .NET
     timeout-minutes: 1200 # 20 minutes
