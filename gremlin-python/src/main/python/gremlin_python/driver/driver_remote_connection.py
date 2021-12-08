@@ -16,24 +16,43 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import logging
 from concurrent.futures import Future
 
 from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import (
     RemoteConnection, RemoteTraversal)
 from gremlin_python.process.strategies import OptionsStrategy
+from gremlin_python.process.traversal import Bytecode
+import uuid
 
-__author__ = 'David M. Brown (davebshow@gmail.com)'
+__author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 class DriverRemoteConnection(RemoteConnection):
 
-    def __init__(self, url, traversal_source = "g", protocol_factory=None,
+    def __init__(self, url, traversal_source="g", protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  username="", password="", kerberized_service='',
                  message_serializer=None, graphson_reader=None,
-                 graphson_writer=None, headers=None,
+                 graphson_writer=None, headers=None, session=None,
                  **transport_kwargs):
+        logging.info("Creating DriverRemoteConnection with url '%s'", str(url))
+        self.__url = url
+        self.__traversal_source = traversal_source
+        self.__protocol_factory = protocol_factory
+        self.__transport_factory = transport_factory
+        self.__pool_size = pool_size
+        self.__max_workers = max_workers
+        self.__username = username
+        self.__password = password
+        self.__kerberized_service = kerberized_service
+        self.__message_serializer = message_serializer
+        self.__graphson_reader = graphson_reader
+        self.__graphson_writer = graphson_writer
+        self.__headers = headers
+        self.__session = session
+        self.__transport_kwargs = transport_kwargs
         if message_serializer is None:
             message_serializer = serializer.GraphSONMessageSerializer(
                 reader=graphson_reader,
@@ -48,21 +67,25 @@ class DriverRemoteConnection(RemoteConnection):
                                      password=password,
                                      kerberized_service=kerberized_service,
                                      headers=headers,
+                                     session=session,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source
 
     def close(self):
+        logging.info("closing DriverRemoteConnection with url '%s'", str(self._url))
         self._client.close()
 
     def submit(self, bytecode):
+        logging.debug("submit with bytecode '%s'", str(bytecode))
         result_set = self._client.submit(bytecode, request_options=self._extract_request_options(bytecode))
         results = result_set.all().result()
         return RemoteTraversal(iter(results))
 
-    def submitAsync(self, bytecode):
+    def submit_async(self, bytecode):
+        logging.debug("submit_async with bytecode '%s'", str(bytecode))
         future = Future()
-        future_result_set = self._client.submitAsync(bytecode, request_options=self._extract_request_options(bytecode))
+        future_result_set = self._client.submit_async(bytecode, request_options=self._extract_request_options(bytecode))
 
         def cb(f):
             try:
@@ -74,6 +97,37 @@ class DriverRemoteConnection(RemoteConnection):
 
         future_result_set.add_done_callback(cb)
         return future
+
+    def is_session_bound(self):
+        return self.__session is not None
+
+    def create_session(self):
+        logging.info("Creating session based connection")
+        if self.is_session_bound():
+            raise Exception('Connection is already bound to a session - child sessions are not allowed')
+        return DriverRemoteConnection(self.__url,
+                                      traversal_source=self.__traversal_source,
+                                      protocol_factory=self.__protocol_factory,
+                                      transport_factory=self.__transport_factory,
+                                      pool_size=self.__pool_size,
+                                      max_workers=self.__max_workers,
+                                      username=self.__username,
+                                      password=self.__password,
+                                      kerberized_service=self.__kerberized_service,
+                                      message_serializer=self.__message_serializer,
+                                      graphson_reader=self.__graphson_reader,
+                                      graphson_writer=self.__graphson_writer,
+                                      headers=self.__headers,
+                                      session=uuid.uuid4(),
+                                      **self.__transport_kwargs)
+
+    def commit(self):
+        logging.info("Submitting commit graph operation.")
+        return self._client.submit(Bytecode.GraphOp.commit())
+
+    def rollback(self):
+        logging.info("Submitting rollback graph operation.")
+        return self._client.submit(Bytecode.GraphOp.rollback())
 
     @staticmethod
     def _extract_request_options(bytecode):

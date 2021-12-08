@@ -538,7 +538,7 @@ class TraversalStrategies(object):
     global_cache = {}
 
     def __init__(self, traversal_strategies=None):
-        self.traversal_strategies =             traversal_strategies.traversal_strategies if traversal_strategies is not None else []
+        self.traversal_strategies = traversal_strategies.traversal_strategies if traversal_strategies is not None else []
 
     def add_strategies(self, traversal_strategies):
         self.traversal_strategies = self.traversal_strategies + traversal_strategies
@@ -653,6 +653,22 @@ class Bytecode(object):
     def __repr__(self):
         return (str(self.source_instructions) if len(self.source_instructions) > 0 else "") + \
                (str(self.step_instructions) if len(self.step_instructions) > 0 else "")
+
+    @staticmethod
+    def _create_graph_op(name, *values):
+        bc = Bytecode()
+        bc.add_source(name, *values)
+        return bc
+
+    @staticmethod
+    class GraphOp:
+        @staticmethod
+        def commit():
+            return Bytecode._create_graph_op("tx", "commit")
+
+        @staticmethod
+        def rollback():
+            return Bytecode._create_graph_op("tx", "rollback")
 
 
 '''

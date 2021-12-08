@@ -20,8 +20,8 @@
 import concurrent.futures
 import ssl
 import pytest
-import sys
 import socket
+import logging
 
 from six.moves import queue
 
@@ -41,7 +41,10 @@ anonymous_url = gremlin_server_url.format(45940)
 basic_url = 'wss://localhost:{}/gremlin'.format(45941)
 kerberos_url = gremlin_server_url.format(45942)
 kerberized_service = 'test-service@{}'.format(socket.gethostname())
+verbose_logging = False
 
+logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
+                    level=logging.DEBUG if verbose_logging else logging.INFO)
 
 @pytest.fixture
 def connection(request):
@@ -60,6 +63,7 @@ def connection(request):
         def fin():
             executor.shutdown()
             conn.close()
+
         request.addfinalizer(fin)
         return conn
 
@@ -73,6 +77,7 @@ def client(request):
     else:
         def fin():
             client.close()
+
         request.addfinalizer(fin)
         return client
 
@@ -95,6 +100,7 @@ def authenticated_client(request):
     else:
         def fin():
             client.close()
+
         request.addfinalizer(fin)
         return client
 
@@ -118,6 +124,31 @@ def remote_connection(request):
     else:
         def fin():
             remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
+def remote_transaction_connection(request):
+    try:
+        if request.param == 'graphbinaryv1':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gtx',
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
+        elif request.param == 'graphsonv2':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gtx',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gtx',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+        else:
+            raise ValueError("Invalid serializer option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
         request.addfinalizer(fin)
         return remote_conn
 
@@ -143,6 +174,7 @@ def remote_connection_authenticated(request):
     else:
         def fin():
             remote_conn.close()
+
         request.addfinalizer(fin)
         return remote_conn
 
@@ -157,6 +189,7 @@ def remote_connection_graphsonV2(request):
     else:
         def fin():
             remote_conn.close()
+
         request.addfinalizer(fin)
         return remote_conn
 
