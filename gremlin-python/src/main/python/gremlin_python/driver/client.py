@@ -54,7 +54,7 @@ class Client:
         self._username = username
         self._password = password
         self._session = session
-        self._sessionEnabled = (session is not None and session != "")
+        self._session_enabled = (session is not None and session != "")
         if transport_factory is None:
             try:
                 from gremlin_python.driver.aiohttp.transport import (
@@ -73,7 +73,7 @@ class Client:
                 password=self._password,
                 kerberized_service=kerberized_service)
         self._protocol_factory = protocol_factory
-        if self._sessionEnabled:
+        if self._session_enabled:
             if pool_size is None:
                 pool_size = 1
             elif pool_size != 1:
@@ -131,13 +131,15 @@ class Client:
         processor = ''
         op = 'eval'
         if isinstance(message, traversal.Bytecode):
-            if self._sessionEnabled:
-                args['session'] = str(self._session)
-            processor = 'session' if self._sessionEnabled else 'traversal'
             op = 'bytecode'
+            processor = 'traversal'
 
         if isinstance(message, str) and bindings:
             args['bindings'] = bindings
+
+        if self._session_enabled:
+            args['session'] = str(self._session)
+            processor = 'session'
 
         if isinstance(message, traversal.Bytecode) or isinstance(message, str):
             logging.info("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
