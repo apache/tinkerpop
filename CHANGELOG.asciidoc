@@ -23,6 +23,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added support for `g.Tx()` in Python.
+* Added logging in in Python.
+* Fixed shutdown cleanup issue in Python aiohttp transport layer.
 * Added a `NoSugarTranslator` translator to `PythonTranslator` which translates Gremlin queries to Python without syntactic sugar (ex `g.V().limit(1)` instead of `g.V()[0:1]`)
 * Added support for `g.Tx()` in .NET.
 * Added support for `with()` constant options to `io()`.
