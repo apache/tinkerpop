@@ -209,8 +209,10 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
     }
 
     protected void validateRequest(final RequestMessage message, final GraphManager graphManager) throws SessionException {
-        if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", message.getOp(), Tokens.ARGS_GREMLIN);
+        // close message just needs to be accounted for here as of 3.5.2. it will not contain a "gremlin" arg. unified
+        // channelizer basically ignores the close message otherwise
+        if (!message.getOp().equals(Tokens.OPS_CLOSE) && !message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
+            final String msg = String.format("A message with a [%s] op code requires a [%s] argument.", message.getOp(), Tokens.ARGS_GREMLIN);
             throw new SessionException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
