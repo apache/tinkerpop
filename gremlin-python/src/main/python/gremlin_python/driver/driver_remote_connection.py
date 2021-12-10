@@ -18,6 +18,7 @@
 #
 import logging
 from concurrent.futures import Future
+import warnings
 
 from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import (
@@ -81,6 +82,13 @@ class DriverRemoteConnection(RemoteConnection):
         result_set = self._client.submit(bytecode, request_options=self._extract_request_options(bytecode))
         results = result_set.all().result()
         return RemoteTraversal(iter(results))
+
+    def submitAsync(self, message, bindings=None, request_options=None):
+        warnings.warn(
+            "gremlin_python.driver.driver_remote_connection.DriverRemoteConnection.submitAsync will be replaced by "
+            "gremlin_python.driver.driver_remote_connection.DriverRemoteConnection.submit_async.",
+            DeprecationWarning)
+        self.submit_async(message, bindings, request_options)
 
     def submit_async(self, bytecode):
         logging.debug("submit_async with bytecode '%s'", str(bytecode))

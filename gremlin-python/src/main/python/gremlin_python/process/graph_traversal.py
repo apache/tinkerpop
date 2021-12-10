@@ -105,7 +105,8 @@ class GraphTraversalSource(object):
         # In order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
         # TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
         # This is the same strategy as gremlin-javascript.
-        # TODO: refactor this to be nicer in 3.6.0 when we can take a breaking change
+        # TODO https://issues.apache.org/jira/browse/TINKERPOP-2664: refactor this to be nicer in 3.6.0 when
+        #  we can take a breaking change
         remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
                                   x.fqcn == "py:RemoteStrategy"), None)
 

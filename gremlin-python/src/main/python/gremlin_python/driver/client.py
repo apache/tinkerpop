@@ -17,8 +17,8 @@
 # under the License.
 #
 import logging
+import warnings
 from concurrent.futures import ThreadPoolExecutor
-
 from six.moves import queue
 
 from gremlin_python.driver import connection, protocol, request, serializer
@@ -109,11 +109,20 @@ class Client:
             self._pool.put_nowait(conn)
 
     def close(self):
+        if self._session_enabled:
+            self._close_session()
         logging.info("Closing Client with url '%s'", self._url)
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
+
+    def _close_session(self):
+        message = request.RequestMessage(
+            processor='session', op='close',
+            args={'session': str(self._session)})
+        conn = self._pool.get(True)
+        return conn.write(message).result()
 
     def _get_connection(self):
         protocol = self._protocol_factory()
@@ -124,6 +133,13 @@ class Client:
 
     def submit(self, message, bindings=None, request_options=None):
         return self.submit_async(message, bindings=bindings, request_options=request_options).result()
+
+    def submitAsync(self, message, bindings=None, request_options=None):
+        warnings.warn(
+            "gremlin_python.driver.client.Client.submitAsync will be replaced by "
+            "gremlin_python.driver.client.Client.submit_async.",
+            DeprecationWarning)
+        self.submit_async(message, bindings, request_options)
 
     def submit_async(self, message, bindings=None, request_options=None):
         logging.debug("message '%s'", str(message))
@@ -142,7 +158,7 @@ class Client:
             processor = 'session'
 
         if isinstance(message, traversal.Bytecode) or isinstance(message, str):
-            logging.info("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
+            logging.debug("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
             message = request.RequestMessage(processor=processor, op=op, args=args)
 
         conn = self._pool.get(True)
