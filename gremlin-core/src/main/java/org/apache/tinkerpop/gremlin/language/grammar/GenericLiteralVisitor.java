@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -277,7 +277,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
-        final HashMap<Object, Object> literalMap = new HashMap<>();
+        final LinkedHashMap<Object, Object> literalMap = new LinkedHashMap<>();
         int childIndex = 1;
         while (childIndex < ctx.getChildCount() && ctx.getChildCount() > 3) {
             Object key = visitGenericLiteral((GremlinParser.GenericLiteralContext) ctx.getChild(childIndex));

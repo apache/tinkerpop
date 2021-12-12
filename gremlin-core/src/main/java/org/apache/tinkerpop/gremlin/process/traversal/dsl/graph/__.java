@@ -983,6 +983,13 @@ public class __ {
         return __.<A>start().property(cardinality, key, value, keyValues);
     }
 
+    /**
+     * @see GraphTraversal#property(Map)
+     */
+    public static <A> GraphTraversal<A, A> property(final Map<Object, Object> value) {
+        return __.<A>start().property(value);
+    }
+
     ///////////////////// BRANCH STEPS /////////////////////
 
     /**
