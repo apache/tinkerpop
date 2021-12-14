@@ -68,6 +68,34 @@ From a Gremlin language perspective there are no functions that can be called on
 
 See:link:https://issues.apache.org/jira/browse/TINKERPOP-2596[TINKERPOP-2596]
 
+==== fold() Map
+
+The `fold()` step has long been used for reducing the traversal stream to a `List` as in:
+
+```text
+gremlin> g.V().values('age').fold()
+==>[29,27,32,35]
+gremlin> g.inject([a: 1],[b:2]).fold()
+==>[[a:1],[b:2]]
+```
+
+This step has always had a lesser known second signature though which has two arguments of a "seed" and "foldFunction":
+
+```text
+gremlin> g.inject([a: 1],[b:2]).fold([], addAll)
+==>[[a:1],[b:2]]
+```
+
+There was a bit of incomplete (or perhaps incorrect) logic that did not allow the folding of `Map` and as of this
+version, that issue has been resolved which enables `Map` entry merges:
+
+```text
+gremlin> g.inject([a: 1],[b:2]).fold([:], addAll)
+==>[a:1,b:2]
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2667[TINKERPOP-2667]
+
 ==== Refinements to null
 
 Release 3.5.0 introduce the ability for there to be traversers that contained a `null` value. Since that time it has

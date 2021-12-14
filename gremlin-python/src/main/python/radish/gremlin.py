@@ -354,6 +354,8 @@ world.gremlins = {
     'g_V_fold': [(lambda g:g.V().fold())], 
     'g_V_fold_unfold': [(lambda g:g.V().fold().unfold())], 
     'g_V_age_foldX0_plusX': [(lambda g:g.V().age.fold(0,Operator.sum_))], 
+    'g_injectXa1_b2X_foldXm_addAllX': [(lambda g:g.inject({'a':1},{'b':2}).fold({},Operator.addAll))], 
+    'g_injectXa1_b2_b4X_foldXm_addAllX': [(lambda g:g.inject({'a':1},{'b':2},{'b':4}).fold({},Operator.addAll))], 
     'g_VX1X_V_valuesXnameX': [(lambda g, vid1=None:g.V(vid1).V().name)], 
     'g_V_outXknowsX_V_name': [(lambda g:g.V().out('knows').V().name)], 
     'g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name': [(lambda g:g.V().has('artist','name','Garcia').in_('sungBy').as_('song').V().has('artist','name','Willie_Dixon').in_('writtenBy').where(P.eq('song')).name)], 

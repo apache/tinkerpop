@@ -170,6 +170,8 @@ public enum Operator implements BinaryOperator<Object> {
      * then the second {@code Collection} is returned and if the second is {@code null} then the first is returned.
      * If both are {@code null} then {@code null} is returned. Arguments must be of type {@code Map} or
      * {@code Collection}.
+     * <p/>
+     * The semantics described above for {@code Collection} are the same when applied to a {@code Map}.
      *
      * @since 3.2.0-incubating
      */

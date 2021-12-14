@@ -854,7 +854,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Rolls up objects in the stream into an aggregate value as defined by a {@code seed} and {@code BiFunction}.
      *
      * @param seed         the value to provide as the first argument to the {@code foldFunction}
-     * @param foldFunction the function to fold by where the first argument is the {@code seed} or the value returned from subsequent calss and
+     * @param foldFunction the function to fold by where the first argument is the {@code seed} or the value returned from subsequent class and
      *                     the second argument is the value from the stream
      * @return the traversal with an appended {@link FoldStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step" target="_blank">Reference Documentation - Fold Step</a>
@@ -862,7 +862,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
         this.asAdmin().getBytecode().addStep(Symbols.fold, seed, foldFunction);
-        return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction)); // TODO: User should provide supplier?
+        return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction));
     }
 
     /**
@@ -2984,15 +2984,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * This step modifies {@link #choose(Function)} to specifies the available choices that might be executed.
      *
-     * @param pickToken       the token that would trigger this option
+     * @param pick       the token that would trigger this option which may be a {@link TraversalOptionParent.Pick},
+     *                   a {@link Traversal}, {@link Predicate}, or object depending on the step being modulated.
      * @param traversalOption the option as a traversal
      * @return the traversal with the modulated step
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      * @since 3.0.0-incubating
      */
-    public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<?, E2> traversalOption) {
-        this.asAdmin().getBytecode().addStep(Symbols.option, pickToken, traversalOption);
-        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(pickToken, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
+    public default <M, E2> GraphTraversal<S, E> option(final M pick, final Traversal<?, E2> traversalOption) {
+        this.asAdmin().getBytecode().addStep(Symbols.option, pick, traversalOption);
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(pick, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
         return this;
     }
 
