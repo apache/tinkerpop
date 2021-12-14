@@ -174,28 +174,6 @@ Feature: Step - has()
       | result |
       | v[josh] |
 
-  Scenario: g_VX1X_out_hasXid_lt_3X
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter xx1 of P.lt("v[lop].id")
-    And the traversal of
-      """
-      g.V(vid1).out().has(T.id, xx1)
-      """
-
-  Scenario: g_VX1AsStringX_out_hasXid_2AsStringX
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].sid"
-    And using the parameter vid2 defined as "v[vadas].sid"
-    And the traversal of
-      """
-      g.V(vid1).out().hasId(vid2)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-
   Scenario: g_VX1X_out_hasXid_2X
     Given the modern graph
     And using the parameter v2 defined as "v[josh]"
@@ -208,49 +186,6 @@ Feature: Step - has()
       | result |
       | v[josh] |
 
-  Scenario: g_VX1X_out_hasIdX2X
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[vadas].id"
-    And the traversal of
-      """
-      g.V(vid1).out().hasId(vid2)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-
-  Scenario: g_VX1X_out_hasXid_2_3X
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[vadas].id"
-    And using the parameter vid3 defined as "v[lop].id"
-    And the traversal of
-      """
-      g.V(vid1).out().hasId(vid2, vid3)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-      | v[lop] |
-
-  Scenario: g_VX1X_out_hasXid_2AsString_3AsStringX
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].sid"
-    And using the parameter vid2 defined as "v[vadas].sid"
-    And using the parameter vid3 defined as "v[lop].sid"
-    And the traversal of
-      """
-      g.V(vid1).out().hasId(vid2, vid3)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-      | v[lop] |
-
   Scenario: g_V_hasXblahX
     Given the modern graph
     And the traversal of
@@ -259,66 +194,6 @@ Feature: Step - has()
       """
     When iterated to list
     Then the result should be empty
-
-  Scenario: g_EX7X_hasLabelXknowsX
-    Given the modern graph
-    And using the parameter eid7 defined as "e[marko-knows->vadas].id"
-    And the traversal of
-      """
-      g.E(eid7).hasLabel("knows")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | e[marko-knows->vadas] |
-
-  Scenario: g_E_hasLabelXknowsX
-    Given the modern graph
-    And the traversal of
-      """
-      g.E().hasLabel("knows")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | e[marko-knows->vadas] |
-      | e[marko-knows->josh] |
-
-  @MultiMetaProperties
-  Scenario: g_E_hasLabelXuses_traversesX
-    Given the crew graph
-    And the traversal of
-      """
-      g.E().hasLabel("uses", "traverses")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | e[marko-uses->gremlin] |
-      | e[marko-uses->tinkergraph] |
-      | e[stephen-uses->gremlin] |
-      | e[stephen-uses->tinkergraph] |
-      | e[daniel-uses->gremlin] |
-      | e[daniel-uses->tinkergraph] |
-      | e[matthias-uses->gremlin] |
-      | e[matthias-uses->tinkergraph] |
-      | e[gremlin-traverses->tinkergraph] |
-
-  Scenario: g_V_hasLabelXperson_software_blahX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().hasLabel("person","software", "blah")
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
-      | v[vadas] |
-      | v[josh] |
-      | v[peter] |
-      | v[lop] |
-      | v[ripple] |
 
   Scenario: g_V_hasXperson_name_markoX_age
     Given the modern graph
@@ -396,20 +271,6 @@ Feature: Step - has()
       | result |
       | vadas |
       | peter |
-
-  Scenario: g_V_in_hasIdXneqX1XX
-    Given the modern graph
-    And using the parameter xx1 of P.neq("v[marko].id")
-    And the traversal of
-    """
-    g.V().in().hasId(xx1)
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[josh] |
-      | v[josh] |
-      | v[peter] |
 
   Scenario: g_V_hasXage_withinX27X_count
     Given the modern graph
@@ -552,74 +413,6 @@ Feature: Step - has()
       | result |
       | lop |
       | ripple |
-
-  Scenario: g_V_hasIdX1X_hasIdX2X
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[vadas].id"
-    And the traversal of
-    """
-    g.V().hasId(vid1).hasId(vid2)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_hasLabelXpersonX_hasLabelXsoftwareX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().hasLabel("person").hasLabel("software")
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_hasIdXemptyX_count
-    Given the modern graph
-    And using the parameter xx1 defined as "l[]"
-    And the traversal of
-    """
-    g.V().hasId(xx1).count()
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[0].l |
-
-  Scenario: g_V_hasIdXwithinXemptyXX_count
-    Given the modern graph
-    And using the parameter xx1 of P.within("l[]")
-    And the traversal of
-    """
-    g.V().hasId(xx1).count()
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[0].l |
-
-  Scenario: g_V_hasIdXwithoutXemptyXX_count
-    Given the modern graph
-    And using the parameter xx1 of P.without("l[]")
-    And the traversal of
-    """
-    g.V().hasId(xx1).count()
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6].l |
-
-  Scenario: g_V_notXhasIdXwithinXemptyXXX_count
-    Given the modern graph
-    And using the parameter xx1 of P.within("l[]")
-    And the traversal of
-    """
-    g.V().not(__.hasId(xx1)).count()
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6].l |
 
   Scenario: g_V_hasXname_containingXarkXX
     Given the modern graph
@@ -785,74 +578,6 @@ Feature: Step - has()
     And the traversal of
     """
     g.E().has(null)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_hasLabelXnullX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().hasLabel(null)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_hasXlabel_nullX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().has(T.label, null)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_hasLabelXnull_nullX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().hasLabel(null, null)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_hasLabelXnull_personX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().hasLabel(null, "person")
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
-      | v[vadas] |
-      | v[josh] |
-      | v[peter] |
-
-  Scenario: g_E_hasLabelXnullX
-    Given the modern graph
-    And the traversal of
-    """
-    g.E().hasLabel(null)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_E_hasXlabel_nullX
-    Given the modern graph
-    And the traversal of
-    """
-    g.E().has(T.label, null)
-    """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_properties_hasLabelXnullX
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().properties().hasLabel(null)
     """
     When iterated to list
     Then the result should be empty

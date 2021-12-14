@@ -111,6 +111,9 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // solution may become necessary as testing of nulls expands.
     def staticTranslate = [
             g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",
+            g_V_hasIdXnullX: "               {\"g_V_hasIdXnullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasId(null)}}, ",
+            g_V_hasIdX2_nullX: "               {\"g_V_hasIdX2_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasId(p[\"vid2\"],null)}}, ",
+            g_V_hasIdX2AsString_nullX: "               {\"g_V_hasIdX2AsString_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasId(p[\"vid2\"],null)}}, ",
             g_VX1X_valuesXageX_injectXnull_nullX: "               {\"g_VX1X_valuesXageX_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p[\"xx1\"]).Values<object>(\"age\").Inject(null,null)}}, "
     ]
 

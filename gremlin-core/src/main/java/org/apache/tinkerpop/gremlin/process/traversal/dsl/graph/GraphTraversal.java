@@ -1620,7 +1620,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             int size = ids.length;
             int capacity = size;
             for (final Object i : otherIds) {
-                if (i.getClass().isArray()) {
+                if (i != null && i.getClass().isArray()) {
                     final Object[] tmp = (Object[]) i;
                     int newLength = size + tmp.length;
                     if (capacity < newLength) {
@@ -1644,7 +1644,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their identifier.
+     * Filters vertices, edges and vertex properties based on their identifier. Calling this step with a {@code null}
+     * value will result in effectively calling {@link #hasId(Object, Object...)} wit a single {@code null} identifier
+     * and therefore filter all results since a {@link T#id} cannot be {@code null}.
      *
      * @param predicate the filter to apply to the identifier of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
@@ -1652,6 +1654,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.4
      */
     public default GraphTraversal<S, E> hasId(final P<Object> predicate) {
+        if (null == predicate)
+            return hasId((Object) null);
+
         this.asAdmin().getBytecode().addStep(Symbols.hasId, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), predicate));
     }

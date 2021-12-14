@@ -55,6 +55,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_injectXlistXnull_10_20_nullXX_meanXlocalX", IgnoreReason.NoReason},
                 {"g_injectXnull_10_20_nullX_mean", IgnoreReason.NoReason},
                 {"g_injectXnull_10_5_nullX_sum", IgnoreReason.NoReason},
+                {"g_V_hasIdXnullX", IgnoreReason.NoReason},
+                {"g_V_hasIdXeqXnullXX", IgnoreReason.NoReason},
+                {"g_V_hasIdX2_nullX", IgnoreReason.NoReason},
+                {"g_V_hasIdX2AsString_nullX", IgnoreReason.NoReason},
                 {"g_injectXlistXnull_10_5_nullXX_sumXlocalX", IgnoreReason.NoReason},
                 {
                     "g_addVXpersonX_propertyXname_joshX_propertyXage_nullX",
