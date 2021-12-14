@@ -98,7 +98,7 @@ public class TraversalPredicateVisitorTest {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.TraversalPredicateContext ctx = parser.traversalPredicate();
-        final P predicate = TraversalPredicateVisitor.getInstance().visitTraversalPredicate(ctx);
+        final P predicate = TraversalPredicateVisitor.instance().visitTraversalPredicate(ctx);
 
         Assert.assertEquals(expected, predicate);
     }

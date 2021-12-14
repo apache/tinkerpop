@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 
@@ -158,13 +159,23 @@ public class GroovyTranslatorTest {
     }
 
     @Test
-    public void shouldTranslateDateUsingDatetimeFunction() {
+    public void shouldTranslateDateUsingLanguageTypeTranslator() {
         final Translator.ScriptTranslator t = GroovyTranslator.of("g",
                 new GroovyTranslator.LanguageTypeTranslator(false));
         final Date datetime = Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant());
         final Date date = Date.from(ZonedDateTime.of(2018, 03, 22, 0, 0, 0, 0, UTC).toInstant());
         assertEquals("g.inject(datetime('2018-03-22T00:00:00Z'),datetime('2018-03-22T00:35:44.741Z'))",
                 t.translate(g.inject(date, datetime)).getScript());
+
+    }
+
+    @Test
+    public void shouldTranslateVertexUsingLanguageTypeTranslator() {
+        final Translator.ScriptTranslator t = GroovyTranslator.of("g",
+                new GroovyTranslator.LanguageTypeTranslator(false));
+
+        assertEquals("g.addE(\"knows\").from(new Vertex(1I,\"person\"))",
+                t.translate(g.addE("knows").from(new ReferenceVertex(1, "person"))).getScript());
 
     }
 

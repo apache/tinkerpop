@@ -32,11 +32,19 @@ public class TraversalFunctionVisitor extends GremlinBaseVisitor<Function> {
 
     private static TraversalFunctionVisitor instance;
 
-    public static TraversalFunctionVisitor getInstance() {
+    public static TraversalFunctionVisitor instance() {
         if (instance == null) {
             instance = new TraversalFunctionVisitor();
         }
         return instance;
+    }
+
+    /**
+     * @deprecated As of release 3.5.2, replaced by {@link #instance()}.
+     */
+    @Deprecated
+    public static TraversalFunctionVisitor getInstance() {
+        return instance();
     }
 
     /**

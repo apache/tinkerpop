@@ -379,6 +379,11 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
+	public T visitTraversalMethod_from_Vertex(final GremlinParser.TraversalMethod_from_VertexContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_group_Empty(final GremlinParser.TraversalMethod_group_EmptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -808,6 +813,11 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_to_Traversal(final GremlinParser.TraversalMethod_to_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitTraversalMethod_to_Vertex(final GremlinParser.TraversalMethod_to_VertexContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1475,7 +1485,7 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 
 	@Override
 	public T visitGremlinStringConstants_connectedComponentStringConstants_propertyName(GremlinParser.GremlinStringConstants_connectedComponentStringConstants_propertyNameContext ctx) {
-		return null;
+		notImplemented(ctx); return null;
 	}
 
 	@Override
@@ -1488,6 +1498,14 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 */
 	@Override
 	public T visitIoOptionsStringConstant(final GremlinParser.IoOptionsStringConstantContext ctx) {
+		notImplemented(ctx); return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
 		notImplemented(ctx); return null;
 	}
 }

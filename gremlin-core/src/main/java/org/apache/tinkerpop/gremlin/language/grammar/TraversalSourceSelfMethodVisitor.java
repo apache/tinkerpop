@@ -56,7 +56,7 @@ public class TraversalSourceSelfMethodVisitor extends GremlinBaseVisitor<GraphTr
     {
         final int childIndexOfParameterUseBulk = 2;
 
-        final Boolean useBulk = (Boolean)(GenericLiteralVisitor.getInstance().visitBooleanLiteral(
+        final Boolean useBulk = (Boolean)(GenericLiteralVisitor.instance().visitBooleanLiteral(
                 (GremlinParser.BooleanLiteralContext)(ctx.getChild(childIndexOfParameterUseBulk))));
 
         return source.withBulk(useBulk);
@@ -80,12 +80,12 @@ public class TraversalSourceSelfMethodVisitor extends GremlinBaseVisitor<GraphTr
         final int childIndexOfParameterInitialValue = 2;
 
         if (ctx.getChildCount() == 4) {
-            return source.withSack(GenericLiteralVisitor.getInstance().visitGenericLiteral(
+            return source.withSack(GenericLiteralVisitor.instance().visitGenericLiteral(
                     ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterInitialValue)));
         } else {
             final int childIndexOfParameterMergeOperator = 4;
 
-            return source.withSack(GenericLiteralVisitor.getInstance().visitGenericLiteral(
+            return source.withSack(GenericLiteralVisitor.instance().visitGenericLiteral(
                     ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterInitialValue)),
                     TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.getChild(childIndexOfParameterMergeOperator)));
         }
@@ -100,9 +100,9 @@ public class TraversalSourceSelfMethodVisitor extends GremlinBaseVisitor<GraphTr
         final int childIndexOfParameterKey = 2;
         final int childIndexOfParameterInitialValue = 4;
 
-        final String argument1 = (String)(GenericLiteralVisitor.getInstance().visitStringLiteral(
+        final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringLiteral(
                 (GremlinParser.StringLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
-        final Object argument2 = GenericLiteralVisitor.getInstance().visitGenericLiteral(
+        final Object argument2 = GenericLiteralVisitor.instance().visitGenericLiteral(
                 (GremlinParser.GenericLiteralContext)(ctx.getChild(childIndexOfParameterInitialValue)));
 
         return source.withSideEffect(argument1, argument2);
@@ -136,15 +136,15 @@ public class TraversalSourceSelfMethodVisitor extends GremlinBaseVisitor<GraphTr
         final int childIndexOfParameterKey = 2;
 
         if (ctx.getChildCount() == 4) {
-            final String argument1 = (String)(GenericLiteralVisitor.getInstance().visitStringLiteral(
+            final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringLiteral(
                     (GremlinParser.StringLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
             return source.with(argument1);
         } else {
             final int childIndexOfParameterInitialValue = 4;
 
-            final String argument1 = (String)(GenericLiteralVisitor.getInstance().visitStringLiteral(
+            final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringLiteral(
                     (GremlinParser.StringLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
-            final Object argument2 = GenericLiteralVisitor.getInstance().visitGenericLiteral(
+            final Object argument2 = GenericLiteralVisitor.instance().visitGenericLiteral(
                     (GremlinParser.GenericLiteralContext)(ctx.getChild(childIndexOfParameterInitialValue)));
             return source.with(argument1, argument2);
         }
