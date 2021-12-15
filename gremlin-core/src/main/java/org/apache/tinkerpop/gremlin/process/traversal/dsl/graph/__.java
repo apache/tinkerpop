@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -980,7 +981,23 @@ public class __ {
      * @see GraphTraversal#property(VertexProperty.Cardinality, Object, Object, Object...)
      */
     public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
-        return __.<A>start().property(cardinality, key, value, keyValues);
+        return __.<A>
+        
+        start().property(cardinality, key, value, keyValues);
+    }
+
+    /**
+     * @see GraphTraversal#property(VertexProperty.Cardinality, Object)
+     */
+    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final LinkedHashMap<Object, Object> map) {
+        return __.<A>start().property(cardinality, map);
+    }
+
+    /**
+     * @see GraphTraversal#property(Object)
+     */
+    public static <A> GraphTraversal<A, A> property(final LinkedHashMap<Object, Object> map) {
+        return __.<A>start().property(map);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
