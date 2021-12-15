@@ -987,12 +987,17 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#property(VertexProperty.Cardinality, Object)
+     */
+    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final LinkedHashMap<Object, Object> map) {
+        return __.<A>start().property(cardinality, map);
+    }
+
+    /**
      * @see GraphTraversal#property(Object)
      */
-    public static <A> GraphTraversal<A, A> property(final Object value) {
-        return __.<A>
-
-                start().property(value);
+    public static <A> GraphTraversal<A, A> property(final LinkedHashMap<Object, Object> map) {
+        return __.<A>start().property(map);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
