@@ -2856,13 +2856,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href=
      *      "http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step"
      *      target="_blank">AddProperty Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.6.0-incubating
      */
-    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality,
-            final LinkedHashMap<Object, Object> map) {
-        Set<Object> keys = map.keySet();
-        for (Object key : keys) {
-            property(cardinality, key, map.get(key.toString()));
+    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final LinkedHashMap<Object, Object> map) {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            property(cardinality, entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -2889,12 +2887,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href=
      *      "http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step"
      *      target="_blank">AddProperty Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.6.0-incubating
      */
     public default GraphTraversal<S, E> property(final LinkedHashMap<Object, Object> map) {
-        Set<Object> keys = map.keySet();
-        for (Object key : keys) {
-            property(key, map.get(key.toString()));
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            property(entry.getKey(), entry.getValue());
         }
         return this;
     }

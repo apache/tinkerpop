@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
 import java.util.function.BiFunction;
 
@@ -1126,6 +1127,24 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         return graphTraversal.property(new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral(0)),
                 new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral(1)),
                 GenericLiteralVisitor.getGenericLiteralList(ctx.genericLiteralList()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal TraversalMethod_property_ObjectContext(
+            final GremlinParser.TraversalMethod_property_ObjectContext ctx) {
+        return graphTraversal.property(new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal TraversalMethod_property_Cardinality_ObjectContext(
+            final GremlinParser.TraversalMethod_property_Cardinality_ObjectContext ctx) {
+        return graphTraversal.property(Cardinality.list, new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx));
     }
 
     /**
