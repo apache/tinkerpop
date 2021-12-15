@@ -47,6 +47,7 @@ limitations under the License.
 * Changed `NumberHelper` to properly cast to `byte` and `short` rather than default coercing to `Integer`.
 * Modified some driver defaults (maximum content length, pool size, maximum in process) to be more consistent with one another.
 * Fixed a potential connection load balancing issue due to a race condition not updating the usage count.
+* Extended property() to allow for setting a map of property values.
 
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 

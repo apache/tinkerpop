@@ -1133,7 +1133,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal TraversalMethod_property_ObjectContext(
+    public GraphTraversal TraversalMethod_property_Object(
             final GremlinParser.TraversalMethod_property_ObjectContext ctx) {
         return graphTraversal.property(new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx));
     }
@@ -1142,7 +1142,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal TraversalMethod_property_Cardinality_ObjectContext(
+    public GraphTraversal TraversalMethod_property_Cardinality_Object(
             final GremlinParser.TraversalMethod_property_Cardinality_ObjectContext ctx) {
         return graphTraversal.property(Cardinality.list, new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx));
     }

@@ -446,7 +446,7 @@ Feature: Step - addV()
       | foo |
       | 42    |
 
-  Scenario: g_addV_propertyXMapXwithXlabel
+  Scenario: g_addV_propertyXMap_with_labelX
     Given the empty graph
     And the traversal of
       """
@@ -456,7 +456,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
     
-  Scenario: g_addV_propertyXCardinalityMapX
+  Scenario: g_addV_propertyXCardinality_MapX
     Given the empty graph
     And the traversal of
       """
@@ -472,7 +472,7 @@ Feature: Step - addV()
       | foo    |
       | 42     |
     
-  Scenario: g_addV_propertyXCardinalityMapXwithXlabel
+  Scenario: g_addV_propertyXCardinality_Map_with_labelX
     Given the empty graph
     And the traversal of
       """
