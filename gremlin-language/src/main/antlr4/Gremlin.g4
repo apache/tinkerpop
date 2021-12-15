@@ -591,11 +591,15 @@ traversalMethod_properties
 traversalMethod_property
 	: 'property' LPAREN traversalCardinality COMMA genericLiteral COMMA genericLiteral (COMMA genericLiteralList)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
 	| 'property' LPAREN genericLiteral COMMA genericLiteral (COMMA genericLiteralList)? RPAREN #traversalMethod_property_Object_Object_Object
+	| 'property' LPAREN genericLiteralMap? RPAREN # traversalMethod_property_Object
+	| 'property' LPAREN traversalCardinality COMMA genericLiteralMap? RPAREN # traversalMethod_property_Cardinality_Object
 	;
 
 traversalMethod_propertyMap
 	: 'propertyMap' LPAREN stringLiteralList RPAREN
 	;
+
+
 
 traversalMethod_range
 	: 'range' LPAREN traversalScope COMMA integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_Scope_long_long

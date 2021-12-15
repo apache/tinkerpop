@@ -661,6 +661,14 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_property_Cardinality_Object(final GremlinParser.TraversalMethod_property_Cardinality_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_property_Object(final GremlinParser.TraversalMethod_property_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_propertyMap(final GremlinParser.TraversalMethod_propertyMapContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
