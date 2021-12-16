@@ -30,13 +30,20 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== tx() in .NET
+==== Tx() in .NET and tx() in Python
 
-After Javascript, .NET is now the second non-JVM variant of Gremlin to get support for
-link:https://tinkerpop.apache.org/docs/3.5.2/reference/#transactions[remote transactions]. An example of the `Tx()`
-syntax can be found in the .NET link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-dotnet-transactions[Transaction Section].
+After Javascript, .NET and Python are now the second and third non-JVM variants of Gremlin to get support for
+link:https://tinkerpop.apache.org/docs/3.5.2/reference/#transactions[remote transactions].
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2556[TINKERPOP-2556]
+An example of the .NET `Tx()` syntax can be found in the
+link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-dotnet-transactions[.NET Transaction Section].
+
+An example of the Python `tx()` syntax can be found in the
+link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-dotnet-transactions[Python Transaction Section]
+
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2556[TINKERPOP-2556] for .NET and
+link:https://issues.apache.org/jira/browse/TINKERPOP-2555[TINKERPOP-2555] for Python
 
 ==== datetime()
 

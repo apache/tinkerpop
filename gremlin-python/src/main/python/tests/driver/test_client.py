@@ -169,7 +169,7 @@ def test_client_async(client):
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
-    future = client.submitAsync(message)
+    future = client.submit_async(message)
     result_set = future.result()
     assert len(result_set.all().result()) == 6
 
@@ -181,8 +181,8 @@ def test_connection_share(client):
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
-    future = client.submitAsync(message)
-    future2 = client.submitAsync(message2)
+    future = client.submit_async(message)
+    future2 = client.submit_async(message2)
 
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
@@ -199,8 +199,8 @@ def test_multi_conn_pool(client):
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1)
-    future = client.submitAsync(message)
-    future2 = client.submitAsync(message2)
+    future = client.submit_async(message)
+    future2 = client.submit_async(message2)
 
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6

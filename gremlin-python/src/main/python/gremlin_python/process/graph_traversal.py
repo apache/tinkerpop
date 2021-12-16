@@ -16,9 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import logging
 import sys
 import copy
+from threading import Lock
 from .traversal import Traversal
 from .traversal import TraversalStrategies
 from .strategies import VertexProgramStrategy, OptionsStrategy
@@ -27,15 +28,19 @@ from ..driver.remote_connection import RemoteStrategy
 from .. import statics
 from ..statics import long
 
+__author__ = 'Stephen Mallette (http://stephen.genoprime.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
+
 
 class GraphTraversalSource(object):
     def __init__(self, graph, traversal_strategies, bytecode=None):
+        logging.info("Creating GraphTraversalSource.")
         self.graph = graph
         self.traversal_strategies = traversal_strategies
         if bytecode is None:
-          bytecode = Bytecode()
+            bytecode = Bytecode()
         self.bytecode = bytecode
         self.graph_traversal = GraphTraversal
+        self.remote_connection = None
 
     def __repr__(self):
         return "graphtraversalsource[" + str(self.graph) + "]"
@@ -79,7 +84,7 @@ class GraphTraversalSource(object):
     def with_(self, k, v=None):
         source = self.get_graph_traversal_source()
         options_strategy = next((x for x in source.bytecode.source_instructions
-                                if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
+                                 if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
 
         val = True if v is None else v
         if options_strategy is None:
@@ -93,12 +98,31 @@ class GraphTraversalSource(object):
     def withRemote(self, remote_connection):
         source = self.get_graph_traversal_source()
         source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
+        self.remote_connection = remote_connection
         return source
+
+    def tx(self):
+        # In order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
+        # TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
+        # This is the same strategy as gremlin-javascript.
+        # TODO https://issues.apache.org/jira/browse/TINKERPOP-2664: refactor this to be nicer in 3.6.0 when
+        #  we can take a breaking change
+        remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
+                                  x.fqcn == "py:RemoteStrategy"), None)
+
+        if remote_connection is None:
+            raise Exception("Error, remote connection is required for transaction.")
+
+        # You can't do g.tx().begin().tx() i.e child transactions are not supported.
+        if remote_connection and remote_connection.is_session_bound():
+            raise Exception("This TraversalSource is already bound to a transaction - child transactions are not "
+                            "supported")
+        return Transaction(self, remote_connection)
 
     def withComputer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
                      edges=None, configuration=None):
-        return self.withStrategies(VertexProgramStrategy(graph_computer, workers, result, persist, vertices,
-                                   edges, configuration))
+        return self.withStrategies(
+            VertexProgramStrategy(graph_computer, workers, result, persist, vertices, edges, configuration))
 
     def E(self, *args):
         traversal = self.get_graph_traversal()
@@ -144,7 +168,7 @@ class GraphTraversal(Traversal):
             if low == long(0):
                 return self.limit(high)
             else:
-                return self.range_(low,high)
+                return self.range_(low, high)
         else:
             raise TypeError("Index must be int or slice")
 
@@ -957,6 +981,69 @@ class __(object, metaclass=MagicType):
     @classmethod
     def where(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).where(*args)
+
+
+# Class to handle transactions.
+class Transaction:
+
+    def __init__(self, g, remote_connection):
+        self._g = g
+        self._session_based_connection = None
+        self._remote_connection = remote_connection
+        self.__is_open = False
+        self.__mutex = Lock()
+
+    # Begins transaction.
+    def begin(self):
+        with self.__mutex:
+            # Verify transaction is not open.
+            self.__verify_transaction_state(False, "Transaction already started on this object")
+
+            # Create new session using the remote connection.
+            self._session_based_connection = self._remote_connection.create_session()
+            self.__is_open = True
+
+            # Set the session as a remote strategy within the traversal strategy.
+            traversal_strategy = TraversalStrategies()
+            traversal_strategy.add_strategies([RemoteStrategy(self._session_based_connection)])
+
+            # Return new GraphTraversalSource.
+            return GraphTraversalSource(self._g.graph, traversal_strategy, self._g.bytecode)
+
+    # Rolls transaction back.
+    def rollback(self):
+        with self.__mutex:
+            # Verify transaction is open, close session and return result of transaction's rollback.
+            self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
+            return self.__close_session(self._session_based_connection.rollback())
+
+    # Commits the current transaction.
+    def commit(self):
+        with self.__mutex:
+            # Verify transaction is open, close session and return result of transaction's commit.
+            self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
+            return self.__close_session(self._session_based_connection.commit())
+
+    # Closes session.
+    def close(self):
+        with self.__mutex:
+            # Verify transaction is open.
+            self.__verify_transaction_state(True, "Cannot close a transaction that has previously been closed.")
+            self.__close_session(None)
+
+    # Return whether or not transaction is open.
+    # Allow camelcase function here to keep api consistent with other languages.
+    def isOpen(self):
+        return self.__is_open
+
+    def __verify_transaction_state(self, state, error_message):
+        if self.__is_open != state:
+            raise Exception(error_message)
+
+    def __close_session(self, session):
+        self._session_based_connection.close()
+        self.__is_open = False
+        return session
 
 
 def V(*args):

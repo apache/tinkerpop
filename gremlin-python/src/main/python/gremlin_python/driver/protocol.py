@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import logging
 import abc
 import base64
 import struct
@@ -86,13 +87,13 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         super(GremlinServerWSProtocol, self).connection_made(transport)
 
     def write(self, request_id, request_message):
-        message = self._message_serializer.serialize_message(
-            request_id, request_message)
+        message = self._message_serializer.serialize_message(request_id, request_message)
         self._transport.write(message)
 
     def data_received(self, message, results_dict):
         # if Gremlin Server cuts off then we get a None for the message
         if message is None:
+            logging.error("Received empty message from server.")
             raise GremlinServerError({'code': 500,
                                       'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
 
@@ -113,10 +114,11 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             elif self._kerberized_service:
                 request_message = self._kerberos_received(message)
             else:
-                raise ConfigurationError(
-                    'Gremlin server requires authentication credentials in DriverRemoteConnection.'
-                    'For basic authentication provide username and password. '
-                    'For kerberos authentication provide the kerberized_service parameter.')
+                error_message = 'Gremlin server requires authentication credentials in DriverRemoteConnection. ' \
+                                'For basic authentication provide username and password. ' \
+                                'For kerberos authentication provide the kerberized_service parameter.'
+                logging.error(error_message)
+                raise ConfigurationError(error_message)
             self.write(request_id, request_message)
             data = self._transport.read()
             # Allow for auth handshake with multiple steps
@@ -132,6 +134,10 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
                 del results_dict[request_id]
             return status_code
         else:
+            # This message is going to be huge and kind of hard to read, but in the event of an error,
+            # it can provide invaluable info, so space it out appropriately.
+            logging.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
+                          str(message), str(results_dict))
             del results_dict[request_id]
             raise GremlinServerError(message['status'])
 

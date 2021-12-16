@@ -923,6 +923,37 @@ Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Tr
 the strategy is encoded in the Gremlin-Python bytecode and transmitted to the Gremlin traversal machine for
 re-construction machine-side.
 
+[[gremlin-python-transactions]]
+=== Transactions
+
+To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
+section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
+builds on that content by demonstrating the transactional syntax for Javascript.
+
+[source,python]
+----
+g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin'))
+
+# Create a Transaction.
+tx = g.tx()
+
+# Spawn a new GraphTraversalSource, binding all traversals established from it to tx.
+gtx = tx.begin()
+
+try:
+    # Execute a traversal within the transaction.
+    gtx.addV("person").property("name", "Lyndon").iterate(),
+
+    # Commit the transaction. The transaction can no longer be used and cannot be re-used.
+    # A new transaction can be spawned through g.tx().
+    # The context of g remains sessionless throughout the process.
+    gtx.commit()
+except Exception e:
+    # Rollback the transaction if an error occurs.
+    gtx.rollback()
+
+----
+
 [[gremlin-python-lambda]]
 === The Lambda Solution
 
