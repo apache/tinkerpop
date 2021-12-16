@@ -598,14 +598,11 @@ previous step to enable vertex and edge creation with all its properties in one 
 ----
 g.V(1).property('country','usa')
 g.V(1).property('city','santa fe').property('state','new mexico').valueMap()
-g.V(1).property(['city': 'santa fe', state':'new mexico').valueMap() <1>
 g.V(1).property(list,'age',35)  <2>
-g.V(1).property(list, ['city': 'santa fe', state':'new mexico').valueMap() <3>
 g.V(1).valueMap()
 g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
 g.V(1).properties('friendWeight').valueMap() <5>
 g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
-g.addV().property([(T.label),'person', state':'new mexico').valueMap() <7>
 ----
 
 <1> Properties can also take a Map as an argument.

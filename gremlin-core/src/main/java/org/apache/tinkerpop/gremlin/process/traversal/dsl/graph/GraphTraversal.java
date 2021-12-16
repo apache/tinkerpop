@@ -166,6 +166,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -2447,6 +2448,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0-incubating
      */
     public default GraphTraversal<S, E> property(final LinkedHashMap<Object, Object> map) {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            property(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
 
     /**
      * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
