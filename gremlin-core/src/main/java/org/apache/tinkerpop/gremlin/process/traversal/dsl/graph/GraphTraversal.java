@@ -2404,7 +2404,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *      target="_blank">AddProperty Step</a>
      * @since 3.6.0-incubating
      */
-    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final LinkedHashMap<Object, Object> map) {
+    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Map<Object, Object> map) {
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             property(cardinality, entry.getKey(), entry.getValue());
         }
@@ -2435,7 +2435,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *      target="_blank">AddProperty Step</a>
      * @since 3.6.0-incubating
      */
-    public default GraphTraversal<S, E> property(final LinkedHashMap<Object, Object> map) {
+    public default GraphTraversal<S, E> property(final Map<Object, Object> map) {
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             property(entry.getKey(), entry.getValue());
         }
