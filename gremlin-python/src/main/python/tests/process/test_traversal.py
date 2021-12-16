@@ -30,8 +30,8 @@ from gremlin_python.process.traversal import Binding, Bindings
 from gremlin_python.process.graph_traversal import __
 
 
-def transactions_enabled():
-    return os.environ['TEST_TRANSACTIONS'] if 'TEST_TRANSACTIONS' in os.environ else False
+def transactions_disabled():
+    return (os.environ['TEST_TRANSACTIONS'] != 'true') if 'TEST_TRANSACTIONS' in os.environ else False
 
 
 class TestTraversal(object):
@@ -135,7 +135,7 @@ class TestTraversal(object):
         except TypeError:
             pass
 
-    @pytest.mark.skipif(not transactions_enabled(), reason="Transactions are not enabled.")
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
     def test_transaction_commit(self, remote_transaction_connection):
         # Start a transaction traversal.
         g = traversal().withRemote(remote_transaction_connection)
@@ -159,7 +159,7 @@ class TestTraversal(object):
         drop_graph_check_count(g)
         verify_gtx_closed(gtx)
 
-    @pytest.mark.skipif(not transactions_enabled(), reason="Transactions are not enabled.")
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
     def test_transaction_rollback(self, remote_transaction_connection):
         # Start a transaction traversal.
         g = traversal().withRemote(remote_transaction_connection)
@@ -183,7 +183,7 @@ class TestTraversal(object):
         drop_graph_check_count(g)
         verify_gtx_closed(gtx)
 
-    @pytest.mark.skipif(not transactions_enabled(), reason="Transactions are not enabled.")
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
     def test_transaction_no_begin(self, remote_transaction_connection):
         # Start a transaction traversal.
         g = traversal().withRemote(remote_transaction_connection)
@@ -235,7 +235,7 @@ class TestTraversal(object):
         tx.rollback()
         assert not tx.isOpen()
 
-    @pytest.mark.skipif(not transactions_enabled(), reason="Transactions are not enabled.")
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
     def test_multi_commit_transaction(self, remote_transaction_connection):
         # Start a transaction traversal.
         g = traversal().withRemote(remote_transaction_connection)
@@ -266,7 +266,7 @@ class TestTraversal(object):
         verify_tx_state([tx1, tx2], False)
         assert g.V().count().next() == start_count + 3
 
-    @pytest.mark.skipif(not transactions_enabled(), reason="Transactions are not enabled.")
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
     def test_multi_rollback_transaction(self, remote_transaction_connection):
         # Start a transaction traversal.
         g = traversal().withRemote(remote_transaction_connection)
@@ -297,7 +297,7 @@ class TestTraversal(object):
         verify_tx_state([tx1, tx2], False)
         assert g.V().count().next() == start_count
 
-    @pytest.mark.skipif(not transactions_enabled(), reason="Transactions are not enabled.")
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
     def test_multi_commit_and_rollback(self, remote_transaction_connection):
         # Start a transaction traversal.
         g = traversal().withRemote(remote_transaction_connection)
