@@ -28,7 +28,7 @@ from gremlin_python.structure.io import graphbinaryV1
 from gremlin_python.structure.io import graphsonV2d0
 from gremlin_python.structure.io import graphsonV3d0
 
-__author__ = 'David M. Brown (davebshow@gmail.com)'
+__author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 class Processor:
@@ -63,6 +63,16 @@ class Session(Processor):
 
     def close(self, args):
         return args
+
+    def bytecode(self, args):
+        gremlin = args['gremlin']
+        args['gremlin'] = self._writer.toDict(gremlin)
+        aliases = args.get('aliases', '')
+        if not aliases:
+            aliases = {'g': 'g'}
+        args['aliases'] = aliases
+        return args
+
 
 class Traversal(Processor):
 
@@ -187,6 +197,7 @@ class GraphBinarySerializersV1(object):
         self._graphbinary_writer = writer
         self.standard = Standard(writer)
         self.traversal = Traversal(writer)
+        self.session = Session(writer)
 
     @property
     def version(self):

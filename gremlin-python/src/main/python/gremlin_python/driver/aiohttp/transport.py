@@ -16,12 +16,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-
 import aiohttp
 import asyncio
 import async_timeout
 from aiohttp import ClientResponseError
+import logging
 
 from gremlin_python.driver.transport import AbstractBaseTransport
 
@@ -57,6 +56,11 @@ class AiohttpTransport(AbstractBaseTransport):
             self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop("max_content_length")
         if "ssl_options" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["ssl"] = self._aiohttp_kwargs.pop("ssl_options")
+
+    def __del__(self):
+        # Close will only actually close if things are left open, so this is safe to call.
+        # Clean up any connection resources and close the event loop.
+        self.close()
 
     def connect(self, url, headers=None):
         # Inner function to perform async connect.
@@ -116,10 +120,13 @@ class AiohttpTransport(AbstractBaseTransport):
     def close(self):
         # Inner function to perform async close.
         async def async_close():
-            if not self._websocket.closed:
+            if self._websocket is not None and not self._websocket.closed:
                 await self._websocket.close()
-            if not self._client_session.closed:
+                self._websocket = None
+
+            if self._client_session is not None and not self._client_session.closed:
                 await self._client_session.close()
+                self._client_session = None
 
         # If the loop is not closed (connection hasn't already been closed)
         if not self._loop.is_closed():

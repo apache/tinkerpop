@@ -16,8 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import logging
+import warnings
 from concurrent.futures import ThreadPoolExecutor
-
 from six.moves import queue
 
 from gremlin_python.driver import connection, protocol, request, serializer
@@ -31,7 +32,7 @@ except ImportError:
     def cpu_count():
         return None
 
-__author__ = 'David M. Brown (davebshow@gmail.com)'
+__author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 class Client:
@@ -39,8 +40,9 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
-                 kerberized_service="", headers=None, session="",
+                 kerberized_service="", headers=None, session=None,
                  **transport_kwargs):
+        logging.info("Creating Client with url '%s'", url)
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -52,7 +54,7 @@ class Client:
         self._username = username
         self._password = password
         self._session = session
-        self._sessionEnabled = (session != "")
+        self._session_enabled = (session is not None and session != "")
         if transport_factory is None:
             try:
                 from gremlin_python.driver.aiohttp.transport import (
@@ -71,7 +73,7 @@ class Client:
                 password=self._password,
                 kerberized_service=kerberized_service)
         self._protocol_factory = protocol_factory
-        if self._sessionEnabled:
+        if self._session_enabled:
             if pool_size is None:
                 pool_size = 1
             elif pool_size != 1:
@@ -107,8 +109,9 @@ class Client:
             self._pool.put_nowait(conn)
 
     def close(self):
-        if self._sessionEnabled:
+        if self._session_enabled:
             self._close_session()
+        logging.info("Closing Client with url '%s'", self._url)
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
@@ -117,7 +120,7 @@ class Client:
     def _close_session(self):
         message = request.RequestMessage(
             processor='session', op='close',
-            args={'session': self._session})
+            args={'session': str(self._session)})
         conn = self._pool.get(True)
         return conn.write(message).result()
 
@@ -129,24 +132,35 @@ class Client:
             headers=self._headers)
 
     def submit(self, message, bindings=None, request_options=None):
-        return self.submitAsync(message, bindings=bindings, request_options=request_options).result()
+        return self.submit_async(message, bindings=bindings, request_options=request_options).result()
 
     def submitAsync(self, message, bindings=None, request_options=None):
+        warnings.warn(
+            "gremlin_python.driver.client.Client.submitAsync will be replaced by "
+            "gremlin_python.driver.client.Client.submit_async.",
+            DeprecationWarning)
+        self.submit_async(message, bindings, request_options)
+
+    def submit_async(self, message, bindings=None, request_options=None):
+        logging.debug("message '%s'", str(message))
+        args = {'gremlin': message, 'aliases': {'g': self._traversal_source}}
+        processor = ''
+        op = 'eval'
         if isinstance(message, traversal.Bytecode):
-            message = request.RequestMessage(
-                processor='traversal', op='bytecode',
-                args={'gremlin': message,
-                      'aliases': {'g': self._traversal_source}})
-        elif isinstance(message, str):
-            message = request.RequestMessage(
-                processor='', op='eval',
-                args={'gremlin': message,
-                      'aliases': {'g': self._traversal_source}})
-            if bindings:
-                message.args.update({'bindings': bindings})
-            if self._sessionEnabled:
-                message = message._replace(processor='session')
-                message.args.update({'session': self._session})
+            op = 'bytecode'
+            processor = 'traversal'
+
+        if isinstance(message, str) and bindings:
+            args['bindings'] = bindings
+
+        if self._session_enabled:
+            args['session'] = str(self._session)
+            processor = 'session'
+
+        if isinstance(message, traversal.Bytecode) or isinstance(message, str):
+            logging.debug("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
+            message = request.RequestMessage(processor=processor, op=op, args=args)
+
         conn = self._pool.get(True)
         if request_options:
             message.args.update(request_options)
