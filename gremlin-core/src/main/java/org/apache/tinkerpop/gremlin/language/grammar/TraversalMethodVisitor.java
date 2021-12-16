@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.function.BiFunction;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
@@ -1151,7 +1151,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public Traversal visitTraversalMethod_property_Cardinality_Object(
-            TraversalMethod_property_Cardinality_ObjectContext ctx) {
+            GremlinParser.TraversalMethod_property_Cardinality_ObjectContext  ctx) {
         return graphTraversal.property(Cardinality.list, new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx.genericLiteralMap()));
     }
 
@@ -1159,8 +1159,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public Traversal visitTraversalMethod_property_Object(TraversalMethod_property_ObjectContext ctx) {
-        return graphTraversal.property(new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx.genericLiteralMap()));
+    public Traversal visitTraversalMethod_property_Object(GremlinParser.TraversalMethod_property_ObjectContext ctx) {
+        return graphTraversal.property((LinkedHashMap<Object, Object>) new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx.genericLiteralMap()));
     }
 
     /**
