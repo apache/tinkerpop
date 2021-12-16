@@ -30,10 +30,7 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton
@@ -269,7 +266,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
-        final HashMap<Object, Object> literalMap = new HashMap<>();
+        final LinkedHashMap<Object, Object> literalMap = new LinkedHashMap<>();
         int childIndex = 1;
         while (childIndex < ctx.getChildCount() && ctx.getChildCount() > 3) {
             Object key = visitGenericLiteral((GremlinParser.GenericLiteralContext) ctx.getChild(childIndex));
