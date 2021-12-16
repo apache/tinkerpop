@@ -702,7 +702,7 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void testTraversalMethod_property_Object() throws Exception {
-        HashMap<Object, Object> map = new HashMap<Object, Object>();
+        final LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
         map.put("key", "foo");
         map.put("key1", "bar");
         compare(g.V().property(map), eval("g.V().property(['key': 'foo', 'key1': 'bar'])"));
@@ -710,10 +710,10 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void testTraversalMethod_property_Cardinality_Object() throws Exception {
-        HashMap<String, String> map = new HashMap<String, String>();
+        final LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
         map.put("key", "foo");
         map.put("key1", "bar");
-        compare(g.V().property(Cardinality.list, map), eval("g.V().property(list, {'key': 'foo', 'key1': 'bar'})"));
+        compare(g.V().property(Cardinality.list, map), eval("g.V().property(list, ['key': 'foo', 'key1': 'bar'])"));
     }
 
     @Test
