@@ -709,7 +709,7 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void testTraversalMethod_property_Cardinality_Object() throws Exception {
-        LinkedHashMap<Object, Object> map = new LinkedHashMap<Object, Object>();
+        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
         map.put("key", "foo");
         map.put("key1", "bar");
         compare(g.V().property(Cardinality.list, map), eval("g.V().property(list, ['key': 'foo', 'key1': 'bar'])"));
