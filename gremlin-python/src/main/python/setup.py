@@ -46,7 +46,7 @@ version = __version__.version
 
 install_requires = [
     'nest_asyncio',
-    'aiohttp>=3.7.0,<=3.7.4',
+    'aiohttp>=3.8.0,<=3.8.1',
     'aenum>=1.4.5,<3.0.0',
     'six>=1.10.0,<2.0.0',
     'isodate>=0.6.0,<1.0.0'
