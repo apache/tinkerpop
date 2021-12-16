@@ -164,6 +164,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -2401,6 +2402,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0-incubating
      */
     public default GraphTraversal<S, E> property(final LinkedHashMap<Object, Object> map) {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            property(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
 
     ///////////////////// BRANCH STEPS /////////////////////
 
@@ -2411,7 +2417,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the {@link Traversal} with the {@link BranchStep} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      * @since 3.0.0-incubating
-     */
+     * */
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.branch, branchTraversal);
         final BranchStep<E, E2, M> branchStep = new BranchStep<>(this.asAdmin());
