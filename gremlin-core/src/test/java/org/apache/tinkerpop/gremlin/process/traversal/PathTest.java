@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -527,6 +529,24 @@ public class PathTest {
             assertEquals(2, subPath.labels().get(1).size());
             assertTrue(subPath.labels().get(2).contains("c"));
             assertEquals(1, subPath.labels().get(2).size());
+        });
+    }
+
+    @Test
+    public void shouldHandleNullSemanticsCorrectly() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            final Path p = supplier.get();
+            assertThat(p.isSimple(), is(true));
+            p.extend(null, Collections.emptySet());
+            assertThat(p.isSimple(), is(true));
+            p.extend(1, Collections.emptySet());
+            assertThat(p.isSimple(), is(true));
+            p.extend(null, Collections.emptySet());
+
+            // immutable path won't change so its just going to always be empty and thus always simple
+            if (!(p instanceof ImmutablePath)) {
+                assertThat(p.isSimple(), is(false));
+            }
         });
     }
 }

@@ -1083,4 +1083,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_TEMPORARY, ((ResponseException) t).getResponseStatusCode());
         }
     }
+
+    @Test
+    public void shouldGenerateFailureErrorResponseStatusCode() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("g.inject(0).fail('make it stop')").all().get();
+            fail("Should have tanked since we used fail() step");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals("make it stop", t.getMessage());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_FAIL_STEP, ((ResponseException) t).getResponseStatusCode());
+        }
+    }
 }

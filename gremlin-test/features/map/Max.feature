@@ -71,11 +71,33 @@ Feature: Step - max()
       | result |
       | d[35].i |
 
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_maxXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("age").cap("a").max(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[35].i |
+
   Scenario: g_V_aggregateXaX_byXageX_capXaX_unfold_max
     Given the modern graph
     And the traversal of
       """
       g.V().aggregate("a").by("age").cap("a").unfold().max()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[35].i |
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_unfold_max
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("age").cap("a").unfold().max()
       """
     When iterated to list
     Then the result should be unordered
@@ -89,6 +111,15 @@ Feature: Step - max()
       g.V().aggregate("a").by("foo").cap("a").max(Scope.local)
       """
     When iterated to list
+    Then the result should be empty
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_maxXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("foo").cap("a").max(Scope.local)
+      """
+    When iterated to list
     Then the result should be unordered
       | result |
       | null |
@@ -98,6 +129,15 @@ Feature: Step - max()
     And the traversal of
       """
       g.V().aggregate("a").by("foo").cap("a").unfold().max()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_unfold_max
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("foo").cap("a").unfold().max()
       """
     When iterated to list
     Then the result should be unordered

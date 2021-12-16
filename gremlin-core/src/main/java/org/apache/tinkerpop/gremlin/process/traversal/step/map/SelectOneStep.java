@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -59,7 +60,11 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
         try {
             final S o = getScopeValue(pop, selectKey, traverser);
             if (null == o) return traverser.split(null, this);
-            final Traverser.Admin<E> outTraverser = traverser.split(TraversalUtil.applyNullable(o, this.selectTraversal), this);
+
+            final TraversalProduct product = TraversalUtil.produce(o, this.selectTraversal);
+            if (!product.isProductive()) return EmptyTraverser.instance();
+
+            final Traverser.Admin<E> outTraverser = traverser.split((E) product.get(), this);
             if (!(this.getTraversal().getParent() instanceof MatchStep))
                 PathProcessor.processTraverserPathLabels(outTraverser, this.keepLabels);
             return outTraverser;

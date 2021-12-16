@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -198,8 +199,7 @@ public interface Path extends Cloneable, Iterable<Object> {
     public Path clone();
 
     /**
-     * Determines whether the path is a simple or not.
-     * A simple path has no cycles and thus, no repeated objects.
+     * Determines whether the path is a simple or not. A simple path has no cycles and thus, no repeated objects.
      *
      * @return Whether the path is simple or not
      */
@@ -207,7 +207,7 @@ public interface Path extends Cloneable, Iterable<Object> {
         final List<Object> objects = this.objects();
         for (int i = 0; i < objects.size() - 1; i++) {
             for (int j = i + 1; j < objects.size(); j++) {
-                if (objects.get(i).equals(objects.get(j)))
+                if (Objects.equals(objects.get(i), objects.get(j)))
                     return false;
             }
         }

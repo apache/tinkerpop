@@ -150,11 +150,10 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_descX_barrier_dedup_age_name();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
-        assertEquals(5, names.size());
+        assertEquals(4, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("vadas"));
         assertTrue(names.contains("josh"));
-        assertTrue(names.contains("ripple"));
         assertTrue(names.contains("peter"));
         assertFalse(traversal.hasNext());
     }

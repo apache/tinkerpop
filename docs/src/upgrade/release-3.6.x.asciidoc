@@ -27,6 +27,369 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Consistent by() Behavior
+
+The `by()` modulator is critical to the usage of Gremlin. When used in conjunction with a step that supports it, the
+arguments to the `by()` modulator shift the behavior of the internals of the step.  The behavior that `by()` introduces
+has not always been consistent with some overloads establishing `null` traversers, others throwing exceptions that are
+hard to digest, some filtering, etc.
+
+In 3.6.0, the rules for the `by()` modulator are made straightforward. If the `by()` produces a result then it is
+said to be "productive" and its value is propagated to the step for use. If the `by()` does not produce a result then
+the traverser to which it was to be applied is filtered.
+
+The following sections demonstrate the behavior in 3.5.x alongside the new 3.6.0 behavior:
+
+*aggregate()*
+
+[source,text]
+----
+gremlin> g.V().aggregate('a').by('age').cap('a') // 3.5.x
+==>[29,27,null,null,32,35]
+gremlin> g.V().aggregate('a').by('age').cap('a') // 3.6.0
+==>[29,27,32,35]
+gremlin> g.V().aggregate('a').by(__.values('age')).cap('a') // 3.6.0
+==>[29,27,32,35]
+gremlin> g.V().aggregate('a').by(out()).cap('a') // 3.5.x
+The provided traverser does not map to a value: v[2]->[VertexStep(OUT,vertex)]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().aggregate('a').by(out()).cap('a') // 3.6.0
+==>[v[3],v[3],v[5]]
+gremlin> g.V().aggregate('a').by('age') // same for 3.5.x and future
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+----
+
+*cyclicPath()*
+
+[source,text]
+----
+gremlin> g.V().has('person','name','marko').both().both().cyclicPath().by('age') // 3.5.x
+==>v[1]
+java.lang.NullPointerException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().has('person','name','marko').both().both().cyclicPath().by('age') // 3.6.0
+==>v[1]
+==>v[1]
+----
+
+*dedup()*
+
+[source,text]
+----
+gremlin> g.V().both().dedup().by('age').elementMap() // 3.5.x
+==>[id:3,label:software,name:lop,lang:java]
+==>[id:2,label:person,name:vadas,age:27]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:6,label:person,name:peter,age:35]
+gremlin> g.V().both().dedup().by('age').elementMap() // 3.6.0
+==>[id:2,label:person,name:vadas,age:27]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:6,label:person,name:peter,age:35]
+----
+
+When using `dedup()` over labels all labels must produce or the path will be filtered:
+
+[source,text]
+----
+gremlin> g.V().as('a').both().as('b').both().as('c').dedup('a','b').by('age').select('a','b','c').by('name')  // 3.5.x
+The provided start does not map to a value: v[3]->value(age)
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().as('a').both().as('b').both().as('c').dedup('a','b').by('age').select('a','b','c').by('name') // 3.6.0
+==>[a:marko,b:vadas,c:marko]
+==>[a:marko,b:josh,c:ripple]
+==>[a:vadas,b:marko,c:lop]
+==>[a:josh,b:marko,c:lop]
+----
+
+*group()*
+
+There are two `by()` modulators that can be assigned to `group()``. The first modulator is meant to identify the key to
+group on and will filter values without that key out of the resulting `Map`.
+
+[source,text]
+----
+gremlin> g.V().group().by('age').by('name') // 3.5.x
+==>[null:[lop,ripple],32:[josh],35:[peter],27:[vadas],29:[marko]]
+gremlin> g.V().group().by('age').by('name') // 3.6.0
+==>[32:[josh],35:[peter],27:[vadas],29:[marko]]
+----
+
+The second `by()`` is applied to the result as a reducing operation and will filter away entries in the `List` value of
+each key.
+
+[source,text]
+----
+gremlin> g.V().group().by('name').by('age') // 3.5.x
+==>[ripple:[null],peter:[35],vadas:[27],josh:[32],lop:[null],marko:[29]]
+gremlin> g.V().group().by('name').by('age') // 3.6.0
+==>[ripple:[],peter:[35],vadas:[27],josh:[32],lop:[],marko:[29]]
+----
+
+*groupCount()*
+
+[source,text]
+----
+gremlin> g.V().groupCount().by('age') // 3.5.x
+==>[null:2,32:1,35:1,27:1,29:1]
+gremlin> g.V().groupCount().by('age') // 3.6.0
+==>[32:1,35:1,27:1,29:1]
+----
+
+*math()*
+
+The `math()`` step requires that the result of the `by()`` be a `Number`, so a result of `null` will still result in a
+runtime exception. Filtering will eliminate such errors, though a runtime error may still be present should the
+modulator produce a non-numeric value.
+
+[source,text]
+----
+gremlin> g.V().math('_+1').by('age') // 3.5.x
+==>30.0
+==>28.0
+The variable _ for math() step must resolve to a Number - it is instead of type null with value null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().math('_+1').by('age') // 3.6.0
+==>30.0
+==>28.0
+==>33.0
+==>36.0
+----
+
+*order()*
+
+[source,text]
+----
+gremlin> g.V().both().order().by('age').elementMap() // 3.5.x
+==>[id:3,label:software,name:lop,lang:java]
+==>[id:3,label:software,name:lop,lang:java]
+==>[id:3,label:software,name:lop,lang:java]
+==>[id:5,label:software,name:ripple,lang:java]
+==>[id:2,label:person,name:vadas,age:27]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:6,label:person,name:peter,age:35]
+gremlin> g.V().both().order().by('age').elementMap() // 3.6.0
+==>[id:2,label:person,name:vadas,age:27]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:4,label:person,name:josh,age:32]
+==>[id:6,label:person,name:peter,age:35]
+----
+
+*path()*
+
+All `by()` modulators must be productive for the filter to be satisfied.
+
+[source,text]
+----
+gremlin> g.V().both().path().by('age') // 3.5.x
+==>[29,null]
+==>[29,27]
+==>[29,32]
+==>[27,29]
+==>[null,29]
+==>[null,32]
+==>[null,35]
+==>[32,null]
+==>[32,null]
+==>[32,29]
+==>[null,32]
+==>[35,null]
+gremlin> g.V().both().path().by('age') // 3.6.0
+==>[29,27]
+==>[29,32]
+==>[27,29]
+==>[32,29]
+----
+
+*project()*
+
+The `project()` step will produce an incomplete `Map` by filtering away keys of unproductive `by()` modulators.
+
+[source,text]
+----
+gremlin> g.V().project('n','a').by('name').by('age') // 3.5.x
+==>[n:marko,a:29]
+==>[n:vadas,a:27]
+==>[n:lop,a:null]
+==>[n:josh,a:32]
+==>[n:ripple,a:null]
+==>[n:peter,a:35]
+gremlin> g.V().project('n','a').by('name').by('age') // 3.6.0
+==>[n:marko,a:29]
+==>[n:vadas,a:27]
+==>[n:lop]
+==>[n:josh,a:32]
+==>[n:ripple]
+==>[n:peter,a:35]
+----
+
+*propertyMap()*
+
+[source,text]
+----
+gremlin> g.V().propertyMap().by(is('x')) // 3.5.x
+The provided start does not map to a value: [vp[name→marko]]→[IsStep(eq(x))]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().propertyMap().by(is('x')) // 3.6.0
+==>[name:[],age:[]]
+==>[name:[],age:[]]
+==>[name:[],lang:[]]
+==>[name:[],age:[]]
+==>[name:[],lang:[]]
+==>[name:[],age:[]]
+----
+
+*sack()*
+
+[source,text]
+----
+gremlin> g.V().sack(assign).by('age').sack() // 3.5.x
+==>29
+==>27
+==>null
+==>32
+==>null
+==>35
+gremlin> g.V().sack(assign).by('age').sack() // 3.6.0
+==>29
+==>27
+==>32
+==>35
+----
+
+*sample()*
+
+[source,text]
+----
+gremlin> g.V().both().sample(2).by('age') // 3.5.x
+java.lang.NullPointerException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().both().sample(2).by('age') // 3.6.0
+==>v[1]
+==>v[4]
+----
+
+*select()*
+
+All `by()` modulators must be productive for the filter to be satisfied.
+
+[source,text]
+----
+gremlin> g.V().has('person','name','marko').as('a').both().as('b').select('a','b').by('age') // 3.5.x
+==>[a:29,b:null]
+==>[a:29,b:27]
+==>[a:29,b:32]
+gremlin> g.V().has('person','name','marko').as('a').both().as('b').select('a','b').by('age') // 3.6.0
+==>[a:29,b:27]
+==>[a:29,b:32]
+----
+
+*simplePath()*
+
+[source,text]
+----
+gremlin> g.V().has('person','name','marko').both().both().simplePath().by('age') // 3.5.x
+java.lang.NullPointerException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().has('person','name','marko').both().both().simplePath().by('age') // 3.6.0
+gremlin>
+----
+
+*tree()*
+
+All `by()` modulators must be productive for the filter to be satisfied.
+
+[source,text]
+----
+gremlin> g.V().out().tree().by('age') // 3.5.x
+==>[32:[null:[]],35:[null:[]],29:[null:[],32:[],27:[]]]
+gremlin> g.V().out().tree().by('age') // 3.6.0
+==>[32:[],35:[],29:[32:[],27:[]]]
+----
+
+*valueMap()*
+
+[source,text]
+----
+gremlin> g.V().valueMap().by(is('x')) // 3.5.x
+The provided start does not map to a value: [marko]→[IsStep(eq(x))]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().valueMap().by(is('x')) // 3.6.0
+==>[name:[],age:[]]
+==>[name:[],age:[]]
+==>[name:[],lang:[]]
+==>[name:[],age:[]]
+==>[name:[],lang:[]]
+==>[name:[],age:[]]
+----
+
+*where()*
+
+[source,text]
+----
+gremlin> g.V().as('a').both().both().as('b').where('a',eq('b')).by('age') // 3.5.x
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[5]
+==>v[3]
+==>v[3]
+==>v[4]
+==>v[4]
+==>v[4]
+==>v[5]
+==>v[3]
+==>v[6]
+gremlin> g.V().as('a').both().both().as('b').where('a',eq('b')).by('age') // 3.6.0
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[2]
+==>v[4]
+==>v[4]
+==>v[4]
+==>v[6]
+----
+
+For the most part, this change largely removes runtime exceptions and since most uses cases are not likely to rely
+on those for query execution, existing code should not be broken by this upgrade. However, users who relied on 3.5.x
+behavior where `by()` might propagate a `null` would however see a behavioral change. To temporarily restore the old
+behavior, simply include `g.withStrategies(ProductiveByStrategy)` in the traversal configuration, which will force the
+`null` to be produced. Ultimately, it would be best not to rely on this strategy in the long term however and convert
+Gremlin that requires it to behave properly without it.
+
+For example, if in 3.5.x there was a traversal like `g.V().group().by('age')` and "age" is known to not always be a
+valid key, the appropriate change would be to propagate `null` explicitly as with:
+`g.V().group().by(coalesce(values('age'), constant(null)))`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635]
+
+
 ==== gremlin-annotations
 
 There is a new module called `gremlin-annotations` and it holds the annotations used to construct
@@ -47,7 +410,28 @@ It is worth noting that `gremlin-groovy` utilized the DSL annotations to constru
 link:https://tinkerpop.apache.org/docs/3.6.0/reference/#credentials-dsl[Credentials DSL] so the `gremlin-annotations`
 package is now explicitly associated to `gremlin-groovy` but as an `<optional>` dependency.
 
-See:link:https://issues.apache.org/jira/browse/TINKERPOP-2411[TINKERPOP-2411]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2411[TINKERPOP-2411]
+
+==== fail() Step
+
+The new `fail()` step provides a way to immediately terminate a traversal with a runtime exception. In the Gremlin
+Console, the exception will be rendered as follows which helps provide some context to the failure:
+
+[source,text]
+----
+gremlin> g.V().fail("nope!")
+fail() Step Triggered
+=====================
+Message > nope!
+Traverser> v[1]
+  Bulk   > 1
+Traversal> V().fail()
+Metadata > {}
+=====================
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635],
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#fail-step[Reference Documentation]
 
 ==== Null for T
 

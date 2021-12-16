@@ -310,12 +310,69 @@ Feature: Step - order()
       | v[josh]   |
       | v[peter] |
 
-  # tests order().by() where a property isn't present to ensure null comes first
+  Scenario: g_V_order_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by("age")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[vadas] |
+      | v[marko] |
+      | v[josh]   |
+      | v[peter] |
+
+  Scenario: g_V_fold_orderXlocalX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().fold().order(local).by("age")
+      """
+    When iterated next
+    Then the result should be ordered
+      | result |
+      | v[vadas] |
+      | v[marko] |
+      | v[josh]   |
+      | v[peter] |
+
+
+  Scenario: g_V_fold_orderXlocalX_byXage_descX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().fold().order(local).by("age", desc)
+      """
+    When iterated next
+    Then the result should be ordered
+      | result |
+      | v[peter] |
+      | v[josh] |
+      | v[marko] |
+      | v[vadas] |
+
   Scenario: g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX
     Given the modern graph
     And the traversal of
       """
       g.V().or(hasLabel("person"),has("software","name","lop")).order().by("age")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[vadas] |
+      | v[marko] |
+      | v[josh]   |
+      | v[peter] |
+
+  # tests order().by() where a property isn't present to ensure null comes first
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().or(hasLabel("person"),has("software","name","lop")).order().by("age")
       """
     When iterated to list
     Then the result should be ordered
@@ -527,3 +584,18 @@ Feature: Step - order()
       | m[{"t[label]":"person"}] |
       | m[{"t[id]":"v[marko].id"}] |
       | m[{"age":29}] |
+
+  Scenario: g_VX1X_elementMap_orderXlocalX_byXkeys_ascXunfold
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).elementMap().order(Scope.local).by(Column.keys, Order.asc).unfold()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | m[{"age":29}] |
+      | m[{"t[id]":"v[marko].id"}] |
+      | m[{"t[label]":"person"}] |
+      | m[{"name":"marko"}] |

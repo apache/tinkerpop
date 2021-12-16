@@ -27,9 +27,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
@@ -64,13 +68,32 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
     public void g_V_projectXa_bX_byXinE_countX_byXageX() {
         final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_projectXa_bX_byXinE_countX_byXageX();
         printTraversalForm(traversal);
-        checkResults(makeMapList(2,
-                "a", 3l, "b", null,
-                "a", 1L, "b", null,
-                "a", 0L, "b", 29,
-                "a", 1L, "b", 27,
-                "a", 1L, "b", 32,
-                "a", 0L, "b", 35), traversal);
+
+        final List<Map<String, Number>> a = new ArrayList<>();
+        a.add(new HashMap<String,Number>() {{
+            put("a", 3L);
+        }});
+        a.add(new HashMap<String,Number>() {{
+            put("a", 1L);
+        }});
+        a.add(new HashMap<String,Number>() {{
+            put("a", 0L);
+            put("b", 29);
+        }});
+        a.add(new HashMap<String,Number>() {{
+            put("a", 1L);
+            put("b", 27);
+        }});
+        a.add(new HashMap<String,Number>() {{
+            put("a", 1L);
+            put("b", 32);
+        }});
+        a.add(new HashMap<String,Number>() {{
+            put("a", 0L);
+            put("b", 35);
+        }});
+
+        checkResults(a, traversal);
     }
 
     @Test

@@ -53,6 +53,7 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
@@ -81,6 +82,7 @@ public final class StepDefinition {
     private final Map<String, String> stringParameters = new HashMap<>();
     private Traversal traversal;
     private Object result;
+    private Throwable error;
     private static final Pattern edgeTripletPattern = Pattern.compile("(.+)-(.+)->(.+)");
     private static final Pattern ioPattern = Pattern.compile("g\\.io\\(\"(.*)\"\\).*");
     private List<Pair<Pattern, Function<String,String>>> stringMatcherConverters = new ArrayList<Pair<Pattern, Function<String,String>>>() {{
@@ -204,6 +206,7 @@ public final class StepDefinition {
         }
 
         if (result != null) result = null;
+        if (error != null) error = null;
     }
 
     @After
@@ -243,16 +246,26 @@ public final class StepDefinition {
 
     @When("iterated to list")
     public void iteratedToList() {
-        result = traversal.toList();
+        try {
+            result = traversal.toList();
+        } catch (Exception ex) {
+            error = ex;
+        }
     }
 
     @When("iterated next")
     public void iteratedNext() {
-        result = traversal.next();
+        try {
+            result = traversal.next();
+        } catch (Exception ex) {
+            error = ex;
+        }
     }
 
     @Then("the result should be unordered")
     public void theResultShouldBeUnordered(final DataTable dataTable) {
+        assertThatNoErrorWasThrown();
+
         final List<Object> actual = translateResultsToActual();
 
         // account for header in dataTable size
@@ -265,6 +278,8 @@ public final class StepDefinition {
 
     @Then("the result should be ordered")
     public void theResultShouldBeOrdered(final DataTable dataTable) {
+        assertThatNoErrorWasThrown();
+
         final List<Object> actual = translateResultsToActual();
 
         // account for header in dataTable size
@@ -277,6 +292,9 @@ public final class StepDefinition {
 
     @Then("the result should be of")
     public void theResultShouldBeOf(final DataTable dataTable) {
+        assertThatNoErrorWasThrown();
+
+
         final List<Object> actual = translateResultsToActual();
 
         // skip the header in the dataTable
@@ -286,6 +304,8 @@ public final class StepDefinition {
 
     @Then("the result should have a count of {int}")
     public void theResultShouldHaveACountOf(final Integer val) {
+        assertThatNoErrorWasThrown();
+
         if (result instanceof Iterable)
             assertEquals(val.intValue(), IteratorUtils.count((Iterable) result));
         else if (result instanceof Map)
@@ -296,13 +316,25 @@ public final class StepDefinition {
 
     @Then("the graph should return {int} for count of {string}")
     public void theGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
+        assertThatNoErrorWasThrown();
+
         assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
     }
 
     @Then("the result should be empty")
     public void theResultShouldBeEmpty() {
+        assertThatNoErrorWasThrown();
+
         assertThat(result, instanceOf(Collection.class));
         assertEquals(0, IteratorUtils.count((Collection) result));
+    }
+
+    @Then("the traversal will raise an error")
+    public void theTraversalWillRaiseAnError() {
+        assertNotNull(error);
+
+        // consume the error now that it has been asserted
+        error = null;
     }
 
     //////////////////////////////////////////////
@@ -318,6 +350,10 @@ public final class StepDefinition {
     }
 
     //////////////////////////////////////////////
+
+    private void assertThatNoErrorWasThrown() {
+        if (error != null) throw new RuntimeException(error);
+    }
 
     private Traversal parseGremlin(final String script) {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));

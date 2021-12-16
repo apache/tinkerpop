@@ -95,8 +95,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
             assertTrue(path.get(1) == null || path.get(1).equals(27) || path.get(1).equals(32));
             ages.add(path.get(1));
         }
-        assertEquals(3, counter);
-        assertEquals(3, ages.size());
+        assertEquals(2, counter);
+        assertEquals(2, ages.size());
     }
 
     @Test

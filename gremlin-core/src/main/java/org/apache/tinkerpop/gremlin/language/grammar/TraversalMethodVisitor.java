@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.Map;
 import java.util.function.BiFunction;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
@@ -447,6 +448,22 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_emit_Traversal(final GremlinParser.TraversalMethod_emit_TraversalContext ctx) {
         return this.graphTraversal.emit(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_fail_Empty(final GremlinParser.TraversalMethod_fail_EmptyContext ctx) {
+        return this.graphTraversal.fail();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_fail_String(final GremlinParser.TraversalMethod_fail_StringContext ctx) {
+        return this.graphTraversal.fail(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
     }
 
     /**

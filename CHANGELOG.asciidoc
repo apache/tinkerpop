@@ -25,6 +25,8 @@ limitations under the License.
 
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
+* Added `fail()` step.
+* Improved Gherkin test framework to allow for asserting traversal exceptions as a behavior.
 * Fixed query indentation for profile metrics where indent levels were not being respected.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 * Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
@@ -38,6 +40,8 @@ limitations under the License.
 * Changed mechanism for determining if `id` equality with `toString()` is used by validating that elements of the predicate collection are all `String` rather than enforcing homogenous collections in the process.
 * Exposed Gherkin tests as part of the provider test suite.
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
+* Removed `ProductiveByStrategy` as a strategy that is applied by default.
+* Changed `by()` modulator semantics to consistently filter.
 * Removed previously deprecated `application/vnd.gremlin-v1.0+gryo-lite` serialization format.
 * Removed previously deprecated `AuthenticationSettings.enableAuditLog`.
 * Removed previously deprecated `GroovyTranslator` from `gremlin-groovy` module.

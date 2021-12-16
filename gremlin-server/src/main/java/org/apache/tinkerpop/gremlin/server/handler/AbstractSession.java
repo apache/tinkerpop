@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -278,14 +279,20 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     protected void handleException(final SessionTask sessionTask, final Throwable t) throws SessionException {
         if (t instanceof SessionException) throw (SessionException) t;
 
-        final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
-        if (possibleTemporaryException.isPresent()) {
-            final Throwable temporaryException = possibleTemporaryException.get();
-            throw new SessionException(temporaryException.getMessage(), t,
-                    ResponseMessage.build(sessionTask.getRequestMessage())
-                            .code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
-                            .statusMessage(temporaryException.getMessage())
-                            .statusAttributeException(temporaryException).create());
+        final Optional<Throwable> possibleSpecialException = determineIfSpecialException(t);
+        if (possibleSpecialException.isPresent()) {
+            final Throwable special = possibleSpecialException.get();
+            final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(sessionTask.getRequestMessage()).
+                    statusMessage(special.getMessage()).
+                    statusAttributeException(special);
+            if (special instanceof TemporaryException) {
+                specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_TEMPORARY);
+            } else if (special instanceof Failure) {
+                final Failure failure = (Failure) special;
+                specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
+                        statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
+            }
+            throw new SessionException(special.getMessage(), specialResponseMsg.create());
         }
 
         final Throwable root = ExceptionUtils.getRootCause(t);
@@ -373,12 +380,12 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     }
 
     /**
-     * Check if any exception in the chain is TemporaryException then we should respond with the right error code so
-     * that the client knows to retry.
+     * Check if any exception in the chain is {@link TemporaryException} or {@link Failure} then respond with the
+     * right error code so that the client knows to retry.
      */
-    protected Optional<Throwable> determineIfTemporaryException(final Throwable ex) {
+    protected static Optional<Throwable> determineIfSpecialException(final Throwable ex) {
         return Stream.of(ExceptionUtils.getThrowables(ex)).
-                filter(i -> i instanceof TemporaryException).findFirst();
+                filter(i -> i instanceof TemporaryException || i instanceof Failure).findFirst();
     }
 
     /**

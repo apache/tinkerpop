@@ -91,7 +91,6 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_meanXlocalX() {
         final Traversal<Vertex, Double> traversal = get_g_V_aggregateXaX_byXfooX_meanXlocalX();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -100,7 +99,6 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_capXaX_unfold_mean() {
         final Traversal<Vertex, Double> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_mean();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 

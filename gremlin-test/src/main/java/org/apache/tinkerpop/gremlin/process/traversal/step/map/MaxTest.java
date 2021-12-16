@@ -105,7 +105,6 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_capXaX_maxXlocalX() {
         final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_maxXlocalX();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -114,7 +113,6 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
     public void g_V_aggregateXaX_byXfooX_capXaX_unfold_max() {
         final Traversal<Vertex, Comparable> traversal = get_g_V_aggregateXaX_byXfooX_capXaX_unfold_max();
         printTraversalForm(traversal);
-        assertNull(traversal.next());
         assertFalse(traversal.hasNext());
     }
 

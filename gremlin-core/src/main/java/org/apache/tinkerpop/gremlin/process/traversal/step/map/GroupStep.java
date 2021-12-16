@@ -124,11 +124,15 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>>
             resetBarrierForProfiling = false;
         }
 
-        if (null == this.barrierStep) {
-            if (this.valueTraversal.hasNext())
-                map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.valueTraversal.next());
-        } else if (this.barrierStep.hasNextBarrier())
-            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.barrierStep.nextBarrier());
+        TraversalUtil.produce(traverser, this.keyTraversal).ifProductive(p -> {
+            if (null == this.barrierStep) {
+                if (this.valueTraversal.hasNext()) {
+                    map.put((K) p, (V) this.valueTraversal.next());
+                }
+            } else if (this.barrierStep.hasNextBarrier())
+                map.put((K) p, (V) this.barrierStep.nextBarrier());
+        });
+
         return map;
     }
 

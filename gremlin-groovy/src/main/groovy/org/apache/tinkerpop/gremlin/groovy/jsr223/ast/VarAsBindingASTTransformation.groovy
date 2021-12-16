@@ -115,6 +115,9 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                                 case GraphTraversal.Symbols.by:
                                     if (i == 1) bindingValue = new PropertyExpression(new ClassExpression(new ClassNode(Order)), "desc")
                                     break
+                                case GraphTraversal.Symbols.fail:
+                                    if (i == 1) bindingValue = new MethodCallExpression(new ClassExpression(new ClassNode(Collections)), "emptyMap", new TupleExpression())
+                                    break
                             }
                             def bindingExpression = createBindingFromVar(entry.text, bindingVariableName, bindingValue)
                             bindingExpression.sourcePosition = entry

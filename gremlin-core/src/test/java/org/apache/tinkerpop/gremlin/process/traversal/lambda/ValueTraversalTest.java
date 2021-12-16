@@ -52,6 +52,16 @@ public class ValueTraversalTest {
     }
 
     @Test
+    public void shouldClone() {
+        final ValueTraversal<Object, Object> t1 = new ValueTraversal<>("age");
+        t1.setBypassTraversal(__.coalesce(__.values("age"), __.constant(null)).asAdmin());
+        final ValueTraversal<Object, Object> t2 = (ValueTraversal) t1.clone();
+        assertEquals(t1, t2);
+        assertEquals(t1.getPropertyKey(), t2.getPropertyKey());
+        assertEquals(t1.getBypassTraversal(), t2.getBypassTraversal());
+    }
+
+    @Test
     public void shouldNotHaveSameHashCode() {
         final ValueTraversal<Vertex, Integer> t1 = new ValueTraversal<>("age");
         final ValueTraversal<Vertex, Integer> t2 = new ValueTraversal<>("name");

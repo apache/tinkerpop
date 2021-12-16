@@ -82,11 +82,35 @@ Feature: Step - mean()
       | d[30.75].d |
 
   # null values are ignored in mean() which is similar to sum aggregation works in SQL
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_meanXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("age").cap("a").mean(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[30.75].d |
+
+  # null values are ignored in mean() which is similar to sum aggregation works in SQL
   Scenario: g_V_aggregateXaX_byXageX_capXaX_unfold_mean
     Given the modern graph
     And the traversal of
       """
       g.V().aggregate("a").by("age").cap("a").unfold().mean()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[30.75].d |
+
+  # null values are ignored in mean() which is similar to sum aggregation works in SQL
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_unfold_mean
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("age").cap("a").unfold().mean()
       """
     When iterated to list
     Then the result should be unordered
@@ -101,6 +125,16 @@ Feature: Step - mean()
       g.V().aggregate("a").by("foo").cap("a").mean(Scope.local)
       """
     When iterated to list
+    Then the result should be empty
+
+  # if all values are null then the result is null
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_meanXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("foo").cap("a").mean(Scope.local)
+      """
+    When iterated to list
     Then the result should be unordered
       | result |
       | null |
@@ -111,6 +145,16 @@ Feature: Step - mean()
     And the traversal of
       """
       g.V().aggregate("a").by("foo").cap("a").unfold().mean()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # if all values are null then the result is null
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_unfold_mean
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("a").by("foo").cap("a").unfold().mean()
       """
     When iterated to list
     Then the result should be unordered

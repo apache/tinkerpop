@@ -52,6 +52,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id);
 
+    public abstract Traversal<Vertex, Tree> get_g_V_out_tree_byXageX();
+
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_out_tree();
@@ -62,6 +64,25 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Tree> traversal = get_g_VX1X_out_out_tree_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertCommonA(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_out_tree_byXageX() {
+        final Traversal<Vertex, Tree> traversal = get_g_V_out_tree_byXageX();
+        printTraversalForm(traversal);
+
+        final Tree tree = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(3, tree.size());
+        assertTrue(tree.containsKey(29));
+        assertEquals(2, ((Map) tree.get(29)).size());
+        assertTrue(((Map) tree.get(29)).containsKey(32));
+        assertTrue(((Map) tree.get(29)).containsKey(27));
+        assertTrue(tree.containsKey(35));
+        assertEquals(0, ((Map) tree.get(35)).size());
+        assertTrue(tree.containsKey(32));
+        assertEquals(0, ((Map) tree.get(32)).size());
     }
 
     @Test
@@ -151,6 +172,10 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             return g.V(v1Id).out().out().tree().by("name");
+        }
+
+        public Traversal<Vertex, Tree> get_g_V_out_tree_byXageX() {
+            return g.V().out().tree().by("age");
         }
 
         @Override

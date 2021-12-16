@@ -33,7 +33,9 @@ import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.6.0, not replaced.
  */
+@Deprecated
 public final class ChainedComparator<S, C extends Comparable> implements Comparator<S>, Serializable, Cloneable {
 
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();

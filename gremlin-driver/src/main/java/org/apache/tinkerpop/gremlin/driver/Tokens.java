@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -96,8 +97,22 @@ public final class Tokens {
 
     public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
 
+    /**
+     * The value of this key holds a string representation of the data held by a {@link Failure} as produced by
+     * {@link Failure#format()}.
+     */
+    public static final String STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE = "failStepMessage";
+
+    /**
+     * Refers to the hierarchy of exception names for a particular exception thrown on the server.
+     */
     public static final String STATUS_ATTRIBUTE_EXCEPTIONS = "exceptions";
+
+    /**
+     * Refers to the stacktrace for an exception thrown on the server
+     */
     public static final String STATUS_ATTRIBUTE_STACK_TRACE = "stackTrace";
+
     /**
      * A {@link ResultSet#statusAttributes()} key for user-facing warnings.
      * <p>

@@ -253,6 +253,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("emit", *args)
         return self
 
+    def fail(self, *args):
+        self.bytecode.add_step("fail", *args)
+        return self
+
     def filter_(self, *args):
         self.bytecode.add_step("filter", *args)
         return self
@@ -679,6 +683,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).emit(*args)
 
     @classmethod
+    def fail(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).fail(*args)
+
+    @classmethod
     def filter_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).filter_(*args)
 
@@ -1039,6 +1047,10 @@ def emit(*args):
     return __.emit(*args)
 
 
+def fail(*args):
+    return __.fail(*args)
+
+
 def filter_(*args):
     return __.filter_(*args)
 
@@ -1354,6 +1366,8 @@ statics.add_static('drop', drop)
 statics.add_static('elementMap', elementMap)
 
 statics.add_static('emit', emit)
+
+statics.add_static('fail', fail)
 
 statics.add_static('filter_', filter_)
 

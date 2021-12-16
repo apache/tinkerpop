@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver.message;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Failure;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -112,6 +115,14 @@ public enum ResponseStatusCode {
      * @since 3.0.0-incubating
      */
     SERVER_ERROR(500),
+
+    /**
+     * A server error that is produced when the {@link GraphTraversal#fail()} step is triggered. The returned exception
+     * will include information consistent with the {@link Failure} interface.
+     *
+     * @since 3.6.0
+     */
+    SERVER_ERROR_FAIL_STEP(595),
 
     /**
      * A server error that indicates that the client should retry the request. A graph will typically return this error

@@ -242,7 +242,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Collection<Integer> ages = traversal.next();
         assertFalse(traversal.hasNext());
-        assertThat(ages, containsInAnyOrder(null, null, null, null, 32, 35));
+        assertThat(ages, containsInAnyOrder(32, 35));
     }
 
     @Test
@@ -252,7 +252,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Collection<Vertex> ages = traversal.next();
         assertFalse(traversal.hasNext());
-        assertThat(ages, containsInAnyOrder(null, null, null, convertToVertex("lop"), convertToVertex("josh"), convertToVertex("lop")));
+        assertThat(ages, containsInAnyOrder(convertToVertex("lop"), convertToVertex("josh"), convertToVertex("lop")));
     }
 
     public static class Traversals extends AggregateTest {

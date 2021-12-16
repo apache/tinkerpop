@@ -98,6 +98,20 @@ Feature: Step - sack()
       | d[1.0].m |
       | d[1.0].m |
 
+  Scenario: g_V_sackXassignX_byXageX_sack
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().sack(assign).by("age").sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
   Scenario: g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
     Given an unsupported test
     Then nothing should happen because

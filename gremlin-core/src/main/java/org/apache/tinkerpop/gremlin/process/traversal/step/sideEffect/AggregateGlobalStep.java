@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
@@ -125,8 +126,11 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
             final BulkSet<Object> bulkSet = new BulkSet<>();
             while (this.starts.hasNext()) {
                 final Traverser.Admin<S> traverser = this.starts.next();
-                bulkSet.add(TraversalUtil.applyNullable(traverser, this.aggregateTraversal), traverser.bulk());
-                traverser.setStepId(this.getNextStep().getId()); // when barrier is reloaded, the traversers should be at the next step
+                TraversalUtil.produce(traverser, aggregateTraversal).ifProductive(p -> bulkSet.add(p, traverser.bulk()));
+
+                traverser.setStepId(this.getNextStep().getId());
+
+                // when barrier is reloaded, the traversers should be at the next step
                 this.barrier.add(traverser);
             }
             this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);

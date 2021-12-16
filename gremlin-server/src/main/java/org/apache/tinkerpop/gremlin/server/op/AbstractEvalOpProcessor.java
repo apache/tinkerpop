@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
+import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -38,6 +39,7 @@ import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
@@ -272,13 +274,22 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                 timerContext.stop();
 
                 if (t != null) {
-                    // if any exception in the chain is TemporaryException then we should respond with the right error
-                    // code so that the client knows to retry
-                    final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
-                    if (possibleTemporaryException.isPresent()) {
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
-                                .statusMessage(possibleTemporaryException.get().getMessage())
-                                .statusAttributeException(possibleTemporaryException.get()).create());
+                    // if any exception in the chain is TemporaryException or Failure then we should respond with the
+                    // right error code so that the client knows to retry
+                    final Optional<Throwable> possibleSpecialException = determineIfSpecialException(t);
+                    if (possibleSpecialException.isPresent()) {
+                        final Throwable special = possibleSpecialException.get();
+                        final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
+                                statusMessage(special.getMessage()).
+                                statusAttributeException(special);
+                        if (special instanceof TemporaryException) {
+                            specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_TEMPORARY);
+                        } else if (special instanceof Failure) {
+                            final Failure failure = (Failure) special;
+                            specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
+                                    statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
+                        }
+                        ctx.writeAndFlush(specialResponseMsg.create());
                     } else if (t instanceof OpProcessorException) {
                         ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
                     } else if (t instanceof TimedInterruptTimeoutException) {

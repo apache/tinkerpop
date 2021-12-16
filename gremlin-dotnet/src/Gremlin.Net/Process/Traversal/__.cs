@@ -364,6 +364,22 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the fail step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Fail()
+        {
+            return new GraphTraversal<object, object>().Fail();
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the fail step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Fail(string msg)
+        {
+            return new GraphTraversal<object, object>().Fail(msg);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the filter step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Filter(IPredicate predicate)

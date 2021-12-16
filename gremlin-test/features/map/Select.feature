@@ -819,13 +819,40 @@ Feature: Step - select()
       | result |
       | d[0.4].d |
 
-  # ProductiveBy
-  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_selectXaX_byXageX
     Given the modern graph
     And the traversal of
       """
       g.V().as("a").select("a").by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_V_asXa_nX_selectXa_nX_byXageX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a","n").select("a","n").by("age").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"d[29].i","n":"marko"}] |
+      | m[{"a":"d[27].i","n":"vadas"}] |
+      | m[{"a":"d[32].i","n":"josh"}] |
+      | m[{"a":"d[35].i","n":"peter"}] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_asXaX_selectXaX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().as("a").select("a").by("age")
       """
     When iterated to list
     Then the result should be unordered

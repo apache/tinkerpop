@@ -30,6 +30,20 @@ Feature: Step - cyclicPath()
       | result |
       | v[marko] |
 
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_VX1X_both_both_cyclicPath_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).both().both().cyclicPath().by('age')
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

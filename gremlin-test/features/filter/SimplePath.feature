@@ -88,3 +88,20 @@ Feature: Step - simplePath()
       | p[d[0].i,v[lop],v[marko],v[josh]] |
       | p[d[0].i,v[josh],v[marko],v[lop]] |
       | p[d[0].i,v[josh],v[marko],v[vadas]] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_both_asXaX_both_asXbX_simplePath_path_byXageX__fromXaX_toXbX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().as('a').both().as('b').simplePath().path().by('age').from('a').to('b')
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[d[29].i,d[32].i] |
+      | p[d[29].i,d[27].i] |
+      | p[d[29].i,d[32].i] |
+      | p[d[32].i,d[29].i] |
+      | p[d[29].i,d[27].i] |
+      | p[d[32].i,d[29].i] |

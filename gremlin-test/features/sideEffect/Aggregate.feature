@@ -96,6 +96,50 @@ Feature: Step - aggregate()
       | d[32].i |
       | d[35].i |
 
+  Scenario: g_V_aggregateXxX_byXageX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate("x").by("age").cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_V_aggregateXlocal_xX_byXageX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "x").by("age").cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXlocal_xX_byXageX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate(Scope.local, "x").by("age").cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+      | null    |
+      | null    |
+
   Scenario: g_V_aggregateXlocal_a_nameX_out_capXaX
     Given the modern graph
     And the traversal of
@@ -177,18 +221,43 @@ Feature: Step - aggregate()
       | result |
       | d[32].i |
       | d[35].i |
+
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("x").by(__.values("age").is(P.gt(29))).cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
       | null |
       | null |
       | null |
       | null |
 
-  # ProductiveBy
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_aggregateXxX_byXout_order_byXnameXX_capXxX
     Given the modern graph
     And the traversal of
       """
       g.V().aggregate("x").by(__.out().order().by("name")).cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[lop] |
+      | v[lop] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXxX_byXout_order_byXnameXX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().aggregate("x").by(__.out().order().by("name")).cap("x")
       """
     When iterated next
     Then the result should be unordered
