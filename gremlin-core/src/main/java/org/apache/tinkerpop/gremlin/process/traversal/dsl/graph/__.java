@@ -975,14 +975,14 @@ public class __ {
     /**
      * @see GraphTraversal#property(VertexProperty.Cardinality, Object)
      */
-    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final LinkedHashMap<Object, Object> map) {
+    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final Map<Object, Object> map) {
         return __.<A>start().property(cardinality, map);
     }
 
     /**
      * @see GraphTraversal#property(Object)
      */
-    public static <A> GraphTraversal<A, A> property(final LinkedHashMap<Object, Object> map) {
+    public static <A> GraphTraversal<A, A> property(final Map<Object, Object> map) {
         return __.<A>start().property(map);
     }
 

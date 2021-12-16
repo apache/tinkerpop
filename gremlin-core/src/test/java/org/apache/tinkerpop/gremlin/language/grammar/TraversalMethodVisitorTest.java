@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -701,7 +702,7 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void testTraversalMethod_property_Object() throws Exception {
-        LinkedHashMap<Object, Object> map = new LinkedHashMap<Object, Object>();
+        HashMap<Object, Object> map = new HashMap<Object, Object>();
         map.put("key", "foo");
         map.put("key1", "bar");
         compare(g.V().property(map), eval("g.V().property(['key': 'foo', 'key1': 'bar'])"));
@@ -709,10 +710,10 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void testTraversalMethod_property_Cardinality_Object() throws Exception {
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        HashMap<String, String> map = new HashMap<String, String>();
         map.put("key", "foo");
         map.put("key1", "bar");
-        compare(g.V().property(Cardinality.list, map), eval("g.V().property(list, ['key': 'foo', 'key1': 'bar'])"));
+        compare(g.V().property(Cardinality.list, map), eval("g.V().property(list, {'key': 'foo', 'key1': 'bar'})"));
     }
 
     @Test
