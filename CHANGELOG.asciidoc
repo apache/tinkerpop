@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added an `AnonymizingTypeTranslator` for use with `GroovyTranslator` which strips PII (anonymizes any String, Numeric, Date, Timestamp, or UUID data)
 * Added support for `g.Tx()` in Python.
 * Added logging in in Python.
 * Fixed shutdown cleanup issue in Python aiohttp transport layer.
