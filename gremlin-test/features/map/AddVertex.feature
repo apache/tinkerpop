@@ -436,51 +436,20 @@ Feature: Step - addV()
       """
       g.addV().property(["name": "foo", "age": 42 ])
       """
-    And the traversal of
-      """
-      g.V().hasLabel("vertex").values()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | foo |
-      | 42    |
-
-  Scenario: g_addV_propertyXmap_with_labelX
-    Given the empty graph
-    And the traversal of
-      """
-      g.addV().property([T.label: "person", "name": "foo", "age": 42 ])
-      """
     When iterated to list
     Then the result should have a count of 1
-    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
-    
+    And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+
   Scenario: g_addV_propertyXsingle_mapX
     Given the empty graph
     And the traversal of
       """
       g.addV().property(Cardinality.single, ["name": "foo", "age": 42 ])
       """
-    And the traversal of
-      """
-      g.V().hasLabel("vertex").values()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | foo    |
-      | 42     |
-    
-  Scenario: g_addV_propertyXsingle_map_with_labelX
-    Given the empty graph
-    And the traversal of
-      """
-      g.addV().property(Cardinality.single, [T.label: "person", "name": "foo", "age": 42 ])
-      """
     When iterated to list
     Then the result should have a count of 1
-    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+    
 
   @AllowNullPropertyValues
   Scenario: g_addVXpersonX_propertyXname_joshX_propertyXage_nullX
