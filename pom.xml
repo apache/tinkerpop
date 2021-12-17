@@ -157,7 +157,7 @@ limitations under the License.
         <groovy.version>2.5.14</groovy.version>
         <hadoop.version>3.3.1</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
-        <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
+        <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
         <junit.version>4.13.1</junit.version>
         <logback.version>1.2.3</logback.version>
@@ -193,7 +193,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.7</version>
+                <version>2.8.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -215,7 +215,7 @@ limitations under the License.
                                     <version>[1.8,12)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>[3.3.9,)</version>
+                                    <version>[3.5.3,)</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -225,7 +225,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -293,7 +293,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.4</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -305,7 +305,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <!-- source: https://stackoverflow.com/a/39139979/6753576 -->
@@ -351,7 +351,6 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -597,24 +596,22 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.2.0</version>
                 </plugin>
-                <!-- can't upgrade past 1.4.6 until we enforce maven 3.5.2 or better
-                     https://github.com/spotify/dockerfile-maven/issues/252 -->
                 <plugin>
                     <groupId>com.spotify</groupId>
                     <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>1.4.6</version>
+                    <version>1.4.13</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1564,7 +1561,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
-                        <version>1.6.0</version>
+                        <version>3.0.0</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>

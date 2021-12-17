@@ -29,7 +29,7 @@ image:conspiracy.png[]
 At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk8/[Java 8] but it is
 preferable to use link:https://openjdk.java.net/projects/jdk/11/[Java 11] cross-compiled to Java 8 (the
 cross-compilation happens automatically as part of the build). Maven (requiring a minimum of
-link:https://maven.apache.org/download.cgi[Maven 3.3.9+]) is used as the common build system, which even
+link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
 will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is

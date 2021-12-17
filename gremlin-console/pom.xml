@@ -328,7 +328,7 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <skip>${skipIntegrationTests}</skip>
-                                    <tasks>
+                                    <target>
                                         <copy todir="${project.build.directory}/python">
                                             <fileset dir="src/test/python"/>
                                         </copy>
@@ -344,7 +344,7 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -373,11 +373,11 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <skip>${skipIntegrationTests}</skip>
-                                    <tasks>
+                                    <target>
                                         <copy todir="${project.build.directory}/python/gremlin-console">
                                             <fileset dir="${project.build.directory}/apache-tinkerpop-gremlin-console-${project.version}-standalone"/>
                                         </copy>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
 

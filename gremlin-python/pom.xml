@@ -110,7 +110,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <!-- seems like we need a few different copies of the same source. all the
                                              different python stuff doesn't seem to want to share. we use
                                              /python3 for basic tests and stuff and /python-packaged for distribution
@@ -158,7 +158,7 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install wheel"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
