@@ -159,6 +159,7 @@ limitations under the License.
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
+        <junit.version>4.13.1</junit.version>
         <logback.version>1.2.3</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.1.72.Final</netty.version>
@@ -734,7 +735,7 @@ limitations under the License.
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>${junit.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hamcrest</groupId>
