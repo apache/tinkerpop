@@ -9,7 +9,7 @@ updates:
       - ".NET"
       - "dependencies"
   - package-ecosystem: "pip"
-    directory: "/gremlin-python"
+    directory: "/gremlin-python/src/main/python"
     schedule:
       interval: "daily"
     target-branch: "3.5-dev"
