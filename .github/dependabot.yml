@@ -8,3 +8,11 @@ updates:
     labels:
       - ".NET"
       - "dependencies"
+  - package-ecosystem: "pip"
+    directory: "/gremlin-python"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - "python"
+      - "dependencies"
