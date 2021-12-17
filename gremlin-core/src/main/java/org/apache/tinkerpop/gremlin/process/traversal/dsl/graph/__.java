@@ -975,8 +975,10 @@ public class __ {
     /**
      * @see GraphTraversal#property(Object)
      */
-    public static <A> GraphTraversal<A, A> property(final LinkedHashMap<Object, Object> map) {
-        return __.<A>start().property(map);
+    public static <A> GraphTraversal<A, A> property(final Object value) {
+        return __.<A>
+
+                start().property(value);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

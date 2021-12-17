@@ -2358,36 +2358,30 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Sets the key(s) and value(s) of an incoming {@link Element} to the values
-     * stored in the {@link Map}. If the
-     * {@link Element} is
-     * a
-     * {@link VertexProperty} and the
-     * {@link Graph} supports it, meta properties can be set. Use of this method
-     * assumes that the
-     * {@link VertexProperty.Cardinality} is defaulted to {@code null} which means
-     * that the default cardinality for
+     * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
+     * {@link Graph} supports it, meta properties can be set.  Use of this method assumes that the
+     * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
      * the {@link Graph} will be used.
      * <p/>
-     * This method is effectively calls
-     * {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
-     * as {@code property(null, key, value, keyValues} for each of the K/V pairs in
-     * the Map passed in.
+     * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
+     * as {@code property(null, key, value, keyValues}.
      *
-     * @param map a Map containing the key/value pairs to set for the element
+     * @param value     the value for the property
      * @return the traversal with the last step modified to add a property
-     * @see <a href=
-     *      "http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step"
-     *      target="_blank">AddProperty Step</a>
-     * @since 3.6.0-incubating
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step" target="_blank">AddProperty Step</a>
+     * @since 3.0.0-incubating
      */
-    public default GraphTraversal<S, E> property(final LinkedHashMap<Object, Object> map) {
-        for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            property(entry.getKey(), entry.getValue());
+    public default GraphTraversal<S, E> property(final Object value) {
+        if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
+            Map<Object, Object> map = (Map)value;
+            for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                property(null, entry.getKey(), entry.getValue());
+            }
+            return this;
+        } else {
+            throw new IllegalArgumentException("property(object) must have a Map argument");
         }
-        return this;
     }
-
     ///////////////////// BRANCH STEPS /////////////////////
 
     /**
