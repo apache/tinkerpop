@@ -74,7 +74,7 @@ setup(
     ],
     tests_require=[
         'pytest>=4.6.4,<5.0.0',
-        'mock>=3.0.5,<4.0.0',
+        'mock>=3.0.5,<5.0.0',
         'radish-bdd==0.8.6',
         'PyHamcrest>=1.9.0,<2.0.0'
     ],
