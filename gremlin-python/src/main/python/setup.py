@@ -69,13 +69,13 @@ setup(
     test_suite="tests",
     data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[
-        'pytest-runner==5.2',
-        'importlib-metadata<3.0.0'
+        'pytest-runner==5.3.1',
+        'importlib-metadata<5.0.0'
     ],
     tests_require=[
-        'pytest>=4.6.4,<5.0.0',
-        'mock>=3.0.5,<4.0.0',
-        'radish-bdd==0.8.6',
+        'pytest>=4.6.4,<7.0.0',
+        'mock>=3.0.5,<5.0.0',
+        'radish-bdd==0.13.4',
         'PyHamcrest>=1.9.0,<2.0.0'
     ],
     install_requires=install_requires,
