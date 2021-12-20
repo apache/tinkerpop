@@ -239,7 +239,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                     if (sessionThread != null) {
                         sessionThread.interrupt();
                     } else {
-                        logger.debug("{} is a {} which is not interruptable as the thread running the session has not " +
+                        logger.debug("{} is a {} which cannot be interrupted as the thread running the session has not " +
                                         "been set - please check the implementation if this is not desirable",
                                 sessionId, this.getClass().getSimpleName());
                     }

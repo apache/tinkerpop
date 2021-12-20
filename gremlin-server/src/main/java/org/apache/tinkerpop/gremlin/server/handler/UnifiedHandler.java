@@ -136,6 +136,9 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 return;
             }
 
+            // ignore the close session message from older versions of the protocol
+            if (msg.getOp().equals(Tokens.OPS_CLOSE)) return;
+
             final Optional<String> optMultiTaskSession = msg.optionalArgs(Tokens.ARGS_SESSION);
             final String sessionId = optMultiTaskSession.orElse(msg.getRequestId().toString());
 
