@@ -149,7 +149,7 @@ gremlin> g.V().groupCount().by('age') // 3.6.0
 
 *math()*
 
-The `math()`` step requires that the result of the `by()`` be a `Number`, so a result of `null` will still result in a
+The `math()` step requires that the result of the `by()` be a `Number`, so a result of `null` will still result in a
 runtime exception. Filtering will eliminate such errors, though a runtime error may still be present should the
 modulator produce a non-numeric value.
 
