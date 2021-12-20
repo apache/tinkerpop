@@ -19,14 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
-import org.apache.tinkerpop.gremlin.process.traversal.*;
+
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Script;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.sql.Timestamp;
-import java.util.*;
-
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * This Translator will translate {@link Bytecode} into a representation that has been stripped of any user data

@@ -23,13 +23,24 @@ import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.language.grammar.NoOpTerminalVisitor;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.UUID;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.junit.Assert.assertEquals;
 
 public class AnonymizingTypeTranslatorTest {
+    private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
 
     private void testAnonymize(final String query, final String expected) {
         try {
@@ -42,8 +53,14 @@ public class AnonymizingTypeTranslatorTest {
         }
     }
 
+    private void testAnonymize(final Traversal<?,?> t, final String expected) {
+        final Translator.ScriptTranslator translator = GroovyTranslator.of("g", new AnonymizingTypeTranslator());
+        final String converted = translator.translate(t).getScript();
+        Assert.assertEquals(expected, converted);
+    }
+
     @Test
-    public void testAnonymize() {
+    public void testBasicAnonymize() {
 
         Arrays.asList(
             
@@ -80,9 +97,40 @@ public class AnonymizingTypeTranslatorTest {
             new Pair<>("g.V().out('created').toBulkSet()",
                        "g.V().out(string0).toBulkSet()"),
             new Pair<>("g.V(1).property('city','santa fe').property('state','new mexico').valueMap()",
-                       "g.V(integer0).property(string0,string1).property(string2,string3).valueMap()")
+                       "g.V(integer0).property(string0,string1).property(string2,string3).valueMap()"),
+            new Pair<>("g.V().values('name').order().by(Order.desc)",
+                       "g.V().values(string0).order().by(Order.desc)"),
+            new Pair<>("g.V(1).property(Cardinality.single, 'x', 'y')",
+                       "g.V(integer0).property(VertexProperty.Cardinality.single,string0,string1)"),
+            new Pair<>("g.V().as('x').out('created')",
+                       "g.V().as(string0).out(string1)"),
+            new Pair<>("g.V(3,4,5).aggregate('x').has('name','josh').as('a').select('x').unfold().hasLabel('software').addE('createdBy').to('a')",
+                       "g.V(integer0,integer1,integer2).aggregate(string0).has(string1,string2).as(string3).select(string0).unfold().hasLabel(string4).addE(string5).to(string3)")
 
         ).forEach(test -> testAnonymize(test.getValue0(), test.getValue1()));
 
     }
+
+    @Test
+    public void shouldTranslateDate() {
+        final Calendar c = Calendar.getInstance();
+        c.set(1975, Calendar.SEPTEMBER, 7);
+        final Date d = c.getTime();
+        testAnonymize(g.inject(d), "g.inject(date0)");
+    }
+
+    @Test
+    public void shouldTranslateTimestamp() {
+        final Calendar c = Calendar.getInstance();
+        c.set(1975, Calendar.SEPTEMBER, 7);
+        final Timestamp t = new Timestamp(c.getTime().getTime());
+        testAnonymize(g.inject(t), "g.inject(timestamp0)");
+    }
+
+    @Test
+    public void shouldTranslateUuid() {
+        final UUID uuid = UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d");
+        testAnonymize(g.inject(uuid), "g.inject(uuid0)");
+    }
+
 }
