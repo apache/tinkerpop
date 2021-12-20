@@ -17,7 +17,9 @@ limitations under the License.
 
 = TinkerPop 3.6.0
 
-*NOT NAMED YET*
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
+
+*Tinkerheart*
 
 == TinkerPop 3.6.0
 
