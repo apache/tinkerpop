@@ -76,7 +76,7 @@ setup(
         'pytest>=4.6.4,<5.0.0',
         'mock>=3.0.5,<4.0.0',
         'radish-bdd==0.8.6',
-        'PyHamcrest>=1.9.0,<2.0.0'
+        'PyHamcrest>=1.9.0,<3.0.0'
     ],
     install_requires=install_requires,
     extra_require={
