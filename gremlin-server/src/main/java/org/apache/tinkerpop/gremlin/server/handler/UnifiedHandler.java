@@ -136,8 +136,14 @@ public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> 
                 return;
             }
 
-            // ignore the close session message from older versions of the protocol
-            if (msg.getOp().equals(Tokens.OPS_CLOSE)) return;
+            // this is for backward compatibility for drivers still sending a close message. the close message was
+            // removed in 3.5.0 but then added back for 3.5.2.
+            if (msg.getOp().equals(Tokens.OPS_CLOSE)) {
+                ctx.writeAndFlush(ResponseMessage.build(msg)
+                        .code(ResponseStatusCode.NO_CONTENT)
+                        .create());
+                return;
+            }
 
             final Optional<String> optMultiTaskSession = msg.optionalArgs(Tokens.ARGS_SESSION);
             final String sessionId = optMultiTaskSession.orElse(msg.getRequestId().toString());
