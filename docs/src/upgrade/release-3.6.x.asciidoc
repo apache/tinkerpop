@@ -452,8 +452,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2611[TINKERPOP-2611]
 
 In Gremlin Server and Gremlin Console distributions, the default logging implementation of log4j 1.2.x has been
 replaced by logback 1.2.x given link:https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2019-17571[CVE-2019-17571].
-While it was easy to replace log4j for users of the zip distributions, it was a little harder for our packaged Docker
-containers which should work more cleanly out of the box.
+While it was easy to replace log4j for users of the zip distributions, it was a little harder for users to change
+our packaged Docker containers which should work more cleanly out of the box.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2534[TINKERPOP-2534]
 
