@@ -47,7 +47,7 @@ version = __version__.version
 install_requires = [
     'nest_asyncio',
     'aiohttp>=3.8.0,<=3.8.1',
-    'aenum>=1.4.5,<3.0.0',
+    'aenum>=1.4.5,<4.0.0',
     'six>=1.10.0,<2.0.0',
     'isodate>=0.6.0,<1.0.0'
 ]
@@ -76,7 +76,7 @@ setup(
         'pytest>=4.6.4,<7.0.0',
         'mock>=3.0.5,<5.0.0',
         'radish-bdd==0.13.4',
-        'PyHamcrest>=1.9.0,<2.0.0'
+        'PyHamcrest>=1.9.0,<3.0.0'
     ],
     install_requires=install_requires,
     extra_require={
