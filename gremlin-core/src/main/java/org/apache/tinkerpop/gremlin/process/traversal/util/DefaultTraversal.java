@@ -65,6 +65,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected Set<TraverserRequirement> requirements;
 
     protected boolean locked = false;
+    protected boolean closed = false;
     protected Bytecode bytecode;
 
     private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
@@ -192,6 +193,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public boolean hasNext() {
+        // if the traversal is closed then resources are released and there is nothing else to iterate
+        if (this.isClosed()) return false;
+
         if (!this.locked) this.applyStrategies();
         final boolean more = this.lastTraverser.bulk() > 0L || this.finalEndStep.hasNext();
         if (!more) CloseableIterator.closeIterator(this);
@@ -200,6 +204,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public E next() {
+        // if the traversal is closed then resources are released and there is nothing else to iterate
+        if (this.isClosed())
+            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : FastNoSuchElementException.instance();
+
         try {
             if (!this.locked) this.applyStrategies();
             if (this.lastTraverser.bulk() == 0L)
@@ -220,18 +228,32 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this.steps.forEach(Step::reset);
         this.finalEndStep.reset();
         this.lastTraverser = EmptyTraverser.instance();
+        this.closed = false;
     }
 
     @Override
     public void addStart(final Traverser.Admin<S> start) {
         if (!this.locked) this.applyStrategies();
-        if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
+        if (!this.steps.isEmpty()) {
+            this.steps.get(0).addStart(start);
+
+            // match() expects that a traversal that has been iterated can continue to iterate if new starts are
+            // added therefore the closed state must be reset.
+            this.closed = false;
+        }
     }
 
     @Override
     public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
         if (!this.locked) this.applyStrategies();
-        if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
+
+        if (!this.steps.isEmpty()) {
+            this.steps.get(0).addStarts(starts);
+
+            // match() expects that a traversal that has been iterated can continue to iterate if new starts are
+            // added therefore the closed state must be reset.
+            this.closed = false;
+        }
     }
 
     @Override
@@ -277,6 +299,18 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public boolean isLocked() {
         return this.locked;
+    }
+
+    /**
+     * Determines if the traversal has been fully iterated and resources released.
+     */
+    public boolean isClosed() {
+        return closed;
+    }
+
+    @Override
+    public void notifyClose() {
+        this.closed = true;
     }
 
     @Override

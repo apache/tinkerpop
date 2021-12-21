@@ -285,7 +285,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     }
 
     /**
-     * Releases resources opened in any steps that implement {@link AutoCloseable}.
+     * Releases resources opened in any steps that implement {@link AutoCloseable}. If this method is overridden,the
+     * implementer should invoke {@link #notifyClose()}.
      */
     @Override
     public default void close() throws Exception {
@@ -293,6 +294,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
             if (step instanceof AutoCloseable)
                 ((AutoCloseable) step).close();
         }
+
+        notifyClose();
+    }
+
+    /**
+     * Gets a callback from {@link #close()} for additional operations specific to the {@link Traversal} implementation.
+     * A good implementation will use {@link #close()} to release resources in steps and this method to release
+     * resources specific to the {@link Traversal} implementations.
+     */
+    public default void notifyClose() {
+        // do nothing by default
     }
 
     /**
