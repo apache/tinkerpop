@@ -102,8 +102,9 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
             }
 
             // without this wait this test is failing randomly on docker/travis with ConcurrentModificationException
-            // see TINKERPOP-2504
-            Thread.sleep(3000);
+            // see TINKERPOP-2504 - adjust the sleep to account for the max time to wait for sessions to close in
+            // an orderly fashion
+            Thread.sleep(Connection.MAX_WAIT_FOR_CLOSE + 1000);
 
             // Assert that the host has not been marked unavailable
             assertEquals(1, cluster.availableHosts().size());
