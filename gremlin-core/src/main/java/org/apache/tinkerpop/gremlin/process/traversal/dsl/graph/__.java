@@ -981,18 +981,14 @@ public class __ {
      * @see GraphTraversal#property(VertexProperty.Cardinality, Object, Object, Object...)
      */
     public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
-        return __.<A>
-        
-        start().property(cardinality, key, value, keyValues);
+        return __.<A>start().property(cardinality, key, value, keyValues);
     }
 
     /**
      * @see GraphTraversal#property(Object)
      */
     public static <A> GraphTraversal<A, A> property(final Object value) {
-        return __.<A>
-
-                start().property(value);
+        return __.<A>start().property(value);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
