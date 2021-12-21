@@ -92,7 +92,7 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_group_byXoutE_countX_byXnameX", skipReasonOrdering));
         add(Pair.with("g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX", skipReasonOrdering));
         add(Pair.with("g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX", skipReasonOrdering));
-        add(Pair.with("g_V_group_byXageX", skipReasonOrdering));
+        add(Pair.with("g_withStrategiesXProductiveByStrategyX_V_group_byXageX", skipReasonOrdering));
         add(Pair.with("g_V_order_byXoutE_count_descX", skipReasonOrdering));
         add(Pair.with("g_V_both_both_dedup_byXoutE_countX_name", skipReasonOrdering));
         add(Pair.with("g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX", skipReasonOrdering));

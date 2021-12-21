@@ -118,7 +118,7 @@ public class TinkerGraphWorld implements World {
                 "g_V_group_byXoutE_countX_byXnameX",
                 "g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX",
                 "g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX",
-                "g_V_group_byXageX",
+                "g_withStrategiesXProductiveByStrategyX_V_group_byXageX",
                 "g_V_order_byXoutE_count_descX",
                 "g_V_both_both_dedup_byXoutE_countX_name",
                 "g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX",

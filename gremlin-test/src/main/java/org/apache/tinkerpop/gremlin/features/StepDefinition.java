@@ -294,7 +294,6 @@ public final class StepDefinition {
     public void theResultShouldBeOf(final DataTable dataTable) {
         assertThatNoErrorWasThrown();
 
-
         final List<Object> actual = translateResultsToActual();
 
         // skip the header in the dataTable
