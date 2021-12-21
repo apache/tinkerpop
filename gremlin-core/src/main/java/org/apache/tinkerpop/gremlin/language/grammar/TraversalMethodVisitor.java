@@ -30,15 +30,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
-<<<<<<< HEAD
-import java.util.Map;
-=======
 import java.util.LinkedHashMap;
-<<<<<<< HEAD
->>>>>>> WIP fixed compilation issue
-=======
 import java.util.Map;
->>>>>>> Merge change from master
+
 import java.util.function.BiFunction;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
