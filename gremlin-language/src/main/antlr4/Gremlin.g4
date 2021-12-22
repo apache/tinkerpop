@@ -600,8 +600,6 @@ traversalMethod_propertyMap
 	: 'propertyMap' LPAREN stringLiteralList RPAREN
 	;
 
-
-
 traversalMethod_range
 	: 'range' LPAREN traversalScope COMMA integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_Scope_long_long
 	| 'range' LPAREN integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_long_long
