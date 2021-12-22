@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   smoke:
     name: smoke
-    timeout-minutes: 600 # 10 minutes
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
         run: mvn clean install -DskipTests -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   java:
     name: mvn clean install
-    timeout-minutes: 2700 # 45 minutes
+    timeout-minutes: 45
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +30,7 @@ jobs:
         run: mvn clean install -pl -:gremlin-javascript -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   gremlin-server:
     name: gremlin-server
-    timeout-minutes: 2700 # 45 minutes
+    timeout-minutes: 45
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +46,7 @@ jobs:
           mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j
   spark-core:
     name: spark core
-    timeout-minutes: 2700 # 45 minutes
+    timeout-minutes: 45
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -62,7 +62,7 @@ jobs:
           mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'
   spark-gryo:
     name: spark gryo
-    timeout-minutes: 2700 # 45 minutes
+    timeout-minutes: 45
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -78,7 +78,7 @@ jobs:
           mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest
   gremlin-console:
     name: gremlin-console
-    timeout-minutes: 1200 # 20 minutes
+    timeout-minutes: 20
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -94,7 +94,7 @@ jobs:
           mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
   javascript:
     name: javascript
-    timeout-minutes: 900 # 15 minutes
+    timeout-minutes: 15
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -110,7 +110,7 @@ jobs:
           mvn verify -pl :gremlin-javascript
   python:
     name: python
-    timeout-minutes: 1200 # 20 minutes
+    timeout-minutes: 20
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -139,7 +139,7 @@ jobs:
           mvn verify -pl gremlin-python
   dotnet:
     name: .NET
-    timeout-minutes: 1200 # 20 minutes
+    timeout-minutes: 20
     needs: smoke
     runs-on: ubuntu-latest
     steps:
@@ -161,7 +161,7 @@ jobs:
           mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
   neo4j-gremlin:
     name: neo4j-gremlin
-    timeout-minutes: 1200 # 20 minutes
+    timeout-minutes: 20
     needs: smoke
     runs-on: ubuntu-latest
     steps:
