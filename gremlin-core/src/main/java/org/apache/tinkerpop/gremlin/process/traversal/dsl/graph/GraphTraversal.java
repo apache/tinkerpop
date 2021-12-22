@@ -2375,7 +2375,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
         if (key instanceof VertexProperty.Cardinality) {
             if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-                Map<Object, Object> map = (Map)value;
+                final Map<Object, Object> map = (Map)value;
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                     property(key, entry.getKey(), entry.getValue());
                 }
@@ -2388,7 +2388,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             }
         } else  { //handles if cardinality is not the first parameter
             if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-                Map<Object, Object> map = (Map)value;
+                final Map<Object, Object> map = (Map)value;
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                     property(null, entry.getKey(), entry.getValue());
                 }
@@ -2416,7 +2416,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> property(final Object value) {
         if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-            Map<Object, Object> map = (Map)value;
+            final Map<Object, Object> map = (Map)value;
             for (Map.Entry<Object, Object> entry : map.entrySet()) {
                 property(null, entry.getKey(), entry.getValue());
             }
