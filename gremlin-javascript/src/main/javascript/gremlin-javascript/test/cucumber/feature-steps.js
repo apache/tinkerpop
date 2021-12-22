@@ -241,6 +241,10 @@ function parseValue(stringValue) {
 
   if(stringValue === "null")
     return null;
+  if(stringValue === "true")
+    return true;
+  if(stringValue === "false")
+    return false;
 
   let extractedValue = null;
   let parser = null;

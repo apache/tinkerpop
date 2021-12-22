@@ -242,12 +242,24 @@ public abstract class AbstractTinkerGraphGraphSONTranslatorProvider extends Tink
         return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g), version), true));
     }
 
+    @Graph.OptOut(
+            test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
+            method = "g_inject_order",
+            reason = "GraphSONv2 does not properly round trip Maps and Sets")
+    @Graph.OptOut(
+            test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
+            method = "g_inject_order_with_unknown_type",
+            reason = "Cannot round trip a generic Java Object")
     public static class TinkerGraphGraphSONv2TranslatorProvider extends AbstractTinkerGraphGraphSONTranslatorProvider {
         public TinkerGraphGraphSONv2TranslatorProvider() {
             super(GraphSONVersion.V2_0);
         }
     }
 
+    @Graph.OptOut(
+            test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
+            method = "g_inject_order_with_unknown_type",
+            reason = "Cannot round trip a generic Java Object")
     public static class TinkerGraphGraphSONv3TranslatorProvider extends AbstractTinkerGraphGraphSONTranslatorProvider {
         public TinkerGraphGraphSONv3TranslatorProvider() {
             super(GraphSONVersion.V3_0);

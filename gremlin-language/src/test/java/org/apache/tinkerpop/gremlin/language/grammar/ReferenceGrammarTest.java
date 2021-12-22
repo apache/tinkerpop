@@ -71,6 +71,10 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
         add(Pair.with(Pattern.compile("c\\[(.*)\\]"), (k,v) -> k.equals("c1") || k.equals("c2") ? "Order.desc" : "__.identity()"));  // closure -> Comparator || Traversal
         add(Pair.with(Pattern.compile("s\\[\\]"), (k,v) -> "[]"));  // set -> list
         add(Pair.with(Pattern.compile("s\\[(.*)\\]"), (k,v) -> "[]"));  // set -> list
+        add(Pair.with(Pattern.compile("(null)"), (k,v) -> "null"));
+        add(Pair.with(Pattern.compile("(true)"), (k,v) -> "true"));
+        add(Pair.with(Pattern.compile("(false)"), (k,v) -> "false"));
+
     }};
 
     @Parameterized.Parameters(name = "{0}")

@@ -155,6 +155,9 @@ public class FeatureReader {
             }
         }
 
-        throw new IllegalStateException(String.format("Could not match the parameter [%s] pattern of %s", k, v));
+        // this should be a raw string if it didn't match anything - suppose it could be a syntax error in the
+        // test too, but i guess the test would fail so perhaps ok to just assume it's raw string value that
+        // didn't need a transform by default
+        return v;
     }
 }

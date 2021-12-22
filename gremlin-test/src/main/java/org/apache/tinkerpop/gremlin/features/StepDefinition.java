@@ -135,6 +135,8 @@ public final class StepDefinition {
             throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("(null)"), s -> "null"));
+        add(Pair.with(Pattern.compile("(true)"), s -> "true"));
+        add(Pair.with(Pattern.compile("(false)"), s -> "false"));
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
@@ -156,6 +158,8 @@ public final class StepDefinition {
         }));
 
         add(Pair.with(Pattern.compile("(null)"), s -> null));
+        add(Pair.with(Pattern.compile("(true)"), s -> true));
+        add(Pair.with(Pattern.compile("(false)"), s -> false));
 
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");

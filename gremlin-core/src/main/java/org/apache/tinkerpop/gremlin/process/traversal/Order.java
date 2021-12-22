@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import java.util.Comparator;
 import java.util.Random;
 
-import org.apache.tinkerpop.gremlin.util.NumberHelper;
+import org.apache.tinkerpop.gremlin.util.OrderabilityComparator;
 
 /**
  * Provides {@code Comparator} instances for ordering traversers.
@@ -56,17 +56,9 @@ public enum Order implements Comparator<Object> {
      * @since 3.3.4
      */
     asc {
-        private final Comparator<Comparable> ascendingComparator = Comparator.nullsFirst(Comparator.<Comparable>naturalOrder());
-
         @Override
         public int compare(final Object first, final Object second) {
-            // need to convert enum to string representations for comparison or else you can get cast exceptions.
-            // this typically happens when sorting local on the keys of maps that contain T
-            final Object f = first instanceof Enum<?> ? ((Enum<?>) first).name() : first;
-            final Object s = second instanceof Enum<?> ? ((Enum<?>) second).name() : second;
-            return f instanceof Number && s instanceof Number
-                    ? NumberHelper.compare((Number) f, (Number) s)
-                    : ascendingComparator.compare((Comparable) f, (Comparable) s);
+            return OrderabilityComparator.INSTANCE.compare(first, second);
         }
 
         @Override
@@ -81,17 +73,9 @@ public enum Order implements Comparator<Object> {
      * @since 3.3.4
      */
     desc {
-        private final Comparator<Comparable> descendingComparator = Comparator.nullsLast(Comparator.<Comparable>reverseOrder());
-
         @Override
         public int compare(final Object first, final Object second) {
-            // need to convert enum to string representations for comparison or else you can get cast exceptions.
-            // this typically happens when sorting local on the keys of maps that contain T
-            final Object f = first instanceof Enum<?> ? ((Enum<?>) first).name() : first;
-            final Object s = second instanceof Enum<?> ? ((Enum<?>) second).name() : second;
-            return f instanceof Number && s instanceof Number
-                    ? NumberHelper.compare((Number) s, (Number) f)
-                    : descendingComparator.compare((Comparable) f, (Comparable) s);
+            return OrderabilityComparator.INSTANCE.compare(second, first);
         }
 
         @Override
