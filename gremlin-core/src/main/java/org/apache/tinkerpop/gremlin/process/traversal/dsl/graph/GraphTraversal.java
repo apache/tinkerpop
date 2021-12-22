@@ -2285,6 +2285,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
      * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
      * can be supplied.
+     * <p/>* 
+     * If a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
+     * be added as property.  This method is the long-hand version of looping through the 
+     * {@link #property(Cardinality, Object, Object, Object...)} method for each key/value pair supplied.
      * <p/>
      * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
      * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
@@ -2366,6 +2370,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
      * the {@link Graph} will be used.
      * <p/>
+     * If a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
+     * be added as property.  This method is the long-hand version of looping through the 
+     * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
+     * <p />
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
      *
@@ -2404,11 +2412,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
-     * {@link Graph} supports it, meta properties can be set.  Use of this method assumes that the
-     * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
-     * the {@link Graph} will be used.
+     * When a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
+     * be added as property.  This method is the long-hand version of looping through the 
+     * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
      * <p/>
+     * If a {@link Map} is not supplied then an exception is thrown.
+     * <p /> 
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
      *
