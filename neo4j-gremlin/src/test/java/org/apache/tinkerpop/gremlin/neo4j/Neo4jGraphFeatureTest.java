@@ -50,7 +50,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @MultiMetaProperties and not @GraphComputerOnly and not @AllowNullPropertyValues",
+        tags = "not @RemoteOnly and not @MultiMetaProperties and not @GraphComputerOnly and not @AllowNullPropertyValues and not @UserSuppliedVertexPropertyIds and not @UserSuppliedEdgeIds and not @UserSuppliedVertexIds",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },

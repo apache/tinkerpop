@@ -42,6 +42,7 @@ const direction = traversalModule.direction;
 const mapAsObject = false;
 
 const parsers = [
+  [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
@@ -62,6 +63,7 @@ const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
+  vertexPropertyNotSupported: "Need a parser for vertex properties",
 };
 
 const ignoredScenarios = {
@@ -71,7 +73,8 @@ const ignoredScenarios = {
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation)
+  'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_properties_order': new IgnoreError(ignoreReason.vertexPropertyNotSupported)
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
@@ -241,6 +244,10 @@ function parseValue(stringValue) {
 
   if(stringValue === "null")
     return null;
+  if(stringValue === "true")
+    return true;
+  if(stringValue === "false")
+    return false;
 
   let extractedValue = null;
   let parser = null;
@@ -296,6 +303,16 @@ function toEdgeIdString(name) {
 function toPath(value) {
   const parts = value.split(',');
   return new Path(new Array(0), parts.map(x => parseValue.call(this, x)));
+}
+
+/*
+ * TODO Implement me.
+ *   vp[vertexName-propkey->propVal]
+ *   vertexName and propKey are simple strings, propVal must be parsed (e.g. numeric property values)
+ *   https://issues.apache.org/jira/browse/TINKERPOP-2686
+ */
+function toVertexProperty(triplet) {
+  return null;
 }
 
 function toT(value) {

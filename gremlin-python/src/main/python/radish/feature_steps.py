@@ -33,7 +33,7 @@ inV = __.inV
 project = __.project
 tail = __.tail
 
-ignores = []
+ignores = ["g.V().properties().order()"] # need a vertex property parser for result set: https://issues.apache.org/jira/browse/TINKERPOP-2686
 
 
 @given("the {graph_name:w} graph")
@@ -207,6 +207,10 @@ def _convert(val, ctx):
         return Direction[val[2:-1]]
     elif isinstance(val, str) and re.match(r"^null$", val):              # parse null to None
         return None
+    elif isinstance(val, str) and re.match(r"^true$", val):              # parse to boolean
+        return True
+    elif isinstance(val, str) and re.match(r"^false$", val):             # parse to boolean
+        return False
     else:
         return val
 

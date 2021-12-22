@@ -137,8 +137,11 @@ public class FeatureReader {
     }
 
     private static String applyParametersToGremlin(String currentGremlin, Map<String, String> parameters) {
-        for (Map.Entry<String,String> kv : parameters.entrySet()) {
-            currentGremlin = currentGremlin.replace(kv.getKey(), kv.getValue());
+        // sort from longest to shortest so that xx1 does not replace xx10
+        final List<String> paramNames = new ArrayList<>(parameters.keySet());
+        paramNames.sort((a,b) -> b.length() - a.length());
+        for (String k : paramNames) {
+            currentGremlin = currentGremlin.replace(k, parameters.get(k));
         }
         return currentGremlin;
     }
@@ -155,6 +158,9 @@ public class FeatureReader {
             }
         }
 
-        throw new IllegalStateException(String.format("Could not match the parameter [%s] pattern of %s", k, v));
+        // this should be a raw string if it didn't match anything - suppose it could be a syntax error in the
+        // test too, but i guess the test would fail so perhaps ok to just assume it's raw string value that
+        // didn't need a transform by default
+        return v;
     }
 }

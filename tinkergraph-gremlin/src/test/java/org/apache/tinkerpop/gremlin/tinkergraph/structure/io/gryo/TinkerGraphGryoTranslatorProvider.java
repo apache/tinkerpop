@@ -216,6 +216,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest",
         method = "*",
         reason = "read and write tests don't translate locally well because of calling iterate() inside read()/write() add a none()")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
+        method = "g_inject_order_with_unknown_type",
+        reason = "Remoting serializers only support known Gremlin types")
 public class TinkerGraphGryoTranslatorProvider extends TinkerGraphProvider {
 
     @Override
