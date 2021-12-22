@@ -2410,7 +2410,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             }
         }
     }
-
+    
     /**
      * When a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
