@@ -65,6 +65,11 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
     final GremlinBaseVisitor<Traversal[]> tListVisitor;
 
     /**
+     * Handles transactions.
+     */
+    final GremlinBaseVisitor<Void> txVisitor;
+
+    /**
      * Creates a {@link GraphTraversal} implementation that is meant to be anonymous. This provides a way to change the
      * type of implementation that will be used as anonymous traversals. By default, it uses {@link __} which generates
      * a {@link DefaultGraphTraversal}
@@ -141,6 +146,7 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
         this.tvisitor = new TraversalRootVisitor(this);
         this.tListVisitor = new NestedTraversalSourceListVisitor(this);
         this.createAnonymous = createAnonymous;
+        this.txVisitor = new TraversalSourceTxVisitor(g, this);
     }
 
     /**
@@ -157,7 +163,8 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
                     return gvisitor.visitTraversalSource((GremlinParser.TraversalSourceContext) firstChild);
                 } else {
                     // handle traversalSource DOT transactionPart
-                    throw new GremlinParserException("Transaction operation is not supported yet");
+                    // third child is the tx info
+                    return txVisitor.visitTransactionPart((GremlinParser.TransactionPartContext) ctx.getChild(2));
                 }
             } else if (firstChild instanceof GremlinParser.EmptyQueryContext) {
                 // handle empty query

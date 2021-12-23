@@ -46,9 +46,9 @@ traversalSource
     ;
 
 transactionPart
-    : 'tx' LPAREN RPAREN DOT 'commit' LPAREN RPAREN
+    : 'tx' LPAREN RPAREN DOT 'begin' LPAREN RPAREN
+    | 'tx' LPAREN RPAREN DOT 'commit' LPAREN RPAREN
     | 'tx' LPAREN RPAREN DOT 'rollback' LPAREN RPAREN
-    | 'tx' LPAREN RPAREN
     ;
 
 rootTraversal

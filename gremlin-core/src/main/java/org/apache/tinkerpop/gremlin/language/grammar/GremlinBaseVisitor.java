@@ -30,7 +30,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
  * operations with no return type.
  */
 public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements GremlinVisitor<T> {
-	private void notImplemented(ParseTree ctx) {
+	protected void notImplemented(final ParseTree ctx) {
 		final String className = (ctx != null)? ctx.getClass().getName() : "";
 		throw new UnsupportedOperationException("Method not implemented for context class " + className);
 	}
