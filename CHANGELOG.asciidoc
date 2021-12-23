@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Added support for `g.Tx()` in Python.
+* Added support for `g.tx()` in Python.
 * Added logging in in Python.
 * Fixed shutdown cleanup issue in Python aiohttp transport layer.
 * Added a `NoSugarTranslator` translator to `PythonTranslator` which translates Gremlin queries to Python without syntactic sugar (ex `g.V().limit(1)` instead of `g.V()[0:1]`)
@@ -57,7 +57,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Prevented exception with  `hasValue(null)` and allowed filtering as expected.
 * Refined `DotNetTranslator` to be more explicit with `null` arguments to ensure that the right overloads are called.
 * Created `GremlinParser` to construct `Traversal` objects from `gremlin-language`.
-* Added `GremlinLangScriptEngine` as a `GremlinScriptEngine` implementation that users the grammar and `JavaTranslator` to evalute Gremlin.
+* Added `GremlinLangScriptEngine` as a `GremlinScriptEngine` implementation that users the grammar and `JavaTranslator` to evaluate Gremlin.
 * Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
 * Added support for custom GraphBinary types in .NET.
 * Removed some unnecessary exception wrapping around `gremlin-driver` errors now producing a more immediate view of the actual error cause.
