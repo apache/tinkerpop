@@ -40,6 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `JsonBuilder` serialization for GraphSON and Gryo.
 * Added `ProductiveByStrategy` to ensure consistency of `by()` modulator behaviors when child traversal arguments contained no elements.
 * Changed drivers to once again send the previously deprecated and removed "close" message for sessions.
+* Modified `fold()` to merge `Map` instances with `addAll`.
 * Allowed `null` string values in the Gremlin grammar.
 * Fixed support for `SeedStrategy` in the Gremlin Grammar.
 * Fixed bug in `Translator` of `gremlin-javascript` around array translation.

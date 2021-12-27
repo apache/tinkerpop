@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,7 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
-        this.listFold = Operator.addAll.equals(foldFunction);
+        this.listFold = seed.get() instanceof Collection;
         this.setSeedSupplier(seed);
         this.setReducingBiOperator(new FoldBiOperator<>(foldFunction));
     }

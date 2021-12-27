@@ -1241,6 +1241,7 @@ g.V(1).out('knows').values('name').fold(0) {a,b -> a + b.length()} <3>
 g.V().values('age').fold(0) {a,b -> a + b} <4>
 g.V().values('age').fold(0, sum) <5>
 g.V().values('age').sum() <6>
+g.inject(["a":1],["b":2]).fold([], addAll) <7>
 ----
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
@@ -1249,6 +1250,7 @@ g.V().values('age').sum() <6>
 <4> What is the total age of the people in the graph?
 <5> The same as before, but using a built-in bi-function.
 <6> The same as before, but using the <<sum-step,`sum()`-step>>.
+<7> A mechanism for merging `Map` instances. If a key occurs in more than a single `Map`, the later occurrence will replace the earlier.
 
 *Additional References*
 

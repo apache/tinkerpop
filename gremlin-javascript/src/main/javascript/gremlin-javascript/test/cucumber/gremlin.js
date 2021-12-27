@@ -369,6 +369,8 @@ const gremlins = {
     g_V_fold: [function({g}) { return g.V().fold() }], 
     g_V_fold_unfold: [function({g}) { return g.V().fold().unfold() }], 
     g_V_age_foldX0_plusX: [function({g}) { return g.V().values("age").fold(0,Operator.sum) }], 
+    g_injectXa1_b2X_foldXm_addAllX: [function({g}) { return g.inject(new Map([["a",1]]),new Map([["b",2]])).fold(new Map([]),Operator.addAll) }], 
+    g_injectXa1_b2_b4X_foldXm_addAllX: [function({g}) { return g.inject(new Map([["a",1]]),new Map([["b",2]]),new Map([["b",4]])).fold(new Map([]),Operator.addAll) }], 
     g_VX1X_V_valuesXnameX: [function({g, vid1}) { return g.V(vid1).V().values("name") }], 
     g_V_outXknowsX_V_name: [function({g}) { return g.V().out("knows").V().values("name") }], 
     g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name: [function({g}) { return g.V().has("artist","name","Garcia").in_("sungBy").as("song").V().has("artist","name","Willie_Dixon").in_("writtenBy").where(P.eq("song")).values("name") }], 
