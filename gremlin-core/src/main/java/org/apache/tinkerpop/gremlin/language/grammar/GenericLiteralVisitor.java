@@ -57,7 +57,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         this.antlr = antlr;
     }
 
-    public static GenericLiteralVisitor getInstance() {
+    public static GenericLiteralVisitor instance() {
         if (instance == null) {
             instance = new GenericLiteralVisitor();
         }
@@ -66,17 +66,25 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
     }
 
     /**
+     * @deprecated As of release 3.5.2, replaced by {@link #instance()}.
+     */
+    @Deprecated
+    public static GenericLiteralVisitor getInstance() {
+        return instance();
+    }
+
+    /**
      * Parse a string literal context and return the string literal
      */
     public static String getStringLiteral(final GremlinParser.StringLiteralContext stringLiteral) {
-        return (String) (getInstance().visitStringLiteral(stringLiteral));
+        return (String) (instance().visitStringLiteral(stringLiteral));
     }
 
     /**
      * Parse a boolean literal context and return the boolean literal
      */
     public static boolean getBooleanLiteral(final GremlinParser.BooleanLiteralContext booleanLiteral) {
-        return (boolean) (getInstance().visitBooleanLiteral(booleanLiteral));
+        return (boolean) (instance().visitBooleanLiteral(booleanLiteral));
     }
 
     /**
@@ -89,7 +97,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         return stringLiteralList.stringLiteralExpr().stringLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(stringLiteral -> getInstance().visitStringLiteral(stringLiteral))
+                .map(stringLiteral -> instance().visitStringLiteral(stringLiteral))
                 .toArray(String[]::new);
     }
 
@@ -103,7 +111,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         return objectLiteralList.genericLiteralExpr().genericLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(genericLiteral -> getInstance().visitGenericLiteral(genericLiteral))
+                .map(genericLiteral -> instance().visitGenericLiteral(genericLiteral))
                 .toArray(Object[]::new);
     }
 
@@ -417,11 +425,11 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         // https://docs.oracle.com/javase/tutorial/java/data/characters.html
         // http://groovy-lang.org/syntax.html#_escaping_special_characters
         if (ctx.gremlinStringConstants() != null) {
-            return GremlinStringConstantsVisitor.getInstance().visitChildren(ctx);
+            return GremlinStringConstantsVisitor.instance().visitChildren(ctx);
         }
 
         if (ctx.NullLiteral() != null) {
-            return GremlinStringConstantsVisitor.getInstance().visitChildren(ctx);
+            return GremlinStringConstantsVisitor.instance().visitChildren(ctx);
         }
 
         return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));

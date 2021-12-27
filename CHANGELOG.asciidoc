@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved behavior of `V()` and `E()` when `null` is an argument producing a filtering behavior rather than an exception.
 * Prevented metrics computation unless the traversal is in a locked state.
 * Added syntax to Gremlin grammar to explicitly define `byte`, `short` and `BigInteger`.
+* Added syntax to Gremlin grammar to allow construction of a reference `Vertex`.
 * Created a way to produce a corpus of Gremlin traversals via `FeatureReader` and `DocumentationReader` in `gremlin-language`.
 * Changed mechanism for determining if `id` equality with `toString()` is used by validating that elements of the predicate collection are all `String` rather than enforcing homogenous collections in the process.
 * Exposed Gherkin tests as part of the provider test suite.

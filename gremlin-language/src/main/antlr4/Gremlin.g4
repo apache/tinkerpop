@@ -393,6 +393,7 @@ traversalMethod_fold
 
 traversalMethod_from
 	: 'from' LPAREN stringLiteral RPAREN #traversalMethod_from_String
+	| 'from' LPAREN structureVertex RPAREN #traversalMethod_from_Vertex
 	| 'from' LPAREN nestedTraversal RPAREN #traversalMethod_from_Traversal
 	;
 
@@ -685,6 +686,7 @@ traversalMethod_times
 traversalMethod_to
 	: 'to' LPAREN traversalDirection (COMMA stringLiteralList)? RPAREN #traversalMethod_to_Direction_String
 	| 'to' LPAREN stringLiteral RPAREN #traversalMethod_to_String
+	| 'to' LPAREN structureVertex RPAREN #traversalMethod_to_Vertex
 	| 'to' LPAREN nestedTraversal RPAREN #traversalMethod_to_Traversal
 	;
 
@@ -746,24 +748,32 @@ traversalMethod_write
     ARGUMENT AND TERMINAL RULES
 **********************************************/
 
+// There is syntax available in the construction of a ReferenceVertex, that allows the label to not be specified.
+// That use case is related to OLAP when the StarGraph does not preserve the label of adjacent vertices or other
+// fail fast scenarios in that processing model. It is not relevant to the grammar however when a user is creating
+// the Vertex to be used in a Traversal and therefore both id and label are required.
+structureVertex
+    : NEW ('Vertex'|'ReferenceVertex') LPAREN genericLiteral COMMA stringLiteral RPAREN
+    ;
+
 traversalStrategy
 //  : 'ConnectiveStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'ElementIdStrategy' - not supported as the configuration takes a lambda
 //  | 'EventStrategy' - not supported as there is no way to send events back to the client
 //  | 'HaltedTraverserStrategy' - not supported as it is not typically relevant to OLTP
 //  | 'OptionsStrategy' - not supported as it's internal to with()
-    : 'new' 'PartitionStrategy' LPAREN traversalStrategyArgs_PartitionStrategy? (COMMA traversalStrategyArgs_PartitionStrategy)* RPAREN
+    : NEW 'PartitionStrategy' LPAREN traversalStrategyArgs_PartitionStrategy? (COMMA traversalStrategyArgs_PartitionStrategy)* RPAREN
 //  | 'RequirementStrategy' - not supported as it's internally relevant only
 //  | 'SackStrategy' - not supported directly as it's internal to withSack()
-    | 'new' 'SeedStrategy' LPAREN 'seed' COLON integerLiteral RPAREN
+    | NEW 'SeedStrategy' LPAREN 'seed' COLON integerLiteral RPAREN
 //  | 'SideEffectStrategy' - not supported directly as it's internal to withSideEffect()
-    | 'new' 'SubgraphStrategy' LPAREN traversalStrategyArgs_SubgraphStrategy? (COMMA traversalStrategyArgs_SubgraphStrategy)* RPAREN
+    | NEW 'SubgraphStrategy' LPAREN traversalStrategyArgs_SubgraphStrategy? (COMMA traversalStrategyArgs_SubgraphStrategy)* RPAREN
 //  | 'MatchAlgorithmStrategy' - not supported directly as it's internal to match()
 //  | 'ProfileStrategy' - not supported directly as it's internal to profile()
 //  | 'ReferenceElementStrategy' - not supported directly as users really can't/shouldn't change this in our context of a remote Gremlin provider
 //  | 'AdjacentToIncidentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'ByModulatorOptimizationStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-    | 'new'? 'ProductiveByStrategy' (LPAREN traversalStrategyArgs_ProductiveByStrategy? RPAREN)?
+    | NEW? 'ProductiveByStrategy' (LPAREN traversalStrategyArgs_ProductiveByStrategy? RPAREN)?
 //  | 'CountStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'EarlyLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'FilterRankingStrategy' - not supported as it is a default strategy and we don't allow removal at this time
@@ -777,10 +787,10 @@ traversalStrategy
 //  | 'PathRetractionStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'RepeatUnrollStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'ComputerVerificationStrategy' - not supported since it's GraphComputer related
-    | 'new' 'EdgeLabelVerificationStrategy' LPAREN traversalStrategyArgs_EdgeLabelVerificationStrategy? (COMMA traversalStrategyArgs_EdgeLabelVerificationStrategy)* RPAREN
+    | NEW 'EdgeLabelVerificationStrategy' LPAREN traversalStrategyArgs_EdgeLabelVerificationStrategy? (COMMA traversalStrategyArgs_EdgeLabelVerificationStrategy)* RPAREN
 //  | 'LambdaRestrictionStrategy' - not supported as we don't support lambdas in any situation
     | 'ReadOnlyStrategy'
-    | 'new' 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
+    | NEW 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
 //  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
     ;
 

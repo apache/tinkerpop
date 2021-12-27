@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
@@ -389,6 +390,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
      * {@code datetime()} function. Time zone offsets are resolved to where {@code 2018-03-22T00:35:44.741+1600}
      * would be converted to {@code datetime('2018-03-21T08:35:44.741Z')}. More commonly {@code 2018-03-22} would simply
      * generate {@code datetime('2018-03-22T00:00:00Z')}.
+     * <p/>
+     * In addition, it prefers use of {@code Vertex} when producing a {@link ReferenceVertex}.
      */
     public static class LanguageTypeTranslator extends DefaultTypeTranslator {
         public LanguageTypeTranslator(final boolean withParameters) {
@@ -403,6 +406,37 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Timestamp o) {
             return getDatetimeSyntax(o.toInstant());
+        }
+
+        @Override
+        protected Script produceScript(final Vertex o) {
+            script.append("new Vertex(");
+            convertToScript(o.id());
+            script.append(",");
+            convertToScript(o.label());
+            return script.append(")");
+        }
+
+        @Override
+        protected String getSyntax(final Number o) {
+            if (o instanceof Long)
+                return o + "L";
+            else if (o instanceof Double)
+                return o + "D";
+            else if (o instanceof Float)
+                return o + "F";
+            else if (o instanceof Integer)
+                return o + "I";
+            else if (o instanceof Byte)
+                return o + "B";
+            if (o instanceof Short)
+                return o + "S";
+            else if (o instanceof BigInteger)
+                return o + "N";
+            else if (o instanceof BigDecimal)
+                return o + "D";
+            else
+                return o.toString();
         }
 
         private static String getDatetimeSyntax(final Instant i) {

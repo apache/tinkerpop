@@ -412,6 +412,9 @@ And the traversal of
   """
 ----
 
+The traversal must be written so that it can be parsed by both `gremlin-groovy` and `gremlin-language`. Using syntax
+particular to one but not the other may result in test execution errors.
+
 It will be the results of this traversal that end up being asserted by Gherkin. When writing these test traversals,
 be sure to always use the method and enum prefixes. For example, use  `__.out()` for an anonymous traversal rather
 than just `out()` and prefer `Scope.local` rather than just `local`.

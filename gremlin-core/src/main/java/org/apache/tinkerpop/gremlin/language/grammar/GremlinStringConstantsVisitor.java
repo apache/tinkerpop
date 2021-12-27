@@ -35,11 +35,18 @@ public class GremlinStringConstantsVisitor extends GremlinBaseVisitor<Object> {
 
     private static GremlinStringConstantsVisitor instance;
 
-    public static GremlinStringConstantsVisitor getInstance() {
+    public static GremlinStringConstantsVisitor instance() {
         if (instance == null) {
             instance = new GremlinStringConstantsVisitor();
         }
         return instance;
+    }
+
+    /**
+     * @deprecated As of release 3.5.2, replaced by {@link #instance()}
+     */
+    public static GremlinStringConstantsVisitor getInstance() {
+        return instance();
     }
 
     @Override
