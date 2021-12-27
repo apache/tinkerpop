@@ -61,3 +61,24 @@ Feature: Step - fold()
       | result |
       | d[123].i |
 
+  Scenario: g_injectXa1_b2X_foldXm_addAllX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(["a":1],["b":2]).fold([:], Operator.addAll)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"d[1].i", "b":"d[2].i"}] |
+
+  Scenario: g_injectXa1_b2_b4X_foldXm_addAllX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(["a":1], ["b":2], ["b":4]).fold([:], Operator.addAll)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"d[1].i", "b":"d[4].i"}] |
