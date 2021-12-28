@@ -103,7 +103,10 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 break;
             case "shouldBlockAdditionalRequestsDuringClose":
             case "shouldBlockAdditionalRequestsDuringForceClose":
-                clearNeo4j(settings);
+            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
+            case "shouldExecuteInSessionWithTransactionManagement":
+            case "shouldRollbackOnEvalExceptionForManagedTransaction":
+                tryIncludeNeo4jGraph(settings);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
@@ -116,19 +119,9 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 processorSettingsForDisableFunctionCache.config.put(SessionOpProcessor.CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, false);
                 settings.processors.add(processorSettingsForDisableFunctionCache);
                 break;
-            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
-            case "shouldExecuteInSessionWithTransactionManagement":
-            case "shouldRollbackOnEvalExceptionForManagedTransaction":
-                clearNeo4j(settings);
-                break;
         }
 
         return settings;
-    }
-
-    private static void clearNeo4j(Settings settings) {
-        deleteDirectory(new File("/tmp/neo4j"));
-        settings.graphs.put("graph", "conf/neo4j-empty.properties");
     }
 
     @Test

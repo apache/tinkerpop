@@ -237,6 +237,12 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     @Override
     public void close() throws Exception {
         try {
+            cluster.close();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
+        try {
             stopServer();
         } catch (Exception ex) {
             throw new RuntimeException(ex);

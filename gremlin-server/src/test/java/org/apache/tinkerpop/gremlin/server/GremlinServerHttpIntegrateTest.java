@@ -73,13 +73,11 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 settings.maxContentLength = 31;
                 break;
             case "should200OnPOSTTransactionalGraph":
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                tryIncludeNeo4jGraph(settings);
                 break;
             case "should200OnPOSTTransactionalGraphInStrictMode":
+                tryIncludeNeo4jGraph(settings);
                 settings.strictTransactionManagement = true;
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
             case "should200OnPOSTWithGraphSON1d0AcceptHeaderDefaultResultToJson":
                 settings.serializers.clear();
