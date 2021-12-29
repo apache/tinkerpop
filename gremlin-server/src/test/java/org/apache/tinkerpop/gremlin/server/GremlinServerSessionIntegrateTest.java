@@ -42,7 +42,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,6 +120,8 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 // Unified setting
                 settings.sessionLifetimeTimeout = 3000L;
                 break;
+            case "shouldBlowTheSessionQueueSize":
+                settings.maxSessionTaskQueueSize = 1;
             case "shouldCloseSessionOnClientClose":
             case "shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions":
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
@@ -128,8 +129,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
             case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
                 tryIncludeNeo4jGraph(settings);
-            case "shouldBlowTheSessionQueueSize":
-                settings.maxSessionTaskQueueSize = 1;
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
