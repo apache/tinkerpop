@@ -97,6 +97,7 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -185,16 +186,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction":
             case "shouldManageTransactionsInSession":
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                tryIncludeNeo4jGraph(settings);
                 break;
             case "shouldRequireAliasedGraphVariablesInStrictTransactionMode":
                 settings.strictTransactionManagement = true;
                 break;
             case "shouldAliasGraphVariablesInStrictTransactionMode":
                 settings.strictTransactionManagement = true;
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                tryIncludeNeo4jGraph(settings);
                 break;
             case "shouldProcessSessionRequestsInOrderAfterTimeout":
                 settings.evaluationTimeout = 250;
@@ -614,6 +613,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat("Should contain 2 results", results.size() == 2);
             assertThat("The numeric result should be 1", results.contains(1L));
             assertThat("The string result contain label person", results.contains("person"));
+
+            executor.shutdown();
         } finally {
             cluster.close();
         }
@@ -926,7 +927,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-
             final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
             assertEquals(1, r.size());
 
@@ -1419,9 +1419,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test
@@ -1439,13 +1439,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+
+            final Client rebound = cluster.connect().alias("graph");
+            final Vertex v = rebound.submit("g.addVertex(T.label,'person')").all().get().get(0).getVertex();
+            assertEquals("person", v.label());
+        } finally {
+            cluster.close();
         }
-
-        final Client rebound = cluster.connect().alias("graph");
-        final Vertex v = rebound.submit("g.addVertex(T.label,'person')").all().get().get(0).getVertex();
-        assertEquals("person", v.label());
-
-        cluster.close();
     }
 
     @Test
@@ -1461,13 +1461,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+
+            final Client rebound = cluster.connect().alias("graph");
+            final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')").all().get().get(0).getVertex();
+            assertEquals("person", v.label());
+        } finally {
+            cluster.close();
         }
-
-        final Client rebound = cluster.connect().alias("graph");
-        final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')").all().get().get(0).getVertex();
-        assertEquals("person", v.label());
-
-        cluster.close();
     }
 
     @Test
@@ -1720,6 +1720,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = Mockito.spy(cluster.connect().alias("g"));
         client.submit("", RequestOptions.build().userAgent("test").create()).all().get();
         cluster.close();
+
         final ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
         verify(client).submitAsync(requestMessageCaptor.capture());
         final RequestMessage requestMessage = requestMessageCaptor.getValue();
@@ -1734,14 +1735,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
         g.with(Tokens.ARGS_USER_AGENT, "test").V().iterate();
         cluster.close();
-        ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
+
+        final ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
         verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
-        RequestOptions requestOptions = requestOptionsCaptor.getValue();
+        final RequestOptions requestOptions = requestOptionsCaptor.getValue();
         assertEquals("test", requestOptions.getUserAgent().get());
 
-        ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+        final ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
         verify(client).submitAsync(requestMessageCaptor.capture());
-        RequestMessage requestMessage = requestMessageCaptor.getValue();
+        final RequestMessage requestMessage = requestMessageCaptor.getValue();
         assertEquals("test", requestMessage.getArgs().getOrDefault(Tokens.ARGS_USER_AGENT, null));
     }
 
@@ -1749,28 +1751,28 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldSendRequestIdBytecode() {
         final UUID overrideRequestId = UUID.randomUUID();
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
-            final Client client = Mockito.spy(cluster.connect().alias("g"));
-            Mockito.when(client.alias("g")).thenReturn(client);
-            GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
-            g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
-            cluster.close();
-            ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
-            verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
-            RequestOptions requestOptions = requestOptionsCaptor.getValue();
-            assertTrue(requestOptions.getOverrideRequestId().isPresent());
-            assertEquals(overrideRequestId, requestOptions.getOverrideRequestId().get());
+        final Client client = Mockito.spy(cluster.connect().alias("g"));
+        Mockito.when(client.alias("g")).thenReturn(client);
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
+        g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
+        cluster.close();
 
-            ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
-            verify(client).submitAsync(requestMessageCaptor.capture());
-            RequestMessage requestMessage = requestMessageCaptor.getValue();
-            assertEquals(overrideRequestId, requestMessage.getRequestId());
+        final ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
+        verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
+        final RequestOptions requestOptions = requestOptionsCaptor.getValue();
+        assertTrue(requestOptions.getOverrideRequestId().isPresent());
+        assertEquals(overrideRequestId, requestOptions.getOverrideRequestId().get());
 
+        final ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+        verify(client).submitAsync(requestMessageCaptor.capture());
+        final RequestMessage requestMessage = requestMessageCaptor.getValue();
+        assertEquals(overrideRequestId, requestMessage.getRequestId());
     }
 
     @Test
     public void shouldClusterReadFileFromResources() throws Exception {
         final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);
-        assertTrue(cluster != null);
+        assertNotNull(cluster);
         cluster.close();
     }
 
@@ -1793,9 +1795,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             // should get a rejection here
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root.getMessage(), startsWith("There is already a request pending with an id of:"));
+            assertEquals(100, result1.get().one().getInt());
+        } finally {
+            cluster.close();
         }
-
-        assertEquals(100, result1.get().one().getInt());
     }
 
     /**
@@ -1814,7 +1817,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             logger.info("Verifying driver cannot connect to server.");
             client.submit("g").all().get(500, TimeUnit.MILLISECONDS);
             fail("Should throw an exception.");
-        } catch (RuntimeException re) {
+        } catch (Exception re) {
             // Client would have no active connections to the host, hence it would encounter a timeout
             // trying to find an alive connection to the host.
             assertThat(re, instanceOf(NoHostAvailableException.class));

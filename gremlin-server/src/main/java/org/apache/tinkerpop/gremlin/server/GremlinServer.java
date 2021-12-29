@@ -39,12 +39,15 @@ import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -300,15 +303,43 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
+            // close TraversalSource and Graph instances - there aren't guarantees that closing Graph will close all
+            // spawned TraversalSource instances so both should be closed directly and independently.
             if (serverGremlinExecutor != null) {
-                serverGremlinExecutor.getGraphManager().getGraphNames().forEach(gName -> {
+                final Set<String> traversalSourceNames = serverGremlinExecutor.getGraphManager().getTraversalSourceNames();
+                traversalSourceNames.forEach(traversalSourceName -> {
+                    logger.debug("Closing GraphTraversalSource instance [{}]", traversalSourceName);
+                    try {
+                        serverGremlinExecutor.getGraphManager().getTraversalSource(traversalSourceName).close();
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception while closing GraphTraversalSource instance [%s]", traversalSourceName), ex);
+                    } finally {
+                        logger.info("Closed GraphTraversalSource instance [{}]", traversalSourceName);
+                    }
+
+                    try {
+                        serverGremlinExecutor.getGraphManager().removeTraversalSource(traversalSourceName);
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception while removing GraphTraversalSource instance [%s] from GraphManager", traversalSourceName), ex);
+                    }
+                });
+
+                final Set<String> graphNames = serverGremlinExecutor.getGraphManager().getGraphNames();
+                graphNames.forEach(gName -> {
                     logger.debug("Closing Graph instance [{}]", gName);
                     try {
-                        serverGremlinExecutor.getGraphManager().getGraph(gName).close();
+                        final Graph graph = serverGremlinExecutor.getGraphManager().getGraph(gName);
+                        graph.close();
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception while closing Graph instance [%s]", gName), ex);
                     } finally {
                         logger.info("Closed Graph instance [{}]", gName);
+                    }
+
+                    try {
+                        serverGremlinExecutor.getGraphManager().removeGraph(gName);
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception while removing Graph instance [%s] from GraphManager", gName), ex);
                     }
                 });
             }
