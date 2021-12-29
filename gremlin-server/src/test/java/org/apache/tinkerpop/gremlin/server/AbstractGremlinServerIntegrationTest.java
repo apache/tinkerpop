@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.op.OpLoader;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -140,9 +141,15 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public void stopServer() throws Exception {
+        // calling close() on TinkerGraph does not free resources quickly enough. adding a clear() call let's gc
+        // cleanup earlier
+        server.getServerGremlinExecutor().getGraphManager().getAsBindings().values().stream()
+                .filter(g -> g instanceof TinkerGraph).forEach(g -> ((TinkerGraph) g).clear());
+
         if (server != null) {
             server.stop().join();
         }
+
         // reset the OpLoader processors so that they can get reconfigured on startup - Settings may have changed
         // between tests
         OpLoader.reset();
@@ -170,14 +177,24 @@ public abstract class AbstractGremlinServerIntegrationTest {
         return (directory.delete());
     }
 
-    protected static void assumeNeo4jIsPresent() {
-        boolean neo4jIncludedForTesting;
+    protected static void tryIncludeNeo4jGraph(final Settings settings) {
+        if (isNeo4jPresent()) {
+            deleteDirectory(new File("/tmp/neo4j"));
+            settings.graphs.put("graph", "conf/neo4j-empty.properties");
+        }
+    }
+
+    protected static boolean isNeo4jPresent() {
         try {
             Class.forName("org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl");
-            neo4jIncludedForTesting = true;
+            return true;
         } catch (Throwable ex) {
-            neo4jIncludedForTesting = false;
+            return false;
         }
+    }
+
+    protected static void assumeNeo4jIsPresent() {
+        boolean neo4jIncludedForTesting = isNeo4jPresent();
         assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));
     }
 

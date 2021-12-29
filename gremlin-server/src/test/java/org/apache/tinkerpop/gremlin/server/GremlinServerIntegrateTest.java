@@ -318,6 +318,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
         }
+
+        g.close();
     }
 
     @Test
@@ -336,7 +338,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldPingChannelIfClientDies() throws Exception {
-        final Client client = TestClientFactory.build().maxConnectionPoolSize(1).minConnectionPoolSize(1).keepAliveInterval(0).create().connect();
+        final Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(1).minConnectionPoolSize(1).keepAliveInterval(0).create();
+        final Client client = cluster.connect();
         client.submit("1+1").all().get();
 
         // since we do nothing for 3 seconds and the time limit for ping is 1 second we should get *about* 3 pings -
@@ -344,7 +347,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // there record
         Thread.sleep(3000);
 
-        client.close();
+        cluster.close();
 
         // stop the server to be sure that logs flush
         stopServer();
@@ -378,10 +381,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
         }
+
+        g.close();
     }
 
     @Test
-    public void shouldTimeOutRemoteTraversalWithPerRequestOption() {
+    public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
         try {
@@ -406,6 +411,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
         }
+
+        g.close();
     }
 
     @Test
@@ -1008,6 +1015,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
+        g.close();
     }
 
     @Test
@@ -1019,7 +1027,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
 
         final Traversal<Vertex,Integer> traversal = g.V().hasLabel("person").has("age", 20).values("age");
-        int age = traversal.promise(t -> t.next(1).get(0)).join();
+        final int age = traversal.promise(t -> t.next(1).get(0)).join();
         assertEquals(20, age);
         assertEquals(20, (int)traversal.next());
         assertThat(traversal.hasNext(), is(false));
@@ -1030,6 +1038,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(traversalCloned.promise(t -> ((Traversal) t).hasNext()).join(), is(false));
 
         assertEquals(3, g.V().promise(Traversal::toList).join().size());
+
+        g.close();
     }
 
     @Test
@@ -1055,6 +1065,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have tanked out because of number of parameters used and size of the compile script");
         } catch (Exception ex) {
             assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM"));
+        } finally {
+            cluster.close();
         }
     }
 
@@ -1071,6 +1083,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals("try again!", t.getMessage());
             assertEquals(ResponseStatusCode.SERVER_ERROR_TEMPORARY, ((ResponseException) t).getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
     }
 }

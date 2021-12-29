@@ -23,7 +23,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -113,7 +112,13 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 break;
             case "shouldCloseSessionOnClientClose":
             case "shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions":
-                clearNeo4j(settings);
+            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
+            case "shouldExecuteInSessionWithTransactionManagement":
+            case "shouldRollbackOnEvalExceptionForManagedTransaction":
+            case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
+                tryIncludeNeo4jGraph(settings);
+            case "shouldBlowTheSessionQueueSize":
+                settings.maxSessionTaskQueueSize = 1;
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
@@ -140,24 +145,9 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 settings.useGlobalFunctionCacheForSessions = false;
 
                 break;
-            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
-            case "shouldExecuteInSessionWithTransactionManagement":
-            case "shouldRollbackOnEvalExceptionForManagedTransaction":
-            case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
-                clearNeo4j(settings);
-                break;
-            case "shouldBlowTheSessionQueueSize":
-                clearNeo4j(settings);
-                settings.maxSessionTaskQueueSize = 1;
-                break;
         }
 
         return settings;
-    }
-
-    private static void clearNeo4j(Settings settings) {
-        deleteDirectory(new File("/tmp/neo4j"));
-        settings.graphs.put("graph", "conf/neo4j-empty.properties");
     }
 
     @Test
@@ -568,7 +558,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         } finally {
             cluster.close();
         }
-
     }
 
     @Test
