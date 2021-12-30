@@ -54,10 +54,6 @@ limitations under the License.
         </dependency>
     </dependencies>
 
-    <properties>
-        <antlr4.version>4.9.1</antlr4.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>

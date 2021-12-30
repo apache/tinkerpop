@@ -149,19 +149,30 @@ limitations under the License.
         <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
+        <antlr4.version>4.9.1</antlr4.version>
+        <caffeine.version>2.3.1</caffeine.version>
+        <commons.collections.version>3.2.2</commons.collections.version>
         <commons.configuration.version>2.7</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.8.0</commons.io.version>
         <commons.lang3.version>3.11</commons.lang3.version>
         <commons.text.version>1.9</commons.text.version>
+        <cucumber.version>6.11.0</cucumber.version>
+        <exp4j.version>0.4.8</exp4j.version>
         <groovy.version>2.5.14</groovy.version>
+        <guice.version>4.2.3</guice.version>
         <hadoop.version>3.3.1</hadoop.version>
+        <hamcrest.version>2.2</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
+        <javapoet.version>1.13.0</javapoet.version>
+        <jbcrypt.version>0.4</jbcrypt.version>
         <jcabi.version>1.1</jcabi.version>
         <junit.version>4.13.1</junit.version>
+        <kerby.version>2.0.1</kerby.version>
         <logback.version>1.2.3</logback.version>
         <metrics.version>3.0.2</metrics.version>
+        <mockito.version>3.3.3</mockito.version>
         <netty.version>4.1.72.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.27</snakeyaml.version>
@@ -251,44 +262,6 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <additionalJOption>-Xdoclint:none</additionalJOption>
-                    <tags>
-                        <tag>
-                            <name>example</name>
-                            <placement>aoptcmf</placement>
-                            <head>Example:</head>
-                        </tag>
-                    </tags>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>aggregate-in-site-lifecycle</id>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                        <phase>site</phase>
-                        <configuration>
-                            <additionalJOption>-Xdoclint:none</additionalJOption>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -465,6 +438,7 @@ limitations under the License.
                 </configuration>
             </plugin>
         </plugins>
+
         <pluginManagement>
             <plugins>
                 <!-- there is a jdk11 profile that will be enabled if built with that version - these settings will be overridden -->
@@ -655,7 +629,7 @@ limitations under the License.
             <dependency>
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
-                <version>3.2.2</version>
+                <version>${commons.collections.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -743,7 +717,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>3.3.3</version>
+                <version>${mockito.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hamcrest</groupId>
@@ -793,7 +767,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
-                <version>2.2</version>
+                <version>${hamcrest.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.hakky54</groupId>
@@ -1310,12 +1284,243 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
+                                        gremlin-annotations/src/main/java:gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy/target/generated-sources/annotations:gremlin-groovy/target/generated-sources/groovy-stubs/main:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
-                                    <includeDependencySources>true</includeDependencySources>
                                     <dependencySourceIncludes>
                                         <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                                     </dependencySourceIncludes>
+                                    <additionalDependencies>
+                                        <additionalDependency>
+                                            <groupId>com.github.ben-manes.caffeine</groupId>
+                                            <artifactId>caffeine</artifactId>
+                                            <version>${caffeine.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-buffer</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-codec</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-codec-http</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.mindrot</groupId>
+                                            <artifactId>jbcrypt</artifactId>
+                                            <version>${jbcrypt.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-common</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-handler</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-transport</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-transport-classes-epoll</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.antlr</groupId>
+                                            <artifactId>antlr4</artifactId>
+                                            <version>${antlr4.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.antlr</groupId>
+                                            <artifactId>antlr4-runtime</artifactId>
+                                            <version>${antlr4.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.google.inject</groupId>
+                                            <artifactId>guice</artifactId>
+                                            <version>${guice.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.mockito</groupId>
+                                            <artifactId>mockito-core</artifactId>
+                                            <version>${mockito.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-configuration2</artifactId>
+                                            <version>${commons.configuration.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>commons-collections</groupId>
+                                            <artifactId>commons-collections</artifactId>
+                                            <version>${commons.collections.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-text</artifactId>
+                                            <version>${commons.text.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.codahale.metrics</groupId>
+                                            <artifactId>metrics-core</artifactId>
+                                            <version>${metrics.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.codahale.metrics</groupId>
+                                            <artifactId>metrics-graphite</artifactId>
+                                            <version>${metrics.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.codahale.metrics</groupId>
+                                            <artifactId>metrics-ganglia</artifactId>
+                                            <version>${metrics.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>info.ganglia.gmetric4j</groupId>
+                                            <artifactId>gmetric4j</artifactId>
+                                            <version>1.0.10</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.hamcrest</groupId>
+                                            <artifactId>hamcrest</artifactId>
+                                            <version>${hamcrest.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.cucumber</groupId>
+                                            <artifactId>cucumber-core</artifactId>
+                                            <version>${cucumber.version}</version>
+                                        </additionalDependency>
+                                        <!-- datatable doesn't align with cucumber.version until 7.x -->
+                                        <additionalDependency>
+                                            <groupId>io.cucumber</groupId>
+                                            <artifactId>datatable</artifactId>
+                                            <version>4.1.0</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.cucumber</groupId>
+                                            <artifactId>cucumber-java</artifactId>
+                                            <version>${cucumber.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.cucumber</groupId>
+                                            <artifactId>cucumber-junit</artifactId>
+                                            <version>${cucumber.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.cucumber</groupId>
+                                            <artifactId>cucumber-guice</artifactId>
+                                            <version>${cucumber.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>junit</groupId>
+                                            <artifactId>junit</artifactId>
+                                            <version>${junit.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.kerby</groupId>
+                                            <artifactId>kerb-simplekdc</artifactId>
+                                            <version>${kerby.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.kerby</groupId>
+                                            <artifactId>kerb-server</artifactId>
+                                            <version>${kerby.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.kerby</groupId>
+                                            <artifactId>kerb-client</artifactId>
+                                            <version>${kerby.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.kerby</groupId>
+                                            <artifactId>kerb-common</artifactId>
+                                            <version>${kerby.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.kerby</groupId>
+                                            <artifactId>kerb-core</artifactId>
+                                            <version>${kerby.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.javatuples</groupId>
+                                            <artifactId>javatuples</artifactId>
+                                            <version>${java.tuples.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-shaded</artifactId>
+                                            <version>${project.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-jsr223</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-groovysh</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-json</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-lang3</artifactId>
+                                            <version>${commons.lang3.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>commons-lang</groupId>
+                                            <artifactId>commons-lang</artifactId>
+                                            <version>${commons.lang.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.squareup</groupId>
+                                            <artifactId>javapoet</artifactId>
+                                            <version>${javapoet.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>net.objecthunter</groupId>
+                                            <artifactId>exp4j</artifactId>
+                                            <version>${exp4j.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.slf4j</groupId>
+                                            <artifactId>slf4j-api</artifactId>
+                                            <version>${slf4j.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.yaml</groupId>
+                                            <artifactId>snakeyaml</artifactId>
+                                            <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.jcabi</groupId>
+                                            <artifactId>jcabi-manifests</artifactId>
+                                            <version>${jcabi.version}</version>
+                                        </additionalDependency>
+                                    </additionalDependencies>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1331,7 +1536,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        gremlin-core/src/main/java:gremlin-driver/src/main/java
+                                        gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java
                                     </sourcepath>
                                     <sourceFileIncludes>
                                         <!-- jsr223 -->
@@ -1403,10 +1608,62 @@ limitations under the License.
                                         <include>org/apache/tinkerpop/gremlin/driver/*.java
                                         </include>
                                     </sourceFileIncludes>
-                                    <!-- add dependencies as necessary here - not sure why this is necessary, but assume
-                                         it is related to the <sourceFileIncludes> as ERROR messages do not appear on
-                                         build for the "full" javadocs -->
                                     <additionalDependencies>
+                                        <additionalDependency>
+                                            <groupId>org.antlr</groupId>
+                                            <artifactId>antlr4</artifactId>
+                                            <version>${antlr4.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.antlr</groupId>
+                                            <artifactId>antlr4-runtime</artifactId>
+                                            <version>${antlr4.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-text</artifactId>
+                                            <version>${commons.text.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-buffer</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-codec</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-codec-http</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-common</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-handler</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-transport</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-transport-classes-epoll</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>commons-collections</groupId>
+                                            <artifactId>commons-collections</artifactId>
+                                            <version>${commons.collections.version}</version>
+                                        </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.apache.commons</groupId>
                                             <artifactId>commons-configuration2</artifactId>
@@ -1443,6 +1700,16 @@ limitations under the License.
                                             <groupId>commons-lang</groupId>
                                             <artifactId>commons-lang</artifactId>
                                             <version>${commons.lang.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.squareup</groupId>
+                                            <artifactId>javapoet</artifactId>
+                                            <version>${javapoet.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>net.objecthunter</groupId>
+                                            <artifactId>exp4j</artifactId>
+                                            <version>${exp4j.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.slf4j</groupId>

@@ -75,7 +75,7 @@ limitations under the License.
         <dependency>
             <groupId>net.objecthunter</groupId>
             <artifactId>exp4j</artifactId>
-            <version>0.4.8</version>
+            <version>${exp4j.version}</version>
         </dependency>
         <!-- LOGGING -->
         <dependency>
