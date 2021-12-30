@@ -463,6 +463,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.4.13 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Fixed `RangeGlobalStep` which was prematurely closing the iterator.
+* Added explicit state to `DefaultTraversal` to track whether or not it was fully iterated and closed to ensure it released resources properly.
 * Prevented XML External Entity (XXE) style attacks via `GraphMLReader` by disabling DTD and external entities by default.
 * Improved error message for failed serialization for HTTP-based requests.
 * Fixed a `NullPointerException` that could occur during a failed `Connection` initialization due to uninstantiated `AtomicInteger`.
