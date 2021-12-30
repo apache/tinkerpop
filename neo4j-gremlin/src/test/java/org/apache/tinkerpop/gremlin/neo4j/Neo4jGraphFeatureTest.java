@@ -54,7 +54,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
-        plugin = {"pretty", "junit:target/cucumber.xml"})
+        plugin = {"progress", "junit:target/cucumber.xml"})
 public class Neo4jGraphFeatureTest {
     private static final Logger logger = LoggerFactory.getLogger(Neo4jGraphFeatureTest.class);
 

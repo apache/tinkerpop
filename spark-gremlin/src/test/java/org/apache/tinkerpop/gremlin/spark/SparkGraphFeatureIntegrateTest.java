@@ -63,7 +63,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
-        plugin = {"pretty", "junit:target/cucumber.xml"})
+        plugin = {"progress", "junit:target/cucumber.xml"})
 public class SparkGraphFeatureIntegrateTest {
     private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 

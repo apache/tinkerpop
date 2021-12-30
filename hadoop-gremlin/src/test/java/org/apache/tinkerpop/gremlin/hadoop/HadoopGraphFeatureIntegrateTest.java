@@ -55,7 +55,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
-        plugin = {"pretty", "junit:target/cucumber.xml"})
+        plugin = {"progress", "junit:target/cucumber.xml"})
 public class HadoopGraphFeatureIntegrateTest {
     private static final String skipReasonLength = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 

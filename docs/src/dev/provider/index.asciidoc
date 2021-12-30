@@ -837,7 +837,7 @@ The following is just an example as taken from TinkerGraph:
         tags = "not @RemoteOnly",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         features = { "../gremlin-test/features" },
-        plugin = {"pretty", "junit:target/cucumber.xml",
+        plugin = {"progress", "junit:target/cucumber.xml",
         objectFactory = GuiceFactory.class})
 ----
 
