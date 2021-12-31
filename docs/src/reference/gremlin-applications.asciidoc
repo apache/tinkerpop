@@ -1100,9 +1100,8 @@ by other serializers that also support it.
 The format of the serialization is configured by the `serializers` setting described in the table above.  Note that
 some serializers have additional configuration options as defined by the `serializers[X].config` setting.  The
 `config` setting is a `Map` where the keys and values get passed to the serializer at its initialization.  The
-available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with three
-different serializers: GraphSON, Gryo, and GraphBinary (however, GraphSON and GraphBinary are the only two configured
-by default).
+available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with two
+different serializers: GraphSON and GraphBinary.
 
 ===== GraphSON
 
@@ -1163,38 +1162,6 @@ IMPORTANT: `GraphSONMessageSerializerGremlinV1d0` configures `application/vnd.gr
 not support text serialization (i.e. `MessageTextSerializer`) which means that it cannot be used for the serializing
 results to the HTTP endpoint in Gremlin Server. GraphSON 1.0 must be configured with `application/json` using the
 `GraphSONMessageSerializerV1d0` as demonstrated above.
-
-===== Gryo
-
-WARNING: Gryo is no longer the recommended serialization format for Gremlin Server. Consider using
-<<server-graphbinary, GraphBinary>> instead.
-
-The Gryo serializer utilizes Kryo-based serialization which produces a binary output.  This format is best consumed
-by JVM-based languages. The format itself is described in the
-link:https://tinkerpop.apache.org/docs/current/dev/io/#gryo[IO Documentation].
-
-[source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerGremlinV3d0 }
-
-It has the MIME type of `application/vnd.gremlin-v3.0+gryo` and the following configuration options:
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Key |Description |Default
-|bufferSize |The maximum size of the Kryo buffer for use on a single object being serialized.  Increasing this value will correct `KryoException` errors that complain of "Buffer too small". |_4096_
-|classResolverSupplier |The fully qualified classname of a custom `Supplier<ClassResolver>` which will be used when constructing `Kryo` instances. There is no direct default for this setting, but without a setting the `GryoClassResolver` is used. |_none_
-|custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
-|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
-|serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
-|=========================================================
-
-As described above, there are multiple ways in which to register serializers for Kryo-based serialization.  Note
-that the `ioRegistries` setting is applied first, followed by the `custom` setting.
-
-Those configuring or implementing a `Supplier<ClassResolver>` should consider this an "advanced" option and typically
-important to use cases where server types need to be coerced to client types (i.e. a type is available on the server
-but not on the client).  Implementations should typically instantiate `ClassResolver` implementations that are
-extensions of the `GryoClassResolver` as this class is important to most serialization tasks in TinkerPop.
 
 [[server-graphbinary]]
 ===== GraphBinary

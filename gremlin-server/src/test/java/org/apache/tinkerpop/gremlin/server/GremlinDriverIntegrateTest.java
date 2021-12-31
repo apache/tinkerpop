@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -37,8 +36,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -882,46 +879,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldSerializeToStringWhenRequestedGryoV1() throws Exception {
-        final Map<String, Object> m = new HashMap<>();
-        m.put("serializeResultToString", true);
-        final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
-        serializer.configure(m, null);
-
-        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
-        final Client client = cluster.connect();
-
-        try {
-            final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
-            final List<Result> results = resultSet.all().join();
-            assertEquals(1, results.size());
-            assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldSerializeToStringWhenRequestedGryoV3() throws Exception {
-        final Map<String, Object> m = new HashMap<>();
-        m.put("serializeResultToString", true);
-        final GryoMessageSerializerV3d0 serializer = new GryoMessageSerializerV3d0();
-        serializer.configure(m, null);
-
-        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
-        final Client client = cluster.connect();
-
-        try {
-            final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
-            final List<Result> results = resultSet.all().join();
-            assertEquals(1, results.size());
-            assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldWorkWithGraphSONV1Serialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
@@ -1472,7 +1429,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
         final Client client = cluster.connect();
         try {
             try {
@@ -1486,8 +1443,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             }
 
             final Client clientAliased = client.alias("g1");
-            final Vertex v = clientAliased.submit("g.addV().property('name','jason')").all().get().get(0).getVertex();
-            assertEquals("jason", v.value("name"));
+            final String name = clientAliased.submit("g.addV().property('name','jason').values('name')").all().get().get(0).getString();
+            assertEquals("jason", name);
         } finally {
             cluster.close();
         }
@@ -1495,7 +1452,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasGraphVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1512,8 +1469,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client aliased = cluster.connect(name.getMethodName()).alias("graph");
             assertEquals("jason", aliased.submit("n='jason'").all().get().get(0).getString());
-            final Vertex v = aliased.submit("g.addVertex('name',n)").all().get().get(0).getVertex();
-            assertEquals("jason", v.value("name"));
+            final String name = aliased.submit("g.addVertex('name',n).values('name')").all().get().get(0).getString();
+            assertEquals("jason", name);
         } finally {
             cluster.close();
         }
@@ -1521,7 +1478,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1536,8 +1493,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final Client clientAliased = client.alias("g1");
         assertEquals("jason", clientAliased.submit("n='jason'").all().get().get(0).getString());
-        final Vertex v = clientAliased.submit("g.addV().property('name',n)").all().get().get(0).getVertex();
-        assertEquals("jason", v.value("name"));
+        final String name = clientAliased.submit("g.addV().property('name',n).values('name')").all().get().get(0).getString();
+        assertEquals("jason", name);
 
         cluster.close();
     }

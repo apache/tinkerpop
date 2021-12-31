@@ -42,23 +42,5 @@ public final class SerTokens {
     public static final String MIME_GRAPHSON_V1D0 = "application/vnd.gremlin-v1.0+json";
     public static final String MIME_GRAPHSON_V2D0 = "application/vnd.gremlin-v2.0+json";
     public static final String MIME_GRAPHSON_V3D0 = "application/vnd.gremlin-v3.0+json";
-
-    /**
-     * @deprecated As of release 3.4.3, replaced by {@link #MIME_GRAPHBINARY_V1D0}.
-     */
-    @Deprecated
-    public static final String MIME_GRYO_V1D0 = "application/vnd.gremlin-v1.0+gryo";
-
-    /**
-     * @deprecated As of release 3.4.3, replaced by {@link #MIME_GRAPHBINARY_V1D0}.
-     */
-    @Deprecated
-    public static final String MIME_GRYO_V3D0 = "application/vnd.gremlin-v3.0+gryo";
-
-    /**
-     * @deprecated As of release 3.2.6, not directly replaced - supported through {@link HaltedTraverserStrategy}.
-     */
-    @Deprecated
-    public static final String MIME_GRYO_LITE_V1D0 = "application/vnd.gremlin-v1.0+gryo-lite";
     public static final String MIME_GRAPHBINARY_V1D0 = "application/vnd.graphbinary-v1.0";
 }

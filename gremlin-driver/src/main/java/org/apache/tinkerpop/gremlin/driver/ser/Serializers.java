@@ -35,25 +35,7 @@ public enum Serializers {
     GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
-    GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0),
-
-    /**
-     * @deprecated As of release 3.4.3, replaced by {@link #GRAPHBINARY_V1D0}.
-     */
-    @Deprecated
-    GRYO_V1D0(SerTokens.MIME_GRYO_V1D0),
-
-    /**
-     * @deprecated As of release 3.4.3, replaced by {@link #GRAPHBINARY_V1D0}.
-     */
-    @Deprecated
-    GRYO_V3D0(SerTokens.MIME_GRYO_V3D0),
-
-    /**
-     * @deprecated As of release 3.2.6, not directly replaced - supported through {@link HaltedTraverserStrategy}.
-     */
-    @Deprecated
-    GRYO_LITE_V1D0(SerTokens.MIME_GRYO_LITE_V1D0);
+    GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0);
 
     private String value;
 
@@ -68,17 +50,12 @@ public enum Serializers {
     public MessageSerializer<?> simpleInstance() {
         switch (value) {
             case SerTokens.MIME_JSON:
+            case SerTokens.MIME_GRAPHSON_V3D0:
                 return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRAPHSON_V1D0:
                 return new GraphSONMessageSerializerGremlinV1d0();
             case SerTokens.MIME_GRAPHSON_V2D0:
                 return new GraphSONMessageSerializerV2d0();
-            case SerTokens.MIME_GRAPHSON_V3D0:
-                return new GraphSONMessageSerializerV3d0();
-            case SerTokens.MIME_GRYO_V1D0:
-                return new GryoMessageSerializerV1d0();
-            case SerTokens.MIME_GRYO_V3D0:
-                return new GryoMessageSerializerV3d0();
             case SerTokens.MIME_GRAPHBINARY_V1D0:
                 return new GraphBinaryMessageSerializerV1();
             default:

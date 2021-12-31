@@ -43,7 +43,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Packaged Gherkin tests and data as standalone package as a convenience distribution.
 * Removed `ProductiveByStrategy` as a strategy that is applied by default.
 * Changed `by()` modulator semantics to consistently filter.
-* Removed previously deprecated `application/vnd.gremlin-v1.0+gryo-lite` serialization format.
+* Removed previously deprecated Gryo `MessageSerializer` implementations.
 * Removed previously deprecated `AuthenticationSettings.enableAuditLog`.
 * Removed previously deprecated `GroovyTranslator` from `gremlin-groovy` module.
 * Removed previously deprecated Gremlin steps that conflicted with Python keywords.

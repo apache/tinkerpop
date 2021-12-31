@@ -311,7 +311,7 @@ documentation as Java covers both embedded and remote use cases.
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
 format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there are three options for serialization: Gryo, GraphSON and GraphBinary. It is important that the client and server
+there are two options for serialization: GraphSON and GraphBinary. It is important that the client and server
 have the same serializers configured in the same way or else one or the other will experience serialization exceptions
 and fail to always communicate. Discrepancy in serializer registration between client and server can happen fairly
 easily as different graph systems may automatically include serializers on the server-side, thus leaving the client
@@ -331,11 +331,9 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cli
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
-ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or Gryo by using
-the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3d0` or `GryoMessageSerializerV3d0` respectively)
+ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
+the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3d0` or `GraphBinaryMessageSerializerV1d0` respectively)
 in the same way and building that into the `Cluster` object.
-
-NOTE: Gryo is no longer the preferred binary serialization format for Gremlin Server - please prefer GraphBinary.
 
 [[gremlin-java-lambda]]
 === The Lambda Solution

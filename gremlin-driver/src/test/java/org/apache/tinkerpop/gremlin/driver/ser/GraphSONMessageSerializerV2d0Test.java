@@ -95,7 +95,7 @@ public class GraphSONMessageSerializerV2d0Test {
     public void shouldConfigureIoRegistry() throws Exception {
         final GraphSONMessageSerializerV1d0 serializer = new GraphSONMessageSerializerV1d0();
         final Map<String, Object> config = new HashMap<String, Object>() {{
-            put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+            put(AbstractMessageSerializer.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
         }};
 
         serializer.configure(config, null);
