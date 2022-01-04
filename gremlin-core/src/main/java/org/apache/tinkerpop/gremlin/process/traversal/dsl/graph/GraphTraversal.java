@@ -2274,10 +2274,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
      * can be supplied.
      * <p/>* 
-     * If a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
-     * be added as property.  This method is the long-hand version of looping through the 
-     * {@link #property(Cardinality, Object, Object, Object...)} method for each key/value pair supplied.
-     * <p/>
      * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
      * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
      * {@link AddVertexStartStep}.  This potential optimization can only happen if cardinality is not supplied
@@ -2358,7 +2354,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
      * the {@link Graph} will be used.
      * <p/>
-     * If a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
+     * If a {@link Map} is supplied then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
      * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
      * <p />
@@ -2387,20 +2383,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                                 new Object[]{});
             }
         } else  { //handles if cardinality is not the first parameter
-            if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-                final Map<Object, Object> map = (Map)value;
-                for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                    property(null, entry.getKey(), entry.getValue());
-                }
-                return this;
-            } else {
-                return this.property(null, key, value, keyValues);
-            }
+            return this.property(null, key, value, keyValues);
         }
     }
     
     /**
-     * When a {@link Map} is supplied and if supported by the {@link Graph} then each of the key/value pairs in the map will
+     * When a {@link Map} is supplied then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
      * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
      * <p/>
@@ -2414,16 +2402,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step" target="_blank">AddProperty Step</a>
      * @since 3.0.0-incubating
      */
-    public default GraphTraversal<S, E> property(final Object value) {
-        if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-            final Map<Object, Object> map = (Map)value;
-            for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                property(null, entry.getKey(), entry.getValue());
-            }
-            return this;
-        } else {
-            throw new IllegalArgumentException("property(object) must have a Map argument");
+    public default GraphTraversal<S, E> property(final Map<Object, Object> value) {
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+            property(null, entry.getKey(), entry.getValue());
         }
+        return this;
     }
     ///////////////////// BRANCH STEPS /////////////////////
 
@@ -2434,7 +2417,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the {@link Traversal} with the {@link BranchStep} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      * @since 3.0.0-incubating
-     * */
+     */
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.branch, branchTraversal);
         final BranchStep<E, E2, M> branchStep = new BranchStep<>(this.asAdmin());
