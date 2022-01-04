@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Minor changes to the initialization of Java driver `Cluster` and `Client` such that hosts are marked as available only after successfully initializing connection pools.
 * `NoHostAvailableException` now contains a cause for the failure.
 * Bumped to Netty 4.1.72.
+* Added user-friendly message in Gremlin console for unavailable hosts upon initiation and fixed possible leak in `RemoteCommand.groovy` upon `RemoteException`.
 
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
