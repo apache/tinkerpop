@@ -83,6 +83,8 @@ class Connection extends EventEmitter {
 
     // A map containing the request id and the handler
     this._responseHandlers = {};
+    // A map containg the request id and the onDataMessage handler
+    this._onDataMessageHandlers = {};
     this._reader = options.reader || this._getDefaultReader(this.mimeType);
     this._writer = options.writer || this._getDefaultWriter(this.mimeType);
     this._openPromise = null;
@@ -159,7 +161,7 @@ class Connection extends EventEmitter {
   }
 
   /** @override */
-  submit(processor, op, args, requestId) {
+  submit(processor, op, args, requestId, onDataMessageHandler) {
     const rid = requestId || utils.getUuid();
     return this.open().then(() => new Promise((resolve, reject) => {
       if (op !== 'authentication') {
@@ -167,6 +169,10 @@ class Connection extends EventEmitter {
           callback: (err, result) => err ? reject(err) : resolve(result),
           result: null
         };
+
+        if (onDataMessageHandler) {
+          this._onDataMessageHandlers[rid] = onDataMessageHandler;
+        }
       }
 
       const message = Buffer.from(this._header + JSON.stringify(this._getRequest(rid, op, args, processor)));
@@ -290,13 +296,31 @@ class Connection extends EventEmitter {
     }
     switch (response.status.code) {
       case responseStatusCode.noContent:
+        if (this._onDataMessageHandlers[response.requestId]) {
+          this._onDataMessageHandlers[response.requestId](
+            new ResultSet(utils.emptyArray, response.status.attributes)
+          );
+        }
         this._clearHandler(response.requestId);
         return handler.callback(null, new ResultSet(utils.emptyArray, response.status.attributes));
       case responseStatusCode.partialContent:
-        handler.result = handler.result || [];
-        handler.result.push.apply(handler.result, response.result.data);
+        if (this._onDataMessageHandlers[response.requestId]) {
+          this._onDataMessageHandlers[response.requestId](
+            new ResultSet(response.result.data, response.status.attributes)
+          );
+        } else {
+          handler.result = handler.result || [];
+          handler.result.push.apply(handler.result, response.result.data);
+        }
         break;
       default:
+        if (this._onDataMessageHandlers[response.requestId]) {
+          this._onDataMessageHandlers[response.requestId](
+            new ResultSet(response.result.data, response.status.attributes)
+          );
+          this._clearHandler(response.requestId);
+          return handler.callback(null);
+        }
         if (handler.result) {
           handler.result.push.apply(handler.result, response.result.data);
         }
@@ -334,6 +358,7 @@ class Connection extends EventEmitter {
    */
   _clearHandler(requestId) {
     delete this._responseHandlers[requestId];
+    delete this._onDataMessageHandlers[requestId];
   }
 
   /**

@@ -74,5 +74,20 @@ describe('Client', function () {
           assert.ok(rs.attributes.get('host'));
         });
     });
+
+    it('should accept an optional callback to process data in chunks according to the batchSize parameter', async () => {
+      const data = [];
+      let calls = 0;
+      await client.submit('g.V().limit(3)', {}, { batchSize: 2 }, (chunk) => {
+        calls += 1;
+        for (const v of chunk) {
+          data.push(v);
+        }
+      });
+
+      assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
+      assert.strictEqual(data.length, 3);
+      assert.ok(data[0] instanceof graphModule.Vertex);
+    });
   });
 });

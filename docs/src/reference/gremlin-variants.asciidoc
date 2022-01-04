@@ -1721,6 +1721,32 @@ IMPORTANT: The preferred method for setting a per-request timeout for scripts is
 with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
+
+==== Processing results as they are returned from the Gremlin server
+
+
+The Gremlin JavaScript driver maintains a WebSocket connection to the Gremlin server and receives messages according to the `batchSize` parameter on the per request settings or the `resultIterationBatchSize` value configured for the Gremlin server. When submitting scripts the default behavior is to wait for the entire result set to be returned from a query before allowing any processing on the result set. 
+
+The following examples assume that you have 100 vertices in your graph.
+
+[source,javascript]
+----
+const result = await client.submit("g.V()");
+console.log(result.toArray()); // 100 - all the vertices in your graph
+----
+
+When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can accept an optional callback to run on each chunk of data returned.
+
+[source,javascript]
+----
+
+await client.submit("g.V()", {}, { batchSize: 25 }, (data) => {
+  console.log(data.toArray().length); // 25 - this callback will be called 4 times (100 / 25 = 4)
+})
+----
+
+If the callback is provided, each chunk of data will be processed as it comes in, rather than waiting for the entire result set to be returned.
+
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages
 
