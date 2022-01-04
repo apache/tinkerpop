@@ -30,7 +30,10 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton

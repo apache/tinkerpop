@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -985,9 +984,9 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#property(Object)
+     * @see GraphTraversal#property(Map)
      */
-    public static <A> GraphTraversal<A, A> property(final Object value) {
+    public static <A> GraphTraversal<A, A> property(final Map<Object, Object> value) {
         return __.<A>start().property(value);
     }
 
