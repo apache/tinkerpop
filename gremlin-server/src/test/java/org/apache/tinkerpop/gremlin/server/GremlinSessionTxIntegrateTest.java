@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -320,5 +322,47 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
         }
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldCommitRollbackInScriptUsingGremlinLang() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = TestClientFactory.open();
+        final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
+                sessionId(name.getMethodName()).
+                manageTransactions(false).
+                maintainStateAfterException(false).
+                create();
+        final Client.Settings clientSettings = Client.Settings.build().useSession(sessionSettings).create();
+        final Client client = cluster.connect();
+        final Client session = cluster.connect(clientSettings);
+
+        // this test mixes calls across scriptengines - probably not a use case but interesting
+        try {
+            session.submit("g.addV('person')").all().get(10, TimeUnit.SECONDS);
+            session.submit("g.addV('person')").all().get(10, TimeUnit.SECONDS);
+
+            // outside of session graph should be empty still but in session we should have 2
+            assertEquals(0, client.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+            assertEquals(2, session.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+
+            // commit whats there using gremlin-language and test again
+            session.submit("g.tx().commit()", RequestOptions.build().language("gremlin-lang").create()).all().get(10, TimeUnit.SECONDS);
+            assertEquals(2, client.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+            assertEquals(2, session.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+
+            // add one more in session and test
+            session.submit("g.addV('person')").all().get(10, TimeUnit.SECONDS);
+            assertEquals(2, client.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+            assertEquals(3, session.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+
+            // rollback the additional one and test
+            session.submit("g.tx().rollback()", RequestOptions.build().language("gremlin-lang").create()).all().get(10, TimeUnit.SECONDS);
+            assertEquals(2, client.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+            assertEquals(2, session.submit("g.V().count()").all().get(10, TimeUnit.SECONDS).get(0).getInt());
+        } finally {
+            cluster.close();
+        }
     }
 }
