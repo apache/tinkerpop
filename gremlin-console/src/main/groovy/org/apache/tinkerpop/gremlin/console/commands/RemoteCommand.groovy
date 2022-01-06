@@ -50,12 +50,13 @@ class RemoteCommand extends ComplexCommandSupport {
         def Optional<RemoteAcceptor> remoteAcceptor = pluggedIn.remoteAcceptor()
         if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 
+        def remote = remoteAcceptor.get()
         try {
-            def remote = remoteAcceptor.get()
             def result = remote.connect(arguments.tail())
             mediator.addRemote(remote)
             return result
         } catch (RemoteException re) {
+            remote.close()
             return re.message
         }
     }
