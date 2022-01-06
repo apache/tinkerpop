@@ -64,6 +64,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added an `AnonymizingTypeTranslator` for use with `GroovyTranslator` which strips PII (anonymizes any String, Numeric, Date, Timestamp, or UUID data)
 * Added support for `g.tx()` in Python.
 * Added logging in in Python.
+* Added `tx()` syntax to `gremlin-language`.
 * Fixed shutdown cleanup issue in Python aiohttp transport layer.
 * Added a `NoSugarTranslator` translator to `PythonTranslator` which translates Gremlin queries to Python without syntactic sugar (ex `g.V().limit(1)` instead of `g.V()[0:1]`)
 * Added support for `g.Tx()` in .NET.
