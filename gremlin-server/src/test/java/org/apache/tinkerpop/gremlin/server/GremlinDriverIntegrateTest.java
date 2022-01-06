@@ -1901,6 +1901,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             try {
                 client.submit("1+1").all().get(3000, TimeUnit.MILLISECONDS);
+                fail("Should throw exception on the retry");
             } catch (RuntimeException re2) {
                 assertThat(re2.getCause(), instanceOf(NoHostAvailableException.class));
             }
