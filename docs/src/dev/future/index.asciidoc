@@ -39,15 +39,27 @@ link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/developer/inde
 The sub-sections that follow only outline those release lines that expect to include significant new features. Other
 release lines may continue to be active with maintenance work and bug fixes, but won't be listed here.
 
-== 3.5.x
+== 3.7.x (Proposed)
 
-This initial release of this line was produced in May 2021.
+Development has not yet started on the 3.7.x release line with a targeted release date of 22H2.  Below is some
+major feature improvements targeted for this release.  The scope for many of these items still needs to be defined.
 
-* Support for bytecode based sessions with `tx()` for Python and .NET.
+* Add support for traversals as parameters for V()/is()/has()
+* Geospatial support for TinkerPop (link:https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial[DISCUSS Thread])
+* Add mid-traversal E() support
+* Add with() option for traversal to not return reference vertices
+* Add subgraph/tree structure in all GLVs
+* List functions (concat()/etc.)
+* Define semantics for query federation across Gremlin servers (depends on call() step)
+* Gremlin debug support
+* Date/Time manipulation functions (dateAdd()/dateDiff()/etc.)
 
-== 3.6.x
 
-The development of the 3.6.x release line is currently under way.
+
+== 3.6.x (Proposed - Target 22Q1)
+
+The development of the 3.6.x release line is currently under way with a target release date of 22Q1.  Below is some
+major feature improvements targeted for this release.
 
 * Unify the Gremlin testing model by providing support for the Gherkin tests in Java so that they can be used by
 providers to validate their implementations.
@@ -56,10 +68,20 @@ providers to validate their implementations.
 ** Allow orderability on any type (link:https://issues.apache.org/jira/browse/TINKERPOP-2641[TINKERPOP-2641])
 ** Modify comparability around `NaN` and `nulltype` (link:https://issues.apache.org/jira/browse/TINKERPOP-2642[TINKERPOP-2642])
 ** Modify equality around `NaN` and `BigDecimal` (link:https://issues.apache.org/jira/browse/TINKERPOP-2643[TINKERPOP-2643])
+* Create `merge()` step to codify the best practice for upsert pattern (link:https://issues.apache.org/jira/browse/TINKERPOP-2681[TINKERPOP-2681])
+* Create `call()` step to allow for invocation of implementation specific procedures (link:https://issues.apache.org/jira/browse/TINKERPOP-2680[TINKERPOP-2680])
+* Add string manipulation functions (split()/substring()/etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
+* Case-insensitive search (link:https://issues.apache.org/jira/browse/TINKERPOP-2673[TINKERPOP-2673])
+* Deprecation of Gryo (link:https://issues.apache.org/jira/browse/TINKERPOP-2398[TINKERPOP-2398])
+* Consistent by() behavior (link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635])
+* Add regular expression support to `TextP` (link:https://issues.apache.org/jira/browse/TINKERPOP-2652[TINKERPOP-2652])
+* Add ability for `property()` to take a Map of values (link:https://issues.apache.org/jira/browse/TINKERPOP-2665[TINKERPOP-2665])
 
-== 3.7.x
+== 3.5.x
 
-Development has not yet started on the 3.7.x release line.
+This initial release of this line was produced in May 2021.
+
+* Support for bytecode based sessions with `tx()` for Python and .NET.
 
 = Proposals
 
