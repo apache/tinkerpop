@@ -25,7 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -177,6 +179,36 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Path> get_g_V_out_out_valuesXnameX_path_order_byXascX() {
             // [path[v[1], e[8][1-knows->4], v[4], e[10][4-created->5], v[5], vp[name->ripple], ripple], path[v[1], e[8][1-knows->4], v[4], e[11][4-created->3], v[3], vp[name->lop], lop]]
             return g.V().outE().inV().outE().inV().properties("name").value().path().order().by(Order.asc);
+        }
+
+        // order asc by vertex: v[3], v[5]
+        public Traversal<Vertex, Vertex> get_g_V_out_out_order_byXascX() {
+            return g.V().out().out().order().by(Order.asc);
+        }
+
+        // order asc by vertex in path: v[3], v[5]
+        public Traversal<Vertex, Vertex> get_g_V_out_out_asXheadX_path_order_byXascX_selectXheadX() {
+            return g.V().out().out().as("head").path().order().by(Order.asc).select("head");
+        }
+
+        // order asc by edge: e[10], v[e11]
+        public Traversal<Vertex, Edge> get_g_V_out_outE_order_byXascX() {
+            return g.V().out().outE().order().by(Order.asc);
+        }
+
+        // order asc by edge in path: e[10], e[11]
+        public Traversal<Vertex, Edge> get_g_V_out_outE_asXheadX_path_order_byXascX_selectXheadX() {
+            return g.V().out().outE().as("head").path().order().by(Order.asc).select("head");
+        }
+
+        // order asc by vertex property: vp[name->lop], vp[name->ripple]
+        public Traversal<Vertex, Object> get_g_V_out_out_propertiesXnameX_order_byXascX_value() {
+            return g.V().out().out().properties("name").order().by(Order.asc).value();
+        }
+
+        // order asc by vertex property in path: vp[name->lop], vp[name->ripple]
+        public Traversal<Vertex, Object> get_g_V_out_out_propertiesXnameX_asXheadX_path_order_byXascX_selectXheadX_value() {
+            return g.V().out().out().properties("name").as("head").path().order().by(Order.asc).select("head").value();
         }
 
         @Override

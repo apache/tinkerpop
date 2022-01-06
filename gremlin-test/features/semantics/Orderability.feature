@@ -42,22 +42,22 @@ Feature: Orderability
 
   Scenario: g_inject_order
     Given the empty graph
-    And using the parameter xxnull defined as "null"
-    And using the parameter xx1i defined as "d[1].i"
-    And using the parameter xxt defined as "true"
-    And using the parameter xxf defined as "false"
-    And using the parameter xx2d defined as "d[2.0].d"
-    And using the parameter xxs1 defined as "foo"
-    And using the parameter xxs2 defined as "bar"
-    And using the parameter xxs3 defined as "zzz"
-    And using the parameter xxl1 defined as "l[a,b,c]"
-    And using the parameter xxl2 defined as "l[a,b,c,d]"
-    And using the parameter xxm1 defined as "m[{\"a\":\"a\", \"b\":\"b\"}]"
-    And using the parameter xxm2 defined as "m[{\"a\":\"a\", \"b\":false, \"c\":\"c\"}]"
+    And using the parameter xx7 defined as "null"
+    And using the parameter xx4 defined as "d[1].i"
+    And using the parameter xy2 defined as "true"
+    And using the parameter xy3 defined as "false"
+    And using the parameter xx8 defined as "d[2.0].d"
+    And using the parameter xx1 defined as "foo"
+    And using the parameter xy1 defined as "bar"
+    And using the parameter xx2 defined as "zzz"
+    And using the parameter xx5 defined as "l[a,b,c]"
+    And using the parameter xx3 defined as "l[a,b,c,d]"
+    And using the parameter xx6 defined as "m[{\"a\":\"a\", \"b\":\"b\"}]"
+    And using the parameter xx9 defined as "m[{\"a\":\"a\", \"b\":false, \"c\":\"c\"}]"
     # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject(xxs1,xxs3,xxl2,xx1i,xxl1,xxm1,xxnull,xx2d,xxm2,xxs2,xxt,xxf).order()
+      g.inject(xx1,xx2,xx3,xx4,xx5,xx6,xx7,xx8,xx9,xy1,xy2,xy3).order()
       """
     When iterated to list
     Then the result should be ordered

@@ -137,6 +137,21 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                         replace("xx1", "p[\"xx1\"]").
                         replace("xx2", "p[\"xx2\"]").
                         replace("xx3", "p[\"xx3\"]").
+                        replace("xx4", "p[\"xx4\"]").
+                        replace("xx5", "p[\"xx5\"]").
+                        replace("xx6", "p[\"xx6\"]").
+                        replace("xx7", "p[\"xx7\"]").
+                        replace("xx8", "p[\"xx8\"]").
+                        replace("xx9", "p[\"xx9\"]").
+                        replace("xy1", "p[\"xy1\"]").
+                        replace("xy2", "p[\"xy2\"]").
+                        replace("xy3", "p[\"xy3\"]").
+                        replace("xy4", "p[\"xy4\"]").
+                        replace("xy5", "p[\"xy5\"]").
+                        replace("xy6", "p[\"xy6\"]").
+                        replace("xy7", "p[\"xy7\"]").
+                        replace("xy8", "p[\"xy8\"]").
+                        replace("xy9", "p[\"xy9\"]").
                         replace("v1", "(Vertex) p[\"v1\"]").
                         replace("v2", "(Vertex) p[\"v2\"]").
                         replace("v3", "(Vertex) p[\"v3\"]").

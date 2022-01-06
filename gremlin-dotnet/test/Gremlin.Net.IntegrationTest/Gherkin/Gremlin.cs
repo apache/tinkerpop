@@ -746,6 +746,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"Primitives_Number_eqXfloatX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Unfold<object>().Where(__.Is(p["xx2"]))}}, 
                {"Primitives_Number_eqXdoubleX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Unfold<object>().Where(__.Is(p["xx2"]))}}, 
                {"Primitives_Number_eqXbigdecimalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Unfold<object>().Where(__.Is(p["xx2"]))}}, 
+               {"g_V_values_order", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>().Order()}}, 
+               {"g_inject_order", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"],p["xx2"],p["xx3"],p["xx4"],p["xx5"],p["xx6"],p["xx7"],p["xx8"],p["xx9"],p["xy1"],p["xy2"],p["xy3"]).Order()}}, 
                {"g_V_valueXnameX_aggregateXxX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("name").Aggregate("x").Cap<object>("x")}}, 
                {"g_V_valueXnameX_aggregateXglobal_xX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("name").Aggregate(Scope.Global,"x").Cap<object>("x")}}, 
                {"g_V_aggregateXxX_byXnameX_capXxX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Aggregate("x").By("name").Cap<object>("x")}}, 
