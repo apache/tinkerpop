@@ -2294,7 +2294,7 @@ stream). This works for `Collection` and `Number`-type objects.
 
 [gremlin-groovy,modern]
 ----
-g.V().values('age').fold().mean()
+g.V().values('age').fold().mean(local)
 ----
 
 If `mean()` encounters `null` values, they will be ignored (i.e. their traversers not counted toward toward the
