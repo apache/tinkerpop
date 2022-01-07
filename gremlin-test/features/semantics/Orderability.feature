@@ -40,27 +40,28 @@ Feature: Orderability
       | ripple |
       | vadas  |
 
-  Scenario: g_V_properties_order_value
+  @OrderByVertexPropertyId
+  Scenario: g_V_properties_order_id
     Given the modern graph
     And the traversal of
       """
-      g.V().properties().order().value()
+      g.V().properties().order().id()
       """
     When iterated to list
     Then the result should be ordered
       | result |
-      | marko |
-      | d[29].i |
-      | vadas  |
-      | d[27].i |
-      | lop  |
-      | java |
-      | josh |
-      | d[32].i |
-      | ripple |
-      | java |
-      | peter |
-      | d[35].i |
+      | d[0].l |
+      | d[1].l |
+      | d[2].l |
+      | d[3].l |
+      | d[4].l |
+      | d[5].l |
+      | d[6].l |
+      | d[7].l |
+      | d[8].l |
+      | d[9].l |
+      | d[10].l |
+      | d[11].l |
 
   Scenario: g_E_properties_order_value
     Given the modern graph
@@ -177,6 +178,7 @@ Feature: Orderability
       | v[ripple] |
       | v[lop] |
 
+  @OrderByEdgeId
   Scenario: g_V_out_outE_order_byXascX
     Given the modern graph
     And the traversal of
@@ -189,6 +191,7 @@ Feature: Orderability
       | e[josh-created->ripple] |
       | e[josh-created->lop] |
 
+  @OrderByEdgeId
   Scenario: g_V_out_outE_order_byXdescX
     Given the modern graph
     And the traversal of
@@ -201,6 +204,7 @@ Feature: Orderability
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  @OrderByEdgeId
   Scenario: g_V_out_outE_asXheadX_path_order_byXascX_selectXheadX
     Given the modern graph
     And the traversal of
@@ -213,6 +217,7 @@ Feature: Orderability
       | e[josh-created->ripple] |
       | e[josh-created->lop] |
 
+  @OrderByEdgeId
   Scenario: g_V_out_outE_asXheadX_path_order_byXdescX_selectXheadX
     Given the modern graph
     And the traversal of
@@ -225,6 +230,7 @@ Feature: Orderability
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  @OrderByVertexPropertyId
   Scenario: g_V_out_out_properties_asXheadX_path_order_byXascX_selectXheadX_value
     Given the modern graph
     And the traversal of
@@ -239,6 +245,7 @@ Feature: Orderability
       | ripple |
       | java |
 
+  @OrderByVertexPropertyId
   Scenario: g_V_out_out_properties_asXheadX_path_order_byXdescX_selectXheadX_value
     Given the modern graph
     And the traversal of

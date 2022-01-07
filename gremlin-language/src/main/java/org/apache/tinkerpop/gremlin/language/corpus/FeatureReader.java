@@ -137,8 +137,11 @@ public class FeatureReader {
     }
 
     private static String applyParametersToGremlin(String currentGremlin, Map<String, String> parameters) {
-        for (Map.Entry<String,String> kv : parameters.entrySet()) {
-            currentGremlin = currentGremlin.replace(kv.getKey(), kv.getValue());
+        // sort from longest to shortest so that xx1 does not replace xx10
+        final List<String> paramNames = new ArrayList<>(parameters.keySet());
+        paramNames.sort((a,b) -> b.length() - a.length());
+        for (String k : paramNames) {
+            currentGremlin = currentGremlin.replace(k, parameters.get(k));
         }
         return currentGremlin;
     }
