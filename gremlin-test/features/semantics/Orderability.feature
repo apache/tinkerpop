@@ -40,6 +40,60 @@ Feature: Orderability
       | ripple |
       | vadas  |
 
+  Scenario: g_V_properties_order_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties().order().value()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | marko |
+      | d[29].i |
+      | vadas  |
+      | d[27].i |
+      | lop  |
+      | java |
+      | josh |
+      | d[32].i |
+      | ripple |
+      | java |
+      | peter |
+      | d[35].i |
+
+  Scenario: g_E_properties_order_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.E().properties().order().value()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[0.2].d |
+      | d[0.4].d |
+      | d[0.4].d |
+      | d[0.5].d |
+      | d[1.0].d |
+      | d[1.0].d |
+
+  Scenario: g_E_properties_order_byXdescX_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.E().properties().order().by(desc).value()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[1.0].d |
+      | d[1.0].d |
+      | d[0.5].d |
+      | d[0.4].d |
+      | d[0.4].d |
+      | d[0.2].d |
+
   Scenario: g_inject_order
     Given the empty graph
     And using the parameter xx1 defined as "null"
@@ -74,3 +128,155 @@ Feature: Orderability
       | l[a,b,c,d] |
       | m[{"a":"a", "b":false, "c":"c"}] |
       | m[{"a":"a", "b":"b"}] |
+
+  Scenario: g_V_out_out_order_byXascX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().order().by(asc)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[lop] |
+      | v[ripple] |
+
+  Scenario: g_V_out_out_order_byXdescX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().order().by(desc)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[ripple] |
+      | v[lop] |
+
+  Scenario: g_V_out_out_asXheadX_path_order_byXascX_selectXheadX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().as("head").path().order().by(asc).select("head")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[lop] |
+      | v[ripple] |
+
+  Scenario: g_V_out_out_asXheadX_path_order_byXdescX_selectXheadX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().as("head").path().order().by(desc).select("head")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | v[ripple] |
+      | v[lop] |
+
+  Scenario: g_V_out_outE_order_byXascX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().outE().order().by(asc)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | e[josh-created->ripple] |
+      | e[josh-created->lop] |
+
+  Scenario: g_V_out_outE_order_byXdescX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().outE().order().by(desc)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
+  Scenario: g_V_out_outE_asXheadX_path_order_byXascX_selectXheadX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().outE().as("head").path().order().by(asc).select("head")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | e[josh-created->ripple] |
+      | e[josh-created->lop] |
+
+  Scenario: g_V_out_outE_asXheadX_path_order_byXdescX_selectXheadX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().outE().as("head").path().order().by(desc).select("head")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
+  Scenario: g_V_out_out_properties_asXheadX_path_order_byXascX_selectXheadX_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().properties().as("head").path().order().by(asc).select("head").value()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | lop |
+      | java |
+      | ripple |
+      | java |
+
+  Scenario: g_V_out_out_properties_asXheadX_path_order_byXdescX_selectXheadX_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().properties().as("head").path().order().by(desc).select("head").value()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | java |
+      | ripple |
+      | java |
+      | lop |
+
+  Scenario: g_V_out_out_values_asXheadX_path_order_byXascX_selectXheadX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().values().as("head").path().order().by(asc).select("head")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | java |
+      | lop |
+      | java |
+      | ripple |
+
+  Scenario: g_V_out_out_values_asXheadX_path_order_byXdescX_selectXheadX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().values().as("head").path().order().by(desc).select("head")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | ripple |
+      | java |
+      | lop |
+      | java |
