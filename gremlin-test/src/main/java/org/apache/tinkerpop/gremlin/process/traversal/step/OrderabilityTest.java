@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,7 +69,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_values_order();
 
-    public abstract Traversal<Vertex, Object> get_g_V_properties_order_value();
+    public abstract Traversal<Vertex, ? extends Property> get_g_V_properties_order();
 
     public abstract Traversal<Edge, Object> get_g_E_properties_order_value();
 
@@ -129,23 +131,54 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_properties_order_value() {
-        final Traversal traversal = get_g_V_properties_order_value();
+    public void g_V_properties_order() {
+        final Traversal traversal = get_g_V_properties_order();
         printTraversalForm(traversal);
         checkOrderedResults(Arrays.asList(
-                "marko",   // vpid = 0
-                29,        // vpid = 1
-                "vadas",   // vpid = 2
-                27,        // vpid = 3
-                "lop",     // vpid = 4
-                "java",    // vpid = 5
-                "josh",    // vpid = 6
-                32,        // vpid = 7
-                "ripple",  // vpid = 8
-                "java",    // vpid = 9
-                "peter",   // vpid = 10
-                35         // vpid = 11
+                convertToVertexProperty("marko", "name", "marko"),    // vpid = 0
+                convertToVertexProperty("marko", "age", 29),          // vpid = 1
+                convertToVertexProperty("vadas", "name", "vadas"),    // vpid = 2
+                convertToVertexProperty("vadas", "age", 27),          // vpid = 3
+                convertToVertexProperty("lop", "name", "lop"),        // vpid = 4
+                convertToVertexProperty("lop", "lang", "java"),       // vpid = 5
+                convertToVertexProperty("josh", "name", "josh"),      // vpid = 6
+                convertToVertexProperty("josh", "age", 32),           // vpid = 7
+                convertToVertexProperty("ripple", "name", "ripple"),  // vpid = 8
+                convertToVertexProperty("ripple", "lang", "java"),    // vpid = 9
+                convertToVertexProperty("peter", "name", "peter"),    // vpid = 10
+                convertToVertexProperty("peter", "age", 35)           // vpid = 11
         ), traversal);
+    }
+
+    /**
+     * Order by vertex property (orders by id).
+     */
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_order_id() {
+        /*
+         * This is exposing a problem somewhere in the remoting API. Needs further investigation.
+         */
+        final List l1 = g.V().properties().toList();
+        final List l2 = g.V().properties().id().toList();
+        final List l3 = g.V().properties().value().toList();
+
+        final Traversal traversal = g.V().properties().order().id();
+        printTraversalForm(traversal);
+//        checkOrderedResults(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10,11
+//                "marko",   // vpid = 0
+//                29,        // vpid = 1
+//                "vadas",   // vpid = 2
+//                27,        // vpid = 3
+//                "lop",     // vpid = 4
+//                "java",    // vpid = 5
+//                "josh",    // vpid = 6
+//                32,        // vpid = 7
+//                "ripple",  // vpid = 8
+//                "java",    // vpid = 9
+//                "peter",   // vpid = 10
+//                35         // vpid = 11
+//        ), traversal);
     }
 
     /**
@@ -438,8 +471,8 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_properties_order_value() {
-            return g.V().properties().order().value();
+        public Traversal<Vertex, ? extends Property> get_g_V_properties_order() {
+            return g.V().properties().order();
         }
 
         @Override

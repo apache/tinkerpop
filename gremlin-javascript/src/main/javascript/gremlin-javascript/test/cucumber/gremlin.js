@@ -735,6 +735,7 @@ const gremlins = {
     Primitives_Number_eqXdoubleX: [function({g, xx1, xx2}) { return g.inject(xx1).unfold().where(__.is(xx2)) }], 
     Primitives_Number_eqXbigdecimalX: [function({g, xx1, xx2}) { return g.inject(xx1).unfold().where(__.is(xx2)) }], 
     g_V_values_order: [function({g}) { return g.V().values().order() }], 
+    g_V_properties_order_value: [function({g}) { return g.V().properties().order().value() }], 
     g_V_properties_order_id: [function({g}) { return g.V().properties().order().id() }], 
     g_E_properties_order_value: [function({g}) { return g.E().properties().order().value() }], 
     g_E_properties_order_byXdescX_value: [function({g}) { return g.E().properties().order().by(Order.desc).value() }], 

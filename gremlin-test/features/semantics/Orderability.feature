@@ -41,6 +41,29 @@ Feature: Orderability
       | vadas  |
 
   @OrderByVertexPropertyId
+  Scenario: g_V_properties_order_value
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties().order().value()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | marko |
+      | d[29].i |
+      | vadas  |
+      | d[27].i |
+      | lop  |
+      | java |
+      | josh |
+      | d[32].i |
+      | ripple |
+      | java |
+      | peter |
+      | d[35].i |
+
+  @OrderByVertexPropertyId
   Scenario: g_V_properties_order_id
     Given the modern graph
     And the traversal of

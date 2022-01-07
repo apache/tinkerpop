@@ -220,6 +220,10 @@ public abstract class AbstractGremlinTest {
         return (GraphTraversal<Vertex, VertexProperty<Object>>) graphProvider.traversal(graph).V().has("name", vertexName).properties(vertexPropertyKey);
     }
 
+    public VertexProperty convertToVertexProperty(final String vertexName, final String propertyKey, final Object propertyValue) {
+        return convertToVertexProperty(graph, vertexName, propertyKey).hasValue(propertyValue).toList().get(0);
+    }
+
     public Edge convertToEdge(final String outVertexName, String edgeLabel, final String inVertexName) {
         return convertToEdge(graph, outVertexName, edgeLabel, inVertexName);
     }
