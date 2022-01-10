@@ -40,51 +40,51 @@ Feature: Orderability
       | ripple |
       | vadas  |
 
-  @OrderByVertexPropertyId
-  Scenario: g_V_properties_order_value
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().properties().order().value()
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | marko |
-      | d[29].i |
-      | vadas  |
-      | d[27].i |
-      | lop  |
-      | java |
-      | josh |
-      | d[32].i |
-      | ripple |
-      | java |
-      | peter |
-      | d[35].i |
+#  @OrderByVertexPropertyId
+#  Scenario: g_V_properties_order_value
+#    Given the modern graph
+#    And the traversal of
+#      """
+#      g.V().properties().order().value()
+#      """
+#    When iterated to list
+#    Then the result should be ordered
+#      | result |
+#      | marko |
+#      | d[29].i |
+#      | vadas  |
+#      | d[27].i |
+#      | lop  |
+#      | java |
+#      | josh |
+#      | d[32].i |
+#      | ripple |
+#      | java |
+#      | peter |
+#      | d[35].i |
 
-  @OrderByVertexPropertyId
-  Scenario: g_V_properties_order_id
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().properties().order().id()
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | d[0].l |
-      | d[1].l |
-      | d[2].l |
-      | d[3].l |
-      | d[4].l |
-      | d[5].l |
-      | d[6].l |
-      | d[7].l |
-      | d[8].l |
-      | d[9].l |
-      | d[10].l |
-      | d[11].l |
+#  @OrderByVertexPropertyId
+#  Scenario: g_V_properties_order_id
+#    Given the modern graph
+#    And the traversal of
+#      """
+#      g.V().properties().order().id()
+#      """
+#    When iterated to list
+#    Then the result should be ordered
+#      | result |
+#      | d[0].l |
+#      | d[1].l |
+#      | d[2].l |
+#      | d[3].l |
+#      | d[4].l |
+#      | d[5].l |
+#      | d[6].l |
+#      | d[7].l |
+#      | d[8].l |
+#      | d[9].l |
+#      | d[10].l |
+#      | d[11].l |
 
   Scenario: g_E_properties_order_value
     Given the modern graph

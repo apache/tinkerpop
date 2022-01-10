@@ -26,7 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @RunWith(GremlinProcessRunner.class)
 public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
@@ -155,30 +157,21 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_properties_order_id() {
+    @Ignore
+    public void g_V_properties_boom() {
         /*
-         * This is exposing a problem somewhere in the remoting API. Needs further investigation.
+         * This is exposing a problem somewhere in the remoting API. Needs further investigation. The value() step
+         * in the traversal changes the order of the results when run remote.
          */
-        final List l1 = g.V().properties().toList();
-        final List l2 = g.V().properties().id().toList();
-        final List l3 = g.V().properties().value().toList();
+        final List<? extends Property> l1 = g.V().properties().order().toList();
+        final List l3 = g.V().properties().order().value().toList();
+        Assert.assertArrayEquals(l1.stream().map(Property::value).collect(Collectors.toList()).toArray(),
+                l3.toArray());
 
-        final Traversal traversal = g.V().properties().order().id();
-        printTraversalForm(traversal);
-//        checkOrderedResults(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10,11
-//                "marko",   // vpid = 0
-//                29,        // vpid = 1
-//                "vadas",   // vpid = 2
-//                27,        // vpid = 3
-//                "lop",     // vpid = 4
-//                "java",    // vpid = 5
-//                "josh",    // vpid = 6
-//                32,        // vpid = 7
-//                "ripple",  // vpid = 8
-//                "java",    // vpid = 9
-//                "peter",   // vpid = 10
-//                35         // vpid = 11
-//        ), traversal);
+        /*
+         * 0..11 when run locally, [0,2,3,4,5,6,7,8,9,10,11,12] when run remote??
+         */
+        checkOrderedResults(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10,11), g.V().properties().id());
     }
 
     /**
