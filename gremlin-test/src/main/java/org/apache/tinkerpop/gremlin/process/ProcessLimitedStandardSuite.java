@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.VertexPropertyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
@@ -113,37 +114,37 @@ public class ProcessLimitedStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
 
-            MatchTest.CountMatchTraversals.class,
-            MatchTest.GreedyMatchTraversals.class,
-            ProfileTest.Traversals.class,
-            WriteTest.Traversals.class,
-            ExplainTest.Traversals.class,
-            SideEffectTest.Traversals.class,
-            SubgraphTest.Traversals.class,
-            TreeTest.Traversals.class,
-
-            // compliance
-            ComplexTest.Traversals.class,
-            CoreTraversalTest.class,
-            TraversalInterruptionTest.class,
-
-            // creations
-            TranslationStrategyProcessTest.class,
-
-            // decorations
-            ElementIdStrategyProcessTest.class,
-            EventStrategyProcessTest.class,
-            ReadOnlyStrategyProcessTest.class,
-            PartitionStrategyProcessTest.class,
-            SeedStrategyProcessTest.class,
-            SubgraphStrategyProcessTest.class,
-
-            // optimizations
-            IncidentToAdjacentStrategyProcessTest.class,
-            EarlyLimitStrategyProcessTest.class,
+//            MatchTest.CountMatchTraversals.class,
+//            MatchTest.GreedyMatchTraversals.class,
+//            ProfileTest.Traversals.class,
+//            WriteTest.Traversals.class,
+//            ExplainTest.Traversals.class,
+//            SideEffectTest.Traversals.class,
+//            SubgraphTest.Traversals.class,
+//            TreeTest.Traversals.class,
+//
+//            // compliance
+//            ComplexTest.Traversals.class,
+//            CoreTraversalTest.class,
+//            TraversalInterruptionTest.class,
+//
+//            // creations
+//            TranslationStrategyProcessTest.class,
+//
+//            // decorations
+//            ElementIdStrategyProcessTest.class,
+//            EventStrategyProcessTest.class,
+//            ReadOnlyStrategyProcessTest.class,
+//            PartitionStrategyProcessTest.class,
+//            SeedStrategyProcessTest.class,
+//            SubgraphStrategyProcessTest.class,
+//
+//            // optimizations
+//            IncidentToAdjacentStrategyProcessTest.class,
+//            EarlyLimitStrategyProcessTest.class,
 
             // semantics
-            OrderabilityTest.Traversals.class,
+            VertexPropertyTest.class,
     };
 
     /**

@@ -720,7 +720,6 @@ world.gremlins = {
     'Primitives_Number_eqXdoubleX': [(lambda g, xx1=None,xx2=None:g.inject(xx1).unfold().where(__.is_(xx2)))], 
     'Primitives_Number_eqXbigdecimalX': [(lambda g, xx1=None,xx2=None:g.inject(xx1).unfold().where(__.is_(xx2)))], 
     'g_V_values_order': [(lambda g:g.V().values().order())], 
-    'g_V_properties_order_value': [(lambda g:g.V().properties().order().value())], 
     'g_V_properties_order_id': [(lambda g:g.V().properties().order().id_())], 
     'g_E_properties_order_value': [(lambda g:g.E().properties().order().value())], 
     'g_E_properties_order_byXdescX_value': [(lambda g:g.E().properties().order().by(Order.desc).value())], 

@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
         tags = "not @RemoteOnly and not @GraphComputerOnly and not @AllowNullPropertyValues",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = TinkerGraphFeatureTest.TinkerGraphGuiceFactory.class,
-        features = { "../gremlin-test/features" },
+        features = { "../gremlin-test/features/semantics/Orderability.feature" },
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class TinkerGraphFeatureTest {
 

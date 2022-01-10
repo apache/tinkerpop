@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.VertexPropertyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
@@ -113,97 +114,97 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * This list of tests in the suite that will be executed as part of this suite.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
-            // branch
-            BranchTest.Traversals.class,
-            ChooseTest.Traversals.class,
-            OptionalTest.Traversals.class,
-            LocalTest.Traversals.class,
-            RepeatTest.Traversals.class,
-            UnionTest.Traversals.class,
-
-            // filter
-            AndTest.Traversals.class,
-            CoinTest.Traversals.class,
-            CyclicPathTest.Traversals.class,
-            DedupTest.Traversals.class,
-            DropTest.Traversals.class,
-            FilterTest.Traversals.class,
-            HasTest.Traversals.class,
-            IsTest.Traversals.class,
-            OrTest.Traversals.class,
-            RangeTest.Traversals.class,
-            SampleTest.Traversals.class,
-            SimplePathTest.Traversals.class,
-            TailTest.Traversals.class,
-            WhereTest.Traversals.class,
-
-            // map
-            AddEdgeTest.Traversals.class,
-            AddVertexTest.Traversals.class,
-            CoalesceTest.Traversals.class,
-            ConstantTest.Traversals.class,
-            CountTest.Traversals.class,
-            ElementMapTest.Traversals.class,
-            FlatMapTest.Traversals.class,
-            FoldTest.Traversals.class,
-            GraphTest.Traversals.class,
-            LoopsTest.Traversals.class,
-            IndexTest.Traversals.class,
-            MapTest.Traversals.class,
-            MatchTest.CountMatchTraversals.class,
-            MatchTest.GreedyMatchTraversals.class,
-            MathTest.Traversals.class,
-            MaxTest.Traversals.class,
-            MeanTest.Traversals.class,
-            MinTest.Traversals.class,
-            SumTest.Traversals.class,
-            OrderTest.Traversals.class,
-            PathTest.Traversals.class,
-            ProfileTest.Traversals.class,
-            ProjectTest.Traversals.class,
-            PropertiesTest.Traversals.class,
-            ReadTest.Traversals.class,
-            SelectTest.Traversals.class,
-            VertexTest.Traversals.class,
-            UnfoldTest.Traversals.class,
-            ValueMapTest.Traversals.class,
-            WriteTest.Traversals.class,
-
-            // sideEffect
-            AggregateTest.Traversals.class,
-            ExplainTest.Traversals.class,
-            GroupTest.Traversals.class,
-            GroupCountTest.Traversals.class,
-            InjectTest.Traversals.class,
-            SackTest.Traversals.class,
-            SideEffectCapTest.Traversals.class,
-            SideEffectTest.Traversals.class,
-            StoreTest.Traversals.class,
-            SubgraphTest.Traversals.class,
-            TreeTest.Traversals.class,
-
-            // compliance
-            ComplexTest.Traversals.class,
-            CoreTraversalTest.class,
-            TraversalInterruptionTest.class,
-
-            // creations
-            TranslationStrategyProcessTest.class,
-
-            // decorations
-            ElementIdStrategyProcessTest.class,
-            EventStrategyProcessTest.class,
-            ReadOnlyStrategyProcessTest.class,
-            PartitionStrategyProcessTest.class,
-            SeedStrategyProcessTest.class,
-            SubgraphStrategyProcessTest.class,
-
-            // optimizations
-            IncidentToAdjacentStrategyProcessTest.class,
-            EarlyLimitStrategyProcessTest.class,
+//            // branch
+//            BranchTest.Traversals.class,
+//            ChooseTest.Traversals.class,
+//            OptionalTest.Traversals.class,
+//            LocalTest.Traversals.class,
+//            RepeatTest.Traversals.class,
+//            UnionTest.Traversals.class,
+//
+//            // filter
+//            AndTest.Traversals.class,
+//            CoinTest.Traversals.class,
+//            CyclicPathTest.Traversals.class,
+//            DedupTest.Traversals.class,
+//            DropTest.Traversals.class,
+//            FilterTest.Traversals.class,
+//            HasTest.Traversals.class,
+//            IsTest.Traversals.class,
+//            OrTest.Traversals.class,
+//            RangeTest.Traversals.class,
+//            SampleTest.Traversals.class,
+//            SimplePathTest.Traversals.class,
+//            TailTest.Traversals.class,
+//            WhereTest.Traversals.class,
+//
+//            // map
+//            AddEdgeTest.Traversals.class,
+//            AddVertexTest.Traversals.class,
+//            CoalesceTest.Traversals.class,
+//            ConstantTest.Traversals.class,
+//            CountTest.Traversals.class,
+//            ElementMapTest.Traversals.class,
+//            FlatMapTest.Traversals.class,
+//            FoldTest.Traversals.class,
+//            GraphTest.Traversals.class,
+//            LoopsTest.Traversals.class,
+//            IndexTest.Traversals.class,
+//            MapTest.Traversals.class,
+//            MatchTest.CountMatchTraversals.class,
+//            MatchTest.GreedyMatchTraversals.class,
+//            MathTest.Traversals.class,
+//            MaxTest.Traversals.class,
+//            MeanTest.Traversals.class,
+//            MinTest.Traversals.class,
+//            SumTest.Traversals.class,
+//            OrderTest.Traversals.class,
+//            PathTest.Traversals.class,
+//            ProfileTest.Traversals.class,
+//            ProjectTest.Traversals.class,
+//            PropertiesTest.Traversals.class,
+//            ReadTest.Traversals.class,
+//            SelectTest.Traversals.class,
+//            VertexTest.Traversals.class,
+//            UnfoldTest.Traversals.class,
+//            ValueMapTest.Traversals.class,
+//            WriteTest.Traversals.class,
+//
+//            // sideEffect
+//            AggregateTest.Traversals.class,
+//            ExplainTest.Traversals.class,
+//            GroupTest.Traversals.class,
+//            GroupCountTest.Traversals.class,
+//            InjectTest.Traversals.class,
+//            SackTest.Traversals.class,
+//            SideEffectCapTest.Traversals.class,
+//            SideEffectTest.Traversals.class,
+//            StoreTest.Traversals.class,
+//            SubgraphTest.Traversals.class,
+//            TreeTest.Traversals.class,
+//
+//            // compliance
+//            ComplexTest.Traversals.class,
+//            CoreTraversalTest.class,
+//            TraversalInterruptionTest.class,
+//
+//            // creations
+//            TranslationStrategyProcessTest.class,
+//
+//            // decorations
+//            ElementIdStrategyProcessTest.class,
+//            EventStrategyProcessTest.class,
+//            ReadOnlyStrategyProcessTest.class,
+//            PartitionStrategyProcessTest.class,
+//            SeedStrategyProcessTest.class,
+//            SubgraphStrategyProcessTest.class,
+//
+//            // optimizations
+//            IncidentToAdjacentStrategyProcessTest.class,
+//            EarlyLimitStrategyProcessTest.class,
 
             // semantics
-            OrderabilityTest.Traversals.class,
+            VertexPropertyTest.class,
     };
 
     /**

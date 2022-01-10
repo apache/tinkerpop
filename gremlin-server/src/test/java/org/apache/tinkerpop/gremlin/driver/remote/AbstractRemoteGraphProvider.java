@@ -336,6 +336,9 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         settings.maxContentLength = 1024000;
         settings.maxChunkSize = 1024000;
 
+        // one hour
+        settings.evaluationTimeout = 1000 * 3600;
+
         server = new GremlinServer(settings);
 
         server.start().get(100, TimeUnit.SECONDS);
