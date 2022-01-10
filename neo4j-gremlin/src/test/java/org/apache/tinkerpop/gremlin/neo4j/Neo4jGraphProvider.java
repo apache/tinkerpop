@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_properties_order_value",
+        method = "g_V_properties_order",
         reason = "Cannot order by vertex property id")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",

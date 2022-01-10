@@ -152,27 +152,26 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
         ), traversal);
     }
 
-    /**
-     * Order by vertex property (orders by id).
-     */
-    @Test
-    @LoadGraphWith(MODERN)
-    @Ignore
-    public void g_V_properties_boom() {
-        /*
-         * This is exposing a problem somewhere in the remoting API. Needs further investigation. The value() step
-         * in the traversal changes the order of the results when run remote.
-         */
-        final List<? extends Property> l1 = g.V().properties().order().toList();
-        final List l3 = g.V().properties().order().value().toList();
-        Assert.assertArrayEquals(l1.stream().map(Property::value).collect(Collectors.toList()).toArray(),
-                l3.toArray());
-
-        /*
-         * 0..11 when run locally, [0,2,3,4,5,6,7,8,9,10,11,12] when run remote??
-         */
-        checkOrderedResults(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10,11), g.V().properties().id());
-    }
+//    /**
+//     * Order by vertex property (orders by id).
+//     */
+//    @Test
+//    @LoadGraphWith(MODERN)
+//    public void g_V_properties_boom() {
+//        /*
+//         * This is exposing a problem somewhere in the remoting API. Needs further investigation. The value() step
+//         * in the traversal changes the order of the results when run remote.
+//         */
+//        final List<? extends Property> l1 = g.V().properties().order().toList();
+//        final List l3 = g.V().properties().order().value().toList();
+//        Assert.assertArrayEquals(l1.stream().map(Property::value).collect(Collectors.toList()).toArray(),
+//                l3.toArray());
+//
+//        /*
+//         * 0..11 when run locally, [0,2,3,4,5,6,7,8,9,10,11,12] when run remote??
+//         */
+//        checkOrderedResults(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10,11), g.V().properties().id());
+//    }
 
     /**
      * Order by edge property (orders by key, then value).
