@@ -1,5 +1,5 @@
 Apache TinkerPop
-Copyright 2015-2021 The Apache Software Foundation.
+Copyright 2015-2022 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -60,7 +60,7 @@ HPPC borrowed code, ideas or both from:
    (Apache license)
 
 ------------------------------------------------------------------------
-Netty 4.1.61
+Netty 4.1.72
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 

@@ -423,7 +423,7 @@ This release also includes changes from <<release-3-4-11, 3.4.11>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-13]]
-=== TinkerPop 3.4.13 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.13 (Release Date: January 10, 2021)
 
 * Fixed `RangeGlobalStep` which was prematurely closing the iterator.
 * Added explicit state to `DefaultTraversal` to track whether or not it was fully iterated and closed to ensure it released resources properly.
@@ -434,6 +434,23 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * `NoHostAvailableException` now contains a cause for the failure.
 * Bumped to Netty 4.1.72.
 * Added user-friendly message in Gremlin console for unavailable hosts upon initiation and fixed possible leak in `RemoteCommand.groovy` upon `RemoteException`.
+
+==== Bugs
+
+* TINKERPOP-2569 Reconnect to server if Java driver fails to initialize
+* TINKERPOP-2589 XML External Entity (XXE) vulnerability
+* TINKERPOP-2597 NullPointerException while initializing connection pool
+* TINKERPOP-2603 TinkerGraph sometimes could not query float values.
+* TINKERPOP-2609 HTTP returns serialization exceptions for the GraphTraversalSource
+* TINKERPOP-2626 RangeGlobalStep closes traversal prematurely
+
+==== Improvements
+
+* TINKERPOP-2504 Intermittently failing server/driver integration tests
+* TINKERPOP-2616 Provide better exceptions with SSL related failures *(breaking)*
+* TINKERPOP-2630 Clarify that a server cannot support Graphson1.0 over HTTP
+* TINKERPOP-2632 Netty 4.1.61 flagged with two high severity security violations
+* TINKERPOP-2669 Netty 4.1.61 flagged with medium severity security violations
 
 [[release-3-4-12]]
 === TinkerPop 3.4.12 (Release Date: July 19, 2021)
