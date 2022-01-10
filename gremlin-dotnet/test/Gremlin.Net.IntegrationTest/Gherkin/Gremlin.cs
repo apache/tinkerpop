@@ -747,7 +747,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"Primitives_Number_eqXdoubleX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Unfold<object>().Where(__.Is(p["xx2"]))}}, 
                {"Primitives_Number_eqXbigdecimalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Unfold<object>().Where(__.Is(p["xx2"]))}}, 
                {"g_V_values_order", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>().Order()}}, 
-               {"g_V_properties_order_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Properties<object>().Order().Value<object>()}}, 
                {"g_V_properties_order_id", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Properties<object>().Order().Id()}}, 
                {"g_E_properties_order_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E().Properties<object>().Order().Value<object>()}}, 
                {"g_E_properties_order_byXdescX_value", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E().Properties<object>().Order().By(Order.Desc).Value<object>()}}, 
