@@ -40,6 +40,9 @@ Feature: Orderability
       | ripple |
       | vadas  |
 
+# This exposes an underlying problem where .value() does not preserve the order (should it?). This will be
+# fixed under separate cover.
+#
 #  @OrderByVertexPropertyId
 #  Scenario: g_V_properties_order_value
 #    Given the modern graph
@@ -63,28 +66,28 @@ Feature: Orderability
 #      | peter |
 #      | d[35].i |
 
-#  @OrderByVertexPropertyId
-#  Scenario: g_V_properties_order_id
-#    Given the modern graph
-#    And the traversal of
-#      """
-#      g.V().properties().order().id()
-#      """
-#    When iterated to list
-#    Then the result should be ordered
-#      | result |
-#      | d[0].l |
-#      | d[1].l |
-#      | d[2].l |
-#      | d[3].l |
-#      | d[4].l |
-#      | d[5].l |
-#      | d[6].l |
-#      | d[7].l |
-#      | d[8].l |
-#      | d[9].l |
-#      | d[10].l |
-#      | d[11].l |
+  @OrderByVertexPropertyId
+  Scenario: g_V_properties_order_id
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties().order().id()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[0].l |
+      | d[1].l |
+      | d[2].l |
+      | d[3].l |
+      | d[4].l |
+      | d[5].l |
+      | d[6].l |
+      | d[7].l |
+      | d[8].l |
+      | d[9].l |
+      | d[10].l |
+      | d[11].l |
 
   Scenario: g_E_properties_order_value
     Given the modern graph
