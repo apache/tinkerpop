@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,18 +49,19 @@ public class DefaultTraversalMetricsTest {
         childMetrics.addNested(backendMetrics);
 
         final DefaultTraversalMetrics profile = new DefaultTraversalMetrics(100, metrics);
-        final String expectedOutput = "Traversal Metrics\n" +
-                "Step                                                               Count  Traversers       Time (ms)    % Dur\n" +
-                "=============================================================================================================\n" +
-                "GraphStep                                                                                      0.000\n" +
-                "  GraphQuery                                                                                   0.000\n" +
-                "    \\_condition=name = Bob\n" +
-                "    AND-Query                                                                                  0.000\n" +
-                "      \\_index=gIndex\n" +
-                "      \\_query-hint=ZSORTED\n" +
-                "      backend-query                                                                            0.000\n" +
-                "        \\_query=gIndex:slice-query\n" +
+        final String LS = System.lineSeparator();
+        final String expectedOutput = "Traversal Metrics" + LS +
+                "Step                                                               Count  Traversers       Time (ms)    % Dur" + LS +
+                "=============================================================================================================" + LS +
+                "GraphStep                                                                                      0.000" + LS +
+                "  GraphQuery                                                                                   0.000" + LS +
+                "    \\_condition=name = Bob" + LS +
+                "    AND-Query                                                                                  0.000" + LS +
+                "      \\_index=gIndex" + LS +
+                "      \\_query-hint=ZSORTED" + LS +
+                "      backend-query                                                                            0.000" + LS +
+                "        \\_query=gIndex:slice-query" + LS +
                 "                                            >TOTAL                     -           -           0.000        -";
-        assertEquals(expectedOutput, profile.toString());
+        assertEquals("traversal metrics", expectedOutput, profile.toString());
     }
 }

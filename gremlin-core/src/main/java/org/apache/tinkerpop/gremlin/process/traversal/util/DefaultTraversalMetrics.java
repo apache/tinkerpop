@@ -118,10 +118,11 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
         // Build a pretty table of metrics data.
 
         // Append headers
-        final StringBuilder sb = new StringBuilder("Traversal Metrics\n")
+        final StringBuilder sb = new StringBuilder("Traversal Metrics")
+                .append(System.lineSeparator())
                 .append(String.format("%-50s %21s %11s %15s %8s", HEADERS));
-
-        sb.append("\n=============================================================================================================");
+        sb.append(System.lineSeparator());
+        sb.append("=============================================================================================================");
 
         appendMetrics(this.positionIndexedMetrics.values(), sb, 0);
 

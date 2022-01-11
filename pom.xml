@@ -400,7 +400,7 @@ limitations under the License.
                         <exclude>.repository/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
-                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>**/bin/gremlin.sh</exclude>
                         <exclude>docs/static/**</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
