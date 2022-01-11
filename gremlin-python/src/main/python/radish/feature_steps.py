@@ -33,7 +33,7 @@ inV = __.inV
 project = __.project
 tail = __.tail
 
-ignores = []
+ignores = ["g_V_properties_order"] # need a vertex property parser for result set
 
 
 @given("the {graph_name:w} graph")

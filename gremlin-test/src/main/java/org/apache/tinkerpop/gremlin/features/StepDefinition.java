@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -160,6 +161,11 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("(null)"), s -> null));
         add(Pair.with(Pattern.compile("(true)"), s -> true));
         add(Pair.with(Pattern.compile("(false)"), s -> false));
+
+        /*
+         * TODO FIXME Add same support for other languages (js, python, .net)
+         */
+        add(Pair.with(Pattern.compile("vp\\[(.+)\\]"), s -> getVertexProperty(g, s)));
 
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
@@ -459,6 +465,17 @@ public final class StepDefinition {
         // make this OLAP proof since you can't leave the star graph
         return g.V().has("name", t.getValue0()).outE(t.getValue1()).toStream().
                    filter(edge -> g.V(edge.inVertex().id()).has("name", t.getValue2()).hasNext()).findFirst().get();
+    }
+
+    /**
+     * Reuse edge triplet syntax for VertexProperty: vp[vertexName-key->value]
+     */
+    private VertexProperty getVertexProperty(final GraphTraversalSource g, final String e) {
+        final Triplet<String,String,String> t = getEdgeTriplet(e);
+        return (VertexProperty) g.V().has("name", t.getValue0())
+                                     .properties(t.getValue1())
+                                     .hasValue(convertToObject(t.getValue2()))
+                .tryNext().orElse(null);
     }
 
     private static Object getEdgeId(final GraphTraversalSource g, final String e) {
