@@ -423,8 +423,11 @@ public class Model {
     }
 
     public void saveAsCsv(final String file) throws Exception {
-        final File f = new File(file);
-        f.getParentFile().mkdirs();
+        saveAsCsv(new File(file));
+    }
+
+    public void saveAsCsv(final File file) throws Exception {
+        file.getParentFile().mkdirs();
 
         final List<Compatibility> compatibilities = Stream.concat(
                 Stream.of(GraphSONCompatibility.values()),
@@ -443,7 +446,7 @@ public class Model {
                 throw new IllegalStateException("No support for the provided Compatibility type");
         }).collect(Collectors.toList()));
 
-        try (final PrintWriter writer = new PrintWriter(f)) {
+        try (final PrintWriter writer = new PrintWriter(file)) {
             writer.println(String.join(",", headers));
 
             final List<Entry> sorted = new ArrayList<>(entries());

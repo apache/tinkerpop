@@ -104,7 +104,7 @@ limitations under the License.
                             <properties>
                                 <property>
                                     <name>projectBaseDir</name>
-                                    <value>${project.basedir}/../</value>
+                                    <value>${project.basedir}</value>
                                 </property>
                             </properties>
                             <scripts>
@@ -119,11 +119,20 @@ limitations under the License.
                             <goal>execute</goal>
                         </goals>
                         <configuration>
+                            <properties>
+                                <property>
+                                    <name>projectBaseDir</name>
+                                    <value>${project.basedir}</value>
+                                </property>
+                                <property>
+                                    <name>mavenVersion</name>
+                                    <value>${project.version}</value>
+                                </property>
+                            </properties>
                             <scripts>
                                 <script>
-def mavenVersion = "${project.version}"
 def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-def file = new File("${project.basedir}/src/main/javascript/gremlin-javascript/package.json")
+def file = new File(projectBaseDir, "src/main/javascript/gremlin-javascript/package.json")
 file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
                                 </script>
                             </scripts>
