@@ -2269,18 +2269,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
-     *
-     * @return the updated traversal with respective {@link NoneStep}.
-     */
-    @Override
-    default GraphTraversal<S, E> none() {
-        return (GraphTraversal<S, E>) Traversal.super.none();
-    }
-
-    /**
      * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link Graph}
      * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
      * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
