@@ -166,6 +166,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -2272,7 +2273,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
      * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
      * can be supplied.
-     * <p/>
+     * <p/>* 
      * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
      * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
      * {@link AddVertexStartStep}.  This potential optimization can only happen if cardinality is not supplied
@@ -2353,6 +2354,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
      * the {@link Graph} will be used.
      * <p/>
+     * If a {@link Map} is supplied then each of the key/value pairs in the map will
+     * be added as property.  This method is the long-hand version of looping through the 
+     * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
+     * <p />
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
      *
@@ -2364,14 +2369,45 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
-        return key instanceof VertexProperty.Cardinality ?
-                this.property((VertexProperty.Cardinality) key, value, null == keyValues ? null : keyValues[0],
+        if (key instanceof VertexProperty.Cardinality) {
+            if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
+                final Map<Object, Object> map = (Map)value;
+                for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                    property(key, entry.getKey(), entry.getValue());
+                }
+                return this;
+            } else {
+                return this.property((VertexProperty.Cardinality) key, value, null == keyValues ? null : keyValues[0],
                         keyValues != null && keyValues.length > 1 ?
                                 Arrays.copyOfRange(keyValues, 1, keyValues.length) :
-                                new Object[]{}) :
-                this.property(null, key, value, keyValues);
+                                new Object[]{});
+            }
+        } else  { //handles if cardinality is not the first parameter
+            return this.property(null, key, value, keyValues);
+        }
     }
-
+    
+    /**
+     * When a {@link Map} is supplied then each of the key/value pairs in the map will
+     * be added as property.  This method is the long-hand version of looping through the 
+     * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
+     * <p/>
+     * If a {@link Map} is not supplied then an exception is thrown.
+     * <p /> 
+     * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
+     * as {@code property(null, key, value, keyValues}.
+     *
+     * @param value     the value for the property
+     * @return the traversal with the last step modified to add a property
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step" target="_blank">AddProperty Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, E> property(final Map<Object, Object> value) {
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+            property(null, entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
     ///////////////////// BRANCH STEPS /////////////////////
 
     /**
