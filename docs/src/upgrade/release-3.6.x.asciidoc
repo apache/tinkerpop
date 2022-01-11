@@ -511,18 +511,12 @@ maintain it independently. The following classes were removed as of this change 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2593[TINKERPOP-2593]
 
-==== GryoLite
+==== Removed Gryo MessageSerializers
 
-The `application/vnd.gremlin-v1.0+gryo-lite` from the `GryoLiteMessageSerializerV1d0` was long ago deprecated in 3.2.6
-when its functionality was quickly replaced by detachment traversal strategies. The traversal strategy approach was
-more flexibly and handled the process more cleanly without the need for additional serialization code and configuration
-in the driver and server. "Gryo Lite" really didn't have much time to be adopted before the new approach was
-implemented yet TinkerPop maintained it for possible backward compatible needs.
-
-Since that time, all of Gryo network serialization has been deprecated in favor of GraphBinary and while it probably
-doesn't make sense at this time to completely remove Gryo, the removal of this "lite" serializer should cause little
-trouble for those upgrading to 3.6.0 and perhaps herald a warning to switch to GraphBinary as soon as possible if still
-on Gryo.
+Gryo `MessageSerializer` implementations were deprecated at 3.4.3 (GryoLite at 3.2.6) in favor of GraphBinary. As
+GraphBinary has been the default implementation for some time now and given that Gryo is a JVM-only format which
+reduces its usability within Gremlin Language Variants, it seemed like the right time to remove the Gryo
+`MessageSerializer` implementations from the code base. Gryo may still be used for file based applications.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2639[TINKERPOP-2639]
 

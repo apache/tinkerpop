@@ -25,8 +25,6 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.ietf.jgss.GSSException;
 import org.junit.Test;
@@ -202,16 +200,6 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
                 .protocol(kdcServer.serverPrincipalName).create();
         final Client client = cluster.connect();
         assertConnection(cluster, client);
-    }
-
-    @Test
-    public void shouldAuthenticateWithSerializeResultToStringGryoV1() throws Exception {
-        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV1d0());
-    }
-
-    @Test
-    public void shouldAuthenticateWithSerializeResultToStringGryoV3() throws Exception {
-        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV3d0());
     }
 
     @Test

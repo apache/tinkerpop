@@ -882,25 +882,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
-    public void shouldReceiveFailureOnBadGryoSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V1D0).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("java.awt.Color.RED").all().join();
-            fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            final Throwable root = ExceptionUtils.getRootCause(re);
-            assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Class is not registered: java.awt.Color"));
-
-            // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
-    }
-
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     @Test
     public void shouldBlockRequestWhenTooBig() throws Exception {

@@ -123,10 +123,6 @@ Gryo over other serialization format should yield smaller data sizes than other 
 improved serialization speed, as well as better support for the various Java data types that might not be supported
 otherwise.
 
-Gryo is useful both as a "graph" serialization format and as a generalized serialization format that can read or
-write any object. This characteristic makes it ideal for use in Gremlin Server, which is designed to return arbitrary
-results of varying types.
-
 It is unlikely that Gryo users will try to consume or produce Gryo without using TinkerPop and Kryo classes to help do
 it. Attempting to read or write a byte stream of Gryo without those tools would be challenging, so the depths of
 what the Gryo format looks like in a byte-by-byte perspective will not be discussed here. It is enough to know that
@@ -159,6 +155,8 @@ side, newer release of TinkerPop are fully backward compatible with Gryo produce
 As of TinkerPop 3.3.0, there is now a new version of Gryo in 3.0 that is only partially compatible with 1.0. Attempts
 to use 3.0 serializers with 1.0 serializers will likely lead to failure. For best results, users should always
 utilize the same version of TinkerPop on the client as on the server.
+
+IMPORTANT: As of 3.6.0, Gryo `MessageSerializer` implementations have been removed from the codebase.
 
 Both versions of Gryo support all the types defined by GraphSON as well as others that are bound more specifically
 to the JVM. The link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/io/gryo/GryoVersion.java[GryoVersion]
