@@ -21,7 +21,9 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-2]]
-=== TinkerPop 3.5.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.2 (Release Date: January 10, 2022)
+
+This release also includes changes from <<release-3-4-13, 3.4.13>>.
 
 * Added an `AnonymizingTypeTranslator` for use with `GroovyTranslator` which strips PII (anonymizes any String, Numeric, Date, Timestamp, or UUID data)
 * Added support for `g.tx()` in Python.
@@ -64,6 +66,49 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added getter method for `bypassTraversal` in `AbstractLambdaTraversal`.
 * Added support for custom GraphBinary types in .NET.
 * Removed some unnecessary exception wrapping around `gremlin-driver` errors now producing a more immediate view of the actual error cause.
+
+==== Bugs
+
+* TINKERPOP-2569 Reconnect to server if Java driver fails to initialize
+* TINKERPOP-2585 Traversal failed for different strategies order
+* TINKERPOP-2589 XML External Entity (XXE) vulnerability
+* TINKERPOP-2597 NullPointerException while initializing connection pool
+* TINKERPOP-2598 within(null) NPE
+* TINKERPOP-2603 TinkerGraph sometimes could not query float values.
+* TINKERPOP-2609 HTTP returns serialization exceptions for the GraphTraversalSource
+* TINKERPOP-2621 toString for traversals such as within with empty array returns empty string as argument instead of brackets
+* TINKERPOP-2626 RangeGlobalStep closes traversal prematurely
+* TINKERPOP-2649 Unable to translate gremlin query to java
+* TINKERPOP-2658 Translator in gremlin-javascript has trouble with array arguments
+* TINKERPOP-2662 Unclosed client session and stacktrace pops up when cleanup is missed
+* TINKERPOP-2670 JavaDocs do not build when using JDK 11
+
+==== Improvements
+
+* TINKERPOP-2504 Intermittently failing server/driver integration tests
+* TINKERPOP-2555 Support for remote transactions in Python
+* TINKERPOP-2556 Support remote transactions in .NET
+* TINKERPOP-2570 Support custom type in GraphBinary for .NET
+* TINKERPOP-2582 Construct traversals from gremlin-language
+* TINKERPOP-2583 Make gremlin-groovy processing optional in Gremlin Server
+* TINKERPOP-2591 Administrative adjustments to gremlint site
+* TINKERPOP-2592 Align the style guides
+* TINKERPOP-2596 datetime function
+* TINKERPOP-2605 Further enforce and refine null semantics
+* TINKERPOP-2615 Expand testing of path() with null values
+* TINKERPOP-2616 Provide better exceptions with SSL related failures *(breaking)*
+* TINKERPOP-2620 Clean up NullPointerExceptions related to null arguments on property related steps
+* TINKERPOP-2630 Clarify that a server cannot support Graphson1.0 over HTTP
+* TINKERPOP-2632 Netty 4.1.61 flagged with two high severity security violations
+* TINKERPOP-2637 Enhance logging in the Python
+* TINKERPOP-2646 Make .NET StreamExtensions public for GraphBinary
+* TINKERPOP-2656 Provide a no syntax sugar translator for python
+* TINKERPOP-2660 Bring back close message for drivers
+* TINKERPOP-2666 Create an anonymizing Translator for logging traversals without user data
+* TINKERPOP-2667 Allow fold() with addAll to work on Map
+* TINKERPOP-2668 Updating aiohttp requirements at germin-python due to vulnerability
+* TINKERPOP-2669 Netty 4.1.61 flagged with medium severity security violations
+* TINKERPOP-2671 Add tx() support to grammar
 
 [[release-3-5-1]]
 === TinkerPop 3.5.1 (Release Date: July 19, 2021)
@@ -423,7 +468,7 @@ This release also includes changes from <<release-3-4-11, 3.4.11>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-13]]
-=== TinkerPop 3.4.13 (Release Date: January 10, 2021)
+=== TinkerPop 3.4.13 (Release Date: January 10, 2022)
 
 * Fixed `RangeGlobalStep` which was prematurely closing the iterator.
 * Added explicit state to `DefaultTraversal` to track whether or not it was fully iterated and closed to ensure it released resources properly.
