@@ -40,32 +40,6 @@ Feature: Orderability
       | ripple |
       | vadas  |
 
-# This exposes an underlying problem where .value() does not preserve the order (should it?). This will be
-# fixed under separate cover.
-#
-#  @UserSuppliedVertexPropertyIds
-#  Scenario: g_V_properties_order_value
-#    Given the modern graph
-#    And the traversal of
-#      """
-#      g.V().properties().order().value()
-#      """
-#    When iterated to list
-#    Then the result should be ordered
-#      | result |
-#      | marko |
-#      | d[29].i |
-#      | vadas  |
-#      | d[27].i |
-#      | lop  |
-#      | java |
-#      | josh |
-#      | d[32].i |
-#      | ripple |
-#      | java |
-#      | peter |
-#      | d[35].i |
-
   @UserSuppliedVertexPropertyIds
   Scenario: g_V_properties_order_id
     Given the modern graph
@@ -295,6 +269,7 @@ Feature: Orderability
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  @UserSuppliedVertexIds
   @UserSuppliedVertexPropertyIds
   Scenario: g_V_out_out_properties_asXheadX_path_order_byXascX_selectXheadX_value
     Given the modern graph
@@ -310,6 +285,7 @@ Feature: Orderability
       | ripple |
       | java |
 
+  @UserSuppliedVertexIds
   @UserSuppliedVertexPropertyIds
   Scenario: g_V_out_out_properties_asXheadX_path_order_byXdescX_selectXheadX_value
     Given the modern graph
@@ -325,6 +301,7 @@ Feature: Orderability
       | java |
       | lop |
 
+  @UserSuppliedVertexIds
   Scenario: g_V_out_out_values_asXheadX_path_order_byXascX_selectXheadX
     Given the modern graph
     And the traversal of
@@ -339,6 +316,7 @@ Feature: Orderability
       | java |
       | ripple |
 
+  @UserSuppliedVertexIds
   Scenario: g_V_out_out_values_asXheadX_path_order_byXdescX_selectXheadX
     Given the modern graph
     And the traversal of

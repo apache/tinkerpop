@@ -113,21 +113,21 @@ public class OrderabilityComparator implements Comparator<Object> {
      * The typespace, along with their priorities and the comparators used to compare within each type.
      */
     private enum Type {
-        Boolean         (Boolean.class, 0, naturalOrderComparator),
-        Number          (Number.class, 1, numberComparator),
-        Date            (Date.class, 2, naturalOrderComparator),
-        String          (String.class, 3, naturalOrderComparator),
-        UUID            (UUID.class, 4, naturalOrderComparator),
-        Vertex          (Vertex.class, 5, elementComparator),
-        Edge            (Edge.class, 6, elementComparator),
-        VertexProperty  (VertexProperty.class, 7, elementComparator),
-        Property        (Property.class, 8, propertyComparator),
-        Path            (Path.class, 9, iteratableComparator),
-        Set             (Set.class, 10, iteratableComparator),
-        List            (List.class, 11, iteratableComparator),
-        Map             (Map.class, 12, mapComparator),
-        MapEntry        (Map.Entry.class, 13, entryComparator),
-        Unknown         (Object.class, 14, unknownTypeComparator);
+        Boolean         (Boolean.class,        0,  naturalOrderComparator),
+        Number          (Number.class,         1,  numberComparator),
+        Date            (Date.class,           2,  naturalOrderComparator),
+        String          (String.class,         3,  naturalOrderComparator),
+        UUID            (UUID.class,           4,  naturalOrderComparator),
+        Vertex          (Vertex.class,         5,  elementComparator),
+        Edge            (Edge.class,           6,  elementComparator),
+        VertexProperty  (VertexProperty.class, 7,  elementComparator),
+        Property        (Property.class,       8,  propertyComparator),
+        Path            (Path.class,           9,  iteratableComparator),
+        Set             (Set.class,            10, iteratableComparator),
+        List            (List.class,           11, iteratableComparator),
+        Map             (Map.class,            12, mapComparator),
+        MapEntry        (Map.Entry.class,      13, entryComparator),
+        Unknown         (Object.class,         14, unknownTypeComparator);
 
         /**
          * Lookup by instanceof semantics (not class equality). Current implementation will return first enum value
