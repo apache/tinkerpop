@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import java.util.function.BiFunction;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
