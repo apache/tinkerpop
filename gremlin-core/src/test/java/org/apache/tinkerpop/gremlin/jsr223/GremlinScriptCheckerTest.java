@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinScriptChecker.EMPTY_RESULT;
+import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker.EMPTY_RESULT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 

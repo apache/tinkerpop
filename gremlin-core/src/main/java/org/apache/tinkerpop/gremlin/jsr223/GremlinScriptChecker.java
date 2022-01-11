@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import java.util.Arrays;
 import java.util.List;

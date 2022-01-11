@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.
 * Removed requirement that "ids" used to filter vertices and edges need to be all of a single type.
 * Created `gremlin-annotations` module where the `@GremlinDsl` annotation and related code has been moved.
+* Moved `GremlinScriptChecker` to `gremlin-core` from `gremlin-groovy` since it is not Groovy dependent.
 * Removed `groovy` and `groovy-json` dependencies from `gremlin-driver` as well as related `JsonBuilder` serialization support.
 * Replaced log4j usage with logback where builds rely on and packaged distributions now contain the latter.
 * Improved behavior of `V()` and `E()` when `null` is an argument producing a filtering behavior rather than an exception.
