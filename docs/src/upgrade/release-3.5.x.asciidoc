@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.5.2
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: January 10, 2022*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.2/CHANGELOG.asciidoc#release-3-5-2[changelog] for a
 complete list of all the modifications that are part of this release.
@@ -39,8 +39,7 @@ An example of the .NET `Tx()` syntax can be found in the
 link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-dotnet-transactions[.NET Transaction Section].
 
 An example of the Python `tx()` syntax can be found in the
-link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-dotnet-transactions[Python Transaction Section]
-
+link:https://tinkerpop.apache.org/docs/3.5.2/reference/#gremlin-python-transactions[Python Transaction Section]
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2556[TINKERPOP-2556] for .NET and
 link:https://issues.apache.org/jira/browse/TINKERPOP-2555[TINKERPOP-2555] for Python

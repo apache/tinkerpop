@@ -264,6 +264,44 @@ limitations under the License.
                 <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                    <tags>
+                        <tag>
+                            <name>example</name>
+                            <placement>aoptcmf</placement>
+                            <head>Example:</head>
+                        </tag>
+                    </tags>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate-in-site-lifecycle</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
+                        <configuration>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
+                            <overview>${basedir}/docs/javadoc/overview.html</overview>
+                            <quiet>true</quiet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
                 <version>3.0.0</version>
