@@ -536,7 +536,7 @@ public interface Graph extends AutoCloseable, Host {
              * orderability semantics.
              */
             @FeatureDescriptor(name = FEATURE_ORDERABILITY_SEMANTICS)
-            default boolean supportsOrderabiltySemantics() {
+            default boolean supportsOrderabilitySemantics() {
                 return true;
             }
 
