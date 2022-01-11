@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Assert;
@@ -32,6 +34,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -120,6 +127,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     public void g_V_values_order() {
         final Traversal<Vertex, Object> traversal = get_g_V_values_order();
         printTraversalForm(traversal);
@@ -133,6 +141,8 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_properties_order() {
         final Traversal traversal = get_g_V_properties_order();
         printTraversalForm(traversal);
@@ -157,6 +167,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     public void g_E_properties_order_value() {
         { // add some more edge properties
             final AtomicInteger a = new AtomicInteger();
@@ -180,6 +191,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      * Mixed type values including list, set, map, uuid, date, boolean, numeric, string, null.
      */
     @Test
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     public void g_inject_order() {
         final Traversal traversal = get_g_inject_order();
         printTraversalForm(traversal);
@@ -200,6 +212,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      * More mixed type values including a Java Object (unknown type).
      */
     @Test
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     public void g_inject_order_with_unknown_type() {
         final Object unknown = new Object();
         final Object[] unordered = new Object[Constants.unordered.length+1];
@@ -224,12 +237,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order asc by vertex: v[3], v[5]
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_order_byXascX() {
         final Traversal traversal = get_g_V_out_out_order_byXascX();
         printTraversalForm(traversal);
@@ -241,12 +253,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order asc by vertex in path: v[3], v[5]
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_asXheadX_path_order_byXascX_selectXheadX() {
         final Traversal traversal = get_g_V_out_out_asXheadX_path_order_byXascX_selectXheadX();
         printTraversalForm(traversal);
@@ -258,12 +269,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order asc by edge: e[10], v[e11]
-     *
-     * Note to graph providers: if your graph does not support user-assigned edge ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_outE_order_byXascX() {
         final Traversal traversal = get_g_V_out_outE_order_byXascX();
         printTraversalForm(traversal);
@@ -275,12 +285,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order asc by edge in path: e[10], e[11]
-     *
-     * Note to graph providers: if your graph does not support user-assigned edge ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_outE_asXheadX_path_order_byXascX_selectXheadX() {
         final Traversal traversal = get_g_V_out_outE_asXheadX_path_order_byXascX_selectXheadX();
         printTraversalForm(traversal);
@@ -292,12 +301,12 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order asc by vertex and then vertex property id in path.
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids and vertex property ids you 
-     * may need to skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_properties_asXheadX_path_order_byXascX_selectXheadX_value() {
         final Traversal traversal = get_g_V_out_out_properties_asXheadX_path_order_byXascX_selectXheadX_value();
         printTraversalForm(traversal);
@@ -311,12 +320,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order asc by vertex and then vertex property value in path.
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_values_asXheadX_path_order_byXascX_selectXheadX() {
         final Traversal traversal = get_g_V_out_out_values_asXheadX_path_order_byXascX_selectXheadX();
         printTraversalForm(traversal);
@@ -330,12 +338,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order desc by vertex: v[5], v[3]
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_order_byXdescX() {
         final Traversal traversal = get_g_V_out_out_order_byXdescX();
         printTraversalForm(traversal);
@@ -347,12 +354,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order desc by vertex in path: v[5], v[3]
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_asXheadX_path_order_byXdescX_selectXheadX() {
         final Traversal traversal = get_g_V_out_out_asXheadX_path_order_byXdescX_selectXheadX();
         printTraversalForm(traversal);
@@ -364,12 +370,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order desc by edge: e[11], v[e10]
-     *
-     * Note to graph providers: if your graph does not support user-assigned edge ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_outE_order_byXdescX() {
         final Traversal traversal = get_g_V_out_outE_order_byXdescX();
         printTraversalForm(traversal);
@@ -381,12 +386,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order desc by edge in path: e[11], e[10]
-     *
-     * Note to graph providers: if your graph does not support user-assigned edge ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_outE_asXheadX_path_order_byXdescX_selectXheadX() {
         final Traversal traversal = get_g_V_out_outE_asXheadX_path_order_byXdescX_selectXheadX();
         printTraversalForm(traversal);
@@ -398,12 +402,12 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order desc by vertex and then vertex property id in path.
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids and vertex property ids you 
-     * may need to skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_properties_asXheadX_path_order_byXdescX_selectXheadX_value() {
         final Traversal traversal = get_g_V_out_out_properties_asXheadX_path_order_byXdescX_selectXheadX_value();
         printTraversalForm(traversal);
@@ -417,12 +421,11 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     /**
      * Order desc by vertex and then vertex property value in path.
-     *
-     * Note to graph providers: if your graph does not support user-assigned vertex ids you may need to
-     * skip this test.
      */
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void g_V_out_out_values_asXheadX_path_order_byXdescX_selectXheadX() {
         final Traversal traversal = get_g_V_out_out_values_asXheadX_path_order_byXdescX_selectXheadX();
         printTraversalForm(traversal);

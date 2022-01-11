@@ -53,62 +53,14 @@ public class OrderabilityComparator implements Comparator<Object> {
                             new OrderabilityComparator()));
 
     /**
-     * The order of this array determines the sort order across types.The index in this array corresponds directly to a
-     * Comparator in the {@link #comparators} array below, so be sure to keep them in sync.
+     * Boolean, Date, String, UUID.
      */
-    private static final Class[] types = new Class[] {
-            Boolean.class,
-            Number.class,
-            Date.class,
-            String.class,
-            UUID.class,
-            Vertex.class,
-            Edge.class,
-            VertexProperty.class,
-            Property.class,
-            Path.class,
-            Set.class,
-            List.class,
-            Map.class,
-            Map.Entry.class,
-    };
-
-    /**
-     * The stable ordering for numeric types, should we choose to support stable ordering for numeric types.
-     */
-    private static final Class[] numerics = new Class[] {
-            Byte.class,
-            Short.class,
-            Integer.class,
-            Long.class,
-            BigInteger.class,
-            Float.class,
-            Double.class,
-            BigDecimal.class
-    };
-
     private static final Comparator<Comparable> naturalOrderComparator = Comparator.naturalOrder();
 
     /**
      * This comparator does not provide a stable order for numerics because of type promotion equivalence semantics.
      */
     private static final Comparator<Number> numberComparator = (f,s) -> NumberHelper.compare(f, s);
-
-    /**
-     * This alternative numeric comparator will sort by numeric type in the case of type promotion equivalence.
-     * Currently unused.
-     */
-    private static final Comparator<Number> stableOrderNumberComparator = (f,s) -> {
-        final int i = NumberHelper.compare(f, s);
-        if (i != 0 || f.getClass().equals(s.getClass())) {
-            // they're not equal, or they are of the same numeric type
-            return i;
-        }
-        // if they are equal but of different types, order by type
-        final int ft = type(numerics, f);
-        final int st = type(numerics, s);
-        return ft - st;
-    };
 
     /**
      * Sort Vertex, Edge, VertexProperty by id.
@@ -158,50 +110,47 @@ public class OrderabilityComparator implements Comparator<Object> {
             Comparator.comparing(f -> f.getClass().getName()).thenComparing(Object::toString);
 
     /**
-     * The comparators that will be used for the types defined above in the {@link #types} array. Be sure to keep them
-     * in sync.
+     * The typespace, along with their priorities and the comparators used to compare within each type.
      */
-    private static final Comparator[] comparators = new Comparator[] {
-        naturalOrderComparator,          // Boolean.class,
-        numberComparator,                // Number.class,
-        naturalOrderComparator,          // Date.class,
-        naturalOrderComparator,          // String.class,
-        naturalOrderComparator,          // UUID.class,
-        elementComparator,               // Vertex.class,
-        elementComparator,               // Edge.class,
-        elementComparator,               // VertexProperty.class,
-        propertyComparator,              // Property.class,
-        iteratableComparator,            // Path.class,
-        iteratableComparator,            // Set.class,
-        iteratableComparator,            // List.class,
-        mapComparator,                   // Map.class,
-        entryComparator,                 // Map.Entry.class,
-    };
+    private enum Type {
+        Boolean         (Boolean.class, 0, naturalOrderComparator),
+        Number          (Number.class, 1, numberComparator),
+        Date            (Date.class, 2, naturalOrderComparator),
+        String          (String.class, 3, naturalOrderComparator),
+        UUID            (UUID.class, 4, naturalOrderComparator),
+        Vertex          (Vertex.class, 5, elementComparator),
+        Edge            (Edge.class, 6, elementComparator),
+        VertexProperty  (VertexProperty.class, 7, elementComparator),
+        Property        (Property.class, 8, propertyComparator),
+        Path            (Path.class, 9, iteratableComparator),
+        Set             (Set.class, 10, iteratableComparator),
+        List            (List.class, 11, iteratableComparator),
+        Map             (Map.class, 12, mapComparator),
+        MapEntry        (Map.Entry.class, 13, entryComparator),
+        Unknown         (Object.class, 14, unknownTypeComparator);
 
-    /**
-     * Marker priority for unknown types. A large number means they will appear after known types. Use -1 if you want
-     * them to appear first.
-     */
-    private static final int UNKNOWN_TYPE = 0xffff;
-
-    /**
-     * Return the first index of the Class array for which the supplied object is an instance. Returns
-     * {@link #UNKNOWN_TYPE} if not an instance of any of the supplied classes.
-     */
-    private static final int type(final Class[] types, final Object o) {
-        for (int i = 0; i < types.length; i++) {
-            if (types[i].isInstance(o)) {
-                return i;
+        /**
+         * Lookup by instanceof semantics (not class equality). Current implementation will return first enum value
+         * that matches the object's type.
+         */
+        public static Type type(final Object o) {
+            final Type[] types = Type.values();
+            for (int i = 0; i < types.length; i++) {
+                if (types[i].type.isInstance(o)) {
+                    return types[i];
+                }
             }
+            return Unknown;
         }
-        return UNKNOWN_TYPE;
-    }
 
-    /**
-     * Return the comparator for the supplied type, or the {@link #unknownTypeComparator} for unknown types.
-     */
-    private static final Comparator comparator(final int type) {
-        return type >= 0 && type < types.length ? comparators[type] : unknownTypeComparator;
+        Type(Class type, int priority, Comparator comparator) {
+            this.type = type;
+            this.priority = priority;
+            this.comparator = comparator;
+        }
+        private final Class type;
+        private final int priority;
+        private final Comparator comparator;
     }
 
     /**
@@ -225,10 +174,16 @@ public class OrderabilityComparator implements Comparator<Object> {
      */
     @Override
     public int compare(final Object f, final Object s) {
-        final int ft = type(types, f);
-        final int st = type(types, s);
+        final Type ft = Type.type(f);
+        /*
+         * Do a quick check to catch very common cases - class equality or both numerics. Even if these are false we
+         * could still be dealing with the same type (e.g. different implementation of Vertex), but let the type lookup
+         * method handle that.
+         */
+        final Type st = f.getClass().equals(s.getClass()) || (f instanceof Number && s instanceof Number) ?
+                        ft : Type.type(s);
 
-        return ft != st ? ft - st : comparator(ft).compare(f, s);
+        return ft != st ? ft.priority - st.priority : ft.comparator.compare(f, s);
     }
 
 }

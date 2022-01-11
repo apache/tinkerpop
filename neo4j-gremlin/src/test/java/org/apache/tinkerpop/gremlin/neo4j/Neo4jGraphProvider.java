@@ -28,34 +28,6 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_properties_order",
-        reason = "Cannot order by vertex property id")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_out_out_properties_asXheadX_path_order_byXascX_selectXheadX_value",
-        reason = "Cannot order by vertex property id")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_out_out_properties_asXheadX_path_order_byXdescX_selectXheadX_value",
-        reason = "Cannot order by vertex property id")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_out_outE_order_byXascX",
-        reason = "Cannot order by edge id")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_out_outE_asXheadX_path_order_byXascX_selectXheadX",
-        reason = "Cannot order by edge id")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_out_outE_order_byXdescX",
-        reason = "Cannot order by edge id")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
-        method = "g_V_out_outE_asXheadX_path_order_byXdescX_selectXheadX",
-        reason = "Cannot order by edge id")
 public class Neo4jGraphProvider extends AbstractNeo4jGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData graphData) {
