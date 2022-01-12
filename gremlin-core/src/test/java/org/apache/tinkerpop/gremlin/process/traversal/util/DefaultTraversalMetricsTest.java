@@ -28,6 +28,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class DefaultTraversalMetricsTest {
+
     @Test
     public void shouldPrintIndentationsCorrectly() {
         final List<MutableMetrics> metrics = new ArrayList<>();
