@@ -53,13 +53,14 @@ public class TraversalEnumParserTest {
                     {"org.apache.tinkerpop.gremlin.process.traversal.Scope", "traversalScope"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Order", "traversalOrder"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Pop", "traversalPop"},
+                    {"org.apache.tinkerpop.gremlin.process.traversal.Pick", "traversalPick"},
+                    {"org.apache.tinkerpop.gremlin.process.traversal.Merge", "traversalMerge"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.SackFunctions$Barrier", "traversalSackMethod"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Operator", "traversalOperator"},
                     {"org.apache.tinkerpop.gremlin.structure.T", "traversalToken"},
                     {"org.apache.tinkerpop.gremlin.structure.Column", "traversalColumn"},
                     {"org.apache.tinkerpop.gremlin.structure.Direction", "traversalDirection"},
                     {"org.apache.tinkerpop.gremlin.structure.VertexProperty$Cardinality", "traversalCardinality"},
-                    {"org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent$Pick", "traversalOptionParent"},
             });
         }
 
@@ -91,6 +92,7 @@ public class TraversalEnumParserTest {
             return Arrays.asList(new Object[][]{
                     {"org.apache.tinkerpop.gremlin.process.traversal.Scope", "traversalScope"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Order", "traversalOrder"},
+                    {"org.apache.tinkerpop.gremlin.process.traversal.Merge", "traversalMerge"},
                     {"org.apache.tinkerpop.gremlin.structure.T", "traversalToken"}
             });
         }

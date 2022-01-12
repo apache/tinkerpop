@@ -33,8 +33,8 @@ from datetime import timedelta
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
                                    SingleByte, ByteBufferType, GremlinType, SingleChar
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
-                                             Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Merge, \
+                                             Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
@@ -96,6 +96,7 @@ class DataType(Enum):
     tree = 0x2b                   # not supported - no tree object in Python yet
     metrics = 0x2c
     traversalmetrics = 0x2d
+    merge = 0x2e
     char = 0x80
     duration = 0x81
     inetaddress = 0x82            # todo
@@ -848,6 +849,11 @@ class PSerializer(_GraphBinaryTypeIO):
             writer.toDict(a, to_extend)
 
         return to_extend
+
+
+class MergeIO(_EnumIO):
+    graphbinary_type = DataType.merge
+    python_type = Merge
 
 
 class ScopeIO(_EnumIO):

@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.AbortiveMultiIterator;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -260,8 +262,12 @@ public final class HadoopGraph implements Graph {
             if (0 == vertexIds.length) {
                 return new HadoopVertexIterator(this);
             } else {
-                final Stream<Vertex> idsThatWereVertices = Stream.of(vertexIds).
-                        filter(id -> id instanceof Vertex).map(id -> (Vertex) id);
+                // attach vertices if detached instances are passed in otherwise they won't be reloaded and will
+                // basically be useless without properties
+                final Stream<Vertex> idsThatWereAttachedVertices = Stream.of(vertexIds).
+                        filter(id -> id instanceof Vertex).map(
+                                id -> id instanceof Attachable ? ((Attachable<Vertex>) id).attach(Attachable.Method.get(this)) : (Vertex) id);
+
                 final Stream<Vertex> verticesFromHadoopGraph = StreamSupport.stream(Spliterators.spliteratorUnknownSize(
                         IteratorUtils.filter(new HadoopVertexIterator(this),
                                 vertex -> ElementHelper.idExists(vertex.id(), vertexIds)), Spliterator.ORDERED), false);
@@ -269,7 +275,7 @@ public final class HadoopGraph implements Graph {
                 // if the vertexIds are all Vertex objects then abort the iteration of the full HadoopGraph as there
                 // is no need to refresh the data in this use case as other graphs might
                 final AbortiveMultiIterator<Vertex> iterator = new AbortiveMultiIterator<>();
-                iterator.addIterator(idsThatWereVertices.iterator());
+                iterator.addIterator(idsThatWereAttachedVertices.iterator());
                 iterator.addIterator(verticesFromHadoopGraph.iterator(), c -> c != vertexIds.length);
                 return iterator;
             }

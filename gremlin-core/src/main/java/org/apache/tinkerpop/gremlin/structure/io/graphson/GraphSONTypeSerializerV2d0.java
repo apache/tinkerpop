@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -131,8 +131,8 @@ public class GraphSONTypeSerializerV2d0 extends AbstractGraphSONTypeSerializer {
             mapped = Pop.class;
         else if (SackFunctions.Barrier.class.isAssignableFrom(c))
             mapped = SackFunctions.Barrier.class;
-        else if (TraversalOptionParent.Pick.class.isAssignableFrom(c))
-            mapped = TraversalOptionParent.Pick.class;
+        else if (Pick.class.isAssignableFrom(c))
+            mapped = Pick.class;
         else if (Scope.class.isAssignableFrom(c))
             mapped = Scope.class;
         else if (T.class.isAssignableFrom(c))

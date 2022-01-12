@@ -312,6 +312,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         
             Assert.Equal(Direction.Out, deserializedValue);
         }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeMerge(int version)
+        {
+            const string serializedValue = "{\"@type\":\"g:Merge\",\"@value\":\"onMatch\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedValue);
+            var deserializedValue = reader.ToObject(jsonElement);
+
+            Assert.Equal(Merge.OnMatch, deserializedValue);
+        }
         
         [Fact]
         public void ShouldDeserializePathFromGraphSON2()

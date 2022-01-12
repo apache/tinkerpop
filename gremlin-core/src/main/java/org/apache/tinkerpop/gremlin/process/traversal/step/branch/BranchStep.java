@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraversal;
@@ -63,7 +64,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     @Override
-    public void addGlobalChildOption(final M pickToken, final Traversal.Admin<S, E> traversalOption) {
+    public void addChildOption(final M pickToken, final Traversal.Admin<S, E> traversalOption) {
         if (pickToken instanceof Pick) {
             if (this.traversalPickOptions.containsKey(pickToken))
                 this.traversalPickOptions.get(pickToken).add(traversalOption);

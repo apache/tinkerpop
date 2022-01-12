@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -33,6 +33,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -78,6 +79,13 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
      */
     public static String getStringLiteral(final GremlinParser.StringLiteralContext stringLiteral) {
         return (String) (instance().visitStringLiteral(stringLiteral));
+    }
+
+    /**
+     * Parse a map literal context and return the map literal
+     */
+    public static Map getMapLiteral(final GremlinParser.GenericLiteralMapContext mapLiteral) {
+        return (Map) (instance().visitGenericLiteralMap(mapLiteral));
     }
 
     /**
@@ -299,6 +307,11 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
         return antlr.tvisitor.visitNestedTraversal(ctx);
     }
 
+    @Override
+    public Object visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+        return StructureElementVisitor.instance().visitStructureVertex(ctx);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -463,8 +476,8 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
      * {@inheritDoc}
      */
     @Override
-    public Object visitTraversalOptionParent(final GremlinParser.TraversalOptionParentContext ctx) {
-        return TraversalEnumParser.parseTraversalEnumFromContext(TraversalOptionParent.Pick.class, ctx);
+    public Object visitTraversalPick(final GremlinParser.TraversalPickContext ctx) {
+        return TraversalEnumParser.parseTraversalEnumFromContext(Pick.class, ctx);
     }
 
     @Override

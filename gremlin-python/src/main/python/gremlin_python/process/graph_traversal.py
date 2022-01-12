@@ -146,6 +146,16 @@ class GraphTraversalSource(object):
         traversal.bytecode.add_step("addV", *args)
         return traversal
 
+    def mergeV(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("mergeV", *args)
+        return traversal
+
+    def mergeE(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("mergeE", *args)
+        return traversal
+
     def inject(self, *args):
         traversal = self.get_graph_traversal()
         traversal.bytecode.add_step("inject", *args)
@@ -401,6 +411,14 @@ class GraphTraversal(Traversal):
 
     def mean(self, *args):
         self.bytecode.add_step("mean", *args)
+        return self
+
+    def mergeE(self, *args):
+        self.bytecode.add_step("mergeE", *args)
+        return self
+
+    def mergeV(self, *args):
+        self.bytecode.add_step("mergeV", *args)
         return self
 
     def min_(self, *args):
@@ -827,6 +845,14 @@ class __(object, metaclass=MagicType):
     @classmethod
     def mean(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).mean(*args)
+
+    @classmethod
+    def mergeE(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).mergeE(*args)
+
+    @classmethod
+    def mergeV(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).mergeV(*args)
 
     @classmethod
     def min_(cls, *args):
@@ -1256,6 +1282,14 @@ def mean(*args):
     return __.mean(*args)
 
 
+def mergeE(*args):
+    return __.mergeE(*args)
+
+
+def mergeV(*args):
+    return __.mergeV(*args)
+
+
 def min_(*args):
     return __.min_(*args)
 
@@ -1515,6 +1549,10 @@ statics.add_static('math', math)
 statics.add_static('max_', max_)
 
 statics.add_static('mean', mean)
+
+statics.add_static('mergeE', mergeE)
+
+statics.add_static('mergeV', mergeV)
 
 statics.add_static('min_', min_)
 

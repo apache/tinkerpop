@@ -49,10 +49,20 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
     private static final String featureDir = Paths.get("..", "gremlin-test", "features").toString();
     private static final String docsDir = Paths.get("..", "docs", "src").toString();
 
-    private static final Pattern vertexPattern = Pattern.compile(".*v\\d.*");
     private static final Pattern edgePattern = Pattern.compile(".*e\\d.*");
 
     private static final List<Pair<Pattern, BiFunction<String,String,String>>> stringMatcherConverters = new ArrayList<Pair<Pattern, BiFunction<String,String,String>>>() {{
+        add(Pair.with(Pattern.compile("m\\[(.*)\\]"), (k,v) -> {
+            // can't handled embedded maps because of the string replace below on the curly braces
+            final String[] items = v.replace("{", "").replace("}", "").split(",");
+            final String listItems = Stream.of(items).map(String::trim).map(x -> {
+                final String[] pair = x.split(":");
+                final String convertedKey = String.format("%s", pair[0]);
+                final String convertedValue = String.format("%s", pair[1]);
+                return String.format("%s:%s", convertedKey, convertedValue);
+            }).collect(Collectors.joining(","));
+            return String.format("[%s]", listItems);
+        }));
         add(Pair.with(Pattern.compile("l\\[\\]"), (k,v) -> "[]"));
         add(Pair.with(Pattern.compile("l\\[(.*)\\]"), (k,v) -> {
             final String[] items = v.split(",");
@@ -60,6 +70,7 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
             return String.format("[%s]", listItems);
         }));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), (k,v) -> "\"1\""));
+        add(Pair.with(Pattern.compile("v(\\d)"), (k,v) -> String.format("new Vertex(%s, \"vertex\")", v)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), (k,v) -> "\"1\""));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.?.*"), (k,v) -> v));
         add(Pair.with(Pattern.compile("m\\[(.*)\\]"), (k,v) -> v.replace('{','[').replace('}', ']')));
@@ -89,11 +100,12 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
 
     @Test
     public void test_parse() {
+        // can't handle maps with complex embedded types at the moment - basically one Gremlin statement at this point
+        assumeThat("Complex embedded types are not supported", query.contains("l[\"666\"]"), is(false));
         assumeThat("Lambdas are not supported", query.contains("Lambda.function("), is(false));
         // start of a closure
         assumeThat("Lambdas are not supported", query.contains("{"), is(false));
         assumeThat("withComputer() step is not supported", query.startsWith("g.withComputer("), is(false));
-        assumeThat("Vertex instances are not supported", vertexPattern.matcher(query).matches(), is(false));
         assumeThat("Edge instances are not supported", edgePattern.matcher(query).matches(), is(false));
         assumeThat("fill() terminator is not supported", query.contains("fill("), is(false));
         assumeThat("withoutStrategies() is not supported", query.contains("withoutStrategies("), is(false));

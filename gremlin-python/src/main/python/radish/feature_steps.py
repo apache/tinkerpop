@@ -20,7 +20,7 @@
 import json
 import re
 from gremlin_python.statics import long
-from gremlin_python.structure.graph import Path
+from gremlin_python.structure.graph import Path, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO, WithOptions
@@ -227,7 +227,11 @@ def __find_cached_element(ctx, graph_name, identifier, element_type):
     else:
         cache = ctx.lookup_v[graph_name] if element_type == "v" else ctx.lookup_e[graph_name]
 
-    return cache[identifier]
+    # try to lookup the element - if it can't be found then it must be a reference Vertex
+    if identifier in cache:
+        return cache[identifier]
+    else:
+        return Vertex(identifier)
 
 
 def _is_nan(val):

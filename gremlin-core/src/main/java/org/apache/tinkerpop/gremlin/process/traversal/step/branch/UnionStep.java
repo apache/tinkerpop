@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -28,21 +28,21 @@ import java.util.Collections;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionParent.Pick> {
+public final class UnionStep<S, E> extends BranchStep<S, E, Pick> {
 
     public UnionStep(final Traversal.Admin traversal, final Traversal.Admin<?, E>... unionTraversals) {
         super(traversal);
         this.setBranchTraversal(new ConstantTraversal<>(Pick.any));
         for (final Traversal.Admin<?, E> union : unionTraversals) {
-            this.addGlobalChildOption(Pick.any, (Traversal.Admin) union);
+            this.addChildOption(Pick.any, (Traversal.Admin) union);
         }
     }
 
     @Override
-    public void addGlobalChildOption(final Pick pickToken, final Traversal.Admin<S, E> traversalOption) {
+    public void addChildOption(final Pick pickToken, final Traversal.Admin<S, E> traversalOption) {
         if (Pick.any != pickToken)
             throw new IllegalArgumentException("Union step only supports the any token: " + pickToken);
-        super.addGlobalChildOption(pickToken, traversalOption);
+        super.addChildOption(pickToken, traversalOption);
     }
 
     @Override

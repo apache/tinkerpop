@@ -812,6 +812,54 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> MergeE ()
+        {
+            return new GraphTraversal<object, Edge>().MergeE();
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> MergeE (IDictionary<object,object> m)
+        {
+            return new GraphTraversal<object, Edge>().MergeE(m);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> MergeE (ITraversal t)
+        {
+            return new GraphTraversal<object, Edge>().MergeE(t);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeV step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> MergeV ()
+        {
+            return new GraphTraversal<object, Vertex>().MergeV();
+        }
+
+        /// <summary>
+        ///     Adds the mergeV step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> MergeV (IDictionary<object,object> m)
+        {
+            return new GraphTraversal<object, Vertex>().MergeV(m);
+        }
+
+        /// <summary>
+        ///     Adds the mergeV step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> MergeV (ITraversal t)
+        {
+            return new GraphTraversal<object, Vertex>().MergeV(t);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the min step to that traversal.
         /// </summary>
         public static GraphTraversal<object, E2> Min<E2>()

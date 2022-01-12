@@ -103,6 +103,7 @@ public class SparkGraphFeatureIntegrateTest {
             "@StepDrop",
             "@StepV",
             "@StepIndex", // doesn't look like this works with Spark atm - doesn't serialize (IndexTest not in the ProcessComputerSuite)
+            "@StepInject", // inject() not supported on GraphComputer
             "@GraphComputerVerificationOneBulk",
             "@GraphComputerVerificationStrategyNotSupported",
             "@GraphComputerVerificationMidVNotSupported",

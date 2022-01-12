@@ -279,7 +279,13 @@ function toNumeric(stringValue) {
 }
 
 function toVertex(name) {
-  return this.getData().vertices.get(name);
+  // some vertices are cached, like those from toy graphs but some are just references. if they are
+  // not cached then they are meant to be references.
+  const vertices = this.getData().vertices;
+  if (vertices.has(name))
+    return this.getData().vertices.get(name);
+  else
+    return new graphModule.Vertex(name, "vertex")
 }
 
 function toVertexId(name) {

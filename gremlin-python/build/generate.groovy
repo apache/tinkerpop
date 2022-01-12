@@ -31,6 +31,16 @@ import java.nio.file.Paths
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
 
+// getting an exception like:
+// > InvocationTargetException: javax.script.ScriptException: groovy.lang.MissingMethodException: No signature of
+// > method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.mergeE() is applicable for
+// > argument types: (String) values: [4ffdea36-4a0e-4681-acba-e76875d1b25b]
+// usually means bindings are not being extracted properly by VarAsBindingASTTransformation which typically happens
+// when a step is taking an argument that cannot properly resolve to the type required by the step itself. there are
+// special cases in that VarAsBindingASTTransformation class which might need to be adjusted. Editing the
+// GremlinGroovyScriptEngineTest#shouldProduceBindingsForVars() with the failing step and argument can typically make
+// this issue relatively easy to debug and enforce.
+
 // file is overwritten on each generation
 radishGremlinFile = new File("${projectBaseDir}/gremlin-python/src/main/python/radish/gremlin.py")
 
@@ -77,7 +87,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'from gremlin_python.process.traversal import TraversalStrategy\n' +
                     'from gremlin_python.process.graph_traversal import __\n' +
                     'from gremlin_python.structure.graph import Graph\n' +
-                    'from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO, WithOptions\n')
+                    'from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, Merge, T, Pick, Operator, IO, WithOptions\n')
 
     // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
     // at runtime. using this approach for now as these are the only such situations encountered so far. a better

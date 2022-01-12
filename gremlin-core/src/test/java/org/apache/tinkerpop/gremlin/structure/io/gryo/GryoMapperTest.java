@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
@@ -375,6 +376,12 @@ public class GryoMapperTest {
     public void shouldHandleByteBuffer() throws Exception {
         final ByteBuffer bb = ByteBuffer.wrap("some bytes for you".getBytes());
         assertThat(Arrays.equals(bb.array(), serializeDeserialize(bb, ByteBuffer.class).array()), is(true));
+    }
+
+    @Test
+    public void shouldHandleMerge() throws Exception {
+        final Merge merge = Merge.onCreate;
+        assertEquals(merge, serializeDeserialize(merge, Merge.class));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

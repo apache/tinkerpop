@@ -535,6 +535,21 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             Assert.Equal(expected, actual);
         }
+
+        [Fact]
+        public async Task TestMerge()
+        {
+            var expected = Merge.OnCreate;
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(expected, serializationStream);
+            serializationStream.Position = 0;
+            var actual = await reader.ReadAsync(serializationStream);
+
+            Assert.Equal(expected, actual);
+        }
         
         [Fact]
         public async Task TestOperator()

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -26,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -47,9 +48,10 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
     public static final EnumSerializer<VertexProperty.Cardinality> CardinalitySerializer = new EnumSerializer<>(DataType.CARDINALITY, VertexProperty.Cardinality::valueOf);
     public static final EnumSerializer<Column> ColumnSerializer = new EnumSerializer<>(DataType.COLUMN, Column::valueOf);
     public static final EnumSerializer<Direction> DirectionSerializer = new EnumSerializer<>(DataType.DIRECTION, Direction::valueOf);
+    public static final EnumSerializer<Merge> MergeSerializer = new EnumSerializer<>(DataType.MERGE, Merge::valueOf);
     public static final EnumSerializer<Operator> OperatorSerializer = new EnumSerializer<>(DataType.OPERATOR, Operator::valueOf);
     public static final EnumSerializer<Order> OrderSerializer = new EnumSerializer<>(DataType.ORDER, Order::valueOf);
-    public static final EnumSerializer<TraversalOptionParent.Pick> PickSerializer = new EnumSerializer<>(DataType.PICK, TraversalOptionParent.Pick::valueOf);
+    public static final EnumSerializer<Pick> PickSerializer = new EnumSerializer<>(DataType.PICK, Pick::valueOf);
     public static final EnumSerializer<Pop> PopSerializer = new EnumSerializer<>(DataType.POP, Pop::valueOf);
     public static final EnumSerializer<Scope> ScopeSerializer = new EnumSerializer<>(DataType.SCOPE, Scope::valueOf);
     public static final EnumSerializer<T> TSerializer = new EnumSerializer<>(DataType.T, T::valueOf);

@@ -383,7 +383,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static Vertex ToVertex(string name, string graphName)
         {
-            return ScenarioData.GetByGraphName(graphName).Vertices[name];
+            if (ScenarioData.GetByGraphName(graphName).Vertices.ContainsKey(name))
+            {
+                return ScenarioData.GetByGraphName(graphName).Vertices[name];
+            }
+            else
+            {
+                return new Vertex(name);
+            }
         }
 
         private static Edge ToEdge(string name, string graphName)

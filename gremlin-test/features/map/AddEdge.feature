@@ -268,7 +268,7 @@ Feature: Step - addE()
     And using the parameter v6 defined as "v[peter]"
     And the traversal of
       """
-      g.withSideEffect("b", v6).V(v1).addE("knows").to("b").property("weight", 0.5)
+      g.withSideEffect("b", v6).V(v1).addE("knows").to("b").property("weight", 0.5D)
       """
     When iterated to list
     Then the result should have a count of 1

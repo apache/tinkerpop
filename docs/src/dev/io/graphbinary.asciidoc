@@ -107,6 +107,7 @@ Changes to existing types require new revision.
 - `0x2b`: Tree
 - `0x2c`: Metrics
 - `0x2d`: TraversalMetrics
+- `0x2e`: Merge
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -566,6 +567,10 @@ Where:
 
 - `{duration}` is a `Long` describing the duration in nanoseconds.
 - `{metrics}` is a `List` composed by `Metrics` items.
+
+==== Merge
+
+Format: a single `String` representing the enum value.
 
 ==== Custom
 

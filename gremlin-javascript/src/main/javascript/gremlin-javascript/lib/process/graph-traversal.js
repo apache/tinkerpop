@@ -212,6 +212,16 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('addE', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
+
+  /**
+   * mergeV GraphTraversalSource step method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  mergeE(...args) {
+    const b = new Bytecode(this.bytecode).addStep('mergeE', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
   
   /**
    * addV GraphTraversalSource step method.
@@ -220,6 +230,16 @@ class GraphTraversalSource {
    */
   addV(...args) {
     const b = new Bytecode(this.bytecode).addStep('addV', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
+
+  /**
+   * mergeV GraphTraversalSource step method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  mergeV(...args) {
+    const b = new Bytecode(this.bytecode).addStep('mergeV', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
@@ -810,6 +830,26 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('mean', args);
     return this;
   }
+
+  /**
+   * Graph traversal mergeE method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  mergeE(...args) {
+    this.bytecode.addStep("mergeE", args);
+    return this;
+  }
+
+  /**
+   * Graph traversal mergeV method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  mergeV(...args) {
+    this.bytecode.addStep("mergeV", args);
+    return this;
+  }
   
   /**
    * Graph traversal min method.
@@ -1365,6 +1405,8 @@ const statics = {
   math: (...args) => callOnEmptyTraversal('math', args),
   max: (...args) => callOnEmptyTraversal('max', args),
   mean: (...args) => callOnEmptyTraversal('mean', args),
+  mergeE: (...args) => callOnEmptyTraversal("mergeE", args),
+  mergeV: (...args) => callOnEmptyTraversal("mergeV", args),
   min: (...args) => callOnEmptyTraversal('min', args),
   not: (...args) => callOnEmptyTraversal('not', args),
   optional: (...args) => callOnEmptyTraversal('optional', args),

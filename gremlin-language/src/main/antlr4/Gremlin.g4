@@ -97,6 +97,8 @@ traversalSourceSpawnMethod
 	| traversalSourceSpawnMethod_addV
 	| traversalSourceSpawnMethod_E
 	| traversalSourceSpawnMethod_V
+	| traversalSourceSpawnMethod_mergeE
+	| traversalSourceSpawnMethod_mergeV
 	| traversalSourceSpawnMethod_inject
     | traversalSourceSpawnMethod_io
     ;
@@ -128,6 +130,16 @@ traversalSourceSpawnMethod_io
     : 'io' LPAREN stringLiteral RPAREN
     ;
 
+traversalSourceSpawnMethod_mergeV
+    : 'mergeV' LPAREN genericLiteralMap RPAREN #traversalSourceSpawnMethod_mergeV_Map
+    | 'mergeV' LPAREN nestedTraversal RPAREN #traversalSourceSpawnMethod_mergeV_Traversal
+    ;
+
+traversalSourceSpawnMethod_mergeE
+    : 'mergeE' LPAREN genericLiteralMap RPAREN #traversalSourceSpawnMethod_mergeE_Map
+    | 'mergeE' LPAREN nestedTraversal RPAREN #traversalSourceSpawnMethod_mergeE_Traversal
+    ;
+
 chainedTraversal
     : traversalMethod
     | chainedTraversal DOT traversalMethod
@@ -157,6 +169,8 @@ traversalMethod
 	: traversalMethod_V
 	| traversalMethod_addE
 	| traversalMethod_addV
+	| traversalMethod_mergeE
+	| traversalMethod_mergeV
 	| traversalMethod_aggregate
 	| traversalMethod_and
 	| traversalMethod_as
@@ -271,6 +285,19 @@ traversalMethod_addV
 	| 'addV' LPAREN stringLiteral RPAREN #traversalMethod_addV_String
 	| 'addV' LPAREN nestedTraversal RPAREN #traversalMethod_addV_Traversal
 	;
+
+traversalMethod_mergeV
+    : 'mergeV' LPAREN RPAREN #traversalMethod_mergeV_empty
+    | 'mergeV' LPAREN genericLiteralMap RPAREN #traversalMethod_mergeV_Map
+    | 'mergeV' LPAREN nestedTraversal RPAREN #traversalMethod_mergeV_Traversal
+    ;
+
+traversalMethod_mergeE
+    : 'mergeE' LPAREN RPAREN #traversalMethod_mergeE_empty
+    | 'mergeE' LPAREN genericLiteralMap RPAREN #traversalMethod_mergeE_Map
+    | 'mergeE' LPAREN nestedTraversal RPAREN #traversalMethod_mergeE_Traversal
+    ;
+
 
 traversalMethod_aggregate
 	: 'aggregate' LPAREN traversalScope COMMA stringLiteral RPAREN #traversalMethod_aggregate_Scope_String
@@ -531,6 +558,8 @@ traversalMethod_not
 
 traversalMethod_option
 	: 'option' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_option_Predicate_Traversal
+	| 'option' LPAREN traversalMerge COMMA genericLiteralMap RPAREN #traversalMethod_option_Merge_Map
+	| 'option' LPAREN traversalMerge COMMA nestedTraversal RPAREN #traversalMethod_option_Merge_Traversal
 	| 'option' LPAREN genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_option_Object_Traversal
 	| 'option' LPAREN nestedTraversal RPAREN #traversalMethod_option_Traversal
 	;
@@ -837,6 +866,11 @@ traversalToken
     | 'value' | 'T.value'
     ;
 
+traversalMerge
+    : 'onCreate' | 'Merge.onCreate'
+    | 'onMatch' | 'Merge.onMatch'
+    ;
+
 traversalOrder
     : 'incr' | 'Order.incr'
     | 'decr' | 'Order.decr'
@@ -883,7 +917,7 @@ traversalOperator
     | 'sumLong' | 'Operator.sumLong'
     ;
 
-traversalOptionParent
+traversalPick
     : 'any' | 'Pick.any'
     | 'none' | 'Pick.none'
     ;
@@ -1311,7 +1345,8 @@ genericLiteral
 	| traversalToken
 	| traversalCardinality
 	| traversalDirection
-	| traversalOptionParent
+	| traversalPick
+	| structureVertex
 	| genericLiteralCollection
 	| genericLiteralRange
 	| nestedTraversal

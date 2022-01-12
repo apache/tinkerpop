@@ -44,6 +44,7 @@ class TestDriverRemoteConnection(object):
         assert long(6) == g.V().count().toList()[0]
         # #
         assert Vertex(1) == g.V(1).next()
+        assert Vertex(1) == g.V(Vertex(1)).next()
         assert 1 == g.V(1).id_().next()
         assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
         assert 1 == len(g.V(1).toList())

@@ -70,6 +70,7 @@ public enum DataType {
     TREE(0X2B),
     METRICS(0x2C),
     TRAVERSALMETRICS(0x2D),
+    MERGE(0x2E),
 
     CHAR(0X80),
     DURATION(0X81),

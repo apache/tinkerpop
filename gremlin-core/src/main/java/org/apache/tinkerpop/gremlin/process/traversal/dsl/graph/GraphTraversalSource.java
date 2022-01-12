@@ -30,17 +30,22 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -298,6 +303,8 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
      * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     *
+     * @since 3.1.0-incubating
      */
     public GraphTraversal<Vertex, Vertex> addV(final String vertexLabel) {
         if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
@@ -310,6 +317,8 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} by adding a vertex with the label as determined by a {@link Traversal}. If the
      * {@code vertexLabelTraversal} is {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     *
+     * @since 3.3.1
      */
     public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
         if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
@@ -321,6 +330,8 @@ public class GraphTraversalSource implements TraversalSource {
 
     /**
      * Spawns a {@link GraphTraversal} by adding a vertex with the default label.
+     *
+     * @since 3.1.0-incubating
      */
     public GraphTraversal<Vertex, Vertex> addV() {
         final GraphTraversalSource clone = this.clone();
@@ -330,7 +341,9 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a edge with the specified label.
+     * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
+     *
+     * @since 3.1.0-incubating
      */
     public GraphTraversal<Edge, Edge> addE(final String label) {
         final GraphTraversalSource clone = this.clone();
@@ -341,12 +354,75 @@ public class GraphTraversalSource implements TraversalSource {
 
     /**
      * Spawns a {@link GraphTraversal} by adding a edge with a label as specified by the provided {@link Traversal}.
+     *
+     * @since 3.3.1
      */
     public GraphTraversal<Edge, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+     * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+     * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+     * made it will use that search criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+     * @since 3.6.0
+     */
+    public GraphTraversal<Vertex, Vertex> mergeV(final Map<Object, Object> searchCreate) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+     * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+     * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+     * made it will use that search criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This anonymous {@link Traversal} must produce a {@code Map} that may have a keys of
+     * {@link T} or a {@code String}.
+     * @since 3.6.0
+     */
+    public <S> GraphTraversal<S, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        final GraphTraversal.Admin<S, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate.asAdmin()));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 3.6.0
+     */
+    public GraphTraversal<Edge, Edge> mergeE(final Map<?, Object> searchCreate) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 3.6.0
+     */
+    public GraphTraversal<Edge, Edge> mergeE(final Traversal<?, Map<Object, Object>> searchCreate) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate.asAdmin()));
     }
 
     /**
@@ -364,6 +440,8 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} starting with all vertices or some subset of vertices as specified by their
      * unique identifier.
+     *
+     * @since 3.0.0-incubating
      */
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         // a single null is [null]
@@ -377,6 +455,8 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} starting with all edges or some subset of edges as specified by their unique
      * identifier.
+     *
+     * @since 3.0.0-incubating
      */
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         // a single null is [null]

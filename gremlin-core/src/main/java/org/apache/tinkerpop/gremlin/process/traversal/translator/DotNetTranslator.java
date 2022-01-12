@@ -19,18 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
-import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -172,7 +173,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected String getSyntax(final TraversalOptionParent.Pick o) {
+        protected String getSyntax(final Pick o) {
             return "Pick." + SymbolHelper.toCSharp(o.toString());
         }
 
@@ -355,6 +356,33 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         script.append(", (").append(castSecondArgTo).append(") ");
                         convertToScript(instruction.getArguments()[1]);
                         script.append(",");
+                    } else if (methodName.equals(GraphTraversal.Symbols.mergeE) || methodName.equals(GraphTraversal.Symbols.mergeV)) {
+                        // there must be at least one argument - if null go with Map
+                        final Object instArg = instruction.getArguments()[0];
+                        if (null == instArg) {
+                            script.append("(IDictionary<object,object>) null");
+                        } else {
+                            if (instArg instanceof Traversal) {
+                                script.append("(ITraversal) ");
+                            } else {
+                                script.append("(IDictionary<object,object>) ");
+                            }
+                            convertToScript(instArg);
+                            script.append(")");
+                        }
+                    } else if (methodName.equals(GraphTraversal.Symbols.option) &&
+                            instruction.getArguments().length == 2 && instruction.getArguments()[0] instanceof Merge) {
+                        final Object[] instArgs = instruction.getArguments();
+                        // trying to catch option(Merge,Traversal|Map)
+                        convertToScript(instArgs[0]);
+                        script.append(", ");
+                        if (instArgs[1] instanceof Traversal) {
+                            script.append("(ITraversal) ");
+                        } else {
+                            script.append("(IDictionary<object,object>) ");
+                        }
+                        convertToScript(instArgs[1]);
+                        script.append(")");
                     } else {
                         final Object[] instArgs = instruction.getArguments();
                         for (int idx = 0; idx < instArgs.length; idx++) {

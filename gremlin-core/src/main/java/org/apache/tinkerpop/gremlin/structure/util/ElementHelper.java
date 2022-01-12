@@ -198,7 +198,7 @@ public final class ElementHelper {
      * assure that key positions contain strings and that there are an even number of elements.
      */
     public static Map<String, Object> asMap(final Object... keyValues) {
-        return asPairs(keyValues).stream().collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+        return asPairs(keyValues).stream().collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
 
     /**
@@ -206,7 +206,7 @@ public final class ElementHelper {
      * assure that key positions contain strings and that there are an even number of elements.
      */
     public static List<Pair<String, Object>> asPairs(final Object... keyValues) {
-        final List list = Arrays.asList(keyValues);
+        final List<Object> list = Arrays.asList(keyValues);
         return IntStream.range(1, list.size())
                 .filter(i -> i % 2 != 0)
                 .mapToObj(i -> Pair.with(list.get(i - 1).toString(), list.get(i)))

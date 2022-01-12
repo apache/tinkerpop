@@ -486,6 +486,8 @@ public class GremlinGroovyScriptEngineTest {
         final Traversal.Admin<Vertex, Vertex> t = (Traversal.Admin<Vertex, Vertex>)
                 engine.eval("g.V(v1Id).has(\"person\",\"age\",29).has('person','active',x).in(\"knows\")." +
                         System.lineSeparator() +
+                        "mergeE(m1).mergeV(m2).option(Merge.onCreate,m3)." +
+                        System.lineSeparator() +
                         "choose(__.out().count()).option(two, __.values(\"name\")).option(three, __.values(\"age\"))." +
                         System.lineSeparator() +
                         "filter(outE().count().is(y))."  +
@@ -500,16 +502,19 @@ public class GremlinGroovyScriptEngineTest {
         final String gremlinAsPython = translator.translate(bytecode).getScript();
 
         final Map<String,Object> bytecodeBindings = bytecode.getBindings();
-        assertEquals(7, bytecodeBindings.size());
+        assertEquals(10, bytecodeBindings.size());
         assertThat(bytecodeBindings.containsKey("x"), is(true));
         assertThat(bytecodeBindings.containsKey("y"), is(true));
         assertThat(bytecodeBindings.containsKey("v1Id"), is(true));
         assertThat(bytecodeBindings.containsKey("l"), is(true));
         assertThat(bytecodeBindings.containsKey("o"), is(true));
+        assertThat(bytecodeBindings.containsKey("m1"), is(true));
+        assertThat(bytecodeBindings.containsKey("m2"), is(true));
+        assertThat(bytecodeBindings.containsKey("m3"), is(true));
         assertThat(bytecodeBindings.containsKey("two"), is(true));
         assertThat(bytecodeBindings.containsKey("three"), is(true));
 
-        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
+        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').mergeE(m1).mergeV(m2).option(Merge.onCreate,m3).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
     }
 
     @Test

@@ -26,15 +26,18 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPres
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
@@ -100,6 +103,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
@@ -1069,6 +1074,89 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Vertex> addV() {
         this.asAdmin().getBytecode().addStep(Symbols.addV);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), (String) null));
+    }
+
+    /**
+     * Performs a merge (i.e. upsert) style operation for an {@link Vertex} using the incoming {@code Map} traverser as
+     * an argument. The {@code Map} represents search criteria and will match each of the supplied key/value pairs where
+     * the keys may be {@code String} property values or a value of {@link T}. If a match is not made it will use that
+     * search criteria to create the new {@link Vertex}.
+     *
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, Vertex> mergeV() {
+        this.asAdmin().getBytecode().addStep(Symbols.mergeV);
+        final MergeVertexStep<S> step = new MergeVertexStep<>(this.asAdmin(), false);
+        return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Performs a merge (i.e. upsert) style operation for an {@link Vertex} using a {@code Map} as an argument.
+     * The {@code Map} represents search criteria and will match each of the supplied key/value pairs where the keys
+     * may be {@code String} property values or a value of {@link T}. If a match is not made it will use that search
+     * criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, Vertex> mergeV(final Map<Object, Object> searchCreate) {
+        this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
+        final MergeVertexStep<S> step = new MergeVertexStep<>(this.asAdmin(), false, searchCreate);
+        return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Performs a merge (i.e. upsert) style operation for an {@link Vertex} using a {@code Map} as an argument.
+     * The {@code Map} represents search criteria and will match each of the supplied key/value pairs where the keys
+     * may be {@code String} property values or a value of {@link T}. If a match is not made it will use that search
+     * criteria to create the new {@link Vertex}.
+     *
+     *  @param searchCreate This anonymous {@link Traversal} must produce a {@code Map} that may have a keys of
+     *  {@link T} or a {@code String}.
+     *  @since 3.6.0
+     */
+    public default GraphTraversal<S, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
+        this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
+        final MergeVertexStep<S> step = new MergeVertexStep(this.asAdmin(), false, searchCreate.asAdmin());
+        return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using an
+     * incoming {@code Map} as an argument.
+     *
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, Edge> mergeE() {
+        this.asAdmin().getBytecode().addStep(Symbols.mergeE);
+        final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false);
+        return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, Edge> mergeE(final Map<?, Object> searchCreate) {
+        this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
+        final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate);
+        return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 3.6.0
+     */
+    public default GraphTraversal<S, Edge> mergeE(final Traversal<?, Map<Object, Object>> searchCreate) {
+        this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
+        final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate.asAdmin());
+        return this.asAdmin().addStep(step);
     }
 
     /**
@@ -3058,18 +3146,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ////
 
     /**
-     * This step modifies {@link #choose(Function)} to specifies the available choices that might be executed.
+     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+     * the documentation of such steps to understand the usage context.
      *
-     * @param pick       the token that would trigger this option which may be a {@link TraversalOptionParent.Pick},
-     *                   a {@link Traversal}, {@link Predicate}, or object depending on the step being modulated.
+     * @param token       the token that would trigger this option which may be a {@link Pick}, {@link Merge},
+     *                    a {@link Traversal}, {@link Predicate}, or object depending on the step being modulated.
      * @param traversalOption the option as a traversal
      * @return the traversal with the modulated step
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
      * @since 3.0.0-incubating
      */
-    public default <M, E2> GraphTraversal<S, E> option(final M pick, final Traversal<?, E2> traversalOption) {
-        this.asAdmin().getBytecode().addStep(Symbols.option, pick, traversalOption);
-        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(pick, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
+    public default <M, E2> GraphTraversal<S, E> option(final M token, final Traversal<?, E2> traversalOption) {
+        this.asAdmin().getBytecode().addStep(Symbols.option, token, traversalOption);
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
+        return this;
+    }
+
+    /**
+     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+     * the documentation of such steps to understand the usage context.
+     *
+     * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
+     * @return the traversal with the modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
+     * @since 3.6.0
+     */
+    public default <M, E2> GraphTraversal<S, E> option(final M token, final Map<Object, Object> m) {
+        this.asAdmin().getBytecode().addStep(Symbols.option, token, m);
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }
 
@@ -3083,7 +3192,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E> option(final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, traversalOption);
-        ((TraversalOptionParent<Object, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(TraversalOptionParent.Pick.any, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
+        ((TraversalOptionParent<Object, E, E2>) this.asAdmin().getEndStep()).addChildOption(Pick.any, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
         return this;
     }
 
@@ -3186,6 +3295,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String tree = "tree";
         public static final String addV = "addV";
         public static final String addE = "addE";
+        public static final String mergeV = "mergeV";
+        public static final String mergeE = "mergeE";
         public static final String from = "from";
         public static final String filter = "filter";
         public static final String or = "or";

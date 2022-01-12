@@ -40,8 +40,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.identi
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.none;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pick.any;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pick.none;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

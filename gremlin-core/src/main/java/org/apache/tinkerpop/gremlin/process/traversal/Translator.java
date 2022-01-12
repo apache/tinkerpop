@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -165,9 +164,9 @@ public interface Translator<S, T> {
             protected abstract String getSyntax(final VertexProperty.Cardinality o);
 
             /**
-             * Take the {@link TraversalOptionParent.Pick} argument and convert it to a string representation in the target language.
+             * Take the {@link Pick} argument and convert it to a string representation in the target language.
              */
-            protected abstract String getSyntax(final TraversalOptionParent.Pick o);
+            protected abstract String getSyntax(final Pick o);
 
             /**
              * Take the numeric argument and convert it to a string representation in the target language. Languages
@@ -308,8 +307,8 @@ public interface Translator<S, T> {
                     return script.append(getSyntax((SackFunctions.Barrier) object));
                 } else if (object instanceof VertexProperty.Cardinality) {
                     return script.append(getSyntax((VertexProperty.Cardinality) object));
-                } else if (object instanceof TraversalOptionParent.Pick) {
-                    return script.append(getSyntax((TraversalOptionParent.Pick) object));
+                } else if (object instanceof Pick) {
+                    return script.append(getSyntax((Pick) object));
                 } else if (object instanceof Enum) {
                     return produceScript((Enum<?>) object);
                 } else if (object instanceof Vertex) {

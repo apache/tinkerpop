@@ -24,14 +24,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.jsr223.CoreImports;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -176,8 +174,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected String getSyntax(final TraversalOptionParent.Pick o) {
-            return "TraversalOptionParent.Pick." + o.toString();
+        protected String getSyntax(final Pick o) {
+            return "Pick." + o.toString();
         }
 
         @Override

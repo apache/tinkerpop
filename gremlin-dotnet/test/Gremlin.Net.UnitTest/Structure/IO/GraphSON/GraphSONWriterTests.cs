@@ -258,13 +258,24 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
-        public void ShouldSerializeEnum(int version)
+        public void ShouldSerializeDirection(int version)
         {
             var writer = CreateGraphSONWriter(version);
 
             var serializedEnum = writer.WriteObject(Direction.Both);
 
             var expectedGraphSON = "{\"@type\":\"g:Direction\",\"@value\":\"BOTH\"}";
+            Assert.Equal(expectedGraphSON, serializedEnum);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeMerge(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var serializedEnum = writer.WriteObject(Merge.OnMatch);
+
+            var expectedGraphSON = "{\"@type\":\"g:Merge\",\"@value\":\"onMatch\"}";
             Assert.Equal(expectedGraphSON, serializedEnum);
         }
 

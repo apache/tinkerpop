@@ -29,6 +29,71 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== mergeV() and mergeE()
+
+One of the most commonly used patterns in Gremlin is the use of `fold().coalesce(unfold(), ...)` to perform upsert-like
+functionality. While this pattern is quite flexible, it can also be confusing to new users and for certain use cases
+challenging to get the pattern correctly implemented. For providers, the pattern is difficult to properly optimize
+because it can branch into complexity quite quickly making it hard to identify a section of Gremlin for an upsert and
+therefore is not executed as efficiently as it might have been otherwise.
+
+The new `mergeV()` and `mergeE()` steps greatly simplify this pattern and as the pattern is condensed into a single
+step it should be straightforward for providers to optimize as part of their implementations. The following example
+demonstrates just how much easier implementing a basic upsert of a vertex has gotten:
+
+[source,text]
+----
+// prior to 3.6.0, use fold().coalesce(unfold(), ...)
+gremlin> g.V().has('person','name','vadas').has('age', 27).
+......1>   fold().
+......2>   coalesce(unfold().property('age',30),
+......3>            addV('person').property('name','vadas').property('age',27)).
+......4>   elementMap()
+==>[id:2,label:person,name:vadas,age:30]
+
+// 3.6.0
+gremlin> g.mergeV([(T.label): 'person', name:'vadas', age: 27]).
+......1>     option(onMatch, [age: 30]).
+......2>   elementMap()
+==>[id:2,label:person,name:vadas,age:30]
+----
+
+The `fold().coalesce(unfold(), ...)` pattern was even more complicated for upserting edges, but the following example
+demonstrates how much easier `mergeE()` is to follow:
+
+[source,text]
+----
+// prior to 3.6.0, use fold().coalesce(unfold(), ...)
+gremlin> g.V().has('person','name','vadas').as('v').
+......1>            V().has('software','name','ripple').
+......2>            coalesce(__.inE('created').where(outV().as('v')),
+......3>                     addE('created').from('v').property('weight',0.5)).
+......4>   elementMap()
+==>[id:0,label:created,IN:[id:5,label:software],OUT:[id:2,label:person],weight:0.5]
+
+// 3.6.0
+gremlin> ripple = g.V().has('software','name','ripple').next()
+==>v[5]
+gremlin> g.V().has('person','name','vadas').
+......1>   mergeE([(T.label):'created',(IN):ripple, weight: 0.5]).
+......2>   elementMap()
+==>[id:0,label:created,IN:[id:5,label:software],OUT:[id:2,label:person],weight:0.5]
+----
+
+For those currently using the `fold().coalesce(unfold(), ...)` pattern, there is no need to be concerned with
+incompatibility as a result of these new steps. That pattern is still perfectly usable and valid Gremlin, but whenever
+possible it would be best to migrate away from it as graph providers ramp up on 3.6.0 support and introduce important
+write optimizations that will make a big difference in performance.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2681[TINKERPOP-2681],
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergee-step[mergeE()-step],
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergev-step[mergeV()-step]
+
+==== Moved Pick
+
+`Pick` was formerly a nested class of `TraversalOptionParent`, but has now been promoted to being a class on its own
+in `org.apache.tinkerpop.gremlin.process.traversal.Pick`.
+
 ==== Consistent by() Behavior
 
 The `by()` modulator is critical to the usage of Gremlin. When used in conjunction with a step that supports it, the

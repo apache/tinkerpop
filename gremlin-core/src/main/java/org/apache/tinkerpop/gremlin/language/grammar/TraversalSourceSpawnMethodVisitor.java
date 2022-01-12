@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
+import java.util.Map;
+
 /**
  * Use a {@link GraphTraversalSource} as the source and returns a {@link GraphTraversal} object.
  */
@@ -113,5 +115,25 @@ public class TraversalSourceSpawnMethodVisitor extends GremlinBaseVisitor<GraphT
             this.graphTraversal = this.traversalSource.io(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
         }
         return graphTraversal;
+    }
+
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_mergeV_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeV_MapContext ctx) {
+        return this.traversalSource.mergeV(GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
+    }
+
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_mergeV_Traversal(final GremlinParser.TraversalSourceSpawnMethod_mergeV_TraversalContext ctx) {
+        return this.traversalSource.mergeV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+    }
+
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_mergeE_Traversal(final GremlinParser.TraversalSourceSpawnMethod_mergeE_TraversalContext ctx) {
+        return this.traversalSource.mergeE(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+    }
+
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_mergeE_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeE_MapContext ctx) {
+        return this.traversalSource.mergeE(GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
     }
 }

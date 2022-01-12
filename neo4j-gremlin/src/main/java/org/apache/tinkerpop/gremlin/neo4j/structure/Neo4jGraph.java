@@ -150,8 +150,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Vertex)
-                            return (Long) ((Vertex) id).id();
+                        else if (id instanceof Vertex && ((Vertex) id).id() instanceof Number)
+                            return ((Number) ((Vertex) id).id()).longValue();
                         else if (null == id)
                             return null;
                         else
@@ -184,8 +184,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Edge)
-                            return (Long) ((Edge) id).id();
+                        else if (id instanceof Edge && ((Edge) id).id() instanceof Number)
+                            return ((Number) ((Edge) id).id()).longValue();
                         else if (null == id)
                             return null;
                         else

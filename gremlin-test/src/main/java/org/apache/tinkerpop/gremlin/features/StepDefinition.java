@@ -32,12 +32,15 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -64,10 +67,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,10 +93,21 @@ public final class StepDefinition {
     private static final Pattern edgeTripletPattern = Pattern.compile("(.+)-(.+)->(.+)");
     private static final Pattern ioPattern = Pattern.compile("g\\.io\\(\"(.*)\"\\).*");
     private List<Pair<Pattern, Function<String,String>>> stringMatcherConverters = new ArrayList<Pair<Pattern, Function<String,String>>>() {{
-        // expects json so that should port to the Gremlin script form - replace curly json braces with square ones
-        // for Gremlin sake.
-        add(Pair.with(Pattern.compile("m\\[(.*)\\]"), s -> s.replace('{','[').replace('}', ']')));
+        // expects json so that should port to the Gremlin script form
+        add(Pair.with(Pattern.compile("m\\[(.*)\\]"), s -> {
+            // can't handled embedded maps because of the string replace below on the curly braces
+            final String[] items = s.replace("{", "").replace("}", "").split(",");
+            final String listItems = Stream.of(items).map(String::trim).map(x -> {
+                final String[] pair = x.split(":");
 
+                // if wrapping double quotes aren't removed they end up re-wrapping again for pure string values
+                // on conversion
+                final String convertedKey = convertToString(pair[0].trim().replace("\"", ""));
+                final String convertedValue = convertToString(pair[1].trim().replace("\"", ""));
+                return String.format("%s:%s", convertedKey, convertedValue);
+            }).collect(Collectors.joining(","));
+            return String.format("[%s]", listItems);
+        }));
         add(Pair.with(Pattern.compile("l\\[\\]"), s -> "[]"));
         add(Pair.with(Pattern.compile("l\\[(.*)\\]"), s -> {
             final String[] items = s.split(",");
@@ -112,9 +128,13 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next().toString()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
+            final Iterator<Object> itty = g.V().has("name", s).id();
+            final Translator.ScriptTranslator.TypeTranslator typeTranslator = new GroovyTranslator.LanguageTypeTranslator(false);
+            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ? typeTranslator.apply("g", itty.next()).getScript() : s, Vertex.DEFAULT_LABEL);
+        }));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> getEdgeIdString(g, s)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> getEdgeIdString(g, s)));
-
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), s -> String.format("Direction.%s", s)));
 
@@ -123,9 +143,6 @@ public final class StepDefinition {
         // cases like the lambda item which likely won't make it to the grammar as it's raw groovy.
         add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Vertex as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Edge as a parameter which is not supported by gremlin-language");

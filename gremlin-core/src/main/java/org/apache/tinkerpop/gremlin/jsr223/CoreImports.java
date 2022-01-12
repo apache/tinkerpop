@@ -55,9 +55,11 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifica
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -194,13 +196,14 @@ public final class CoreImports {
         CLASS_IMPORTS.add(VertexProperty.Cardinality.class);
         CLASS_IMPORTS.add(Column.class);
         CLASS_IMPORTS.add(Direction.class);
+        CLASS_IMPORTS.add(Merge.class);
         CLASS_IMPORTS.add(Operator.class);
         CLASS_IMPORTS.add(Order.class);
         CLASS_IMPORTS.add(Pop.class);
         CLASS_IMPORTS.add(Scope.class);
         CLASS_IMPORTS.add(T.class);
         CLASS_IMPORTS.add(TraversalOptionParent.class);
-        CLASS_IMPORTS.add(TraversalOptionParent.Pick.class);
+        CLASS_IMPORTS.add(Pick.class);
         CLASS_IMPORTS.add(P.class);
         CLASS_IMPORTS.add(TextP.class);
         CLASS_IMPORTS.add(WithOptions.class);
@@ -344,12 +347,13 @@ public final class CoreImports {
         Collections.addAll(ENUM_IMPORTS, VertexProperty.Cardinality.values());
         Collections.addAll(ENUM_IMPORTS, Column.values());
         Collections.addAll(ENUM_IMPORTS, Direction.values());
+        Collections.addAll(ENUM_IMPORTS, Merge.values());
         Collections.addAll(ENUM_IMPORTS, Operator.values());
         Collections.addAll(ENUM_IMPORTS, Order.values());
         Collections.addAll(ENUM_IMPORTS, Pop.values());
         Collections.addAll(ENUM_IMPORTS, Scope.values());
         Collections.addAll(ENUM_IMPORTS, T.values());
-        Collections.addAll(ENUM_IMPORTS, TraversalOptionParent.Pick.values());
+        Collections.addAll(ENUM_IMPORTS, Pick.values());
 
         ////////////
         // FIELDS //

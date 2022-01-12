@@ -26,15 +26,16 @@ import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -329,7 +330,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Column.class, 132));
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
-            add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137));
+            add(GryoTypeReg.of(Pick.class, 137));
+            add(GryoTypeReg.of(Merge.class, 196));              // ***LAST ID***
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
 
@@ -343,7 +345,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
             add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));
-            add(GryoTypeReg.of(ProductiveByStrategy.class, 195, new JavaSerializer())); // ***LAST ID***
+            add(GryoTypeReg.of(ProductiveByStrategy.class, 195, new JavaSerializer()));
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
@@ -529,7 +531,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Column.class, 132));
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
-            add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137));
+            add(GryoTypeReg.of(Pick.class, 137));
+            add(GryoTypeReg.of(Merge.class, 196));       // ***LAST ID***
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
 
@@ -586,7 +589,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
             add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));
-            add(GryoTypeReg.of(ProductiveByStrategy.class, 195, new JavaSerializer())); // ***LAST ID***
+            add(GryoTypeReg.of(ProductiveByStrategy.class, 195, new JavaSerializer()));
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));

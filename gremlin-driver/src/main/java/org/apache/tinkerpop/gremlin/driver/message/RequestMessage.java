@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.message;
 
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public final class RequestMessage {
     /**
      * An "invalid" message.  Used internally only.
      */
-    public static final RequestMessage INVALID = new RequestMessage("invalid");
+    public static final RequestMessage INVALID = new RequestMessage(Tokens.OPS_INVALID);
 
     private final UUID requestId;
     private final String op;

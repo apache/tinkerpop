@@ -21,11 +21,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -40,7 +42,9 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -75,6 +79,31 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
         gts.V().addV().property("any", "thing").next();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
+        assertEquals(1, listener1.addVertexEventRecorded());
+        assertEquals(1, listener2.addVertexEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldTriggerAddVertexViaMergeV() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        graph.addVertex("some", "thing");
+        final GraphTraversalSource gts = create(eventStrategy);
+        final Map<Object,Object> m = new HashMap<>();
+        m.put("any", "thing");
+        gts.V().mergeV(m).property("any", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
         assertEquals(1, listener1.addVertexEventRecorded());
@@ -123,6 +152,37 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final GraphTraversalSource gts = create(eventStrategy);
         gts.V(v).as("v").addE("self").to("v").next();
+
+        tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
+
+        assertEquals(0, listener1.addVertexEventRecorded());
+        assertEquals(0, listener2.addVertexEventRecorded());
+
+        assertEquals(1, listener1.addEdgeEventRecorded());
+        assertEquals(1, listener2.addEdgeEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldTriggerAddEdgeViaMergeE() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex v = graph.addVertex();
+        v.addEdge("self", v);
+
+        final GraphTraversalSource gts = create(eventStrategy);
+        final Map<Object,Object> m = new HashMap<>();
+        m.put(T.label, "self-but-different");
+        gts.V(v).mergeE(m).next();
 
         tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
 
@@ -246,6 +306,40 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldTriggerAddVertexPropertyChangedViaMergeV() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex vSome = graph.addVertex("some", "thing");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing");
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        final Map<Object,Object> m1 = new HashMap<>();
+        m1.put("any", "thing");
+        gts.mergeV(m1).iterate();
+
+        final Map<Object,Object> m2 = new HashMap<>();
+        m2.put("any", "thing else");
+        gts.mergeV(m1).option(Merge.onMatch, m2).iterate();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing else"))));
+
+        assertEquals(1, listener1.addVertexEventRecorded());
+        assertEquals(1, listener2.addVertexEventRecorded());
+        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
+        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldTriggerAddVertexPropertyPropertyChanged() {
         final StubMutationListener listener1 = new StubMutationListener();
@@ -303,6 +397,44 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(0, listener2.edgePropertyChangedEventRecorded());
         assertEquals(0, listener1.edgePropertyChangedEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldTriggerUpdateEdgePropertyAddedViaMergeE() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex v = graph.addVertex();
+        v.addEdge("self", v);
+
+        final GraphTraversalSource gts = create(eventStrategy);
+        final Map<Object,Object> m = new HashMap<>();
+        m.put(T.label, "self");
+        final Map<Object,Object> mMatch = new HashMap<>();
+        mMatch.put("some", "thing");
+        gts.V(v).mergeE(m).option(Merge.onMatch, mMatch).next();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.E().has("some", "thing"))));
+
+        assertEquals(1, IteratorUtils.count(gts.E()));
+
+        assertEquals(0, listener1.addVertexEventRecorded());
+        assertEquals(0, listener2.addVertexEventRecorded());
+
+        assertEquals(0, listener1.addEdgeEventRecorded());
+        assertEquals(0, listener2.addEdgeEventRecorded());
+
+        assertEquals(1, listener2.edgePropertyChangedEventRecorded());
+        assertEquals(1, listener1.edgePropertyChangedEventRecorded());
     }
 
     @Test

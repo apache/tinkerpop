@@ -28,7 +28,7 @@ import java.util.List;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.none;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pick.none;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)

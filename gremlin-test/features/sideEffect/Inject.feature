@@ -51,13 +51,14 @@ Feature: Step - inject()
       | p[v[marko],v[vadas],vadas,d[5].i] |
       | p[v[marko],v[josh],josh,d[4].i] |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_injectXg_VX4XX_out_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter v4 defined as "v[josh]"
+    And using the parameter v2 defined as "v[josh]"
     And the traversal of
       """
-      g.V(vid1).inject(v4).out().values("name")
+      g.V(vid1).inject(v2).out().values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -130,7 +131,6 @@ Feature: Step - inject()
       | result |
       | null |
 
-
   Scenario: g_inject
     Given the empty graph
     And the traversal of
@@ -140,7 +140,6 @@ Feature: Step - inject()
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_valuesXageX_injectXnull_nullX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"

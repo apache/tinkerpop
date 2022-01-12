@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.HasNextStep;
 
@@ -36,18 +37,18 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> predicateTraversal, final Traversal.Admin<S, E> trueChoice, final Traversal.Admin<S, E> falseChoice) {
         this(traversal, (Traversal.Admin<S, M>) predicateTraversal.addStep(new HasNextStep<>(predicateTraversal)));
-        this.addGlobalChildOption((M) Boolean.TRUE, trueChoice);
-        this.addGlobalChildOption((M) Boolean.FALSE, falseChoice);
+        this.addChildOption((M) Boolean.TRUE, trueChoice);
+        this.addChildOption((M) Boolean.FALSE, falseChoice);
     }
 
     @Override
-    public void addGlobalChildOption(final M pickToken, final Traversal.Admin<S, E> traversalOption) {
+    public void addChildOption(final M pickToken, final Traversal.Admin<S, E> traversalOption) {
         if (pickToken instanceof Pick) {
             if (Pick.any.equals(pickToken))
                 throw new IllegalArgumentException("Choose step can not have an any-option as only one option per traverser is allowed");
             if (this.traversalPickOptions.containsKey(pickToken))
                 throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
         }
-        super.addGlobalChildOption(pickToken, traversalOption);
+        super.addChildOption(pickToken, traversalOption);
     }
 }

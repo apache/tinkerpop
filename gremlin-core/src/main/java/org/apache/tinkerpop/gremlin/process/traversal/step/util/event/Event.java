@@ -129,7 +129,8 @@ public interface Event {
     }
 
     /**
-     * Represents an action where a {@link VertexProperty} is modified on a {@link Vertex}.
+     * Represents an action where a {@link VertexProperty} is modified on a {@link Vertex}. If the {@link Property} is
+     * new then the {@code oldValue} will be {@code null}.
      */
     class VertexPropertyChangedEvent extends ElementPropertyChangedEvent {
 
@@ -144,7 +145,8 @@ public interface Event {
     }
 
     /**
-     * Represents an action where a {@link Property} is modified on a {@link VertexProperty}.
+     * Represents an action where a {@link Property} is modified on a {@link VertexProperty}. If the {@link Property} is
+     * new then the {@code oldValue} will be {@code null}.
      */
     class VertexPropertyPropertyChangedEvent extends ElementPropertyChangedEvent {
 

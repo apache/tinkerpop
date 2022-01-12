@@ -27,13 +27,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -221,7 +221,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Operator", Operator.sum, null},
                 new Object[] {"Operator", Operator.div, null},
                 new Object[] {"Order", Order.desc, null},
-                new Object[] {"Pick", TraversalOptionParent.Pick.any, null},
+                new Object[] {"Pick", Pick.any, null},
                 new Object[] {"Pop", Pop.mixed, null},
                 new Object[] {"Scope", Scope.global, null},
                 new Object[] {"T", T.label, null},

@@ -76,6 +76,7 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
             try {
                 objects.add(serializer.deserializeRequest(messageBytes.discardReadBytes()));
             } catch (SerializationException se) {
+                logger.warn(se.getMessage());
                 objects.add(RequestMessage.INVALID);
             }
         } finally {

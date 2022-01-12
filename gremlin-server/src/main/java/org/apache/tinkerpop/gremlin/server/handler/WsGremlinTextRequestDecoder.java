@@ -63,6 +63,7 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
 
             objects.add(serializer.deserializeRequest(frame.text()));
         } catch (SerializationException se) {
+            logger.warn(se.getMessage());
             objects.add(RequestMessage.INVALID);
         }
     }

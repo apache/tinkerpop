@@ -28,6 +28,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
 * Added `fail()` step.
+* Added `mergeV()` and `mergeE()` steps.
+* Moved `TraversalOptionParent.Pick` to it's own class as `Pick`.
 * Improved Gherkin test framework to allow for asserting traversal exceptions as a behavior.
 * Fixed query indentation for profile metrics where indent levels were not being respected.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.

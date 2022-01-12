@@ -2765,46 +2765,6 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
-==== Operator
-
-[source,json]
-----
-{
-  "@type" : "g:Operator",
-  "@value" : "sum"
-}
-----
-
-==== Order
-
-[source,json]
-----
-{
-  "@type" : "g:Order",
-  "@value" : "shuffle"
-}
-----
-
-==== Pick
-
-[source,json]
-----
-{
-  "@type" : "g:Pick",
-  "@value" : "any"
-}
-----
-
-==== Pop
-
-[source,json]
-----
-{
-  "@type" : "g:Pop",
-  "@value" : "all"
-}
-----
-
 ==== Lambda
 
 [source,json]
@@ -2816,6 +2776,16 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
     "language" : "gremlin-groovy",
     "arguments" : 1
   }
+}
+----
+
+==== Merge
+
+[source,json]
+----
+{
+  "@type" : "g:Merge",
+  "@value" : "onMatch"
 }
 ----
 
@@ -2876,6 +2846,26 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       }
     } ]
   }
+}
+----
+
+==== Operator
+
+[source,json]
+----
+{
+  "@type" : "g:Operator",
+  "@value" : "sum"
+}
+----
+
+==== Order
+
+[source,json]
+----
+{
+  "@type" : "g:Order",
+  "@value" : "shuffle"
 }
 ----
 
@@ -2995,6 +2985,26 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       }
     } ]
   }
+}
+----
+
+==== Pick
+
+[source,json]
+----
+{
+  "@type" : "g:Pick",
+  "@value" : "any"
+}
+----
+
+==== Pop
+
+[source,json]
+----
+{
+  "@type" : "g:Pop",
+  "@value" : "all"
 }
 ----
 
@@ -5149,56 +5159,6 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
-==== Operator
-
-[source,json]
-----
-{
-  "@type" : "g:Operator",
-  "@value" : "sum"
-}
-----
-
-==== Order
-
-[source,json]
-----
-{
-  "@type" : "g:Order",
-  "@value" : "shuffle"
-}
-----
-
-==== Pick
-
-[source,json]
-----
-{
-  "@type" : "g:Pick",
-  "@value" : "any"
-}
-----
-
-==== Pop
-
-[source,json]
-----
-{
-  "@type" : "g:Pop",
-  "@value" : "all"
-}
-----
-
-==== Pick
-
-[source,json]
-----
-{
-  "@type" : "g:Pick",
-  "@value" : "any"
-}
-----
-
 ==== Lambda
 
 [source,json]
@@ -5210,6 +5170,16 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
     "language" : "gremlin-groovy",
     "arguments" : 1
   }
+}
+----
+
+==== Merge
+
+[source,json]
+----
+{
+  "@type" : "g:Merge",
+  "@value" : "onMatch"
 }
 ----
 
@@ -5268,6 +5238,26 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       } ]
     } ]
   }
+}
+----
+
+==== Operator
+
+[source,json]
+----
+{
+  "@type" : "g:Operator",
+  "@value" : "sum"
+}
+----
+
+==== Order
+
+[source,json]
+----
+{
+  "@type" : "g:Order",
+  "@value" : "shuffle"
 }
 ----
 
@@ -5402,6 +5392,26 @@ Please see <<_p,P>> for additional information on `within`.
       }
     } ]
   }
+}
+----
+
+==== Pick
+
+[source,json]
+----
+{
+  "@type" : "g:Pick",
+  "@value" : "any"
+}
+----
+
+==== Pop
+
+[source,json]
+----
+{
+  "@type" : "g:Pop",
+  "@value" : "all"
 }
 ----
 

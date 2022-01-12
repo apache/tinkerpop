@@ -152,6 +152,11 @@ GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
 statics.add_static('V1_0', GryoVersion.V1_0)
 statics.add_static('V3_0', GryoVersion.V3_0)
 
+Merge = Enum('Merge', ' onCreate onMatch')
+
+statics.add_static('onCreate', Merge.onCreate)
+statics.add_static('onMatch', Merge.onMatch)
+
 Order = Enum('Order', ' asc desc shuffle')
 
 statics.add_static('shuffle', Order.shuffle)

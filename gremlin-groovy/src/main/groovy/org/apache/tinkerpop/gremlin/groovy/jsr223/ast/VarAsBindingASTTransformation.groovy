@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223.ast
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.Translator
@@ -118,7 +119,11 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                                 case GraphTraversal.Symbols.by:
                                     if (i == 1) bindingValue = new PropertyExpression(new ClassExpression(new ClassNode(Order)), "desc")
                                     break
-                                case GraphTraversal.Symbols.fail:
+                                case GraphTraversal.Symbols.mergeE:
+                                case GraphTraversal.Symbols.mergeV:
+                                    bindingValue = new MethodCallExpression(new ClassExpression(new ClassNode(Collections)), "emptyMap", new TupleExpression())
+                                    break
+                                case GraphTraversal.Symbols.option:
                                     if (i == 1) bindingValue = new MethodCallExpression(new ClassExpression(new ClassNode(Collections)), "emptyMap", new TupleExpression())
                                     break
                             }

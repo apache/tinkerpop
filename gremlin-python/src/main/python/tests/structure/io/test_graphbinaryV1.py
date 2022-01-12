@@ -24,7 +24,7 @@ import math
 from gremlin_python.statics import timestamp, long, SingleByte, SingleChar, ByteBufferType
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Merge
 
 
 class TestGraphBinaryReader(object):
@@ -163,6 +163,11 @@ class TestGraphSONWriter(object):
         
     def test_barrier(self):
         x = Barrier.normSack
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_merge(self):
+        x = Merge.onMatch
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 

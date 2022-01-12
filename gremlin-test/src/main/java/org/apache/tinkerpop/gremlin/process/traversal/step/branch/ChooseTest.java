@@ -22,9 +22,9 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -195,7 +195,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
             return g.V().choose(label())
                     .option("blah", out("knows"))
                     .option("bleep", out("created"))
-                    .option(TraversalOptionParent.Pick.none, identity()).values("name");
+                    .option(Pick.none, identity()).values("name");
         }
 
         @Override
@@ -212,7 +212,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount() {
             return g.V().hasLabel("person").choose(values("age"))
                     .option(27L, __.constant("young"))
-                    .option(TraversalOptionParent.Pick.none, __.constant("old"))
+                    .option(Pick.none, __.constant("old"))
                     .groupCount();
         }
 

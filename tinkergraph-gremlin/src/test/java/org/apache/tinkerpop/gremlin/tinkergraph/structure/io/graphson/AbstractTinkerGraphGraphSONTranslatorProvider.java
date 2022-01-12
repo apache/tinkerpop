@@ -250,6 +250,14 @@ public abstract class AbstractTinkerGraphGraphSONTranslatorProvider extends Tink
             test = "org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest",
             method = "g_inject_order_with_unknown_type",
             reason = "Remoting serializers only support known Gremlin types")
+    @Graph.OptOut(
+            test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeTest",
+            method = "*",
+            reason = "Remoting serializers only support known Gremlin types")
+    @Graph.OptOut(
+            test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexTest",
+            method = "*",
+            reason = "Remoting serializers only support known Gremlin types")
     public static class TinkerGraphGraphSONv2TranslatorProvider extends AbstractTinkerGraphGraphSONTranslatorProvider {
         public TinkerGraphGraphSONv2TranslatorProvider() {
             super(GraphSONVersion.V2_0);

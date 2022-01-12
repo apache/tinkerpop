@@ -1090,6 +1090,61 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the mergeE step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Edge> MergeE ()
+        {
+            Bytecode.AddStep("mergeE");
+            return Wrap<S, Edge>(this);
+        }
+
+        /// <summary>
+        ///     Adds the mergeE step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Edge> MergeE (IDictionary<object,object> m)
+        {
+            Bytecode.AddStep("mergeE", m);
+            return Wrap<S, Edge>(this);
+        }
+
+        /// <summary>
+        ///     Adds the mergeE step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Edge> MergeE (ITraversal t)
+        {
+            Bytecode.AddStep("mergeE", t);
+            return Wrap<S, Edge>(this);
+        }
+
+        /// <summary>
+        ///     Adds the mergeV step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Vertex> MergeV ()
+        {
+            Bytecode.AddStep("mergeV");
+            return Wrap<S, Vertex>(this);
+        }
+
+        /// <summary>
+        ///     Adds the mergeV step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Vertex> MergeV (IDictionary<object,object> m)
+        {
+            Bytecode.AddStep("mergeV", m);
+            return Wrap<S, Vertex>(this);
+        }
+
+        /// <summary>
+        ///     Adds the mergeV step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Vertex> MergeV (ITraversal t)
+        {
+            Bytecode.AddStep("mergeV", t);
+            return Wrap<S, Vertex>(this);
+        }
+
+
+        /// <summary>
         ///     Adds the min step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E2> Min<E2> ()
@@ -1129,6 +1184,15 @@ namespace Gremlin.Net.Process.Traversal
         ///     Adds the option step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Option (object pickToken, ITraversal traversalOption)
+        {
+            Bytecode.AddStep("option", pickToken, traversalOption);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the option step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Option (object pickToken, IDictionary<object,object> traversalOption)
         {
             Bytecode.AddStep("option", pickToken, traversalOption);
             return Wrap<S, E>(this);

@@ -516,6 +516,27 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#mergeV()
+     */
+    public static <A> GraphTraversal<A, Vertex> mergeV() {
+        return __.<A>start().mergeV();
+    }
+
+    /**
+     * @see GraphTraversal#mergeV(Map)
+     */
+    public static <A> GraphTraversal<A, Vertex> mergeV(final Map<Object, Object> searchCreate) {
+        return __.<A>start().mergeV(searchCreate);
+    }
+
+    /**
+     * @see GraphTraversal#mergeV(Traversal)
+     */
+    public static <A> GraphTraversal<A, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
+        return __.<A>start().mergeV(searchCreate);
+    }
+
+    /**
      * @see GraphTraversal#addE(String)
      */
     public static <A> GraphTraversal<A, Edge> addE(final String edgeLabel) {
@@ -523,10 +544,31 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#addE(org.apache.tinkerpop.gremlin.process.traversal.Traversal)
+     * @see GraphTraversal#addE(Traversal)
      */
     public static <A> GraphTraversal<A, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
         return __.<A>start().addE(edgeLabelTraversal);
+    }
+
+    /**
+     * @see GraphTraversal#mergeE()
+     */
+    public static <A> GraphTraversal<A, Edge> mergeE() {
+        return __.<A>start().mergeE();
+    }
+
+    /**
+     * @see GraphTraversal#mergeE(Map)
+     */
+    public static <A> GraphTraversal<A, Edge> mergeE(final Map<?, Object> searchCreate) {
+        return __.<A>start().mergeE(searchCreate);
+    }
+
+    /**
+     * @see GraphTraversal#mergeE(Traversal)
+     */
+    public static <A> GraphTraversal<A, Edge> mergeE(final Traversal<?, Map<Object, Object>> searchCreate) {
+        return __.<A>start().mergeE(searchCreate);
     }
 
     /**
