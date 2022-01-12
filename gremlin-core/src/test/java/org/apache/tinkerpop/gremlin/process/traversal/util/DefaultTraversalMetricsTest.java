@@ -28,7 +28,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class DefaultTraversalMetricsTest {
-static final Logger logger = LoggerFactory.getLogger(DefaultTraversalMetricsTest.class);
     @Test
     public void shouldPrintIndentationsCorrectly() {
         final List<MutableMetrics> metrics = new ArrayList<>();
