@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class DefaultTraversalMetricsTest {
-
+static final Logger logger = LoggerFactory.getLogger(DefaultTraversalMetricsTest.class);
     @Test
     public void shouldPrintIndentationsCorrectly() {
         final List<MutableMetrics> metrics = new ArrayList<>();
@@ -48,8 +50,8 @@ public class DefaultTraversalMetricsTest {
 
         final DefaultTraversalMetrics profile = new DefaultTraversalMetrics(100, metrics);
         final String LS = System.lineSeparator();
-        final String expectedOutput = "Traversal Metrics" + LS +
-                "Step                                                               Count  Traversers       Time (ms)    % Dur" + LS +
+        final String expectedOutput = "Traversal Metrics\n" +
+                "Step                                                               Count  Traversers       Time (ms)    % Dur\n" +
                 "=============================================================================================================" + LS +
                 "GraphStep                                                                                      0.000" + LS +
                 "  GraphQuery                                                                                   0.000" + LS +
