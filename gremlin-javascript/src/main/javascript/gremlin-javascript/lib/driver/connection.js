@@ -27,7 +27,10 @@ const Stream = require('stream');
 const WebSocket = require('ws');
 const util = require('util');
 const utils = require('../utils');
-const serializer = require('../structure/io/graph-serializer');
+const serializer = {
+  ...require('../structure/io/graph-serializer'),
+  ...require('../structure/io/binary/graph-serializer'),
+};
 const ResultSet = require('./result-set');
 const ResponseError = require('./response-error');
 
@@ -40,6 +43,7 @@ const responseStatusCode = {
 
 const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
 const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
+const graphBinaryMimeType = 'application/vnd.graphbinary-v1.0';
 
 const pingIntervalDelay = 60 * 1000;
 const pongTimeoutDelay = 30 * 1000;
@@ -220,11 +224,21 @@ class Connection extends EventEmitter {
   }
 
   _getDefaultReader(mimeType) {
-    return mimeType === graphSON2MimeType ? new serializer.GraphSON2Reader() : new serializer.GraphSONReader();
+    if (mimeType === graphBinaryMimeType)
+      return new serializer.GraphBinaryReader();
+
+    return mimeType === graphSON2MimeType
+      ? new serializer.GraphSON2Reader()
+      : new serializer.GraphSONReader();
   }
 
   _getDefaultWriter(mimeType) {
-    return mimeType === graphSON2MimeType ? new serializer.GraphSON2Writer() : new serializer.GraphSONWriter();
+    if (mimeType === graphBinaryMimeType)
+      return new serializer.GraphBinaryWriter();
+
+    return mimeType === graphSON2MimeType
+      ? new serializer.GraphSON2Writer()
+      : new serializer.GraphSONWriter();
   }
 
   _pingHeartbeat() {
