@@ -50,8 +50,8 @@ static final Logger logger = LoggerFactory.getLogger(DefaultTraversalMetricsTest
 
         final DefaultTraversalMetrics profile = new DefaultTraversalMetrics(100, metrics);
         final String LS = System.lineSeparator();
-        final String expectedOutput = "Traversal Metrics\n" +
-                "Step                                                               Count  Traversers       Time (ms)    % Dur\n" +
+        final String expectedOutput = "Traversal Metrics" + LS +
+                "Step                                                               Count  Traversers       Time (ms)    % Dur" + LS +
                 "=============================================================================================================" + LS +
                 "GraphStep                                                                                      0.000" + LS +
                 "  GraphQuery                                                                                   0.000" + LS +
