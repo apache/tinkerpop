@@ -413,6 +413,7 @@ limitations under the License.
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
                         <exclude>**/*.graffle</exclude>
+                        <exclude>**/*.svg</exclude>
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>

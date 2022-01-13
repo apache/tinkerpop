@@ -5,393 +5,597 @@ this work for additional information regarding copyright ownership.
 The ASF licenses this file to You under the Apache License, Version 2.0
 (the "License"); you may not use this file except in compliance with
 the License.  You may obtain a copy of the License at
-
   http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<img src="img/tinkerpop-cityscape.png" class="img-responsive" />
-<div class="container">
- <div class="hero-unit" style="padding:10px">
-    <b><font size="5" face="american typewriter">Apache TinkerPop&trade;</font></b>
-    <p><font size="5">The Gremlin Graph Traversal Machine and Language</font></p>
- </div>
-</div>
-<br/>
-<div class="container-fluid">
- <div class="container">
-    <div class="row">
-       <div class="col-sm-10 col-md-10">
-          <a href="http://arxiv.org/abs/1508.03843">Gremlin</a> is the graph traversal language of <a href="https://tinkerpop.apache.org/">Apache TinkerPop</a>.
-          Gremlin is a <a href="https://en.wikipedia.org/wiki/Functional_programming">functional</a>, <a href="https://en.wikipedia.org/wiki/Dataflow_programming">data-flow</a>
-          language that enables users to succinctly express complex traversals on (or queries of) their application's property graph. Every Gremlin traversal is composed of a sequence of (potentially nested) steps. A step
-          performs an atomic operation on the data stream. Every step is either a <em>map</em>-step (transforming the objects in the stream), a <em>filter</em>-step (removing objects
-          from the stream), or a <em>sideEffect</em>-step (computing statistics about the stream). The Gremlin step library extends on these 3-fundamental operations to provide
-          users a rich collection of steps that they can compose in order to ask any conceivable question they may have of their data for Gremlin is <a href="http://arxiv.org/abs/1508.03843">Turing Complete</a>.
-       </div>
-       <div class="col-sm-2 col-md-2">
-          <img src="img/gremlin-head.png" width="100%">
-       </div>
-    </div>
-    <br/>
-    <div style="border-radius:3px;border:1px solid black;padding:10px;padding-left:10px;height:170px" id="gremlinCarousel" class="carousel slide" data-ride="carousel" data-interval="30000">
-       <!-- Indicators -->
-       <ol class="carousel-indicators carousel-indicators-numbers">
-          <li data-target="#gremlinCarousel" data-slide-to="0" class="active">1</li>
-          <li data-target="#gremlinCarousel" data-slide-to="1">2</li>
-          <li data-target="#gremlinCarousel" data-slide-to="2">3</li>
-          <li data-target="#gremlinCarousel" data-slide-to="3">4</li>
-          <li data-target="#gremlinCarousel" data-slide-to="4">5</li>
-          <li data-target="#gremlinCarousel" data-slide-to="5">6</li>
-       </ol>
-       <div class="carousel-inner" role="listbox">
-          <div class="item active">
-             <div class="row">
-                <div class="col-xs-5">
-                   <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-gremlin">
-g.V().has("name","gremlin").
-  out("knows").
-  out("knows").
-  values("name")
+<!DOCTYPE html>
+<html lang=en>
+    <head>
+        <meta charset=utf-8>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="img/favicon.png" rel="shortcut icon" />
+        <title>Apache TinkerPop</title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <link href="css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link href="css/custome.css" rel="stylesheet">
+        <link href="css/responsive.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.css" integrity="sha512-K2J6Yt6ElUYEMPcTr0wm555AAyiqkgYiUgPIW18FT88/aYSNDk0EvGjsln/TEu3ee/jaHf0xoXzFppSbBtUXbQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+      <!-- header -->
+         <div class="header">
+            <div class="container">
+              <nav class="navbar navbar-expand-lg  ">
+                  <div class="container-fluid">
+                    <a class="navbar-brand" href="index.html">
+                        <img src="img/logo.png" class="img-fluid" alt="img">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="fa fa-bars"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                          <a class="nav-link active" aria-current="page" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="download.html">Download</a>
+                        </li>
+                          <li class="nav-item dropdown">
+                              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Documentation
+                              </a>
+                              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                 <li class="dropdown-header">Latest Documentation</li>
+                                 <li><a href="https://tinkerpop.apache.org/docs/current" class="dropdown-item">Documentation Index</a></li>
+                                 <li><a href="https://tinkerpop.apache.org/docs/current/upgrade" class="dropdown-item">Upgrade Information</a></li>
+                                 <li><a href="https://tinkerpop.apache.org/javadocs/current/core/" class="dropdown-item">Core Javadoc API</a></li>
+                                 <li><a href="https://tinkerpop.apache.org/javadocs/current/full/" class="dropdown-item">Full Javadoc API</a></li>
+                                   <li><hr class="dropdown-divider"></li>
+                                 <li><a href="https://tinkerpop.apache.org/docs/" class="dropdown-item">Documentation Archives</a></li>
+                                 <li><a href="https://tinkerpop.apache.org/javadocs/" class="dropdown-item">Javadoc Archives</a></li>
+                                 <li><hr class="dropdown-divider"></li>
+                                 <li><a href="https://tinkerpop.apache.org/docs/current/index.html#publications" class="dropdown-item">Publications</a></li>
+                              </ul>
+                              
+                            </li>
+                         <li class="nav-item dropdown">
+                              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Tutorials
+                              </a>
+                              <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
+                                     <li><a href="gremlin.html" class="dropdown-item">Introduction to Gremlin</a></li>
+                                     <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/tutorials/getting-started/" >Getting Started</a></li>
+                                     <li><a class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/">The Gremlin Console</a></li>
+                                     <li><a class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/recipes/">Gremlin Recipes</a></li>
+                                     <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/tutorials/gremlins-anatomy/">Gremlin's Anatomy</a></li>
+                                     <li><hr class="dropdown-divider"></li>
+                                     <li><a class="dropdown-item" href="http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html">Book: Practical Gremlin by Kelvin Lawrence</a></li>
+                                     <li><a class="dropdown-item" href="http://sql2gremlin.com/">SQL2Gremlin</a></li>
+                                  </ul>
+                             
+                            </li>
+                         <li class="nav-item dropdown">
+                              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Community
+                              </a>
+                              <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
+                                 <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users">User Mailing List</a></li>
+                                 <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">Developer Mailing List</a></li>
+                                 <li><a class="dropdown-item" href="https://discord.gg/ndMpKZcBEE" target="_blank"><img src="img/discord_logo.png" class="nav-icon">Join us on Discord</a></li>
+                                 <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/">Issue Tracker</a></li>
+                                 <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a></li>
+                                 <li><a class="dropdown-item" href="providers.html">Data System Support</a></li>
+                                 <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
+                                 <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                 <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon">GitHub</a></li>
+                                 <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon">Twitter</a></li>
+                              </ul>
+                            
+                            </li>
+                        
+                         <li class="nav-item">
+                          <a class="nav-link" href="https://tinkerpop.apache.org/gremlint/">Gremlint</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Apache Software
+                          </a>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                                 <li><a  class="dropdown-item" href="https://www.apache.org/">Apache Homepage</a></li>
+                                 <li><a class="dropdown-item" href="https://www.apache.org/licenses/">License</a></li>
+                                 <li><a class="dropdown-item" href="https://www.apache.org/events/current-event">Events</a></li>
+                                 <li><a class="dropdown-item" href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a></li>
+                                 <li><a class="dropdown-item" href="https://www.apache.org/foundation/thanks.html">Thanks</a></li>
+                                 <li><a class="dropdown-item" href="https://www.apache.org/security/">Security</a></li>
+                              </ul>
+                          
+                        </li>
+                         
+                      </ul>
+                    </div>
+                  </div>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- hero -->
+        <div class="container hero-inner">
+            <img src="img/gremlin/bg.png" class="img-fluid w-100" alt="img">
+        </div>
 
-  </code></pre>
+        <!-- Content -->
+        <div class="sec-pad "> 
+            <div class="container">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-md-12 col-lg-6 text-center">
+                        <h1 class="ft-40 bold black mb-2">Apache TinkerPop™</h1>
+                        <p class="mb-3 mb-md-5 medium black">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
+                    </div>
                 </div>
-                <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
-                   <b>What are the names of Gremlin's friends' friends?</b>
-                   <p/>
-                   <ol style="padding-left:20px">
-                      <li>Get the vertex with name "gremlin."</li>
-                      <li>Traverse to the people that Gremlin knows.</li>
-                      <li>Traverse to the people those people know.</li>
-                      <li>Get those people's names.</li>
-                   </ol>
-                   <br/>
+                 <div class="row d-flex">
+                    <div class="col-lg-6 mb-4 md-lg-0 text-lg-center text-start">
+                        <img src="img/gremlin/about-gremlin.png" class="img-fluid " alt="img" >
+                    </div>
+                    <div class="col-lg-6 ">
+                        <div class="use-case-page-pl-3">
+                            <h2 class="ft-30 bold black mb-3 md-md-5">Gremlin Query Language</h2>
+                        <p>Gremlin is the graph traversal language of Apache TinkerPop. Gremlin is a functional, data-flow language that enables users to succinctly express complex traversals on (or queries of) their application's property graph. Every Gremlin traversal is composed of a sequence of (potentially nested) steps. A step performs an atomic operation on the data stream. Every step is either a map-step (transforming the objects in the stream), a filter-step (removing objects from the stream), or a sideEffect-step (computing statistics about the stream). The Gremlin step library extends on these 3-fundamental operations to provide users a rich collection of steps that they can compose in order to ask any conceivable question they may have of their data for Gremlin is Turing Complete. </p>
+                    </div>
+                    </div>
                 </div>
-             </div>
-          </div>
-          <div class="item">
-             <div class="row">
-                <div class="col-xs-5">
-                   <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-gremlin">
-g.V().match(
-  as("a").out("knows").as("b"),
-  as("a").out("created").as("c"),
-  as("b").out("created").as("c"),
-  as("c").in("created").count().is(2)).
-    select("c").by("name")</code></pre>
-                </div>
-                <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
-                   <b>What are the names of the projects created by two friends?</b>
-                   <p/>
-                   <ol style="padding-left:20px">
-                      <li>...there exists some "a" who knows "b".</li>
-                      <li>...there exists some "a" who created "c".</li>
-                      <li>...there exists some "b" who created "c".</li>
-                      <li>...there exists some "c" created by 2 people.</li>
-                      <li>Get the name of all matching "c" projects.</li>
-                   </ol>
-                </div>
-             </div>
-          </div>
-          <div class="item">
-             <div class="row">
-                <div class="col-xs-5">
-                   <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-gremlin">
-g.V().has("name","gremlin").
-  repeat(in("manages")).
-    until(has("title","ceo")).
-  path().by("name")
+               
+            </div>
+        </div>
+          <div class="sec-pad dark-bg"> 
+            <div class="container">
+                <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                      
+                      <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <div class="row">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <div class="code-box h-100">
+                                                    <code>
+                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
+                                                    </code>
+                                                </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <ul class="list-unstyled text-white op-7">
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
+                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
+                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
+                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
+                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
 
-</code></pre>
-                </div>
-                <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
-                   <b>Get the managers from Gremlin to the CEO in the hiearchy.</b>
-                   <p/>
-                   <ol style="padding-left:20px">
-                      <li>Get the vertex with the name "gremlin."</li>
-                      <li>Traverse up the management chain...</li>
-                      <li>...until a person with the title of CEO is reached.</li>
-                      <li>Get name of the managers in the path traversed.</li>
-                   </ol>
-                   <br/>
-                </div>
-             </div>
-          </div>
-          <div class="item">
-             <div class="row">
-                <div class="col-xs-5">
-                   <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-gremlin">
-g.V().has("name","gremlin").as("a").
-  out("created").in("created").
-    where(neq("a")).
-  groupCount().by("title")
+                        <div class="carousel-item">
+                            <div class="row">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <div class="code-box h-100">
+                                                    <code>
+                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
+                                                    </code>
+                                                </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <ul class="list-unstyled text-white op-7">
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
+                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
+                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
+                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
+                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <div class="row">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <div class="code-box h-100">
+                                                    <code>
+                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
+                                                    </code>
+                                                </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <ul class="list-unstyled text-white op-7">
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
+                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
+                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
+                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
+                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <div class="row">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <div class="code-box h-100">
+                                                    <code>
+                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
+                                                    </code>
+                                                </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <ul class="list-unstyled text-white op-7">
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
+                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
+                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
+                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
+                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <div class="row">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <div class="code-box h-100">
+                                                    <code>
+                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
+                                                    </code>
+                                                </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <ul class="list-unstyled text-white op-7">
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
+                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
+                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
+                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
+                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="carousel-indicators mt-5">
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1">1</button>
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2">2</button>
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3">3</button>
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="3" aria-label="Slide 4">4</button>
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="4" aria-label="Slide 5">5</button>
+                      </div>
+                    </div>
+            </div>
+        </div>
 
-</code></pre>
+<div class="sec-pad "> 
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                         <img src="img/gremlin/oltp-and-olap.png" class="img-fluid w-100" alt="img">
+                    </div>
                 </div>
-                <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
-                   <b>Get the distribution of titles amongst Gremlin's collaborators.</b>
-                   <p/>
-                   <ol style="padding-left:20px">
-                      <li>Get the vertex with the name "gremlin" and label it "a."</li>
-                      <li>Get Gremlin's created projects and then who created them...</li>
-                      <li>...that are not Gremlin.</li>
-                      <li>Group count those collaborators by their titles.</li>
-                   </ol>
-                   <br/>
+            </div>
+        </div>
+        <div class="sec-pad pt-0"> 
+            <div class="container">
+                <div class="row">
+                     <div class="col-lg-12 ">
+                            <h2 class="ft-30 bold black mb-3 md-md-5">OLTP and OLAP Traversals</h2>
+                        <p>Gremlin was designed according to the "write once, run anywhere"-philosophy. This means that not only can all TinkerPop-enabled graph systems execute Gremlin traversals, but also, every Gremlin traversal can be evaluated as either a real-time database query or as a batch analytics query. The former is known as an online transactional process (OLTP) and the latter as an online analytics process (OLAP). This universality is made possible by the Gremlin traversal machine. This distributed, graph-based virtual machine understands how to coordinate the execution of a multi-machine graph traversal. Moreover, not only can the execution either be OLTP or OLAP, it is also possible for certain subsets of a traversal to execute OLTP while others via OLAP. The benefit is that the user does not need to learn both a database query language and a domain-specific BigData analytics language (e.g. Spark DSL, MapReduce, etc.). Gremlin is all that is required to build a graph-based application because the Gremlin traversal machine will handle the rest. </p>
+                    </div>
                 </div>
-             </div>
-          </div>
-          <div class="item">
-             <div class="row">
-                <div class="col-xs-5">
-                   <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-gremlin">
-g.V().has("name","gremlin").
-  out("bought").aggregate("stash").
-  in("bought").out("bought").
-    where(not(within("stash"))).
-  groupCount().order(local).by(values,desc)
-</code></pre>
-                </div>
-                <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
-                   <b>Get a ranked list of relevant products for Gremlin to purchase.</b>
-                   <p/>
-                   <ol style="padding-left:20px">
-                      <li>Get the vertex with the name "gremlin."</li>
-                      <li>Get the products Gremlin has purchased and save as "stash."</li>
-                      <li>Who else bought those products and what else did they buy...</li>
-                      <li>...that Gremlin has not already purchased.</li>
-                      <li>Group count the products and order by their relevance.</li>
-                   </ol>
-                </div>
-             </div>
-          </div>
-          <div class="item">
-             <div class="row">
-                <div class="col-xs-5">
-                   <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-gremlin">
-g.V().hasLabel("person").
-  pageRank().
-    by("friendRank").
-    by(outE("knows")).
-  order().by("friendRank",desc).
-  limit(10)</code></pre>
-                </div>
-                <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
-                   <b>Get the 10 most central people in the knows-graph.</b>
-                   <p/>
-                   <ol style="padding-left:20px">
-                      <li>Get all people vertices.</li>
-                      <li>Calculate their PageRank using knows-edges.</li>
-                      <li>Order the people by their friendRank score.</li>
-                      <li>Get the top 10 ranked people.</li>
-                   </ol>
-                </div>
-             </div>
-          </div>
-       </div>
-    </div>
- </div>
- <br/>
- <div class="container">
-    <a name="oltp-and-olap-traversals"></a>
-    <h3>OLTP and OLAP Traversals</h3>
-    <br/>
-    Gremlin was designed according to the "write once, run anywhere"-philosophy. This means that not only can all TinkerPop-enabled
-    graph systems execute Gremlin traversals, but also, every Gremlin traversal can be evaluated as either a real-time database query
-    or as a batch analytics query. The former is known as an <em>online transactional process</em> (<a href="https://en.wikipedia.org/wiki/Online_transaction_processing">OLTP</a>) and the latter as an <em>online analytics
-    process</em> (<a href="https://en.wikipedia.org/wiki/Online_analytical_processing">OLAP</a>). This universality is made possible by the Gremlin traversal machine. This distributed, graph-based <a href="https://en.wikipedia.org/wiki/Virtual_machine#Abstract_virtual_machine_techniques">virtual machine</a>
-    understands how to coordinate the execution of a multi-machine graph traversal. Moreover, not only can the execution either be OLTP or
-    OLAP, it is also possible for certain subsets of a traversal to execute OLTP while others via OLAP. The benefit is that the user does
-    not need to learn both a database query language and a domain-specific BigData analytics language (e.g. Spark DSL, MapReduce, etc.).
-    Gremlin is all that is required to build a graph-based application because the Gremlin traversal machine will handle the rest.
-    <br/><br/>
-    <center><img src="img/oltp-and-olap.png" style="width:80%;" class="img-responsive"></center>
- </div>
- <br/>
- <div class="container">
-    <a name="imperative-and-declarative-traversals"></a>
-    <h3>Imperative and Declarative Traversals</h3>
-    <br/>
-    <div class="row">
-       <div class="col-sm-7 col-md-8">
-          A Gremlin traversal can be written in either an <em>imperative</em> (<a href="https://en.wikipedia.org/wiki/Imperative_programming">procedural</a>) manner, a <em>declarative</em> (<a href="https://en.wikipedia.org/wiki/Declarative_programming">descriptive</a>) manner,
-          or in a hybrid manner containing both imperative and declarative aspects. An imperative Gremlin traversal tells the traversers how to proceed at each step in the traversal. For instance,
-          the imperative traversal on the right first places a traverser at the vertex denoting Gremlin. That traverser then splits itself across all of Gremlin's collaborators that are not Gremlin
-          himself. Next, the traversers walk to the managers of those collaborators to ultimately be grouped into a manager name count distribution. This traversal is imperative in that it tells the
-          traversers to "go here and then go there" in an explicit, procedural manner.
-       </div>
-       <div class="col-sm-5 col-md-4">
-          <pre style="padding:10px;">
-<code class="language-gremlin">g.V().has("name","gremlin").as("a").
-  out("created").in("created").
-    where(neq("a")).
-  in("manages").
-  groupCount().by("name")</code>
-</pre>
-       </div>
-    </div>
-    <p/>
-    <div class="row">
-       <div class="col-sm-5 col-md-4">
-          <pre style="padding:10px;">
-<code class="language-gremlin">g.V().match(
-  as("a").has("name","gremlin"),
-  as("a").out("created").as("b"),
-  as("b").in("created").as("c"),
-  as("c").in("manages").as("d"),
-    where("a",neq("c"))).
-  select("d").
-  groupCount().by("name")</code>
-</pre>
-       </div>
-       <div class="col-sm-7 col-md-8">
-          A declarative Gremlin traversal does not tell the traversers the order in which to execute their walk, but instead, allows each traverser to select a pattern to execute from a collection
-          of (potentially nested) patterns. The <a href="https://tinkerpop.apache.org/docs/current/reference/#match-step">declarative traversal</a> on the left yields the same result as the imperative traversal above. However, the declarative traversal has the added benefit
-          that it leverages not only a compile-time query planner (like imperative traversals), but also a runtime query planner that chooses which traversal pattern to execute next based on the
-          historic statistics of each pattern -- favoring those patterns which tend to reduce/filter the most data.
-       </div>
-    </div>
-    <br/>
-    The user can write their traversals in any way they choose. However, ultimately when their traversal is compiled, and depending on the underlying execution engine
-    (i.e. an OLTP graph database or an OLAP graph processor), the user's traversal is rewritten by a set of <em><a href="https://tinkerpop.apache.org/docs/current/reference/#traversalstrategy">traversal strategies</a></em> which do their best to determine the most optimal execution
-    plan based on an understanding of graph data access costs as well as the underlying data systems's unique capabilities (e.g. fetch the Gremlin vertex from the graph database's "name"-index).
-    Gremlin has been designed to give users flexibility in how they express their queries and graph system providers flexibility in how to efficiently evaluate traversals against their TinkerPop-enabled data system.
- </div>
- <br/>
- <div class="container">
-    <a name="host-language-embedding"></a>
-    <h3>Host Language Embedding</h3>
-    <br/>
-    <div class="row">
-       <div class="col-sm-5 col-md-4">
-          <img src="img/gremlin-language-variants.png" class="img-responsive">
-       </div>
-       <div class="col-sm-7 col-md-8">
-          Classic database query languages, like <a href="https://en.wikipedia.org/wiki/SQL">SQL</a>, were conceived as being fundamentally different from the programming languages that would
-          ultimately use them in a production setting. For this reason, classical databases require the developer to code both in their native programming
-          language as well as in the database's respective query language. An argument can be made that the difference between "query languages" and
-          "programming languages" are not as great as we are taught to believe. Gremlin unifies this divide because traversals can be written in any
-          programming language that supports function <a href="https://en.wikipedia.org/wiki/Function_composition">composition</a> and <a href="https://en.wikipedia.org/wiki/Nested_function">nesting</a> (which every major programming language supports). In this way, the user's
-          Gremlin traversals are written along side their application code and benefit from the advantages afforded by the host language and its tooling
-          (e.g. type checking, syntax highlighting, dot completion, etc.). Various <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-drivers-variants">Gremlin language variants</a> exist including: Gremlin-Java, Gremlin-Groovy, <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python">Gremlin-Python</a>,
-          <a href="https://github.com/mpollmeier/gremlin-scala">Gremlin-Scala</a>, etc.
-       </div>
-       <div class="col-md-12">
-          <p><br/>The first example below shows a simple Java class. Note that the Gremlin traversal is expressed in Gremlin-Java and thus, is part of the user's application code. There is no need for the
-             developer to create a <code>String</code> representation of their query in (yet) another language to ultimately pass that <code>String</code> to the graph computing system and be returned a result set. Instead,
-             traversals are embedded in the user's host programming language and are on equal footing with all other application code. With Gremlin, users <strong>do not</strong> have to deal with the awkwardness exemplified
-             in the second example below which is a common anti-pattern found throughout the industry.
-          </p>
-       </div>
-       <br/><br/>
-       <div class="col-md-5">
-          <pre style="padding:10px;"><code class="language-gremlin">public class GremlinTinkerPopExample {
-  public void run(String name, String property) {
+            </div>
+        </div>
 
-    Graph graph = GraphFactory.open(...);
-    GraphTraversalSource g = traversal().withEmbedded(graph);
+        <div class="sec-pad pt-0"> 
+            <div class="container">
+                <div class="row mb-3 mb-md-5">
+                    <div class="col-md-12 col-lg-6 mb-4 mb-lg-0">
+                        <div class="code-box h-100">
+                                                    <code>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> <span class="text-blue">as</span><span class="text-success">("a").</span>
 
-    double avg = g.V().has("name",name).
-                   out("knows").out("created").
-                   values(property).mean().next();
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("created").</span><span class="text-blue">in</span><span class="text-success">("created").</span>
 
-    System.out.println("Average rating: " + avg);
-  }
-}
+                                                             <br>&nbsp;&nbsp;<span class="text-blue">where</span><span class="text-success">(</span><span class="text-blue">neq</span><span class="text-success">("a")).</span>
+
+                                                             <br>&nbsp;&nbsp;<span class="text-blue">in</span><span class="text-success"> ("manages").</span>
+                                                             <br>&nbsp;&nbsp;<span class="text-blue">groupCount</span><span class="text-success">().</span><span class="text-blue">by</span><span class="text-success">("name")</span>
+                                                    </code>
+                                                </div>
+                    </div>
+                     <div class="col-md-12 col-lg-6">
+                        <h2 class="ft-30 bold black mb-3 md-md-5">Imperative & Declarative Traversals</h2>
+                        <p>A Gremlin traversal can be written in either an imperative (procedural) manner, a declarative (descriptive) manner, or in a hybrid manner containing both imperative and declarative aspects. An imperative Gremlin traversal tells the traversers how to proceed at each step in the traversal. For instance, the imperative traversal on the right first places a traverser at the vertex denoting Gremlin. That traverser then splits itself across all of Gremlin's collaborators that are not Gremlin himself. Next, the traversers walk to the managers of those collaborators to ultimately be grouped into a manager name count distribution. This traversal is imperative in that it tells the traversers to "go here and then go there" in an explicit, procedural manner.</p>
+                    </div>
+                    
+                </div>
+
+                <div class="row mb-3 mb-md-5">
+                    
+                     <div class="col-md-12 col-lg-6 order-2 order-md-1">
+                        <p class="text-lg-end text-start">A declarative Gremlin traversal does not tell the traversers the order in which to execute their walk, but instead, allows each traverser to select a pattern to execute from a collection of (potentially nested) patterns. The declarative traversal on the left yields the same result as the imperative traversal above. However, the declarative traversal has the added benefit that it leverages not only a compile-time query planner (like imperative traversals), but also a runtime query planner that chooses which traversal pattern to execute next based on the historic statistics of each pattern -- favoring those patterns which tend to reduce/filter the most data.</p>
+                    </div>
+                    <div class="col-md-12 col-lg-6 mb-4 mb-lg-0 order-1 order-md-2">
+                        <div class="code-box h-100">
+                                                    <code>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().match(</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">has</span><span class="text-success">("name","gremlin"),</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">out</span><span class="text-success">("created").as("b"),</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">in</span><span class="text-success">("created").as("c"),</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">in</span><span class="text-success">("manages").as("d"),</span>
+
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">where</span><span class="text-success">("a",</span><span class="text-blue">neq</span><span class="text-success">("c"))).</span>
 
 
-</code>
-</pre>
-       </div>
-       <div class="col-md-7">
-          <pre style="padding:10px;"><code class="language-gremlin">public class SqlJdbcExample {
-  public void run(String name, String property) {
+                                                              <br>&nbsp;&nbsp;<span class="text-blue">select</span><span class="text-success">("d").</span>
 
-    Connection connection = DriverManager.getConnection(...)
-    Statement statement = connection.createStatement();
-    ResultSet result = statement.executeQuery(
-      "SELECT AVG(pr." + property + ") as AVERAGE FROM PERSONS p1" +
-        "INNER JOIN KNOWS k ON k.person1 = p1.id " +
-        "INNER JOIN PERSONS p2 ON p2.id = k.person2 " +
-        "INNER JOIN CREATED c ON c.person = p2.id " +
-        "INNER JOIN PROJECTS pr ON pr.id = c.project " +
-          "WHERE p.name = '" + name + "');
+                                                                <br>&nbsp;&nbsp;<span class="text-blue">groupCount</span><span class="text-success">().</span><span class="text-blue">by</span><span class="text-success">("name")</span>
+                                                             
+                                                    </code>
+                                                </div>
+                    </div>
+                    
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        The user can write their traversals in any way they choose. However, ultimately when their traversal is compiled, and depending on the underlying execution engine (i.e. an OLTP graph database or an OLAP graph processor), the user's traversal is rewritten by a set of traversal strategies which do their best to determine the most optimal execution plan based on an understanding of graph data access costs as well as the underlying data systems's unique capabilities (e.g. fetch the Gremlin vertex from the graph database's "name"-index). Gremlin has been designed to give users flexibility in how they express their queries and graph system providers flexibility in how to efficiently evaluate traversals against their TinkerPop-enabled data system.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+         <div class="sec-pad pt-0"> 
+            <div class="container">
+                 <div class="row d-flex">
+                    <div class="col-lg-6 mb-4 md-lg-0 text-lg-center text-start">
+                        <img src="img/gremlin/language-variants.png" class="img-fluid " alt="img" >
+                    </div>
+                    <div class="col-lg-6 ">
+                        <div class="use-case-page-pl-3">
+                            <h2 class="ft-30 bold black mb-3 md-md-5">Host Language Embedding</h2>
+                        <p>Classic database query languages, like SQL, were conceived as being fundamentally different from the programming languages that would ultimately use them in a production setting. For this reason, classical databases require the developer to code both in their native programming language as well as in the database's respective query language. An argument can be made that the difference between "query languages" and "programming languages" are not as great as we are taught to believe. Gremlin unifies this divide because traversals can be written in any programming language that supports function composition and nesting (which every major programming language supports). In this way, the user's Gremlin traversals are written along side their application code and benefit from the advantages afforded by the host language and its tooling (e.g. type checking, syntax highlighting, dot completion, etc.). Various Gremlin language variants exist including: Gremlin-Java, Gremlin-Groovy, Gremlin-Python, Gremlin-Scala, etc.</p>
+                    </div>
+                    </div>
+                </div>
+               <div class="row mt-3 mt-md-5">
+                    <div class="col-12">
+                       The first example below shows a simple Java class. Note that the Gremlin traversal is expressed in Gremlin-Java and thus, is part of the user's application code. There is no need for the developer to create a String representation of their query in (yet) another language to ultimately pass that String to the graph computing system and be returned a result set. Instead, traversals are embedded in the user's host programming language and are on equal footing with all other application code. With Gremlin, users do not have to deal with the awkwardness exemplified in the second example below which is a common anti-pattern found throughout the industry.
+                    </div>
+                </div>
+                <div class="row mt-3 mt-md-5">
+                    <div class="col-md-12 col-lg-5 mb-4 mb-lg-0">
+                         <div class="code-box h-100">
+                                                    <code>
+                                                        <span class="text-purpal">public Class</span><span class="text-blue"> GremlinTinkerPopExample{</span>
 
-    System.out.println("Average rating: " + result.next().getDouble("AVERAGE")
-  }
-}</code>
-</pre>
-       </div>
-       <div class="col-md-12">
-          <p><br/>Behind the scenes, a Gremlin traversal will evaluate locally against an embedded graph database, serialize itself across the network to a remote
-             graph database, or send itself to an OLAP processor for cluster-wide distributed execution. The traversal source definition determines where the traversal executes. Once a traversal source is
-             defined it can be used over and over again in a manner analogous to a database connection. The ultimate effect is that the user "feels" that their data and their traversals are all
-             co-located in their application and accessible via their application's native programming language. The "query language/programming language"-divide is bridged by Gremlin.
-          </p>
-          <br/>
-       </div>
-       <div class="col-md-12">
-          <pre style="padding:10px;"><code class="language-gremlin">Graph graph = GraphFactory.open(...);
-GraphTraversalSource g;
-g = traversal().withEmbedded(graph);                                            // local OLTP
-g = traversal().withRemote(DriverRemoteConnection.using("localhost", 8182))     // remote
-g = traversal().withEmbedded(graph).withComputer(SparkGraphComputer.class);     // distributed OLAP</code>
-</pre>
-       </div>
-       <br/>
-    </div>
-    <div class="container">
-       <hr/>
-       <h4>Related Resources</h4>
-       <br/>
-       <div class="carousel slide" data-ride="carousel" data-type="multi" data-interval="7000" id="relatedResources">
-          <div class="carouselGrid-inner">
-             <div class="item active">
-                <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="https://academy.datastax.com/resources/getting-started-graph-databases"><img src="img/resources/graph-databases-101-resource.png" width="100%" /></a></div>
-             </div>
-             <div class="item">
-                <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="http://datastax.com/dev/blog/the-benefits-of-the-gremlin-graph-traversal-machine"><img src="img/resources/benefits-gremlin-machine-resource.png" width="100%" /></a></div>
-             </div>
-             <div class="item">
-                <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="http://arxiv.org/abs/1508.03843"><img src="img/resources/arxiv-article-resource.png" width="100%" /></a></div>
-             </div>
-             <div class="item">
-                <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="http://sql2gremlin.com/"><img src="img/resources/sql-2-gremlin-resource.png" width="100%" /></a></div>
-             </div>
-          </div>
-          <a class="left carouselGrid-control" href="#relatedResources" data-slide="prev">
-          <span class="icon-prev" aria-hidden="true"></span>
-          <span class="sr-only">Previous</span>
-          </a>
-          <a class="right carouselGrid-control" href="#relatedResources" data-slide="next">
-          <span class="icon-next" aria-hidden="true"></span>
-          <span class="sr-only">Next</span>
-          </a>
-       </div>
-       <script>
-          $('.carousel[data-type="multi"] .item').each(function(){
-            var next = $(this).next();
-            if (!next.length) { // if ther isn't a next
-              next = $(this).siblings(':first'); // this is the first
-            }
-            next.children(':first-child').clone().appendTo($(this)); // put the next ones on the array
+                                                            <br>&nbsp;<span class="text-purpal">public void</span><span class="text-blue"> run(String name, String property){</span>
 
-            for (var i=0;i<2;i++) { // THIS LOOP SPITS OUT EXTRA ITEMS TO THE CAROUSEL
-              next=next.next();
-              if (!next.length) {
-                next = $(this).siblings(':first');
-              }
-              next.children(':first-child').clone().appendTo($(this));
-            }
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">Graph graph</span><span class="text-success"> = </span><span class="text-blue"> GraphFactory.open(...);</span>
 
-          });
-       </script>
-    </div>
-    <br/>
-    <br/>
- </div>
-</div>
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">GraphTraversalSource</span><span class="text-purpal"> g </span><span class="text-success"> = </span><span class="text-blue">traversal().withEmbedded(graph);</span>
+                                                            <br>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">double avg</span><span class="text-success"> = </span><span class="text-purpal"> g</span><span class="text-success">.V().</span><span class="text-blue">has</span><span class="text-success">("name",</span><span class="text-blue">name</span><span class="text-success">).</span>
+
+                                                            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").</span><span class="text-blue">out</span><span class="text-success">("created").</span>
+                                                            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue">values(property).mean().next();</span> <br>
+
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">System.out.printIn</span><span class="text-success">("Average rating :" +</span><span class="text-blue">avg</span><span class="text-success">);</span>
+
+
+                                                              <br>&nbsp;&nbsp;<span class="text-success">}</span>
+
+                                                                <br>&nbsp;<span class="text-success">}</span>
+                                                             
+                                                    </code>
+                                                </div>
+                    </div>
+                    <div class="col-md-12 col-lg-7">
+                        <div class="code-box h-100">
+                                                    <code>
+                                                        <span class="text-purpal">public Class</span><span class="text-blue"> Sql3dbcExample {</span>
+
+                                                            <br>&nbsp;<span class="text-purpal">public void</span><span class="text-blue"> run(String name, String property){</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">Connection connection</span><span class="text-success"> = </span><span class="text-blue"> DriverManager.getConnection(...)</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">Statement statement</span><span class="text-success"> = </span><span class="text-blue"> connection.createStatement();</span>
+
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">ResultSet result</span><span class="text-success"> = </span><span class="text-blue"> statement.executeQuery(</span>
+
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-success">"SELECT AVG(pr."</span><span class="text-blue"> + property + </span><span class="text-success">") as AVERAGE FROM PERSONS p1" +</span>
+
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-success">"INNER JOIN KNOWS K ON k. person1 pl.id +</span>
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-success">"INNER JOIN PERSONS P2 ON p2.id k.person2 +</span>
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-success">"INNER JOIN CREATED C ON c.person = p2.id " +</span>
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-success">"INNER JOIN PROJECTS Pr ON pr.id c.project</span>
+                                                             <br>&nbsp;&nbsp;&nbsp;<span class="text-success">"WHERE p.name "</span><span class="text-blue"> + name  + </span><span class="text-success">"');</span>
+
+                                                            
+
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">System.out.println(</span><span class="text-success">"Average rating"</span><span class="text-purpal">+</span><span class="text-blue">result.next().getDouble(</span><span class="text-success">"AVERAGE"</span><span class="text-blue">)</span>
+
+
+                                                              <br>&nbsp;&nbsp;<span class="text-blue">}</span>
+
+                                                                <br>&nbsp;<span class="text-blue">}</span>
+                                                             
+                                                    </code>
+                                                </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3 mt-md-5">
+                    <div class="col-12">
+                       Behind the scenes, a Gremlin traversal will evaluate locally against an embedded graph database, serialize itself across the network to a remote graph database, or send itself to an OLAP processor for cluster-wide distributed execution. The traversal source definition determines where the traversal executes. Once a traversal source is defined it can be used over and over again in a manner analogous to a database connection. The ultimate effect is that the user "feels" that their data and their traversals are all co-located in their application and accessible via their application's native programming language. The "query language/programming language"-divide is bridged by Gremlin.
+                    </div>
+                </div>
+                 <div class="row mt-3 mt-md-5">
+                    <div class="col-md-12 col-lg-12 ">
+                         <div class="code-box h-100">
+                                                    <code>
+                                                        <span class="text-blue">Graph graph = GraphFactory.open(...);</span><br>
+                                                        <span class="text-blue">GraphTraversalSource g;</span>
+
+                                                            <br><span class="text-purpal">g</span><span class="text-blue"> = traversal().withEmbedded(graph); &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="comment-text">//local OLTP</span></span>
+
+
+                                                            <br><span class="text-purpal">g</span><span class="text-blue"> =  traversal().withRemote(DriverRemoteConnection.using("<span class="text-success">Localhost</span><span class="text-blue">",</span><span class="text-purpal">8182</span><span class="text-blue">));</span> &nbsp;&nbsp;&nbsp;&nbsp; <span class="comment-text">//remote</span></span>
+
+                                                            <br><span class="text-purpal">g</span><span class="text-blue"> =  traversal().withEmbedded((graph).withComputer(SparkGraphComputer.<span class="text-purpal">class</span><span class="text-blue">);</span> &nbsp;&nbsp;&nbsp; <span class="comment-text">//distributed OLAP</span></span>
+                                                            
+                                                             
+                                                    </code>
+                                                </div>
+                    </div>
+                  
+                </div>
+            </div>
+        </div>
+
+         <div class="sec-pad pt-0"> 
+            <div class="container">
+                <div class="row">
+                     <div class="col-lg-12 ">
+                            <h2 class="ft-30 bold black mb-3 mb-md-4">Related Resources</h2>
+                    
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="rr-box">
+                            <img src="img/gremlin/blog-01.png" class="img-fluid" alt="img">
+                            <div class="rr-box-body medium text-blue">
+                                <a href="#">The Benefits of the Gremlin Graph Traversal Machine</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="rr-box">
+                            <img src="img/gremlin/blog-02.png" class="img-fluid" alt="img">
+                            <div class="rr-box-body medium text-blue">
+                                <a href="#">The Gremlin Graph Traversal Machine and Language</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="rr-box">
+                            <img src="img/gremlin/blog-03.png" class="img-fluid" alt="img">
+                            <div class="rr-box-body medium text-blue">
+                                <a href="#">SQL2Gremlin Introduction</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="rr-box">
+                            <img src="img/gremlin/blog-04.png" class="img-fluid" alt="img">
+                            <div class="rr-box-body medium text-blue">
+                                <a href="#">How to Succeed with Apache Cassandra</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer -->
+       
+    <!-- join us -->
+        <div class="join-us">
+            <div class="container">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="ju-box">
+                            <h2 class="ft-40 text-blue bold">Join Us on</h2>
+                            <p class="bold">Join us on our Discord Chat</p>
+                            <a href="https://discord.gg/ndMpKZcBEE"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- footer -->
+        <footer>
+            <div class="primary-footer sec-pad">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="bold ft-25">Apache TinkerPop™</div>
+                            <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
+                            <ul class="list-unstyled list-inline hover-op-low">
+                                <li class="list-inline-item"><a href="https://discord.gg/ndMpKZcBEE"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
+                                <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
+                                <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 ft-links">
+                            <div class="bold ft-18 mb-3">Links</div>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <ul class="hover-op-low list-unstyled">
+                                        <li><a href="index.html">Home</a></li>
+                                        <li><a href="downloads.html">Downloads</a></li>
+                                        <li><a href="https://tinkerpop.apache.org/docs/current">Documentation</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-lg-6">
+                                     <ul class="hover-op-low list-unstyled">
+                                        <li><a href="https://tinkerpop.apache.org/docs/current/dev/developer#_contributing">Contributing</a></li>
+                                        <li><a href="providers.html">Providers</a></li>
+                                        <li><a href="community.html">Community</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mt-4">
+                            <p>Apache TinkerPop, TinkerPop, Apache, Apache feather logo, and Apache TinkerPop project logo are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="secondry-footer">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            Copyright © 2015-2022 The Apache Software Foundation
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <script src="js/jquery-1.11.1.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"
+              integrity="sha512-Eak/29OTpb36LLo2r47IpVzPBLXnAMPAVypbSZiZ4Qkf8p/7S/XRG5xp7OKWPPYfJT6metI+IORkR5G8F900+g=="
+              crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="js/my.js"></script>
+    </body>
+</html>
+       

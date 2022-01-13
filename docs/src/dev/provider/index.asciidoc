@@ -22,15 +22,17 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 = Introduction
 
-This document discusses Apache TinkerPop™ implementation details that are most useful to developers who implement TinkerPop
-interfaces and the Gremlin language. This document may also be helpful to Gremlin users who simply want a deeper
-understanding of how TinkerPop works and what the behavioral semantics of Gremlin are. The <<providers,Provider Section>>
-outlines the various integration and extension points that TinkerPop has while the <<gremlin-semantics,Gremlin Semantics Section>>
-documents the Gremlin language itself.
+image:tinkerpop-cityscape.png[]
 
-Providers who rely on the TinkerPop execution engine generally the behaviors described in the Gremlin Semantics section
-for free, but those who develop their own engine or extend upon the certain features should refer to that section for
-the details required for a consistent Gremlin experience.
+This document discusses Apache TinkerPop™ implementation details that are most useful to developers who implement
+TinkerPop interfaces and the Gremlin language. This document may also be helpful to Gremlin users who simply want a
+deeper understanding of how TinkerPop works and what the behavioral semantics of Gremlin are. The
+<<providers,Provider Section>> outlines the various integration and extension points that TinkerPop has while the
+<<gremlin-semantics,Gremlin Semantics Section>> documents the Gremlin language itself.
+
+Providers who rely on the TinkerPop execution engine generally receive the behaviors described in the Gremlin Semantics
+section for free, but those who develop their own engine or extend upon the certain features should refer to that
+section for the details required for a consistent Gremlin experience.
 
 [[providers]]
 = Provider Documentation
@@ -1469,3 +1471,5 @@ in use with the Gremlin Console plugin host.  Simply instantiate and return a `R
 `getRemoteAcceptor(GremlinShellEnvironment)` should produce a new instance of a `RemoteAcceptor`.
 
 include::gremlin-semantics.asciidoc[]
+
+include::policies.asciidoc[]

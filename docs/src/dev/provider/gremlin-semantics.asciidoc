@@ -17,6 +17,8 @@ limitations under the License.
 [[gremlin-semantics]]
 = Gremlin Semantics
 
+image:tinkerpop-meeting-room.png[]
+
 This section provides details on Gremlin language operational semantics. Describing these semantics and reinforcing
 them with tests in the Gremlin test suite makes it easier for providers to implement the language and for the
 TinkerPop Community to have better consistency in their user experiences. While the general Gremlin test suite offers
