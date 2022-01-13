@@ -42,12 +42,6 @@ else
   rm -rf target/site/home/template
 fi
 
-pushd docs/site/
-
-for filename in home/*.html; do
-  sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../../target/site/${filename}"
-done
-
 popd
 
 echo "Home page site generated to $(cd target/site/home ; pwd)"

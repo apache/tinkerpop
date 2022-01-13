@@ -1,0 +1,119 @@
+/*--------------------------------------------------------------
+15. Media queries
+--------------------------------------------------------------*/
+@media only screen and (min-device-width: 1400px) and (max-device-width: 1600px){ 
+   
+
+}
+@media only screen and (min-width : 1600px) {
+
+}
+@media only screen and (min-width: 1200px) {
+
+
+}
+@media only screen and (max-width: 1300px) {
+
+
+}
+
+@media only screen and (max-width: 980px) {
+ .use-case-page-pl-3{
+    padding-left: 0rem;
+}
+.nav-link {
+    padding: 0.5rem 0rem !important;
+}
+.navbar-collapse {
+    flex-basis: 100%;
+    flex-grow: 1;
+    align-items: center;
+    background-color: #fff;
+    padding: 0px 29px;
+}
+.dropdown-menu{
+        background: #FCFEFF 0% 0% no-repeat padding-box;
+    box-shadow: 0px 0px 0px #00000017;
+    border: 0px;
+    font-size: 15px;
+}
+.dropdown-item {
+    padding: 0.25rem 0.50rem;
+}
+.dropdown-header {
+    padding: 0.5rem 0.50rem;
+}
+}
+@media only screen and (max-width: 800px) {
+
+}
+@media only screen and (max-width: 768px) {
+ 
+
+}
+@media (min-width: 992px){
+
+}
+
+@media only screen and (max-width: 768px) {
+.ft-links {
+    padding: 0rem 12px;
+}
+.sec-pad{
+    padding: 2rem 0rem;
+}
+.ft-40 {
+    font-size: 30px;
+}
+.ft-30 {
+    font-size: 26px;
+}
+.ju-box {
+    padding: 30px 30px;
+}
+table th, table td {
+    padding: 16px 12px;
+}
+.navbar-brand img{
+    width: 190px;
+}
+.tab-content {
+    padding: 17px 25px;
+}
+}
+@media only screen and (max-width: 640px) {
+  .hero-img {
+    padding: 10rem 0rem 12rem;
+}
+.tinkerpop-splash {
+    margin-top: -12rem;
+}
+}
+    
+
+@media only screen and (max-width: 590px) {
+
+}
+@media (min-width: 576px){
+
+}
+
+@media only screen and (max-width: 480px) {
+  
+}
+@media only screen and (max-width: 400px) {
+
+}
+@media screen and (max-width: 375px){
+
+}
+@media screen and (max-width: 321px){
+
+}
+
+
+
+
+
+
+

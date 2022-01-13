@@ -1,0 +1,1190 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="img/favicon.png" rel="shortcut icon"/>
+    <title>Apache TinkerPop</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/custome.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.css"
+          integrity="sha512-K2J6Yt6ElUYEMPcTr0wm555AAyiqkgYiUgPIW18FT88/aYSNDk0EvGjsln/TEu3ee/jaHf0xoXzFppSbBtUXbQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/prism.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<!-- header -->
+<div class="header">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg  ">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.html">
+                    <img src="img/logo.png" class="img-fluid" alt="img">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="fa fa-bars"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="download.html">Download</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                Documentation
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li class="dropdown-header">Latest Documentation</li>
+                                <li><a href="https://tinkerpop.apache.org/docs/current" class="dropdown-item">Documentation
+                                    Index</a></li>
+                                <li><a href="https://tinkerpop.apache.org/docs/current/upgrade" class="dropdown-item">Upgrade
+                                    Information</a></li>
+                                <li><a href="https://tinkerpop.apache.org/javadocs/current/core/" class="dropdown-item">Core
+                                    Javadoc API</a></li>
+                                <li><a href="https://tinkerpop.apache.org/javadocs/current/full/" class="dropdown-item">Full
+                                    Javadoc API</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a href="https://tinkerpop.apache.org/docs/" class="dropdown-item">Documentation
+                                    Archives</a></li>
+                                <li><a href="https://tinkerpop.apache.org/javadocs/" class="dropdown-item">Javadoc
+                                    Archives</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a href="https://tinkerpop.apache.org/docs/current/index.html#publications"
+                                       class="dropdown-item">Publications</a></li>
+                            </ul>
+
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                Tutorials
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
+                                <li><a href="gremlin.html" class="dropdown-item">Introduction to Gremlin</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://tinkerpop.apache.org/docs/current/tutorials/getting-started/">Getting
+                                    Started</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/">The
+                                    Gremlin Console</a></li>
+                                <li><a class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/recipes/">Gremlin
+                                    Recipes</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://tinkerpop.apache.org/docs/current/tutorials/gremlins-anatomy/">Gremlin's
+                                    Anatomy</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item"
+                                       href="http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html">Book: Practical
+                                    Gremlin by Kelvin Lawrence</a></li>
+                                <li><a class="dropdown-item" href="http://sql2gremlin.com/">SQL2Gremlin</a></li>
+                            </ul>
+
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                Community
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
+                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users">User
+                                    Mailing List</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">Developer
+                                    Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://discord.gg/ndMpKZcBEE" target="_blank"><img
+                                        src="img/discord_logo.png" class="nav-icon">Join us on Discord</a></li>
+                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/">Issue
+                                    Tracker</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a>
+                                </li>
+                                <li><a class="dropdown-item" href="providers.html">Data System Support</a></li>
+                                <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img
+                                        src="img/github-logo.png" class="nav-icon">GitHub</a></li>
+                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img
+                                        src="img/twitter-logo.png" class="nav-icon">Twitter</a></li>
+                            </ul>
+
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://tinkerpop.apache.org/gremlint/">Gremlint</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                Apache Software
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                                <li><a class="dropdown-item" href="https://www.apache.org/">Apache Homepage</a></li>
+                                <li><a class="dropdown-item" href="https://www.apache.org/licenses/">License</a></li>
+                                <li><a class="dropdown-item"
+                                       href="https://www.apache.org/events/current-event">Events</a></li>
+                                <li><a class="dropdown-item" href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+                                </li>
+                                <li><a class="dropdown-item"
+                                       href="https://www.apache.org/foundation/thanks.html">Thanks</a></li>
+                                <li><a class="dropdown-item" href="https://www.apache.org/security/">Security</a></li>
+                            </ul>
+
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<!-- hero -->
+<div class="container hero-inner">
+    <img src="img/community/bg.png" class="img-fluid w-100" alt="img">
+</div>
+
+<!-- Content -->
+<div class="sec-pad ">
+    <div class="container">
+        <div class="row d-flex">
+            <div class="col-md-12 text-center">
+                <h1 class="ft-40 bold black mb-2">Community</h1>
+                <p class="mb-3 mb-md-5 medium black">The Apache TinkerPop Community encompasses many different
+                    programming language ecosystems and, as a result, provides for helpful libraries, tools and
+                    applications for numerous environments and use cases. In this way, developers can feel comfortable
+                    programming in their language of choice. While TinkerPop provides official support for certain
+                    languages and tools, many are third-party supported by the wider TinkerPop Community.</p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p class="mb-3 mb-md-5">Any listing of third-party products is intended to help users identify
+                    TinkerPop-enabled graph systems and does not constitute an endorsement by Apache TinkerPop nor the
+                    Apache Software Foundation. Please see the
+                    <a class="text-blue" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">listing
+                        policy</a> for information on how to get a TinkerPop-enabled product shown here.</p>
+            </div>
+            <div class="col-12 mb-3">
+                <h2 class="ft-30 black bold">Programming Languages</h2>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="d-flex align-items-start">
+                    <img src="img/community/tinkerpop.png" class="img-fluid me-3" alt="img">
+                    <div class="text-blue bold ft-17">
+                        Official TinkerPop Support
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="d-flex align-items-start">
+                    <img src="img/community/third-party.png" class="img-fluid me-3" alt="img">
+                    <div class="text-blue bold ft-17">
+                        Community support
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="d-flex align-items-start">
+                    <img src="img/community/tools.png" class="img-fluid me-3" alt="img">
+                    <div class="text-blue bold ft-17">
+                        Some tools and libraries
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="d-flex align-items-start">
+                    <img src="img/community/tool.png" class="img-fluid me-3" alt="img">
+                    <div class="text-blue bold ft-17">
+                        Many tools and libraries
+                    </div>
+                </div>
+            </div>
+            <br>
+
+            <div class="col-12 mt-4">
+                <div class="accordion" id="accordionExample">
+
+
+                    <!-- clojure -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                <img src="img/community/clojure.png" class="img-fluid me-3" alt="img">Clojure
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse " aria-labelledby="headingOne"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/clojurewerkz/ogre"
+                                                              target="_blank">Ogre</a>: Ogre is a Gremlin language
+                                            variant for Clojure. It provides an API that enhances the expressivity of
+                                            Gremlin within Clojure, it doesn't introduce any significant amount of
+                                            performance overhead, and it can work with any TinkerPop-enabled graph
+                                            database or analytic system.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- elixer -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                <img src="img/community/elixer.png" class="img-fluid me-3" alt="img">Elixer
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/Revmaker/gremlex"
+                                                              target="_blank">Gremlex</a>: A Gremlin Server driver for
+                                            Elixir.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- go -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                <img src="img/community/go.png" class="img-fluid me-3" alt="img">Go
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tool.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/northwesternmutual/grammes"
+                                                              target="_blank">Grammes</a>: A strongly typed Gremlin
+                                            server driver for Go.
+                                            <br/>- <a class="text-blue" href="https://github.com/qasaur/gremgo"
+                                                      target="_blank">Gremgo</a>: A Gremlin Server driver for Go.
+                                            <br/>- <a class="text-blue" href="https://github.com/schwartzmx/gremtune"
+                                                      target="_blank">Gremtune</a>: A Gremlin Server driver for Go with
+                                            Amazon Neptune Compatibility.</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- groovy -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                <img src="img/community/groovy.png" class="img-fluid me-3" alt="img">Groovy
+                                <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="heading4"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            Apache TinkerPop’s Gremlin-Groovy implements Gremlin within the Apache
+                                            Groovy language. As a JVM-based language variant, Gremlin-Groovy is backed
+                                            by Gremlin-Java constructs. Moreover, given its scripting nature,
+                                            Gremlin-Groovy serves as the language of Gremlin Console and Gremlin Server.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-groovy">def g = traversal().withRemote(...)
+def l = g.V().out('knows').in('created').toList()
+</code></pre>
+                                                </div>
+                                                <p class="medium black">Example</p>
+                                            </div>
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <code class="language-groovy">implementation
+                                                        'org.apache.tinkerpop:gremlin-groovy:3.5.1'</code>
+                                                </div>
+                                                <p class="medium black">Gradle</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="mt-4 text-center text-blue ft-17">
+                                    <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-groovy"
+                                       target="_blank"><u>Learn More</u></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- haskell -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading5">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                <img src="img/community/haskell.png" class="img-fluid me-3" alt="img">Haskell
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="heading5"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/debug-ito/greskell"
+                                                              target="_blank">greskell</a>: Haskell binding for Gremlin
+                                            graph query language.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- java -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading6">
+                            <button class="accordion-button " type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse6" aria-expanded="true" aria-controls="collapse6">
+                                <img src="img/community/java.png" class="img-fluid me-3" alt="img">Java
+                                <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/third-party.png" class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tool.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse6" class="accordion-collapse collapse show" aria-labelledby="heading6"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            Apache TinkerPop’s Gremlin-Java implements Gremlin within the Java language.
+                                            It is considered the canonical, reference implementation of Gremlin and
+                                            serves as the foundation by which all other Gremlin language variants should
+                                            emulate.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-java">GraphTraversalSource g = traversal().withRemote(...);
+List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
+                                                </div>
+                                                <p class="medium black">Example</p>
+                                            </div>
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-xml">&lt;!-- gremlin-driver is a common dependency but 
+     there are others -->
+&lt;dependency&gt;
+  &lt;groupId&gt;org.apache.tinkerpop&lt;/groupId&gt;
+  &lt;artifactId&gt;gremlin-driver&lt;/artifactId&gt;
+  &lt;version&gt;3.5.1&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+                                                </div>
+                                                <p class="medium black">Maven</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="mt-4 text-center text-blue ft-17">
+                                    <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-java"
+                                       target="_blank"><u>Learn More</u></a>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue" href="http://syncleus.com/Ferma/"
+                                                              target="_blank">Ferma</a>: An Object Graph Mapper (OGM)
+                                            for Apache TinkerPop.
+                                            <br>- <a class="text-blue" href="https://github.com/karthicks/gremlin-ogm"
+                                                     target="_blank">gremlin-objects</a>: An Object Graph Mapper (OGM)
+                                            for Apache TinkerPop.
+                                            <br>- <a class="text-blue" href="https://bayofmany.github.io/"
+                                                     target="_blank">Peapod</a>: An Object Graph Mapper (OGM) for Apache
+                                            TinkerPop.
+                                            <br>- <a class="text-blue"
+                                                     href="https://github.com/Microsoft/spring-data-gremlin"
+                                                     target="_blank">spring-data-gremlin</a>: Spring Data support for
+                                            TinkerPop-enabled graph systems.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- javascript -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading7">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                                <img src="img/community/javascript.png" class="img-fluid me-3" alt="img">Javascript
+                                <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/third-party.png" class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tool.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="heading7"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            Apache TinkerPop’s Gremlin-JavaScript implements Gremlin within the
+                                            JavaScript language. It targets Node.js runtime.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-8 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-javascript">const g = traversal().withRemote(...);
+const l = await g.V().out('knows').in('created').toList();</code></pre>
+                                                </div>
+                                                <p class="medium black">Example</p>
+                                            </div>
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-4 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-plain">npm install gremlin</code></pre>
+                                                </div>
+                                                <p class="medium black">npm</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="mt-4 text-center text-blue ft-17">
+                                    <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript"
+                                       target="_blank"><u>Learn More</u></a>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            <a href="https://github.com/apache/tinkerpop/tree/master/gremlint"
+                                               target="_blank" class="text-blue">Gremlint</a>: A linter and formatter
+                                            library for Gremlin.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/gremlin-orm/gremlin-orm"
+                                                              target="_blank">gremlin-orm</a>: Gremlin ORM for Node.js.
+                                            <br>- <a class="text-blue"
+                                                     href="https://github.com/jbmusso/gremlin-template-string"
+                                                     target="_blank">gremlin-template-string</a>: A Gremlin language
+                                            builder.
+                                            <br>- <a class="text-blue" href="https://github.com/RedSeal-co/ts-tinkerpop"
+                                                     target="_blank">ts-tinkerpop</a>: A helper library for Typescript
+                                            applications via node-java.
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- kotlin -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading8">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
+                                <img src="img/community/kotlin.png" class="img-fluid me-3" alt="img">Kotlin
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse8" class="accordion-collapse collapse" aria-labelledby="heading8"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/pm-dev/kotlin-gremlin-ogm"
+                                                              target="_blank">kotlin-gremlin-ogm</a>: An Object Graph
+                                            Mapping Library for Kotlin and Gremlin.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- c# -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading9">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                                <img src="img/community/c-sharp-logo-png.png" class="img-fluid me-3" alt="img">.NET
+                                <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/third-party.png" class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse9" class="accordion-collapse collapse" aria-labelledby="heading9"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            Apache TinkerPop’s Gremlin.NET implements Gremlin within the C# language
+                                            making it easy for .NET developers to use Gremlin in their environment.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-csharp">var g = Traversal().WithRemote(...);
+var l = await g.V().Out("knows").In("created").ToList();</code></pre>
+                                                </div>
+                                                <p class="medium black">Example</p>
+                                            </div>
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-plain">dotnet add package Gremlin.Net --version 3.5.1</code></pre>
+                                                </div>
+                                                <p class="medium black">NuGet</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-center text-blue ft-17">
+                                    <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet"
+                                       target="_blank"><u>Learn More</u></a>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/ExRam/ExRam.Gremlinq"
+                                                              target="_blank">Gremlinq</a>: A strongly typed server
+                                            driver.</p>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- python -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading10">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
+                                <img src="img/community/python.png" class="img-fluid me-3" alt="img">Python
+                                <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/third-party.png" class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tool.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse10" class="accordion-collapse collapse" aria-labelledby="heading10"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            Apache TinkerPop’s gremlin-python implements Gremlin within the Python
+                                            language. It attempts to make Gremlin feel Pythonic while adhering to
+                                            Gremlin feel as much as possible.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-python">g = traversal().withRemote(...);
+l = g.V().both()[1:3].toList()</code></pre>
+                                                </div>
+                                                <p class="medium black">Example</p>
+                                            </div>
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code
+                                                            class="language-plain">pip install gremlinpython</code></pre>
+                                                </div>
+                                                <p class="medium black">PyPi</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-center text-blue ft-17">
+                                    <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python"
+                                       target="_blank"><u>Learn More</u></a>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/davebshow/goblin"
+                                                              target="_blank">Goblin</a>: Goblin OGM for the TinkerPop 3
+                                            Gremlin Server.
+                                            <br>- <a class="text-blue" href="https://github.com/davebshow/gremlinclient"
+                                                     target="_blank">gremlinclient</a>: An asynchronous Python 2/3
+                                            client for Gremlin Server that allows for flexible coroutine syntax.
+                                            <br>- <a class="text-blue" href="https://github.com/emehrkay/gremlinpy"
+                                                     target="_blank">gremlin-py</a>: Write pure Python Gremlin that can
+                                            be sent to Gremlin Server.
+                                            <br>- <a class="text-blue"
+                                                     href="https://github.com/davebshow/ipython-gremlin"
+                                                     target="_blank">ipython-gremlin</a>: Gremlin in IPython and
+                                            Jupyter.
+                                            <br>- <a class="text-blue"
+                                                     href="https://gremlinrestclient.readthedocs.org/en/latest/"
+                                                     target="_blank">gremlinrestclient</a>: Python 2/3 library that uses
+                                            HTTP to communicate with the Gremlin Server over REST.
+                                            <br>- <a class="text-blue"
+                                                     href="https://github.com/windj007/python-gremlin-rest"
+                                                     target="_blank">python-gremlin-rest</a>: A REST-based client for
+                                            Gremlin Server.
+                                        </p>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- php -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading11">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
+                                <img src="img/community/php.png" class="img-fluid me-3" alt="img">PHP
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid me-2 " alt="img"> <img
+                                        src="img/community/tools.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse11" class="accordion-collapse collapse" aria-labelledby="heading11"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/PommeVerte/gremlin-php"
+                                                              target="_blank">gremlin-php</a>: A Gremlin Server driver
+                                            for PHP.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ruby -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading12">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
+                                <img src="img/community/ruby.png" class="img-fluid me-3" alt="img">Ruby
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid " alt="img"><img
+                                        src="img/community/tools.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse12" class="accordion-collapse collapse" aria-labelledby="heading12"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/marcelocf/gremlin_client"
+                                                              target="_blank">gremlin_client</a>: A Gremlin Server
+                                            driver for Ruby.
+                                            <br>- <a class="text-blue" href="https://github.com/babbel/grumlin"
+                                                     target="_blank">grumlin</a>: A Gremlin Server driver and language
+                                            variant for Ruby.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- rust -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading13">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse13" aria-expanded="false" aria-controls="collapse13">
+                                <img src="img/community/rust.png" class="img-fluid me-3" alt="img">Rust
+                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                       class="img-fluid " alt="img"><img
+                                        src="img/community/tools.png" class="img-fluid " alt="img"></div>
+                            </button>
+                        </h2>
+                        <div id="collapse13" class="accordion-collapse collapse" aria-labelledby="heading13"
+                             data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17 mb-2">
+                                            Third-Party Libraries and Tools
+                                        </p>
+                                        <p class="ft-17">- <a class="text-blue"
+                                                              href="https://github.com/wolf4ood/gremlin-rs"
+                                                              target="_blank">gremlin-rs</a>: A Gremlin Server driver
+                                            and language variant for Rust.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- scala -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading14">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse14" aria-expanded="false" aria-controls="collapse14">
+                            <img src="img/community/scala.png" class="img-fluid me-3" alt="img">Scala
+                            <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
+                                                                   class="img-fluid me-2" alt="img"> <img
+                                    src="img/community/tool.png" class="img-fluid " alt="img"></div>
+                        </button>
+                    </h2>
+                    <div id="collapse14" class="accordion-collapse collapse" aria-labelledby="heading14"
+                         data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <div class="d-flex align-items-start">
+                                <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                     alt="img">
+                                <div>
+                                    <p class="ft-17 mb-2">
+                                        Third-Party Libraries and Tools
+                                    </p>
+                                    <p class="ft-17">- <a class="text-blue"
+                                                          href="https://github.com/mpollmeier/gremlin-scala"
+                                                          target="_blank">gremlin-scala</a>: Gremlin-Scala is a Gremlin
+                                        language variant that uses standard Scala functions, provides a convenient DSL
+                                        to create vertices and edges, ensures type safe traversals, and incurrs minimal
+                                        runtime overhead by only allocating instances if absolutely necessary.
+                                        <br>- <a class="text-blue" href="https://github.com/coreyauger/reactive-gremlin"
+                                                 target="_blank">gremlinclient</a>: An Akka HTTP Websocket Connector.
+                                        <br>- <a class="text-blue"
+                                                 href="https://github.com/viagraphs/scalajs-gremlin-client"
+                                                 target="_blank">scalajs-gremlin-client</a>: A Gremlin-Server client
+                                        with ad-hoc extensible, reactive, typeclass based API.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h2 class="ft-25 black bold mt-5 mb-4">Docker</h2>
+
+                <!-- docker -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading15">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
+                            <img src="img/community/docker.png" class="img-fluid me-3" alt="img">Docker
+                        </button>
+                    </h2>
+                    <div id="collapse15" class="accordion-collapse collapse" aria-labelledby="heading15"
+                         data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <div class="d-flex align-items-start">
+                                <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3" alt="img">
+                                <div>
+                                    <p class="ft-17">
+                                        TinkerPop offers convenient Docker images for Gremlin Server and Gremlin Console
+                                        to help make it easy to quickly get started with those applications.
+                                    </p>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                            <div class="code-box">
+                                                <code>
+                                                    <span class="text-blue">docker pull tinkerpop/gremlin-server</span>
+                                                </code>
+                                            </div>
+                                            <a class="medium text-blue"
+                                               href="https://hub.docker.com/r/tinkerpop/gremlin-server" target="_blank"><u>Gremlin
+                                                Server</u></a>
+                                        </div>
+                                        <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                            <div class="code-box">
+                                                <code>
+                                                    <span class="text-blue">docker pull tinkerpop/gremlin-console</span>
+                                                </code>
+                                            </div>
+                                            <a class="medium text-blue"
+                                               href="https://hub.docker.com/r/tinkerpop/gremlin-console"
+                                               target="_blank"><u>Gremlin Console</u></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- compilers/transpilers -->
+                <h2 class="ft-25 black bold mt-5 mb-4">Compilers and Transpilers</h2>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading16">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse16" aria-expanded="false" aria-controls="collapse16">
+                            <img src="img/community/compiler.png" class="img-fluid me-3" alt="img">Compilers and
+                            Transpilers
+                        </button>
+                    </h2>
+                    <div id="collapse16" class="accordion-collapse collapse" aria-labelledby="heading16"
+                         data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <div class="d-flex align-items-start">
+                                <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3" alt="img">
+                                <div>
+                                    <p class="ft-17">
+                                        There are many languages built to query data. SQL is typically used to query
+                                        relational data. There is SPARQL for RDF data. Cypher is used to do pattern
+                                        matching in graph data. The list could go on. Compilers convert languages like
+                                        these to Gremlin so that it becomes possible to use them in any context that
+                                        Gremlin is used. In other words, a Gremlin Compiler enables a particular query
+                                        language to work on any TinkerPop-enabled graph system.
+                                    </p>
+                                    <p class="ft-17">- <a class="text-blue"
+                                                          href="https://github.com/opencypher/cypher-for-gremlin"
+                                                          target="_blank">cypher-for-gremlin</a>: A Cypher-to-Gremlin
+                                        traversal transpiler.
+                                        <br>- <a class="text-blue"
+                                                 href="https://tinkerpop.apache.org/docs/current/reference/#sparql-gremlin"
+                                                 target="_blank">sparql-gremlin</a>: A SPARQL to Gremlin traversal
+                                        compiler.
+                                        <br>- <a class="text-blue" href="https://github.com/twilmes/sql-gremlin"
+                                                 target="_blank">sql-gremlin</a>: A SQL to Gremlin traversal compiler.
+                                    </p>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- poweredby -->
+                <h2 class="ft-25 black bold mt-5 mb-4">Powered By</h2>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading17">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse17" aria-expanded="false" aria-controls="collapse17">
+                            <img src="img/community/powered-by.png" class="img-fluid me-3" alt="img">Powered By
+                        </button>
+                    </h2>
+                    <div id="collapse17" class="accordion-collapse collapse" aria-labelledby="heading17"
+                         data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <div class="d-flex align-items-start">
+                                <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3" alt="img">
+
+                                <div>
+                                    <p class="ft-17">
+                                        There are many applications that build upon TinkerPop interfaces and protocols.
+                                        These applications offer graph visualization functionality, different
+                                        environments for using Gremlin itself and support for various end-user use
+                                        cases.
+                                    </p>
+                                    <p class="ft-17">- <a class="text-blue" href="https://www.exakat.io/"
+                                                          target="_blank">exakat.io</a>: Static analysis engine for PHP,
+                                        powered by Gremlin.
+                                        <br>- <a class="text-blue" href="https://gdotv.com/" target="_blank">G.V()</a>:
+                                        G.V() is an all-in-one Gremlin IDE and graph visualization software for Windows,
+                                        macOS and Linux. It offers powerful Gremlin Query completion features based on
+                                        your graph structure and intuitive results visualization options. It is
+                                        compatible with Apache TinkerPop-enabled graph databases over Gremlin Server
+                                        protocol.
+                                        <br>- <a class="text-blue"
+                                                 href="https://bricaud.github.io/graphexp/graphexp.html"
+                                                 target="_blank">Graphexp</a>: Interactive visualization of the Gremlin
+                                        graph database with D3.js.
+                                        <br>- <a class="text-blue" href="https://github.com/aws/graph-notebook"
+                                                 target="_blank">Graph Notebook</a>: Library extending Jupyter notebooks
+                                        to integrate with Apache TinkerPop, openCypher, and RDF SPARQL.
+                                        <br>- <a class="text-blue" href="https://github.com/bechbd/gremlin-ide"
+                                                 target="_blank">gremlin-ide</a>: An IDE for Apache TinkerPop-enabled
+                                        databases using React and Electron.
+                                        <br>- <a class="text-blue" href="https://gremlify.com/"
+                                                 target="_blank">gremlify</a>: A Gremlin workspace for queries and
+                                        visualization.
+                                        <br>- <a class="text-blue" href="https://gremlint.com/"
+                                                 target="_blank">gremlint</a>: A Gremlin linter and formatter.
+                                        <br>- <a class="text-blue"
+                                                 href="https://github.com/prabushitha/gremlin-visualizer"
+                                                 target="_blank">Gremlin-Visualizer</a>: A visualization tool for the
+                                        results of gremlin traversals.
+                                        <br>- <a class="text-blue" href="https://github.com/meltwater/jugri"
+                                                 target="_blank">JUGRI</a>: A Jupyter Gremlin interface.
+                                        <br>- <a class="text-blue" href="https://cambridge-intelligence.com/keylines/"
+                                                 target="_blank">KeyLines™</a>: KeyLines™ is an Apache TinkerPop and
+                                        Gremlin compatible JavaScript SDK for quickly and easily building powerful,
+                                        custom and scalable graph visualization applications. The KeyLines SDK offers a
+                                        rich library of functionality to help you visualize and explore the data in your
+                                        graph database, including graph layouts, social network analysis measures,
+                                        filtering, temporal graph visualization and geospatial graph analysis. It allows
+                                        the visualization of complex graph data at scale.
+                                        <br>- <a class="text-blue" href="https://linkurio.us/" target="_blank">Linkurious™</a>:
+                                        Linkurious™ is a browser-based graph visualization software to search, explore
+                                        and visualize connected data. It is compatible with Apache TinkerPop and thus,
+                                        any TinkerPop-enabled graph system. Linkurious provides enterprise-ready
+                                        security (authentication, access rights, audit) and flexibility (API,
+                                        linkurious.js JS graph visualization library) to help software architects
+                                        successfully deploy graph capabilities within their organizations.
+                                        <br>- <a class="text-blue"
+                                                 href="ttps://customer.precisely.com/s/article/Spectrum-Technology-Platform-Data-Hub-Module"
+                                                 target="_blank">Precisely Spectrum Data Hub Module</a>: Uses Gremlin
+                                        OLTP to query Neo4j-powered master data management based graph database.
+                                        <br>- <a class="text-blue" href="https://www.stackstate.com/" target="_blank">StackState</a>:
+                                        Monitoring and AIOps allowing users to utilize Gremlin for analytical functions.
+                                        <br>- <a class="text-blue" href="https://github.com/aws/graph-notebook"
+                                                 target="_blank">Tom Sawyer Perspectives™</a>: Tom Sawyer Perspectives™
+                                        is advanced graphics-based software for building enterprise-class data
+                                        relationship visualization and analysis applications. It is a complete Software
+                                        Development Kit (SDK) with a graphics-based design and preview environment. Tom
+                                        Sawyer Perspectives combines visualization, layout, and analysis technology with
+                                        an elegant platform architecture. Tom Sawyer Perspectives enables interaction
+                                        with graph database systems via Apache TinkerPop.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+
+
+<!-- footer -->
+
+<!-- join us -->
+<div class="join-us">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="ju-box">
+                    <h2 class="ft-40 text-blue bold">Join Us on</h2>
+                    <p class="bold">Join us on our Discord Chat</p>
+                    <a href="https://discord.gg/ndMpKZcBEE"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- footer -->
+<footer>
+    <div class="primary-footer sec-pad">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="bold ft-25">Apache TinkerPop™</div>
+                    <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases
+                        (OLTP) and graph analytic systems (OLAP).</p>
+                    <ul class="list-unstyled list-inline hover-op-low">
+                        <li class="list-inline-item"><a href="https://discord.gg/ndMpKZcBEE"><img
+                                src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img
+                                src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img
+                                src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 ft-links">
+                    <div class="bold ft-18 mb-3">Links</div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <ul class="hover-op-low list-unstyled">
+                                <li><a href="index.html">Home</a></li>
+                                <li><a href="downloads.html">Downloads</a></li>
+                                <li><a href="https://tinkerpop.apache.org/docs/current">Documentation</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6">
+                            <ul class="hover-op-low list-unstyled">
+                                <li><a href="https://tinkerpop.apache.org/docs/current/dev/developer#_contributing">Contributing</a>
+                                </li>
+                                <li><a href="providers.html">Providers</a></li>
+                                <li><a href="community.html">Community</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-4">
+                    <p>Apache TinkerPop, TinkerPop, Apache, Apache feather logo, and Apache TinkerPop project logo are
+                        either registered trademarks or trademarks of The Apache Software Foundation in the United
+                        States and other countries.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="secondry-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    Copyright © 2015-2022 The Apache Software Foundation
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="js/jquery-1.11.1.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"
+        integrity="sha512-Eak/29OTpb36LLo2r47IpVzPBLXnAMPAVypbSZiZ4Qkf8p/7S/XRG5xp7OKWPPYfJT6metI+IORkR5G8F900+g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="js/my.js"></script>
+<script src="js/prism.js"></script>
+</body>
+</html>

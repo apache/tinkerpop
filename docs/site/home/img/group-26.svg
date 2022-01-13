@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" viewBox="0 0 50 50">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#ff9a00"/>
+      <stop offset="1" stop-color="#ffb13b"/>
+    </linearGradient>
+  </defs>
+  <g id="Group_26" data-name="Group 26" transform="translate(-155 -1076)">
+    <rect id="Rectangle_4" data-name="Rectangle 4" width="50" height="50" rx="15" transform="translate(155 1076)" fill="url(#linear-gradient)"/>
+    <g id="file-earmark-code" transform="translate(164.5 1085.414)">
+      <path id="Path_12" data-name="Path 12" d="M8.333,2.25h9.583V4.167H8.333A1.917,1.917,0,0,0,6.417,6.083V25.25a1.917,1.917,0,0,0,1.917,1.917H23.667a1.917,1.917,0,0,0,1.917-1.917V11.833H27.5V25.25a3.833,3.833,0,0,1-3.833,3.833H8.333A3.833,3.833,0,0,1,4.5,25.25V6.083A3.833,3.833,0,0,1,8.333,2.25Z" transform="translate(0 0)" fill="#f6fcff"/>
+      <path id="Path_13" data-name="Path 13" d="M20.25,8.958V2.25l9.583,9.583H23.125A2.875,2.875,0,0,1,20.25,8.958Z" transform="translate(-2.333)" fill="#f6fcff"/>
+      <path id="Path_14" data-name="Path 14" d="M18.072,14.905a.958.958,0,0,1,1.357,0l3.833,3.833a.958.958,0,0,1,0,1.357l-3.833,3.833a.96.96,0,1,1-1.357-1.357l3.156-3.155-3.156-3.154a.958.958,0,0,1,0-1.357Zm-2.476,0a.958.958,0,0,0-1.357,0l-3.833,3.833a.958.958,0,0,0,0,1.357l3.833,3.833A.96.96,0,1,0,15.6,22.572l-3.157-3.155L15.6,16.261a.958.958,0,0,0,0-1.357Z" transform="translate(-0.833 -1.833)" fill="#f6fcff"/>
+    </g>
+  </g>
+</svg>
