@@ -549,6 +549,21 @@ link:https://tinkerpop.apache.org/docs/3.6.0/reference/#gremlin-python-differenc
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2650[TINKERPOP-2650]
 
+==== `property()` accepts a Map as an argument
+
+The `property()` step has been extended to take a `Map` of property key/value pairs as an argument with two new signatures:
+```
+property(Map)
+property(Cardinality, Map)
+```
+When called, each individual key/value pair in the map is saved as a property to the element.
+When the cardinality is specified, that cardinality will be applied to all elements in the map as they are saved to the element.
+
+If users need different cardinalities per property, then please use the existing pattern of stringing multiple property() calls together.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2665[TINKERPOP-2665]
+
+
 === Upgrading for Providers
 
 ==== Graph System Providers

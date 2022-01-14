@@ -34,10 +34,14 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -694,6 +698,30 @@ public class TraversalMethodVisitorTest {
     @Test
     public void testTraversalMethod_property_Object_Object_Object() throws Exception {
         compare(g.V().property(1,2,"key", 4), eval("g.V().property(1,2,'key',4)"));
+    }
+
+    @Test
+    public void testTraversalMethod_property_Object() throws Exception {
+        LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
+        map.put("key", "foo");
+        map.put("key1", "bar");
+        compare(g.V().property(map), eval("g.V().property(['key': 'foo', 'key1': 'bar'])"));
+        map.clear();
+        map.put("name", "foo");
+        map.put("age", 42);
+        compare(g.addV().property(map), eval("g.addV().property([\"name\": \"foo\", \"age\": 42 ])"));
+        map.clear();
+        map.put(label, "foo");
+        map.put("age", 42);
+        compare(g.addV().property(map), eval("g.addV().property([T.label: \"foo\", \"age\": 42 ])"));
+    }
+
+    @Test
+    public void testTraversalMethod_property_Cardinality_Object() throws Exception {
+        final LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
+        map.put("key", "foo");
+        map.put("key1", "bar");
+        compare(g.V().property(Cardinality.list, map), eval("g.V().property(list, ['key': 'foo', 'key1': 'bar'])"));
     }
 
     @Test

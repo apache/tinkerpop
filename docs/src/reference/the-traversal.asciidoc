@@ -598,15 +598,21 @@ previous step to enable vertex and edge creation with all its properties in one 
 ----
 g.V(1).property('country','usa')
 g.V(1).property('city','santa fe').property('state','new mexico').valueMap()
-g.V(1).property(list,'age',35)  <1>
+g.V(1).property(['city': 'santa fe', 'state': 'new mexico'])  <1>
+g.V(1).property(list,'age',35)  <2>
+g.V(1).property(list, ['city': 'santa fe', 'state': 'new mexico'])  <3>
 g.V(1).valueMap()
-g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <2>
-g.V(1).properties('friendWeight').valueMap() <3>
+g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
+g.V(1).properties('friendWeight').valueMap() <5>
+g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
 ----
 
-<1> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
-<2> It is possible to select the property value (as well as key) via a traversal.
-<3> For vertices, the `property()`-step can add meta-properties.
+<1> Properties can also take a Map as an argument.
+<2> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
+<3> If a cardinality is specified for a Map then that cardinality will be used for all properties in the map.  If you need different cardinalities per property then you should individually add the property values.
+<4> It is possible to select the property value (as well as key) via a traversal.
+<5> For vertices, the `property()`-step can add meta-properties.
+<6> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
 
 *Additional References*
 
