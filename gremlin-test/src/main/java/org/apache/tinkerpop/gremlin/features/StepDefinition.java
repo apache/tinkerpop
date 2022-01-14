@@ -45,6 +45,7 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.AssumptionViolatedException;
 
+import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIn.in;
@@ -475,8 +476,9 @@ public final class StepDefinition {
 
     private String tryUpdateDataFilePath(final String docString) {
         final Matcher matcher = ioPattern.matcher(docString);
-        final String gremlin = matcher.matches() ?
-                docString.replace(matcher.group(1), world.changePathToDataFile(matcher.group(1))) : docString;
-        return gremlin;
+        if (! matcher.matches()) { return docString; }
+        final String relPath = matcher.group(1);
+        final String absPath = world.changePathToDataFile(relPath);
+        return docString.replace(relPath, escapeJava(absPath));
     }
 }

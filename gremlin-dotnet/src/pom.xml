@@ -53,16 +53,25 @@ limitations under the License.
                             <goal>execute</goal>
                         </goals>
                         <configuration>
+                            <properties>
+                                <property>
+                                    <name>projectBaseDir</name>
+                                    <value>${project.basedir}</value>
+                                </property>
+                                <property>
+                                    <name>mavenVersion</name>
+                                    <value>${project.version}</value>
+                                </property>
+                            </properties>
                             <scripts>
                                 <script>
-def mavenVersion = "${project.version}"
-def file = new File("${project.basedir}/Gremlin.Net/Gremlin.Net.csproj")
+def file = new File(projectBaseDir,"Gremlin.Net/Gremlin.Net.csproj")
 file.write(file.getText("UTF-8").replaceFirst(/&lt;Version&gt;(.*)&lt;\/Version&gt;/, "&lt;Version&gt;" + mavenVersion + "&lt;/Version&gt;"))
 
-file = new File("${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.csproj")
+file = new File(projectBaseDir,"Gremlin.Net.Template/Gremlin.Net.Template.csproj")
 file.write(file.getText("UTF-8").replaceFirst(/Version="(.*)"/, "Version=\"" + mavenVersion + "\""))
 
-file = new File("${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
+file = new File(projectBaseDir,"Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
 file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&gt;/, "&lt;version&gt;" + mavenVersion + "&lt;/version&gt;"))
                                 </script>
                             </scripts>

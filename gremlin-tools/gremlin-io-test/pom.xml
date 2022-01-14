@@ -197,14 +197,19 @@
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>projectBuildDir</name>
+                                            <value>${project.build.directory}</value>
+                                        </property>
+                                    </properties>
                                     <scripts>
                                         <script>
                                             <![CDATA[
 import org.apache.tinkerpop.gremlin.structure.io.Model
 import java.io.File
 
-new File("${project.build.directory}/dev-docs/").mkdirs()
-Model.instance().saveAsCsv("${project.build.directory}/dev-docs/model.csv")
+Model.instance().saveAsCsv(new File(projectBuildDir, "dev-docs/model.csv"))
 ]]>
                                         </script>
                                     </scripts>
