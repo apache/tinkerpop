@@ -2,18 +2,19 @@
 # maps log commit email addresses to user names so that they properly report
 # for release notes with: git shortlog -sn
 # --------------------------------------------------------------------------
-Stephen Mallette                 <spmallette@users.noreply.github.com>
-Stephen Mallette                 <spmallette@gmail.com>
-Stephen Mallette                 <spmva@genoprime.com>
-Stephen Mallette                 <spmva@genprime.com>
-Florian Hockmann                 <fh@florian-hockmann.de>
-Jason Plurad                     <pluradj@us.ibm.com>
-Otavio Santana                   <otaviopolianasantana@gmail.com>
-Harsh Thakkar                    <harsh9t@gmail.com>
-HadoopMarc                       <vtslab@xs4all.nl>
-Bryn Cooke                       <bryncooke@gmail.com>
-Marko A. Rodriguez               <okram@apache.org>
 Bob Briody                       <bob@thinkaurelius.com>
 Bob Briody                       <bob.briody@datastax.com>
+Bryn Cooke                       <bryncooke@gmail.com>
+Florian Hockmann                 <fh@florian-hockmann.de>
+Harsh Thakkar                    <harsh9t@gmail.com>
+HadoopMarc                       <vtslab@xs4all.nl>
+Jason Plurad                     <pluradj@us.ibm.com>
+Marko A. Rodriguez               <okram@apache.org>
 Matt Frantz                      <mfrantz@redsealnetworks.com>
-
+Mike Personick                   <mike@supersonick.io>
+Otavio Santana                   <otaviopolianasantana@gmail.com>
+Øyvind Sæbø                      <oyvind.sabo@gmail.com>
+Dave Bechberger                  <bechbd@users.noreply.github.com>
+Stephen Mallette                 <spmallette@users.noreply.github.com>
+Stephen Mallette                 <spmva@genoprime.com>
+Stephen Mallette                 <spmva@genprime.com>
