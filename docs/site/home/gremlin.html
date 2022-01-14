@@ -26,6 +26,7 @@ limitations under the License.
         <link href="css/custome.css" rel="stylesheet">
         <link href="css/responsive.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.css" integrity="sha512-K2J6Yt6ElUYEMPcTr0wm555AAyiqkgYiUgPIW18FT88/aYSNDk0EvGjsln/TEu3ee/jaHf0xoXzFppSbBtUXbQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link href="css/prism.css" rel="stylesheet">
         <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -167,21 +168,22 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-6 mb-4 mb-md-0">
                                     <div class="code-box h-100">
-                                                    <code>
-                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
-                                                    </code>
-                                                </div>
+                                        <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-groovy">
+g.V().has("name","gremlin").
+  out("knows").
+  out("knows").
+  values("name")
+
+                                        </code></pre>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <p class="bold mb-2 text-white">What are the names of Gremlin's friends' friends?</p>
                                     <ul class="list-unstyled text-white op-7">
-                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
-                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
-                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
-                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
-                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                        <li class="mb-1">1. Get the vertex with name "gremlin."</li>
+                                        <li class="mb-1">2. Traverse to the people that Gremlin knows.</li>
+                                        <li class="mb-1">3. Traverse to the people those people know.</li>
+                                        <li class="mb-1">4. Get those people's names.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -191,21 +193,22 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-6 mb-4 mb-md-0">
                                     <div class="code-box h-100">
-                                                    <code>
-                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
-                                                    </code>
-                                                </div>
+                                        <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-groovy">g.V().match(
+  as("a").out("knows").as("b"),
+  as("a").out("created").as("c"),
+  as("b").out("created").as("c"),
+  as("c").in("created").count().is(2)).
+    select("c").by("name")</code></pre>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <p class="bold mb-2 text-white">What are the names of the projects created by two friends?</p>
                                     <ul class="list-unstyled text-white op-7">
-                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
-                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
-                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
-                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
-                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                        <li class="mb-1">1. ...there exists some "a" who knows "b".</li>
+                                        <li class="mb-1">2. ...there exists some "a" who created "c".</li>
+                                        <li class="mb-1">3. ...there exists some "b" who created "c".</li>
+                                        <li class="mb-1">4. ...there exists some "c" created by 2 people.</li>
+                                        <li class="mb-1">5. Get the name of all matching "c" projects.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -214,21 +217,22 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-6 mb-4 mb-md-0">
                                     <div class="code-box h-100">
-                                                    <code>
-                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
-                                                    </code>
-                                                </div>
+                                        <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-groovy">
+g.V().has("name","gremlin").
+  repeat(in("manages")).
+    until(has("title","ceo")).
+  path().by("name")
+
+</code></pre>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <p class="bold mb-2 text-white">Get the managers from Gremlin to the CEO in the hierarchy.</p>
                                     <ul class="list-unstyled text-white op-7">
-                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
-                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
-                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
-                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
-                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."</li>
+                                        <li class="mb-1">2. Traverse up the management chain...</li>
+                                        <li class="mb-1">3. ...until a person with the title of CEO is reached.</li>
+                                        <li class="mb-1">4. ...Get name of the managers in the path traversed.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -237,21 +241,22 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-6 mb-4 mb-md-0">
                                     <div class="code-box h-100">
-                                                    <code>
-                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
-                                                    </code>
-                                                </div>
+                                        <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-groovy">
+g.V().has("name","gremlin").as("a").
+  out("created").in("created").
+    where(neq("a")).
+  groupCount().by("title")
+
+</code></pre>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
+                                    <p class="bold mb-2 text-white">Get the distribution of titles amongst Gremlin's collaborators.</p>
                                     <ul class="list-unstyled text-white op-7">
-                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
-                                        <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
-                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
-                                        <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
-                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin" and label it "a."</li>
+                                        <li class="mb-1">2. Get Gremlin's created projects and then who created them...</li>
+                                        <li class="mb-1">3. ...that are not Gremlin.</li>
+                                        <li class="mb-1">4. Group count those collaborators by their titles.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -260,21 +265,22 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-6 mb-4 mb-md-0">
                                     <div class="code-box h-100">
-                                                    <code>
-                                                        <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("knows").out("knows").</span><span class="text-blue">values</span><span class="text-success">("name")</span>
-                                                    </code>
-                                                </div>
+                                        <pre style="padding-left:10px;height:148px;overflow:hidden;"><code class="language-groovy">g.V().has("name","gremlin").
+  out("bought").aggregate("stash").
+  in("bought").out("bought").
+    where(not(within("stash"))).
+  groupCount().order(local).by(values,desc)
+</code></pre>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <p class="bold mb-2 text-white">Get a ranked list of relevant products for Gremlin to purchase.</p>
                                     <ul class="list-unstyled text-white op-7">
-                                        <li class="mb-1">1. Get the vertex with the name "gremlin."  </li>
+                                        <li class="mb-1">1. Get the vertex with the name "gremlin."</li>
                                         <li class="mb-1">2. Get the products Gremlin has purchased and save as "stash."</li>
-                                        <li class="mb-1">3. Who else bought those products and what else did they buy... </li>
+                                        <li class="mb-1">3. Who else bought those products and what else did they buy...</li>
                                         <li class="mb-1">4. ...that Gremlin has not already purchased.</li>
-                                        <li class="mb-1"> 5. Group count the products and order by their relevance.</li>
+                                        <li class="mb-1">5. Group count the products and order by their relevance.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -597,6 +603,7 @@ limitations under the License.
               integrity="sha512-Eak/29OTpb36LLo2r47IpVzPBLXnAMPAVypbSZiZ4Qkf8p/7S/XRG5xp7OKWPPYfJT6metI+IORkR5G8F900+g=="
               crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="js/my.js"></script>
+        <script src="js/prism.js"></script>
     </body>
 </html>
        

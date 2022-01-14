@@ -31,6 +31,7 @@ limitations under the License.
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.css"
           integrity="sha512-K2J6Yt6ElUYEMPcTr0wm555AAyiqkgYiUgPIW18FT88/aYSNDk0EvGjsln/TEu3ee/jaHf0xoXzFppSbBtUXbQ=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/prism.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -308,16 +309,14 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
-                                        <code>
-                                            <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                            <span class="text-purpal">g</span><span class="text-blue">.V</span><span
-                                                class="text-success">().</span><span class="text-blue">has</span><span
-                                                class="text-success">("name","gremlin").</span>
-                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span
-                                                class="text-success">("knows").out("knows").</span><span
-                                                class="text-blue">values</span><span
-                                                class="text-success">("name")</span>
-                                        </code>
+                                        <pre><code class="language-groovy">
+
+// What are the names of Gremlin's friends' friends?
+g.V().has("name","gremlin").
+  out("knows").out("knows").values("name")
+
+
+</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -326,16 +325,14 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
-                                        <code>
-                                            <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                            <span class="text-purpal">g</span><span class="text-blue">.V</span><span
-                                                class="text-success">().</span><span class="text-blue">has</span><span
-                                                class="text-success">("name","gremlin").</span>
-                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span
-                                                class="text-success">("knows").out("knows").</span><span
-                                                class="text-blue">values</span><span
-                                                class="text-success">("name")</span>
-                                        </code>
+                                        <pre><code class="language-groovy">// What are the names of projects that were created by two friends?
+g.V().
+  match(as("a").out("knows").as("b"),
+    as("a").out("created").as("c"),
+    as("b").out("created").as("c"),
+    as("c").in("created").count().is(2)).
+  select("c").by("name")
+</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -344,16 +341,14 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
-                                        <code>
-                                            <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                            <span class="text-purpal">g</span><span class="text-blue">.V</span><span
-                                                class="text-success">().</span><span class="text-blue">has</span><span
-                                                class="text-success">("name","gremlin").</span>
-                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span
-                                                class="text-success">("knows").out("knows").</span><span
-                                                class="text-blue">values</span><span
-                                                class="text-success">("name")</span>
-                                        </code>
+                                        <pre><code class="language-groovy">
+// What are the names of the managers in the
+// management chain going from Gremlin to the CEO?
+g.V().has("name","gremlin").
+  repeat(in("manages")).until(has("title","ceo")).
+  path().by("name")
+
+</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -362,16 +357,14 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
-                                        <code>
-                                            <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                            <span class="text-purpal">g</span><span class="text-blue">.V</span><span
-                                                class="text-success">().</span><span class="text-blue">has</span><span
-                                                class="text-success">("name","gremlin").</span>
-                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span
-                                                class="text-success">("knows").out("knows").</span><span
-                                                class="text-blue">values</span><span
-                                                class="text-success">("name")</span>
-                                        </code>
+                                        <pre><code class="language-groovy">// What is the distribution of job titles
+// amongst Gremlin's collaborators?
+g.V().has("name","gremlin").as("a").
+  out("created").in("created").
+  where(neq("a")).
+  groupCount().by("title")
+
+</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -380,16 +373,14 @@ limitations under the License.
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
-                                        <code>
-                                            <p class="comment-text mb-2">// What are the names of Gremlin's Friends?</p>
-                                            <span class="text-purpal">g</span><span class="text-blue">.V</span><span
-                                                class="text-success">().</span><span class="text-blue">has</span><span
-                                                class="text-success">("name","gremlin").</span>
-                                            <br>&nbsp;&nbsp;<span class="text-blue">out</span><span
-                                                class="text-success">("knows").out("knows").</span><span
-                                                class="text-blue">values</span><span
-                                                class="text-success">("name")</span>
-                                        </code>
+                                        <pre><code class="language-groovy">// Get a ranking of the most relevant products for Gremlin
+// given his purchase history.
+g.V().has("name","gremlin").out("bought").aggregate("stash").
+  in("bought").out("bought").
+  where(not(within("stash"))).
+  groupCount().
+  order(local).by(values,desc)
+</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -938,6 +929,7 @@ limitations under the License.
         integrity="sha512-Eak/29OTpb36LLo2r47IpVzPBLXnAMPAVypbSZiZ4Qkf8p/7S/XRG5xp7OKWPPYfJT6metI+IORkR5G8F900+g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="js/my.js"></script>
+<script src="js/prism.js"></script>
 </body>
 </html>
     
