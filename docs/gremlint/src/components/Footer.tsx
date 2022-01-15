@@ -20,9 +20,9 @@
 import styled from 'styled-components';
 import CenteredContainer from './CenteredContainer';
 import { textColor } from '../styleVariables';
-import { packages } from '../../package-lock.json';
+import lockFile from '../../package-lock.json';
 
-const gremlintVersion = packages['node_modules/gremlint'].version;
+const gremlintVersion = lockFile.packages['node_modules/gremlint'].version;
 
 const FooterContent = styled.div`
   padding: 10px;
