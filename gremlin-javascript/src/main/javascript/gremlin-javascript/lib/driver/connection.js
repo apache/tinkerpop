@@ -184,7 +184,7 @@ class Connection extends EventEmitter {
           };
 
           const request_buf = this._writer.writeRequest(request);
-          const message = Buffer.concat([this._header_buf, request_buf], this._header_buf.length + request_buf.length);
+          const message = Buffer.concat([this._header_buf, request_buf]);
           this._ws.send(message);
         }),
     );
@@ -215,7 +215,7 @@ class Connection extends EventEmitter {
         };
 
         const request_buf = this._writer.writeRequest(request);
-        const message = Buffer.concat([this._header_buf, request_buf], this._header_buf.length + request_buf.length);
+        const message = Buffer.concat([this._header_buf, request_buf]);
         this._ws.send(message);
       })
       .catch((err) => readableStream.destroy(err));

@@ -35,18 +35,19 @@ class GraphBinaryWriter {
   constructor() {}
 
   writeRequest({ requestId, op, processor, args }) {
-    return Buffer.from([
+    const bufs = [
       // {version} 1 byte
-      0x81,
+      Buffer.from([0x81]),
       // {request_id} UUID
-      ...UuidSerializer.serialize(requestId, false),
+      UuidSerializer.serialize(requestId, false),
       // {op} String
-      ...StringSerializer.serialize(op, false),
+      StringSerializer.serialize(op, false),
       // {processor} String
-      ...StringSerializer.serialize(processor, false),
+      StringSerializer.serialize(processor, false),
       // {args} Map
-      ...MapSerializer.serialize(args, false),
-    ]);
+      MapSerializer.serialize(args, false),
+    ];
+    return Buffer.concat(bufs);
 
     /*// Detailed example for a quick reference:
       // {version}
