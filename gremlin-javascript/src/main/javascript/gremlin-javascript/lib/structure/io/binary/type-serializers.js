@@ -23,9 +23,43 @@
 'use strict';
 
 const DataType = require('./data-type');
-const INT32_MAX = 0x7FFFFFFF;
+const INT32_MIN = -2147483648;
+const INT32_MAX = 2147483647;
+
+class AnySerializer {
+
+  static getSerializerCanBeUsedFor(item) {
+    // TODO: align with Java.parse(GraphSON) logic
+    const serializers = [ // specifically ordered, the first canBeUsedFor=true wins
+      IntSerializer,
+      MapSerializer,
+      UuidSerializer,
+      StringSerializer,
+    ];
+    for (let i = 0; i < serializers.length; i++)
+      if (serializers[i].canBeUsedFor(item))
+        return serializers[i];
+
+    return StringSerializer; // TODO: is it what we want with falling back to a string?
+  }
+
+  static serialize(item, fullyQualifiedFormat = true) {
+    return AnySerializer
+      .getSerializerCanBeUsedFor(item)
+      .serialize(item, fullyQualifiedFormat);
+  }
+
+}
 
 class IntSerializer {
+
+  static canBeUsedFor(value) {
+    if (typeof value !== 'number')
+      return false;
+    if (value < INT32_MIN || value > INT32_MAX)
+      return false;
+    return true;
+  }
 
   static serialize(item, fullyQualifiedFormat = true) {
     if (item === undefined || item === null)
@@ -48,12 +82,13 @@ class IntSerializer {
     // TODO
   }
 
-  static canBeUsedFor(value) {
-    // TODO
-  }
 }
 
 class StringSerializer {
+
+  static canBeUsedFor(value) {
+    return (typeof value === 'string');
+  }
 
   static serialize(item, fullyQualifiedFormat = true) {
     if (item === undefined || item === null)
@@ -65,7 +100,7 @@ class StringSerializer {
     const bufs = [];
     if (fullyQualifiedFormat)
       bufs.push( Buffer.from([DataType.STRING, 0x00]) );
-    const v = Buffer.from(item, 'utf8');
+    const v = Buffer.from(String(item), 'utf8');
     bufs.push( IntSerializer.serialize(v.length, false) ); // TODO: what if len > INT32_MAX, for now it's backed by logic of IntSerializer.serialize itself
     bufs.push( v );
 
@@ -76,12 +111,13 @@ class StringSerializer {
     // TODO
   }
 
-  static canBeUsedFor(value) {
-    return (typeof value === 'string');
-  }
 }
 
 class MapSerializer {
+
+  static canBeUsedFor(value) {
+    return (typeof value === 'object');
+  }
 
   static serialize(item, fullyQualifiedFormat = true) {
     if (item === undefined || item === null)
@@ -113,13 +149,13 @@ class MapSerializer {
     // TODO
   }
 
-  static canBeUsedFor(value) {
-    // TODO
-  }
-
 }
 
 class UuidSerializer {
+
+  static canBeUsedFor(value) {
+    // TODO
+  }
 
   static serialize(item, fullyQualifiedFormat = true) {
     if (item === undefined || item === null)
@@ -148,15 +184,30 @@ class UuidSerializer {
     // TODO
   }
 
+}
+
+class BytecodeSerializer {
+
   static canBeUsedFor(value) {
+    // TODO
+  }
+
+  static serialize(item, fullyQualifiedFormat = true) {
+    // TODO
+  }
+
+  static deserialize(buffer) {
     // TODO
   }
 
 }
 
 module.exports = {
+  AnySerializer,
+
   IntSerializer,
   StringSerializer,
   MapSerializer,
   UuidSerializer,
+  BytecodeSerializer,
 };

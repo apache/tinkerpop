@@ -26,52 +26,63 @@ const assert = require('assert');
 const {
   IntSerializer,
   StringSerializer,
+  MapSerializer,
   UuidSerializer,
+  BytecodeSerializer,
 } = require('../../lib/structure/io/binary/type-serializers');
+
+describe('GraphBinary.AnySerializer', () => {
+
+  describe('getSerializerCanBeUsedFor', () =>
+    it.skip('')
+  );
+
+  describe('serialize', () =>
+    it.skip('')
+  );
+
+});
 
 describe('GraphBinary.IntSerializer', () => {
 
-  describe('canBeUsedFor', () => {
-    it.skip('');
-  });
+  describe('canBeUsedFor', () =>
+    it.skip('')
+  );
 
-  describe('serialize', () => {
+  describe('serialize', () =>
     [
       { v: undefined,   fq: true,  e: [0x01,0x01] },
       { v: undefined,   fq: false, e: [           0x00,0x00,0x00,0x00] },
       { v: null,        fq: true,  e: [0x01,0x01] },
       { v: null,        fq: false, e: [           0x00,0x00,0x00,0x00] },
-      { v: 0,           fq: true,  e: [0x01,0x00, 0x00,0x00,0x00,0x00] },
-      { v: 0,           fq: false, e: [           0x00,0x00,0x00,0x00] },
-      { v: 1,           fq: true,  e: [0x01,0x00, 0x00,0x00,0x00,0x01] },
-      { v: 1,           fq: false, e: [           0x00,0x00,0x00,0x01] },
-      { v: 256,         fq: true,  e: [0x01,0x00, 0x00,0x00,0x01,0x00] },
-      { v: 256,         fq: false, e: [           0x00,0x00,0x01,0x00] },
-      { v: 65536,       fq: true,  e: [0x01,0x00, 0x00,0x01,0x00,0x00] },
-      { v: 65536,       fq: false, e: [           0x00,0x01,0x00,0x00] },
-      { v: 16777216,    fq: true,  e: [0x01,0x00, 0x01,0x00,0x00,0x00] },
-      { v: 16777216,    fq: false, e: [           0x01,0x00,0x00,0x00] },
-      { v: 2147483647,  fq: true,  e: [0x01,0x00, 0x7F,0xFF,0xFF,0xFF] },
-      { v: 2147483647,  fq: false, e: [           0x7F,0xFF,0xFF,0xFF] },
-      { v: -1,          fq: true,  e: [0x01,0x00, 0xFF,0xFF,0xFF,0xFF] },
-      { v: -1,          fq: false, e: [           0xFF,0xFF,0xFF,0xFF] },
-      { v: -2147483648, fq: true,  e: [0x01,0x00, 0x80,0x00,0x00,0x00] },
-      { v: -2147483648, fq: false, e: [           0x80,0x00,0x00,0x00] },
-    ].forEach(({ v, fq, e }) => it(`should be able to handle value=${v} with fullyQualifiedFormat=${fq}`, () => assert.deepEqual(
-      IntSerializer.serialize(v, fq),
-      Buffer.from(e),
-    )));
-  });
+      // the following will be automatically tested for fq=false/true
+      { v: 0,           e: [0x00,0x00,0x00,0x00] },
+      { v: 1,           e: [0x00,0x00,0x00,0x01] },
+      { v: 256,         e: [0x00,0x00,0x01,0x00] },
+      { v: 65536,       e: [0x00,0x01,0x00,0x00] },
+      { v: 16777216,    e: [0x01,0x00,0x00,0x00] },
+      { v: 2147483647,  e: [0x7F,0xFF,0xFF,0xFF] },
+      { v: -1,          e: [0xFF,0xFF,0xFF,0xFF] },
+      { v: -2147483648, e: [0x80,0x00,0x00,0x00] },
+    ].forEach(({ v, fq, e }, i) => it(`should be able to handle value of case #${i}`, () => {
+      if (fq !== undefined) {
+        assert.deepEqual( IntSerializer.serialize(v, fq), Buffer.from(e) );
+        return;
+      }
+      assert.deepEqual( IntSerializer.serialize(v, false), Buffer.from(e) );
+      assert.deepEqual( IntSerializer.serialize(v, true), Buffer.concat([Buffer.from([0x01,0x00]), Buffer.from(e)]) );
+    }))
+  );
 
-  describe('deserialize', () => {
-    it.skip('');
-  });
+  describe('deserialize', () =>
+    it.skip('')
+  );
 
 });
 
 describe('GraphBinary.StringSerializer', () => {
 
-  describe('canBeUsedFor', () => {
+  describe('canBeUsedFor', () =>
     [
       { v: 'some string',    e: true },
       { v: '',               e: true },
@@ -92,10 +103,10 @@ describe('GraphBinary.StringSerializer', () => {
     ].forEach(({ v, e }, i) => it(`should return ${e} if value is '${v}', case #${i}`, () => assert.strictEqual(
       StringSerializer.canBeUsedFor(v),
       e,
-    )));
-  });
+    )))
+  );
 
-  describe('serialize', () => {
+  describe('serialize', () =>
     [
       { v: undefined,   fq: true,  e: [0x03,0x01] },
       { v: undefined,   fq: false, e: [           0x00,0x00,0x00,0x00] },
@@ -110,22 +121,78 @@ describe('GraphBinary.StringSerializer', () => {
     ].forEach(({ v, fq, e }) => it(`should be able to handle value='${v}' with fullyQualifiedFormat=${fq}`, () => assert.deepEqual(
       StringSerializer.serialize(v, fq),
       Buffer.from(e),
-    )));
+    )))
+  );
+
+  describe('deserialize', () =>
+    it.skip('')
+  );
+
+});
+
+describe('GraphBinary.MapSerializer', () => {
+
+  describe('canBeUsedFor', () =>
+    it.skip('')
+  );
+
+  describe('serialize', () => {
+    [
+      { v: undefined, fq: true,  e: [0x0A, 0x01] },
+      { v: undefined, fq: false, e: [            0x00,0x00,0x00,0x00] },
+      { v: null,      fq: true,  e: [0x0A, 0x01] },
+      { v: null,      fq: false, e: [            0x00,0x00,0x00,0x00] },
+      // the following will be automatically tested for fq=false/true
+      { v: {},
+        e: [0x00,0x00,0x00,0x00] },
+      { v: { 'a': 'a' },
+        e: [0x00,0x00,0x00,0x01, /*'a'*/0x03,0x00,0x00,0x00,0x00,0x01,0x61, /*'a'*/0x03,0x00,0x00,0x00,0x00,0x01,0x61] },
+      { v: { 'a': 'A' },
+        e: [0x00,0x00,0x00,0x01, /*'a'*/0x03,0x00,0x00,0x00,0x00,0x01,0x61, /*'A'*/0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+      { v: { 'a': 1 },
+        e: [0x00,0x00,0x00,0x01, /*'a'*/0x03,0x00,0x00,0x00,0x00,0x01,0x61, /*1*/0x01,0x00,0x00,0x00,0x00,0x01] },
+      { v: { 'yz': 'A1' },
+        e: [0x00,0x00,0x00,0x01, /*'yz'*/0x03,0x00,0x00,0x00,0x00,0x02,0x79,0x7A, /*'A1'*/0x03,0x00,0x00,0x00,0x00,0x02,0x41,0x31] },
+      { v: { 'one': 1, 'two': 2 },
+        e: [0x00,0x00,0x00,0x02,
+          /*'one'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6F,0x6E,0x65, /*1*/0x01,0x00,0x00,0x00,0x00,0x01,
+          /*'two'*/0x03,0x00,0x00,0x00,0x00,0x03,0x74,0x77,0x6F, /*2*/0x01,0x00,0x00,0x00,0x00,0x02,
+        ]
+      },
+      { v: { 'one': 1, 'two': 2, 'int32': { 'min': -2147483648, 'max': 2147483647 } },
+        e: [0x00,0x00,0x00,0x03,
+          /*'one'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6F,0x6E,0x65, /*1*/0x01,0x00,0x00,0x00,0x00,0x01,
+          /*'two'*/0x03,0x00,0x00,0x00,0x00,0x03,0x74,0x77,0x6F, /*2*/0x01,0x00,0x00,0x00,0x00,0x02,
+          /*'int32'*/ 0x03,0x00, 0x00,0x00,0x00,0x05, 0x69,0x6E,0x74,0x33,0x32, 
+          /*int32 map*/
+          0x0A,0x00, 0x00,0x00,0x00,0x02,
+            /*'min'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6D,0x69,0x6E, /*-2147483648*/0x01,0x00,0x80,0x00,0x00,0x00,
+            /*'max'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6D,0x61,0x78, /* 2147483647*/0x01,0x00,0x7F,0xFF,0xFF,0xFF,
+        ]
+      },
+    ].forEach(({ v, fq, e }, i) => it(`should be able to handle value of case #${i}`, () => {
+      if (fq !== undefined) {
+        assert.deepEqual( MapSerializer.serialize(v, fq), Buffer.from(e) );
+        return;
+      }
+      assert.deepEqual( MapSerializer.serialize(v, false), Buffer.from(e) );
+      assert.deepEqual( MapSerializer.serialize(v, true), Buffer.concat([Buffer.from([0x0A,0x00]), Buffer.from(e)]) );
+    }));
   });
 
-  describe('deserialize', () => {
-    it.skip('');
-  });
+  describe('deserialize', () =>
+    it.skip('')
+  );
 
 });
 
 describe('GraphBinary.UuidSerializer', () => {
 
-  describe('canBeUsedFor', () => {
-    it.skip('');
-  });
+  describe('canBeUsedFor', () =>
+    it.skip('')
+  );
 
-  describe('serialize', () => {
+  describe('serialize', () =>
     [
       { v: undefined,                                       fq: true,  e: [0x0C,0x01] },
       { v: undefined,                                       fq: false, e: [           0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
@@ -148,16 +215,39 @@ describe('GraphBinary.UuidSerializer', () => {
       { v: 'AaBbCcDd-EeFf-1122-3344-556677889900',          fq: true,  e: [0x0C,0x00, 0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
       { v: 'AaBbCcDd-EeFf-1122-3344-556677889900',          fq: false, e: [           0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
 
+      { v: 'AaBbCcDd-EeFf-1122-3344-556677889900FFFF',      fq: true,  e: [0x0C,0x00, 0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
       { v: 'AaBbCcDd-EeFf-1122-3344-556677889900FFFF',      fq: false, e: [           0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
-      { v: 'AaBbCcDd-EeFf-1122-3344-556677889900FFFF',      fq: false, e: [           0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
+      { v: 'GHIJKLMN-OPQR-STUV-WXYZ-!@#$%^&*()_+',          fq: true,  e: [0x0C,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
+      { v: 'GHIJKLMN-OPQR-STUV-WXYZ-!@#$%^&*()_+',          fq: false, e: [           0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
     ].forEach(({ v, fq, e }) => it(`should be able to handle value='${v}' with fullyQualifiedFormat=${fq}`, () => assert.deepEqual(
       UuidSerializer.serialize(v, fq),
       Buffer.from(e),
-    )));
-  });
+    )))
+  );
 
-  describe('deserialize', () => {
-    it.skip('');
-  });
+  describe('deserialize', () =>
+    it.skip('')
+  );
+
+});
+
+describe('GraphBinary.BytecodeSerializer', () => {
+
+  describe('canBeUsedFor', () =>
+    it.skip('')
+  );
+
+  describe('serialize', () =>
+    [
+      {} // TODO
+    ].forEach(({ v, fq, e }) => it(`should be able to handle value='${v}' with fullyQualifiedFormat=${fq}`, () => assert.deepEqual(
+      BytecodeSerializer.serialize(v, fq),
+      Buffer.from(e),
+    )))
+  );
+
+  describe('deserialize', () =>
+    it.skip('')
+  );
 
 });
