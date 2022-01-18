@@ -65,6 +65,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// The GLV suite does not test against a graph that has null property values enabled.
         /// </summary>
-        NullPropertyValuesNotSupportedOnTestGraph
+        NullPropertyValuesNotSupportedOnTestGraph,
+
+        /// <summary>
+        /// Need a Gherkin parser for VertexProperty results: https://issues.apache.org/jira/browse/TINKERPOP-2686
+        /// </summary>
+        VertexPropertyNotSupportedInGherkin
     }
 }

@@ -134,32 +134,14 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                 def t = gremlinItty.next()[0]
                 writer.write("(g,p) =>")
                 writer.write(translator.translate(t.bytecode).script.
-                        replace("xx1", "p[\"xx1\"]").
-                        replace("xx2", "p[\"xx2\"]").
-                        replace("xx3", "p[\"xx3\"]").
-                        replace("v1", "(Vertex) p[\"v1\"]").
-                        replace("v2", "(Vertex) p[\"v2\"]").
-                        replace("v3", "(Vertex) p[\"v3\"]").
-                        replace("v4", "(Vertex) p[\"v4\"]").
-                        replace("v5", "(Vertex) p[\"v5\"]").
-                        replace("v6", "(Vertex) p[\"v6\"]").
-                        replace("vid1", "p[\"vid1\"]").
-                        replace("vid2", "p[\"vid2\"]").
-                        replace("vid3", "p[\"vid3\"]").
-                        replace("vid4", "p[\"vid4\"]").
-                        replace("vid5", "p[\"vid5\"]").
-                        replace("vid6", "p[\"vid6\"]").
-                        replace("e7", "p[\"e7\"]").
-                        replace("e10", "p[\"e10\"]").
-                        replace("e11", "p[\"e11\"]").
-                        replace("eid7", "p[\"eid7\"]").
-                        replace("eid10", "p[\"eid10\"]").
-                        replace("eid11", "p[\"eid11\"]").
-                        replace("l1", "(IFunction) p[\"l1\"]").
-                        replace("l2", "(IFunction) p[\"l2\"]").
-                        replace("pred1", "(IPredicate) p[\"pred1\"]").
-                        replace("c1", "(IComparator) p[\"c1\"]").
-                        replace("c2", "(IComparator) p[\"c2\"]"))
+                        replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
+                        replaceAll("v([0-9]+)", "(Vertex) p[\"v\$1\"]").
+                        replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
+                        replaceAll("e([0-9]+)", "p[\"e\$1\"]").
+                        replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").
+                        replaceAll("l([0-9]+)", "(IFunction) p[\"l\$1\"]").
+                        replaceAll("pred([0-9]+)", "(IPredicate) p[\"pred\$1\"]").
+                        replaceAll("c([0-9]+)", "(IComparator) p[\"c\$1\"]"))
                 if (gremlinItty.hasNext())
                     writer.write(', ')
                 else

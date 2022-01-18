@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -136,6 +137,8 @@ public final class StepDefinition {
             throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("(null)"), s -> "null"));
+        add(Pair.with(Pattern.compile("(true)"), s -> "true"));
+        add(Pair.with(Pattern.compile("(false)"), s -> "false"));
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
@@ -157,6 +160,13 @@ public final class StepDefinition {
         }));
 
         add(Pair.with(Pattern.compile("(null)"), s -> null));
+        add(Pair.with(Pattern.compile("(true)"), s -> true));
+        add(Pair.with(Pattern.compile("(false)"), s -> false));
+
+        /*
+         * TODO FIXME Add same support for other languages (js, python, .net)
+         */
+        add(Pair.with(Pattern.compile("vp\\[(.+)\\]"), s -> getVertexProperty(g, s)));
 
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
@@ -458,6 +468,17 @@ public final class StepDefinition {
                    filter(edge -> g.V(edge.inVertex().id()).has("name", t.getValue2()).hasNext()).findFirst().get();
     }
 
+    /**
+     * Reuse edge triplet syntax for VertexProperty: vp[vertexName-key->value]
+     */
+    private VertexProperty getVertexProperty(final GraphTraversalSource g, final String e) {
+        final Triplet<String,String,String> t = getEdgeTriplet(e);
+        return (VertexProperty) g.V().has("name", t.getValue0())
+                                     .properties(t.getValue1())
+                                     .hasValue(convertToObject(t.getValue2()))
+                .tryNext().orElse(null);
+    }
+
     private static Object getEdgeId(final GraphTraversalSource g, final String e) {
         return getEdge(g, e).id();
     }
@@ -468,8 +489,11 @@ public final class StepDefinition {
 
     private String applyParameters(final String docString) {
         String replaced = docString;
-        for (Map.Entry<String, String> kv : stringParameters.entrySet()) {
-            replaced = replaced.replace(kv.getKey(), kv.getValue());
+        // sort from longest to shortest so that xx1 does not replace xx10
+        final List<String> paramNames = new ArrayList<>(stringParameters.keySet());
+        paramNames.sort((a,b) -> b.length() - a.length());
+        for (String k : paramNames) {
+            replaced = replaced.replace(k, stringParameters.get(k));
         }
         return replaced;
     }

@@ -61,13 +61,13 @@ public interface Graph extends AutoCloseable, Host {
     /**
      * Configuration key used by {@link GraphFactory}} to determine which graph to instantiate.
      */
-    public static final String GRAPH = "gremlin.graph";
+    String GRAPH = "gremlin.graph";
 
     /**
      * This should only be used by providers to create keys, labels, etc. in a namespace safe from users.
      * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".
      */
-    public static class Hidden {
+    class Hidden {
 
         /**
          * The prefix to denote that a key is a hidden key.
@@ -114,7 +114,7 @@ public interface Graph extends AutoCloseable, Host {
      * @param keyValues The key/value pairs to turn into vertex properties
      * @return The newly created vertex
      */
-    public Vertex addVertex(final Object... keyValues);
+    Vertex addVertex(final Object... keyValues);
 
     /**
      * Add a {@link Vertex} to the graph with provided vertex label.
@@ -122,7 +122,7 @@ public interface Graph extends AutoCloseable, Host {
      * @param label the label of the vertex
      * @return The newly created labeled vertex
      */
-    public default Vertex addVertex(final String label) {
+    default Vertex addVertex(final String label) {
         return this.addVertex(T.label, label);
     }
 
@@ -134,7 +134,7 @@ public interface Graph extends AutoCloseable, Host {
      * @return A graph computer for processing this graph
      * @throws IllegalArgumentException if the provided {@link GraphComputer} class is not supported.
      */
-    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException;
+    <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException;
 
     /**
      * Generate a {@link GraphComputer} using the default engine of the underlying graph system.
@@ -143,7 +143,7 @@ public interface Graph extends AutoCloseable, Host {
      * @return A default graph computer
      * @throws IllegalArgumentException if there is no default graph computer
      */
-    public GraphComputer compute() throws IllegalArgumentException;
+    GraphComputer compute() throws IllegalArgumentException;
 
     /**
      * Generate a {@link TraversalSource} using the specified {@code TraversalSource} class.
@@ -152,7 +152,7 @@ public interface Graph extends AutoCloseable, Host {
      * @param traversalSourceClass The traversal source class
      * @param <C>                  The traversal source class
      */
-    public default <C extends TraversalSource> C traversal(final Class<C> traversalSourceClass) {
+    default <C extends TraversalSource> C traversal(final Class<C> traversalSourceClass) {
         try {
             return traversalSourceClass.getConstructor(Graph.class).newInstance(this);
         } catch (final Exception e) {
@@ -166,7 +166,7 @@ public interface Graph extends AutoCloseable, Host {
      *
      * @return A graph traversal source
      */
-    public default GraphTraversalSource traversal() {
+    default GraphTraversalSource traversal() {
         return new GraphTraversalSource(this);
     }
 
@@ -222,7 +222,7 @@ public interface Graph extends AutoCloseable, Host {
      * @param vertexIds the ids of the vertices to get
      * @return an {@link Iterator} of vertices that match the provided vertex ids
      */
-    public Iterator<Vertex> vertices(final Object... vertexIds);
+    Iterator<Vertex> vertices(final Object... vertexIds);
 
     /**
      * Get the {@link Edge} objects in this graph with the provided edge ids or {@link Edge} objects. If no ids are
@@ -268,18 +268,18 @@ public interface Graph extends AutoCloseable, Host {
      * @param edgeIds the ids of the edges to get
      * @return an {@link Iterator} of edges that match the provided edge ids
      */
-    public Iterator<Edge> edges(final Object... edgeIds);
+    Iterator<Edge> edges(final Object... edgeIds);
 
     /**
      * Configure and control the transactions for those graphs that support this feature.
      */
-    public Transaction tx();
+    Transaction tx();
 
     /**
      * Configure and control the transactions for those graphs that support this feature. Graphs that support multiple
      * transaction models can use this method expose different sorts of {@link Transaction} implementations.
      */
-    public default <Tx extends Transaction> Tx tx(final Class<Tx> txClass) {
+    default <Tx extends Transaction> Tx tx(final Class<Tx> txClass) {
         throw new UnsupportedOperationException("This Graph does not support multiple transaction types - use tx() instead");
     }
 
@@ -316,7 +316,7 @@ public interface Graph extends AutoCloseable, Host {
      * functionality is replaced by the `io` step of {@link GraphTraversalSource}.
      */
     @Deprecated
-    public default <I extends Io> I io(final Io.Builder<I> builder) {
+    default <I extends Io> I io(final Io.Builder<I> builder) {
         return (I) builder.graph(this).create();
     }
 
@@ -326,7 +326,7 @@ public interface Graph extends AutoCloseable, Host {
      *
      * @return The variables associated with this graph
      */
-    public Variables variables();
+    Variables variables();
 
     /**
      * Get the {@code Configuration} associated with the construction of this graph. Whatever configuration was passed
@@ -334,45 +334,45 @@ public interface Graph extends AutoCloseable, Host {
      *
      * @return the configuration used during graph construction.
      */
-    public Configuration configuration();
+    Configuration configuration();
 
     /**
      * Graph variables are a set of key/value pairs associated with the graph. The keys are String and the values
      * are Objects.
      */
-    public interface Variables {
+    interface Variables {
 
         /**
          * Keys set for the available variables.
          */
-        public Set<String> keys();
+        Set<String> keys();
 
         /**
          * Gets a variable.
          */
-        public <R> Optional<R> get(final String key);
+        <R> Optional<R> get(final String key);
 
         /**
          * Sets a variable.
          */
-        public void set(final String key, Object value);
+        void set(final String key, Object value);
 
         /**
          * Removes a variable.
          */
-        public void remove(final String key);
+        void remove(final String key);
 
         /**
          * Gets the variables of the {@link Graph} as a {@code Map}.
          */
-        public default Map<String, Object> asMap() {
+        default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
                     .map(key -> Pair.with(key, get(key).get()))
                     .collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
             return Collections.unmodifiableMap(map);
         }
 
-        public static class Exceptions {
+        class Exceptions {
 
             private Exceptions() {
             }
@@ -403,7 +403,7 @@ public interface Graph extends AutoCloseable, Host {
     /**
      * Gets the {@link Features} exposed by the underlying {@code Graph} implementation.
      */
-    public default Features features() {
+    default Features features() {
         return new Features() {
         };
     }
@@ -421,12 +421,12 @@ public interface Graph extends AutoCloseable, Host {
      * TinkerPop core code to determine what operations may be appropriately executed which will have impact on
      * features utilized by users.
      */
-    public interface Features {
+    interface Features {
 
         /**
          * Gets the features related to "graph" operation.
          */
-        public default GraphFeatures graph() {
+        default GraphFeatures graph() {
             return new GraphFeatures() {
             };
         }
@@ -434,7 +434,7 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Gets the features related to "vertex" operation.
          */
-        public default VertexFeatures vertex() {
+        default VertexFeatures vertex() {
             return new VertexFeatures() {
             };
         }
@@ -442,7 +442,7 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Gets the features related to "edge" operation.
          */
-        public default EdgeFeatures edge() {
+        default EdgeFeatures edge() {
             return new EdgeFeatures() {
             };
         }
@@ -450,20 +450,21 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features specific to a operations of a "graph".
          */
-        public interface GraphFeatures extends FeatureSet {
-            public static final String FEATURE_COMPUTER = "Computer";
-            public static final String FEATURE_TRANSACTIONS = "Transactions";
-            public static final String FEATURE_PERSISTENCE = "Persistence";
-            public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
-            public static final String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
-            public static final String FEATURE_IO_READ = "IoRead";
-            public static final String FEATURE_IO_WRITE = "IoWrite";
+        interface GraphFeatures extends FeatureSet {
+            String FEATURE_COMPUTER = "Computer";
+            String FEATURE_TRANSACTIONS = "Transactions";
+            String FEATURE_PERSISTENCE = "Persistence";
+            String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
+            String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
+            String FEATURE_IO_READ = "IoRead";
+            String FEATURE_IO_WRITE = "IoWrite";
+            String FEATURE_ORDERABILITY_SEMANTICS = "OrderabilitySemantics";
 
             /**
              * Determines if the {@code Graph} implementation supports {@link GraphComputer} based processing.
              */
             @FeatureDescriptor(name = FEATURE_COMPUTER)
-            public default boolean supportsComputer() {
+            default boolean supportsComputer() {
                 return true;
             }
 
@@ -474,7 +475,7 @@ public interface Graph extends AutoCloseable, Host {
              * TinkerGraph does not support this feature as it is a pure in-sideEffects graph.
              */
             @FeatureDescriptor(name = FEATURE_PERSISTENCE)
-            public default boolean supportsPersistence() {
+            default boolean supportsPersistence() {
                 return true;
             }
 
@@ -486,7 +487,7 @@ public interface Graph extends AutoCloseable, Host {
              * multiple instances to operate on the same database.
              */
             @FeatureDescriptor(name = FEATURE_CONCURRENT_ACCESS)
-            public default boolean supportsConcurrentAccess() {
+            default boolean supportsConcurrentAccess() {
                 return true;
             }
 
@@ -494,7 +495,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if the {@code Graph} implementations supports transactions.
              */
             @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
-            public default boolean supportsTransactions() {
+            default boolean supportsTransactions() {
                 return true;
             }
 
@@ -503,7 +504,7 @@ public interface Graph extends AutoCloseable, Host {
              * to be executed across multiple threads via {@link Transaction#createThreadedTx()}.
              */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
-            public default boolean supportsThreadedTransactions() {
+            default boolean supportsThreadedTransactions() {
                 return true;
             }
 
@@ -515,7 +516,7 @@ public interface Graph extends AutoCloseable, Host {
              * {@code HadoopGraph} don't accept direct mutations but can still do reads from that {@code io()} step.
              */
             @FeatureDescriptor(name = FEATURE_IO_READ)
-            public default boolean supportsIoRead() {
+            default boolean supportsIoRead() {
                 return true;
             }
 
@@ -526,14 +527,23 @@ public interface Graph extends AutoCloseable, Host {
              * {@code HadoopGraph} will use a different approach to handle writes.
              */
             @FeatureDescriptor(name = FEATURE_IO_WRITE)
-            public default boolean supportsIoWrite() {
+            default boolean supportsIoWrite() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementation supports total universal orderability per the Gremlin
+             * orderability semantics.
+             */
+            @FeatureDescriptor(name = FEATURE_ORDERABILITY_SEMANTICS)
+            default boolean supportsOrderabilitySemantics() {
                 return true;
             }
 
             /**
              * Gets the features related to "graph sideEffects" operation.
              */
-            public default VariableFeatures variables() {
+            default VariableFeatures variables() {
                 return new VariableFeatures() {
                 };
             }
@@ -542,13 +552,13 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features that are related to {@link Vertex} operations.
          */
-        public interface VertexFeatures extends ElementFeatures {
-            public static final String FEATURE_ADD_VERTICES = "AddVertices";
-            public static final String FEATURE_MULTI_PROPERTIES = "MultiProperties";
-            public static final String FEATURE_DUPLICATE_MULTI_PROPERTIES = "DuplicateMultiProperties";
-            public static final String FEATURE_META_PROPERTIES = "MetaProperties";
-            public static final String FEATURE_REMOVE_VERTICES = "RemoveVertices";
-            public static final String FEATURE_UPSERT = "Upsert";
+        interface VertexFeatures extends ElementFeatures {
+            String FEATURE_ADD_VERTICES = "AddVertices";
+            String FEATURE_MULTI_PROPERTIES = "MultiProperties";
+            String FEATURE_DUPLICATE_MULTI_PROPERTIES = "DuplicateMultiProperties";
+            String FEATURE_META_PROPERTIES = "MetaProperties";
+            String FEATURE_REMOVE_VERTICES = "RemoveVertices";
+            String FEATURE_UPSERT = "Upsert";
 
             /**
              * Gets the {@link VertexProperty.Cardinality} for a key.  By default, this method will return
@@ -561,7 +571,7 @@ public interface Graph extends AutoCloseable, Host {
              * hint on the actual cardinality. Generally speaking it is likely best to drop down to the API of the
              * {@link Graph} implementation for any schema related queries.
              */
-            public default VertexProperty.Cardinality getCardinality(final String key) {
+            default VertexProperty.Cardinality getCardinality(final String key) {
                 return VertexProperty.Cardinality.list;
             }
 
@@ -569,7 +579,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if a {@link Vertex} can be added to the {@code Graph}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_VERTICES)
-            public default boolean supportsAddVertices() {
+            default boolean supportsAddVertices() {
                 return true;
             }
 
@@ -577,7 +587,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if a {@link Vertex} can be removed from the {@code Graph}.
              */
             @FeatureDescriptor(name = FEATURE_REMOVE_VERTICES)
-            public default boolean supportsRemoveVertices() {
+            default boolean supportsRemoveVertices() {
                 return true;
             }
 
@@ -585,7 +595,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if a {@link Vertex} can support multiple properties with the same key.
              */
             @FeatureDescriptor(name = FEATURE_MULTI_PROPERTIES)
-            public default boolean supportsMultiProperties() {
+            default boolean supportsMultiProperties() {
                 return true;
             }
 
@@ -595,7 +605,7 @@ public interface Graph extends AutoCloseable, Host {
              * just returns what {@link #supportsMultiProperties()} returns.
              */
             @FeatureDescriptor(name = FEATURE_DUPLICATE_MULTI_PROPERTIES)
-            public default boolean supportsDuplicateMultiProperties() {
+            default boolean supportsDuplicateMultiProperties() {
                 return supportsMultiProperties();
             }
 
@@ -605,7 +615,7 @@ public interface Graph extends AutoCloseable, Host {
              * properties.
              */
             @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
-            public default boolean supportsMetaProperties() {
+            default boolean supportsMetaProperties() {
                 return true;
             }
 
@@ -619,14 +629,14 @@ public interface Graph extends AutoCloseable, Host {
              * a vertex and should therefore resort to their own body of tests to validate this feature.
              */
             @FeatureDescriptor(name = FEATURE_UPSERT)
-            public default boolean supportsUpsert() {
+            default boolean supportsUpsert() {
                 return false;
             }
 
             /**
              * Gets features related to "properties" on a {@link Vertex}.
              */
-            public default VertexPropertyFeatures properties() {
+            default VertexPropertyFeatures properties() {
                 return new VertexPropertyFeatures() {
                 };
             }
@@ -635,16 +645,16 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features that are related to {@link Edge} operations.
          */
-        public interface EdgeFeatures extends ElementFeatures {
-            public static final String FEATURE_ADD_EDGES = "AddEdges";
-            public static final String FEATURE_REMOVE_EDGES = "RemoveEdges";
-            public static final String FEATURE_UPSERT = "Upsert";
+        interface EdgeFeatures extends ElementFeatures {
+            String FEATURE_ADD_EDGES = "AddEdges";
+            String FEATURE_REMOVE_EDGES = "RemoveEdges";
+            String FEATURE_UPSERT = "Upsert";
 
             /**
              * Determines if an {@link Edge} can be added to a {@code Vertex}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_EDGES)
-            public default boolean supportsAddEdges() {
+            default boolean supportsAddEdges() {
                 return true;
             }
 
@@ -652,7 +662,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if an {@link Edge} can be removed from a {@code Vertex}.
              */
             @FeatureDescriptor(name = FEATURE_REMOVE_EDGES)
-            public default boolean supportsRemoveEdges() {
+            default boolean supportsRemoveEdges() {
                 return true;
             }
 
@@ -667,14 +677,14 @@ public interface Graph extends AutoCloseable, Host {
              * feature.
              */
             @FeatureDescriptor(name = FEATURE_UPSERT)
-            public default boolean supportsUpsert() {
+            default boolean supportsUpsert() {
                 return false;
             }
 
             /**
              * Gets features related to "properties" on an {@link Edge}.
              */
-            public default EdgePropertyFeatures properties() {
+            default EdgePropertyFeatures properties() {
                 return new EdgePropertyFeatures() {
                 };
             }
@@ -683,16 +693,16 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features that are related to {@link Element} objects.  This is a base interface.
          */
-        public interface ElementFeatures extends FeatureSet {
-            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
-            public static final String FEATURE_NUMERIC_IDS = "NumericIds";
-            public static final String FEATURE_STRING_IDS = "StringIds";
-            public static final String FEATURE_UUID_IDS = "UuidIds";
-            public static final String FEATURE_CUSTOM_IDS = "CustomIds";
-            public static final String FEATURE_ANY_IDS = "AnyIds";
-            public static final String FEATURE_ADD_PROPERTY = "AddProperty";
-            public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
-            public static final String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
+        interface ElementFeatures extends FeatureSet {
+            String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            String FEATURE_NUMERIC_IDS = "NumericIds";
+            String FEATURE_STRING_IDS = "StringIds";
+            String FEATURE_UUID_IDS = "UuidIds";
+            String FEATURE_CUSTOM_IDS = "CustomIds";
+            String FEATURE_ANY_IDS = "AnyIds";
+            String FEATURE_ADD_PROPERTY = "AddProperty";
+            String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
+            String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
 
             /**
              * Determines if an {@link Element} allows properties with {@code null} property values. In the event that
@@ -700,7 +710,7 @@ public interface Graph extends AutoCloseable, Host {
              * the property.
              */
             @FeatureDescriptor(name = FEATURE_NULL_PROPERTY_VALUES)
-            public default boolean supportsNullPropertyValues() {
+            default boolean supportsNullPropertyValues() {
                 return true;
             }
 
@@ -709,7 +719,7 @@ public interface Graph extends AutoCloseable, Host {
              * supporting "data types" and refers to support of calls to {@link Element#property(String, Object)}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
-            public default boolean supportsAddProperty() {
+            default boolean supportsAddProperty() {
                 return true;
             }
 
@@ -717,7 +727,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if an {@link Element} allows properties to be removed.
              */
             @FeatureDescriptor(name = FEATURE_REMOVE_PROPERTY)
-            public default boolean supportsRemoveProperty() {
+            default boolean supportsRemoveProperty() {
                 return true;
             }
 
@@ -729,7 +739,7 @@ public interface Graph extends AutoCloseable, Host {
              * is assumed to be an identifier data type that the {@link Graph} will accept.
              */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
-            public default boolean supportsUserSuppliedIds() {
+            default boolean supportsUserSuppliedIds() {
                 return true;
             }
 
@@ -742,7 +752,7 @@ public interface Graph extends AutoCloseable, Host {
              * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
-            public default boolean supportsNumericIds() {
+            default boolean supportsNumericIds() {
                 return true;
             }
 
@@ -755,7 +765,7 @@ public interface Graph extends AutoCloseable, Host {
              * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_STRING_IDS)
-            public default boolean supportsStringIds() {
+            default boolean supportsStringIds() {
                 return true;
             }
 
@@ -768,7 +778,7 @@ public interface Graph extends AutoCloseable, Host {
              * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_UUID_IDS)
-            public default boolean supportsUuidIds() {
+            default boolean supportsUuidIds() {
                 return true;
             }
 
@@ -781,7 +791,7 @@ public interface Graph extends AutoCloseable, Host {
              * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
-            public default boolean supportsCustomIds() {
+            default boolean supportsCustomIds() {
                 return true;
             }
 
@@ -795,7 +805,7 @@ public interface Graph extends AutoCloseable, Host {
              * is {@code true}.
              */
             @FeatureDescriptor(name = FEATURE_ANY_IDS)
-            public default boolean supportsAnyIds() {
+            default boolean supportsAnyIds() {
                 return true;
             }
 
@@ -816,7 +826,7 @@ public interface Graph extends AutoCloseable, Host {
              * if any of the other types are supported, they will be typed checked against the class of the supplied
              * identifier.
              */
-            public default boolean willAllowId(final Object id) {
+            default boolean willAllowId(final Object id) {
                 if (!supportsUserSuppliedIds()) return false;
                 if (supportsCustomIds())
                     throw new UnsupportedOperationException("The default implementation is not capable of validating custom ids - please override");
@@ -829,21 +839,21 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features that are related to {@link Vertex} {@link Property} objects.
          */
-        public interface VertexPropertyFeatures extends PropertyFeatures {
-            public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
-            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
-            public static final String FEATURE_NUMERIC_IDS = "NumericIds";
-            public static final String FEATURE_STRING_IDS = "StringIds";
-            public static final String FEATURE_UUID_IDS = "UuidIds";
-            public static final String FEATURE_CUSTOM_IDS = "CustomIds";
-            public static final String FEATURE_ANY_IDS = "AnyIds";
-            public static final String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
+        interface VertexPropertyFeatures extends PropertyFeatures {
+            String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
+            String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            String FEATURE_NUMERIC_IDS = "NumericIds";
+            String FEATURE_STRING_IDS = "StringIds";
+            String FEATURE_UUID_IDS = "UuidIds";
+            String FEATURE_CUSTOM_IDS = "CustomIds";
+            String FEATURE_ANY_IDS = "AnyIds";
+            String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
 
             /**
              * Determines if meta-properties allow for {@code null} property values.
              */
             @FeatureDescriptor(name = FEATURE_NULL_PROPERTY_VALUES)
-            public default boolean supportsNullPropertyValues() {
+            default boolean supportsNullPropertyValues() {
                 return true;
             }
 
@@ -851,7 +861,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if a {@link VertexProperty} allows properties to be removed.
              */
             @FeatureDescriptor(name = FEATURE_REMOVE_PROPERTY)
-            public default boolean supportsRemoveProperty() {
+            default boolean supportsRemoveProperty() {
                 return true;
             }
 
@@ -859,7 +869,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if a {@link VertexProperty} allows an identifier to be assigned to it.
              */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
-            public default boolean supportsUserSuppliedIds() {
+            default boolean supportsUserSuppliedIds() {
                 return true;
             }
 
@@ -867,7 +877,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if an {@link VertexProperty} has numeric identifiers as their internal representation.
              */
             @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
-            public default boolean supportsNumericIds() {
+            default boolean supportsNumericIds() {
                 return true;
             }
 
@@ -875,7 +885,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if an {@link VertexProperty} has string identifiers as their internal representation.
              */
             @FeatureDescriptor(name = FEATURE_STRING_IDS)
-            public default boolean supportsStringIds() {
+            default boolean supportsStringIds() {
                 return true;
             }
 
@@ -883,7 +893,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if an {@link VertexProperty} has UUID identifiers as their internal representation.
              */
             @FeatureDescriptor(name = FEATURE_UUID_IDS)
-            public default boolean supportsUuidIds() {
+            default boolean supportsUuidIds() {
                 return true;
             }
 
@@ -891,7 +901,7 @@ public interface Graph extends AutoCloseable, Host {
              * Determines if an {@link VertexProperty} has a specific custom object as their internal representation.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
-            public default boolean supportsCustomIds() {
+            default boolean supportsCustomIds() {
                 return true;
             }
 
@@ -900,7 +910,7 @@ public interface Graph extends AutoCloseable, Host {
              * setting can only return true if {@link #supportsUserSuppliedIds()} is true.
              */
             @FeatureDescriptor(name = FEATURE_ANY_IDS)
-            public default boolean supportsAnyIds() {
+            default boolean supportsAnyIds() {
                 return true;
             }
 
@@ -921,7 +931,7 @@ public interface Graph extends AutoCloseable, Host {
              * if any of the other types are supported, they will be typed checked against the class of the supplied
              * identifier.
              */
-            public default boolean willAllowId(final Object id) {
+            default boolean willAllowId(final Object id) {
                 if (!supportsUserSuppliedIds()) return false;
                 if (supportsCustomIds())
                     throw new UnsupportedOperationException("The default implementation is not capable of validating custom ids - please override");
@@ -934,14 +944,14 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features that are related to {@link Edge} {@link Property} objects.
          */
-        public interface EdgePropertyFeatures extends PropertyFeatures {
+        interface EdgePropertyFeatures extends PropertyFeatures {
         }
 
         /**
          * A base interface for {@link Edge} or {@link Vertex} {@link Property} features.
          */
-        public interface PropertyFeatures extends DataTypeFeatures {
-            public static final String FEATURE_PROPERTIES = "Properties";
+        interface PropertyFeatures extends DataTypeFeatures {
+            String FEATURE_PROPERTIES = "Properties";
 
             /**
              * Determines if an {@link Element} allows for the processing of at least one data type defined by the
@@ -949,7 +959,7 @@ public interface Graph extends AutoCloseable, Host {
              * features on {@link PropertyFeatures} is true then this value must be true.
              */
             @FeatureDescriptor(name = FEATURE_PROPERTIES)
-            public default boolean supportsProperties() {
+            default boolean supportsProperties() {
                 return supportsBooleanValues() || supportsByteValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
                         || supportsMixedListValues() || supportsSerializableValues()
@@ -962,14 +972,14 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Features for {@link Graph.Variables}.
          */
-        public interface VariableFeatures extends DataTypeFeatures {
-            public static final String FEATURE_VARIABLES = "Variables";
+        interface VariableFeatures extends DataTypeFeatures {
+            String FEATURE_VARIABLES = "Variables";
 
             /**
              * If any of the features on {@link VariableFeatures} is {@code true} then this value must be {@code true}.
              */
             @FeatureDescriptor(name = FEATURE_VARIABLES)
-            public default boolean supportsVariables() {
+            default boolean supportsVariables() {
                 return supportsBooleanValues() || supportsByteValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
                         || supportsMixedListValues() || supportsSerializableValues()
@@ -982,31 +992,31 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * Base interface for features that relate to supporting different data types.
          */
-        public interface DataTypeFeatures extends FeatureSet {
-            public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
-            public static final String FEATURE_BYTE_VALUES = "ByteValues";
-            public static final String FEATURE_DOUBLE_VALUES = "DoubleValues";
-            public static final String FEATURE_FLOAT_VALUES = "FloatValues";
-            public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
-            public static final String FEATURE_LONG_VALUES = "LongValues";
-            public static final String FEATURE_MAP_VALUES = "MapValues";
-            public static final String FEATURE_MIXED_LIST_VALUES = "MixedListValues";
-            public static final String FEATURE_BOOLEAN_ARRAY_VALUES = "BooleanArrayValues";
-            public static final String FEATURE_BYTE_ARRAY_VALUES = "ByteArrayValues";
-            public static final String FEATURE_DOUBLE_ARRAY_VALUES = "DoubleArrayValues";
-            public static final String FEATURE_FLOAT_ARRAY_VALUES = "FloatArrayValues";
-            public static final String FEATURE_INTEGER_ARRAY_VALUES = "IntegerArrayValues";
-            public static final String FEATURE_LONG_ARRAY_VALUES = "LongArrayValues";
-            public static final String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
-            public static final String FEATURE_STRING_ARRAY_VALUES = "StringArrayValues";
-            public static final String FEATURE_STRING_VALUES = "StringValues";
-            public static final String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
+        interface DataTypeFeatures extends FeatureSet {
+            String FEATURE_BOOLEAN_VALUES = "BooleanValues";
+            String FEATURE_BYTE_VALUES = "ByteValues";
+            String FEATURE_DOUBLE_VALUES = "DoubleValues";
+            String FEATURE_FLOAT_VALUES = "FloatValues";
+            String FEATURE_INTEGER_VALUES = "IntegerValues";
+            String FEATURE_LONG_VALUES = "LongValues";
+            String FEATURE_MAP_VALUES = "MapValues";
+            String FEATURE_MIXED_LIST_VALUES = "MixedListValues";
+            String FEATURE_BOOLEAN_ARRAY_VALUES = "BooleanArrayValues";
+            String FEATURE_BYTE_ARRAY_VALUES = "ByteArrayValues";
+            String FEATURE_DOUBLE_ARRAY_VALUES = "DoubleArrayValues";
+            String FEATURE_FLOAT_ARRAY_VALUES = "FloatArrayValues";
+            String FEATURE_INTEGER_ARRAY_VALUES = "IntegerArrayValues";
+            String FEATURE_LONG_ARRAY_VALUES = "LongArrayValues";
+            String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
+            String FEATURE_STRING_ARRAY_VALUES = "StringArrayValues";
+            String FEATURE_STRING_VALUES = "StringValues";
+            String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
 
             /**
              * Supports setting of a boolean value.
              */
             @FeatureDescriptor(name = FEATURE_BOOLEAN_VALUES)
-            public default boolean supportsBooleanValues() {
+            default boolean supportsBooleanValues() {
                 return true;
             }
 
@@ -1014,7 +1024,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a byte value.
              */
             @FeatureDescriptor(name = FEATURE_BYTE_VALUES)
-            public default boolean supportsByteValues() {
+            default boolean supportsByteValues() {
                 return true;
             }
 
@@ -1022,7 +1032,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a double value.
              */
             @FeatureDescriptor(name = FEATURE_DOUBLE_VALUES)
-            public default boolean supportsDoubleValues() {
+            default boolean supportsDoubleValues() {
                 return true;
             }
 
@@ -1030,7 +1040,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a float value.
              */
             @FeatureDescriptor(name = FEATURE_FLOAT_VALUES)
-            public default boolean supportsFloatValues() {
+            default boolean supportsFloatValues() {
                 return true;
             }
 
@@ -1038,7 +1048,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a integer value.
              */
             @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
-            public default boolean supportsIntegerValues() {
+            default boolean supportsIntegerValues() {
                 return true;
             }
 
@@ -1046,7 +1056,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a long value.
              */
             @FeatureDescriptor(name = FEATURE_LONG_VALUES)
-            public default boolean supportsLongValues() {
+            default boolean supportsLongValues() {
                 return true;
             }
 
@@ -1055,7 +1065,7 @@ public interface Graph extends AutoCloseable, Host {
              * arbitrary serializable values that may or may not be defined as a feature itself.
              */
             @FeatureDescriptor(name = FEATURE_MAP_VALUES)
-            public default boolean supportsMapValues() {
+            default boolean supportsMapValues() {
                 return true;
             }
 
@@ -1067,7 +1077,7 @@ public interface Graph extends AutoCloseable, Host {
              * @see #supportsMixedListValues()
              */
             @FeatureDescriptor(name = FEATURE_MIXED_LIST_VALUES)
-            public default boolean supportsMixedListValues() {
+            default boolean supportsMixedListValues() {
                 return true;
             }
 
@@ -1075,7 +1085,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of boolean values.
              */
             @FeatureDescriptor(name = FEATURE_BOOLEAN_ARRAY_VALUES)
-            public default boolean supportsBooleanArrayValues() {
+            default boolean supportsBooleanArrayValues() {
                 return true;
             }
 
@@ -1083,7 +1093,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of byte values.
              */
             @FeatureDescriptor(name = FEATURE_BYTE_ARRAY_VALUES)
-            public default boolean supportsByteArrayValues() {
+            default boolean supportsByteArrayValues() {
                 return true;
             }
 
@@ -1091,7 +1101,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of double values.
              */
             @FeatureDescriptor(name = FEATURE_DOUBLE_ARRAY_VALUES)
-            public default boolean supportsDoubleArrayValues() {
+            default boolean supportsDoubleArrayValues() {
                 return true;
             }
 
@@ -1099,7 +1109,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of float values.
              */
             @FeatureDescriptor(name = FEATURE_FLOAT_ARRAY_VALUES)
-            public default boolean supportsFloatArrayValues() {
+            default boolean supportsFloatArrayValues() {
                 return true;
             }
 
@@ -1107,7 +1117,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of integer values.
              */
             @FeatureDescriptor(name = FEATURE_INTEGER_ARRAY_VALUES)
-            public default boolean supportsIntegerArrayValues() {
+            default boolean supportsIntegerArrayValues() {
                 return true;
             }
 
@@ -1115,7 +1125,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of string values.
              */
             @FeatureDescriptor(name = FEATURE_STRING_ARRAY_VALUES)
-            public default boolean supportsStringArrayValues() {
+            default boolean supportsStringArrayValues() {
                 return true;
             }
 
@@ -1123,7 +1133,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of an array of long values.
              */
             @FeatureDescriptor(name = FEATURE_LONG_ARRAY_VALUES)
-            public default boolean supportsLongArrayValues() {
+            default boolean supportsLongArrayValues() {
                 return true;
             }
 
@@ -1131,7 +1141,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a Java serializable value.
              */
             @FeatureDescriptor(name = FEATURE_SERIALIZABLE_VALUES)
-            public default boolean supportsSerializableValues() {
+            default boolean supportsSerializableValues() {
                 return true;
             }
 
@@ -1139,7 +1149,7 @@ public interface Graph extends AutoCloseable, Host {
              * Supports setting of a string value.
              */
             @FeatureDescriptor(name = FEATURE_STRING_VALUES)
-            public default boolean supportsStringValues() {
+            default boolean supportsStringValues() {
                 return true;
             }
 
@@ -1151,7 +1161,7 @@ public interface Graph extends AutoCloseable, Host {
              * @see #supportsMixedListValues()
              */
             @FeatureDescriptor(name = FEATURE_UNIFORM_LIST_VALUES)
-            public default boolean supportsUniformListValues() {
+            default boolean supportsUniformListValues() {
                 return true;
             }
         }
@@ -1159,7 +1169,7 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * A marker interface to identify any set of Features. There is no need to implement this interface.
          */
-        public interface FeatureSet {
+        interface FeatureSet {
         }
 
         /**
@@ -1196,7 +1206,7 @@ public interface Graph extends AutoCloseable, Host {
     /**
      * Common exceptions to use with a graph.
      */
-    public static class Exceptions {
+    class Exceptions {
 
         private static final boolean debug = Boolean.parseBoolean(java.lang.System.getenv().getOrDefault("gremlin.structure.debug", "false"));
 
@@ -1241,18 +1251,18 @@ public interface Graph extends AutoCloseable, Host {
     @Target(ElementType.TYPE)
     @Repeatable(OptIns.class)
     @Inherited
-    public @interface OptIn {
-        public static String SUITE_STRUCTURE_STANDARD = "org.apache.tinkerpop.gremlin.structure.StructureStandardSuite";
-        public static String SUITE_STRUCTURE_INTEGRATE = "org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite";
-        public static String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
-        public static String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
-        public static String SUITE_PROCESS_LIMITED_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessLimitedComputerSuite";
-        public static String SUITE_PROCESS_LIMITED_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessLimitedStandardSuite";
+    @interface OptIn {
+        String SUITE_STRUCTURE_STANDARD = "org.apache.tinkerpop.gremlin.structure.StructureStandardSuite";
+        String SUITE_STRUCTURE_INTEGRATE = "org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite";
+        String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
+        String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
+        String SUITE_PROCESS_LIMITED_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessLimitedComputerSuite";
+        String SUITE_PROCESS_LIMITED_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessLimitedStandardSuite";
 
         /**
          * The test suite class to opt in to.
          */
-        public String value();
+        String value();
     }
 
     /**
@@ -1262,7 +1272,7 @@ public interface Graph extends AutoCloseable, Host {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Inherited
-    public @interface OptIns {
+    @interface OptIns {
         OptIn[] value();
     }
 
@@ -1273,29 +1283,29 @@ public interface Graph extends AutoCloseable, Host {
     @Target(ElementType.TYPE)
     @Repeatable(OptOuts.class)
     @Inherited
-    public @interface OptOut {
+    @interface OptOut {
         /**
          * The test class to opt out of. This may be set to a base class of a test as in the case of the Gremlin
          * process class of tests from which Gremlin flavors extend.  If the actual test class is an inner class
          * of then use a "$" as a separator between the outer class and inner class.
          */
-        public String test();
+        String test();
 
         /**
          * The specific name of the test method to opt out of or asterisk to opt out of all methods in a
          * {@link #test}.
          */
-        public String method();
+        String method();
 
         /**
          * The reason the implementation is opting out of this test.
          */
-        public String reason();
+        String reason();
 
         /**
          * For parameterized tests specify the name of the test itself without its "square brackets".
          */
-        public String specific() default "";
+        String specific() default "";
 
         /**
          * The list of {@link GraphComputer} implementations by class name that a test should opt-out from using (i.e. other
@@ -1304,7 +1314,7 @@ public interface Graph extends AutoCloseable, Host {
          * default, an empty array is assigned and it is thus assumed that all computers are excluded when an
          * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
          */
-        public String[] computers() default {};
+        String[] computers() default {};
 
     }
 
@@ -1315,7 +1325,7 @@ public interface Graph extends AutoCloseable, Host {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Inherited
-    public @interface OptOuts {
+    @interface OptOuts {
         OptOut[] value();
     }
 }

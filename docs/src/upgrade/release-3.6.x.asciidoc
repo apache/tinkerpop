@@ -600,3 +600,69 @@ requirement if they wish, but it is no longer enforced by TinkerPop and the `Gra
 been removed so providers will need to construct their own exception.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2507[TINKERPOP-2507]
+
+===== Orderability Semantics
+
+Prior to 3.6, orderability (OrderGlobalStep) only applied to a single typespace and only to certain types. Attempts to
+order across types resulted in an exception. The 3.6 release introduces total orderability semantics, defined in the
+Graph Provider Documentation. Order now works on all types in the Gremlin language, including collections, structure
+elements (Vertex, Edge, VertexProperty, Property), paths, and all the allowed property value types. Additionally,
+ordering is possible across types, with the type priority defined in the orderability semantics section of the Provider
+Documentation.
+
+[source,text]
+----
+gremlin> g = traversal().withEmbedded(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+
+// Order across types
+gremlin> g.V().values().order()     // 3.5.x
+java.lang.String cannot be cast to java.lang.Integer
+Type ':help' or ':h' for help.
+gremlin> g.V().values().order()     // 3.6.0
+==>27
+==>29
+==>32
+==>35
+==>java
+==>java
+==>josh
+==>lop
+==>marko
+==>peter
+==>ripple
+==>vadas
+
+// Order by Vertex
+gremlin> g.V().order()      // 3.5.x
+org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex cannot be cast to java.lang.Comparable
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.V().order()      // 3.6.0
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+
+// Order by Map / Map.Entry
+gremlin> g.V().valueMap().order()   // 3,5,x
+java.util.LinkedHashMap cannot be cast to java.lang.Comparable
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.V().valueMap().order()   // 3.6.0
+==>[name:[josh],age:[32]]
+==>[name:[lop],lang:[java]]
+==>[name:[marko],age:[29]]
+==>[name:[peter],age:[35]]
+==>[name:[ripple],lang:[java]]
+==>[name:[vadas],age:[27]]
+----
+
+Feature tags have been introduced for feature tests that stress these new semantics (see Committer Documentation).
+A new GraphFeature has been added "OrderabilitySemantics" to signify compliance with the new cross type orderability
+semantics.
+
+See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_orderability[Provider Documentation]
+See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/developer/#_for_committers[Developer Documentation]

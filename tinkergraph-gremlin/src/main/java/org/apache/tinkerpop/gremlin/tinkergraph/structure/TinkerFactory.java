@@ -87,12 +87,25 @@ public final class TinkerFactory {
      * Generate the graph in {@link #createModern()} into an existing graph.
      */
     public static void generateModern(final TinkerGraph g) {
-        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", "age", 29);
-        final Vertex vadas = g.addVertex(T.id, 2, T.label, "person", "name", "vadas", "age", 27);
-        final Vertex lop = g.addVertex(T.id, 3, T.label, "software", "name", "lop", "lang", "java");
-        final Vertex josh = g.addVertex(T.id, 4, T.label, "person", "name", "josh", "age", 32);
-        final Vertex ripple = g.addVertex(T.id, 5, T.label, "software", "name", "ripple", "lang", "java");
-        final Vertex peter = g.addVertex(T.id, 6, T.label, "person", "name", "peter", "age", 35);
+        final Vertex marko = g.addVertex(T.id, 1, T.label, "person");
+        marko.property("name", "marko", T.id, 0);
+        marko.property("age", 29, T.id, 1);
+        final Vertex vadas = g.addVertex(T.id, 2, T.label, "person");
+        vadas.property("name", "vadas", T.id, 2);
+        vadas.property("age", 27, T.id, 3);
+        final Vertex lop = g.addVertex(T.id, 3, T.label, "software");
+        lop.property("name", "lop", T.id, 4);
+        lop.property("lang", "java", T.id, 5);
+        final Vertex josh = g.addVertex(T.id, 4, T.label, "person");
+        josh.property("name", "josh", T.id, 6);
+        josh.property("age", 32, T.id, 7);
+        final Vertex ripple = g.addVertex(T.id, 5, T.label, "software");
+        ripple.property("name", "ripple", T.id, 8);
+        ripple.property("lang", "java", T.id, 9);
+        final Vertex peter = g.addVertex(T.id, 6, T.label, "person");
+        peter.property("name", "peter", T.id, 10);
+        peter.property("age", 35, T.id, 11);
+
         marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5d);
         marko.addEdge("knows", josh, T.id, 8, "weight", 1.0d);
         marko.addEdge("created", lop, T.id, 9, "weight", 0.4d);

@@ -70,7 +70,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"m\[(.+)\]", ToMap},
                 {@"c\[(.+)\]", ToLambda},
                 {@"t\[(.+)\]", ToT},
-                {"null", (_, __) => null}
+                {"null", (_, __) => null},
+                {"true", (_, __) => true},
+                {"false", (_, __) => false}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
 
         private static readonly IDictionary<char, Func<string, object>> NumericParsers =
