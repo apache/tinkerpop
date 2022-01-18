@@ -61,6 +61,17 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Creates a new Groovy lambda with the specified number of lambda arguments.
+        /// </summary>
+        /// <param name="expression">The lambda expression.</param>
+        /// <param name="arguments">The number of lambda arguments.</param>
+        /// <returns>The created lambda.</returns>
+        public static ILambda Groovy(string expression, int arguments)
+        {
+            return new GroovyStringBasedLambda(expression, arguments);
+        }
+
+        /// <summary>
         ///     Creates a new Python lambda.
         /// </summary>
         /// <param name="expression">The lambda expression.</param>

@@ -1,4 +1,4 @@
-﻿﻿#region License
+﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

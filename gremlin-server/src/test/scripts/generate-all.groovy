@@ -35,20 +35,20 @@ globals << [hook : [
     // to have a special test TinkerGraph config for setting up the id manager properly, but based on how we do
     // things now, that test config would have been mixed in with release artifacts and there would have been ugly
     // exclusions to make packaging work properly.
-    allowSetOfIdManager = { graph, idManagerFieldName ->
+    allowSetOfIdManager = { graph, idManagerFieldName, idManager ->
         java.lang.reflect.Field idManagerField = graph.class.getDeclaredField(idManagerFieldName)
         idManagerField.setAccessible(true)
         java.lang.reflect.Field modifiersField = java.lang.reflect.Field.class.getDeclaredField("modifiers")
         modifiersField.setAccessible(true)
         modifiersField.setInt(idManagerField, modifiersField.getModifiers() & ~java.lang.reflect.Modifier.FINAL)
 
-        idManagerField.set(graph, TinkerGraph.DefaultIdManager.INTEGER)
+        idManagerField.set(graph, idManager)
     }
 
     [classic, modern, crew, sink, grateful].each{
-      allowSetOfIdManager(it, "vertexIdManager")
-      allowSetOfIdManager(it, "edgeIdManager")
-      allowSetOfIdManager(it, "vertexPropertyIdManager")
+      allowSetOfIdManager(it, "vertexIdManager", TinkerGraph.DefaultIdManager.INTEGER)
+      allowSetOfIdManager(it, "edgeIdManager", TinkerGraph.DefaultIdManager.INTEGER)
+      allowSetOfIdManager(it, "vertexPropertyIdManager", TinkerGraph.DefaultIdManager.LONG)
     }
     TinkerFactory.generateClassic(classic)
     TinkerFactory.generateModern(modern)

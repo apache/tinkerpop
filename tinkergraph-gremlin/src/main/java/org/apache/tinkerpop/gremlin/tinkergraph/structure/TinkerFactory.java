@@ -88,23 +88,23 @@ public final class TinkerFactory {
      */
     public static void generateModern(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person");
-        marko.property("name", "marko", T.id, 0);
-        marko.property("age", 29, T.id, 1);
+        marko.property("name", "marko", T.id, 0l);
+        marko.property("age", 29, T.id, 1l);
         final Vertex vadas = g.addVertex(T.id, 2, T.label, "person");
-        vadas.property("name", "vadas", T.id, 2);
-        vadas.property("age", 27, T.id, 3);
+        vadas.property("name", "vadas", T.id, 2l);
+        vadas.property("age", 27, T.id, 3l);
         final Vertex lop = g.addVertex(T.id, 3, T.label, "software");
-        lop.property("name", "lop", T.id, 4);
-        lop.property("lang", "java", T.id, 5);
+        lop.property("name", "lop", T.id, 4l);
+        lop.property("lang", "java", T.id, 5l);
         final Vertex josh = g.addVertex(T.id, 4, T.label, "person");
-        josh.property("name", "josh", T.id, 6);
-        josh.property("age", 32, T.id, 7);
+        josh.property("name", "josh", T.id, 6l);
+        josh.property("age", 32, T.id, 7l);
         final Vertex ripple = g.addVertex(T.id, 5, T.label, "software");
-        ripple.property("name", "ripple", T.id, 8);
-        ripple.property("lang", "java", T.id, 9);
+        ripple.property("name", "ripple", T.id, 8l);
+        ripple.property("lang", "java", T.id, 9l);
         final Vertex peter = g.addVertex(T.id, 6, T.label, "person");
-        peter.property("name", "peter", T.id, 10);
-        peter.property("age", 35, T.id, 11);
+        peter.property("name", "peter", T.id, 10l);
+        peter.property("age", 35, T.id, 11l);
 
         marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5d);
         marko.addEdge("knows", josh, T.id, 8, "weight", 1.0d);

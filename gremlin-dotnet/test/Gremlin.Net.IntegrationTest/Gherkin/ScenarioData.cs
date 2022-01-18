@@ -47,6 +47,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<string, Edge> EmptyEdges =
             new ReadOnlyDictionary<string, Edge>(new Dictionary<string, Edge>());
         
+        private static readonly IDictionary<string, VertexProperty> EmptyVertexProperties =
+            new ReadOnlyDictionary<string, VertexProperty>(new Dictionary<string, VertexProperty>());
+        
         private readonly RemoteConnectionFactory _connectionFactory;
 
         public Scenario CurrentScenario;
@@ -77,6 +80,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             var g = Traversal().WithRemote(graphData.Connection);
             graphData.Vertices = GetVertices(g);
             graphData.Edges = GetEdges(g);
+            graphData.VertexProperties = GetVertexProperties(g);
         }
 
         private readonly IDictionary<string, ScenarioDataPerGraph> _dataPerGraph;
@@ -86,7 +90,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _connectionFactory = new RemoteConnectionFactory(messageSerializer);
             _dataPerGraph = LoadDataPerGraph();
             var empty = new ScenarioDataPerGraph("empty", _connectionFactory.CreateRemoteConnection("ggraph"),
-                new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>());
+                new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>(), new Dictionary<string, VertexProperty>());
             _dataPerGraph.Add("empty", empty);
         }
 
@@ -96,7 +100,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 var connection = _connectionFactory.CreateRemoteConnection($"g{name}");
                 var g = Traversal().WithRemote(connection);
-                return new ScenarioDataPerGraph(name, connection, GetVertices(g), GetEdges(g));
+                return new ScenarioDataPerGraph(name, connection, GetVertices(g), GetEdges(g), GetVertexProperties(g));
             }).ToDictionary(x => x.Name);
         }
 
@@ -119,7 +123,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             try
             {
                 IFunction lambda = Lambda.Groovy(
-                    "it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')");
+                    "it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", 1);
 
                 return g.E().Group<string, Edge>()
                     .By(lambda)
@@ -133,6 +137,68 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
         }
 
+        private static IDictionary<string, VertexProperty> GetVertexProperties(GraphTraversalSource g)
+        {
+            try
+            {
+                /*
+                 * This closure will turn a VertexProperty into a triple string of the form:
+                 * "vertexName-propKey->propVal"
+                 *
+                 * It will also take care of wrapping propVal in the appropriate Numeric format. We must do this in
+                 * case a Vertex has multiple properties with the same key and number value but in different numeric
+                 * type spaces (rare, but possible, and presumably something we may want to write tests around).
+                 */
+                var groovy = @"
+                    { vp ->
+                          def result = vp.element().value('name') + '-' + vp.key() + '->'
+                          def value = vp.value()
+                          def type = ''
+                          switch(value) {
+                            case { !(it instanceof Number) }:
+                              return result + value
+                            case Byte:
+                              type = 'b'
+                              break
+                            case Short:
+                              type = 's'
+                              break
+                            case Integer:
+                              type = 'i'
+                              break
+                            case Long:
+                              type = 'l'
+                              break
+                            case Float:
+                              type = 'f'
+                              break
+                            case Double:
+                              type = 'd'
+                              break
+                            case BigDecimal:
+                              type = 'm'
+                              break
+                            case BigInteger:
+                              type = 'n'
+                              break
+                          }
+                          return result + 'd[' + value + '].' + type
+                    }  
+                ";
+                
+                IFunction lambda = Lambda.Groovy(groovy, 1);
+
+                return g.V().Properties<VertexProperty>().Group<string, VertexProperty>()
+                    .By(lambda)
+                    .By(__.Tail<object>())
+                    .Next();
+            }
+            catch (ResponseException)
+            {
+                return EmptyVertexProperties;
+            }
+        }
+
         public void Dispose()
         {
             _connectionFactory?.Dispose();
@@ -142,12 +208,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     internal class ScenarioDataPerGraph
     {
         public ScenarioDataPerGraph(string name, IRemoteConnection connection, IDictionary<string, Vertex> vertices,
-                                    IDictionary<string, Edge> edges)
+                                    IDictionary<string, Edge> edges, IDictionary<string, VertexProperty> vertexProperties)
         {
             Name = name;
             Connection = connection;
             Vertices = vertices;
             Edges = edges;
+            VertexProperties = vertexProperties;
         }
 
         public string Name { get; }
@@ -157,5 +224,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         public IDictionary<string, Vertex> Vertices { get; set; }
         
         public IDictionary<string, Edge> Edges { get; set; }
+        
+        public IDictionary<string, VertexProperty> VertexProperties { get; set; }
     }
 }

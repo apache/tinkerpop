@@ -84,9 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {
                     "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX",
                     IgnoreReason.ArrayKeysInMapNotAssertingInGherkin
-                },
-                {"g_V_properties_order", IgnoreReason.VertexPropertyNotSupportedInGherkin},
-                {"g_V_properties_order_id", IgnoreReason.VertexPropertyNotSupportedInGherkin},
+                }
             };
 
         private static class Keywords
