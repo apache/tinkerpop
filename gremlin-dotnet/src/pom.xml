@@ -93,7 +93,7 @@ file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&
                 <packaging.type>pom</packaging.type>
             </properties>
         </profile>
-        <!-- activates the building of .NET components and requires that the .NET Core SDK be installed on the system -->
+        <!-- activates the building of .NET components and requires that the .NET SDK be installed on the system -->
         <profile>
             <id>gremlin-dotnet</id>
             <activation>
