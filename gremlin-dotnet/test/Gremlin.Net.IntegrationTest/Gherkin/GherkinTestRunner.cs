@@ -430,7 +430,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private string GetRootPath()
         {
-            var codeBaseUrl = new Uri(GetType().GetTypeInfo().Assembly.CodeBase);
+            var codeBaseUrl = new Uri(GetType().GetTypeInfo().Assembly.Location);
             var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
             DirectoryInfo rootDir = null;
             for (var dir = Directory.GetParent(Path.GetDirectoryName(codeBasePath));
