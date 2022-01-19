@@ -29,7 +29,6 @@ const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
 const ResultSet = require('./result-set');
 const ResponseError = require('./response-error');
-const Bytecode = require('../process/bytecode');
 
 const responseStatusCode = {
   success: 200,
@@ -92,7 +91,8 @@ class Connection extends EventEmitter {
     this._pingInterval = null;
     this._pongTimeout = null;
 
-    this._header = String.fromCharCode(this.mimeType.length) + this.mimeType;
+    this._header = String.fromCharCode(this.mimeType.length) + this.mimeType; // TODO: what if mimeType.length > 255
+    this._header_buf = Buffer.from(this._header);
     this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
@@ -169,7 +169,19 @@ class Connection extends EventEmitter {
         };
       }
 
-      const message = Buffer.from(this._header + JSON.stringify(this._getRequest(rid, op, args, processor)));
+      const request = {
+        'requestId': rid,
+        'op': op || 'bytecode',
+        // if using op eval need to ensure processor stays unset if caller didn't set it.
+        'processor': (!processor && op !== 'eval') ? 'traversal' : processor,
+        'args': args || {},
+      };
+
+      const request_buf = this._writer.writeRequest(request);
+      const message = Buffer.concat(
+        [this._header_buf, request_buf],
+        this._header_buf.length + request_buf.length
+      );
       this._ws.send(message);
     }));
   }
@@ -184,26 +196,6 @@ class Connection extends EventEmitter {
     return mimeType === graphSON2MimeType
       ? new serializer.GraphSON2Writer()
       : new serializer.GraphSONWriter();
-  }
-
-  _getRequest(id, op, args, processor) {
-    if (args) {
-      args = this._adaptArgs(args, true);
-    } else {
-      args = {};
-    }
-
-    if (args['gremlin'] instanceof Bytecode) {
-      args['gremlin'] = this._writer.adaptObject(args['gremlin']);
-    }
-
-    return ({
-      'requestId': { '@type': 'g:UUID', '@value': id },
-      'op': op || 'bytecode',
-      // if using op eval need to ensure processor stays unset if caller didn't set it.
-      'processor': (!processor && op !== 'eval') ? 'traversal' : processor,
-      'args': args
-    });
   }
 
   _pingHeartbeat() {
@@ -247,7 +239,7 @@ class Connection extends EventEmitter {
   }
 
   _handleMessage(data) {
-    const response = this._reader.read(JSON.parse(data.toString()));
+    const response = this._reader.readResponse(data);
     if (response.requestId === null || response.requestId === undefined) {
       // There was a serialization issue on the server that prevented the parsing of the request id
       // We invoke any of the pending handlers with an error
@@ -334,32 +326,6 @@ class Connection extends EventEmitter {
    */
   _clearHandler(requestId) {
     delete this._responseHandlers[requestId];
-  }
-
-  /**
-   * Takes the given args map and ensures all arguments are passed through to _write.adaptObject
-   * @param {Object} args Map of arguments to process.
-   * @param {Boolean} protocolLevel Determines whether it's a protocol level binding.
-   * @returns {Object}
-   * @private
-   */
-  _adaptArgs(args, protocolLevel) {
-    if (args instanceof Object) {
-      let newObj = {};
-      Object.keys(args).forEach((key) => {
-        // bindings key (at the protocol-level needs special handling. without this, it wraps the generated Map
-        // in another map for types like EnumValue. Could be a nicer way to do this but for now it's solving the
-        // problem with script submission of non JSON native types
-        if (protocolLevel && key === 'bindings')
-          newObj[key] = this._adaptArgs(args[key], false);
-        else
-          newObj[key] = this._writer.adaptObject(args[key]);
-      });
-
-      return newObj;
-    }
-
-    return args;
   }
 
   /**
