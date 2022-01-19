@@ -92,8 +92,30 @@ class GraphBinaryWriter {
 class GraphBinaryReader {
 
   readResponse(buffer) {
-    // TODO
-    console.log( buffer );
+    if (buffer === undefined || buffer === null)
+      throw new Error('Buffer is missing.');
+    if (! (buffer instanceof Buffer))
+      throw new Error('Not an instance of Buffer.');
+    if (buffer.length < 1)
+      throw new Error('Buffer is empty.');
+
+    const version = buffer[0];
+    if (version !== 0x81)
+      throw new Error(`Unsupported version '${version}'.`);
+
+    // TODO: {request_id} is a nullable UUID.
+
+    // TODO: {status_code} is an Int.
+
+    // TODO: {status_message} is a nullable String.
+
+    // TODO: {status_attributes} is a Map.
+
+    // TODO: {result_meta} is a Map.
+
+    // TODO: {result_data} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}.
+
+    // TODO: return { requestId, op, processor, args }
   }
 
 }

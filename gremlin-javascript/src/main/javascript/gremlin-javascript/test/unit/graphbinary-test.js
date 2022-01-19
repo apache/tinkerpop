@@ -24,7 +24,7 @@
 
 const assert = require('assert');
 
-const { GraphBinaryWriter } = require('../../lib/structure/io/binary/graph-serializer');
+const { GraphBinaryWriter, GraphBinaryReader } = require('../../lib/structure/io/binary/graph-serializer');
 const {
   IntSerializer,
   StringSerializer,
@@ -365,5 +365,47 @@ describe('GraphBinary.Writer', () => {
       Buffer.from(e),
     )))
   );
+
+});
+
+describe('GraphBinary.Reader', () => {
+
+  describe('readResponse', () => {
+
+    [ undefined, null ].forEach(buffer =>
+      it(`should error if buffer is '${buffer}'`, () => assert.throws(
+        () => new GraphBinaryReader().readResponse(buffer),
+        { message: /Buffer is missing/ },
+      ))
+    );
+
+    [ '', -1, 0, 42, 3.14, NaN, Infinity, -Infinity, Symbol('') ].forEach((buffer, i) =>
+      it(`should error if it is not a Buffer, case #${i}`, () => assert.throws(
+        () => new GraphBinaryReader().readResponse(buffer),
+        { message: /Not an instance of Buffer/ },
+      ))
+    );
+
+    it('should error if buffer is empty', () => assert.throws(
+      () => new GraphBinaryReader().readResponse(Buffer.from([])),
+      { message: /Buffer is empty/ },
+    ));
+
+    [
+      [ 0x00 ],
+      [ 0x00, 0x81 ],
+      [ 0x01 ],
+      [ 0x80, 0x81 ],
+      [ 0x82, 0x81 ],
+      [ 0xFF, 0x00, 0x81 ],
+      [ 0x00, 0x81 ],
+      [ 0x00, 0x00, 0x81 ],
+      [ 0x00, 0x00, 0x00, 0x81 ],
+    ].forEach((b, i) => it(`should error if version is incorrect, case #${i}`, () => assert.throws(
+      () => new GraphBinaryReader().readResponse(Buffer.from(b)),
+      { message: /Unsupported version/ },
+    )));
+
+  });
 
 });
