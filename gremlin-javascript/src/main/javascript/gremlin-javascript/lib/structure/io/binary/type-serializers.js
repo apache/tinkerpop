@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const Bytecode = require('../../../process/bytecode');
 const DataType = require('./data-type');
 const INT32_MIN = -2147483648;
 const INT32_MAX = 2147483647;
@@ -32,6 +33,7 @@ class AnySerializer {
     // TODO: align with Java.parse(GraphSON) logic
     const serializers = [ // specifically ordered, the first canBeUsedFor=true wins
       IntSerializer,
+      BytecodeSerializer,
       MapSerializer,
       UuidSerializer,
       StringSerializer,
@@ -68,6 +70,7 @@ class IntSerializer {
       else
         return Buffer.from([0x00, 0x00, 0x00, 0x00]);
 
+    // TODO: this and other serializers could be optimised, e.g. to allocate a buf once, instead of multiple bufs to concat, etc
     const bufs = [];
     if (fullyQualifiedFormat)
       bufs.push( Buffer.from([DataType.INT, 0x00]) );
@@ -189,11 +192,47 @@ class UuidSerializer {
 class BytecodeSerializer {
 
   static canBeUsedFor(value) {
-    // TODO
+    return (value instanceof Bytecode);
   }
 
   static serialize(item, fullyQualifiedFormat = true) {
-    // TODO
+    if (item === undefined || item === null)
+      if (fullyQualifiedFormat)
+        return Buffer.from([DataType.BYTECODE, 0x01]);
+      else
+        return Buffer.from([0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00]); // {steps_length} = 0, {sources_length} = 0
+
+    const bufs = [];
+    if (fullyQualifiedFormat)
+      bufs.push( Buffer.from([DataType.BYTECODE, 0x00]) );
+
+    // {steps_length}{step_0}...{step_n}
+    bufs.push( IntSerializer.serialize(item.stepInstructions.length, false) ); // TODO: what if steps_length > INT32_MAX
+    for (let i = 0; i < item.stepInstructions.length; i++) {
+      // {step_i} is composed of {name}{values_length}{value_0}...{value_n}
+      const step = item.stepInstructions[i];
+      const name = step[0];
+      const values_length = step.length - 1;
+      bufs.push( StringSerializer.serialize(name, false) );
+      bufs.push( IntSerializer.serialize(values_length, false) );
+      for (let j = 0; j < values_length; j++)
+        bufs.push( AnySerializer.serialize(step[1 + j], true) );
+    }
+
+    // {sources_length}{source_0}...{source_n}
+    bufs.push( IntSerializer.serialize(item.sourceInstructions.length, false) ); // TODO: what if sources_length > INT32_MAX
+    for (let i = 0; i < item.sourceInstructions.length; i++) {
+      // {source_i} is composed of {name}{values_length}{value_0}...{value_n}
+      const source = item.sourceInstructions[i];
+      const name = source[0];
+      const values_length = source.length - 1;
+      bufs.push( StringSerializer.serialize(name, false) );
+      bufs.push( IntSerializer.serialize(values_length, false) );
+      for (let j = 0; j < values_length; j++)
+        bufs.push( AnySerializer(source[1 + j], true) );
+    }
+
+    return Buffer.concat(bufs);
   }
 
   static deserialize(buffer) {

@@ -90,7 +90,12 @@ class GraphBinaryWriter {
  * GraphBinary reader.
  */
 class GraphBinaryReader {
-  // TODO
+
+  readResponse(buffer) {
+    // TODO
+    console.log( buffer );
+  }
+
 }
 
 module.exports = {
