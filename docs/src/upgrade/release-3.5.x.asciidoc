@@ -30,7 +30,7 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Tx() in .NET and tx() in Python
+==== Tx() in .NET and Python
 
 After Javascript, .NET and Python are now the second and third non-JVM variants of Gremlin to get support for
 link:https://tinkerpop.apache.org/docs/3.5.2/reference/#transactions[remote transactions].

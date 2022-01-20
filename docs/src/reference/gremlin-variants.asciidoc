@@ -926,7 +926,7 @@ re-construction machine-side.
 
 To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
 section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
-builds on that content by demonstrating the transactional syntax for Javascript.
+builds on that content by demonstrating the transactional syntax for Python.
 
 [source,python]
 ----

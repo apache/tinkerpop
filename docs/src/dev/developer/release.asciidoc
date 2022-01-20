@@ -258,13 +258,12 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
-. Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
+. Wait for Apache Sonatype to sync the artifacts to link:https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[Maven Central].
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
 .. Typically, this need only be done on the `master` branch as we only publish from there.
-.. Update the `template/header-footer.html`.
 .. Update `index.html`.
-.. Update link:https://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+.. Update link:https://tinkerpop.apache.org/download.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
