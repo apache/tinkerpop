@@ -26,7 +26,7 @@ limitations under the License.
 
   <PropertyGroup Label="Package">
     <!-- do not edit the version directly - maven updates it automatically -->
-    <Version>3.5.2</Version>
+    <Version>3.5.3-SNAPSHOT</Version>
     <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
     <Description>Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
