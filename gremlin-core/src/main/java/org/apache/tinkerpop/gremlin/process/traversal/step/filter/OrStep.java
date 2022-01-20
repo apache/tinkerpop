@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -33,10 +34,18 @@ public final class OrStep<S> extends ConnectiveStep<S> {
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        GremlinTypeErrorException typeError = null;
         for (final Traversal.Admin<S, ?> traversal : this.traversals) {
-            if (TraversalUtil.test(traverser, traversal))
-                return true;
+            try {
+                if (TraversalUtil.test(traverser, traversal))
+                    return true;
+            } catch (GremlinTypeErrorException ex) {
+                // hold onto it until the end in case any other arguments evaluate to TRUE
+                typeError = ex;
+            }
         }
+        if (typeError != null)
+            throw typeError;
         return false;
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.util.NumberHelper;
+import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 
 import java.util.function.BiPredicate;
 
@@ -34,17 +34,14 @@ import java.util.function.BiPredicate;
 public enum Compare implements BiPredicate<Object, Object> {
 
     /**
-     * Evaluates if the first object is equal to the second. If both are of type {@link Number}, {@link NumberHelper}
-     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
+     * Evaluates if the first object is equal to the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
      */
     eq {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null == first ? null == second : (bothAreNumber(first, second)
-                    ? NumberHelper.compare((Number) first, (Number) second) == 0
-                    : first.equals(second));
+            return GremlinValueComparator.COMPARE.equals(first, second);
         }
 
         /**
@@ -57,8 +54,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is not equal to the second. If both are of type {@link Number}, {@link NumberHelper}
-     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
+     * Evaluates if the first object is not equal to the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
      */
@@ -78,25 +74,14 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is greater than the second. If both are of type {@link Number}, {@link NumberHelper}
-     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
+     * Evaluates if the first object is greater than the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
      */
     gt {
         @Override
         public boolean test(final Object first, final Object second) {
-            if (null != first && null != second) {
-                if (bothAreNumber(first, second)) {
-                    return NumberHelper.compare((Number) first, (Number) second) > 0;
-                }
-                if (bothAreComparableAndOfSameType(first, second)) {
-                    return ((Comparable) first).compareTo(second) > 0;
-                }
-                throwException(first, second);
-            }
-
-            return false;
+            return GremlinValueComparator.COMPARE.compare(first, second) > 0;
         }
 
         /**
@@ -109,15 +94,14 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is greater-equal to the second. If both are of type {@link Number}, {@link NumberHelper}
-     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
+     * Evaluates if the first object is greater-equal to the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
      */
     gte {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null == first ? null == second : (null != second && !lt.test(first, second));
+            return GremlinValueComparator.COMPARE.compare(first, second) >= 0;
         }
 
         /**
@@ -130,24 +114,14 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is less than the second. If both are of type {@link Number}, {@link NumberHelper}
-     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
+     * Evaluates if the first object is less than the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
      */
     lt {
         @Override
         public boolean test(final Object first, final Object second) {
-            if (null != first && null != second) {
-                if (bothAreNumber(first, second)) {
-                    return NumberHelper.compare((Number) first, (Number) second) < 0;
-                }
-                if (bothAreComparableAndOfSameType(first, second)) {
-                    return ((Comparable) first).compareTo(second) < 0;
-                }
-                throwException(first, second);
-            }
-            return false;
+            return GremlinValueComparator.COMPARE.compare(first, second) < 0;
         }
 
         /**
@@ -160,15 +134,14 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is less-equal to the second. If both are of type {@link Number}, {@link NumberHelper}
-     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
+     * Evaluates if the first object is less-equal to the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
      */
     lte {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null == first ? null == second : (null != second && !gt.test(first, second));
+            return GremlinValueComparator.COMPARE.compare(first, second) <= 0;
         }
 
         /**
@@ -179,19 +152,6 @@ public enum Compare implements BiPredicate<Object, Object> {
             return gt;
         }
     };
-
-    private static boolean bothAreNumber(Object first, Object second) {
-        return first instanceof Number && second instanceof Number;
-    }
-
-    private static boolean bothAreComparableAndOfSameType(Object first, Object second) {
-        return first instanceof Comparable && second instanceof Comparable
-                && (first.getClass().isInstance(second) || second.getClass().isInstance(first));
-    }
-
-    private static void throwException(Object first, Object second) {
-        throw new IllegalArgumentException(String.format("Cannot compare '%s' (%s) and '%s' (%s) as both need to be an instance of Number or Comparable (and of the same type)", first, first.getClass().getSimpleName(), second, second.getClass().getSimpleName()));
-    }
 
     /**
      * Produce the opposite representation of the current {@code Compare} enum.

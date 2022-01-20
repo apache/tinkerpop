@@ -502,7 +502,6 @@ are two types of tags:
 * `@StepClass*` - Marks the step grouping and is a prefix that precedes and either refers to one of the following:
 ** One of the four types of steps: `Branch`, `Filter`, `Map`, and `SideEffect` (e.g. `@StepClassBranch`)
 ** `Semantics` which maps to elements of the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics[Gremlin Semantics] specification.
-** `Orderability` which maps to the total orderability semantics defined in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics[Gremlin Semantics] specification.
 ** An `Integrated` grouping that does not fit those individual classifications well.
 * `@Step*` - Marks testing for a particular step. While this tag is generally unique to the feature
 file itself and test filtering could be accomplished at that level by way of the file, the use of the tag is a

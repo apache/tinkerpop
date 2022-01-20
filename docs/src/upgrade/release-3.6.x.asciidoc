@@ -601,7 +601,23 @@ been removed so providers will need to construct their own exception.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2507[TINKERPOP-2507]
 
-===== Orderability Semantics
+===== Comparability/Orderability Semantics
+
+Prior to 3.6, comparability was not well defined and produced exceptions in a variety of cases. The 3.6 release
+rationalizes the comparability semantics, defined in the Graph Provider Documentation. One feature of these semantics
+is the introduction of a Ternary Boolean Logics, where `ERROR` cases are well defined, and errors are no longer
+propagated back to the client as an exception. The `ERROR` value is eventually reduced to `false`, which results in
+the solution being quietly filtered and allows the traversal to proceed normally. For example:
+
+[source,text]
+----
+gremlin> g.inject(1, "foo").is(P.gt(0)).count() // 3.5.x
+Cannot compare 'foo' (String) and '0' (Integer) as both need to be an instance of Number or Comparable (and of the same type)
+Type ':help' or ':h' for help.
+
+gremlin> g.inject(1, "foo").is(P.gt(0)).count() // 3.6.0
+==>1
+----
 
 Prior to 3.6, orderability (OrderGlobalStep) only applied to a single typespace and only to certain types. Attempts to
 order across types resulted in an exception. The 3.6 release introduces total orderability semantics, defined in the
@@ -661,8 +677,9 @@ gremlin> g.V().valueMap().order()   // 3.6.0
 ----
 
 Feature tags have been introduced for feature tests that stress these new semantics (see Committer Documentation).
-A new GraphFeature has been added "OrderabilitySemantics" to signify compliance with the new cross type orderability
+A new GraphFeature has been added "OrderabilitySemantics" to signify compliance with the new comparability/orderability
 semantics.
 
+See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_comparability[Provider Documentation]
 See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_orderability[Provider Documentation]
 See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/developer/#_for_committers[Developer Documentation]
