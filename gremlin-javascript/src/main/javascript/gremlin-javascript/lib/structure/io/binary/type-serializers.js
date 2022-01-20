@@ -169,7 +169,7 @@ class UuidSerializer {
 
     const uuid_str = String(item)
       .replace(/^urn:uuid:/, '')
-      .replaceAll(/[{}-]/g, '');
+      .replace(/[{}-]/g, '');
 
     const bufs = [];
     if (fullyQualifiedFormat)
