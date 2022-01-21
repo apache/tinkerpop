@@ -255,7 +255,17 @@ public final class NumberHelper {
                 }
                 return bigDecimalValue(b);
             },
-            (a, b) -> bigDecimalValue(a).compareTo(bigDecimalValue(b)));
+            (a, b) -> {
+                if( a instanceof Float && Float.isInfinite((Float) a))
+                    return 1;
+                else if( b instanceof Float && Float.isInfinite((Float) b))
+                    return -1;
+                else if( a instanceof Double && Double.isInfinite((Double) a))
+                    return 1;
+                else if( b instanceof Double && Double.isInfinite((Double) b))
+                    return -1;
+                return bigDecimalValue(a).compareTo(bigDecimalValue(b));
+            });
 
     public final BiFunction<Number, Number, Number> add;
     public final BiFunction<Number, Number, Number> sub;
