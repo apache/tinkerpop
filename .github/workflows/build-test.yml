@@ -176,10 +176,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - name: Set up .NET 3.1.x
+      - name: Set up .NET 6.0.x
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: '6.0.x'
       - name: Build with Maven
         run: |
           touch gremlin-dotnet/src/.glv

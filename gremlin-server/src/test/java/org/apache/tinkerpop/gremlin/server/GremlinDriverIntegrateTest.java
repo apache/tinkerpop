@@ -1855,6 +1855,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             // trying to find an alive connection to the host.
             assertThat(re, instanceOf(NoHostAvailableException.class));
 
+            try {
+                client.submit("1+1").all().get(3000, TimeUnit.MILLISECONDS);
+                fail("Should throw exception on the retry");
+            } catch (RuntimeException re2) {
+                if (client instanceof Client.SessionedClient) {
+                    assertThat(re2.getCause().getCause(), instanceOf(ConnectionException.class));
+                } else {
+                    assertThat(re2.getCause(), instanceOf(ConnectException.class));
+                }
+            }
+
             //
             // should recover when the server comes back
             //

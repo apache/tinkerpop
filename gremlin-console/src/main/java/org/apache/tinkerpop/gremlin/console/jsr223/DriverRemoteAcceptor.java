@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
@@ -112,6 +113,9 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             return String.format("Configured %s", this.currentCluster) + getSessionStringSegment();
         } catch (final FileNotFoundException ignored) {
             throw new RemoteException("The 'connect' option must be accompanied by a valid configuration file");
+        } catch (final NoHostAvailableException nhae) {
+            return String.format("Configured %s, but host not presently available. The Gremlin Console will attempt to reconnect on each query submission, " +
+                    "however, you may wish to close this remote and investigate the problem directly. %s", this.currentCluster, getSessionStringSegment());
         } catch (final Exception ex) {
             throw new RemoteException("Error during 'connect' - " + ex.getMessage(), ex);
         }
@@ -171,6 +175,11 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
         } catch (SaslException sasl) {
             throw new RemoteException("Security error - check username/password and related settings", sasl);
         } catch (Exception ex) {
+            // users may try to submit after initiating cluster on a dead host, if host remains unavailable after initiation, output this error message
+            if (ex.getCause().getCause() instanceof NoHostAvailableException) {
+                return String.format("Configured %s, but host not presently available. The Gremlin Console will attempt to reconnect on each query submission, " +
+                        "however, you may wish to close this remote and investigate the problem directly. %s", this.currentCluster, getSessionStringSegment());
+            }
             final Optional<ResponseException> inner = findResponseException(ex);
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();

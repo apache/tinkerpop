@@ -23,6 +23,7 @@
 'use strict';
 
 const typeSerializers = require('./type-serializers');
+const Bytecode = require('../../process/bytecode');
 
 /**
  * GraphSON2 writer.
@@ -97,6 +98,47 @@ class GraphSON2Writer {
    */
   write(obj) {
     return JSON.stringify(this.adaptObject(obj));
+  }
+
+  writeRequest({ requestId, op, processor, args }) {
+    const req = {
+      requestId: { '@type': 'g:UUID', '@value': requestId },
+      op,
+      processor,
+      args: this._adaptArgs(args, true),
+    };
+
+    if (req.args['gremlin'] instanceof Bytecode) {
+      req.args['gremlin'] = this.adaptObject(req.args['gremlin']);
+    }
+
+    return Buffer.from( JSON.stringify(req) );
+  }
+
+  /**
+   * Takes the given args map and ensures all arguments are passed through to adaptObject
+   * @param {Object} args Map of arguments to process.
+   * @param {Boolean} protocolLevel Determines whether it's a protocol level binding.
+   * @returns {Object}
+   * @private
+   */
+  _adaptArgs(args, protocolLevel) {
+    if (args instanceof Object) {
+      let newObj = {};
+      Object.keys(args).forEach((key) => {
+        // bindings key (at the protocol-level needs special handling. without this, it wraps the generated Map
+        // in another map for types like EnumValue. Could be a nicer way to do this but for now it's solving the
+        // problem with script submission of non JSON native types
+        if (protocolLevel && key === 'bindings')
+          newObj[key] = this._adaptArgs(args[key], false);
+        else
+          newObj[key] = this.adaptObject(args[key]);
+      });
+
+      return newObj;
+    }
+
+    return args;
   }
 }
 
@@ -177,6 +219,10 @@ class GraphSON2Reader {
     }
     // Default (for boolean, number and other scalars)
     return obj;
+  }
+
+  readResponse(buffer) {
+    return this.read( JSON.parse(buffer.toString()) );
   }
 
   _deserializeObject(obj) {
