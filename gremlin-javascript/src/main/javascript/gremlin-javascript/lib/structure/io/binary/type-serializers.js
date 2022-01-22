@@ -81,8 +81,39 @@ class IntSerializer {
     return Buffer.concat(bufs);
   }
 
-  static deserialize(buffer) {
-    // TODO
+  static deserialize(buffer, fullyQualifiedFormat=true) {
+    try {
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+        throw new Error('buffer is missing');
+      if (buffer.length < 1)
+        throw new Error('buffer is empty');
+
+      let len = 0;
+      let cursor = buffer;
+
+      if (fullyQualifiedFormat) {
+        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
+        if (type_code !== DataType.INT)
+          throw new Error('unexpected type code');
+
+        if (cursor.length < 1)
+          throw new Error('value flag is missing');
+        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
+        if (value_flag === 1)
+          return { v: null, len };
+        if (value_flag !== 0)
+          throw new Error('unexpected value flag');
+      }
+
+      if (cursor.length < 4)
+        throw new Error('unexpected value length');
+      len += 4;
+
+      const v = cursor.readInt32BE();
+      return { v, len };
+    } catch (e) {
+      throw des_error({ des: this.name, args: arguments, msg: e.message });
+    }
   }
 
 }

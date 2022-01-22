@@ -60,37 +60,102 @@ describe('GraphBinary.AnySerializer', () => {
 
 describe('GraphBinary.IntSerializer', () => {
 
+  const type_code = from([0x01]);
+  const value_flag = from([0x00]);
+
+  const cases = [
+    { v:undefined,                          fq:1, b:[0x01,0x01],           av:null },
+    { v:undefined,                          fq:0, b:[0x00,0x00,0x00,0x00], av:0 },
+    { v:null,                               fq:1, b:[0x01,0x01] },
+    { v:null,                               fq:0, b:[0x00,0x00,0x00,0x00], av:0 },
+    { v:0,                                        b:[0x00,0x00,0x00,0x00] },
+    { v:1,                                        b:[0x00,0x00,0x00,0x01] },
+    { v:256,                                      b:[0x00,0x00,0x01,0x00] },
+    { v:65536,                                    b:[0x00,0x01,0x00,0x00] },
+    { v:16777216,                                 b:[0x01,0x00,0x00,0x00] },
+    { v:2147483647,                               b:[0x7F,0xFF,0xFF,0xFF] },
+    { v:-1,                                       b:[0xFF,0xFF,0xFF,0xFF] },
+    { v:-2147483648,                              b:[0x80,0x00,0x00,0x00] },
+
+    { des:1, err:/buffer is missing/,       fq:1, b:undefined },
+    { des:1, err:/buffer is missing/,       fq:0, b:undefined },
+    { des:1, err:/buffer is missing/,       fq:1, b:null },
+    { des:1, err:/buffer is missing/,       fq:0, b:null },
+    { des:1, err:/buffer is empty/,         fq:1, b:[] },
+    { des:1, err:/buffer is empty/,         fq:0, b:[] },
+
+    { des:1, err:/unexpected type code/,    fq:1, b:[0x00] },
+    { des:1, err:/unexpected type code/,    fq:1, b:[0x02] },
+    { des:1, err:/unexpected type code/,    fq:1, b:[0x1D] },
+    { des:1, err:/unexpected type code/,    fq:1, b:[0x81] },
+    { des:1, err:/unexpected type code/,    fq:1, b:[0x0F] },
+    { des:1, err:/unexpected type code/,    fq:1, b:[0xFF] },
+
+    { des:1, err:/value flag is missing/,   fq:1, b:[0x01] },
+    { des:1, err:/unexpected value flag/,   fq:1, b:[0x01,0x10] },
+    { des:1, err:/unexpected value flag/,   fq:1, b:[0x01,0x02] },
+    { des:1, err:/unexpected value flag/,   fq:1, b:[0x01,0x0F] },
+    { des:1, err:/unexpected value flag/,   fq:1, b:[0x01,0xFF] },
+
+    { des:1, err:/unexpected value length/, fq:1, b:[0x01,0x00] },
+    { des:1, err:/unexpected value length/,       b:[0x11] },
+    { des:1, err:/unexpected value length/,       b:[0x11,0x22,0x33] },
+  ];
+
   describe('canBeUsedFor', () =>
     it.skip('')
   );
 
   describe('serialize', () =>
-    [
-      { v: undefined,   fq: true,  e: [0x01,0x01] },
-      { v: undefined,   fq: false, e: [           0x00,0x00,0x00,0x00] },
-      { v: null,        fq: true,  e: [0x01,0x01] },
-      { v: null,        fq: false, e: [           0x00,0x00,0x00,0x00] },
-      // the following will be automatically tested for fq=false/true
-      { v: 0,           e: [0x00,0x00,0x00,0x00] },
-      { v: 1,           e: [0x00,0x00,0x00,0x01] },
-      { v: 256,         e: [0x00,0x00,0x01,0x00] },
-      { v: 65536,       e: [0x00,0x01,0x00,0x00] },
-      { v: 16777216,    e: [0x01,0x00,0x00,0x00] },
-      { v: 2147483647,  e: [0x7F,0xFF,0xFF,0xFF] },
-      { v: -1,          e: [0xFF,0xFF,0xFF,0xFF] },
-      { v: -2147483648, e: [0x80,0x00,0x00,0x00] },
-    ].forEach(({ v, fq, e }, i) => it(`should be able to handle value of case #${i}`, () => {
+    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
+      // deserialize case only
+      if (des)
+        return; // keep it like passed test not to mess with case index
+
+      b = from(b);
+
+      // when fq is under control
       if (fq !== undefined) {
-        assert.deepEqual( IntSerializer.serialize(v, fq), Buffer.from(e) );
+        assert.deepEqual( IntSerializer.serialize(v, fq), b );
         return;
       }
-      assert.deepEqual( IntSerializer.serialize(v, false), Buffer.from(e) );
-      assert.deepEqual( IntSerializer.serialize(v, true), Buffer.concat([Buffer.from([0x01,0x00]), Buffer.from(e)]) );
+
+      // generic case
+      assert.deepEqual( IntSerializer.serialize(v, true),  concat([type_code, value_flag, b]) );
+      assert.deepEqual( IntSerializer.serialize(v, false), concat([                       b]) );
     }))
   );
 
   describe('deserialize', () =>
-    it.skip('')
+    cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+      if (Array.isArray(b))
+        b = from(b);
+
+      // wrong binary
+      if (err !== undefined) {
+        if (fq !== undefined)
+          assert.throws(() => IntSerializer.deserialize(b, fq), { message: err });
+        else {
+          assert.throws(() => IntSerializer.deserialize(concat([type_code, value_flag, b]), true),  { message: err });
+          assert.throws(() => IntSerializer.deserialize(concat([                       b]), false), { message: err });
+        }
+        return;
+      }
+
+      if (av !== undefined)
+        v = av;
+      const len = b.length;
+
+      // when fq is under control
+      if (fq !== undefined) {
+        assert.deepStrictEqual( IntSerializer.deserialize(from(b), fq), {v,len} );
+        return;
+      }
+
+      // generic case
+      assert.deepStrictEqual( IntSerializer.deserialize(concat([type_code, value_flag, b]), true),  {v,len:len+2} );
+      assert.deepStrictEqual( IntSerializer.deserialize(concat([                       b]), false), {v,len:len+0} );
+    }))
   );
 
 });
