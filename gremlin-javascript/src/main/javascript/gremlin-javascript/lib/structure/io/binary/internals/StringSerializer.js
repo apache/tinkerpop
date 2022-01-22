@@ -22,10 +22,11 @@
  */
 'use strict';
 
-module.exports = class {
+module.exports = class StringSerializer {
 
   constructor(ioc) {
     this.ioc = ioc;
+    this.ioc.serializers[ioc.DataType.STRING] = this;
   }
 
   canBeUsedFor(value) {
@@ -50,14 +51,14 @@ module.exports = class {
   }
 
   deserialize(buffer, fullyQualifiedFormat=true, nullable=false) {
+    let len = 0;
+    let cursor = buffer;
+
     try {
       if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
         throw new Error('buffer is missing');
       if (buffer.length < 1)
         throw new Error('buffer is empty');
-
-      let len = 0;
-      let cursor = buffer;
 
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
@@ -86,8 +87,9 @@ module.exports = class {
 
       const v = cursor.toString('utf8', 0, length);
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ des: this.name, args: arguments, msg: e.message });
+    }
+    catch (e) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }
 

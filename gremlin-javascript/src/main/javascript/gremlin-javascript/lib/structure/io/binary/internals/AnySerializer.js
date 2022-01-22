@@ -22,7 +22,7 @@
  */
 'use strict';
 
-module.exports = class {
+module.exports = class AnySerializer {
 
   constructor(ioc) {
     this.ioc = ioc;
@@ -49,6 +49,25 @@ module.exports = class {
     return this
       .getSerializerCanBeUsedFor(item)
       .serialize(item, fullyQualifiedFormat);
+  }
+
+  deserialize(buffer) { // obviously, fullyQualifiedFormat always is true
+    try {
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+        throw new Error('buffer is missing');
+      if (buffer.length < 1)
+        throw new Error('buffer is empty');
+
+      const type_code = buffer.readUInt8();
+      const serializer = this.ioc.serializers[type_code];
+      if (! serializer)
+        throw new Error('unknown {type_code}');
+
+      return serializer.deserialize(buffer);
+    }
+    catch (e) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, msg: e.message });
+    }
   }
 
 }

@@ -25,7 +25,7 @@
 /**
  * GraphBinary writer.
  */
-module.exports = class {
+module.exports = class GraphBinaryWriter {
 
   constructor(ioc) {
     this.ioc = ioc;

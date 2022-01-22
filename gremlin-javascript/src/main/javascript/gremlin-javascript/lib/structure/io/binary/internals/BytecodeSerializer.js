@@ -24,10 +24,11 @@
 
 const Bytecode = require('../../../../process/bytecode');
 
-module.exports = class {
+module.exports = class BytecodeSerializer {
 
   constructor(ioc) {
     this.ioc = ioc;
+    this.ioc.serializers[ioc.DataType.BYTECODE] = this;
   }
 
   canBeUsedFor(value) {

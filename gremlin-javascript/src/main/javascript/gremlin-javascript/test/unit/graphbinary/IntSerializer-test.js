@@ -113,7 +113,7 @@ describe('GraphBinary.IntSerializer', () => {
 
       // when fq is under control
       if (fq !== undefined) {
-        assert.deepStrictEqual( intSerializer.deserialize(from(b), fq), {v,len} );
+        assert.deepStrictEqual( intSerializer.deserialize(b, fq), {v,len} );
         return;
       }
 

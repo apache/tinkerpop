@@ -27,6 +27,8 @@ const ioc = {};
 ioc.DataType = require('./internals/DataType');
 ioc.utils = require('./internals/utils');
 
+ioc.serializers = {};
+
 ioc.intSerializer = new (require('./internals/IntSerializer'))(ioc);
 ioc.stringSerializer = new (require('./internals/StringSerializer'))(ioc);
 ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);

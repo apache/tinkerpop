@@ -25,7 +25,7 @@
 /**
  * GraphBinary reader.
  */
-module.exports = class {
+module.exports = class GraphBinaryReader {
 
   constructor(ioc) {
     this.ioc = ioc;

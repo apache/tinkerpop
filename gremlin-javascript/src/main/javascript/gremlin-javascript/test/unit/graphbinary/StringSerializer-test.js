@@ -127,7 +127,7 @@ describe('GraphBinary.StringSerializer', () => {
 
       // when fq is under control
       if (fq !== undefined) {
-        assert.deepStrictEqual( stringSerializer.deserialize(from(b), fq, na), {v,len} );
+        assert.deepStrictEqual( stringSerializer.deserialize(b, fq, na), {v,len} );
         return;
       }
 

@@ -23,6 +23,7 @@
 'use strict';
 
 const assert = require('assert');
+const { anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
 const { from, concat } = Buffer;
 
@@ -34,6 +35,44 @@ describe('GraphBinary.AnySerializer', () => {
 
   describe('serialize', () =>
     it.skip('')
+  );
+
+  describe('deserialize', () =>
+    [
+      { err:/buffer is missing/,                  b:undefined },
+      { err:/buffer is missing/,                  b:undefined },
+      { err:/buffer is missing/,                  b:null },
+      { err:/buffer is missing/,                  b:null },
+      { err:/buffer is empty/,                    b:[] },
+      { err:/buffer is empty/,                    b:[] },
+
+      { err:/unknown {type_code}/,                b:[0x2E] },
+      { err:/unknown {type_code}/,                b:[0x30] },
+      { err:/unknown {type_code}/,                b:[0x8F] },
+      { err:/unknown {type_code}/,                b:[0xFF] },
+
+      { v:null,                                   b:[0x01,0x01] },
+      { v:1,                                      b:[0x01,0x00, 0x00,0x00,0x00,0x01] },
+
+      { v:null,                                   b:[0x03,0x01] },
+      { v:'Ab0',                                  b:[0x03,0x00, 0x00,0x00,0x00,0x03, 0x41,0x62,0x30] },
+
+      { v:null,                                   b:[0x0C,0x01] },
+      { v:'00010203-0405-0607-0809-0a0b0c0d0e0f', b:[0x0C,0x00, 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F] },
+    ]
+    .forEach(({ v, b, err }, i) => it(`should be able to handle case #${i}`, () => {
+      if (Array.isArray(b))
+        b = from(b);
+
+      // wrong binary
+      if (err !== undefined) {
+        assert.throws(() => anySerializer.deserialize(b), { message: err });
+        return;
+      }
+
+      const len = b.length;
+      assert.deepStrictEqual( anySerializer.deserialize(b), {v,len} );
+    }))
   );
 
 });

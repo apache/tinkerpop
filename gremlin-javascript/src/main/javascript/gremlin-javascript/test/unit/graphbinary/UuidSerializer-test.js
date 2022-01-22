@@ -129,7 +129,7 @@ describe('GraphBinary.UuidSerializer', () => {
 
       // when fq is under control
       if (fq !== undefined) {
-        assert.deepStrictEqual( uuidSerializer.deserialize(from(b), fq, na), {v,len} );
+        assert.deepStrictEqual( uuidSerializer.deserialize(b, fq, na), {v,len} );
         return;
       }
 

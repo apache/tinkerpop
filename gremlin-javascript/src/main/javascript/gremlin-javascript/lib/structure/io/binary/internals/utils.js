@@ -25,18 +25,27 @@
 /*
  * Deserialization error general constructor.
  */
-const des_error = ({ des, args, msg }) => {
-  let buffer = args[0];
-  let buffer_tail = '';
-  if (buffer instanceof Buffer) {
-    if (buffer.length > 32)
-      buffer_tail = '...';
-    buffer = buffer.slice(0, 32).toString('hex');
+const des_error = ({ serializer, args, cursor, msg }) => {
+  if (cursor === undefined)
+    cursor = args[0]; // buffer
+  let cursor_tail = '';
+  if (cursor instanceof Buffer) {
+    if (cursor.length > 32)
+      cursor_tail = '...';
+    cursor = cursor.slice(0, 32).toString('hex');
   }
+
   const fullyQualifiedFormat = args[1];
   const nullable = args[2];
 
-  return new Error(`${des}.deserialize(buffer=${buffer}${buffer_tail}, fullyQualifiedFormat=${fullyQualifiedFormat}, nullable=${nullable}): ${msg}.`);
+  let m = `${serializer.constructor.name}.deserialize(cursor=${cursor}${cursor_tail}`;
+  if (fullyQualifiedFormat !== undefined)
+    m += `, fullyQualifiedFormat=${fullyQualifiedFormat}`;
+  if (nullable !== undefined)
+    m += `, nullable=${nullable}`;
+  m += `): ${msg}.`;
+
+  return new Error(m);
 };
 
 module.exports = {
