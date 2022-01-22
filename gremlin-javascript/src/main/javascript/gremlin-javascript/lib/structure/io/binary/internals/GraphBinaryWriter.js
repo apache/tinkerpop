@@ -22,30 +22,27 @@
  */
 'use strict';
 
-const {
-  StringSerializer,
-  MapSerializer,
-  UuidSerializer,
-} = require('./type-serializers');
-
 /**
  * GraphBinary writer.
  */
-class GraphBinaryWriter {
-  constructor() {}
+module.exports = class {
+
+  constructor(ioc) {
+    this.ioc = ioc;
+  }
 
   writeRequest({ requestId, op, processor, args }) {
     const bufs = [
       // {version} 1 byte
       Buffer.from([0x81]),
       // {request_id} UUID
-      UuidSerializer.serialize(requestId, false),
+      this.ioc.uuidSerializer.serialize(requestId, false),
       // {op} String
-      StringSerializer.serialize(op, false),
+      this.ioc.stringSerializer.serialize(op, false),
       // {processor} String
-      StringSerializer.serialize(processor, false),
+      this.ioc.stringSerializer.serialize(processor, false),
       // {args} Map
-      MapSerializer.serialize(args, false),
+      this.ioc.mapSerializer.serialize(args, false),
     ];
     return Buffer.concat(bufs);
 
@@ -84,60 +81,5 @@ class GraphBinaryWriter {
           0x00,0x00,0x00,0x00,
     */
   }
-}
-
-/**
- * GraphBinary reader.
- */
-class GraphBinaryReader {
-
-  readResponse(buffer) {
-    if (buffer === undefined || buffer === null)
-      throw new Error('Buffer is missing.');
-    if (! (buffer instanceof Buffer))
-      throw new Error('Not an instance of Buffer.');
-    if (buffer.length < 1)
-      throw new Error('Buffer is empty.');
-
-    const response = { status: {}, result: {} };
-    let cursor = buffer;
-    let len;
-
-    // {version} is a Byte representing the protocol version
-    const version = cursor[0];
-    if (version !== 0x81)
-      throw new Error(`Unsupported version '${version}'.`);
-    cursor = cursor.slice(1); // skip version
-
-    // {request_id} is a nullable UUID
-    ({ v: response.request_id, len } = UuidSerializer.deserialize(cursor, false, true));
-    cursor = cursor.slice(len);
-
-    // {status_code} is an Int
-    ({ v: response.status.code, len } = IntSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
-
-    // {status_message} is a nullable String
-    ({ v: response.status.message, len } = StringSerializer.deserialize(cursor, false, true));
-    cursor = cursor.slice(len);
-
-    // {status_attributes} is a Map
-    ({ v: response.status.attributes, len } = MapSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
-
-    // {result_meta} is a Map
-    ({ v: response.result.meta, len } = MapSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
-
-    // {result_data} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
-    ({ v: response.result.data } = AnySerializer.deserialize(cursor));
-
-    return response;
-  }
 
 }
-
-module.exports = {
-  GraphBinaryWriter,
-  GraphBinaryReader,
-};

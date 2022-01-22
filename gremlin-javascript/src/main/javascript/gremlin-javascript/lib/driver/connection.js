@@ -29,7 +29,8 @@ const util = require('util');
 const utils = require('../utils');
 const serializer = {
   ...require('../structure/io/graph-serializer'),
-  ...require('../structure/io/binary/graph-serializer'),
+  graphBinaryReader: require('../structure/io/binary/GraphBinary'),
+  graphBinaryWriter: require('../structure/io/binary/GraphBinary'),
 };
 const ResultSet = require('./result-set');
 const ResponseError = require('./response-error');
@@ -225,7 +226,7 @@ class Connection extends EventEmitter {
 
   _getDefaultReader(mimeType) {
     if (mimeType === graphBinaryMimeType)
-      return new serializer.GraphBinaryReader();
+      return serializer.graphBinaryReader;
 
     return mimeType === graphSON2MimeType
       ? new serializer.GraphSON2Reader()
@@ -234,7 +235,7 @@ class Connection extends EventEmitter {
 
   _getDefaultWriter(mimeType) {
     if (mimeType === graphBinaryMimeType)
-      return new serializer.GraphBinaryWriter();
+      return serializer.graphBinaryWriter;
 
     return mimeType === graphSON2MimeType
       ? new serializer.GraphSON2Writer()
