@@ -99,23 +99,40 @@ class GraphBinaryReader {
     if (buffer.length < 1)
       throw new Error('Buffer is empty.');
 
-    const version = buffer[0];
+    const response = { status: {}, result: {} };
+    let cursor = buffer;
+    let len;
+
+    // {version} is a Byte representing the protocol version
+    const version = cursor[0];
     if (version !== 0x81)
       throw new Error(`Unsupported version '${version}'.`);
+    cursor = cursor.slice(1); // skip version
 
-    // TODO: {request_id} is a nullable UUID.
+    // {request_id} is a nullable UUID
+    ({ v: response.request_id, len } = UuidSerializer.deserialize(cursor, false, true));
+    cursor = cursor.slice(len);
 
-    // TODO: {status_code} is an Int.
+    // {status_code} is an Int
+    ({ v: response.status.code, len } = IntSerializer.deserialize(cursor, false));
+    cursor = cursor.slice(len);
 
-    // TODO: {status_message} is a nullable String.
+    // {status_message} is a nullable String
+    ({ v: response.status.message, len } = StringSerializer.deserialize(cursor, false, true));
+    cursor = cursor.slice(len);
 
-    // TODO: {status_attributes} is a Map.
+    // {status_attributes} is a Map
+    ({ v: response.status.attributes, len } = MapSerializer.deserialize(cursor, false));
+    cursor = cursor.slice(len);
 
-    // TODO: {result_meta} is a Map.
+    // {result_meta} is a Map
+    ({ v: response.result.meta, len } = MapSerializer.deserialize(cursor, false));
+    cursor = cursor.slice(len);
 
-    // TODO: {result_data} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}.
+    // {result_data} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
+    ({ v: response.result.data } = AnySerializer.deserialize(cursor));
 
-    // TODO: return { requestId, op, processor, args }
+    return response;
   }
 
 }

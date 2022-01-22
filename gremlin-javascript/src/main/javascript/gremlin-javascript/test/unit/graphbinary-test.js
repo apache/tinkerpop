@@ -18,6 +18,13 @@
  */
 
 /**
+ * Glossary:
+ *   v  - JavaScript value
+ *   b - binary value
+ *   av - actually expected JavaScript value
+ *   fq - fullyQualifiedFormat
+ *   na - nullable
+ *
  * @author Igor Ostapenko
  */
 'use strict';
@@ -36,6 +43,8 @@ const {
 const Bytecode = require('../../lib/process/bytecode');
 const { GraphTraversal } = require('../../lib/process/graph-traversal');
 const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
+
+const { from, concat } = Buffer;
 
 describe('GraphBinary.AnySerializer', () => {
 
@@ -171,7 +180,7 @@ describe('GraphBinary.MapSerializer', () => {
         e: [0x00,0x00,0x00,0x03,
           /*'one'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6F,0x6E,0x65, /*1*/0x01,0x00,0x00,0x00,0x00,0x01,
           /*'two'*/0x03,0x00,0x00,0x00,0x00,0x03,0x74,0x77,0x6F, /*2*/0x01,0x00,0x00,0x00,0x00,0x02,
-          /*'int32'*/ 0x03,0x00, 0x00,0x00,0x00,0x05, 0x69,0x6E,0x74,0x33,0x32, 
+          /*'int32'*/ 0x03,0x00, 0x00,0x00,0x00,0x05, 0x69,0x6E,0x74,0x33,0x32,
           /*int32 map*/
           0x0A,0x00, 0x00,0x00,0x00,0x02,
             /*'min'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6D,0x69,0x6E, /*-2147483648*/0x01,0x00,0x80,0x00,0x00,0x00,
@@ -218,42 +227,119 @@ describe('GraphBinary.MapSerializer', () => {
 
 describe('GraphBinary.UuidSerializer', () => {
 
+  const type_code = from([0x0C]);
+  const value_flag = from([0x00]);
+
+  const cases = [
+    { v:undefined,                           fq:1,       b:[0x0C,0x01],                                                                          av:null },
+    { v:undefined,                           fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
+    { v:null,                                fq:1,       b:[0x0C,0x01] },
+    { v:null,                                fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
+
+    { v:'00000000-0000-0000-0000-000000000000',          b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
+    { v:'00010203-0405-0607-0809-0A0B0C0D0E0F',          b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
+    { v:'AaBbCcDd-EeFf-1122-3344-556677889900',          b:[0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
+
+    // string presentation formats
+    { v:'000102030405060708090A0B0C0D0E0F',              b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F], av:'00010203-0405-0607-0809-0A0B0C0D0E0F' },
+    { v:'00010203-0405-0607-0809-0A0B0C0D0E0F',          b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
+    { v:'{00010203-0405-0607-0809-0A0B0C0D0E0F}',        b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F], av:'00010203-0405-0607-0809-0A0B0C0D0E0F' },
+    { v:'urn:uuid:00010203-0405-0607-0809-0A0B0C0D0E0F', b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F], av:'00010203-0405-0607-0809-0A0B0C0D0E0F' },
+
+    // wrong string presentation
+    { v:'AaBbCcDd-EeFf-1122-3344-556677889900FFFF',      b:[0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00], av:'AaBbCcDd-EeFf-1122-3344-556677889900' },
+    { v:'GHIJKLMN-OPQR-STUV-WXYZ-!@#$%^&*()_+',          b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
+
+    { des:1, err:/buffer is missing/,        fq:1,       b:undefined },
+    { des:1, err:/buffer is missing/,        fq:0,       b:undefined },
+    { des:1, err:/buffer is missing/,        fq:1,       b:null },
+    { des:1, err:/buffer is missing/,        fq:0,       b:null },
+    { des:1, err:/buffer is empty/,          fq:1,       b:[] },
+    { des:1, err:/buffer is empty/,          fq:0,       b:[] },
+    { des:1, err:/buffer is empty/,          fq:0, na:1, b:[] },
+
+    { des:1, err:/unexpected type code/,     fq:1,       b:[0x01] },
+    { des:1, err:/unexpected type code/,     fq:1,       b:[0x00] },
+    { des:1, err:/unexpected type code/,     fq:1,       b:[0x0D] },
+    { des:1, err:/unexpected type code/,     fq:1,       b:[0x0B] },
+    { des:1, err:/unexpected type code/,     fq:1,       b:[0x8C] },
+    { des:1, err:/unexpected type code/,     fq:1,       b:[0xFC] },
+
+    { des:1, err:/value flag is missing/,    fq:1,       b:[0x0C] },
+    { des:1, err:/unexpected value flag/,    fq:1,       b:[0x0C,0x10] },
+    { des:1, err:/unexpected value flag/,    fq:0, na:1, b:[0x10] },
+    { des:1, err:/unexpected value flag/,    fq:1,       b:[0x0C,0x02] },
+    { des:1, err:/unexpected value flag/,    fq:0, na:1, b:[0x02] },
+    { des:1, err:/unexpected value flag/,    fq:1,       b:[0x0C,0x0F] },
+    { des:1, err:/unexpected value flag/,    fq:0, na:1, b:[0x0F] },
+    { des:1, err:/unexpected value flag/,    fq:1,       b:[0x0C,0xFF] },
+    { des:1, err:/unexpected value flag/,    fq:0, na:1, b:[0xFF] },
+
+    { des:1, err:/unexpected value length/,  fq:1,       b:[0x0C,0x00] },
+    { des:1, err:/unexpected value length/,  fq:0, na:1, b:[0x00] },
+    { des:1, err:/unexpected value length/,              b:[0x00] },
+    { des:1, err:/unexpected value length/,              b:[0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E] },
+  ];
+
   describe('canBeUsedFor', () =>
     it.skip('')
   );
 
   describe('serialize', () =>
-    [
-      { v: undefined,                                       fq: true,  e: [0x0C,0x01] },
-      { v: undefined,                                       fq: false, e: [           0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
-      { v: null,                                            fq: true,  e: [0x0C,0x01] },
-      { v: null,                                            fq: false, e: [           0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
-
-      // the following will be automatically tested for fq=false/true
-      { v: '000102030405060708090A0B0C0D0E0F',              e: [0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
-      { v: '00010203-0405-0607-0809-0A0B0C0D0E0F',          e: [0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
-      { v: '00010203-0405-0607-0809-0A0B0C0D0E0F',          e: [0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
-      { v: '{00010203-0405-0607-0809-0A0B0C0D0E0F}',        e: [0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
-      { v: 'urn:uuid:00010203-0405-0607-0809-0A0B0C0D0E0F', e: [0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
-
-      { v: '00000000-0000-0000-0000-000000000000',          e: [0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
-      { v: 'AaBbCcDd-EeFf-1122-3344-556677889900',          e: [0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
-
-      { v: 'AaBbCcDd-EeFf-1122-3344-556677889900FFFF',      e: [0xAA,0xBB,0xCC,0xDD, 0xEE,0xFF,0x11,0x22, 0x33,0x44,0x55,0x66, 0x77,0x88,0x99,0x00] },
-      { v: 'GHIJKLMN-OPQR-STUV-WXYZ-!@#$%^&*()_+',          e: [0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
-    ].forEach(({ v, fq, e }, i) => it(`should be able to handle value of case #${i}`, () => {
+    cases.forEach(({ des, v, fq, b, berr }, i) => it(`should be able to handle case #${i}`, () => {
+      // deserialize case only
+      if (des)
+        return; // keep it like passed test not to mess with case index
+      b = from(b);
+      // when fq is under control
       if (fq !== undefined) {
-        assert.deepEqual( UuidSerializer.serialize(v, fq), Buffer.from(e) );
+        assert.deepEqual( UuidSerializer.serialize(v, fq), b );
         return;
       }
-      assert.deepEqual( UuidSerializer.serialize(v, false), Buffer.from(e) );
-      assert.deepEqual( UuidSerializer.serialize(v, true), Buffer.concat([Buffer.from([0x0C,0x00]), Buffer.from(e)]) );
+      // generic case
+      assert.deepEqual( UuidSerializer.serialize(v, true),  concat([type_code, value_flag, b]) );
+      assert.deepEqual( UuidSerializer.serialize(v, false), concat([                       b]) );
     }))
   );
 
-  describe('deserialize', () =>
-    it.skip('')
-  );
+  describe('deserialize', () => {
+    cases.forEach(({ v, fq, na, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+      if (Array.isArray(b))
+        b = from(b);
+
+      // wrong binary
+      if (err !== undefined) {
+        if (fq !== undefined)
+          assert.throws(() => UuidSerializer.deserialize(b, fq, na), { message: err });
+        else {
+          assert.throws(() => UuidSerializer.deserialize(concat([type_code, value_flag, b]), true),         { message: err });
+          assert.throws(() => UuidSerializer.deserialize(concat([           value_flag, b]), false, true),  { message: err });
+          assert.throws(() => UuidSerializer.deserialize(concat([                       b]), false, false), { message: err });
+        }
+        return;
+      }
+
+      if (av !== undefined)
+        v = av;
+      if (typeof v === 'string')
+        v = v.toLowerCase();
+      const len = b.length;
+
+      // when fq is under control
+      if (fq !== undefined) {
+        assert.deepStrictEqual( UuidSerializer.deserialize(from(b), fq, na), {v,len} );
+        return;
+      }
+
+      // generic case
+      assert.deepStrictEqual( UuidSerializer.deserialize(concat([type_code, value_flag, b]), true,  false), {v,len:len+2} );
+      assert.deepStrictEqual( UuidSerializer.deserialize(concat([type_code, value_flag, b]), true,  true),  {v,len:len+2} );
+      assert.deepStrictEqual( UuidSerializer.deserialize(concat([           value_flag, b]), false, true),  {v,len:len+1} );
+      assert.deepStrictEqual( UuidSerializer.deserialize(concat([                       b]), false, false), {v,len:len+0} );
+    }));
+
+    it.skip('nullable null');
+  });
 
 });
 

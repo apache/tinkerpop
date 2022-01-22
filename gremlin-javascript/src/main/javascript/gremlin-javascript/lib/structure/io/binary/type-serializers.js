@@ -183,8 +183,52 @@ class UuidSerializer {
     return Buffer.concat(bufs);
   }
 
-  static deserialize(buffer) {
-    // TODO
+  static deserialize(buffer, fullyQualifiedFormat=true, nullable=false) {
+    try {
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+        throw new Error('buffer is missing');
+      if (buffer.length < 1)
+        throw new Error('buffer is empty');
+
+      let len = 0;
+      let cursor = buffer;
+
+      if (fullyQualifiedFormat) {
+        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
+        if (type_code !== DataType.UUID)
+          throw new Error('unexpected type code');
+      }
+      if (fullyQualifiedFormat || nullable) {
+        if (cursor.length < 1)
+          throw new Error('value flag is missing');
+        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
+        if (value_flag === 1)
+          return { v: null, len };
+        if (value_flag !== 0)
+          throw new Error('unexpected value flag');
+      }
+
+      if (cursor.length < 16)
+        throw new Error('unexpected value length');
+      len += 16;
+
+      // Example: 2075278D-F624-4B2B-960D-25D374D57C04
+      const v =
+          cursor.slice(0, 4).toString('hex')
+        + '-'
+        + cursor.slice(4, 6).toString('hex')
+        + '-'
+        + cursor.slice(6, 8).toString('hex')
+        + '-'
+        + cursor.slice(8, 10).toString('hex')
+        + '-'
+        + cursor.slice(10, 16).toString('hex')
+      ;
+      return { v, len };
+    }
+    catch (e) {
+      throw des_error({ des: this.name, args: arguments, msg: e.message });
+    }
   }
 
 }
@@ -240,6 +284,20 @@ class BytecodeSerializer {
   }
 
 }
+
+const des_error = ({ des, args, msg }) => {
+  let buffer = args[0];
+  let buffer_tail = '';
+  if (buffer instanceof Buffer) {
+    if (buffer.length > 32)
+      buffer_tail = '...';
+    buffer = buffer.slice(0, 32).toString('hex');
+  }
+  const fullyQualifiedFormat = args[1];
+  const nullable = args[2];
+
+  return new Error(`${des}.deserialize(buffer=${buffer}${buffer_tail}, fullyQualifiedFormat=${fullyQualifiedFormat}, nullable=${nullable}): ${msg}.`);
+};
 
 module.exports = {
   AnySerializer,
