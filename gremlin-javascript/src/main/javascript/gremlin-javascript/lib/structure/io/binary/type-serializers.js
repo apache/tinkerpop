@@ -94,19 +94,19 @@ class IntSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (type_code !== DataType.INT)
-          throw new Error('unexpected type code');
+          throw new Error('unexpected {type_code}');
 
         if (cursor.length < 1)
-          throw new Error('value flag is missing');
+          throw new Error('{value_flag} is missing');
         const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (value_flag === 1)
           return { v: null, len };
         if (value_flag !== 0)
-          throw new Error('unexpected value flag');
+          throw new Error('unexpected {value_flag}');
       }
 
       if (cursor.length < 4)
-        throw new Error('unexpected value length');
+        throw new Error('unexpected {value} length');
       len += 4;
 
       const v = cursor.readInt32BE();
@@ -154,16 +154,16 @@ class StringSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (type_code !== DataType.STRING)
-          throw new Error('unexpected type code');
+          throw new Error('unexpected {type_code}');
       }
       if (fullyQualifiedFormat || nullable) {
         if (cursor.length < 1)
-          throw new Error('value flag is missing');
+          throw new Error('{value_flag} is missing');
         const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (value_flag === 1)
           return { v: null, len };
         if (value_flag !== 0)
-          throw new Error('unexpected value flag');
+          throw new Error('unexpected {value_flag}');
       }
 
       if (cursor.length < 4)
@@ -265,20 +265,20 @@ class UuidSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (type_code !== DataType.UUID)
-          throw new Error('unexpected type code');
+          throw new Error('unexpected {type_code}');
       }
       if (fullyQualifiedFormat || nullable) {
         if (cursor.length < 1)
-          throw new Error('value flag is missing');
+          throw new Error('{value_flag} is missing');
         const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (value_flag === 1)
           return { v: null, len };
         if (value_flag !== 0)
-          throw new Error('unexpected value flag');
+          throw new Error('unexpected {value_flag}');
       }
 
       if (cursor.length < 16)
-        throw new Error('unexpected value length');
+        throw new Error('unexpected {value} length');
       len += 16;
 
       // Example: 2075278D-F624-4B2B-960D-25D374D57C04
