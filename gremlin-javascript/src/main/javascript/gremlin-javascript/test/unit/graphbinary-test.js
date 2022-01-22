@@ -296,10 +296,11 @@ describe('GraphBinary.UuidSerializer', () => {
   const value_flag = from([0x00]);
 
   const cases = [
-    { v:undefined,                           fq:1,       b:[0x0C,0x01],                                                                          av:null },
-    { v:undefined,                           fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
-    { v:null,                                fq:1,       b:[0x0C,0x01] },
-    { v:null,                                fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
+    {        v:undefined,                    fq:1,       b:[0x0C,0x01],                                                                          av:null },
+    {        v:undefined,                    fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
+    {        v:null,                         fq:1,       b:[0x0C,0x01] },
+    {        v:null,                         fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
+    { des:1, v:null,                         fq:0, na:1, b:[0x01] },
 
     { v:'00000000-0000-0000-0000-000000000000',          b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
     { v:'00010203-0405-0607-0809-0A0B0C0D0E0F',          b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
@@ -355,19 +356,22 @@ describe('GraphBinary.UuidSerializer', () => {
       // deserialize case only
       if (des)
         return; // keep it like passed test not to mess with case index
+
       b = from(b);
+
       // when fq is under control
       if (fq !== undefined) {
         assert.deepEqual( UuidSerializer.serialize(v, fq), b );
         return;
       }
+
       // generic case
       assert.deepEqual( UuidSerializer.serialize(v, true),  concat([type_code, value_flag, b]) );
       assert.deepEqual( UuidSerializer.serialize(v, false), concat([                       b]) );
     }))
   );
 
-  describe('deserialize', () => {
+  describe('deserialize', () =>
     cases.forEach(({ v, fq, na, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
       if (Array.isArray(b))
         b = from(b);
@@ -401,10 +405,8 @@ describe('GraphBinary.UuidSerializer', () => {
       assert.deepStrictEqual( UuidSerializer.deserialize(concat([type_code, value_flag, b]), true,  true),  {v,len:len+2} );
       assert.deepStrictEqual( UuidSerializer.deserialize(concat([           value_flag, b]), false, true),  {v,len:len+1} );
       assert.deepStrictEqual( UuidSerializer.deserialize(concat([                       b]), false, false), {v,len:len+0} );
-    }));
-
-    it.skip('nullable null');
-  });
+    }))
+  );
 
 });
 
