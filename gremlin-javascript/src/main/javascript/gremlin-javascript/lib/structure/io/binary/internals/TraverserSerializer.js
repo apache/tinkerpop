@@ -22,11 +22,13 @@
  */
 'use strict';
 
-module.exports = class ListSerializer {
+const { Traverser } = require('../../../../process/traversal');
+
+module.exports = class TraverserSerializer {
 
   constructor(ioc) {
     this.ioc = ioc;
-    this.ioc.serializers[ioc.DataType.LIST] = this;
+    this.ioc.serializers[ioc.DataType.TRAVERSER] = this;
   }
 
   canBeUsedFor() {
@@ -49,7 +51,7 @@ module.exports = class ListSerializer {
 
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.LIST)
+        if (type_code !== this.ioc.DataType.TRAVERSER)
           throw new Error('unexpected {type_code}');
 
         if (cursor.length < 1)
@@ -62,23 +64,20 @@ module.exports = class ListSerializer {
       }
 
       if (cursor.length < 4)
-        throw new Error('unexpected {length} length');
-      const length = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
-      if (length < 0)
-        throw new Error('{length} is less than zero');
+        throw new Error('unexpected {bulk} length');
+      const bulk = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      if (bulk < 0)
+        throw new Error('{bulk} is less than zero');
 
-      const v = [];
-      for (let i = 0; i < length; i++) {
-        let value, value_len;
-        try {
-          ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-          len += value_len; cursor = cursor.slice(value_len);
-        } catch (e) {
-          throw new Error(`{item_${i}}: ${e.message}`);
-        }
-        v.push(value);
+      let value, value_len;
+      try {
+        ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
+        len += value_len; cursor = cursor.slice(value_len);
+      } catch (e) {
+        throw new Error(`value: ${e.message}`);
       }
 
+      const v = new Traverser(value, bulk);
       return { v, len };
     }
     catch (e) {

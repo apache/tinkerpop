@@ -35,6 +35,7 @@ ioc.listSerializer = new (require('./internals/ListSerializer'))(ioc);
 ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);
 ioc.uuidSerializer = new (require('./internals/UuidSerializer'))(ioc);
 ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);
+ioc.traverserSerializer = new (require('./internals/TraverserSerializer'))(ioc);
 
 ioc.graphBinaryReader = new (require('./internals/GraphBinaryReader.js'))(ioc);
 ioc.graphBinaryWriter = new (require('./internals/GraphBinaryWriter'))(ioc);

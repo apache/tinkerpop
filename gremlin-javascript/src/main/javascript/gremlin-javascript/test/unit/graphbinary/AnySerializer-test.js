@@ -25,6 +25,7 @@
 const assert = require('assert');
 const { anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 const Bytecode = require('../../../lib/process/bytecode');
+const { Traverser } = require('../../../lib/process/traversal');
 
 const { from, concat } = Buffer;
 
@@ -78,6 +79,10 @@ describe('GraphBinary.AnySerializer', () => {
       // BYTECODE
       { v:null,                                   b:[0x15,0x01] },
       { v:new Bytecode(),                         b:[0x15,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
+
+      // TRAVERSER
+      { v:null,                                   b:[0x21,0x01] },
+      { v:new Traverser('A', 2),                  b:[0x21,0x00, 0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
 
       // TODO: "register" other types
     ]
