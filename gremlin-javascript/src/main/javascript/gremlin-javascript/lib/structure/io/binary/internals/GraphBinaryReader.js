@@ -50,7 +50,7 @@ module.exports = class GraphBinaryReader {
     cursor = cursor.slice(1); // skip version
 
     // {request_id} is a nullable UUID
-    ({ v: response.request_id, len } = this.ioc.uuidSerializer.deserialize(cursor, false, true));
+    ({ v: response.requestId, len } = this.ioc.uuidSerializer.deserialize(cursor, false, true));
     cursor = cursor.slice(len);
 
     // {status_code} is an Int
