@@ -99,7 +99,7 @@ module.exports = class MapSerializer {
           ({ v: key, len: key_len } = this.ioc.anySerializer.deserialize(cursor));
           len += key_len; cursor = cursor.slice(key_len);
         } catch (e) {
-          throw new Error(`{item_${i}} key: ${e.message.replace(/\.$/, '')}`);
+          throw new Error(`{item_${i}} key: ${e.message}`);
         }
 
         let value, value_len;
@@ -107,7 +107,7 @@ module.exports = class MapSerializer {
           ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
           len += value_len; cursor = cursor.slice(value_len);
         } catch (e) {
-          throw new Error(`{item_${i}} value: ${e.message.replace(/\.$/, '')}`);
+          throw new Error(`{item_${i}} value: ${e.message}`);
         }
 
         v[key] = value;

@@ -75,8 +75,121 @@ module.exports = class BytecodeSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer) {
-    // TODO
+  deserialize(buffer, fullyQualifiedFormat=true) {
+    let len = 0;
+    let cursor = buffer;
+
+    try {
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+        throw new Error('buffer is missing');
+      if (buffer.length < 1)
+        throw new Error('buffer is empty');
+
+      if (fullyQualifiedFormat) {
+        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
+        if (type_code !== this.ioc.DataType.BYTECODE)
+          throw new Error('unexpected {type_code}');
+
+        if (cursor.length < 1)
+          throw new Error('{value_flag} is missing');
+        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
+        if (value_flag === 1)
+          return { v: null, len };
+        if (value_flag !== 0)
+          throw new Error('unexpected {value_flag}');
+      }
+
+      const v = new Bytecode();
+
+      // steps
+
+      if (cursor.length < 4)
+        throw new Error('unexpected {steps_length} length');
+      const steps_length = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      if (steps_length < 0)
+        throw new Error('{steps_length} is less than zero');
+
+      // {step_i} is composed of {name}{values_length}{value_0}...{value_n}
+      for (let i = 0; i < steps_length; i++) {
+        // {name} is a String
+        let name, name_len;
+        try {
+          ({ v: name, len: name_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+          len += name_len; cursor = cursor.slice(name_len);
+        } catch (e) {
+          throw new Error(`{step_${i}} {name}: ${e.message}`);
+        }
+        // {values_length} is an Int describing the amount values
+        let values_length, values_length_len;
+        try {
+          ({ v: values_length, len: values_length_len} = this.ioc.intSerializer.deserialize(cursor, false));
+          len += values_length_len; cursor = cursor.slice(values_length_len);
+        } catch (e) {
+          throw new Error(`{step_${i}} {values_length}: ${e.message}`);
+        }
+        if (values_length < 0)
+          throw new Error(`{step_${i}} {values_length} is less than zero`);
+        // {value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument
+        let values = [], value, value_len;
+        for (let j = 0; j < values_length; j++) {
+          try {
+            ({ v: value, len: value_len} = this.ioc.anySerializer.deserialize(cursor));
+            len += value_len; cursor = cursor.slice(value_len);
+            values.push(value);
+          } catch (e) {
+            throw new Error(`{step_${i}} {value_${j}}: ${e.message}`);
+          }
+        }
+        v.addStep(name, values);
+      }
+
+      // sources
+
+      if (cursor.length < 4)
+        throw new Error('unexpected {sources_length} length');
+      const sources_length = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      if (sources_length < 0)
+        throw new Error('{sources_length} is less than zero');
+
+      // {source_i} is composed of {name}{values_length}{value_0}...{value_n}
+      for (let i = 0; i < sources_length; i++) {
+        // {name} is a String
+        let name, name_len;
+        try {
+          ({ v: name, len: name_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+          len += name_len; cursor = cursor.slice(name_len);
+        } catch (e) {
+          throw new Error(`{source_${i}} {name}: ${e.message}`);
+        }
+        // {values_length} is an Int describing the amount values
+        let values_length, values_length_len;
+        try {
+          ({ v: values_length, len: values_length_len} = this.ioc.intSerializer.deserialize(cursor, false));
+          len += values_length_len; cursor = cursor.slice(values_length_len);
+        } catch (e) {
+          throw new Error(`{source_${i}} {values_length}: ${e.message}`);
+        }
+        if (values_length < 0)
+          throw new Error(`{source_${i}} {values_length} is less than zero`);
+        // {value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
+        let values = [], value, value_len;
+        for (let j = 0; j < values_length; j++) {
+          try {
+            ({ v: value, len: value_len} = this.ioc.anySerializer.deserialize(cursor));
+            len += value_len; cursor = cursor.slice(value_len);
+            values.push(value);
+          } catch (e) {
+            throw new Error(`{source_${i}} {value_${j}}: ${e.message}`);
+          }
+        }
+        v.addSource(name, values);
+      }
+
+      return { v, len };
+    }
+    catch (e) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    }
   }
 
 }

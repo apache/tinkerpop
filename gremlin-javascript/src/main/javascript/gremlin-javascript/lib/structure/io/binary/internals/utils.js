@@ -43,7 +43,7 @@ const des_error = ({ serializer, args, cursor, msg }) => {
     m += `, fullyQualifiedFormat=${fullyQualifiedFormat}`;
   if (nullable !== undefined)
     m += `, nullable=${nullable}`;
-  m += `): ${msg}.`;
+  m += `): ${msg.replace(/\.$/, '')}.`;
 
   return new Error(m);
 };
