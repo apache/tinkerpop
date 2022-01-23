@@ -24,6 +24,7 @@
 
 const assert = require('assert');
 const { anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const Bytecode = require('../../../lib/process/bytecode');
 
 const { from, concat } = Buffer;
 
@@ -34,6 +35,7 @@ describe('GraphBinary.AnySerializer', () => {
   );
 
   describe('serialize', () =>
+    // TODO: this is like a register of supported type serializers:
     it.skip('')
   );
 
@@ -51,14 +53,29 @@ describe('GraphBinary.AnySerializer', () => {
       { err:/unknown {type_code}/,                b:[0x8F] },
       { err:/unknown {type_code}/,                b:[0xFF] },
 
+      // this is like a register of supported type deserializers:
+
+      // INT
       { v:null,                                   b:[0x01,0x01] },
       { v:1,                                      b:[0x01,0x00, 0x00,0x00,0x00,0x01] },
 
+      // STRING
       { v:null,                                   b:[0x03,0x01] },
       { v:'Ab0',                                  b:[0x03,0x00, 0x00,0x00,0x00,0x03, 0x41,0x62,0x30] },
 
+      // MAP
+      { v:null,                                   b:[0x0A,0x01] },
+      { v:{},                                     b:[0x0A,0x00, 0x00,0x00,0x00,0x00] },
+
+      // UUID
       { v:null,                                   b:[0x0C,0x01] },
       { v:'00010203-0405-0607-0809-0a0b0c0d0e0f', b:[0x0C,0x00, 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F] },
+
+      // BYTECODE
+      { v:null,                                   b:[0x15,0x01] },
+      { v:new Bytecode(),                         b:[0x15,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
+
+      // TODO: "register" other types
     ]
     .forEach(({ v, b, err }, i) => it(`should be able to handle case #${i}`, () => {
       if (Array.isArray(b))
