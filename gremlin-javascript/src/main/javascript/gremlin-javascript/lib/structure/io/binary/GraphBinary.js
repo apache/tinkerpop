@@ -31,6 +31,7 @@ ioc.serializers = {};
 
 ioc.intSerializer = new (require('./internals/IntSerializer'))(ioc);
 ioc.stringSerializer = new (require('./internals/StringSerializer'))(ioc);
+ioc.listSerializer = new (require('./internals/ListSerializer'))(ioc);
 ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);
 ioc.uuidSerializer = new (require('./internals/UuidSerializer'))(ioc);
 ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);

@@ -63,6 +63,10 @@ describe('GraphBinary.AnySerializer', () => {
       { v:null,                                   b:[0x03,0x01] },
       { v:'Ab0',                                  b:[0x03,0x00, 0x00,0x00,0x00,0x03, 0x41,0x62,0x30] },
 
+      // LIST
+      { v:null,                                   b:[0x09,0x01] },
+      { v:[],                                     b:[0x09,0x00, 0x00,0x00,0x00,0x00] },
+
       // MAP
       { v:null,                                   b:[0x0A,0x01] },
       { v:{},                                     b:[0x0A,0x00, 0x00,0x00,0x00,0x00] },
