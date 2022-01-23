@@ -24,8 +24,8 @@
 
 module.exports = class IntSerializer {
 
-  static INT32_MIN = -2147483648;
-  static INT32_MAX = 2147483647;
+  INT32_MIN = -2147483648;
+  INT32_MAX = 2147483647;
 
   constructor(ioc) {
     this.ioc = ioc;
