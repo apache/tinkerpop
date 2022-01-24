@@ -63,9 +63,13 @@ module.exports = class TraverserSerializer {
           throw new Error('unexpected {value_flag}');
       }
 
-      if (cursor.length < 4)
-        throw new Error('unexpected {bulk} length');
-      const bulk = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      let bulk, bulk_len;
+      try {
+        ({ v: bulk, len: bulk_len } = this.ioc.longSerializer.deserialize(cursor, false));
+        len += bulk_len; cursor = cursor.slice(bulk_len);
+      } catch (e) {
+        throw new Error(`{bulk}: ${e.message}`);
+      }
       if (bulk < 0)
         throw new Error('{bulk} is less than zero');
 
@@ -74,7 +78,7 @@ module.exports = class TraverserSerializer {
         ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
         len += value_len; cursor = cursor.slice(value_len);
       } catch (e) {
-        throw new Error(`value: ${e.message}`);
+        throw new Error(`{value}: ${e.message}`);
       }
 
       const v = new Traverser(value, bulk);
