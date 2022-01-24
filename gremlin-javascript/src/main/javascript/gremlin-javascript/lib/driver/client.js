@@ -91,14 +91,19 @@ class Client {
    */
 
   /**
+   * @typedef {Object} RequestOptions
+   * @property {String} [requestOptions.requestId] User specified request identifier which must be a UUID.
+   * @property {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
+   * @property {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
+   * @property {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
+   * @returns
+   */
+
+  /**
    * @private
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
-   * @param {Object} [requestOptions] Configuration specific to the current request.
-   * @param {String} [requestOptions.requestId] User specified request identifier which must be a UUID.
-   * @param {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
-   * @param {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
-   * @param {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
+   * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {SubmitConfiguration}
    */
   buildSubmitRequest(message, bindings, requestOptions) {
@@ -146,15 +151,11 @@ class Client {
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
-   * @param {Object} [requestOptions] Configuration specific to the current request.
-   * @param {String} [requestOptions.requestId] User specified request identifier which must be a UUID.
-   * @param {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
-   * @param {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
-   * @param {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
+   * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise}
    */
   submit(message, bindings, requestOptions) {
-    const { processor, op, args, requestIdOverride} = this.buildSubmitRequest(
+    const { processor, op, args, requestIdOverride } = this.buildSubmitRequest(
       message,
       bindings,
       requestOptions
@@ -167,11 +168,7 @@ class Client {
    * Send a request to the Gremlin Server and receive a stream for the results, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
-   * @param {Object} [requestOptions] Configuration specific to the current request.
-   * @param {String} [requestOptions.requestId] User specified request identifier which must be a UUID.
-   * @param {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
-   * @param {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
-   * @param {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
+   * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {ReadableStream}
    */
   stream(message, bindings, requestOptions) {
