@@ -96,7 +96,6 @@ class Client {
    * @property {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
    * @property {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
    * @property {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
-   * @returns
    */
 
   /**
