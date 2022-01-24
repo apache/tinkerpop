@@ -1735,17 +1735,44 @@ const result = await client.submit("g.V()");
 console.log(result.toArray()); // 100 - all the vertices in your graph
 ----
 
-When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can accept an optional callback to run on each chunk of data returned.
+When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver return a readable stream instead of waiting for the entire result set to be loaded.
 
 [source,javascript]
 ----
 
-await client.submit("g.V()", {}, { batchSize: 25 }, (data) => {
-  console.log(data.toArray().length); // 25 - this callback will be called 4 times (100 / 25 = 4)
+const readable =  client.stream("g.V()", {}, { batchSize: 25 });
+
+readable.on('data', (data) => {
+  console.log(data.toArray()); // 25 vertices
+})
+
+readable.on('error', (error) => {
+  console.log(error); // errors returned from gremlin server
+})
+
+readable.on('end', () => {
+  console.log('query complete'); // when the finish event is received then all the results have been processed
 })
 ----
 
-If the callback is provided, each chunk of data will be processed as it comes in, rather than waiting for the entire result set to be returned.
+If you are using NodeJS >= 10.0, you can asynchronously iterate readable streams:
+
+
+[source,javascript]
+----
+
+const readable = client.stream("g.V()", {}, { batchSize: 25 });
+
+try {
+  for await (const result of readable) {
+      console.log('data', result.toArray()); // 25 vertices
+    }
+} catch (err) {
+  console.log(err);
+}
+
+----
+
 
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages

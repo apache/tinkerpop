@@ -23,6 +23,7 @@
 'use strict';
 
 const EventEmitter = require('events');
+const Stream = require('stream');
 const WebSocket = require('ws');
 const util = require('util');
 const utils = require('../utils');
@@ -47,7 +48,6 @@ const pongTimeoutDelay = 30 * 1000;
  * Represents a single connection to a Gremlin Server.
  */
 class Connection extends EventEmitter {
-
   /**
    * Creates a new instance of {@link Connection}.
    * @param {String} url The resource uri.
@@ -82,8 +82,6 @@ class Connection extends EventEmitter {
 
     // A map containing the request id and the handler
     this._responseHandlers = {};
-    // A map containg the request id and the onDataMessage handler
-    this._onDataMessageHandlers = {};
     this._reader = options.reader || this._getDefaultReader(this.mimeType);
     this._writer = options.writer || this._getDefaultWriter(this.mimeType);
     this._openPromise = null;
@@ -96,7 +94,7 @@ class Connection extends EventEmitter {
     this._header = String.fromCharCode(this.mimeType.length) + this.mimeType; // TODO: what if mimeType.length > 255
     this._header_buf = Buffer.from(this._header);
     this.isOpen = false;
-    this.traversalSource = options.traversalSource || 'g';
+    this.traversalSource = options.traversalSource || "g";
     this._authenticator = options.authenticator;
 
     this._pingEnabled = this.options.pingEnabled === false ? false : true;
@@ -120,67 +118,98 @@ class Connection extends EventEmitter {
       return this._openPromise;
     }
 
-    this.emit('log', `ws open`);
+    this.emit("log", `ws open`);
 
     this._ws = new WebSocket(this.url, {
       headers: this.options.headers,
       ca: this.options.ca,
       cert: this.options.cert,
       pfx: this.options.pfx,
-      rejectUnauthorized: this.options.rejectUnauthorized
+      rejectUnauthorized: this.options.rejectUnauthorized,
     });
 
-    this._ws.on('message', (data) => this._handleMessage(data));
-    this._ws.on('close', (code, message) => this._handleClose(code, message));
+    this._ws.on("message", (data) => this._handleMessage(data));
+    this._ws.on("close", (code, message) => this._handleClose(code, message));
 
-    this._ws.on('pong', () => {
-      this.emit('log', 'ws pong received');
+    this._ws.on("pong", () => {
+      this.emit("log", "ws pong received");
       if (this._pongTimeout) {
         clearTimeout(this._pongTimeout);
         this._pongTimeout = null;
       }
     });
-    this._ws.on('ping', () => {
-      this.emit('log', 'ws ping received');
+    this._ws.on("ping", () => {
+      this.emit("log", "ws ping received");
       this._ws.pong();
     });
 
-    return this._openPromise = new Promise((resolve, reject) => {
-      this._ws.on('open', () => {
+    return (this._openPromise = new Promise((resolve, reject) => {
+      this._ws.on("open", () => {
         this.isOpen = true;
         if (this._pingEnabled) {
           this._pingHeartbeat();
         }
         resolve();
       });
-      this._ws.on('error', (err) => {
+      this._ws.on("error", (err) => {
         this._handleError(err);
         reject(err);
       });
-    });
+    }));
   }
 
   /** @override */
-  submit(processor, op, args, requestId, onDataMessageHandler) {
+  submit(processor, op, args, requestId) {
     const rid = requestId || utils.getUuid();
-    return this.open().then(() => new Promise((resolve, reject) => {
-      if (op !== 'authentication') {
-        this._responseHandlers[rid] = {
-          callback: (err, result) => err ? reject(err) : resolve(result),
-          result: null
-        };
+    return this.open().then(
+      () =>
+        new Promise((resolve, reject) => {
+          if (op !== "authentication") {
+            this._responseHandlers[rid] = {
+              callback: (err, result) => (err ? reject(err) : resolve(result)),
+              result: null,
+            };
+          }
 
-        if (onDataMessageHandler) {
-          this._onDataMessageHandlers[rid] = onDataMessageHandler;
-        }
-      }
+          const request = {
+            requestId: rid,
+            op: op || "bytecode",
+            // if using op eval need to ensure processor stays unset if caller didn't set it.
+            processor: !processor && op !== "eval" ? "traversal" : processor,
+            args: args || {},
+          };
 
+          const request_buf = this._writer.writeRequest(request);
+          const message = Buffer.concat(
+            [this._header_buf, request_buf],
+            this._header_buf.length + request_buf.length
+          );
+          this._ws.send(message);
+        })
+    );
+  }
+
+  /** @override */
+  stream(processor, op, args, requestId) {
+    const rid = requestId || utils.getUuid();
+
+    const readableStream = new Stream.Readable({
+      objectMode: true,
+      read() {},
+    });
+
+    this._responseHandlers[rid] = {
+      callback: (err) => err ? readableStream.destroy(err) : readableStream.push(null),
+      result: readableStream,
+    };
+    
+    this.open().then(() => {
       const request = {
-        'requestId': rid,
-        'op': op || 'bytecode',
+        requestId: rid,
+        op: op || "bytecode",
         // if using op eval need to ensure processor stays unset if caller didn't set it.
-        'processor': (!processor && op !== 'eval') ? 'traversal' : processor,
-        'args': args || {},
+        processor: !processor && op !== "eval" ? "traversal" : processor,
+        args: args || {},
       };
 
       const request_buf = this._writer.writeRequest(request);
@@ -189,7 +218,9 @@ class Connection extends EventEmitter {
         this._header_buf.length + request_buf.length
       );
       this._ws.send(message);
-    }));
+    }).catch((err) => readableStream.destroy(err));
+
+    return readableStream;
   }
 
   _getDefaultReader(mimeType) {
@@ -205,7 +236,6 @@ class Connection extends EventEmitter {
   }
 
   _pingHeartbeat() {
-
     if (this._pingInterval) {
       clearInterval(this._pingInterval);
       this._pingInterval = null;
@@ -225,23 +255,22 @@ class Connection extends EventEmitter {
       }, this._pongTimeoutDelay);
 
       this._ws.ping();
-
     }, this._pingIntervalDelay);
   }
 
   _handleError(err) {
-    this.emit('log', `ws error ${err}`);
+    this.emit("log", `ws error ${err}`);
     this._cleanupWebsocket();
-    this.emit('socketError', err);
+    this.emit("socketError", err);
   }
 
   _handleClose(code, message) {
-    this.emit('log', `ws close code=${code} message=${message}`);
+    this.emit("log", `ws close code=${code} message=${message}`);
     this._cleanupWebsocket();
     if (this._closeCallback) {
       this._closeCallback();
     }
-    this.emit('close', code, message);
+    this.emit("close", code, message);
   }
 
   _handleMessage(data) {
@@ -249,17 +278,32 @@ class Connection extends EventEmitter {
     if (response.requestId === null || response.requestId === undefined) {
       // There was a serialization issue on the server that prevented the parsing of the request id
       // We invoke any of the pending handlers with an error
-      Object.keys(this._responseHandlers).forEach(requestId => {
+      Object.keys(this._responseHandlers).forEach((requestId) => {
         const handler = this._responseHandlers[requestId];
         this._clearHandler(requestId);
         if (response.status !== undefined && response.status.message) {
           return handler.callback(
             // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
-            new ResponseError(util.format(
-              'Server error (no request information): %s (%d)', response.status.message, response.status.code), response.status));
+            new ResponseError(
+              util.format(
+                "Server error (no request information): %s (%d)",
+                response.status.message,
+                response.status.code
+              ),
+              response.status
+            )
+          );
         } else {
-           // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
-          return handler.callback(new ResponseError(util.format('Server error (no request information): %j', response), response.status));
+          // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
+          return handler.callback(
+            new ResponseError(
+              util.format(
+                "Server error (no request information): %j",
+                response
+              ),
+              response.status
+            )
+          );
         }
       });
       return;
@@ -273,54 +317,80 @@ class Connection extends EventEmitter {
       return;
     }
 
-    if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
-      this._authenticator.evaluateChallenge(response.result.data).then(res => {
-        return this.submit(undefined, 'authentication', res, response.requestId);
-      }).catch(handler.callback);
+    if (
+      response.status.code === responseStatusCode.authenticationChallenge &&
+      this._authenticator
+    ) {
+      this._authenticator
+        .evaluateChallenge(response.result.data)
+        .then((res) => {
+          return this.submit(
+            undefined,
+            "authentication",
+            res,
+            response.requestId
+          );
+        })
+        .catch(handler.callback);
 
       return;
-    }
-    else if (response.status.code >= 400) {
+    } else if (response.status.code >= 400) {
       // callback in error
       return handler.callback(
         // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
-        new ResponseError(util.format('Server error: %s (%d)', response.status.message, response.status.code), response.status));
+        new ResponseError(
+          util.format(
+            "Server error: %s (%d)",
+            response.status.message,
+            response.status.code
+          ),
+          response.status
+        )
+      );
     }
+
+    const isStreamingResponse = handler.result instanceof Stream.Readable;
+
     switch (response.status.code) {
       case responseStatusCode.noContent:
-        if (this._onDataMessageHandlers[response.requestId]) {
-          this._onDataMessageHandlers[response.requestId](
+        this._clearHandler(response.requestId);
+        if (isStreamingResponse) {
+          handler.result.push(
             new ResultSet(utils.emptyArray, response.status.attributes)
           );
+          return handler.callback(null);
         }
-        this._clearHandler(response.requestId);
-        return handler.callback(null, new ResultSet(utils.emptyArray, response.status.attributes));
+        return handler.callback(
+          null,
+          new ResultSet(utils.emptyArray, response.status.attributes)
+        );
       case responseStatusCode.partialContent:
-        if (this._onDataMessageHandlers[response.requestId]) {
-          this._onDataMessageHandlers[response.requestId](
+        if (isStreamingResponse) {
+          handler.result.push(
             new ResultSet(response.result.data, response.status.attributes)
           );
-        } else {
-          handler.result = handler.result || [];
-          handler.result.push.apply(handler.result, response.result.data);
+          break;
         }
+        handler.result = handler.result || [];
+        handler.result.push.apply(handler.result, response.result.data);
         break;
       default:
-        if (this._onDataMessageHandlers[response.requestId]) {
-          this._onDataMessageHandlers[response.requestId](
+        if (isStreamingResponse) {
+          handler.result.push(
             new ResultSet(response.result.data, response.status.attributes)
           );
-          this._clearHandler(response.requestId);
           return handler.callback(null);
         }
         if (handler.result) {
           handler.result.push.apply(handler.result, response.result.data);
-        }
-        else {
+        } else {
           handler.result = response.result.data;
         }
         this._clearHandler(response.requestId);
-        return handler.callback(null, new ResultSet(handler.result, response.status.attributes));
+        return handler.callback(
+          null,
+          new ResultSet(handler.result, response.status.attributes)
+        );
     }
   }
 
@@ -350,7 +420,6 @@ class Connection extends EventEmitter {
    */
   _clearHandler(requestId) {
     delete this._responseHandlers[requestId];
-    delete this._onDataMessageHandlers[requestId];
   }
 
   /**
@@ -362,7 +431,7 @@ class Connection extends EventEmitter {
       return Promise.resolve();
     }
     if (!this._closePromise) {
-      this._closePromise = new Promise(resolve => {
+      this._closePromise = new Promise((resolve) => {
         this._closeCallback = resolve;
         this._ws.close();
       });
