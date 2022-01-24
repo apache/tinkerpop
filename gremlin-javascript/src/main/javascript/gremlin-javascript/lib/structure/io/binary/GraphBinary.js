@@ -30,6 +30,7 @@ ioc.utils = require('./internals/utils');
 ioc.serializers = {};
 
 ioc.intSerializer = new (require('./internals/IntSerializer'))(ioc);
+ioc.longSerializer = new (require('./internals/LongSerializer'))(ioc);
 ioc.stringSerializer = new (require('./internals/StringSerializer'))(ioc);
 ioc.listSerializer = new (require('./internals/ListSerializer'))(ioc);
 ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);
