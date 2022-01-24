@@ -1735,7 +1735,7 @@ const result = await client.submit("g.V()");
 console.log(result.toArray()); // 100 - all the vertices in your graph
 ----
 
-When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver return a readable stream instead of waiting for the entire result set to be loaded.
+When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can return a readable stream instead of waiting for the entire result set to be loaded.
 
 [source,javascript]
 ----
@@ -1751,7 +1751,7 @@ readable.on('error', (error) => {
 })
 
 readable.on('end', () => {
-  console.log('query complete'); // when the finish event is received then all the results have been processed
+  console.log('query complete'); // when the end event is received then all the results have been processed
 })
 ----
 
