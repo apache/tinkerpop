@@ -138,6 +138,84 @@ public class CompareTest {
                 {Compare.gte, big2, big1, true},
                 {Compare.lte, big2, big1, false},
         }));
+
+        // Compare bigdecimal numbers with double infinite
+        final BigDecimal big500 = new BigDecimal("500.00");
+
+        final Double doubleInfinite = Double.POSITIVE_INFINITY;
+        testCases.addAll(Arrays.asList(new Object[][]{
+            // big500 - doubleInfinite
+            {Compare.eq, big500, doubleInfinite, false},
+            {Compare.neq, big500, doubleInfinite, true},
+            {Compare.gt, big500, doubleInfinite, false},
+            {Compare.lt, big500, doubleInfinite, true},
+            {Compare.gte, big500, doubleInfinite, false},
+            {Compare.lte, big500, doubleInfinite, true},
+            // doubleInfinite - big500
+            {Compare.eq, doubleInfinite, big500, false},
+            {Compare.neq, doubleInfinite, big500, true},
+            {Compare.gt, doubleInfinite, big500, true},
+            {Compare.lt, doubleInfinite, big500, false},
+            {Compare.gte, doubleInfinite, big500, true},
+            {Compare.lte, doubleInfinite, big500, false},
+        }));
+
+        // Compare bigdecimal numbers with float infinite
+        final Float floatInfinite = Float.POSITIVE_INFINITY;
+        testCases.addAll(Arrays.asList(new Object[][]{
+            // big500 - floatInfinite
+            {Compare.eq, big500, floatInfinite, false},
+            {Compare.neq, big500, floatInfinite, true},
+            {Compare.gt, big500, floatInfinite, false},
+            {Compare.lt, big500, floatInfinite, true},
+            {Compare.gte, big500, floatInfinite, false},
+            {Compare.lte, big500, floatInfinite, true},
+            // floatInfinite - big500
+            {Compare.eq, floatInfinite, big500, false},
+            {Compare.neq, floatInfinite, big500, true},
+            {Compare.gt, floatInfinite, big500, true},
+            {Compare.lt, floatInfinite, big500, false},
+            {Compare.gte, floatInfinite, big500, true},
+            {Compare.lte, floatInfinite, big500, false},
+        }));
+
+        final Double doubleNegativeInfinite = Double.NEGATIVE_INFINITY;
+        testCases.addAll(Arrays.asList(new Object[][]{
+            // big500 - doubleNegativeInfinite
+            {Compare.eq, big500, doubleNegativeInfinite, false},
+            {Compare.neq, big500, doubleNegativeInfinite, true},
+            {Compare.gt, big500, doubleNegativeInfinite, true},
+            {Compare.lt, big500, doubleNegativeInfinite, false},
+            {Compare.gte, big500, doubleNegativeInfinite, true},
+            {Compare.lte, big500, doubleNegativeInfinite, false},
+            // doubleNegativeInfinite - big500
+            {Compare.eq, doubleNegativeInfinite, big500, false},
+            {Compare.neq, doubleNegativeInfinite, big500, true},
+            {Compare.gt, doubleNegativeInfinite, big500, false},
+            {Compare.lt, doubleNegativeInfinite, big500, true},
+            {Compare.gte, doubleNegativeInfinite, big500, false},
+            {Compare.lte, doubleNegativeInfinite, big500, true},
+        }));
+//
+//        // Compare bigdecimal numbers with float infinite
+//        final Float floatNegativeInfinite = Float.NEGATIVE_INFINITY;
+//        testCases.addAll(Arrays.asList(new Object[][]{
+//            // big500 - floatNegativeInfinite
+//            {Compare.eq, big500, floatNegativeInfinite, false},
+//            {Compare.neq, big500, floatNegativeInfinite, true},
+//            {Compare.gt, big500, floatNegativeInfinite, true},
+//            {Compare.lt, big500, floatNegativeInfinite, false},
+//            {Compare.gte, big500, floatNegativeInfinite, true},
+//            {Compare.lte, big500, floatNegativeInfinite, false},
+//            // floatNegativeInfinite - big500
+//            {Compare.eq, floatNegativeInfinite, big500, false},
+//            {Compare.neq, floatNegativeInfinite, big500, true},
+//            {Compare.gt, floatNegativeInfinite, big500, false},
+//            {Compare.lt, floatNegativeInfinite, big500, true},
+//            {Compare.gte, floatNegativeInfinite, big500, false},
+//            {Compare.lte, floatNegativeInfinite, big500, true},
+//        }));
+
         return testCases;
     }
 

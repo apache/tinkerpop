@@ -256,14 +256,22 @@ public final class NumberHelper {
                 return bigDecimalValue(b);
             },
             (a, b) -> {
-                if( a instanceof Float && Float.isInfinite((Float) a))
+                if( a instanceof Float && ((Float) a) == Float.POSITIVE_INFINITY)
                     return 1;
-                else if( b instanceof Float && Float.isInfinite((Float) b))
+                else if( a instanceof Float && ((Float) a) == Float.NEGATIVE_INFINITY)
                     return -1;
-                else if( a instanceof Double && Double.isInfinite((Double) a))
+                else if( b instanceof Float && ((Float) b) == Float.POSITIVE_INFINITY)
+                    return -1;
+                else if( b instanceof Float && ((Float) b) == Float.NEGATIVE_INFINITY)
                     return 1;
-                else if( b instanceof Double && Double.isInfinite((Double) b))
+                else if( a instanceof Double && ((Double) a) == Double.POSITIVE_INFINITY)
+                    return 1;
+                else if( a instanceof Double && ((Double) a) == Double.NEGATIVE_INFINITY)
                     return -1;
+                else if( b instanceof Double && ((Double) b) == Double.POSITIVE_INFINITY)
+                    return -1;
+                else if( b instanceof Double && ((Double) b) == Double.NEGATIVE_INFINITY)
+                    return 1;
                 return bigDecimalValue(a).compareTo(bigDecimalValue(b));
             });
 
