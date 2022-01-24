@@ -103,9 +103,13 @@ module.exports = class BytecodeSerializer {
 
       // steps
 
-      if (cursor.length < 4)
-        throw new Error('unexpected {steps_length} length');
-      const steps_length = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      let steps_length, steps_length_len;
+      try {
+        ({ v: steps_length, len: steps_length_len } = this.ioc.intSerializer.deserialize(cursor, false));
+        len += steps_length_len; cursor = cursor.slice(steps_length_len);
+      } catch (e) {
+        throw new Error(`{steps_length}: ${e.message}`);
+      }
       if (steps_length < 0)
         throw new Error('{steps_length} is less than zero');
 
@@ -145,9 +149,13 @@ module.exports = class BytecodeSerializer {
 
       // sources
 
-      if (cursor.length < 4)
-        throw new Error('unexpected {sources_length} length');
-      const sources_length = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      let sources_length, sources_length_len;
+      try {
+        ({ v: sources_length, len: sources_length_len } = this.ioc.intSerializer.deserialize(cursor, false));
+        len += sources_length_len; cursor = cursor.slice(sources_length_len);
+      } catch (e) {
+        throw new Error(`{sources_length}: ${e.message}`);
+      }
       if (sources_length < 0)
         throw new Error('{sources_length} is less than zero');
 

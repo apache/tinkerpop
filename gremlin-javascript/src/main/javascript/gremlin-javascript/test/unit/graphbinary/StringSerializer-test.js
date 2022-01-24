@@ -73,9 +73,6 @@ describe('GraphBinary.StringSerializer', () => {
     { des:1, err:/unexpected {value_flag}/,    fq:1,       b:[0x03,0xFF] },
     { des:1, err:/unexpected {value_flag}/,    fq:0, na:1, b:[0xFF] },
 
-    { des:1, err:/unexpected {length} length/, fq:1,       b:[0x03,0x00] },
-    { des:1, err:/unexpected {length} length/,             b:[0x11] },
-    { des:1, err:/unexpected {length} length/,             b:[0x11,0x22,0x33] },
     { des:1, err:/{length} is less than zero/,             b:[0xFF,0xFF,0xFF,0xFF] },
     { des:1, err:/{length} is less than zero/,             b:[0x80,0x00,0x00,0x00] },
 

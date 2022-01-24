@@ -61,9 +61,13 @@ module.exports = class ListSerializer {
           throw new Error('unexpected {value_flag}');
       }
 
-      if (cursor.length < 4)
-        throw new Error('unexpected {length} length');
-      const length = cursor.readInt32BE(); len += 4; cursor = cursor.slice(4);
+      let length, length_len;
+      try {
+        ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
+        len += length_len; cursor = cursor.slice(length_len);
+      } catch (e) {
+        throw new Error(`{length}: ${e.message}`);
+      }
       if (length < 0)
         throw new Error('{length} is less than zero');
 
