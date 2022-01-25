@@ -445,7 +445,7 @@ Format: `{bulk}{value}`
 
 Where:
 
-- `{bulk}` is an `Int`.
+- `{bulk}` is a `Long`.
 - `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== BigDecimal
