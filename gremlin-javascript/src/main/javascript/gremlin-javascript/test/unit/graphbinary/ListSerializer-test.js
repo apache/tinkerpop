@@ -38,6 +38,10 @@ describe('GraphBinary.ListSerializer', () => {
     { v:null,                                          fq:1, b:[0x09, 0x01] },
     { v:null,                                          fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
 
+    { v:[],                                                  b:[0x00,0x00,0x00,0x00] },
+    { v:[2147483647],                                        b:[0x00,0x00,0x00,0x01, 0x01,0x00,0x7F,0xFF,0xFF,0xFF] },
+    { v:[-1,'A'],                                            b:[0x00,0x00,0x00,0x02, 0x01,0x00,0xFF,0xFF,0xFF,0xFF, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+
     { des:1, err:/buffer is missing/,                  fq:1, b:undefined },
     { des:1, err:/buffer is missing/,                  fq:0, b:undefined },
     { des:1, err:/buffer is missing/,                  fq:1, b:null },
