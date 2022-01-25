@@ -88,6 +88,9 @@ describe('GraphBinary.AnySerializer', () => {
       { v:null,                                   b:[0x21,0x01] },
       { v:new Traverser('A', 2n),                 b:[0x21,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
 
+      // UNSPECIFIED_NULL
+      { v:null,                                   b:[0xFE,0x01] },
+
       // TODO: "register" other types
     ]
     .forEach(({ v, b, err }, i) => it(`should be able to handle case #${i}`, () => {
