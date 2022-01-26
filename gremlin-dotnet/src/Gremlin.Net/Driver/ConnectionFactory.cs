@@ -21,31 +21,28 @@
 
 #endregion
 
-using System;
-using System.Net.WebSockets;
-
 namespace Gremlin.Net.Driver
 {
     internal class ConnectionFactory : IConnectionFactory
     {
-        private readonly Action<ClientWebSocketOptions> _webSocketConfiguration;
+        private readonly WebSocketSettings _webSocketSettings;
         private readonly GremlinServer _gremlinServer;
         private readonly string _sessionId;
-        private IMessageSerializer _messageSerializer;
+        private readonly IMessageSerializer _messageSerializer;
 
         public ConnectionFactory(GremlinServer gremlinServer, IMessageSerializer messageSerializer,
-            Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
+            WebSocketSettings webSocketSettings, string sessionId)
         {
             _gremlinServer = gremlinServer;
             _messageSerializer = messageSerializer;
             _sessionId = sessionId;
-            _webSocketConfiguration = webSocketConfiguration;
+            _webSocketSettings = webSocketSettings;
         }
 
         public IConnection CreateConnection()
         {
             return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password,
-                _messageSerializer, _webSocketConfiguration, _sessionId);
+                _messageSerializer, _webSocketSettings, _sessionId);
         }
     }
 }
