@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
 import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -104,7 +102,7 @@ public class OrderTest {
     @RunWith(Parameterized.class)
     public static class OrderabilityTest {
 
-        private static final Comparator order = GremlinValueComparator.ORDER;
+        private static final Comparator order = GremlinValueComparator.ORDERABILITY;
 
         private static final Object NaN = new Object() {
             public String toString() { return "NaN"; }
@@ -146,6 +144,11 @@ public class OrderTest {
                     {asList(0), asList(Double.NaN), -1},
                     {asMap(1, 1), asMap(1, null), 1},
                     {asList(0), asList("foo"), Type.Number.priority() - Type.String.priority()},
+                    // sorting
+                    {asSet(1, 2, 3), asSet(3, 2, 1), 0},
+                    {asSet(1, 2, 3), asSet(3.0, 2.0, 1.0), 0},
+                    {asMap(1, 1, 2, 2, 3, 3), asMap(3, 3, 2, 2, 1, 1), 0},
+                    {asMap(1, 1, 2, 2, 3, 3), asMap(3.0, 3.0, 2.0, 2.0, 1.0, 1.0), 0},
 
             }));
         }

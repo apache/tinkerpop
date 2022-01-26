@@ -509,6 +509,23 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public Object visitNanLiteral(final GremlinParser.NanLiteralContext ctx) {
+        return Double.NaN;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
+        final String infLiteral = ctx.getText();
+        return infLiteral.charAt(0) == '-' ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * {@inheritDoc}
      * Generic literal collection returns a list of {@code Object}
      */
     @Override

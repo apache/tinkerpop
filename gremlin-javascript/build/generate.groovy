@@ -92,7 +92,8 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'const Scope = traversalModule.scope\n' +
                     'const T = traversalModule.t\n' +
                     'const TextP = traversalModule.TextP\n' +
-                    'const WithOptions = traversalModule.withOptions\n')
+                    'const WithOptions = traversalModule.withOptions\n'
+    )
 
     // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
     // at runtime. using this approach for now as these are the only such situations encountered so far. a better

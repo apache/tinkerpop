@@ -215,6 +215,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     public GremlinGroovyScriptEngine(final Customizer... customizers) {
         // initialize the global scope in case this scriptengine was instantiated outside of the ScriptEngineManager
         setBindings(new ConcurrentBindings(), ScriptContext.GLOBAL_SCOPE);
+        context.setAttribute("Infinity", Double.POSITIVE_INFINITY, ScriptContext.GLOBAL_SCOPE);
 
         final List<Customizer> listOfCustomizers = new ArrayList<>();
 

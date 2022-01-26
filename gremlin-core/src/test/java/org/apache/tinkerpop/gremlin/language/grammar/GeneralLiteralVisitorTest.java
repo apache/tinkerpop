@@ -43,6 +43,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Generic Literal visitor test
@@ -598,6 +599,65 @@ public class GeneralLiteralVisitorTest {
             // verify total number of elements
             final List<Object> genericLiterals = (List<Object>) genericLiteral;
             Assert.assertTrue(genericLiterals.isEmpty());
+        }
+    }
+
+    public static class NullNaNInfTest {
+
+        @Test
+        public void testNull() {
+            final String script = "null";
+
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.NullLiteralContext ctx = parser.nullLiteral();
+            assertEquals(null, GenericLiteralVisitor.getInstance().visitNullLiteral(ctx));
+        }
+
+        @Test
+        public void testNaN() {
+            final String script = "NaN";
+
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.NanLiteralContext ctx = parser.nanLiteral();
+
+            final Object o = GenericLiteralVisitor.getInstance().visitNanLiteral(ctx);
+            assertTrue(o instanceof Double);
+            assertTrue(Double.isNaN((double) o));
+        }
+
+        @Test
+        public void testInf() {
+            final String script = "Infinity";
+
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
+
+            assertEquals(Double.POSITIVE_INFINITY, GenericLiteralVisitor.getInstance().visitInfLiteral(ctx));
+        }
+
+        @Test
+        public void testPosInf() {
+            final String script = "+Infinity";
+
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
+
+            assertEquals(Double.POSITIVE_INFINITY, GenericLiteralVisitor.getInstance().visitInfLiteral(ctx));
+        }
+
+        @Test
+        public void testNegInf() {
+            final String script = "-Infinity";
+
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
+
+            assertEquals(Double.NEGATIVE_INFINITY, GenericLiteralVisitor.getInstance().visitInfLiteral(ctx));
         }
     }
 }

@@ -180,6 +180,12 @@ def _convert(val, ctx):
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match(r"^s\[.*\]$", val):           # parse set
         return set() if val == "s[]" else set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):          # parse nan
+        return float("nan")
+    elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):     # parse +inf
+        return float("inf")
+    elif isinstance(val, str) and re.match(r"^d\[-Infinity\]$", val):    # parse -inf
+        return float("-inf")
     elif isinstance(val, str) and re.match(r"^d\[.*\]\.[bsilfdmn]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
     elif isinstance(val, str) and re.match(r"^v\[.*\]\.id$", val):       # parse vertex id
@@ -224,10 +230,17 @@ def __find_cached_element(ctx, graph_name, identifier, element_type):
     return cache[identifier]
 
 
+def _is_nan(val):
+    return isinstance(val, float) and (val != val)
+
+
 def _convert_results(val):
     if isinstance(val, Path):
         # kill out labels as they aren't in the assertion logic
         return Path([set([])], val.objects)
+    elif _is_nan(val):
+        # we need to use the string form for NaN to test the results since float.nan != float.nan
+        return "d[NaN]"
     else:
         return val
 
@@ -248,6 +261,9 @@ def _table_assertion(data, result, ctx, ordered):
     # from the list - in the end there should be no items left over and each will have been asserted
     for ix, line in enumerate(data):
         val = _convert(line['result'], ctx)
+        # we need to use the string form for NaN to test the results since float.nan != float.nan
+        if _is_nan(val):
+            val = "d[NaN]"
 
         # clear the labels since we don't define them in .feature files
         if isinstance(val, Path):

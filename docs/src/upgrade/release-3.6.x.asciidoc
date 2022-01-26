@@ -680,6 +680,5 @@ Feature tags have been introduced for feature tests that stress these new semant
 A new GraphFeature has been added "OrderabilitySemantics" to signify compliance with the new comparability/orderability
 semantics.
 
-See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_comparability[Provider Documentation]
-See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_orderability[Provider Documentation]
+See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_gremlin_semantics[Gremlin Semantics]
 See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/developer/#_for_committers[Developer Documentation]

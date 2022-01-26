@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.util.Comparator;
-import java.util.Random;
 
 import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 
@@ -86,7 +85,7 @@ public enum Order implements Comparator<Object> {
 
     private static final Comparator<Object> ORDER = Comparator.comparing(
             // first transform (strip Traverser layer and convert Enums)
-            Order::transform, GremlinValueComparator.ORDER);
+            Order::transform, GremlinValueComparator.ORDERABILITY);
 
     /**
      * Strip the Traverser layer and convert Enum to string.

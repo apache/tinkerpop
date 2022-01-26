@@ -53,38 +53,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.NoReason},
                 {"g_V_aggregateXaX_byXageX_capXaX_unfold_sum", IgnoreReason.NoReason},
                 {"g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack", IgnoreReason.NoReason},
-                {"g_injectXlistXnull_10_20_nullXX_meanXlocalX", IgnoreReason.NoReason},
-                {"g_injectXnull_10_20_nullX_mean", IgnoreReason.NoReason},
-                {"g_injectXnull_10_5_nullX_sum", IgnoreReason.NoReason},
-                {"g_V_hasIdXnullX", IgnoreReason.NoReason},
-                {"g_V_hasIdXeqXnullXX", IgnoreReason.NoReason},
                 {"g_V_hasIdX2_nullX", IgnoreReason.NoReason},
                 {"g_V_hasIdX2AsString_nullX", IgnoreReason.NoReason},
-                {"g_injectXlistXnull_10_5_nullXX_sumXlocalX", IgnoreReason.NoReason},
-                {
-                    "g_addVXpersonX_propertyXname_joshX_propertyXage_nullX",
-                    IgnoreReason.NoReason
-                },
-                {
-                    "g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX",
-                    IgnoreReason.NoReason
-                },
-                {
-                    "g_addEXknowsXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX",
-                    IgnoreReason.NoReason
-                },
-                {
-                    "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack",
-                    IgnoreReason.NoReason
-                },
-                {
-                    "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
-                    IgnoreReason.NoReason
-                },
-                {
-                    "g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX",
-                    IgnoreReason.ArrayKeysInMapNotAssertingInGherkin
-                }
+                {"g_addVXpersonX_propertyXname_joshX_propertyXage_nullX", IgnoreReason.NoReason},
+                {"g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX", IgnoreReason.NoReason},
+                {"g_addEXknowsXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX", IgnoreReason.NoReason},
+                {"g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack", IgnoreReason.NoReason},
+                {"g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack", IgnoreReason.NoReason},
+                {"g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX", IgnoreReason.ArrayKeysInMapNotAssertingInGherkin}
             };
 
         private static class Keywords

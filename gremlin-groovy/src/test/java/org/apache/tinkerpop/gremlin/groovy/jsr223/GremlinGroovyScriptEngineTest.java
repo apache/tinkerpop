@@ -32,6 +32,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -509,4 +511,35 @@ public class GremlinGroovyScriptEngineTest {
 
         assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
     }
+
+    @Test
+    public void shouldHandleNaNInf() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((GroovyCustomizer)
+                () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
+
+        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+
+        final Traversal.Admin t = (Traversal.Admin)
+                engine.eval("g.inject(-Infinity,NaN,xx1).is(P.eq(Infinity).or(P.eq(NaN)).or(P.eq(+Infinity)))", bindings);
+        final Bytecode bytecode = t.getBytecode();
+
+        final Map<String,Object> bytecodeBindings = bytecode.getBindings();
+        assertEquals(1, bytecodeBindings.size());
+        assertThat(bytecodeBindings.containsKey("xx1"), is(true));
+
+        final JavascriptTranslator jsTranslator = JavascriptTranslator.of("g");
+        final String gremlinAsJs = jsTranslator.translate(bytecode).getScript();
+        assertEquals("g.inject(Number.NEGATIVE_INFINITY,Number.NaN,xx1).is(P.eq(Number.POSITIVE_INFINITY).or(P.eq(Number.NaN)).or(P.eq(Number.POSITIVE_INFINITY)))", gremlinAsJs);
+
+        final PythonTranslator pyTranslator = PythonTranslator.of("g");
+        final String gremlinAsPy = pyTranslator.translate(bytecode).getScript();
+        assertEquals("g.inject(float('-inf'),float('nan'),xx1).is_(P.eq(float('inf')).or_(P.eq(float('nan'))).or_(P.eq(float('inf'))))", gremlinAsPy);
+
+        final DotNetTranslator dnTranslator = DotNetTranslator.of("g");
+        final String gremlinAsDn = dnTranslator.translate(bytecode).getScript();
+        assertEquals("g.Inject(Double.NegativeInfinity,Double.NaN,xx1).Is(P.Eq(Double.PositiveInfinity).Or(P.Eq(Double.NaN)).Or(P.Eq(Double.PositiveInfinity)))", gremlinAsDn);
+    }
+
 }

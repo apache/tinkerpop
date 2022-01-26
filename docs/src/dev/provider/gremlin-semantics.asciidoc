@@ -29,25 +29,20 @@ sub-sections below.
 
 == Types
 
-The TinkerPop query execution runtime handles the following primitive types:
+The TinkerPop query execution runtime is aligned with Java primitives and handles the following primitive types:
 
-* Boolean: true or false
+* Boolean
 * Integer
-  ** int8
-  ** int16 (short)
-  ** int32
-  ** int64 (long)
-  ** uint8 (byte)
-  ** uint16
-  ** uint32
-  ** uint64
-  ** BigInt
-* Float
-  ** float32
-  ** float64 (double)
-  *** In Double and Float, we have a concept of INFINITY / https://en.wikipedia.org/wiki/Signed_zero[signed-zero], and NaN.
-  ** BigFloat
-* String / Char
+  ** Byte (int8)
+  ** Short (int16)
+  ** Integer (int32)
+  ** Long (int64)
+  ** BigInteger
+* Decimal
+  ** Float (32-bit) (including +/-Infinity and NaN)
+  ** Double (64-bit) (including +/-Infinity and NaN)
+  ** BigDecimal
+* String
 * UUID
 * Date
 * `nulltype`
@@ -61,434 +56,323 @@ when some types are not supported Graph providers needs to map unsupported types
 mapping can be done in either information-preserving manner or non-preserving manner. Graph providers must tell which
 mapping they support through `Graph.Features` as well as which types they support.
 
-* Which atomic types are supported
+* Which primitive types are supported
   ** Boolean, Integer, Float, String, UUID and Date
   ** TinkerPop by default supports all of them
 * Which integer types are supported
-  ** int8, int16, int32, int64, uint8, uint16, uint32, uint64, BigInt
-  ** TinkerPop by default supports uint8 (byte), int16 (short), int32 (int), int64 (long) and BigInt
+  ** TinkerPop by default supports int8 (Byte), int16 (Short), int32 (Integer), int64 (Long) and BigInteger in Java
 * Which float types are supported
-  ** float32, float64 and BigFloat
   ** TinkerPop by default supports all as float, double, and BigDecimal in Java
 
 In addition to these, there are composite types as follows:
 
-* Vertex
-* Edge
-* VertexProperty
-* Property
-** Edge property
-** Vertex meta property
-* PropertyKey
-* PropertyValue
-* Label
-* ID
+* Graph Element
+** Vertex
+** Edge
+** VertexProperty
+* Property (edge properties and meta properties)
+** (Key, Value) pair
+** Key is String, Value is any of the primitive types defined above
 * Path
 * List
 * Map
-* Set / BulkSet
-* Map.Entry (obtained from unfolding a Map)
+* Map.Entry
+* Set
 
-== Type Casting
+=== Numeric Type Promotion
 
-TinkerPop performs type casting a.k.a type promotion for Numbers. Numbers are  Byte, Short, Integer, Long, Float,
-Double, BigInteger, and BigDecimal. Here is the rule how types are promoted:
+TinkerPop performs type promotion a.k.a type casting for Numbers. Numbers are Byte, Short, Integer, Long, Float,
+Double, BigInteger, and BigDecimal. In general, numbers are compared using semantic equivalence, without regard for
+their specific type, e.g. `1 == 1.0`.
 
-* If at least one is BigDecimal then compare as BigDecimal
-* If at least one is BigInteger then compare as BigInteger
-* If at least one is Double then compare as Double
-* If one of them is a Float, then convert both to floating type of highest common bit denomination
-** If another value is Long or Double, we need 64bit so convert both to Double
-** Otherwise convert both to Float
-* If at least one is Long then compare as Long
-* If at least one is Integer then compare as Integer
-* If at least one is Short then compare as Short
-* If at least one is Byte then compare as Byte
+Numeric types are promoted as follows:
+
+* First determine whether to use floating point or not. If any numbers in the comparison are floating point then we
+convert all of them to floating point.
+* Next determine the maximum bit size of the numerics being compared.
+* If any floating point are present:
+** If the maximum bit size is 32 (up to Integer/Float), we compare as Float
+** If the maximum bit size is 64 (up to Long/Double), we compare as Double
+** Otherwise we compare as BigDecimal
+* If no floating point are present:
+** If the maximum bit size is 8 we compare as Byte
+** If the maximum bit size is 16 we compare as Short
+** If the maximum bit size is 32 we compare as Integer
+** If the maximum bit size is 64 we compare as Long
+** Otherwise we compare as BigInteger
 
 BigDecimal and BigInteger may not be supported depending on the language and Storage, therefore the behavior of type
 casting for these two types can vary depending on a Graph provider.
 
-== Equality vs. Equivalence
+[[gremlin-semantics-concepts]]
+== Comparability, Equality, Orderability, and Equivalence
 
-Equality defines when two values are considered equal in the context of database lookups and predicates, while
-equivalence defines value collation semantics in the context of, for instance, deduplication. For instance,
-equivalence over two values `a := Double.NaN` and `b:= Double.NaN` is true, but equality would (in our proposal) be
-defined as false; the rational here (which is commonly found in query and programming languages) is that comparing two
-"unknown" numbers — which is a frequent use case for NaN, cannot certainly be identified as equal in comparison, but it
-typically makes sense to group them together in, for instance, aggregations and order by.
-
-Both equality and equivalence can be understood as complete, i.e. the result of equality and equivalence checks is
-always either `true` or `false` (in particular, it never returns nulltype` or throws an exception). The details on
-equality and equivalence are sketched in the following two subsections, respectively.
+This section of the document attempts to more clearly define the semantics for different types of value comparison
+within the Gremlin language and reference implementation. There are four concepts related to value comparison:
 
 [[gremlin-semantics-equality]]
-=== Equality
+===== Equality
+Equality semantics is used by the equality operators (`P.eq/neq`) and contains operators derived from them
+(`P.within/without`). It is also used for implicit `P.eq` comparisons, for example `g.V().has("age", 25)` - equality
+semantics are used to look up vertices by `age` when considering the value.
 
-* Used by equality and membership predicates (such as `P.eq, `P.neq`, and the list membership `P.within`) in Gremlin.
-When this `eq` operator returns `true` for two values (LHS and RHS), by definition LHS and RHS are equal to each other.
-* If graph providers need join semantics in query execution, equality should be used to join data over join keys. +
-Example:
+[[gremlin-semantics-comparability]]
+===== Comparability
+Comparability semantics is used by the compare operators (`P.lt/lte/gt/gte`) and operators derived from them
+(`P.inside/outside/between`) and defines the semantics of how to compare two values.
 
-[code]
-----
-// equality over two ids
-gremlin> g.V().has(id, "some id")
-// equality over vertices
-gremlin> g.V().as("v").out().out().where(eq("v"))
-----
+[[gremlin-semantics-orderability]]
+===== Orderability
+Orderability semantics defines how two values are compared in the context of an `order()` operation. These semantics
+have important differences from Comparability.
 
-* Equality adheres to type promotion semantics for numerical values, i.e. equality holds for values of different
-numerical type if they cast into the exactly same same value of the lowest common super type.
-* Other than the type promotion between Numbers, two values of different type are always regarded as not equal.
-* Equality checks always return `true` or `false`. They never result in `nulltype` output, undefined behavior, nor do
-they ever throw an error.
+[[gremlin-semantics-equivalence]]
+===== Equivalence
+Equivalence semantics are slightly different from Equality and are used for operations such as `dedup()` and `group()`.
+Key differences include handling of numeric types and NaN.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests]
+Both Equality and Equivalence can be understood as complete, i.e. the result of equality and equivalence checks is
+always either `TRUE` or `FALSE` (in particular, it never returns `nulltype` or throws an exception). Similarly,
+Orderability can be also understood as complete - any two values can be compared without error for ordering purposes.
+Comparability semantics are not complete with respect to binary boolean semantics, and as such, Gremlin introduces a
+ternary boolean semantics for Comparability that includes a third boolean state - `ERROR`, with its own well-defined
+semantics.
 
-==== Primitive types
+==== Ternary Boolean Logics
+
+When evaluating boolean value expressions, we sometimes encounter situations that cannot be proved as either `TRUE` or
+`FALSE`. Common `ERROR` cases are Comparability against `NaN`, cross-type Comparability (e.g. `String` vs `Numeric`), or
+other invalid arguments to other boolean value expressions.
+
+Rather than throwing an exception and halting the traversal, we extend normal binary boolean logics and introduce a
+third boolean option option - `ERROR`. How this `ERROR` result is handled is Graph provider dependent. For the reference
+implementation, `ERROR` is an internal representation only and will not be propagated back to the client as an
+exception - it will eventually hit a binary reduction operation and be reduced to `FALSE` (thus quietly filters the
+solution that produced the `ERROR`). Before that happens though, it will be treated as its own boolean value with its
+own semantics that can be used in other boolean value expressions, such as Connective predicates (`P.and/or`) and
+negation (`P.not`).
+
+===== Ternary Boolean Semantics for `AND`:
+|===
+|A|B|AND|Intuition
+
+| `TRUE` | `TRUE` | `TRUE` |
+| `TRUE` | `FALSE` | `FALSE` |
+| `TRUE` | `ERROR` | `ERROR` | `TRUE && X == X`
+| `FALSE` | `TRUE` | `FALSE` |
+| `FALSE` | `FALSE` | `FALSE` |
+| `FALSE` | `ERROR` | `FALSE` | `FALSE && X == FALSE`
+| `ERROR` | `TRUE` | `ERROR` | `X && TRUE == X`
+| `ERROR` | `FALSE` | `FALSE` | `X && FALSE == FALSE`
+| `ERROR` | `ERROR` | `ERROR` | `X && X == X`
+|===
+===== Ternary Boolean Semantics for `OR`:
+|===
+|A|B|OR|Intuition
+
+| `TRUE` | `TRUE` | `TRUE` |
+| `TRUE` | `FALSE` | `TRUE` |
+| `TRUE` | `ERROR` | `TRUE` | `TRUE \|\| X == TRUE`
+| `FALSE` | `TRUE` | `TRUE` |
+| `FALSE` | `FALSE` | `FALSE` |
+| `FALSE` | `ERROR` | `ERROR` | `FALSE \|\| X == X`
+| `ERROR` | `TRUE` | `TRUE` | `X \|\| TRUE == TRUE`
+| `ERROR` | `FALSE` | `ERROR` | `X \|\| FALSE == X`
+| `ERROR` | `ERROR` | `ERROR` | `X \|\| X == X`
+|===
+===== Ternary Boolean Semantics for `OR`:
+The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERROR` values. The key idea is that, for an
+`ERROR` value, we can neither prove nor disprove the expression, and hence stick with `ERROR`.
+|===
+|Argument | Result
+
+|`TRUE` | `FALSE`
+|`FALSE` | `TRUE`
+|`ERROR` | `ERROR`
+|===
+
+[[gremlin-semantics-equality-comparability]]
+=== Equality and Comparability
+<<Equality,Equality>> and <<Comparability,Comparability>> can be understood to be semantically aligned with one another.
+As mentioned above, <<Equality,Equality>> is used for `P.eq/neq` (and derived predicates) and
+<<Comparability,Comparability>> is used for `P.lt/lte/gt/gte` (and derived predicates).
+If we define Comparability using a `compare()` function over `A` and `B` as follows:
+```
+If (A, B) are Comparable per Gremlin semantics, then:
+  For A < B,  Comparability.compare(A, B) < 0
+  For A > B,  Comparability.compare(A, B) > 0
+  For A == B, Comparability.compare(A, B) == 0
+If (A, B) not Comparable, then:
+              Comparability.compare(A, B) => ERROR
+```
+Then we can define Equality using an `equals()` function over `A` and `B` that acts as a strict binary
+reduction of `Comparability.compare(A, B) == 0`:
+```
+For any (A, B):
+  Comparability.compare(A, B) == 0     implies Equality.equals(A, B) == TRUE
+  Comparability.compare(A, B) <> 0     implies Equality.equals(A, B) == FALSE
+  Comparability.compare(A, B) => ERROR implies Equality.equals(A, B) == FALSE
+```
+
+The following table illustrates how <<Equality,Equality>> and <<Comparability,Comparability>> operate under various
+classes of comparison:
+|===
+|Class|Arguments|<<Comparability,Comparability>>|<<Equality,Equality>>
+
+|Comparisons Involving `NaN`|`(NaN,X)` +
+
+where `X` = any value, including `NaN`|`ERROR` +
+
+Comparing `NaN` to anything (including itself) cannot be evaluated.|`FALSE`
+
+|Comparisons Involving `null`|`(null,null)`|`compare() == 0`|`TRUE`
+||`(null, X)`|`ERROR` +
+
+Since `nulltype` is its own type, this falls under the umbrella of cross-type comparisons. |`FALSE`
+|Comparisons within the same type family (i.e. String vs. String, Number vs. Number, etc.)|`(X, Y)` +
+
+where `X` and `Y` of same type|Result of `compare()` depends on type semantics, defined below.|`TRUE` iff `compare() == 0`
+|Comparisons across types (i.e. String vs. Number)|`(X, Y)` +
+
+where `X` and `Y` of different type|`ERROR`|`FALSE`
+
+|===
+
+==== Equality and Comparability Semantics by Type
+
+For <<Equality,Equality>> and <<Comparability,Comparability>> evaluation of values within the same type family, we
+define the semantics per type family as follows.
 
 ===== Number
 
-Number consists of Byte, Short, Integer, Long, Float, Double, BigInteger, and BigDecimal.
+Numbers are compared using type promotion, described above. As such, `1 == 1.0`.
 
-* If either one of LHS or RHS is Number and another isn't, eq returns `false`.
-* If both LHS and RHS are Number, it follows the type casting described above and then check the equality.
-* Example for edge cases:
-    ** -0.0 eq 0.0  = `true`
-    ** +0.0 eq 0.0 = `true`
-    ** -0.0 eq +0.0 = `true`
-    ** NaN eq NaN  = `false`
-    ** +INF eq +INF = `true`
-    ** -INF eq -INF = `true`
-    ** -INF eq +INF = `false`
-* TinkerPop is JVM based so there can be ±INF^^float and ±INF^^double, NaN^^float and NaN^^double. They also adhere to
-the type promotion rules.
+Edge cases:
+
+* `-0.0 == 0.0 == +0.0`
+* `+INF == +INF`,  `-INF == -INF`,  `-INF != +INF`
+** `Float.±Infinity` and `Double.±Infinity` adhere to the same type promotion rules.
+* As described above `NaN` is not <<Equality,Equal>> and not <<Comparability,Comparable>> to any Number (including itself).
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
-===== Boolean
-
-* If either one of LHS or RHS is Boolean and another isn't, return `false`
-* True != False, True == True, False == False
-
-===== String
-
-* If either one of LHS or RHS is String and another isn't, return `false`
-* We assume the common graphical order over unicode strings.
-* LHS and RHS needs to be lexicographically equal for LHS eq RHS == `true` for String.
-
-===== UUID
-
-* UUID is evaluated based on its String representation.
-* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50" are not equal to each other.
-
-===== Date
-
-* If either one of LHS or RHS is Date and another isn't, return `false`
-* LHS eq RHS == `true` when both LHS and RHS value are numerically identical in Unix Epoch time.
-
 ===== nulltype
-
-* If either one of LHS or RHS is `nulltype` and another isn't, return `false`
-* If both LHS and RHS are `nulltype`, return `true`
-
-==== Composite types
-
-For all of them, if LHS and RHS is not of the same data type, equality returns `false`. The following semantics applied
-when both LHS and RHS has the data type.
-
-===== Vertex / Edge / VertexProperty
-
-They are considered an `Element` family in TinkerPop and if two `Element` objects have the same type and have the same
-`T.id`, they are considered as equal.
-
-===== Property
-
-If key and value are same, two properties are equal.
-
-===== PropertyKey
-
-`T.key` is `String` type so equality for String type applies.
-
-===== PropertyValue
-
-Any type, so equality for a corresponding type applies.
-
-===== ID
-
-`T.id` can be any type, so equality for a corresponding type applies.
-
-===== Label
-
-`T.label` is `String` type so equality for `String` type applies.
-
-===== Path
-
-Two `Path` objects are equal when their path elements are equal (using equality of List), and the corresponding path
-labels are also equal.
-
-===== List
-
-* Two lists are equal if they contain the same (equal to each other) elements in the same order.
-
-===== Map
-
-* Two maps are equal when a Set of key-value pairs from those two maps are equal to each other. A key-value pair is
-equal to another pair if and only if both its key and value are equal to each other.
-
-===== Set
-
-* Two sets are equal if they contain the same (equal to each other) elements.
-
-=== Equivalence
-
-* Equivalence defines how TinkerPop deals with two values to be grouped or de-duplicated. Specifically it is necessary
-for the dedup and group steps in Gremlin. +
-Example:
-
-[code]
-----
-// deduplication needs equivalence over two property values
-gremlin> g.V().dedup().by("name")
-// grouping by equivalence over two property values
-gremlin> g.V().group().by("age")
-----
-
-* Equivalence ignores type promotion semantics, i.e. two values of different types (e.g. 2^^int vs. 2.0^^float) are
-always considered to be non-equivalent. (There is an open question whether equivalence takes type promotion into account).
-* For Number,
-** Because type promotion is not effective, if the types are different then two numbers are never equivalent
-** NaN is not equal to NaN, but equivalent to each other
-* Other than the edge case around NaN (and, as of today, Numbers), equivalence in TinkerPop is identical to equality.
-* Like equality, equivalence checks always return `true` or `false`. They never result in `nulltype` output, undefined behavior, nor do they ever throw an error.
-
-Equivalence is identical to Equality, except for the cases listed below.
-
-==== Primitive types
-
-===== Number
-
-* Unlike Equality, we *don't do* type casting for Equivalence.
-** If the type is different, they are not equivalent.
-*** +INF^^double is not equivalent to +INF^^float
-*** NaN^^double is not equivalent to NaN^^float
-** 123 and 123.0 are equal but not equivalent to each other
-* -0.0, 0.0, and +0.0 are not equivalent to each other
-** -0.0 is equivalent to -0.0
-** 0.0 is equivalent to 0.0
-** +0.0 is equivalent to +0.0
-* -INF and +INF are not equivalent to each other
-** -INF is equivalent to -INF
-** +INF is equivalent to +INF
-** They are equialavlent to each other irrespective to its underlying type, so in Java, for example, Double.POSITIVE_INFINITY is equivalent to Float.POSITIVE_INFINITY.
-* NaN is not equivalent to any (non-NaN) numbers
-** NaN *is equivalent to* NaN irrespective to its underlying type, so in Java, for example, Double.NaN is equivalent to Float.NaN.
-
-===== `nulltype`
-
-* `nulltype` is not equivalent to any other values
-* `nulltype` is equivalent to `nulltype`
-
-== Comparability vs. Orderability
-
-Comparability and orderability can be understood as analagous concepts to equality and equivalence but for range
-comparisons (rather than exact comparison). For any two values within the same type space (except for NaN),
-comparability and orderability are the same. The key differences between comparability and orderability are as follows:
-
-|===
-|Scenario|Comparability|Orderability
-
-|NaN|Not comparable to anything, including itself|Appears after +Infinity in the numeric type space
-|Two values of different types|Not comparable. This includes the `nulltype`|Subject to a total type ordering where every value of type A appears before
-or after every value of Type B depending on the types
-|===
-
-Comparability is what is being used in range predicates. It is restricted to comparison within the same type or,
-for numerics, class of types; comparability is complete within a given type, but returns `ERROR` if the two types are
-considered incomparable (e.g., an integer cannot be compared to a string).
-
-`ERROR` represents an extension of normal boolean logics - it is a third option value in a ternary
-boolean logics system for boolean value expression evaluation. `ERROR` is an internal representation only and will not
-be propagated back to the client as an exception - it will eventually hit a binary reduction operation and be reduced
-to `false`. Before that happens though, it will be treated as its own boolean value that can be used in other boolean
-value expressions, such as `AND`/`OR`:
-
-|===
-|A|B|=>|AND|OR|XOR
-
-|TRUE | TRUE |=>| TRUE | TRUE | FALSE
-|TRUE | FALSE |=>| FALSE | TRUE | TRUE
-|TRUE | ERROR |=>| ERROR | TRUE | ERROR
-|FALSE | TRUE |=>| FALSE | TRUE | TRUE
-|FALSE | FALSE |=>| FALSE | FALSE | FALSE
-|FALSE | ERROR |=>| FALSE | ERROR | ERROR
-|ERROR | TRUE |=>| ERROR | TRUE | ERROR
-|ERROR | FALSE |=>| FALSE | ERROR | ERROR
-|ERROR | ERROR |=>| ERROR | ERROR | ERROR
-|===
-
-The NOT predicate inverts TRUE and FALSE, respectively, but maintains ERROR values. The key idea is that, for an
-ERROR value, we can neither prove nor disprove the expression, and hence stick with ERROR.
-
-|===
-|arg|=>|result
-
-|TRUE |=>| FALSE
-|FALSE |=>| TRUE
-|ERROR |=>| ERROR
-|===
-
-Common `ERROR` cases are comparisons against NaN, cross-type comparisons, or invalid arguments to other boolean value
-expressions.
-
-Orderability provides a stable sort order over mixed type results without errors or exceptions; it is consistent with
-comparability within a type, and complete both within and across types, i.e. it will never return `ERROR` or throw
-an exception.
-
-More details on comparability and orderability are described in the following two subsections, respectively.
-
-=== Comparability
-
-Comparability is used by the compare operators (`P.gt`, `P.lt`, `P.gte`, `P.lte`) in Gremlin and defines how to
-compare two values.
-
-Example:
-
-[code]
-----
-// comparison over two property values
-gremlin> g.E().has("weight", P.gt(1))
-----
-
-Comparison should generally return true or false and not result in undefined behavior, but can return `ERROR` in certain
-cases (comparison across data types, comparing against `NaN`, invalid arguments to other boolean value
-expressions). How this `ERROR` result is handled is Graph provider dependent. The reference implementation does a final
-binary reduction from `ERROR` to `FALSE` (and thus quietly filters the solution that produced the `ERROR`).
-
-==== Primitive types
-
-===== Number
-
-* For numbers, comparison should be aligned to equality conceptually as far as type promotion is concerned.
-e.g. `1.0 < 2 < 3L`
-* If one argument a Number and the other isn’t, return `ERROR` for all comparisons. This comes first before the handling
-for each numeric type.
-* If both LHS and RHS are Numbers, try the type casting, and then compare two values.
-* For -0.0, 0.0, +0.0, lt and gt returns `false` and lte, gte returns `true` because they are "equal" in this semantics.
-* -INF < +INF
-* Any comparison between NaN and any Number (including NaN itself) returns `ERROR` (which is reduced to `false`) +
-https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2.3 +
+As described in the table above, `null == null`, but is not <<Equality,Equal>> and not <<Comparability,Comparable>> to
+any non-`null` value.
 
 ===== Boolean
-
-* If one argument is Boolean and the other isn’t, returns `ERROR`.
-* False < True
+For Booleans, `TRUE == TRUE`, `FALSE == FALSE`, `TRUE != FALSE`, and `FALSE < TRUE`.
 
 ===== String
-
-* If one argument is String and the other isn’t, returns `ERROR`.
-* We assume the common lexicographical order over unicode strings
-* LHS and RHS are compared lexicographically
+We assume the common lexicographical order over unicode strings. `A` and `B` are compared lexicographically, and
+`A == B` if `A` and `B` are lexicographically equal.
 
 ===== UUID
-
-* If one argument is UUID and the other isn’t, returns `ERROR`.
-* UUID is evaluated based on its `String` representation.
-* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50"
-cannot be compared with each other, hence comparing them returns `ERROR`.
+UUID is evaluated based on its String representation. However, `UUID("b46d37e9-755c-477e-9ab6-44aabea51d50")` and the
+String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
 ===== Date
+Dates are evaluated based on the numerical comparison of Unix Epoch time.
 
-* If one argument is Date and the other isn’t, returns `ERROR`.
-* Compare LHS and RHS based on chronological order, i.e. numerical order in timestamp.
-
-==== Composite types
-
-For all of them, if LHS and RHS is not of the same type, compare returns `ERROR`. The following semantics applied
-when both LHS and RHS have the same type:
-
-===== Vertex / Edge / VertexProperty
-
-They are compared by their ID. The ID is chosen internally by the implementation, so comparison is implementation
-specific.
+===== Graph Element (Vertex / Edge / VertexProperty)
+If they are the same type of Element, these are compared by the value of their `T.id` according to the semantics for
+the particular primitive type used for ids (implementation-specific). Elements of different types are
+not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
 ===== Property
-
-Compared first by property key, then by property value according to comparability semantics.
-
-===== PropertyKey
-
-Comparability of String applies.
-
-===== PropertyValue
-
-Property values are of any primitive types defined, so comparability for a corresponding type applies.
-
-===== ID
-
-IDs are of any primitive types defined, so comparability for a corresponding type applies.
-
-===== Label
-
-Comparability of String applies.
-
-===== Iterable (Path, List, Set, Map)
-
-* Iterables must be of the same type, otherwise `ERROR` (e.g. List and Set are incomparable).
-* Comparison of iterables without inherent order (Set and Map) are implementation-specific.
-** For the reference implementation, all iterables are compared via their natural iteration order.
-* Elements are compared element by element from the two iterations according to conmparability semantics.
-* Empty iterations are equal and are less than non-empty iterations.
-* If iteration `A` exhausts its elements before iteration `B` then `A < B`.
-
-===== Path
-
-* Only comparable to other Paths, otherwise `ERROR`.
-* Iterable semantics apply.
-
-===== Set
-
-* Only comparable to other Sets, otherwise `ERROR`.
-* Iterable semantics apply.
+Properties are compared first by key (String semantics), then by value, according to the semantics for the particular
+primitive type of the value. Properties with values in different type families are
+not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
 ===== List
+Lists are compared pairwise, element-by-element, in their natural list order. For each element, if the pairs are
+<<Equality and Comparability,Equal>>, we simply move on to the next element pair until we encounter a pair whose
+`Comparability.compare()` value is non-zero (`-1`, `1`, or `ERROR`), and we return that value. Lists can be evaluated
+for <<Equality and Comparability,Equality and Comparability>> even if they contain multiple types of elements, so long
+as their elements are pairwise comparable per <<Equality and Comparability,Equality/Comparability>> semantics. During
+this element by element comparison, if iteration `A` exhausts its elements before iteration `B` then `A < B`, and
+vice-versa.
 
-* Only comparable to other Lists, otherwise `ERROR`.
-* Iterable semantics apply.
+Empty lists are equal to other empty lists and less than non-empty lists.
+
+|===
+|`A`|`B`|`compare(A,B)`|`P`|Reason
+
+|`[]`|`[]`|`0`|`P.eq`|empty lists are equal
+|`[]`|`[1]`|`-1`|`P.lt`|empty < non-empty
+|`[1]`|`[]`|`1`|`P.gt`|non-empty > empty
+|`[1,2,3]`|`[1,2,3]`|`0`|`P.eq`|pairwise equal
+|`[1,2,3]`|`[1,2,4]`|`-1`|`P.lt`|pairwise equal until last element: `3 < 4`
+|`[1,2,3]`|`[1,2,3,4]`|`-1`|`P.lt`|`A` exhausts first
+|`[1,2,3,4]`|`[1,2,3]`|`1`|`P.gt`|`B` exhausts first
+|`[1,2]`|`[1.0,2.0]`|`0`|`P.eq`|type promotion
+|`[1,"a"]`|`[1,"b"]`|`-1`|`P.lt`|pairwise <<Comparability,Comparable>> and `"a" < "b"`
+|`[1]`|`["a"]`|`ERROR`|`P.neq`|cross-type comparison
+|===
+
+===== Path
+<<Equality and Comparability,Equality and Comparability>> semantics for `Paths` are similar to those for `Lists`, described above (though
+`Paths` and `Lists` are still of different types and thus not <<Equality,Equal>> and not <<Comparability,Comparable>>).
+
+===== Set
+`Sets` are compared pairwise, element-by-element, in the same way as `Lists`, but they are compared in sorted order
+using <<Orderability,Orderability>> semantics to sort (described further below). We use <<Orderability,Orderability>>
+semantics for ordering so that `Sets` containing multiple element types can be properly sorted before being compared.
+
+For example:
+
+|===
+|`A`|`B`|`compare(A,B)`|`P`|Reason
+
+|`{1, 2}`|`{2, 1}`|`0`|`P.eq`|sort before compare
+|`{1, "foo"}`|`{"foo", 1}`|`0`|`P.eq`|we use <<Orderability,Orderability>> semantics to sort across types
+|===
+
+Sets do introduce a bit of semantic stickiness, in that on the one hand they do respect type promotion semantics for
+Equality and Comparability:
+```
+{1, 2} == {1.0, 2.0}
+```
+But on the other hand they also allow two elements that would be equal (and thus duplicates) according to type
+promotion:
+```
+{1, 1.0, 2} is a valid set and != {1, 2}
+```
+We allow some "wiggle-room" in the implementation for providers to decide how to handle this logical inconsistency. The
+reference implementation allows for semantically equivalent numerics to appear in a set (e.g `{1, 1.0}`), while at the
+same time evaluating the same semantically equivalent numerics as equal during pairwise comparison across sets (e.g.
+`{1,2} == {1.0,2.0}`).
 
 ===== Map
+'Map' semantics can be thought of as similar to `Set` semantics for the entry set the comprises the `Map`. So again,
+we compare pairwise, entry-by-entry, in the same way as `Lists`, and again, we first sort the entries using
+<<Orderability,Orderability>> semantics. Map entries are compared first by key, then by value using the
+<<Equality and Comparability Semantics by Type,Equality and Comparability>> semantics that apply to the specific type
+of key and value.
 
-* Only comparable to other Maps, otherwise `ERROR`.
-* Iterable semantics apply (using `Map.entrySet()`)
-* Map entries are compared first by key, then by value according to comparability semantics.
+Maps semantics have the same logical inconsistency as set semantics, because of type promotion. Again, we leave room
+for providers to decide how to handle this in their implementation. The reference implementation allows for semantically
+equivalent keys to appear in a map (e.g. `1` and `1.0` can both be keys in the same map), but when comparing maps we
+treat pairwise entries with semantically equivalent keys as the same.
 
-=== Mapping for P
-
-The following table maps the notions proposed above to the various `P` operators:
-
-[%header]
-|================
-|Predicate|Concept
-|P.eq     |Equality
-|P.neq    |Equality
-|P.within |Equality
-|P.without|Equality
-|P.lt     |Comparability
-|P.gt     |Comparability
-|P.lte    |Equality, Comparability
-|P.gte    |Equality, Comparability
-|P.inside |Comparability
-|P.outside|Comparability
-|P.between|Equality, Comparability
-|================
-
+[[gremlin-semantics-orderability]]
 === Orderability
 
-Orderability semantics are used to define a global order across all Gremlin values. In the reference implementation, any
-step using `Order.asc` or `Order.desc` (e.g. OrderGlobalStep, OrderLocalStep) will follow these semantics. Unlike
-Comparability, Orderability will not result in `ERROR` for any comparisons - even if two values are incomparable we will
-still be able to determine their respective order. We do this by defining a global order across type, and values in
-different type spaces will be ordered according to their priority (e.g. all Numbers < all Strings).
+<<Equality and Comparability,Equality and Comparability>> were described in depth in the sections above, and their
+semantics map to the `P` predicates. <<Comparability,Comparability>> in particular is limited to
+comparison of values within the same type family. Comparability is complete within a given type (except for `NaN`,
+which results in `ERROR` for any comparison), but returns `ERROR` for comparisons across types (e.g., an integer cannot
+be compared to a string).
+
+Orderability semantics are very similar to Comparability for the most part, except that Orderability will never result
+in `ERROR` for comparison of any two values - even if two values are incomparable according to Comparability semantics
+we will still be able to determine their respective order. This allows for a total order across all Gremlin values. In
+the reference implementation, any step using `Order.asc` or `Order.desc` (e.g. OrderGlobalStep, OrderLocalStep) will
+follow these semantics.
+
+To achieve this globally complete order, we need to address any cases in Comparability that produce a comparison
+`ERROR`, we must define a global order across type families, and we must provide semantics for ordering "unknown"
+values (for cases of in-process JVM implementations, like the TinkerGraph).
 
 We define the type space, and the global order across the type space as follows:
 ----
@@ -508,85 +392,91 @@ We define the type space, and the global order across the type space as follows:
 14. Unknown
 ----
 
-Within a given type space, orderability determines if two values are ordered at the same position or one value is
+Values in different type spaces will be ordered according to their priority (e.g. all Numbers < all Strings).
+
+Within a given type space, Orderability determines if two values are ordered at the same position or one value is
 positioned before or after the another. When the position is identical, which value comes first (in other words,
-whether it should perform stable sort) depends on graph providers' implementation. For almost all cases, comparability
-can be used to determine orderability within a type space, with a few exceptions outlined below.
+whether it should perform stable sort) depends on graph providers' implementation.
 
-==== Primitive types
+To allow for this total ordering, we must also address the cases in <<Equality and Comparability,Comparability>> that
+produce an comparison `ERROR`:
 
-===== Number
+|===
+|`ERROR` Scenario|Comparability|Orderability
 
-Same as Comparability, except NaN is equivalent to NaN and is greater than all other Numbers, including +Infinity.
+|Comparison against `NaN`|`NaN` not comparable to anything, including itself.|`NaN` appears after `+Infinity` in the numeric type space.
+|Comparison across types|Cannot compare values of different types. This includes the `nulltype`.|Subject to a total
+type ordering where every value of type A appears before or after every value of Type B per the priorty list above.
+|===
+
+==== Key differences from Comparability
+
+One key difference to note is that we use Orderability semantics to compare values within containers (`List`, `Set`,
+`Path`, `Map`, `Property`) rather than using Comparability semantics (i.e. Orderability all the way down).
+
+===== Numeric Ordering
+Same as Comparability, except `NaN` is equivalent to `NaN` and is greater than all other Numbers, including `+Infinity`.
 Additionally, because of type promotion (`1` == `1.0`), numbers of the same value but of different numeric types will
-not have a stable sort order.
-
-===== Boolean
-
-Same as Comparability.
-
-===== String
-
-Same as Comparability.
-
-===== UUID
-
-Same as Comparability.
-
-===== Date
-
-Same as Comparability.
-
-==== Composite types
-
-===== Vertex / Edge / VertexProperty
-
-Same as Comparability.
+not have a stable sort order (`1` can appear either before or after `1.0`).
 
 ===== Property
+Same as Comparability, except Orderability semantics are used for the property value.
 
-Same as Comparability, except orderability semantics are used for the property value.
+===== Iterables (Path, List, Set, Map)
+Same as Comparability, except Orderability semantics apply for the pairwise element-by-element comparisons.
 
-===== PropertyKey
+===== Unknown Types
+For Orderability semantics, we allow for the possibility of "unknown" types. If the "unknown" arguments are of the same
+type, we use `java.lang.Object#equals()` and `java.lang.Comparable` (if implemented) to determine their natural order.
+If the unknown arguments are of different types or do not define a natural order, we order first by Class,
+then by `Object.toString()`.
 
-Same as Comparability.
+[[gremlin-semantics-equivalence]]
+=== Equivalence
 
-===== PropertyValue
+Equivalence defines how TinkerPop deals with two values to be grouped or de-duplicated. Specifically it is necessary
+for the `dedup()` and `group()` steps in Gremlin.
 
-General orderability semantics apply, since property values can be of any primitive type.
+For example:
+[code]
+----
+// deduplication needs equivalence over two property values
+gremlin> g.V().dedup().by("name")
+// grouping by equivalence over two property values
+gremlin> g.V().group().by("age")
+----
 
-===== ID
+Like Equality, Equivalence checks always return `true` or `false`, never `nulltype` or `error`, nor do they produce
+exceptions. For the most part Equivalence and Equality are the same, with the following key differences:
 
-General orderability semantics apply, since IDs can be of any primitive type.
+* Equivalence ignores type promotion semantics, i.e. two values of different types (e.g. 2^^int vs. 2.0^^float) are
+always considered to be non-equivalent.
+* `NaN` Equivalence is the reverse of Equality: `NaN` is equivalent to `NaN` and not
+Equivalent to any other Number.
 
-===== Label
+=== Further Reference
 
-Same as Comparability.
+==== Mapping for P
 
-===== Iterable (Path, List, Set, Map)
+The following table maps the notions proposed above to the various `P` operators:
 
-Same as Comparability, except orderability semantics apply for element comparisons.
+[%header]
+|================
+|Predicate|Concept
+|P.eq     |Equality
+|P.neq    |Equality
+|P.within |Equality
+|P.without|Equality
+|P.lt     |Comparability
+|P.gt     |Comparability
+|P.lte    |Equality, Comparability
+|P.gte    |Equality, Comparability
+|P.inside |Comparability
+|P.outside|Comparability
+|P.between|Equality, Comparability
+|================
 
-===== Path
+==== See Also
 
-* Iterable semantics apply.
-
-===== Set
-
-* Iterable semantics apply.
-
-===== List
-
-* Iterable semantics apply.
-
-===== Map
-
-* Iterable semantics apply for `Map.entrySet()`
-* Map Entries are ordered first by key, then by value according to orderability semantics.
-
-===== Unknown
-
-* If the unknown arguments are of the same type and implement Comparable, their natural order is used.
-* If the unknown arguments are of different types or do not define a natural order, order first by Classname, then
-by `Object.toString()`.
-
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Comparability.feature[Comparability Tests]

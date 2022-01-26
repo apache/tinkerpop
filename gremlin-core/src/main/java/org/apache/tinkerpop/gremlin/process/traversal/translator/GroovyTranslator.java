@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.math.BigDecimal;
@@ -181,24 +182,30 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Number o) {
+            if (o instanceof Double || o instanceof Float) {
+                if (NumberHelper.isNaN(o))
+                    return (o instanceof Double ? "Double" : "Float") + ".NaN";
+                if (NumberHelper.isPositiveInfinity(o))
+                    return (o instanceof Double ? "Double" : "Float") + ".POSITIVE_INFINITY";
+                if (NumberHelper.isNegativeInfinity(o))
+                    return (o instanceof Double ? "Double" : "Float") + ".POSITIVE_INFINITY";
+
+                return o + (o instanceof Double ? "d" : "f");
+            }
             if (o instanceof Long)
                 return o + "L";
-            else if (o instanceof Double)
-                return Double.isNaN((double) o) ? "Double.NaN" : o + "d";
-            else if (o instanceof Float)
-                return Float.isNaN((float) o) ? "Float.NaN" : o + "f";
-            else if (o instanceof Integer)
+            if (o instanceof Integer)
                 return "(int) " + o;
-            else if (o instanceof Byte)
+            if (o instanceof Byte)
                 return "(byte) " + o;
             if (o instanceof Short)
                 return "(short) " + o;
-            else if (o instanceof BigInteger)
+            if (o instanceof BigInteger)
                 return "new BigInteger('" + o.toString() + "')";
-            else if (o instanceof BigDecimal)
+            if (o instanceof BigDecimal)
                 return "new BigDecimal('" + o.toString() + "')";
-            else
-                return o.toString();
+
+            return o.toString();
         }
 
         @Override
@@ -419,24 +426,30 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Number o) {
+            if (o instanceof Double || o instanceof Float) {
+                if (NumberHelper.isNaN(o))
+                    return "NaN";
+                if (NumberHelper.isPositiveInfinity(o))
+                    return "Infinity";
+                if (NumberHelper.isNegativeInfinity(o))
+                    return "-Infinity";
+
+                return o + (o instanceof Double ? "D" : "F");
+            }
             if (o instanceof Long)
                 return o + "L";
-            else if (o instanceof Double)
-                return o + "D";
-            else if (o instanceof Float)
-                return o + "F";
-            else if (o instanceof Integer)
+            if (o instanceof Integer)
                 return o + "I";
-            else if (o instanceof Byte)
+            if (o instanceof Byte)
                 return o + "B";
             if (o instanceof Short)
                 return o + "S";
-            else if (o instanceof BigInteger)
+            if (o instanceof BigInteger)
                 return o + "N";
-            else if (o instanceof BigDecimal)
+            if (o instanceof BigDecimal)
                 return o + "D";
-            else
-                return o.toString();
+
+            return o.toString();
         }
 
         private static String getDatetimeSyntax(final Instant i) {

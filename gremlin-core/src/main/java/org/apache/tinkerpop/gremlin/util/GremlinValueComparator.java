@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
@@ -48,7 +51,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
     /**
      * Orderability comparator allows for a total order across all types (no type error exceptions).
      */
-    public static final GremlinValueComparator ORDER = new GremlinValueComparator() {
+    public static final GremlinValueComparator ORDERABILITY = new GremlinValueComparator() {
 
         /**
          * Compare two Gremlin value objects per the Orderability semantics.
@@ -80,7 +83,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
     };
 
     /**
-     * Compare has very similar semantics to orderability with the following exceptions:
+     * Comparability has very similar semantics to orderability with the following exceptions:
      *
      * 1. NaN is not equal to anything, including itself, and cannot be compared to anything:
      *      equals(NaN, anything) = FALSE
@@ -91,7 +94,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
      * Note that because of type errors for Comparability, equals(a,b) does not necessarily produce the same result
      * as compare(a,b) == 0. Make sure to use equals(a,b) for P.eq/neq.
      */
-    public static final GremlinValueComparator COMPARE = new GremlinValueComparator() {
+    public static final GremlinValueComparator COMPARABILITY = new GremlinValueComparator() {
 
         /**
          * Compare two Gremlin value objects per the Comparability semantics. Throws type errors for NaN comparison
@@ -122,8 +125,12 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
          */
         @Override
         public boolean equals(final Object f, final Object s) {
+            // shortcut a long, drawn out element by element comparison
+            if (containersOfDifferentSize(f, s))
+                return false;
+
             try {
-                return compare(f, s) == 0;
+                return this.compare(f, s) == 0;
             } catch (GremlinTypeErrorException ex) {
                 /**
                  * By routing through the compare(f, s) path we expose ourselves to type errors, which should be
@@ -136,6 +143,18 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
                  */
                 return false;
             }
+        }
+
+        private boolean containersOfDifferentSize(final Object f, final Object s) {
+            if (f instanceof Collection && s instanceof Collection)
+                if (((Collection) f).size() != (((Collection) s).size()))
+                    return true;
+
+            if (f instanceof Path && s instanceof Path)
+                if (((Path) f).size() != (((Path) s).size()))
+                    return true;
+
+            return false;
         }
     };
 
@@ -183,10 +202,26 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
     };
 
     /**
-     * Sort Map by entry-set.
+     * Compare by sorted elements.
      */
-    private final Comparator<Map> mapComparator =
-            Comparator.comparing(Map::entrySet, iterableComparator);
+    private final Comparator<Set> setComparator = (s1, s2) -> {
+        final List l1 = new ArrayList(s1);
+        final List l2 = new ArrayList(s2);
+        Collections.sort(l1, ORDERABILITY);
+        Collections.sort(l2, ORDERABILITY);
+        return iterableComparator.compare(l1, l2);
+    };
+
+    /**
+     * Compare by sorted entry-set.
+     */
+    private final Comparator<Map> mapComparator = (m1, m2) -> {
+        final List l1 = new ArrayList(m1.entrySet());
+        final List l2 = new ArrayList(m2.entrySet());
+        Collections.sort(l1, ORDERABILITY);
+        Collections.sort(l2, ORDERABILITY);
+        return iterableComparator.compare(l1, l2);
+    };
 
     /**
      * Sort Map.Entry first by key, then by value.
@@ -304,7 +339,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         put(Type.VertexProperty, elementComparator);
         put(Type.Property,       propertyComparator);
         put(Type.Path,           iterableComparator);
-        put(Type.Set,            iterableComparator);
+        put(Type.Set,            setComparator);
         put(Type.List,           iterableComparator);
         put(Type.Map,            mapComparator);
         put(Type.MapEntry,       entryComparator);

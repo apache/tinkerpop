@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.sql.Timestamp;
@@ -173,6 +174,14 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Number o) {
+            if (o instanceof Float || o instanceof Double) {
+                if (NumberHelper.isNaN(o))
+                    return "Number.NaN";
+                if (NumberHelper.isPositiveInfinity(o))
+                    return "Number.POSITIVE_INFINITY";
+                if (NumberHelper.isNegativeInfinity(o))
+                    return "Number.NEGATIVE_INFINITY";
+            }
             return o.toString();
         }
 

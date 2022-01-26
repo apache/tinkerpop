@@ -73,7 +73,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"t\[(.+)\]", ToT},
                 {"null", (_, __) => null},
                 {"true", (_, __) => true},
-                {"false", (_, __) => false}
+                {"false", (_, __) => false},
+                {@"d\[NaN\]", (_, __) => Double.NaN},
+                {@"d\[Infinity\]", (_, __) => Double.PositiveInfinity},
+                {@"d\[-Infinity\]", (_, __) => Double.NegativeInfinity}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
 
         private static readonly IDictionary<char, Func<string, object>> NumericParsers =

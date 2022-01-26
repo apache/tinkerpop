@@ -248,6 +248,12 @@ function parseValue(stringValue) {
     return true;
   if(stringValue === "false")
     return false;
+  if(stringValue === "d[NaN]")
+    return Number.NaN;
+  if(stringValue === "d[Infinity]")
+    return Number.POSITIVE_INFINITY;
+  if(stringValue === "d[-Infinity]")
+    return Number.NEGATIVE_INFINITY;
 
   let extractedValue = null;
   let parser = null;
