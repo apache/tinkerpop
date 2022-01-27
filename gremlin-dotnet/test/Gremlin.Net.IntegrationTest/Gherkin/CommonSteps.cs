@@ -56,6 +56,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
             {
+                {@"vp\[(.+)\]", ToVertexProperty},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"v\[(.+)\]", ToVertex},
@@ -385,6 +386,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static Edge ToEdge(string name, string graphName)
         {
             return ScenarioData.GetByGraphName(graphName).Edges[name];
+        }
+
+        private static VertexProperty ToVertexProperty(string triplet, string graphName)
+        {
+            return ScenarioData.GetByGraphName(graphName).VertexProperties[triplet];
         }
 
         private static Path ToPath(string value, string graphName)

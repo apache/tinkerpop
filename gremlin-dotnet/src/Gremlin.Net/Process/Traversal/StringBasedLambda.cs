@@ -51,5 +51,11 @@ namespace Gremlin.Net.Process.Traversal
             var args = expression.Substring(0, expression.IndexOf("->", StringComparison.Ordinal));
             Arguments = args.Contains(",") ? 2 : 1;
         }
+        
+        public GroovyStringBasedLambda(string expression, int arguments) : base(expression, "gremlin-groovy")
+        {
+            Arguments = arguments;
+        }
+
     }
 }
