@@ -1,4 +1,4 @@
-module gremlin-go
+module github.com/lyndonb-bq/tinkerpop/gremlin-go
 
 go 1.17
 
