@@ -1,5 +1,5 @@
 name: build-test
-on: [push, pull_request]
+on: [] # push, pull_request
 jobs:
   smoke:
     name: smoke

@@ -1,0 +1,13 @@
+{
+  "READ_FAILED": "Reading message failed!",
+  "WRITE_FAILED": "Writing request failed!",
+  "UNKNOWN_SER_DATATYPE": "Unknown data type to serialize.",
+  "UNKNOWN_DESER_DATATYPE": "Unknown data type to deserialize.",
+  "NULL_INPUT": "Input cannot be null.",
+  "UNMATCHED_DATATYPE": "Datatype read from input buffer different from requested datatype.",
+  "UNEXPECTED_NULL_VALUE": "Unexpected null value to write when value is not nullable.",
+  "NOT_MAP_TYPE": "Did not get the expected map type as input.",
+  "MALFORMED_URL": "Malformed ws or wss URL.",
+  "TRANSPORT_CLOSE_FAILED": "Ignoring error when closing existing transporter to replace with a new one: %s",
+  "NOT_SLICE_TYPE": "Did not get the expected slice type as input."
+}
