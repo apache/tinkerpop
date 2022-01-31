@@ -255,7 +255,25 @@ public final class NumberHelper {
                 }
                 return bigDecimalValue(b);
             },
-            (a, b) -> bigDecimalValue(a).compareTo(bigDecimalValue(b)));
+            (a, b) -> {
+                if( a instanceof Float && ((Float) a) == Float.POSITIVE_INFINITY)
+                    return 1;
+                else if( a instanceof Float && ((Float) a) == Float.NEGATIVE_INFINITY)
+                    return -1;
+                else if( b instanceof Float && ((Float) b) == Float.POSITIVE_INFINITY)
+                    return -1;
+                else if( b instanceof Float && ((Float) b) == Float.NEGATIVE_INFINITY)
+                    return 1;
+                else if( a instanceof Double && ((Double) a) == Double.POSITIVE_INFINITY)
+                    return 1;
+                else if( a instanceof Double && ((Double) a) == Double.NEGATIVE_INFINITY)
+                    return -1;
+                else if( b instanceof Double && ((Double) b) == Double.POSITIVE_INFINITY)
+                    return -1;
+                else if( b instanceof Double && ((Double) b) == Double.NEGATIVE_INFINITY)
+                    return 1;
+                return bigDecimalValue(a).compareTo(bigDecimalValue(b));
+            });
 
     public final BiFunction<Number, Number, Number> add;
     public final BiFunction<Number, Number, Number> sub;
