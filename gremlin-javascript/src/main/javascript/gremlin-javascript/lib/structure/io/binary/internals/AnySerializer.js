@@ -31,6 +31,7 @@ module.exports = class AnySerializer {
     this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
       ioc.intSerializer,
       ioc.bytecodeSerializer,
+      ioc.traverserSerializer,
       ioc.mapSerializer,
       ioc.uuidSerializer,
       ioc.stringSerializer,

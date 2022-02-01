@@ -70,7 +70,13 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TraverserSerializer,
-      // TODO +
+      { v: new t.Traverser("A1", 16),
+        b: [
+          DataType.TRAVERSER,0x00,
+          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10,
+          DataType.STRING,0x00, 0x00,0x00,0x00,0x02, 0x41,0x31,
+        ]
+      },
 
       // TraversalStrategySerializer,
       // TODO

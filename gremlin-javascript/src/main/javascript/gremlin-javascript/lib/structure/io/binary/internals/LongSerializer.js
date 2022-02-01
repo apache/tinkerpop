@@ -45,7 +45,7 @@ module.exports = class LongSerializer {
     if (fullyQualifiedFormat)
       bufs.push( Buffer.from([this.ioc.DataType.LONG, 0x00]) );
     const v = Buffer.alloc(8);
-    v.writeBigInt64BE(item);
+    v.writeBigInt64BE( BigInt(item) );
     bufs.push(v);
 
     return Buffer.concat(bufs);

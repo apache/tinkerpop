@@ -24,7 +24,7 @@
 
 const assert = require('assert');
 const { traverserSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const { Traverser } = require('../../../lib/process/traversal');
+const t = require('../../../lib/process/traversal');
 
 const { from, concat } = Buffer;
 
@@ -35,12 +35,12 @@ describe('GraphBinary.TraverserSerializer', () => {
 
   const cases = [
     { v:undefined,                           fq:1, b:[0x21, 0x01],                                         av:null },
-    { v:undefined,                           fq:0, b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01, 0xFE,0x01], av:new Traverser(null, 1n) },
+    { v:undefined,                           fq:0, b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01, 0xFE,0x01], av:new t.Traverser(null, 1n) },
     { v:null,                                fq:1, b:[0x21, 0x01] },
-    { v:null,                                fq:0, b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01, 0xFE,0x01], av:new Traverser(null, 1n) },
+    { v:null,                                fq:0, b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01, 0xFE,0x01], av:new t.Traverser(null, 1n) },
 
-    { v:new Traverser(-1, 0n),                     b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x01,0x00,0xFF,0xFF,0xFF,0xFF] },
-    { v:new Traverser('abC', 2n),                  b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00, 0x00,0x00,0x00,0x03, 0x61,0x62,0x43] },
+    { v:new t.Traverser(-1, 0n),                   b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01, 0x01,0x00,0xFF,0xFF,0xFF,0xFF], av:new t.Traverser(-1, 1n) }, // check Traverser.constructor() when bulk=0 becomes bulk=1
+    { v:new t.Traverser('abC', 2n),                b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00, 0x00,0x00,0x00,0x03, 0x61,0x62,0x43] },
 
     { des:1, err:/buffer is missing/,        fq:1, b:undefined },
     { des:1, err:/buffer is missing/,        fq:0, b:undefined },
@@ -66,7 +66,7 @@ describe('GraphBinary.TraverserSerializer', () => {
     { des:1, err:/{bulk} is less than zero/,       b:[0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00] },
   ];
 
-  describe.skip('serialize', () => {
+  describe('serialize', () => {
     cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
       // deserialize case only
       if (des)
@@ -119,7 +119,15 @@ describe('GraphBinary.TraverserSerializer', () => {
   );
 
   describe('canBeUsedFor', () =>
-    it.skip('')
+    // most of the cases are implicitly tested via AnySerializer.serialize() tests
+    [
+      { v: null,              e: false },
+      { v: undefined,         e: false },
+      { v: {},                e: false },
+      { v: new t.Traverser(), e: true  },
+    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+      assert.strictEqual( traverserSerializer.canBeUsedFor(v), e )
+    ))
   );
 
 });

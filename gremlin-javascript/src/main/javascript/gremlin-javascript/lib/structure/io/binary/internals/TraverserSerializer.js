@@ -22,7 +22,7 @@
  */
 'use strict';
 
-const { Traverser } = require('../../../../process/traversal');
+const t = require('../../../../process/traversal');
 
 module.exports = class TraverserSerializer {
 
@@ -31,12 +31,27 @@ module.exports = class TraverserSerializer {
     this.ioc.serializers[ioc.DataType.TRAVERSER] = this;
   }
 
-  canBeUsedFor() {
-    // TODO
+  canBeUsedFor(value) {
+    return (value instanceof t.Traverser);
   }
 
-  serialize() {
-    // TODO
+  serialize(item, fullyQualifiedFormat = true) {
+    if (item === undefined || item === null)
+      if (fullyQualifiedFormat)
+        return Buffer.from([this.ioc.DataType.TRAVERSER, 0x01]);
+      else
+        return Buffer.from([0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01, 0xFE,0x01]); // {bulk} = 1, {value} = null
+
+    const bufs = [];
+    if (fullyQualifiedFormat)
+      bufs.push( Buffer.from([this.ioc.DataType.TRAVERSER, 0x00]) );
+
+    // {bulk}
+    bufs.push( this.ioc.longSerializer.serialize(item.bulk, false) );
+    // {value}
+    bufs.push( this.ioc.anySerializer.serialize(item.object) );
+
+    return Buffer.concat(bufs);
   }
 
   deserialize(buffer, fullyQualifiedFormat=true) {
@@ -81,7 +96,7 @@ module.exports = class TraverserSerializer {
         throw new Error(`{value}: ${e.message}`);
       }
 
-      const v = new Traverser(value, bulk);
+      const v = new t.Traverser(value, bulk);
       return { v, len };
     }
     catch (e) {
