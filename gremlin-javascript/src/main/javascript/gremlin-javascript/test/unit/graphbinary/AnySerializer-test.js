@@ -23,21 +23,98 @@
 'use strict';
 
 const assert = require('assert');
-const { anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+
+const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
-const { Traverser } = require('../../../lib/process/traversal');
+const { GraphTraversal } = require('../../../lib/process/graph-traversal');
+const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
 
 const { from, concat } = Buffer;
 
 describe('GraphBinary.AnySerializer', () => {
 
-  describe('getSerializerCanBeUsedFor', () =>
-    it.skip('')
-  );
-
   describe('serialize', () =>
-    // TODO: this is like a register of supported type serializers:
-    it.skip('')
+    [
+      // Let's follow existing structure/io/graph-serializer.GraphSON3Writer.adaptObject()
+
+      // NumberSerializer,
+      // { v:NaN, b:[] },
+      // { v:Infinity, b:[] },
+      // { v:-Infinity, b:[] },
+      // TODO
+
+      // DateSerializer,
+      // TODO
+
+      // BytecodeSerializer,
+      // Traversal type
+      { v: g().V(),
+        b: [
+          DataType.BYTECODE,0x00,
+          0x00,0x00,0x00,0x01, // {steps_length}
+            0x00,0x00,0x00,0x01, 0x56, // V
+            0x00,0x00,0x00,0x00, // (void)
+          0x00,0x00,0x00,0x00, // {sources_length}
+        ]
+      },
+      // Bytecode type
+      { v: g().V().getBytecode(),
+        b: [
+          DataType.BYTECODE,0x00,
+          0x00,0x00,0x00,0x01, // {steps_length}
+            0x00,0x00,0x00,0x01, 0x56, // V
+            0x00,0x00,0x00,0x00, // (void)
+          0x00,0x00,0x00,0x00, // {sources_length}
+        ]
+      },
+
+      // TraverserSerializer,
+      // TODO +
+
+      // TraversalStrategySerializer,
+      // TODO
+
+      // PSerializer,
+      // TODO
+
+      // TextPSerializer,
+      // TODO
+
+      // LambdaSerializer,
+      // TODO
+
+      // EnumSerializer,
+      // TODO
+
+      // VertexSerializer,
+      // TODO
+
+      // EdgeSerializer,
+      // TODO
+
+      // LongSerializer,
+      // TODO +
+
+      // ListSerializer,
+      // TODO +
+
+      // SetSerializer,
+      // TODO
+
+      // MapSerializer,
+      // TODO +
+
+      // Default (strings / objects / ...)
+      // TODO: string
+      // TODO: uuid
+      // TODO: unspecified null
+      // TODO: leftovers
+    ].forEach(({ v, b }, i) => it(`should be able to handle case #${i}`, () => {
+      b = from(b);
+      assert.deepEqual(anySerializer.serialize(v, true),  b);
+      assert.deepEqual(anySerializer.serialize(v, false), b.slice(2));
+    }))
   );
 
   describe('deserialize', () =>
@@ -86,7 +163,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // TRAVERSER
       { v:null,                                   b:[0x21,0x01] },
-      { v:new Traverser('A', 2n),                 b:[0x21,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+      { v:new t.Traverser('A', 2n),               b:[0x21,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
 
       // UNSPECIFIED_NULL
       { v:null,                                   b:[0xFE,0x01] },

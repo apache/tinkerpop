@@ -39,9 +39,9 @@ ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);
 ioc.traverserSerializer = new (require('./internals/TraverserSerializer'))(ioc);
 ioc.unspecifiedNullSerializer = new (require('./internals/UnspecifiedNullSerializer'))(ioc);
 
+ioc.anySerializer = new (require('./internals/AnySerializer'))(ioc);
+
 ioc.graphBinaryReader = new (require('./internals/GraphBinaryReader.js'))(ioc);
 ioc.graphBinaryWriter = new (require('./internals/GraphBinaryWriter'))(ioc);
-
-ioc.anySerializer = new (require('./internals/AnySerializer'))(ioc);
 
 module.exports = ioc;

@@ -23,6 +23,7 @@
 'use strict';
 
 const Bytecode = require('../../../../process/bytecode');
+const t = require('../../../../process/traversal');
 
 module.exports = class BytecodeSerializer {
 
@@ -32,7 +33,7 @@ module.exports = class BytecodeSerializer {
   }
 
   canBeUsedFor(value) {
-    return (value instanceof Bytecode);
+    return (value instanceof Bytecode) || (value instanceof t.Traversal);
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -41,6 +42,9 @@ module.exports = class BytecodeSerializer {
         return Buffer.from([this.ioc.DataType.BYTECODE, 0x01]);
       else
         return Buffer.from([0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00]); // {steps_length} = 0, {sources_length} = 0
+
+    if (item instanceof t.Traversal)
+      item = item.getBytecode();
 
     const bufs = [];
     if (fullyQualifiedFormat)
