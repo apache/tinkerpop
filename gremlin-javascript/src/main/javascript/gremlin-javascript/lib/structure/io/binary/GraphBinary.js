@@ -37,6 +37,7 @@ ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);
 ioc.uuidSerializer = new (require('./internals/UuidSerializer'))(ioc);
 ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);
 ioc.traverserSerializer = new (require('./internals/TraverserSerializer'))(ioc);
+ioc.enumSerializer = new (require('./internals/EnumSerializer'))(ioc);
 ioc.unspecifiedNullSerializer = new (require('./internals/UnspecifiedNullSerializer'))(ioc);
 
 ioc.anySerializer = new (require('./internals/AnySerializer'))(ioc);

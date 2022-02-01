@@ -34,7 +34,7 @@ module.exports = class LongSerializer {
     // TODO: what if item is not within int64 limits
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.LONG, 0x01]);

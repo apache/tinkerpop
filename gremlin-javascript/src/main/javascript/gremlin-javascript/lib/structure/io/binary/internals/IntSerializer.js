@@ -40,7 +40,7 @@ module.exports = class IntSerializer {
     return true;
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.INT, 0x01]);

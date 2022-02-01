@@ -31,6 +31,7 @@ module.exports = class AnySerializer {
     this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
       ioc.intSerializer,
       ioc.bytecodeSerializer,
+      ioc.enumSerializer,
       ioc.traverserSerializer,
       ioc.mapSerializer,
       ioc.uuidSerializer,
@@ -46,7 +47,7 @@ module.exports = class AnySerializer {
     return this.ioc.StringSerializer; // TODO: is it what we want with falling back to a string?
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     return this
       .getSerializerCanBeUsedFor(item)
       .serialize(item, fullyQualifiedFormat);

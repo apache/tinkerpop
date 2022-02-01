@@ -35,7 +35,7 @@ module.exports = class TraverserSerializer {
     return (value instanceof t.Traverser);
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.TRAVERSER, 0x01]);

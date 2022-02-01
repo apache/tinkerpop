@@ -33,7 +33,7 @@ module.exports = class MapSerializer {
     return (typeof value === 'object');
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.MAP, 0x01]);

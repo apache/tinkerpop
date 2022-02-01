@@ -66,7 +66,7 @@ describe('GraphBinary.TraverserSerializer', () => {
     { des:1, err:/{bulk} is less than zero/,       b:[0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00] },
   ];
 
-  describe('serialize', () => {
+  describe('serialize', () =>
     cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
       // deserialize case only
       if (des)
@@ -83,8 +83,8 @@ describe('GraphBinary.TraverserSerializer', () => {
       // generic case
       assert.deepEqual( traverserSerializer.serialize(v, true),  concat([type_code, value_flag, b]) );
       assert.deepEqual( traverserSerializer.serialize(v, false), concat([                       b]) );
-    }));
-  });
+    }))
+  );
 
   describe('deserialize', () =>
     cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {

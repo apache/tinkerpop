@@ -33,7 +33,7 @@ module.exports = class StringSerializer {
     return (typeof value === 'string');
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.STRING, 0x01]);

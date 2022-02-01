@@ -36,7 +36,7 @@ module.exports = class BytecodeSerializer {
     return (value instanceof Bytecode) || (value instanceof t.Traversal);
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.BYTECODE, 0x01]);

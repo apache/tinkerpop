@@ -33,7 +33,7 @@ module.exports = class UuidSerializer {
     // TODO
   }
 
-  serialize(item, fullyQualifiedFormat = true) {
+  serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
         return Buffer.from([this.ioc.DataType.UUID, 0x01]);
