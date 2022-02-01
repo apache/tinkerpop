@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -47,6 +49,8 @@ public class PTest {
 
     @RunWith(Parameterized.class)
     public static class ParameterizedTest {
+        @Rule
+        public ExpectedException exceptionRule = ExpectedException.none();
 
         @Parameterized.Parameters(name = "{0}.test({1}) = {2}")
         public static Iterable<Object[]> data() {
@@ -97,6 +101,7 @@ public class PTest {
                     {P.outside(1, 10), 1, false},
                     {P.outside(1, 10), 9, false},
                     {P.outside(1, 10), 10, false},
+                    {P.outside(1, Double.NaN), 0, true},
                     {P.within(), 0, false},
                     {P.within((Object) null), 0, false},
                     {P.within((Object) null), null, true},
@@ -158,6 +163,20 @@ public class PTest {
                     {TextP.containing("o").and(P.gte("j")).and(TextP.endingWith("ko")), "josh", false},
                     {TextP.containing("o").and(P.gte("j").and(TextP.endingWith("ko"))), "marko", true},
                     {TextP.containing("o").and(P.gte("j").and(TextP.endingWith("ko"))), "josh", false},
+
+                    // type errors
+                    {P.outside(Double.NaN, Double.NaN), 0, GremlinTypeErrorException.class},
+                    {P.inside(-1, Double.NaN), 0, GremlinTypeErrorException.class},
+                    {P.inside(Double.NaN, 1), 0, GremlinTypeErrorException.class},
+                    {TextP.containing(null), "abc", GremlinTypeErrorException.class},
+                    {TextP.containing("abc"), null, GremlinTypeErrorException.class},
+                    {TextP.containing(null), null, GremlinTypeErrorException.class},
+                    {TextP.startingWith(null), "abc", GremlinTypeErrorException.class},
+                    {TextP.startingWith("abc"), null, GremlinTypeErrorException.class},
+                    {TextP.startingWith(null), null, GremlinTypeErrorException.class},
+                    {TextP.endingWith(null), "abc", GremlinTypeErrorException.class},
+                    {TextP.endingWith("abc"), null, GremlinTypeErrorException.class},
+                    {TextP.endingWith(null), null, GremlinTypeErrorException.class},
             }));
         }
 
@@ -168,10 +187,13 @@ public class PTest {
         public Object value;
 
         @Parameterized.Parameter(value = 2)
-        public boolean expected;
+        public Object expected;
 
         @Test
         public void shouldTest() {
+            if (expected instanceof Class)
+                exceptionRule.expect((Class) expected);
+
             assertEquals(expected, predicate.test(value));
             assertNotEquals(expected, predicate.clone().negate().test(value));
             assertNotEquals(expected, P.not(predicate.clone()).test(value));

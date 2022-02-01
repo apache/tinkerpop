@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalFilterStep<S> extends FilterStep<S> implements TraversalParent, Configuring {
+public final class TraversalFilterStep<S> extends FilterStep<S> implements TraversalParent, Configuring, BinaryReductionStep {
     private final Parameters parameters = new Parameters();
 
     private Traversal.Admin<S, ?> filterTraversal;

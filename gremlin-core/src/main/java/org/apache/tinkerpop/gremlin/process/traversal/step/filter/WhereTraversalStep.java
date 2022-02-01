@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, PathProcessor {
+public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, PathProcessor, BinaryReductionStep {
 
     protected Traversal.Admin<?, ?> whereTraversal;
     protected final Set<String> scopeKeys = new HashSet<>();

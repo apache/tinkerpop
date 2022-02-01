@@ -37,6 +37,7 @@ public enum Text implements BiPredicate<String, String> {
     startingWith {
         @Override
         public boolean test(final String value, final String prefix) {
+            checkNull(value, prefix);
             return value.startsWith(prefix);
         }
 
@@ -77,6 +78,7 @@ public enum Text implements BiPredicate<String, String> {
     endingWith {
         @Override
         public boolean test(final String value, final String suffix) {
+            checkNull(value, suffix);
             return value.endsWith(suffix);
         }
 
@@ -117,6 +119,7 @@ public enum Text implements BiPredicate<String, String> {
     containing {
         @Override
         public boolean test(final String value, final String search) {
+            checkNull(value, search);
             return value.contains(search);
         }
 
@@ -148,6 +151,12 @@ public enum Text implements BiPredicate<String, String> {
             return containing;
         }
     };
+
+    private static final void checkNull(final String... args) {
+        for (String arg : args)
+            if (arg == null)
+                throw new GremlinTypeErrorException();
+    }
 
     /**
      * Produce the opposite representation of the current {@code Text} enum.

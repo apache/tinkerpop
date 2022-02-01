@@ -52,9 +52,19 @@ public enum Contains implements BiPredicate<Object, Collection> {
     within {
         @Override
         public boolean test(final Object first, final Collection second) {
-            return first instanceof Number
-                    ? IteratorUtils.anyMatch(second.iterator(), o -> Compare.eq.test(first, o))
-                    : second.contains(first);
+            GremlinTypeErrorException typeError = null;
+            for (final Object o : second) {
+                try {
+                    if (Compare.eq.test(first, o))
+                        return true;
+                } catch (GremlinTypeErrorException ex) {
+                    // hold onto it until the end in case any other arguments evaluate to TRUE
+                    typeError = ex;
+                }
+            }
+            if (typeError != null)
+                throw typeError;
+            return false;
         }
     },
 

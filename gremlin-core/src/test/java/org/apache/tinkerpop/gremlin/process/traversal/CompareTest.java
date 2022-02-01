@@ -18,7 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
+import org.javatuples.Pair;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -29,6 +33,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asList;
+import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asSet;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -37,54 +44,43 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class CompareTest {
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
+    private static final Object NaN = new Object() {
+        public String toString() { return "NaN"; }
+    };
+
     @Parameterized.Parameters(name = "{0}.test({1},{2}) = {3}")
     public static Iterable<Object[]> data() {
         final List<Object[]> testCases = new ArrayList<>(Arrays.asList(new Object[][]{
-                {Compare.eq, null, null, true},
-                {Compare.eq, null, 1, false},
-                {Compare.eq, 1, null, false},
                 {Compare.eq, "1", "1", true},
                 {Compare.eq, 100, 99, false},
                 {Compare.eq, 100, 101, false},
                 {Compare.eq, "z", "a", false},
                 {Compare.eq, "a", "z", false},
                 {Compare.eq, new Object(), new Object(), false},
-                {Compare.neq, null, null, false},
-                {Compare.neq, null, 1, true},
-                {Compare.neq, 1, null, true},
                 {Compare.neq, "1", "1", false},
                 {Compare.neq, 100, 99, true},
                 {Compare.neq, 100, 101, true},
                 {Compare.neq, "z", "a", true},
                 {Compare.neq, "a", "z", true},
                 {Compare.neq, new Object(), new Object(), true},
-                {Compare.gt, null, null, false},
-                {Compare.gt, null, 1, false},
-                {Compare.gt, 1, null, false},
                 {Compare.gt, "1", "1", false},
                 {Compare.gt, 100, 99, true},
                 {Compare.gt, 100, 101, false},
                 {Compare.gt, "z", "a", true},
                 {Compare.gt, "a", "z", false},
-                {Compare.lt, null, null, false},
-                {Compare.lt, null, 1, false},
-                {Compare.lt, 1, null, false},
                 {Compare.lt, "1", "1", false},
                 {Compare.lt, 100, 99, false},
                 {Compare.lt, 100, 101, true},
                 {Compare.lt, "z", "a", false},
                 {Compare.lt, "a", "z", true},
-                {Compare.gte, null, null, true},
-                {Compare.gte, null, 1, false},
-                {Compare.gte, 1, null, false},
                 {Compare.gte, "1", "1", true},
                 {Compare.gte, 100, 99, true},
                 {Compare.gte, 100, 101, false},
                 {Compare.gte, "z", "a", true},
                 {Compare.gte, "a", "z", false},
-                {Compare.lte, null, null, true},
-                {Compare.lte, null, 1, false},
-                {Compare.lte, 1, null, false},
                 {Compare.lte, "1", "1", true},
                 {Compare.lte, 100, 99, false},
                 {Compare.lte, 100, 101, true},
@@ -95,7 +91,141 @@ public class CompareTest {
                 {Compare.gte, new B(), new C(), true},
                 {Compare.lte, new B(), new D(), true},
                 {Compare.lte, new C(), new C(), true},
-                {Compare.lte, new D(), new D(), true}
+                {Compare.lte, new D(), new D(), true},
+
+                // type promotion
+                {Compare.eq,  1, 1.0d, true},
+                {Compare.neq, 1, 1.0d, false},
+                {Compare.lt,  1, 1.0d, false},
+                {Compare.lte, 1, 1.0d, true},
+                {Compare.gt,  1, 1.0d, false},
+                {Compare.gte, 1, 1.0d, true},
+
+                // Incomparable types produce ERROR
+                {Compare.gt,  23, "23", GremlinTypeErrorException.class},
+                {Compare.gte, 23, "23", GremlinTypeErrorException.class},
+                {Compare.lt,  23, "23", GremlinTypeErrorException.class},
+                {Compare.lte, 23, "23", GremlinTypeErrorException.class},
+                {Compare.lte, new CompareTest.A(), new CompareTest.B(), GremlinTypeErrorException.class},
+                {Compare.lte, new CompareTest.B(), new CompareTest.A(), GremlinTypeErrorException.class},
+                {Compare.lte, new CompareTest.C(), new CompareTest.D(), GremlinTypeErrorException.class},
+                {Compare.gte, new Object(), new Object(), GremlinTypeErrorException.class},
+                {Compare.gte, new Object(), new Object(), GremlinTypeErrorException.class},
+                {Compare.gte, new Object(), new Object(), GremlinTypeErrorException.class},
+
+                /*
+                 * NaN has pretty much the same comparability behavior against any argument (including itself):
+                 * P.eq(NaN, any) = FALSE
+                 * P.neq(NaN, any) = TRUE
+                 * P.lt/lte/gt/gte(NaN, any) = ERROR -> FALSE
+                 */
+                {Compare.eq,  NaN, NaN, false},
+                {Compare.neq, NaN, NaN, true},
+                {Compare.gt,  NaN, NaN, GremlinTypeErrorException.class},
+                {Compare.gte, NaN, NaN, GremlinTypeErrorException.class},
+                {Compare.lt,  NaN, NaN, GremlinTypeErrorException.class},
+                {Compare.lte, NaN, NaN, GremlinTypeErrorException.class},
+
+                {Compare.eq,  NaN, 0, false},
+                {Compare.neq, NaN, 0, true},
+                {Compare.gt,  NaN, 0, GremlinTypeErrorException.class},
+                {Compare.gte, NaN, 0, GremlinTypeErrorException.class},
+                {Compare.lt,  NaN, 0, GremlinTypeErrorException.class},
+                {Compare.lte, NaN, 0, GremlinTypeErrorException.class},
+
+                {Compare.eq,  NaN, "foo", false},
+                {Compare.neq, NaN, "foo", true},
+                {Compare.gt,  NaN, "foo", GremlinTypeErrorException.class},
+                {Compare.gte, NaN, "foo", GremlinTypeErrorException.class},
+                {Compare.lt,  NaN, "foo", GremlinTypeErrorException.class},
+                {Compare.lte, NaN, "foo", GremlinTypeErrorException.class},
+
+                /*
+                 * We consider null to be in its own type space, and thus not comparable (lt/lte/gt/gte) with
+                 * anything other than null:
+                 *
+                 * P.eq(null, any non-null) = FALSE
+                 * P.neq(null, any non-null) = TRUE
+                 * P.lt/lte/gt/gte(null, any non-null) = ERROR -> FALSE
+                 */
+                {Compare.eq,  null, null, true},
+                {Compare.neq, null, null, false},
+                {Compare.gt,  null, null, false},
+                {Compare.gte, null, null, true},
+                {Compare.lt,  null, null, false},
+                {Compare.lte, null, null, true},
+
+                {Compare.eq,  "foo", null, false},
+                {Compare.neq, "foo", null, true},
+                {Compare.gt,  "foo", null, GremlinTypeErrorException.class},
+                {Compare.gte, "foo", null, GremlinTypeErrorException.class},
+                {Compare.lt,  "foo", null, GremlinTypeErrorException.class},
+                {Compare.lte, "foo", null, GremlinTypeErrorException.class},
+
+                {Compare.eq,  null, 1, false},
+                {Compare.eq,  1, null, false},
+                {Compare.neq, null, 1, true},
+                {Compare.neq, 1, null, true},
+                {Compare.gt,  null, 1, GremlinTypeErrorException.class},
+                {Compare.gt,  1, null, GremlinTypeErrorException.class},
+                {Compare.gte, null, 1, GremlinTypeErrorException.class},
+                {Compare.gte, 1, null, GremlinTypeErrorException.class},
+                {Compare.lt,  null, 1, GremlinTypeErrorException.class},
+                {Compare.lt,  1, null, GremlinTypeErrorException.class},
+                {Compare.lte, null, 1, GremlinTypeErrorException.class},
+                {Compare.lte, 1, null, GremlinTypeErrorException.class},
+
+                {Compare.eq,  NaN, null, false},
+                {Compare.neq, NaN, null, true},
+                {Compare.gt,  NaN, null, GremlinTypeErrorException.class},
+                {Compare.gte, NaN, null, GremlinTypeErrorException.class},
+                {Compare.lt,  NaN, null, GremlinTypeErrorException.class},
+                {Compare.lte, NaN, null, GremlinTypeErrorException.class},
+
+                /*
+                 * Collections
+                 */
+                {Compare.eq, asList(0), asList(0), true},
+                {Compare.neq, asList(0), asList(0), false},
+                {Compare.lt, asList(0), asList(0), false},
+                {Compare.lte, asList(0), asList(0), true},
+                {Compare.gt, asList(0), asList(0), false},
+                {Compare.gte, asList(0), asList(0), true},
+
+                {Compare.eq, asList(0), asList(1), false},
+                {Compare.neq, asList(0), asList(1), true},
+                {Compare.lt, asList(0), asList(1), true},
+                {Compare.lte, asList(0), asList(1), true},
+                {Compare.gt, asList(0), asList(1), false},
+                {Compare.gte, asList(0), asList(1), false},
+
+                {Compare.eq, asList(Double.NaN), asList(Double.NaN), false},
+                {Compare.neq, asList(Double.NaN), asList(Double.NaN), true},
+                {Compare.lt, asList(Double.NaN), asList(Double.NaN), GremlinTypeErrorException.class},
+                {Compare.lte, asList(Double.NaN), asList(Double.NaN), GremlinTypeErrorException.class},
+                {Compare.gt, asList(Double.NaN), asList(Double.NaN), GremlinTypeErrorException.class},
+                {Compare.gte, asList(Double.NaN), asList(Double.NaN), GremlinTypeErrorException.class},
+
+                {Compare.eq, asList(Double.NaN), asList(0), false},
+                {Compare.neq, asList(Double.NaN), asList(0), true},
+                {Compare.lt, asList(Double.NaN), asList(0), GremlinTypeErrorException.class},
+                {Compare.lte, asList(Double.NaN), asList(0), GremlinTypeErrorException.class},
+                {Compare.gt, asList(Double.NaN), asList(0), GremlinTypeErrorException.class},
+                {Compare.gte, asList(Double.NaN), asList(0), GremlinTypeErrorException.class},
+
+                {Compare.eq, asMap(1, 1), asMap(1, null), false},
+                {Compare.neq, asMap(1, 1), asMap(1, null), true},
+                {Compare.lt, asMap(1, 1), asMap(1, null), GremlinTypeErrorException.class},
+                {Compare.lte, asMap(1, 1), asMap(1, null), GremlinTypeErrorException.class},
+                {Compare.gt, asMap(1, 1), asMap(1, null), GremlinTypeErrorException.class},
+                {Compare.gte, asMap(1, 1), asMap(1, null), GremlinTypeErrorException.class},
+
+                {Compare.eq, asList(0), asList("foo"), false},
+                {Compare.neq, asList(0), asList("foo"), true},
+                {Compare.lt, asList(0), asList("foo"), GremlinTypeErrorException.class},
+                {Compare.lte, asList(0), asList("foo"), GremlinTypeErrorException.class},
+                {Compare.gt, asList(0), asList("foo"), GremlinTypeErrorException.class},
+                {Compare.gte, asList(0), asList("foo"), GremlinTypeErrorException.class},
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);
@@ -229,11 +359,34 @@ public class CompareTest {
     public Object second;
 
     @Parameterized.Parameter(value = 3)
-    public boolean expected;
+    public Object expected;
 
     @Test
     public void shouldTest() {
-        assertEquals(expected, compare.test(first, second));
+        if (expected instanceof Class)
+            exceptionRule.expect((Class) expected);
+
+        if (first == NaN || second == NaN) {
+            // test all the NaN combos
+            final List<Pair> args = new ArrayList<>();
+            if (first == NaN && second == NaN) {
+                args.add(new Pair(Double.NaN, Double.NaN));
+                args.add(new Pair(Double.NaN, Float.NaN));
+                args.add(new Pair(Float.NaN, Double.NaN));
+                args.add(new Pair(Float.NaN, Float.NaN));
+            } else if (first == NaN) {
+                args.add(new Pair(Double.NaN, second));
+                args.add(new Pair(Float.NaN, second));
+            } else {
+                args.add(new Pair(first, Double.NaN));
+                args.add(new Pair(first, Float.NaN));
+            }
+            for (Pair arg : args) {
+                assertEquals(expected, compare.test(arg.getValue0(), arg.getValue1()));
+            }
+        } else {
+            assertEquals(expected, compare.test(first, second));
+        }
     }
 
     static class A implements Comparable<A> {

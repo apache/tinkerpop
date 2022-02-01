@@ -184,9 +184,9 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             if (o instanceof Long)
                 return o + "L";
             else if (o instanceof Double)
-                return o + "d";
+                return Double.isNaN((double) o) ? "Double.NaN" : o + "d";
             else if (o instanceof Float)
-                return o + "f";
+                return Float.isNaN((float) o) ? "Float.NaN" : o + "f";
             else if (o instanceof Integer)
                 return "(int) " + o;
             else if (o instanceof Byte)

@@ -177,6 +177,10 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Number o) {
+            if (o instanceof Float && Float.isNaN((float) o) )
+                return "Single.NaN";
+            if (o instanceof Double && Double.isNaN((double) o) )
+                return "Double.NaN";
             return o.toString();
         }
 

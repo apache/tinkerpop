@@ -51,7 +51,7 @@ The TinkerPop query execution runtime handles the following primitive types:
 * UUID
 * Date
 * `nulltype`
-  ** It denotes the "undefined" value.
+  ** Has only one value in its type space - the "undefined" value `null`
 
 NOTE: TinkerPop has a bit of a JVM-centric view of types as it was developed within that ecosystem.
 
@@ -115,7 +115,7 @@ equivalence defines value collation semantics in the context of, for instance, d
 equivalence over two values `a := Double.NaN` and `b:= Double.NaN` is true, but equality would (in our proposal) be
 defined as false; the rational here (which is commonly found in query and programming languages) is that comparing two
 "unknown" numbers — which is a frequent use case for NaN, cannot certainly be identified as equal in comparison, but it
-typically makes sense to group them together in, for instance, aggregations.
+typically makes sense to group them together in, for instance, aggregations and order by.
 
 Both equality and equivalence can be understood as complete, i.e. the result of equality and equivalence checks is
 always either `true` or `false` (in particular, it never returns nulltype` or throws an exception). The details on
@@ -281,7 +281,7 @@ Equivalence is identical to Equality, except for the cases listed below.
 ** -INF is equivalent to -INF
 ** +INF is equivalent to +INF
 ** They are equialavlent to each other irrespective to its underlying type, so in Java, for example, Double.POSITIVE_INFINITY is equivalent to Float.POSITIVE_INFINITY.
-* NaN is not equivalent to any other numbers
+* NaN is not equivalent to any (non-NaN) numbers
 ** NaN *is equivalent to* NaN irrespective to its underlying type, so in Java, for example, Double.NaN is equivalent to Float.NaN.
 
 ===== `nulltype`
@@ -291,84 +291,130 @@ Equivalence is identical to Equality, except for the cases listed below.
 
 == Comparability vs. Orderability
 
-Comparability and orderability can be understood as the "dual" concepts of equality and equivalence for range
-comparisons (rather than exact comparison). For the two values of the same type (except for NaN), comparability is
-stronger than orderability in the sense that everything that every order between two values that holds `true` w.r.t.
-comparability also holds `true` w.r.t. orderability, but not vice versa. Comparability is what is being used in range
-predicates. It is restricted to comparison within the same type or, for numerics, class of types; comparability is
-complete within a given type, but returns `nulltype` if the two types are considered incomparable (e.g., an integer
-cannot be compared to a string). Orderability fills these gaps, by providing a stable sort order over mixed type
-results; it is consistent with comparability within a type, and complete both within and across types, i.e. it will
-never return `nulltype` or throw an exception.
+Comparability and orderability can be understood as analagous concepts to equality and equivalence but for range
+comparisons (rather than exact comparison). For any two values within the same type space (except for NaN),
+comparability and orderability are the same. The key differences between comparability and orderability are as follows:
 
-More details on comparability and orderability are sketched in the following two subsections, respectively.
+|===
+|Scenario|Comparability|Orderability
+
+|NaN|Not comparable to anything, including itself|Appears after +Infinity in the numeric type space
+|Two values of different types|Not comparable. This includes the `nulltype`|Subject to a total type ordering where every value of type A appears before
+or after every value of Type B depending on the types
+|===
+
+Comparability is what is being used in range predicates. It is restricted to comparison within the same type or,
+for numerics, class of types; comparability is complete within a given type, but returns `ERROR` if the two types are
+considered incomparable (e.g., an integer cannot be compared to a string).
+
+`ERROR` represents an extension of normal boolean logics - it is a third option value in a ternary
+boolean logics system for boolean value expression evaluation. `ERROR` is an internal representation only and will not
+be propagated back to the client as an exception - it will eventually hit a binary reduction operation and be reduced
+to `false`. Before that happens though, it will be treated as its own boolean value that can be used in other boolean
+value expressions, such as `AND`/`OR`:
+
+|===
+|A|B|=>|AND|OR|XOR
+
+|TRUE | TRUE |=>| TRUE | TRUE | FALSE
+|TRUE | FALSE |=>| FALSE | TRUE | TRUE
+|TRUE | ERROR |=>| ERROR | TRUE | ERROR
+|FALSE | TRUE |=>| FALSE | TRUE | TRUE
+|FALSE | FALSE |=>| FALSE | FALSE | FALSE
+|FALSE | ERROR |=>| FALSE | ERROR | ERROR
+|ERROR | TRUE |=>| ERROR | TRUE | ERROR
+|ERROR | FALSE |=>| FALSE | ERROR | ERROR
+|ERROR | ERROR |=>| ERROR | ERROR | ERROR
+|===
+
+The NOT predicate inverts TRUE and FALSE, respectively, but maintains ERROR values. The key idea is that, for an
+ERROR value, we can neither prove nor disprove the expression, and hence stick with ERROR.
+
+|===
+|arg|=>|result
+
+|TRUE |=>| FALSE
+|FALSE |=>| TRUE
+|ERROR |=>| ERROR
+|===
+
+Common `ERROR` cases are comparisons against NaN, cross-type comparisons, or invalid arguments to other boolean value
+expressions.
+
+Orderability provides a stable sort order over mixed type results without errors or exceptions; it is consistent with
+comparability within a type, and complete both within and across types, i.e. it will never return `ERROR` or throw
+an exception.
+
+More details on comparability and orderability are described in the following two subsections, respectively.
 
 === Comparability
 
-* Used by the comparison operators (`P.gt`, `P.lt`, `P.gte`, `P.lte`) in Gremlin and defines how to compare two values. +
+Comparability is used by the compare operators (`P.gt`, `P.lt`, `P.gte`, `P.lte`) in Gremlin and defines how to
+compare two values.
+
 Example:
 
 [code]
 ----
 // comparison over two property values
-gremlin> g.E().has("weight", gt(1))
+gremlin> g.E().has("weight", P.gt(1))
 ----
 
-* For numbers,
-** it should be aligned to equality conceptually as far as type promotion is concerned. e.g. `1.0 < 2 < 3L`
-* Comparison should not result in undefined behavior, but can return `nulltype` if and only if we are comparing
-incomparable data types. How this `nulltype` result is handled is Graph provider dependent.
-* Otherwise Comparison does return `true` or `false`
+Comparison should generally return true or false and not result in undefined behavior, but can return `ERROR` in certain
+cases (comparison across data types, comparing against `NaN`, invalid arguments to other boolean value
+expressions). How this `ERROR` result is handled is Graph provider dependent. The reference implementation does a final
+binary reduction from `ERROR` to `FALSE` (and thus quietly filters the solution that produced the `ERROR`).
 
 ==== Primitive types
 
 ===== Number
 
-* If either one of LHS or RHS is Numbers and another isn’t, throw an Exception. This comes first before the handling for each type.
+* For numbers, comparison should be aligned to equality conceptually as far as type promotion is concerned.
+e.g. `1.0 < 2 < 3L`
+* If one argument a Number and the other isn’t, return `ERROR` for all comparisons. This comes first before the handling
+for each numeric type.
 * If both LHS and RHS are Numbers, try the type casting, and then compare two values.
 * For -0.0, 0.0, +0.0, lt and gt returns `false` and lte, gte returns `true` because they are "equal" in this semantics.
 * -INF < +INF
-* Any comparison between NaN and any numbers (including NaN) should return `false` +
-https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2.3
-* IF `nulltype` and NaN is compared it should return `nulltype` as their "type" is different and they are not comparable.
+* Any comparison between NaN and any Number (including NaN itself) returns `ERROR` (which is reduced to `false`) +
+https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2.3 +
 
 ===== Boolean
 
-* If either one of LHS or RHS is Boolean and another isn’t, throws an Exception
+* If one argument is Boolean and the other isn’t, returns `ERROR`.
 * False < True
 
 ===== String
 
-* If either one of LHS or RHS is String and another isn’t, returns `nulltype`.
+* If one argument is String and the other isn’t, returns `ERROR`.
 * We assume the common lexicographical order over unicode strings
 * LHS and RHS are compared lexicographically
-* UUID is evaluated based on its String representation.
 
 ===== UUID
 
+* If one argument is UUID and the other isn’t, returns `ERROR`.
 * UUID is evaluated based on its `String` representation.
-* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50" cannot be compared with each other, hence comparing them returns `nulltype`.
+* However, for example, UUID("b46d37e9-755c-477e-9ab6-44aabea51d50") and String "b46d37e9-755c-477e-9ab6-44aabea51d50"
+cannot be compared with each other, hence comparing them returns `ERROR`.
 
 ===== Date
 
-* If either one of LHS or RHS is Date and another isn’t, throw an Exception
+* If one argument is Date and the other isn’t, returns `ERROR`.
 * Compare LHS and RHS based on chronological order, i.e. numerical order in timestamp.
-
-===== `nulltype`
-
-* `nulltype` is not comparable, if the LHS or RHS is `nulltype` then the comparison result is `nulltype`.
 
 ==== Composite types
 
-For all of them, if LHS and RHS is not of the same data type, equality returns `false`. The following semantics applied when both LHS and RHS has the data type.
+For all of them, if LHS and RHS is not of the same type, compare returns `ERROR`. The following semantics applied
+when both LHS and RHS have the same type:
 
 ===== Vertex / Edge / VertexProperty
 
-They are not comparable, return `nulltype`.
+They are compared by their ID. The ID is chosen internally by the implementation, so comparison is implementation
+specific.
 
 ===== Property
 
-It it not comparable, return `nulltype`.
+Compared first by property key, then by property value according to comparability semantics.
 
 ===== PropertyKey
 
@@ -386,141 +432,35 @@ IDs are of any primitive types defined, so comparability for a corresponding typ
 
 Comparability of String applies.
 
-===== Path
+===== Iterable (Path, List, Set, Map)
 
-It is not comparable, throw an Exception.
-
-===== List
-
-It is not comparable, throw an Exception.
-
-===== Map
-
-It is not comparable, throw an Exception.
-
-===== Map.Entry
-
-It is not comparable, throw an Exception.
-
-===== Set
-
-It is not comparable, throw an Exception.
-
-=== Orderability
-
-* Used to determine the order. In TinkerPop, the order step follows the notion of orderability.
-* Orderability must not result in `nulltype` / undefined behavior.
-* Orderability must not throw an error. In other words, even if two values are incomparable we should still be able to
-determine the order of those two. This inevitably leads to the requirement to define the order across different data
-types. For the detailed order across types, see appendix.
-* Orderability determines if two values are ordered at the same position or one value is positioned earlier than another.
-* The concept of equivalence is used to determine if the two values are at the same position
-* When the position is identical, which value comes first (in other words, whether it should perform stable sort)
-depends on graph providers' implementation.
-* For values of the same type, comparability can be used to determine which comes first except for `NaN` in Number.
-For a different type, we have a dedicated order as described in the section below.
-
-To sort across any types of values, we define the order between each type as follows:
-(In this order, ID, label, property key and property value are considered as a part of primitive types)
-
-* `nulltype`
-* Boolean
-* Number
-* Date
-* String
-* Vertex
-* Edge
-* VertexProperty
-* Property
-* Path
-* List
-* Map
-
-==== Primitive types
-
-===== Number
-
-* Same applies as Comparability. Exceptions are as below:
-** NaN is ordered at a larger index among all Numbers. i.e. after +INF.
-* We do type promotion for orderability as we do for comparability.
-
-===== Boolean
-
-* False < True
-
-===== String
-
-* String value is ordered lexicographically
-
-===== UUID
-
-* UUID is ordered lexicographically based on its String representation
-
-===== Date
-
-* Date value is ordered chronologically
-
-===== `nulltype`
-
-* `nulltype` is before all value types
-
-==== Composite types
-
-===== Vertex / Edge / VertexProperty
-
-They are ordered by their ID. The ID is chosen internally by the implementation, so ordering is implementation specific, but is guaranteed to be stable.
-
-===== Property
-
-They are ordered by property key. If the key is equal, then property value is used as the second key.
-
-===== PropertyKey
-
-Comparability of String applies.
-
-===== PropertyValue
-
-Property values are of any primitive types defined, so orderability for a corresponding type applies.
-
-===== ID
-
-IDs are of any primitive types defined, so orderability for a corresponding type applies.
-
-===== Label
-
-Comparability of String applies.
+* Iterables must be of the same type, otherwise `ERROR` (e.g. List and Set are incomparable).
+* Comparison of iterables without inherent order (Set and Map) are implementation-specific.
+** For the reference implementation, all iterables are compared via their natural iteration order.
+* Elements are compared element by element from the two iterations according to conmparability semantics.
+* Empty iterations are equal and are less than non-empty iterations.
+* If iteration `A` exhausts its elements before iteration `B` then `A < B`.
 
 ===== Path
 
-* Orderability of the 1st element in the Path applies. Empty Path should come first.
-* If the 1st element is tie, then check the next element, and so on.
-* If one Path exhausts the element fast then it comes earlier in the order.
-
-===== List
-
-* Orderability of the 1st element in the List applies.
-* Empty List should come first.
-* If the 1st element is tie, then check the next element, and so on.
-* If one List exhausts the element fast then it comes earlier in the order.
-
-===== Map
-
-* For two maps, get the 1st entry (a key-value pair) from both, the orderability between them decides the order of the maps.
-* If the 1st entry is tie, then we pick the second one and repeat the process until we determine the order.
-    ** So the orderability of Map depends on in which order they return an entry. It is implementation dependent and undefined in this semantics.
-* If one Map exhausts an entry earlier than another, then it comes earlier in the order.
-
-===== Map.Entry
-
-* First check the orderability of their key.
-* If the key ties, then check the orderability of their value.
+* Only comparable to other Paths, otherwise `ERROR`.
+* Iterable semantics apply.
 
 ===== Set
 
-* For two sets, get the 1st item from both, the orderability between them decides the order of the sets.
-* If the first item is tie, we pick the second one and so on until we determine the order.
-    ** So the orderability of Set depends on in which order they return an item. It is implementation dependent and undefined in this semantics.
-* If one Set exhausts an item earlier than another, then it comes earlier in the order.
+* Only comparable to other Sets, otherwise `ERROR`.
+* Iterable semantics apply.
+
+===== List
+
+* Only comparable to other Lists, otherwise `ERROR`.
+* Iterable semantics apply.
+
+===== Map
+
+* Only comparable to other Maps, otherwise `ERROR`.
+* Iterable semantics apply (using `Map.entrySet()`)
+* Map entries are compared first by key, then by value according to comparability semantics.
 
 === Mapping for P
 
@@ -528,7 +468,7 @@ The following table maps the notions proposed above to the various `P` operators
 
 [%header]
 |================
-|Construct|Concept
+|Predicate|Concept
 |P.eq     |Equality
 |P.neq    |Equality
 |P.within |Equality
@@ -541,3 +481,112 @@ The following table maps the notions proposed above to the various `P` operators
 |P.outside|Comparability
 |P.between|Equality, Comparability
 |================
+
+=== Orderability
+
+Orderability semantics are used to define a global order across all Gremlin values. In the reference implementation, any
+step using `Order.asc` or `Order.desc` (e.g. OrderGlobalStep, OrderLocalStep) will follow these semantics. Unlike
+Comparability, Orderability will not result in `ERROR` for any comparisons - even if two values are incomparable we will
+still be able to determine their respective order. We do this by defining a global order across type, and values in
+different type spaces will be ordered according to their priority (e.g. all Numbers < all Strings).
+
+We define the type space, and the global order across the type space as follows:
+----
+1.  nulltype
+2.  Boolean
+3.  Number
+4.  Date
+5.  String
+6.  Vertex
+7.  Edge
+8.  VertexProperty
+9.  Property
+10. Path
+11. Set
+12. List
+13. Map
+14. Unknown
+----
+
+Within a given type space, orderability determines if two values are ordered at the same position or one value is
+positioned before or after the another. When the position is identical, which value comes first (in other words,
+whether it should perform stable sort) depends on graph providers' implementation. For almost all cases, comparability
+can be used to determine orderability within a type space, with a few exceptions outlined below.
+
+==== Primitive types
+
+===== Number
+
+Same as Comparability, except NaN is equivalent to NaN and is greater than all other Numbers, including +Infinity.
+Additionally, because of type promotion (`1` == `1.0`), numbers of the same value but of different numeric types will
+not have a stable sort order.
+
+===== Boolean
+
+Same as Comparability.
+
+===== String
+
+Same as Comparability.
+
+===== UUID
+
+Same as Comparability.
+
+===== Date
+
+Same as Comparability.
+
+==== Composite types
+
+===== Vertex / Edge / VertexProperty
+
+Same as Comparability.
+
+===== Property
+
+Same as Comparability, except orderability semantics are used for the property value.
+
+===== PropertyKey
+
+Same as Comparability.
+
+===== PropertyValue
+
+General orderability semantics apply, since property values can be of any primitive type.
+
+===== ID
+
+General orderability semantics apply, since IDs can be of any primitive type.
+
+===== Label
+
+Same as Comparability.
+
+===== Iterable (Path, List, Set, Map)
+
+Same as Comparability, except orderability semantics apply for element comparisons.
+
+===== Path
+
+* Iterable semantics apply.
+
+===== Set
+
+* Iterable semantics apply.
+
+===== List
+
+* Iterable semantics apply.
+
+===== Map
+
+* Iterable semantics apply for `Map.entrySet()`
+* Map Entries are ordered first by key, then by value according to orderability semantics.
+
+===== Unknown
+
+* If the unknown arguments are of the same type and implement Comparable, their natural order is used.
+* If the unknown arguments are of different types or do not define a natural order, order first by Classname, then
+by `Object.toString()`.
+

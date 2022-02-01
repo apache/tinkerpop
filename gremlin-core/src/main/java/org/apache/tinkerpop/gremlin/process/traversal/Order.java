@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import java.util.Comparator;
 import java.util.Random;
 
-import org.apache.tinkerpop.gremlin.util.OrderabilityComparator;
+import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 
 /**
  * Provides {@code Comparator} instances for ordering traversers.
@@ -58,7 +58,7 @@ public enum Order implements Comparator<Object> {
     asc {
         @Override
         public int compare(final Object first, final Object second) {
-            return OrderabilityComparator.INSTANCE.compare(first, second);
+            return ORDER.compare(first, second);
         }
 
         @Override
@@ -75,7 +75,7 @@ public enum Order implements Comparator<Object> {
     desc {
         @Override
         public int compare(final Object first, final Object second) {
-            return OrderabilityComparator.INSTANCE.compare(second, first);
+            return ORDER.compare(second, first);
         }
 
         @Override
@@ -84,7 +84,23 @@ public enum Order implements Comparator<Object> {
         }
     };
 
-    private static final Random RANDOM = new Random();
+    private static final Comparator<Object> ORDER = Comparator.comparing(
+            // first transform (strip Traverser layer and convert Enums)
+            Order::transform, GremlinValueComparator.ORDER);
+
+    /**
+     * Strip the Traverser layer and convert Enum to string.
+     */
+    private static Object transform(Object o) {
+        // we want to sort the underlying object contained by the traverser
+        if (o instanceof Traverser)
+            o = ((Traverser) o).get();
+        // need to convert enum to string representations for comparison or else you can get cast exceptions.
+        // this typically happens when sorting local on the keys of maps that contain T
+        if (o instanceof Enum)
+            o = ((Enum) o).name();
+        return o;
+    }
 
     /**
      * {@inheritDoc}

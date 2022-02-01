@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -35,6 +37,9 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class ContainsTest {
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Parameterized.Parameters(name = "{0}({1},{2}) = {3}")
     public static Iterable<Object[]> data() {
         return new ArrayList<>(Arrays.asList(new Object[][]{
@@ -47,7 +52,12 @@ public class ContainsTest {
                 {Contains.within, 100, Arrays.asList(1, 2, 3, 4, 10), false},
                 {Contains.without, 10L, Arrays.asList(1, 2, 3, 4, 10), false},
                 {Contains.within, "test", Arrays.asList(1, 2, 3, "test", 10), true},
-                {Contains.without, "testing", Arrays.asList(1, 2, 3, "test", 10), true}
+                {Contains.without, "testing", Arrays.asList(1, 2, 3, "test", 10), true},
+
+                {Contains.within, Double.NaN, Arrays.asList(Double.NaN), false},
+                {Contains.within, Double.NaN, Arrays.asList(0, Double.NaN), false},
+                {Contains.without, Double.NaN, Arrays.asList(Double.NaN), true},
+                {Contains.without, Double.NaN, Arrays.asList(0, Double.NaN), true},
         }));
     }
 
@@ -61,10 +71,13 @@ public class ContainsTest {
     public Collection collection;
 
     @Parameterized.Parameter(value = 3)
-    public boolean expected;
+    public Object expected;
 
     @Test
     public void shouldTest() {
+        if (expected instanceof Class)
+            exceptionRule.expect((Class) expected);
+
         assertEquals(expected, contains.test(first, collection));
     }
 }

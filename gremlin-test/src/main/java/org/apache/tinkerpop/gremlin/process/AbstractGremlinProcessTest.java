@@ -164,6 +164,13 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         }
     }
 
+    // for basic filtering tests
+    public static void checkHasNext(final boolean expected, final Traversal traversal) {
+        final List results = traversal.toList();
+        assertThat(traversal.hasNext(), is(false));
+        assertThat(results.size() > 0, is(expected)); // easier for debugging this way
+    }
+
     private static <A> boolean internalCheckList(final List<A> expectedList, final List<A> actualList) {
         if (expectedList.size() != actualList.size()) {
             return false;

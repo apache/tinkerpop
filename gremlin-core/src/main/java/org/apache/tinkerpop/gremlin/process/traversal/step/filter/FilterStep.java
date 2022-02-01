@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,9 +36,22 @@ public abstract class FilterStep<S> extends AbstractStep<S, S> {
     @Override
     protected Traverser.Admin<S> processNextStart() {
         while (true) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            if (this.filter(traverser))
-                return traverser;
+            try {
+                final Traverser.Admin<S> traverser = this.starts.next();
+                if (this.filter(traverser))
+                    return traverser;
+            } catch (GremlinTypeErrorException ex) {
+                if (this instanceof BinaryReductionStep || getTraversal().isRoot()) {
+                    /*
+                     * Either we are at a known reduction point (TraversalFilterStep, WhereTraversalStep), or we
+                     * are at the top level of the query. In either of these cases we do a binary reduction from
+                     * ERROR -> FALSE and filter the solution quietly.
+                     */
+                } else {
+                    // not a ternary -> binary reducer, pass the ERROR on
+                    throw ex;
+                }
+            }
         }
     }
 

@@ -429,10 +429,20 @@ public final class NumberHelper {
      *     a = null, b = 1 -> 1
      *     a = 1, b = null -> 1
      *     a = null, b = null -> null
+     *     a = NaN, b = 1 -> 1
+     *     a = 1, b = NaN -> 1
+     *     a = NaN, b = NaN -> NaN
      * </pre>
      */
     public static Number min(final Number a, final Number b) {
-        if (null == a && null == b) return null;
+        // handle one or both null (propagate null if both)
+        if (a == null || b == null)
+            return a == null ? b : a;
+
+        // handle one or both NaN (propagate NaN if both)
+        if (eitherAreNaN(a, b))
+            return isNaN(a) ? b : a;
+
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).min.apply(a, b);
     }
@@ -445,24 +455,27 @@ public final class NumberHelper {
      *     a = null, b = 1 -> 1
      *     a = 1, b = null -> 1
      *     a = null, b = null -> null
+     *     a = NaN, b = 1 -> 1
+     *     a = 1, b = NaN -> 1
+     *     a = NaN, b = NaN -> NaN
      * </pre>
      */
     public static Comparable min(final Comparable a, final Comparable b) {
-        if (null == a || null == b) {
-            if (null == a && null == b)
-                return null;
-            else
-                return null == a ? b : a;
-        }
+        // handle one or both null (propagate null if both)
+        if (a == null || b == null)
+            return a == null ? b : a;
 
-        if (a instanceof Number && b instanceof Number && !a.equals(Double.NaN) && !b.equals(Double.NaN)) {
+        // handle one or both NaN (propagate NaN if both)
+        if (eitherAreNaN(a, b))
+            return isNaN(a) ? b : a;
+
+        if (a instanceof Number && b instanceof Number) {
             final Number an = (Number) a, bn = (Number) b;
             final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
             return (Comparable) getHelper(clazz).min.apply(an, bn);
+        } else {
+            return a.compareTo(b) < 0 ? a : b;
         }
-        return isNonValue(a) ? b :
-                isNonValue(b) ? a :
-                        a.compareTo(b) < 0 ? a : b;
     }
 
     /**
@@ -473,10 +486,20 @@ public final class NumberHelper {
      *     a = null, b = 1 -> 1
      *     a = 1, b = null -> 1
      *     a = null, b = null -> null
+     *     a = NaN, b = 1 -> 1
+     *     a = 1, b = NaN -> 1
+     *     a = NaN, b = NaN -> NaN
      * </pre>
      */
     public static Number max(final Number a, final Number b) {
-        if (null == a && null == b) return null;
+        // handle one or both null (propagate null if both)
+        if (a == null || b == null)
+            return a == null ? b : a;
+
+        // handle one or both NaN (propagate NaN if both)
+        if (eitherAreNaN(a, b))
+            return isNaN(a) ? b : a;
+
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).max.apply(a, b);
     }
@@ -489,28 +512,31 @@ public final class NumberHelper {
      *     a = null, b = 1 -> 1
      *     a = 1, b = null -> 1
      *     a = null, b = null -> null
+     *     a = NaN, b = 1 -> 1
+     *     a = 1, b = NaN -> 1
+     *     a = NaN, b = NaN -> NaN
      * </pre>
      */
     public static Comparable max(final Comparable a, final Comparable b) {
-        if (null == a || null == b) {
-            if (null == a && null == b)
-                return null;
-            else
-                return null == a ? b : a;
-        }
+        // handle one or both null (propagate null if both)
+        if (a == null || b == null)
+            return a == null ? b : a;
 
-        if (a instanceof Number && b instanceof Number && !a.equals(Double.NaN) && !b.equals(Double.NaN)) {
+        // handle one or both NaN (propagate NaN if both)
+        if (eitherAreNaN(a, b))
+            return isNaN(a) ? b : a;
+
+        if (a instanceof Number && b instanceof Number) {
             final Number an = (Number) a, bn = (Number) b;
             final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
             return (Comparable) getHelper(clazz).max.apply(an, bn);
+        } else {
+            return a.compareTo(b) > 0 ? a : b;
         }
-        return isNonValue(a) ? b :
-                isNonValue(b) ? a :
-                        a.compareTo(b) > 0 ? a : b;
     }
 
     /**
-     * Compares two numbers.
+     * Compares two numbers. Follows orderability semantics for NaN, which places NaN after +Inf.
      *
      * <pre>
      *     a = 4, b = 2 -> 1
@@ -518,15 +544,19 @@ public final class NumberHelper {
      *     a = null, b = 1 -> -1
      *     a = 1, b = null -> 1
      *     a = null, b = null -> 0
+     *     a = NaN, b = NaN -> 0
+     *     a = NaN, b = Inf -> 1
      * </pre>
      */
     public static Integer compare(final Number a, final Number b) {
-        if (null == a || null == b) {
-            if (a == b)
-                return 0;
-            else
-                return null == a ? -1 : 1;
-        }
+        // handle one or both null
+        if (a == null || b == null)
+            return a == b ? 0 : (a == null ? -1 : 1);
+
+        // handle one or both NaN
+        if (eitherAreNaN(a, b))
+            return (bothAreNaN(a, b)) ? 0 : isNaN(a) ? 1 : -1;
+
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).cmp.apply(a, b);
     }
@@ -589,10 +619,20 @@ public final class NumberHelper {
     }
 
     private static boolean isNumber(final Number number) {
-        return number != null && !number.equals(Double.NaN);
+        return number != null && !isNaN(number);
     }
 
-    private static boolean isNonValue(final Object value) {
-        return value instanceof Double && !isNumber((Double) value);
+    public static boolean isNaN(final Object object) {
+        return (object instanceof Float && Float.isNaN((float) object)) ||
+                (object instanceof Double && Double.isNaN((double) object));
     }
+
+    public static boolean eitherAreNaN(final Object first, final Object second) {
+        return isNaN(first) || isNaN(second);
+    }
+
+    public static boolean bothAreNaN(final Object first, final Object second) {
+        return isNaN(first) && isNaN(second);
+    }
+
 }

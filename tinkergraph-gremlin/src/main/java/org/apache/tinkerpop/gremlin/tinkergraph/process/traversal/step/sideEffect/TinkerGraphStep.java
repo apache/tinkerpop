@@ -128,15 +128,18 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
 
     private <E extends Element> Iterator<E> iteratorList(final Iterator<E> iterator) {
         final List<E> list = new ArrayList<>();
-        while (iterator.hasNext()) {
-            final E e = iterator.next();
-            if (HasContainer.testAll(e, this.hasContainers))
-                list.add(e);
-        }
 
-        // close the old iterator to release resources since we are returning a new iterator (over list)
-        // out of this function.
-        CloseableIterator.closeIterator(iterator);
+        try {
+            while (iterator.hasNext()) {
+                final E e = iterator.next();
+                if (HasContainer.testAll(e, this.hasContainers))
+                    list.add(e);
+            }
+        } finally {
+            // close the old iterator to release resources since we are returning a new iterator (over list)
+            // out of this function.
+            CloseableIterator.closeIterator(iterator);
+        }
 
         return new TinkerGraphIterator<>(list.iterator());
     }
