@@ -23,7 +23,66 @@ for early testing purposes only.
 -->
 
 # Getting Started
-<!-- TODO: Fill this section in with instructions on how to try it out. -->
+#### Prerequisites
+
+* A basic understanding of [Go Modules](https://go.dev/blog/using-go-modules)
+* A project set up which uses Go Modules
+
+To install the Gremlin-Go as a dependency for your project, run the following in the root directory of your project that contains your `go.mod` file:
+
+`go get github.com/lyndonb-bq/tinkerpop/gremlin-go@gremlin-go`
+
+Note: Currently as of Milestone #1, Gremlin-Go exists in the `lyndonb-bq` fork on the `gremlin-go` branch. Expect this to change in the future when the project is closer to a completed state.
+
+After running the `go get` command, your `go.mod` file should contain something similar to the following:
+
+```
+module gremlin-go-example
+
+go 1.17
+
+require github.com/lyndonb-bq/tinkerpop/gremlin-go v0.0.0-20220131225152-54920637bf94
+
+require (
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/nicksnyder/go-i18n/v2 v2.1.2 // indirect
+	golang.org/x/text v0.3.7 // indirect
+)
+```
+
+If it does, then this means Gremlin-Go was successfully installed as a dependency of your project.
+
+Here is a simple example of using Gremlin-Go as an import in a sample project's `main.go` file. This example should run, provided that it is configured to point to a compatible `gremlin-server`. In this example, a simple local server is running, and this will print`[2]` as an output. If no server is available, this code can still be executed to print an error as output.
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+)
+
+func main() {
+	// Creating the connection to the server.
+	driverRemoteConnection := gremlingo.NewDriverRemoteConnection("localhost", 8182)
+	// Cleanup
+	defer driverRemoteConnection.Close()
+	// Submit a traversal (string format in milestone 1).
+	resultSet, err := driverRemoteConnection.Submit("1 + 1")
+	// Check for traversal execution errors, print them if there are any and exit.
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// Grab the first result from all the results in the ResultSet.
+	result := resultSet.All()[0]
+	// Print the first result.
+	fmt.Println(result.AsString())
+}
+```
+
+Note: The exact import name as well as the module prefix for `NewDriverRemoteConnection` may change in the future.
 
 # Go Gremlin Language Variant
 
