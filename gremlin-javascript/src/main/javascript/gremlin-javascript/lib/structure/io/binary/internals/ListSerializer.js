@@ -29,12 +29,34 @@ module.exports = class ListSerializer {
     this.ioc.serializers[ioc.DataType.LIST] = this;
   }
 
-  canBeUsedFor() {
-    // TODO
+  canBeUsedFor(value) {
+    return Array.isArray(value);
   }
 
-  serialize() {
-    // TODO
+  serialize(item, fullyQualifiedFormat=true) {
+    if (item === undefined || item === null)
+      if (fullyQualifiedFormat)
+        return Buffer.from([this.ioc.DataType.LIST, 0x01]);
+      else
+        return Buffer.from([0x00,0x00,0x00,0x00]); // {length} = 0
+
+    const bufs = [];
+    if (fullyQualifiedFormat)
+      bufs.push( Buffer.from([this.ioc.DataType.LIST, 0x00]) );
+
+    // {length}
+    let length = item.length;
+    if (length < 0)
+      length = 0; // TODO: test it
+    if (length > this.ioc.intSerializer.INT32_MAX)
+      throw new Error(`List length=${length} is greater than supported max_length=${this.ioc.intSerializer.INT32_MAX}.`);
+    bufs.push( this.ioc.intSerializer.serialize(length, false) );
+
+    // {item_0}...{item_n}
+    for (let i = 0; i < length; i++)
+      bufs.push( this.ioc.anySerializer.serialize(item[i]) );
+
+    return Buffer.concat(bufs);
   }
 
   deserialize(buffer, fullyQualifiedFormat=true) {

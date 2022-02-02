@@ -36,7 +36,18 @@ describe('GraphBinary.AnySerializer', () => {
 
   describe('serialize', () =>
     [
-      // Let's follow existing structure/io/graph-serializer.GraphSON3Writer.adaptObject()
+      /*
+        This is the most complex part of GraphBinary,
+        we are expected to guess right serializer, i.e. right type.
+        GraphSON implementation splits decision making among client and server sides due to JSON nature.
+        But GraphBinary have to decide on a type on client side only.
+
+        Let's follow existing structure/io/graph-serializer.GraphSON3Writer.adaptObject() logic
+        of serializer/type selection and add the rest of the types.
+
+        These test suite is the documentation and set of examples of what type is inferred
+        for a given JavaScript value.
+      */
 
       // NumberSerializer
       // { v:NaN, b:[] },
@@ -133,6 +144,8 @@ describe('GraphBinary.AnySerializer', () => {
 
       // ListSerializer
       // TODO +
+      { v:[],  b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x00] },
+      { v:[1], b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x01, 0x01,0x00, 0x00,0x00,0x00,0x01] },
 
       // SetSerializer
       // TODO

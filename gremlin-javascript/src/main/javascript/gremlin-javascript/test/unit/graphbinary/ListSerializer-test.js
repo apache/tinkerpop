@@ -23,7 +23,8 @@
 'use strict';
 
 const assert = require('assert');
-const { listSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const { listSerializer, intSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const t = require('../../../lib/process/traversal');
 
 const { from, concat } = Buffer;
 
@@ -67,7 +68,7 @@ describe('GraphBinary.ListSerializer', () => {
     { des:1, err:/{length} is less than zero/,               b:[0x80,0x00,0x00,0x00] },
   ];
 
-  describe.skip('serialize', () => {
+  describe('serialize', () => {
     cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
       // deserialize case only
       if (des)
@@ -85,6 +86,13 @@ describe('GraphBinary.ListSerializer', () => {
       assert.deepEqual( listSerializer.serialize(v, true),  concat([type_code, value_flag, b]) );
       assert.deepEqual( listSerializer.serialize(v, false), concat([                       b]) );
     }));
+
+    it.skip('should not error if array length is INT32_MAX'); // TODO: resource heavy
+
+    it('should error if array length is greater than INT32_MAX', () => assert.throws(
+      () => listSerializer.serialize(new Array(intSerializer.INT32_MAX+1)),
+      { message: new RegExp(`List length=${intSerializer.INT32_MAX+1} is greater than supported max_length=${intSerializer.INT32_MAX}`) }
+    ));
   });
 
   describe('deserialize', () =>
@@ -120,7 +128,18 @@ describe('GraphBinary.ListSerializer', () => {
   );
 
   describe('canBeUsedFor', () =>
-    it.skip('')
+    // most of the cases are implicitly tested via AnySerializer.serialize() tests
+    [
+      { v: null,              e: false },
+      { v: undefined,         e: false },
+      { v: {},                e: false },
+      { v: new t.Traverser(), e: false },
+      { v: [],                e: true },
+      { v: [0],               e: true },
+      { v: [undefined],       e: true },
+    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+      assert.strictEqual( listSerializer.canBeUsedFor(v), e )
+    ))
   );
 
 });

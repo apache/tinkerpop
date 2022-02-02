@@ -31,8 +31,9 @@ module.exports = class AnySerializer {
     this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
       ioc.intSerializer,
       ioc.bytecodeSerializer,
-      ioc.enumSerializer,
       ioc.traverserSerializer,
+      ioc.enumSerializer,
+      ioc.listSerializer,
       ioc.mapSerializer,
       ioc.uuidSerializer,
       ioc.stringSerializer,
@@ -44,7 +45,7 @@ module.exports = class AnySerializer {
       if (this.serializers[i].canBeUsedFor(item))
         return this.serializers[i];
 
-    return this.ioc.StringSerializer; // TODO: is it what we want with falling back to a string?
+    return this.ioc.stringSerializer; // TODO: is it what we want with falling back to a string? or it's better to error to signal end user of unexpected value?
   }
 
   serialize(item, fullyQualifiedFormat=true) {
