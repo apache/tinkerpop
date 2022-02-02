@@ -560,7 +560,7 @@ public class __ {
     /**
      * @see GraphTraversal#mergeE(Map)
      */
-    public static <A> GraphTraversal<A, Edge> mergeE(final Map<?, Object> searchCreate) {
+    public static <A> GraphTraversal<A, Edge> mergeE(final Map<Object, Object> searchCreate) {
         return __.<A>start().mergeE(searchCreate);
     }
 

@@ -44,6 +44,26 @@ demonstrates just how much easier implementing a basic upsert of a vertex has go
 [source,text]
 ----
 // prior to 3.6.0, use fold().coalesce(unfold(), ...)
+gremlin> g.V().
+......1>   has('person', 'name', 'vadas').has('age',27).
+......2>   fold().
+......3>   coalesce(unfold(),
+......4>            addV('person').property('name', 'vadas').property('age', 27)).
+......5>   elementMap()
+==>[id:2,label:person,name:vadas,age:27]
+
+// 3.6.0
+gremlin> g.mergeV([(T.label): 'person', name:'vadas', age: 27]).
+......1>   elementMap()
+==>[id:2,label:person,name:vadas,age:27]
+----
+
+In a more complex example below, if the vertex is found, then it is updated with an "age" of "30" otherwise it is
+created with an "age" of 27:
+
+[source,text]
+----
+// prior to 3.6.0, use fold().coalesce(unfold(), ...)
 gremlin> g.V().has('person','name','vadas').has('age', 27).
 ......1>   fold().
 ......2>   coalesce(unfold().property('age',30),
@@ -58,12 +78,12 @@ gremlin> g.mergeV([(T.label): 'person', name:'vadas', age: 27]).
 ==>[id:2,label:person,name:vadas,age:30]
 ----
 
-The `fold().coalesce(unfold(), ...)` pattern was even more complicated for upserting edges, but the following example
-demonstrates how much easier `mergeE()` is to follow:
+The pattern was even more complicated for upserting edges, but the following example demonstrates how much easier
+`mergeE()` is to follow:
 
 [source,text]
 ----
-// prior to 3.6.0, use fold().coalesce(unfold(), ...)
+// prior to 3.6.0, use a form of coalesce()
 gremlin> g.V().has('person','name','vadas').as('v').
 ......1>            V().has('software','name','ripple').
 ......2>            coalesce(__.inE('created').where(outV().as('v')),

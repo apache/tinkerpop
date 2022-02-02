@@ -34,6 +34,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallba
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -77,14 +79,27 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
         this.searchCreateTraversal = integrateChild(searchCreateTraversal);
     }
 
+    /**
+     * Gets the traversal that will be used to provide the {@code Map} that will be used to search for vertices.
+     * This {@code Map} also will be used as the default data set to be used to create a vertex if the search is not
+     * successful.
+     */
     public Traversal.Admin<S, Map<Object, Object>> getSearchCreateTraversal() {
         return searchCreateTraversal;
     }
 
+    /**
+     * Gets the traversal that will be used to provide the {@code Map} that will be the override to the one provided
+     * by the {@link #getSearchCreateTraversal()} for vertex creation events.
+     */
     public Traversal.Admin<S, Map<Object, Object>> getOnCreateTraversal() {
         return onCreateTraversal;
     }
 
+    /**
+     * Gets the traversal that will be used to provide the {@code Map} that will be used to modify vertices that
+     * match the search criteria of {@link #getSearchCreateTraversal()}.
+     */
     public Traversal.Admin<S, Map<String, Object>> getOnMatchTraversal() {
         return onMatchTraversal;
     }
@@ -96,6 +111,9 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
         return isStart;
     }
 
+    /**
+     * Determine if this is the first pass through {@link #processNextStart()}.
+     */
     public boolean isFirst() {
         return first;
     }
@@ -126,8 +144,11 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
 
     @Override
     public void configure(final Object... keyValues) {
-        // this is a Mutating step but property() should not be folded into this step. this exception should not
-        // end up visible to users really
+        // this is a Mutating step but property() should not be folded into this step.  The main issue here is that
+        // this method won't know what step called it - property() or with() or something else so it can't make the
+        // choice easily to throw an exception, write the keys/values to parameters, etc. It really is up to the
+        // caller to make sure it is handled properly at this point. this may best be left as a do-nothing method for
+        // now.
     }
 
     @Override
@@ -184,6 +205,7 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
     @Override
     protected Iterator<Vertex> flatMap(final Traverser.Admin<S> traverser) {
         final Map<Object,Object> searchCreate = TraversalUtil.apply(traverser, searchCreateTraversal);
+        validateMapInput(searchCreate, false);
 
         Stream<Vertex> stream = createSearchStream(searchCreate);
         stream = stream.map(v -> {
@@ -192,6 +214,8 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
 
             // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
             final Map<String, Object> onMatchMap = TraversalUtil.apply(traverser, onMatchTraversal);
+            validateMapInput(onMatchMap, true);
+
             onMatchMap.forEach((key, value) -> {
                 // trigger callbacks for eventing - in this case, it's a VertexPropertyChangedEvent. if there's no
                 // registry/callbacks then just set the property
@@ -202,7 +226,10 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
                     final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(v), oldValue, value);
                     this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
                 }
-                v.property(key, value);
+
+                // try to detect proper cardinality for the key according to the graph
+                final Graph graph = this.getTraversal().getGraph().get();
+                v.property(graph.features().vertex().getCardinality(key), key, value);
             });
 
             return v;
@@ -218,7 +245,12 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
 
             // if there is an onCreateTraversal then the search criteria is ignored for the creation as it is provided
             // by way of the traversal which will return the Map
-            final Map<Object,Object> m = null == onCreateTraversal ? searchCreate : TraversalUtil.apply(traverser, onCreateTraversal);
+            final boolean useOnCreate = onCreateTraversal != null;
+            final Map<Object,Object> m = useOnCreate ? TraversalUtil.apply(traverser, onCreateTraversal) : searchCreate;
+
+            // searchCreate should have already been validated so only do it if it is overridden
+            if (useOnCreate) validateMapInput(m, false);
+
             final List<Object> keyValues = new ArrayList<>();
             for (Map.Entry<Object, Object> entry : m.entrySet()) {
                 keyValues.add(entry.getKey());
@@ -234,6 +266,40 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
             }
 
             return IteratorUtils.of(vertex);
+        }
+    }
+
+    /**
+     * Validates input to any {@code Map} arguments to this step. For {@link Merge#onMatch} updates cannot be applied
+     * to immutable parts of an {@link Edge} (id, label, incident vertices) so those can be ignored in the validation.
+     */
+    public static void validateMapInput(final Map<?,Object> m, final boolean ignoreTokens) {
+        if (ignoreTokens) {
+            m.entrySet().stream().filter(e -> {
+                final Object k = e.getKey();
+                return !(k instanceof String);
+            }).findFirst().map(e -> {
+                throw new IllegalArgumentException(String.format(
+                        "option(onMatch) expects keys in Map to be of String - check: %s",
+                        e.getKey().toString()));
+            });
+        } else {
+            m.entrySet().stream().filter(e -> {
+                final Object k = e.getKey();
+                return k != T.id && k != T.label && !(k instanceof String);
+            }).findFirst().map(e -> {
+                throw new IllegalArgumentException(String.format(
+                        "mergeV() and option(onCreate) expects keys in Map to be of String, T.id, T.label - check: %s",
+                        e.getKey().toString()));
+            });
+        }
+
+        if (!ignoreTokens) {
+            m.entrySet().stream().filter(e -> e.getKey() == T.label && !(e.getValue() instanceof String)).findFirst().map(e -> {
+                throw new IllegalArgumentException(String.format(
+                        "mergeV() expects T.label value to be of String - found: %s",
+                        e.getValue().getClass().getSimpleName()));
+            });
         }
     }
 

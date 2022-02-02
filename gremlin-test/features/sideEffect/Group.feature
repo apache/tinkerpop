@@ -263,6 +263,11 @@ Feature: Step - group()
       | result |
       | m[{"software":"d[2.0].d", "person":"d[5.0].d"}] |
 
+  # This test works, but the test frameworks don't all support it well because of how parameters are now processed
+  # in 3.6.0 where we need more than just simple JSON processing. would be nice to "ignore" it somehow as it does
+  # work in some situations but not all test frameworks have that ability either (i.e. to ignore prior to parsing
+  # the parameter). TINKERPOP-2699
+  #
   # The post-ordering really isn't really right but works around TINKERPOP-2600
 #  Scenario: g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX
 #    Given the modern graph

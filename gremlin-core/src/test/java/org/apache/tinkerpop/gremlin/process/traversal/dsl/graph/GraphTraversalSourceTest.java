@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -79,5 +81,15 @@ public class GraphTraversalSourceTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailAddVWithNullVertexLabelTraversal() {
         g.addV((Traversal<?, String>) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailMergeEForBadInput() {
+        g.mergeE(CollectionFactory.asMap(T.value, "nope"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailMergeVForBadInput() {
+        g.mergeV(CollectionFactory.asMap(T.value, "nope"));
     }
 }

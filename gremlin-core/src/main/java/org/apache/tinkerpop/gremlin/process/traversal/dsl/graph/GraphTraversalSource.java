@@ -374,6 +374,7 @@ public class GraphTraversalSource implements TraversalSource {
      * @since 3.6.0
      */
     public GraphTraversal<Vertex, Vertex> mergeV(final Map<Object, Object> searchCreate) {
+        MergeVertexStep.validateMapInput(searchCreate, false);
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
@@ -405,6 +406,7 @@ public class GraphTraversalSource implements TraversalSource {
      * @since 3.6.0
      */
     public GraphTraversal<Edge, Edge> mergeE(final Map<?, Object> searchCreate) {
+        MergeEdgeStep.validateMapInput(searchCreate, false);
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);

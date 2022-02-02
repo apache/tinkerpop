@@ -41,8 +41,10 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ import java.util.stream.Stream;
 public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<Event>,
         TraversalOptionParent<Merge, S, Edge> {
 
+    public static final Vertex PLACEHOLDER_VERTEX = new ReferenceVertex(Graph.Hidden.hide(MergeEdgeStep.class.getName()));
     private final boolean isStart;
     private boolean first = true;
     private Traversal.Admin<S,Map<Object, Object>> searchCreateTraversal;
@@ -81,14 +84,27 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
         this.searchCreateTraversal = integrateChild(searchCreateTraversal);
     }
 
+    /**
+     * Gets the traversal that will be used to provide the {@code Map} that will be used to search for edges.
+     * This {@code Map} also will be used as the default data set to be used to create a edge if the search is not
+     * successful.
+     */
     public Traversal.Admin<S, Map<Object, Object>> getSearchCreateTraversal() {
         return searchCreateTraversal;
     }
 
+    /**
+     * Gets the traversal that will be used to provide the {@code Map} that will be the override to the one provided
+     * by the {@link #getSearchCreateTraversal()} for edge creation events.
+     */
     public Traversal.Admin<S, Map<Object, Object>> getOnCreateTraversal() {
         return onCreateTraversal;
     }
 
+    /**
+     * Gets the traversal that will be used to provide the {@code Map} that will be used to modify edges that
+     * match the search criteria of {@link #getSearchCreateTraversal()}.
+     */
     public Traversal.Admin<S, Map<String, Object>> getOnMatchTraversal() {
         return onMatchTraversal;
     }
@@ -100,6 +116,9 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
         return isStart;
     }
 
+    /**
+     * Determine if this is the first pass through {@link #processNextStart()}.
+     */
     public boolean isFirst() {
         return first;
     }
@@ -130,8 +149,11 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
 
     @Override
     public void configure(final Object... keyValues) {
-        // this is a Mutating step but property() should not be folded into this step. this exception should not
-        // end up visible to users really
+        // this is a Mutating step but property() should not be folded into this step.  The main issue here is that
+        // this method won't know what step called it - property() or with() or something else so it can't make the
+        // choice easily to throw an exception, write the keys/values to parameters, etc. It really is up to the
+        // caller to make sure it is handled properly at this point. this may best be left as a do-nothing method for
+        // now.
     }
 
     @Override
@@ -147,7 +169,7 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
         if (isStart && first) {
             first = false;
             final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
-            this.addStart(generator.generate(false, (Step) this, 1L));
+            this.addStart(generator.generate(PLACEHOLDER_VERTEX, (Step) this, 1L));
         }
         return super.processNextStart();
     }
@@ -193,7 +215,9 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
                             // try to take advantage of string id conversions of the graph by doing a lookup rather
                             // than direct compare on id
                             final Iterator<Vertex> found = graph.vertices(kv.getValue());
-                            return found.hasNext() && e.vertices(direction).next().equals(found.next());
+                            final boolean matched = found.hasNext() && e.vertices(direction).next().equals(found.next());
+                            CloseableIterator.closeIterator(found);
+                            return matched;
                         } else {
                             final Property<Object> vp = e.property(kv.getKey().toString());
                             return vp.isPresent() && kv.getValue().equals(vp.value());
@@ -206,21 +230,12 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
 
     @Override
     protected Iterator<Edge> flatMap(final Traverser.Admin<S> traverser) {
-        final S possibleVertex = traverser.get();
         final Map<Object,Object> searchCreate = TraversalUtil.apply(traverser, searchCreateTraversal);
 
-        Vertex outV = (Vertex) searchCreate.getOrDefault(Direction.OUT, possibleVertex);
-        Vertex inV = (Vertex) searchCreate.getOrDefault(Direction.IN, possibleVertex);
+        validateMapInput(searchCreate, false);
 
-        if (inV instanceof Attachable)
-            inV = ((Attachable<Vertex>) inV)
-                    .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-        if (outV instanceof Attachable)
-            outV = ((Attachable<Vertex>) outV)
-                    .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-
-        final Vertex fromV = outV;
-        final Vertex toV = inV;
+        final Vertex outV = resolveVertex(traverser, searchCreate, Direction.OUT);
+        final Vertex inV = resolveVertex(traverser, searchCreate, Direction.IN);
 
         Stream<Edge> stream = createSearchStream(searchCreate);
         stream = stream.map(e -> {
@@ -229,6 +244,8 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
 
             // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
             final Map<String, Object> onMatchMap = TraversalUtil.apply(traverser, onMatchTraversal);
+            validateMapInput(onMatchMap, true);
+
             onMatchMap.forEach((key, value) -> {
                 // trigger callbacks for eventing - in this case, it's a EdgePropertyChangedEvent. if there's no
                 // registry/callbacks then just set the property
@@ -255,14 +272,32 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
 
             // if there is an onCreateTraversal then the search criteria is ignored for the creation as it is provided
             // by way of the traversal which will return the Map
-            final Map<Object,Object> m = null == onCreateTraversal ? searchCreate : TraversalUtil.apply(traverser, onCreateTraversal);
+            final boolean useOnCreate = onCreateTraversal != null;
+            final Map<Object,Object> m = useOnCreate ? TraversalUtil.apply(traverser, onCreateTraversal) : searchCreate;
+
+            // searchCreate should have alredy been validated so only do it if it is overridden
+            if (useOnCreate) validateMapInput(m, false);
+
             final List<Object> keyValues = new ArrayList<>();
             String label = Edge.DEFAULT_LABEL;
-            for (Map.Entry<Object, Object> entry : m.entrySet()) {
-                // skip Direction keys as they are already handled in getting fromV/toV
-                if (entry.getKey() instanceof Direction) continue;
 
-                if (entry.getKey().equals(T.label)) {
+            // assume the to/from vertices from traverser/searchMatch are what we want, but then
+            // consider the override dropping in from onCreate
+            Vertex fromV = outV;
+            Vertex toV = inV;
+
+            for (Map.Entry<Object, Object> entry : m.entrySet()) {
+                if (entry.getKey() instanceof Direction) {
+                    // only override if onCreate was specified otherwise stick to however traverser/searchMatch
+                    // was resolved
+                    if (useOnCreate && entry.getKey().equals(Direction.IN)) {
+                        toV = ((Attachable<Vertex>) entry.getValue())
+                                .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+                    } else if (useOnCreate && entry.getKey().equals(Direction.OUT)) {
+                        fromV = ((Attachable<Vertex>) entry.getValue())
+                                .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+                    }
+                } else if (entry.getKey().equals(T.label)) {
                     label = (String) entry.getValue();
                 } else {
                     keyValues.add(entry.getKey());
@@ -280,6 +315,63 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             }
 
             return IteratorUtils.of(edge);
+        }
+    }
+
+    /**
+     * Little helper method that will resolve {@link Direction} map keys to a {@link Vertex} which is the currency
+     * of this step. Since this step can accept a {@link Vertex} as the traverser it uses that as a default value
+     * in the case where {@link Direction} is not specified in the {@code Map}. As a result the {@code Map} value
+     * overrides the traverser. Note that if this is a start step then the traverser will contain a
+     * {@link #PLACEHOLDER_VERTEX} which is basically just a dummy to use as a marker where it will be assumed a
+     * {@code Map} argument to the step will have the necessary {@link Vertex} to allow the step to do its work. If
+     * the {@link Direction} contains something other than a {@link Vertex} it will become the {@link T#id} to a
+     * fresh {@link ReferenceVertex}.
+     */
+    protected Vertex resolveVertex(final Traverser.Admin<S> traverser, final Map<Object, Object> searchCreate,
+                                   final Direction direction) {
+        final S possibleVertex = traverser.get();
+        final Object o = searchCreate.getOrDefault(direction, possibleVertex);
+        final Vertex v = o instanceof Vertex ? (Vertex) o : new ReferenceVertex(o);
+        if (v != PLACEHOLDER_VERTEX && v instanceof Attachable) {
+            return ((Attachable<Vertex>) v)
+                    .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+        } else {
+            return v;
+        }
+    }
+
+    /**
+     * Validates input to any {@code Map} arguments to this step. For {@link Merge#onMatch} updates cannot be applied
+     * to immutable parts of an {@link Edge} (id, label, incident vertices) so those can be ignored in the validation.
+     */
+    public static void validateMapInput(final Map<?,Object> m, final boolean ignoreTokens) {
+        if (ignoreTokens) {
+            m.entrySet().stream().filter(e -> {
+                final Object k = e.getKey();
+                return !(k instanceof String);
+            }).findFirst().map(e -> {
+                throw new IllegalArgumentException(String.format(
+                        "option(onMatch) expects keys in Map to be of String - check: %s",
+                        e.getKey().toString()));
+            });
+        } else {
+            m.entrySet().stream().filter(e -> {
+                final Object k = e.getKey();
+                return k != T.id && k != T.label && k != Direction.OUT && k != Direction.IN && !(k instanceof String);
+            }).findFirst().map(e -> {
+                throw new IllegalArgumentException(String.format(
+                        "mergeE() and option(onCreate) expects keys in Map to be of String, T.id, T.label, or any Direction except BOTH - check: %s",
+                        e.getKey().toString()));
+            });
+        }
+
+        if (!ignoreTokens) {
+            m.entrySet().stream().filter(e -> e.getKey() == T.label && !(e.getValue() instanceof String)).findFirst().map(e -> {
+                throw new IllegalArgumentException(String.format(
+                        "mergeE() expects T.label value to be of String - found: %s",
+                        e.getValue().getClass().getSimpleName()));
+            });
         }
     }
 

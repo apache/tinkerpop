@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,16 @@ public class GraphTraversalTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailPropertyWithCardinalityNullVertexLabel() {
         g.addV().property(VertexProperty.Cardinality.single, T.label, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailMergeEWithBadInput() {
+        g.inject(0).mergeE(CollectionFactory.asMap(T.value, 100));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailMergeVWithBadInput() {
+        g.inject(0).mergeV(CollectionFactory.asMap(T.value, 100));
     }
 
     @Test
