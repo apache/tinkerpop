@@ -34,7 +34,7 @@ const { from, concat } = Buffer;
 
 describe('GraphBinary.AnySerializer', () => {
 
-  describe('serialize', () =>
+  describe('serialize', () => {
     [
       /*
         This is the most complex part of GraphBinary,
@@ -162,8 +162,14 @@ describe('GraphBinary.AnySerializer', () => {
       b = from(b);
       assert.deepEqual(anySerializer.serialize(v, true),  b);
       assert.deepEqual(anySerializer.serialize(v, false), b.slice(2));
-    }))
-  );
+    }));
+
+    it(`should error if value is unsupported`, () => assert.throws(
+      () => anySerializer.serialize( Symbol('sym1') ),
+      { message: "No serializer found to support item where typeof(item)='symbol' and String(item)='Symbol(sym1)'." }
+    ));
+
+  });
 
   describe('deserialize', () =>
     [

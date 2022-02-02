@@ -27,7 +27,6 @@ module.exports = class AnySerializer {
   constructor(ioc) {
     this.ioc = ioc;
 
-    // TODO: align with Java.parse(GraphSON) logic
     this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
       ioc.intSerializer,
       ioc.bytecodeSerializer,
@@ -45,7 +44,7 @@ module.exports = class AnySerializer {
       if (this.serializers[i].canBeUsedFor(item))
         return this.serializers[i];
 
-    return this.ioc.stringSerializer; // TODO: is it what we want with falling back to a string? or it's better to error to signal end user of unexpected value?
+    throw new Error(`No serializer found to support item where typeof(item)='${typeof(item)}' and String(item)='${String(item)}'.`);
   }
 
   serialize(item, fullyQualifiedFormat=true) {
