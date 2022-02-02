@@ -50,10 +50,16 @@ describe('GraphBinary.AnySerializer', () => {
       */
 
       // NumberSerializer
-      // { v:NaN, b:[] },
-      // { v:Infinity, b:[] },
-      // { v:-Infinity, b:[] },
-      // TODO
+      // TODO: { v:NaN, b:[] },
+      // TODO: { v:Infinity, b:[] },
+      // TODO: { v:-Infinity, b:[] },
+      // TODO: float/double
+      // TODO: long/int64
+      { v:0,           b:[DataType.INT,0x00, 0x00,0x00,0x00,0x00] },
+      { v:1,           b:[DataType.INT,0x00, 0x00,0x00,0x00,0x01] },
+      { v:2147483647,  b:[DataType.INT,0x00, 0x7F,0xFF,0xFF,0xFF] }, // INT32_MAX
+      { v:-2147483648, b:[DataType.INT,0x00, 0x80,0x00,0x00,0x00] }, // INT32_MIN
+      { v:-1,          b:[DataType.INT,0x00, 0xFF,0xFF,0xFF,0xFF] },
 
       // DateSerializer,
       // TODO
