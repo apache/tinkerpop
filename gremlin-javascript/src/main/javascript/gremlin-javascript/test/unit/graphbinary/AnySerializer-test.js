@@ -154,10 +154,15 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO +
 
       // Default (strings / objects / ...)
-      // TODO: string
+      // TODO: align with Java.parse(GraphSON) logic
       // TODO: uuid
       // TODO: unspecified null
       // TODO: leftovers
+
+      // StringSerializer
+      { v:'A1', b:[DataType.STRING,0x00, 0x00,0x00,0x00,0x02, 0x41,0x31] },
+      { v:'',   b:[DataType.STRING,0x00, 0x00,0x00,0x00,0x00] },
+
     ].forEach(({ v, b }, i) => it(`should be able to handle case #${i}`, () => {
       b = from(b);
       assert.deepEqual(anySerializer.serialize(v, true),  b);
