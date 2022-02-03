@@ -30,6 +30,15 @@ module.exports = class MapSerializer {
   }
 
   canBeUsedFor(value) {
+    if (value === null || value === undefined)
+      return false;
+
+    if (value instanceof Map)
+      return true;
+
+    if (Array.isArray(value))
+      return false;
+
     return (typeof value === 'object');
   }
 
@@ -40,7 +49,9 @@ module.exports = class MapSerializer {
       else
         return this.ioc.intSerializer.serialize(0, false);
 
-    const keys = Object.keys(item);
+    const isMap = (item instanceof Map);
+
+    const keys = isMap ? Array.from(item.keys()) : Object.keys(item);
     let map_length = keys.length;
     if (map_length < 0)
       map_length = 0;
@@ -53,7 +64,7 @@ module.exports = class MapSerializer {
     bufs.push( this.ioc.intSerializer.serialize(map_length, false) );
     for (let i = 0; i < map_length; i++) {
       const key = keys[i];
-      const value = item[key];
+      const value = isMap ? item.get(key) : item[key];
       bufs.push(
         this.ioc.anySerializer.serialize(key),
         this.ioc.anySerializer.serialize(value),
@@ -96,7 +107,7 @@ module.exports = class MapSerializer {
       if (length < 0)
         throw new Error('{length} is less than zero');
 
-      const v = {};
+      const v = new Map();
       for (let i = 0; i < length; i++) {
         let key, key_len;
         try {
@@ -114,7 +125,7 @@ module.exports = class MapSerializer {
           throw new Error(`{item_${i}} value: ${e.message}`);
         }
 
-        v[key] = value;
+        v.set(key, value);
       }
 
       return { v, len };

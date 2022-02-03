@@ -111,10 +111,10 @@ describe('GraphBinary.Reader', () => {
           status: {
             code: 200,
             message: 'OK',
-            attributes: { 'life-meaning': 42 },
+            attributes: new Map([ ['life-meaning',42] ]),
           },
           result: {
-            meta: { m1: '', m2: 'a_B' },
+            meta: new Map([ ['m1',''], ['m2','a_B'] ]),
             data: [ new Traverser('marko', 3n) ],
           }
         }

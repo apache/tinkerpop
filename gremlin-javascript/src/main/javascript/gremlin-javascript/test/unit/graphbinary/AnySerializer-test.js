@@ -155,7 +155,14 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO
 
       // MapSerializer
-      // TODO +
+      { v: new Map([ ['A',3] ]),
+        b: [
+          DataType.MAP,0x00,
+          0x00,0x00,0x00,0x01, // {length}
+          0x03,0x00,0x00,0x00,0x00,0x01,0x41, // A
+          0x01,0x00,0x00,0x00,0x00,0x03 // 3
+        ]
+      },
 
       // Default (strings / objects / ...)
       // TODO: align with Java.parse(GraphSON) logic
@@ -171,7 +178,17 @@ describe('GraphBinary.AnySerializer', () => {
       { v:'A1', b:[DataType.STRING,0x00, 0x00,0x00,0x00,0x02, 0x41,0x31] },
       { v:'',   b:[DataType.STRING,0x00, 0x00,0x00,0x00,0x00] },
 
-    ].forEach(({ v, b }, i) => it(`should be able to handle case #${i}`, () => {
+      // Object
+      { v: { 'B': 2 },
+        b: [
+          DataType.MAP,0x00,
+          0x00,0x00,0x00,0x01, // {length}
+          0x03,0x00,0x00,0x00,0x00,0x01,0x42, // B
+          0x01,0x00,0x00,0x00,0x00,0x02 // 2
+        ]
+      },
+
+    ].forEach(({ v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
       b = from(b);
       assert.deepEqual(anySerializer.serialize(v, true),  b);
       assert.deepEqual(anySerializer.serialize(v, false), b.slice(2));
@@ -218,7 +235,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // MAP
       { v:null,                                   b:[0x0A,0x01] },
-      { v:{},                                     b:[0x0A,0x00, 0x00,0x00,0x00,0x00] },
+      { v:new Map(),                              b:[0x0A,0x00, 0x00,0x00,0x00,0x00] },
 
       // UUID
       { v:null,                                   b:[0x0C,0x01] },

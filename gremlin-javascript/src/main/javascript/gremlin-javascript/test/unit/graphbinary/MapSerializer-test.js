@@ -24,6 +24,7 @@
 
 const assert = require('assert');
 const { mapSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const t = require('../../../lib/process/traversal');
 
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
@@ -64,7 +65,7 @@ describe('GraphBinary.MapSerializer', () => {
       ]
     },
 
-    { v:{ 'one': 1, 'two': 2, 'int32': { 'min': -2147483648, 'max': 2147483647 } },
+    { v:{ 'one': 1, 'two': 2, 'int32': new Map([ ['min',-2147483648], ['max',2147483647] ]) },
       b:[0x00,0x00,0x00,0x03,
         /*'one'*/0x03,0x00,0x00,0x00,0x00,0x03,0x6F,0x6E,0x65, /*1*/0x01,0x00,0x00,0x00,0x00,0x01,
         /*'two'*/0x03,0x00,0x00,0x00,0x00,0x03,0x74,0x77,0x6F, /*2*/0x01,0x00,0x00,0x00,0x00,0x02,
@@ -76,7 +77,7 @@ describe('GraphBinary.MapSerializer', () => {
       ]
     },
 
-    { v:{ aliases: {g:'g'}, gremlin: g().V().getBytecode() },
+    { v:{ aliases: new Map([ ['g','g'] ]), gremlin: g().V().getBytecode() },
       b:[0x00,0x00,0x00,0x02,
         /*'aliases'*/
         0x03,0x00, 0x00,0x00,0x00,0x07, ...from('aliases'),
@@ -139,17 +140,26 @@ describe('GraphBinary.MapSerializer', () => {
       if (des)
         return; // keep it like passed test not to mess with case index
 
+      let map;
+      if (v)
+        map = new Map( Object.entries(v) );
       b = from(b);
 
       // when fq is under control
       if (fq !== undefined) {
         assert.deepEqual( mapSerializer.serialize(v, fq), b );
+        if (map)
+          assert.deepEqual( mapSerializer.serialize(map, fq), b );
         return;
       }
 
       // generic case
       assert.deepEqual( mapSerializer.serialize(v, true),  concat([type_code, value_flag, b]) );
       assert.deepEqual( mapSerializer.serialize(v, false), concat([                       b]) );
+      if (map) {
+        assert.deepEqual( mapSerializer.serialize(map, true),  concat([type_code, value_flag, b]) );
+        assert.deepEqual( mapSerializer.serialize(map, false), concat([                       b]) );
+      }
     }));
   });
 
@@ -171,6 +181,8 @@ describe('GraphBinary.MapSerializer', () => {
 
       if (av !== undefined)
         v = av;
+      if (v)
+        v = new Map( Object.entries(v) );
       const len = b.length;
 
       // when fq is under control
@@ -186,7 +198,19 @@ describe('GraphBinary.MapSerializer', () => {
   );
 
   describe('canBeUsedFor', () =>
-    it.skip('')
+    // most of the cases are implicitly tested via AnySerializer.serialize() tests
+    [
+      { v: null,              e: false },
+      { v: undefined,         e: false },
+      { v: {},                e: true },
+      { v: new t.Traverser(), e: true },
+      { v: [],                e: false },
+      { v: [{}],              e: false },
+      { v: [new Map()],       e: false },
+      { v: new Map(),         e: true },
+    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+      assert.strictEqual( mapSerializer.canBeUsedFor(v), e )
+    ))
   );
 
 });
