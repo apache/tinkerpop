@@ -167,7 +167,6 @@ describe('GraphBinary.AnySerializer', () => {
       // Default (strings / objects / ...)
       // TODO: align with Java.parse(GraphSON) logic
       // TODO: uuid
-      // TODO: unspecified null
       // TODO: leftovers
 
       // BooleanSerializer
@@ -188,8 +187,20 @@ describe('GraphBinary.AnySerializer', () => {
         ]
       },
 
+      // UnspecifiedNullSerializer
+      { v:null,      fq:1, b:[0xFE,0x01] },
+      { v:undefined, fq:1, b:[0xFE,0x01] },
+
     ].forEach(({ v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
       b = from(b);
+
+      // when fq is under control
+      if (fq !== undefined) {
+        assert.deepEqual( anySerializer.serialize(v, fq), b );
+        return;
+      }
+
+      // generic case
       assert.deepEqual(anySerializer.serialize(v, true),  b);
       assert.deepEqual(anySerializer.serialize(v, false), b.slice(2));
     }));

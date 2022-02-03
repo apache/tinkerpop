@@ -29,8 +29,8 @@ module.exports = class UnspecifiedNullSerializer {
     this.ioc.serializers[ioc.DataType.UNSPECIFIED_NULL] = this;
   }
 
-  canBeUsedFor() {
-    // TODO
+  canBeUsedFor(value) {
+    return (value === null || value === undefined);
   }
 
   serialize(item) { // fullyQualifiedFormat always is true

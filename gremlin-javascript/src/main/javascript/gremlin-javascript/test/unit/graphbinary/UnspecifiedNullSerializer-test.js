@@ -24,6 +24,7 @@
 
 const assert = require('assert');
 const { unspecifiedNullSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const t = require('../../../lib/process/traversal');
 
 const { from, concat } = Buffer;
 
@@ -84,7 +85,19 @@ describe('GraphBinary.UnspecifiedNullSerializer', () => {
   );
 
   describe('canBeUsedFor', () =>
-    it.skip('')
+    // most of the cases are implicitly tested via AnySerializer.serialize() tests
+    [
+      { v: null,              e: true },
+      { v: undefined,         e: true },
+      { v: {},                e: false },
+      { v: new t.Traverser(), e: false },
+      { v: [],                e: false },
+      { v: [{}],              e: false },
+      { v: [new Map()],       e: false },
+      { v: new Map(),         e: false },
+    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+      assert.strictEqual( unspecifiedNullSerializer.canBeUsedFor(v), e )
+    ))
   );
 
 });
