@@ -31,16 +31,16 @@ const { from, concat } = Buffer;
 describe('GraphBinary.EnumSerializer', () => {
 
   const types = [
-    { name: 'Barrier',     code: from([0x13]) },
-    { name: 'Cardinality', code: from([0x16]) },
-    { name: 'Column',      code: from([0x17]) },
-    { name: 'Direction',   code: from([0x18]) },
-    { name: 'Operator',    code: from([0x19]) },
-    { name: 'Order',       code: from([0x1A]) },
-    { name: 'Pick',        code: from([0x1B]) },
-    { name: 'Pop',         code: from([0x1C]) },
-    { name: 'Scope',       code: from([0x1F]) },
-    { name: 'T',           code: from([0x20]) },
+    { name: 'Barrier',     code: from([0x13]), enum: t.barrier },
+    { name: 'Cardinality', code: from([0x16]), enum: t.cardinality },
+    { name: 'Column',      code: from([0x17]), enum: t.column },
+    { name: 'Direction',   code: from([0x18]), enum: t.direction },
+    { name: 'Operator',    code: from([0x19]), enum: t.operator },
+    { name: 'Order',       code: from([0x1A]), enum: t.order },
+    { name: 'Pick',        code: from([0x1B]), enum: t.pick },
+    { name: 'Pop',         code: from([0x1C]), enum: t.pop },
+    { name: 'Scope',       code: from([0x1F]), enum: t.scope },
+    { name: 'T',           code: from([0x20]), enum: t.t },
   ];
   const value_flag = from([0x00]);
 
@@ -49,10 +49,6 @@ describe('GraphBinary.EnumSerializer', () => {
     { v:undefined, fq:0, b:[0x03,0x00, 0x00,0x00,0x00,0x00], av:'' },
     { v:null,      fq:1, b:[0x01] },
     { v:null,      fq:0, b:[0x03,0x00, 0x00,0x00,0x00,0x00], av:'' },
-
-    { v:'',              b:[0x03,0x00, 0x00,0x00,0x00,0x00]},
-    { v:'A',             b:[0x03,0x00, 0x00,0x00,0x00,0x01, 0x41]},
-    { v:'a1',            b:[0x03,0x00, 0x00,0x00,0x00,0x02, 0x61,0x31]},
 
     { des:1, err:/buffer is missing/,       fq:1, B:undefined },
     { des:1, err:/buffer is missing/,       fq:0, B:undefined },
@@ -103,7 +99,7 @@ describe('GraphBinary.EnumSerializer', () => {
     ))
   );
 
-  describe('deserialize', () =>
+  describe('deserialize', () => {
     types.forEach((type) => describe(`${type.name}`, () =>
       cases.forEach(({ v, fq, b, B, av, err }, i) => it(`should be able to handle case #${i}`, () => {
         if (B)
@@ -143,8 +139,16 @@ describe('GraphBinary.EnumSerializer', () => {
         v.typeName = undefined;
         assert.deepStrictEqual( enumSerializer.deserialize(concat([                       b]), false), {v,len:len+0} );
       }))
-    ))
-  );
+    ));
+
+    types.forEach(type =>
+      Object.values(type.enum).forEach(e => it(`should return existing t.EnumValue(${e.typeName}, ${e.elementName}) instance`, () => {
+        const b = enumSerializer.serialize(e);
+        const r = enumSerializer.deserialize(b);
+        assert.strictEqual(r.v, e);
+      }))
+    );
+  });
 
   describe('canBeUsedFor', () => {
     it('should error if type name is not supported', () => assert.throws(

@@ -29,18 +29,25 @@ module.exports = class EnumSerializer {
   constructor(ioc) {
     this.ioc = ioc;
 
+    const to_orig_enum = obj => {
+      // process/traversal.js:toEnum() changes original element name (e.g. OUT => out) for end users' convenience
+      // but we need original mapping as is w/o additional time spent on case-insensititive comparison
+      const r = {};
+      Object.values(obj).forEach(e => r[e.elementName] = e);
+      return r;
+    };
     const DT = ioc.DataType;
     this.types = [
-      { name: 'Barrier',     code: DT.BARRIER,     enum: t.barrier },
-      { name: 'Cardinality', code: DT.CARDINALITY, enum: t.cardinality },
-      { name: 'Column',      code: DT.COLUMN,      enum: t.column },
-      { name: 'Direction',   code: DT.DIRECTION,   enum: t.direction },
-      { name: 'Operator',    code: DT.OPERATOR,    enum: t.operator },
-      { name: 'Order',       code: DT.ORDER,       enum: t.order },
-      { name: 'Pick',        code: DT.PICK,        enum: t.pick },
-      { name: 'Pop',         code: DT.POP,         enum: t.pop },
-      { name: 'Scope',       code: DT.SCOPE,       enum: t.scope },
-      { name: 'T',           code: DT.T,           enum: t.t },
+      { name: 'Barrier',     code: DT.BARRIER,     enum: to_orig_enum(t.barrier) },
+      { name: 'Cardinality', code: DT.CARDINALITY, enum: to_orig_enum(t.cardinality) },
+      { name: 'Column',      code: DT.COLUMN,      enum: to_orig_enum(t.column) },
+      { name: 'Direction',   code: DT.DIRECTION,   enum: to_orig_enum(t.direction) },
+      { name: 'Operator',    code: DT.OPERATOR,    enum: to_orig_enum(t.operator) },
+      { name: 'Order',       code: DT.ORDER,       enum: to_orig_enum(t.order) },
+      { name: 'Pick',        code: DT.PICK,        enum: to_orig_enum(t.pick) },
+      { name: 'Pop',         code: DT.POP,         enum: to_orig_enum(t.pop) },
+      { name: 'Scope',       code: DT.SCOPE,       enum: to_orig_enum(t.scope) },
+      { name: 'T',           code: DT.T,           enum: to_orig_enum(t.t) },
     ];
     this.byname = {};
     this.bycode = {};
@@ -111,7 +118,12 @@ module.exports = class EnumSerializer {
         throw new Error(`elementName: ${e.message}`);
       }
 
-      const v = new t.EnumValue(type ? type.name : undefined, elementName); // TODO: should we use type.enum in order to point to an existing instance? beware, it has non-obvious case sensitivity logic for keys
+      let v;
+      if (!type)
+        v = new t.EnumValue(undefined, elementName);
+      else
+        v = type.enum[elementName]; // users are expected to work with maps like Map.get(T.id), i.e. it must be exactly the same object
+
       return { v, len };
     }
     catch (e) {
