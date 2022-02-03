@@ -109,34 +109,34 @@ describe('GraphBinary.AnySerializer', () => {
 
       // EnumSerializer (actually represents different enum like types)
       { v: new t.EnumValue('Barrier', 'normSack'),
-        b: [ DataType.BARRIER,0x00, 0x00,0x00,0x00,0x08, ...from('normSack') ]
+        b: [ DataType.BARRIER,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x08, ...from('normSack') ]
       },
       { v: new t.EnumValue('Cardinality', 'single'),
-        b: [ DataType.CARDINALITY,0x00, 0x00,0x00,0x00,0x06, ...from('single') ]
+        b: [ DataType.CARDINALITY,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('single') ]
       },
       { v: new t.EnumValue('Column', 'keys'),
-        b: [ DataType.COLUMN,0x00, 0x00,0x00,0x00,0x04, ...from('keys') ]
+        b: [ DataType.COLUMN,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('keys') ]
       },
       { v: new t.EnumValue('Direction', 'OUT'),
-        b: [ DataType.DIRECTION,0x00, 0x00,0x00,0x00,0x03, ...from('OUT') ]
+        b: [ DataType.DIRECTION,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x03, ...from('OUT') ]
       },
       { v: new t.EnumValue('Operator', 'addAll'),
-        b: [ DataType.OPERATOR,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
+        b: [ DataType.OPERATOR,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
       },
       { v: new t.EnumValue('Order', 'desc'),
-        b: [ DataType.ORDER,0x00, 0x00,0x00,0x00,0x04, ...from('desc') ]
+        b: [ DataType.ORDER,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('desc') ]
       },
       { v: new t.EnumValue('Pick', 'any'),
-        b: [ DataType.PICK,0x00, 0x00,0x00,0x00,0x03, ...from('any') ]
+        b: [ DataType.PICK,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x03, ...from('any') ]
       },
       { v: new t.EnumValue('Pop', 'first'),
-        b: [ DataType.POP,0x00, 0x00,0x00,0x00,0x05, ...from('first') ]
+        b: [ DataType.POP,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x05, ...from('first') ]
       },
       { v: new t.EnumValue('Scope', 'local'),
-        b: [ DataType.SCOPE,0x00, 0x00,0x00,0x00,0x05, ...from('local') ]
+        b: [ DataType.SCOPE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x05, ...from('local') ]
       },
       { v: new t.EnumValue('T', 'id'),
-        b: [ DataType.T,0x00, 0x00,0x00,0x00,0x02, ...from('id') ]
+        b: [ DataType.T,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x02, ...from('id') ]
       },
 
       // VertexSerializer
@@ -224,7 +224,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // BARRIER
       { v:new t.EnumValue('Barrier',null),        b:[0x13,0x01] },
-      { v:new t.EnumValue('Barrier','normSack'),  b:[0x13,0x00, 0x00,0x00,0x00,0x08, ...from('normSack')] },
+      { v:new t.EnumValue('Barrier','normSack'),  b:[0x13,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('normSack')] },
 
       // BYTECODE
       { v:null,                                   b:[0x15,0x01] },
@@ -232,39 +232,39 @@ describe('GraphBinary.AnySerializer', () => {
 
       // CARDINALITY
       { v:new t.EnumValue('Cardinality',null),    b:[0x16,0x01] },
-      { v:new t.EnumValue('Cardinality', 'set'),  b:[0x16,0x00, 0x00,0x00,0x00,0x03, ...from('set')] },
+      { v:new t.EnumValue('Cardinality', 'set'),  b:[0x16,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('set')] },
 
       // COLUMN
       { v:new t.EnumValue('Column',null),         b:[0x17,0x01] },
-      { v:new t.EnumValue('Column','keys'),       b:[0x17,0x00, 0x00,0x00,0x00,0x04, ...from('keys')] },
+      { v:new t.EnumValue('Column','keys'),       b:[0x17,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('keys')] },
 
       // DIRECTION
       { v:new t.EnumValue('Direction',null),      b:[0x18,0x01] },
-      { v:new t.EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
+      { v:new t.EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
 
       // OPERATOR
       { v:new t.EnumValue('Operator',null),       b:[0x19,0x01] },
-      { v:new t.EnumValue('Operator','addAll'),   b:[0x19,0x00, 0x00,0x00,0x00,0x06, ...from('addAll')] },
+      { v:new t.EnumValue('Operator','addAll'),   b:[0x19,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('addAll')] },
 
       // ORDER
       { v:new t.EnumValue('Order',null),          b:[0x1A,0x01] },
-      { v:new t.EnumValue('Order','desc'),        b:[0x1A,0x00, 0x00,0x00,0x00,0x04, ...from('desc')] },
+      { v:new t.EnumValue('Order','desc'),        b:[0x1A,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('desc')] },
 
       // PICK
       { v:new t.EnumValue('Pick',null),           b:[0x1B,0x01] },
-      { v:new t.EnumValue('Pick','any'),          b:[0x1B,0x00, 0x00,0x00,0x00,0x03, ...from('any')] },
+      { v:new t.EnumValue('Pick','any'),          b:[0x1B,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('any')] },
 
       // POP
       { v:new t.EnumValue('Pop',null),            b:[0x1C,0x01] },
-      { v:new t.EnumValue('Pop','first'),         b:[0x1C,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
+      { v:new t.EnumValue('Pop','first'),         b:[0x1C,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
 
       // SCOPE
       { v:new t.EnumValue('Scope',null),          b:[0x1F,0x01] },
-      { v:new t.EnumValue('Scope','local'),       b:[0x1F,0x00, 0x00,0x00,0x00,0x05, ...from('local')] },
+      { v:new t.EnumValue('Scope','local'),       b:[0x1F,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('local')] },
 
       // T
       { v:new t.EnumValue('T',null),              b:[0x20,0x01] },
-      { v:new t.EnumValue('T','id'),              b:[0x20,0x00, 0x00,0x00,0x00,0x02, ...from('id')] },
+      { v:new t.EnumValue('T','id'),              b:[0x20,0x00, 0x03,0x00, 0x00,0x00,0x00,0x02, ...from('id')] },
 
       // TRAVERSER
       { v:null,                                   b:[0x21,0x01] },

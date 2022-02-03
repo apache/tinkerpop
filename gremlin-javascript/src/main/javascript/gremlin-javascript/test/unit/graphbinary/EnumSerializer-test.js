@@ -46,13 +46,13 @@ describe('GraphBinary.EnumSerializer', () => {
 
   const cases = [
     { v:undefined, fq:1, b:[0x01], av:null },
-    { v:undefined, fq:0, b:[0x00,0x00,0x00,0x00], av:'' },
+    { v:undefined, fq:0, b:[0x03,0x00, 0x00,0x00,0x00,0x00], av:'' },
     { v:null,      fq:1, b:[0x01] },
-    { v:null,      fq:0, b:[0x00,0x00,0x00,0x00], av:'' },
+    { v:null,      fq:0, b:[0x03,0x00, 0x00,0x00,0x00,0x00], av:'' },
 
-    { v:'',              b:[0x00,0x00,0x00,0x00]},
-    { v:'A',             b:[0x00,0x00,0x00,0x01, 0x41]},
-    { v:'a1',            b:[0x00,0x00,0x00,0x02, 0x61,0x31]},
+    { v:'',              b:[0x03,0x00, 0x00,0x00,0x00,0x00]},
+    { v:'A',             b:[0x03,0x00, 0x00,0x00,0x00,0x01, 0x41]},
+    { v:'a1',            b:[0x03,0x00, 0x00,0x00,0x00,0x02, 0x61,0x31]},
 
     { des:1, err:/buffer is missing/,       fq:1, B:undefined },
     { des:1, err:/buffer is missing/,       fq:0, B:undefined },
@@ -75,7 +75,7 @@ describe('GraphBinary.EnumSerializer', () => {
     { des:1, err:/unexpected {value_flag}/, fq:1, b:[0x0F] },
     { des:1, err:/unexpected {value_flag}/, fq:1, b:[0xFF] },
 
-    { des:1, err:/elementName: .*StringSerializer.* unexpected {value} length/, B:[0x00,0x00,0x00] },
+    { des:1, err:/elementName: .*StringSerializer.* unexpected {value} length/, B:[0x03,0x00, 0x00,0x00,0x00] },
   ];
 
   describe('serialize', () =>
@@ -157,7 +157,7 @@ describe('GraphBinary.EnumSerializer', () => {
       { v: null,                        e: false },
       { v: undefined,                   e: false },
       { v: {},                          e: false },
-      { v: new t.EnumValue('Barrier'), e: true  },
+      { v: new t.EnumValue('Barrier'),  e: true  },
     ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
       assert.strictEqual( enumSerializer.canBeUsedFor(v), e )
     ));

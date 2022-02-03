@@ -66,13 +66,13 @@ module.exports = class EnumSerializer {
       if (fullyQualifiedFormat)
         return Buffer.from([type.code, 0x01]);
       else
-        return Buffer.from([0x00,0x00,0x00,0x00]);
+        return Buffer.from([this.ioc.DataType.STRING,0x00, 0x00,0x00,0x00,0x00]);
 
     const bufs = [];
     if (fullyQualifiedFormat)
       bufs.push( Buffer.from([type.code, 0x00]) );
 
-    bufs.push( this.ioc.stringSerializer.serialize(item.elementName, false) );
+    bufs.push( this.ioc.stringSerializer.serialize(item.elementName, true) );
 
     return Buffer.concat(bufs);
   }
@@ -105,7 +105,7 @@ module.exports = class EnumSerializer {
 
       let elementName, elementName_len;
       try {
-        ({ v: elementName, len: elementName_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+        ({ v: elementName, len: elementName_len } = this.ioc.stringSerializer.deserialize(cursor, true));
         len += elementName_len; cursor = cursor.slice(elementName_len);
       } catch (e) {
         throw new Error(`elementName: ${e.message}`);
