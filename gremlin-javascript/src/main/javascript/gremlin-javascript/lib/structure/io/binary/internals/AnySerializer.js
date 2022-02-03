@@ -28,6 +28,7 @@ module.exports = class AnySerializer {
     this.ioc = ioc;
 
     this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
+      ioc.booleanSerializer,
       ioc.intSerializer,
       ioc.bytecodeSerializer,
       ioc.traverserSerializer,

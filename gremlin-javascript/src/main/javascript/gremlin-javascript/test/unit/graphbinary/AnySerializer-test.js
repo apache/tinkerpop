@@ -39,8 +39,6 @@ describe('GraphBinary.AnySerializer', () => {
       /*
         This is the most complex part of GraphBinary,
         we are expected to guess right serializer, i.e. right type.
-        GraphSON implementation splits decision making among client and server sides due to JSON nature.
-        But GraphBinary have to decide on a type on client side only.
 
         Let's follow existing structure/io/graph-serializer.GraphSON3Writer.adaptObject() logic
         of serializer/type selection and add the rest of the types.
@@ -165,6 +163,10 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO: unspecified null
       // TODO: leftovers
 
+      // BooleanSerializer
+      { v:true,  b:[DataType.BOOLEAN,0x00, 0x01] },
+      { v:false, b:[DataType.BOOLEAN,0x00, 0x00] },
+
       // StringSerializer
       { v:'A1', b:[DataType.STRING,0x00, 0x00,0x00,0x00,0x02, 0x41,0x31] },
       { v:'',   b:[DataType.STRING,0x00, 0x00,0x00,0x00,0x00] },
@@ -269,6 +271,10 @@ describe('GraphBinary.AnySerializer', () => {
       // TRAVERSER
       { v:null,                                   b:[0x21,0x01] },
       { v:new t.Traverser('A', 2n),               b:[0x21,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+
+      // BOOLEAN
+      { v:null,                                   b:[0x27,0x01] },
+      { v:true,                                   b:[0x27,0x00, 0x01] },
 
       // UNSPECIFIED_NULL
       { v:null,                                   b:[0xFE,0x01] },

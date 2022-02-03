@@ -124,7 +124,26 @@ describe('GraphBinary.IntSerializer', () => {
   );
 
   describe('canBeUsedFor', () =>
-    it.skip('')
+    // most of the cases are implicitly tested via AnySerializer.serialize() tests
+    [
+      { v: null,              e: false },
+      { v: undefined,         e: false },
+      { v: {},                e: false },
+      { v: [],                e: false },
+      { v: [0],               e: false },
+      { v: [undefined],       e: false },
+      { v: 0n,                e: false },
+      { v: BigInt(1),         e: false },
+      { v: 0,                 e: true  },
+      { v: 1,                 e: true  },
+      { v: -1,                e: true  },
+      { v: 2147483647,        e: true  },
+      { v: 2147483648,        e: false },
+      { v: -2147483648,       e: true },
+      { v: -2147483649,       e: false },
+    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+      assert.strictEqual( intSerializer.canBeUsedFor(v), e )
+    ))
   );
 
 });
