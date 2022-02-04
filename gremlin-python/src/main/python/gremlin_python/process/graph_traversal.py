@@ -28,12 +28,14 @@ from ..driver.remote_connection import RemoteStrategy
 from .. import statics
 from ..statics import long
 
+log = logging.getLogger("gremlinpython")
+
 __author__ = 'Stephen Mallette (http://stephen.genoprime.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
 class GraphTraversalSource(object):
     def __init__(self, graph, traversal_strategies, bytecode=None):
-        logging.info("Creating GraphTraversalSource.")
+        log.info("Creating GraphTraversalSource.")
         self.graph = graph
         self.traversal_strategies = traversal_strategies
         if bytecode is None:
