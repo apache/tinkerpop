@@ -97,7 +97,14 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO
 
       // PSerializer
-      // TODO
+      { v: t.P.eq('marko'),
+        b: [
+          DataType.P,0x00,
+          0x00,0x00,0x00,0x02, ...from('eq'),
+          0x00,0x00,0x00,0x01,
+          0x03,0x00, 0x00,0x00,0x00,0x05, ...from('marko'),
+        ]
+      },
 
       // TextPSerializer
       // TODO
@@ -147,7 +154,6 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO +
 
       // ListSerializer
-      // TODO +
       { v:[],  b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x00] },
       { v:[1], b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x01, 0x01,0x00, 0x00,0x00,0x00,0x01] },
 
@@ -287,6 +293,9 @@ describe('GraphBinary.AnySerializer', () => {
       // POP
       { v:new t.EnumValue('Pop',null),            b:[0x1C,0x01] },
       { v:new t.EnumValue('Pop','first'),         b:[0x1C,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
+
+      // P
+      { v:t.P.eq(7),                              b:[0x1E,0x00, 0x00,0x00,0x00,0x02, ...from('eq'), 0x00,0x00,0x00,0x01, 0x01,0x00,0x00,0x00,0x00,0x07] },
 
       // SCOPE
       { v:new t.EnumValue('Scope',null),          b:[0x1F,0x01] },

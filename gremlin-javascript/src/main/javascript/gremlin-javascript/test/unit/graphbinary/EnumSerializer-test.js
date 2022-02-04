@@ -123,12 +123,13 @@ describe('GraphBinary.EnumSerializer', () => {
 
         if (av !== undefined)
           v = av;
-        v = new t.EnumValue(type.name, v);
+        if (v !== undefined && v !== null)
+          v = new t.EnumValue(type.name, v);
         const len = b.length;
 
         // when fq is under control
         if (fq !== undefined) {
-          if (!fq)
+          if (v && !fq)
             v.typeName = undefined;
           assert.deepStrictEqual( enumSerializer.deserialize(b, fq), {v,len} );
           return;

@@ -33,6 +33,7 @@ module.exports = class AnySerializer {
       ioc.booleanSerializer,
       ioc.intSerializer,
       ioc.bytecodeSerializer,
+      ioc.pSerializer,
       ioc.traverserSerializer,
       ioc.enumSerializer,
       ioc.listSerializer,
