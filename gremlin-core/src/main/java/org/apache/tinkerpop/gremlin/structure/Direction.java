@@ -36,23 +36,45 @@ public enum Direction {
 
     /**
      * Refers to an outgoing direction.
+     *
+     * @since 3.0.0-incubating
      */
     OUT,
 
     /**
      * Refers to an incoming direction.
+     *
+     * @since 3.0.0-incubating
      */
     IN,
 
     /**
      * Refers to either direction ({@link #IN} or {@link #OUT}).
+     *
+     * @since 3.0.0-incubating
      */
     BOTH;
 
     /**
      * The actual direction of an {@link Edge} may only be {@link #IN} or {@link #OUT}, as defined in this array.
+     *
+     * @since 3.0.0-incubating
      */
     public static final Direction[] proper = new Direction[]{OUT, IN};
+
+    /**
+     * Friendly alias to {@link #OUT}
+     *
+     * @since 3.6.0
+     */
+    public static final Direction from = Direction.OUT;
+
+    /**
+     * Friendly alias to {@link #IN}
+     *
+     * @since 3.6.0
+     */
+    public static final Direction to = Direction.IN;
 
     /**
      * Produce the opposite representation of the current {@code Direction} enum.
@@ -64,5 +86,17 @@ public enum Direction {
             return OUT;
         else
             return BOTH;
+    }
+
+    /**
+     * Get {@code Direction} from name.
+     */
+    public static Direction directionValueOf(final String name) {
+        if (name.equals("to"))
+            return Direction.to;
+        else if (name.equals("from"))
+            return Direction.from;
+        else
+            return Direction.valueOf(name);
     }
 }

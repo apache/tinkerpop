@@ -361,6 +361,8 @@ public final class CoreImports {
 
         try {
             FIELD_IMPORTS.add(Double.class.getField("NaN"));
+            FIELD_IMPORTS.add(Direction.class.getField("from"));
+            FIELD_IMPORTS.add(Direction.class.getField("to"));
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }

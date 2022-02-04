@@ -29,6 +29,7 @@ Feature: Step - mergeE()
   #   - results in a self edge
   # g_mergeEXlabel_knows_out_marko_in_vadasX
   # g_mergeEXlabel_knows_out_marko1_in_vadas1X
+  # g_mergeEXlabel_knows_out_marko_in_vadasX_aliased_direction
   #   - mergeE(Map) specifying out/in for vertices in the match/create with no option()
   #   - vertices already exist
   #   - results in new edge
@@ -443,3 +444,20 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").as(\"a\").outE(\"self\").has(\"weight\",0.5).inV().where(eq(\"a\"))"
+
+  @UserSuppliedVertexIds
+  Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_aliased_direction
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 100).property("name", "marko").
+        addV("person").property(T.id, 101).property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[from]\":\"v[100]\", \"D[to]\":\"v[101]\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"

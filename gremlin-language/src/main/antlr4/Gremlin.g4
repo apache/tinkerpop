@@ -880,8 +880,8 @@ traversalOrder
     ;
 
 traversalDirection
-    : 'IN' | 'Direction.IN'
-    | 'OUT' | 'Direction.OUT'
+    : 'IN' | 'Direction.IN' | 'Direction.from' | 'from'
+    | 'OUT' | 'Direction.OUT' | 'Direction.to' | 'to'
     | 'BOTH' | 'Direction.BOTH'
     ;
 

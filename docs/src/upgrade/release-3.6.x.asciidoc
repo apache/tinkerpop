@@ -95,8 +95,8 @@ gremlin> g.V().has('person','name','vadas').as('v').
 gremlin> ripple = g.V().has('software','name','ripple').next()
 ==>v[5]
 gremlin> g.V().has('person','name','vadas').
-......1>   mergeE([(T.label):'created',(IN):ripple, weight: 0.5]).
-......2>   elementMap()
+......1>    mergeE([(T.label):'created',(to):ripple, weight: 0.5]).
+......2>    elementMap()
 ==>[id:0,label:created,IN:[id:5,label:software],OUT:[id:2,label:person],weight:0.5]
 ----
 
@@ -108,6 +108,11 @@ write optimizations that will make a big difference in performance.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2681[TINKERPOP-2681],
 link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergee-step[mergeE()-step],
 link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergev-step[mergeV()-step]
+
+==== Direction Aliases
+
+Aliases have been added to `Direction` to allow for `OUT` to be referred to as `from` and `IN` can be referred to as
+`to`, which is a bit more friendly and matches more closely with existing Gremlin syntax.
 
 ==== Moved Pick
 

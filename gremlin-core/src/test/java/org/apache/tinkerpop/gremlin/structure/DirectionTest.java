@@ -40,4 +40,12 @@ public class DirectionTest {
     public void shouldReturnOppositeOfBoth() {
         assertEquals(Direction.BOTH, Direction.BOTH.opposite());
     }
+
+    @Test
+    public void shouldGetDirectionFromName() {
+        assertEquals(Direction.IN, Direction.directionValueOf("IN"));
+        assertEquals(Direction.OUT, Direction.directionValueOf("OUT"));
+        assertEquals(Direction.IN, Direction.directionValueOf("to"));
+        assertEquals(Direction.OUT, Direction.directionValueOf("from"));
+    }
 }

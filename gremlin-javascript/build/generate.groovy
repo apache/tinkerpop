@@ -92,7 +92,9 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'const Direction = {\n' +
                     '    BOTH: traversalModule.direction.both,\n' +
                     '    IN: traversalModule.direction.in,\n' +
-                    '    OUT: traversalModule.direction.out\n' +
+                    '    OUT: traversalModule.direction.out,\n' +
+                    '    from_: traversalModule.direction.out,\n' +
+                    '    to: traversalModule.direction.in\n' +
                     '};\n' +
                     'const Merge = traversalModule.merge;\n' +
                     'const P = traversalModule.P;\n' +

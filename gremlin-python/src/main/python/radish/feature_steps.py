@@ -32,6 +32,13 @@ label = __.label
 inV = __.inV
 project = __.project
 tail = __.tail
+direction = {
+    "OUT": Direction.OUT,
+    "IN": Direction.IN,
+    "BOTH": Direction.BOTH,
+    "from_": Direction.OUT,
+    "to": Direction.IN,
+}
 
 ignores = ["g.V().properties().order()"] # need a vertex property parser for result set: https://issues.apache.org/jira/browse/TINKERPOP-2686
 
@@ -210,7 +217,7 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match(r"^t\[.*\]$", val):           # parse instance of T enum
         return T[val[2:-1]]
     elif isinstance(val, str) and re.match(r"^D\[.*\]$", val):           # parse instance of Direction enum
-        return Direction[val[2:-1]]
+        return direction[__alias_direction(val[2:-1])]
     elif isinstance(val, str) and re.match(r"^null$", val):              # parse null to None
         return None
     elif isinstance(val, str) and re.match(r"^true$", val):              # parse to boolean
@@ -219,6 +226,10 @@ def _convert(val, ctx):
         return False
     else:
         return val
+
+
+def __alias_direction(d):
+    return "from_" if d == "from" else d
 
 
 def __find_cached_element(ctx, graph_name, identifier, element_type):

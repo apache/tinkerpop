@@ -140,6 +140,8 @@ Direction = Enum('Direction', ' BOTH IN OUT')
 statics.add_static('OUT', Direction.OUT)
 statics.add_static('IN', Direction.IN)
 statics.add_static('BOTH', Direction.BOTH)
+statics.add_static('from_', Direction.IN)
+statics.add_static('to', Direction.BOTH)
 
 GraphSONVersion = Enum('GraphSONVersion', ' V1_0 V2_0 V3_0')
 

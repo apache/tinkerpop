@@ -799,6 +799,8 @@ from gremlin_python.process.traversal import Scope
 from gremlin_python.process.traversal import Barrier
 from gremlin_python.process.traversal import Bindings
 from gremlin_python.process.traversal import WithOptions
+from_ = Direction.OUT
+to = Direction.IN
 ----
 
 These can be used analogously to how they are used in Gremlin-Java.
@@ -1166,7 +1168,7 @@ bits of conflicting Gremlin get an underscore appended as a suffix:
 <<is-step,is_()>>, <<in-step,in_()>>, <<max-step,max_()>>, <<min-step,min_()>>, <<not-step,not_()>>, <<or-step,or_()>>,
 <<range-step,range_()>>, <<sum-step,sum_()>>, <<with-step,with_()>>
 
-*Tokens* - <<a-note-on-scopes,Scope.global_>>
+*Tokens* - <<a-note-on-scopes,Scope.global_>>, `Direction.from_`
 
 [[gremlin-python-limitations]]
 === Limitations
@@ -1620,6 +1622,13 @@ const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.column
 const direction = gremlin.process.direction
+Direction: {
+  BOTH: traversalModule.direction.both,
+  IN: traversalModule.direction.in,
+  OUT: traversalModule.direction.out,
+  from_: traversalModule.direction.in,
+  to: traversalModule.direction.out,
+}
 const p = gremlin.process.P
 const textp = gremlin.process.TextP
 const pick = gremlin.process.pick
@@ -1809,6 +1818,7 @@ In situations where Javascript reserved words and global functions overlap with 
 bits of conflicting Gremlin get an underscore appended as a suffix:
 
 *Steps* - <<from-step,from_()>>, <<in-step,in_()>>, <<with-step,with_()>>
+*Tokens* - `Direction.from_`
 
 Gremlin allows for `Map` instances to include `null` keys, but `null` keys in Javascript have some interesting behavior
 as in:

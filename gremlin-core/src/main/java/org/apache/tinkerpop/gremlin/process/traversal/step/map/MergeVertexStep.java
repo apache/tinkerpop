@@ -281,7 +281,7 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
             }).findFirst().map(e -> {
                 throw new IllegalArgumentException(String.format(
                         "option(onMatch) expects keys in Map to be of String - check: %s",
-                        e.getKey().toString()));
+                        e.getKey()));
             });
         } else {
             m.entrySet().stream().filter(e -> {
@@ -290,7 +290,7 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
             }).findFirst().map(e -> {
                 throw new IllegalArgumentException(String.format(
                         "mergeV() and option(onCreate) expects keys in Map to be of String, T.id, T.label - check: %s",
-                        e.getKey().toString()));
+                        e.getKey()));
             });
         }
 

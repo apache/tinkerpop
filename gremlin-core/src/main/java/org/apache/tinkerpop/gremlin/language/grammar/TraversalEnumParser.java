@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 
 /**
  * Traversal enum parser parses all the enums like (e.g. {@link Scope} in graph traversal.
@@ -43,5 +44,15 @@ public class TraversalEnumParser {
         } else {
             return E.valueOf(enumType, text);
         }
+    }
+
+    /**
+     * Parsing of {@link Direction} requires some special handling because of aliases (from/to).
+     */
+    public static Direction parseTraversalDirectionFromContext(final GremlinParser.TraversalDirectionContext context) {
+        String text = context.getText();
+        if (text.startsWith(Direction.class.getSimpleName()))
+            text = text.substring(Direction.class.getSimpleName().length() + 1);
+        return Direction.directionValueOf(text);
     }
 }

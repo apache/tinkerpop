@@ -469,7 +469,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitTraversalDirection(final GremlinParser.TraversalDirectionContext ctx) {
-        return TraversalEnumParser.parseTraversalEnumFromContext(Direction.class, ctx);
+        return TraversalEnumParser.parseTraversalDirectionFromContext(ctx);
     }
 
     /**

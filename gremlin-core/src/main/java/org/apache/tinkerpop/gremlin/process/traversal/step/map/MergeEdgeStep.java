@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -353,7 +354,7 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             }).findFirst().map(e -> {
                 throw new IllegalArgumentException(String.format(
                         "option(onMatch) expects keys in Map to be of String - check: %s",
-                        e.getKey().toString()));
+                        e.getKey()));
             });
         } else {
             m.entrySet().stream().filter(e -> {
@@ -362,7 +363,7 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             }).findFirst().map(e -> {
                 throw new IllegalArgumentException(String.format(
                         "mergeE() and option(onCreate) expects keys in Map to be of String, T.id, T.label, or any Direction except BOTH - check: %s",
-                        e.getKey().toString()));
+                        e.getKey()));
             });
         }
 

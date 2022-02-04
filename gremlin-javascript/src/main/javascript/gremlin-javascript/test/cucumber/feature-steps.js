@@ -217,7 +217,9 @@ function getSandbox(g, parameters) {
     Direction: {
       BOTH: traversalModule.direction.both,
       IN: traversalModule.direction.in,
-      OUT: traversalModule.direction.out
+      OUT: traversalModule.direction.out,
+      from_: traversalModule.direction.in,
+      to: traversalModule.direction.out,
     },
     Order: traversalModule.order,
     P: traversalModule.P,
@@ -332,7 +334,13 @@ function toT(value) {
 }
 
 function toDirection(value) {
-  return direction[value.toLowerCase()];
+  // swap Direction.from alias
+  if (value === 'from')
+    return direction["out"];
+  else if (value === 'to')
+    return direction["in"];
+  else
+    return direction[value.toLowerCase()];
 }
 
 function toArray(stringList) {
