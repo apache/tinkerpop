@@ -31,8 +31,8 @@ import (
 
 func writeToBuffer(value interface{}, buffer *bytes.Buffer) []byte {
 	logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
-	writer := graphBinaryWriter{logHandler}
-	val, err := writer.write(value, buffer)
+	serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, logHandler}
+	val, err := serializer.write(value, buffer)
 	if err != nil {
 		panic(err)
 	}
@@ -41,8 +41,8 @@ func writeToBuffer(value interface{}, buffer *bytes.Buffer) []byte {
 
 func readToValue(buff *bytes.Buffer) interface{} {
 	logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
-	reader := graphBinaryReader{logHandler}
-	val, err := reader.read(buff)
+	serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, logHandler}
+	val, err := serializer.read(buff)
 	if err != nil {
 		panic(err)
 	}
