@@ -32,6 +32,8 @@ except ImportError:
 from gremlin_python.driver import request
 from gremlin_python.driver.resultset import ResultSet
 
+log = logging.getLogger("gremlinpython")
+
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
@@ -93,7 +95,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
     def data_received(self, message, results_dict):
         # if Gremlin Server cuts off then we get a None for the message
         if message is None:
-            logging.error("Received empty message from server.")
+            log.error("Received empty message from server.")
             raise GremlinServerError({'code': 500,
                                       'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
 
@@ -117,7 +119,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
                 error_message = 'Gremlin server requires authentication credentials in DriverRemoteConnection. ' \
                                 'For basic authentication provide username and password. ' \
                                 'For kerberos authentication provide the kerberized_service parameter.'
-                logging.error(error_message)
+                log.error(error_message)
                 raise ConfigurationError(error_message)
             self.write(request_id, request_message)
             data = self._transport.read()
@@ -136,7 +138,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         else:
             # This message is going to be huge and kind of hard to read, but in the event of an error,
             # it can provide invaluable info, so space it out appropriately.
-            logging.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
+            log.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
                           str(message), str(results_dict))
             del results_dict[request_id]
             raise GremlinServerError(message['status'])
