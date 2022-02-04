@@ -259,7 +259,7 @@ describe('GraphBinary.AnySerializer', () => {
       { v:'00010203-0405-0607-0809-0a0b0c0d0e0f', b:[0x0C,0x00, 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F] },
 
       // BARRIER
-      { v:new t.EnumValue('Barrier',null),        b:[0x13,0x01] },
+      { v:null,                                   b:[0x13,0x01] },
       { v:new t.EnumValue('Barrier','normSack'),  b:[0x13,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('normSack')] },
 
       // BYTECODE
@@ -267,42 +267,42 @@ describe('GraphBinary.AnySerializer', () => {
       { v:new Bytecode(),                         b:[0x15,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
 
       // CARDINALITY
-      { v:new t.EnumValue('Cardinality',null),    b:[0x16,0x01] },
+      { v:null,                                   b:[0x16,0x01] },
       { v:new t.EnumValue('Cardinality', 'set'),  b:[0x16,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('set')] },
 
       // COLUMN
-      { v:new t.EnumValue('Column',null),         b:[0x17,0x01] },
+      { v:null,                                   b:[0x17,0x01] },
       { v:new t.EnumValue('Column','keys'),       b:[0x17,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('keys')] },
 
       // DIRECTION
-      { v:new t.EnumValue('Direction',null),      b:[0x18,0x01] },
+      { v:null,                                   b:[0x18,0x01] },
       { v:new t.EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
 
       // OPERATOR
-      { v:new t.EnumValue('Operator',null),       b:[0x19,0x01] },
+      { v:null,                                   b:[0x19,0x01] },
       { v:new t.EnumValue('Operator','addAll'),   b:[0x19,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('addAll')] },
 
       // ORDER
-      { v:new t.EnumValue('Order',null),          b:[0x1A,0x01] },
+      { v:null,                                   b:[0x1A,0x01] },
       { v:new t.EnumValue('Order','desc'),        b:[0x1A,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('desc')] },
 
       // PICK
-      { v:new t.EnumValue('Pick',null),           b:[0x1B,0x01] },
+      { v:null,                                   b:[0x1B,0x01] },
       { v:new t.EnumValue('Pick','any'),          b:[0x1B,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('any')] },
 
       // POP
-      { v:new t.EnumValue('Pop',null),            b:[0x1C,0x01] },
+      { v:null,                                   b:[0x1C,0x01] },
       { v:new t.EnumValue('Pop','first'),         b:[0x1C,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
 
       // P
       { v:t.P.eq(7),                              b:[0x1E,0x00, 0x00,0x00,0x00,0x02, ...from('eq'), 0x00,0x00,0x00,0x01, 0x01,0x00,0x00,0x00,0x00,0x07] },
 
       // SCOPE
-      { v:new t.EnumValue('Scope',null),          b:[0x1F,0x01] },
+      { v:null,                                   b:[0x1F,0x01] },
       { v:new t.EnumValue('Scope','local'),       b:[0x1F,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('local')] },
 
       // T
-      { v:new t.EnumValue('T',null),              b:[0x20,0x01] },
+      { v:null,                                   b:[0x20,0x01] },
       { v:new t.EnumValue('T','id'),              b:[0x20,0x00, 0x03,0x00, 0x00,0x00,0x00,0x02, ...from('id')] },
 
       // TRAVERSER

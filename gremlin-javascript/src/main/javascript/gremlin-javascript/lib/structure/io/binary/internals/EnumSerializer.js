@@ -105,7 +105,7 @@ module.exports = class EnumSerializer {
           throw new Error('{value_flag} is missing');
         const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
         if (value_flag === 1)
-          return { v: new t.EnumValue(type.name, null), len };
+          return { v: null, len };
         if (value_flag !== 0)
           throw new Error('unexpected {value_flag}');
       }
