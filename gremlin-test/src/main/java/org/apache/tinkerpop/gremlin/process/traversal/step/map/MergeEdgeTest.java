@@ -37,8 +37,11 @@ import org.junit.runner.RunWith;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 @RunWith(GremlinProcessRunner.class)
 public abstract class MergeEdgeTest extends AbstractGremlinTest {
@@ -112,13 +115,13 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
     public void g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX() {
         final Traversal<Edge, Edge> traversal = get_g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX();
         printTraversalForm(traversal);
-        final Edge edge = traversal.next();
-        assertEquals("knows", edge.label());
-        assertEquals(100, edge.outVertex().id());
-        assertEquals(101, edge.inVertex().id());
-        assertEquals("Y", edge.<String>value("created"));
-        assertFalse(traversal.hasNext());
-        assertEquals(1, IteratorUtils.count(g.E()));
+        try {
+            traversal.next();
+            fail("Should have failed as vertices are not created");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), endsWith("could not be found and edge could not be created"));
+        }
+        assertEquals(0, IteratorUtils.count(g.E()));
     }
 
     @Test

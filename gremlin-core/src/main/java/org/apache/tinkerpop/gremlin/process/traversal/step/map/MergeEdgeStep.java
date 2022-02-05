@@ -279,6 +279,13 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             // searchCreate should have alredy been validated so only do it if it is overridden
             if (useOnCreate) validateMapInput(m, false);
 
+            // check if from/to were already determined by traverser/searchMatch, and if not, then at least ensure that
+            // the from/to is set in m
+            if (outV == PLACEHOLDER_VERTEX && !m.containsKey(Direction.OUT))
+                throw new IllegalArgumentException("Out Vertex not specified - edge cannot be created");
+            if (inV == PLACEHOLDER_VERTEX && !m.containsKey(Direction.IN))
+                throw new IllegalArgumentException("In Vertex not specified - edge cannot be created");
+
             final List<Object> keyValues = new ArrayList<>();
             String label = Edge.DEFAULT_LABEL;
 
@@ -292,11 +299,9 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
                     // only override if onCreate was specified otherwise stick to however traverser/searchMatch
                     // was resolved
                     if (useOnCreate && entry.getKey().equals(Direction.IN)) {
-                        toV = ((Attachable<Vertex>) entry.getValue())
-                                .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+                        toV = tryAttachVertex((Attachable<Vertex>) entry.getValue());
                     } else if (useOnCreate && entry.getKey().equals(Direction.OUT)) {
-                        fromV = ((Attachable<Vertex>) entry.getValue())
-                                .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+                        fromV = tryAttachVertex((Attachable<Vertex>) entry.getValue());
                     }
                 } else if (entry.getKey().equals(T.label)) {
                     label = (String) entry.getValue();
@@ -335,10 +340,21 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
         final Object o = searchCreate.getOrDefault(direction, possibleVertex);
         final Vertex v = o instanceof Vertex ? (Vertex) o : new ReferenceVertex(o);
         if (v != PLACEHOLDER_VERTEX && v instanceof Attachable) {
-            return ((Attachable<Vertex>) v)
-                    .attach(Attachable.Method.getOrCreate(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            return tryAttachVertex((Attachable<Vertex>) v);
         } else {
             return v;
+        }
+    }
+
+    /**
+     * Tries to attach a {@link Vertex} to its host {@link Graph} of the traversal. If the {@link Vertex} cannot be
+     * found then an {@code IllegalArgumentException} is expected.
+     */
+    protected Vertex tryAttachVertex(final Attachable<Vertex> attachable) {
+        try {
+            return attachable.attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+        } catch (IllegalStateException ise) {
+            throw new IllegalArgumentException(String.format("%s could not be found and edge could not be created", attachable));
         }
     }
 

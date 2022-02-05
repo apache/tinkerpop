@@ -44,11 +44,11 @@ Feature: Step - mergeE()
   # g_mergeEXlabel_knows_out_marko_in_vadas_weight_05X
   #   - mergeE(Map) specifying out/in for vertices in the match/create with no option()
   #   - no vertices/edges in graph
-  #   - results in two new vertices and one new edge
+  #   - results in error as vertices don't exist
   # g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX
   #   - mergeE(Map) specifying out/in for vertices in the match/create with option(Map)
   #   - no vertices/edges in graph
-  #   - results in two new vertices and one new edge
+  #   - results in error as vertices don't exist
   # g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists
   #   - mergeE(Map) specifying out/in for vertices in the match/create with option(Map)
   #   - vertices and edge already exist
@@ -89,6 +89,10 @@ Feature: Step - mergeE()
   #   - mergeE(Map) using the vertex of current traverser as reference - testing child traversal
   #   - vertex already exists
   #   - results in a self edge
+  # g_injectXlabel_knows_out_marko_in_vadas_label_self_out_vadas_in_vadasX
+  #   - mergeE() using the map of current traverser as reference
+  #   - vertices already exists
+  #   - results in two new edges
 
   Scenario: g_V_mergeEXlabel_self_weight_05X
     Given the empty graph
@@ -186,9 +190,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1)
       """
     When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 2 for count of "g.V()"
-    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0.5)"
+    Then the traversal will raise an error
 
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX
@@ -201,10 +203,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
       """
     When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 2 for count of "g.V()"
-    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
-    And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
+    Then the traversal will raise an error
 
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists
@@ -461,3 +460,24 @@ Feature: Step - mergeE()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
+
+  @UserSuppliedVertexIds
+  Scenario: g_injectXlabel_knows_out_marko_in_vadas_label_self_out_vadas_in_vadasX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 100).property("name", "marko").
+        addV("person").property(T.id, 101).property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[101]\", \"D[IN]\":\"v[101]\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx2).mergeE()
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 2 for count of "g.E()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").out(\"self\").has(\"person\",\"name\",\"vadas\")"
