@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io;
 
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +31,6 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Compatibilities {
-
-    public static final Compatibilities GRYO_ONLY = Compatibilities.with(GryoCompatibility.class);
 
     public static final Compatibilities UNTYPED_GRAPHSON = Compatibilities.with(GraphSONCompatibility.class)
             .configuredAs(".*no-types|v1d0");

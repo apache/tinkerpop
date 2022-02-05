@@ -27,7 +27,6 @@ import org.apache.commons.configuration2.BaseConfiguration
 
 new File("${projectBuildDir}/dev-docs/").mkdirs()
 new File("${projectBuildDir}/test-case-data/io/graphson/").mkdirs()
-new File("${projectBuildDir}/test-case-data/io/gryo/").mkdirs()
 
 conf = new BaseConfiguration()
 conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())

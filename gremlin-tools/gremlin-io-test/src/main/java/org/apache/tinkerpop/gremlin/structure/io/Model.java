@@ -42,8 +42,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphbinary.GraphBinaryCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
@@ -93,7 +91,6 @@ public class Model {
 
     private static final List<Compatibility> ALL = Collections.unmodifiableList(new ArrayList<Compatibility>() {{
         addAll(Arrays.asList(GraphSONCompatibility.values()));
-        addAll(Arrays.asList(GryoCompatibility.values()));
         addAll(Arrays.asList(GraphBinaryCompatibility.values()));
     }});
 
@@ -112,55 +109,43 @@ public class Model {
         final Compatibility[] noTypeGraphSONPlusBrokenGraphBinary = Compatibilities.with(GraphSONCompatibility.class)
                 .configuredAs(".*no-types|v1d0").join(Compatibilities.with(GraphBinaryCompatibility.class)).matchToArray();
 
-        final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
-        final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
-
-        // the inverse of this definition is basically 3.4.0 or better for both GraphSON and Gryo with no support for
+        // the inverse of this definition is basically 3.4.0 or better for GraphSON with no support for
         // untyped GraphSON anywhere along the way
-        final Compatibility[] before3_4_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.4.0")
-                .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
-                .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.4.0"))).matchToArray();
+        final Compatibility[] before3_4_0 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+                .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.4.0")).matchToArray();
 
-        // the inverse of this definition is basically 3.5.0 or better for both GraphSON and Gryo with no support for
+        // the inverse of this definition is basically 3.5.0 or better for GraphSON with no support for
         // untyped GraphSON anywhere along the way
         List<Compatibility> c = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0").match();
-        final Compatibility[] before3_5_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.5.0")
-                .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
-                        .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.5.0"))).matchToArray();
+        final Compatibility[] before3_5_0 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+                        .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.5.0")).matchToArray();
 
-        // there is no point to testing gryo for list/map/set as they are kryo primitives essentially
-        final Compatibility[] noGraphSONBeforeV3AndNoGryo = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").join(Compatibilities.GRYO_ONLY).matchToArray();
+        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
-        // Serialization of Class in Gryo 1.0 had a bug that prevented proper operation in versions prior to 3.2.4.
-        addCoreEntry(File.class, "Class", "", noTypeGraphSONPlusGryo3_2_3);
+        addCoreEntry(File.class, "Class", "");
         addCoreEntry(new Date(1481750076295L), "Date");
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addCoreEntry(100, "Integer");
-        addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.", noGraphSONBeforeV3AndNoGryo);
+        addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.", noGraphSONBeforeV3);
         addCoreEntry(100L, "Long", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
 
         final Map<Object,Object> map = new HashMap<>();
         map.put("test", 123);
         map.put(new Date(1481750076295L), "red");
         map.put(Arrays.asList(1,2,3), new Date(1481750076295L));
-        addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.", noGraphSONBeforeV3AndNoGryo);
+        addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.", noGraphSONBeforeV3);
 
-        addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.", noGraphSONBeforeV3AndNoGryo);
-        // Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.
-        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "", noTypeGraphSONPlusGryo3_2_3);
+        addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.", noGraphSONBeforeV3);
+        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "");
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
         addGraphStructureEntry(graph.edges().next(), "Edge", "");
         addGraphStructureEntry(g.V().out().out().path().next(), "Path", "");
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "");
-        // TODO: missing a stargraph deserializer in graphson v1/v2
-        addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
         addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
-        // TODO: tree has bugs for graphson
-        addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", Compatibilities.GRYO_ONLY.match());
         addGraphStructureEntry(graph.vertices().next(), "Vertex", "");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "");
 
@@ -184,19 +169,17 @@ public class Model {
         final TraversalMetrics tm = createStaticTraversalMetrics();
         final MutableMetrics metrics = new MutableMetrics(tm.getMetrics("7.0.0()"));
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
-        addGraphProcessEntry(metrics, "Metrics", "", noTypeGraphSONPlusGryo3_3_0);
+        addGraphProcessEntry(metrics, "Metrics", "");
         addGraphProcessEntry(P.gt(0), "P", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(P.within(1), "P within", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(P.without(1,2), "P without", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
-        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", noTypeGraphSONPlusGryo3_2_3);
-        // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
-        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", noTypeGraphSONPlusGryo3_2_3);
+        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "");
+        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "");
         addGraphProcessEntry(Scope.local, "Scope", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(T.label, "T", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         // TextP was only added at 3.4.0 and is not supported with untyped GraphSON of any sort
         addGraphProcessEntry(TextP.containing("ark"), "TextP", "", before3_4_0);
-        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", noTypeGraphSONPlusGryo3_3_0);
+        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "");
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
 
         final Map<String,Object> requestBindings = new HashMap<>();
@@ -205,8 +188,6 @@ public class Model {
         final Map<String,Object> requestAliases = new HashMap<>();
         requestAliases.put("g", "social");
 
-        // RequestMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component
-        // (MessageSerializer) that doesn't fit the test model.
         RequestMessage requestMessage;
         requestMessage = RequestMessage.build("authentication").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
@@ -233,8 +214,6 @@ public class Model {
                 add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases).create();
         addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
 
-        // ResponseMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component
-        // (MessageSerializer) that doesn't fit the test model
         ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create();
         addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).");
@@ -246,13 +225,11 @@ public class Model {
         addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(new Byte("1"), "Byte", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        // ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.
-        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "", noTypeGraphSONPlusGryo3_2_3);
+        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "");
         addExtendedEntry("x".charAt(0), "Char", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         try {
-            // InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.
-            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "", noTypeGraphSONPlusGryo3_2_3);
+            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -350,10 +327,7 @@ public class Model {
     }
 
     private void addRequestMessageEntry(final Object obj, final String title, final String description) {
-        final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .before("3.0")
-                .join(Compatibilities.with(GraphBinaryCompatibility.class))
-                .match();
+        final List<Compatibility> incompatibilityList = Compatibilities.with(GraphBinaryCompatibility.class).match();
 
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
@@ -361,10 +335,7 @@ public class Model {
     }
 
     private void addResponseMessageEntry(final Object obj, final String title, final String description) {
-        final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .before("3.0")
-                .join(Compatibilities.with(GraphBinaryCompatibility.class))
-                .match();
+        final List<Compatibility> incompatibilityList = Compatibilities.with(GraphBinaryCompatibility.class).match();
 
         // TODO: temporary problem? seems to be something breaking in vertex serialization
         if (title.equals("Standard Result"))
@@ -429,16 +400,13 @@ public class Model {
     public void saveAsCsv(final File file) throws Exception {
         file.getParentFile().mkdirs();
 
-        final List<Compatibility> compatibilities = Stream.concat(
-                Stream.of(GraphSONCompatibility.values()),
-                Stream.of(GryoCompatibility.values())).collect(Collectors.toList());
+        final List<Compatibility> compatibilities = Stream.of(GraphSONCompatibility.values()).
+                collect(Collectors.toList());
 
         final List<String> headers = new ArrayList<>();
         headers.add("resource");
         headers.addAll(compatibilities.stream().map(c -> {
-            if (c instanceof GryoCompatibility)
-                return "gryo-" + ((GryoCompatibility) c).name();
-            else if (c instanceof GraphSONCompatibility)
+            if (c instanceof GraphSONCompatibility)
                 return "graphson-" + ((GraphSONCompatibility) c).name();
             else if (c instanceof GraphBinaryCompatibility)
                 return "graphbinary-" + ((GraphBinaryCompatibility) c).name();
@@ -499,12 +467,8 @@ public class Model {
             return compatibleWith.contains(compatibility);
         }
 
-        public boolean hasGryoCompatibility() {
-            return compatibleWith.stream().anyMatch(c -> c instanceof GryoCompatibility);
-        }
-
         public boolean hasGraphSONCompatibility() {
-            return compatibleWith.stream().anyMatch(c -> c instanceof GryoCompatibility);
+            return compatibleWith.stream().anyMatch(c -> c instanceof GraphSONCompatibility);
         }
 
         public boolean hasGraphBinaryCompatibility() {
