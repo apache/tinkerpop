@@ -39,6 +39,7 @@ module.exports = class AnySerializer {
       ioc.enumSerializer,
       ioc.listSerializer,
       ioc.uuidSerializer,
+      ioc.edgeSerializer,
       ioc.vertexSerializer,
       ioc.stringSerializer,
 

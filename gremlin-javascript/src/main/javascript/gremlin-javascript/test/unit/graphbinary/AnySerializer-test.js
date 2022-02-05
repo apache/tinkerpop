@@ -25,7 +25,7 @@
 const assert = require('assert');
 const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
-const { Vertex } = require('../../../lib/structure/graph');
+const { Vertex, Edge } = require('../../../lib/structure/graph');
 const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
@@ -155,7 +155,19 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // EdgeSerializer
-      // TODO
+      { v:new Edge('A', new Vertex('B','Person',null), 'has', new Vertex('C','Pet',null), null),
+        b:[
+          DataType.EDGE,0x00,
+          DataType.STRING,0x00, 0x00,0x00,0x00,0x01, 0x41, // id
+          0x00,0x00,0x00,0x03, ...from('has'), // label
+          DataType.STRING,0x00, 0x00,0x00,0x00,0x01, 0x43, // inVId
+          0x00,0x00,0x00,0x03, ...from('Pet'), // inVLabel
+          DataType.STRING,0x00, 0x00,0x00,0x00,0x01, 0x42, // outVId
+          0x00,0x00,0x00,0x06, ...from('Person'), // outVLabel
+          0xFE,0x01, // parent
+          0xFE,0x01, // properties
+        ]
+      },
 
       // LongSerializer
       // TODO +
@@ -268,6 +280,22 @@ describe('GraphBinary.AnySerializer', () => {
       // UUID
       { v:null,                                   b:[0x0C,0x01] },
       { v:'00010203-0405-0607-0809-0a0b0c0d0e0f', b:[0x0C,0x00, 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F] },
+
+      // EDGE
+      { v:null,                                   b:[0x0D,0x01] },
+      { v:new Edge(1, new Vertex(2,'Person',null), 'has', new Vertex(3,'Pet',null), null),
+        b:[
+          0x0D,0x00,
+          0x01,0x00, 0x00,0x00,0x00,0x01, // id
+          0x00,0x00,0x00,0x03, ...from('has'), // label
+          0x01,0x00, 0x00,0x00,0x00,0x03, // inVId
+          0x00,0x00,0x00,0x03, ...from('Pet'), // inVLabel
+          0x01,0x00, 0x00,0x00,0x00,0x02, // outVId
+          0x00,0x00,0x00,0x06, ...from('Person'), // outVLabel
+          0xFE,0x01, // parent
+          0xFE,0x01, // properties
+        ]
+      },
 
       // VERTEX
       { v:null,                                   b:[0x11,0x01] },

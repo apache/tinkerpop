@@ -147,4 +147,5 @@ describe('GraphBinary.VertexSerializer', () => {
       assert.strictEqual( vertexSerializer.canBeUsedFor(v), e )
     ))
   );
+
 });
