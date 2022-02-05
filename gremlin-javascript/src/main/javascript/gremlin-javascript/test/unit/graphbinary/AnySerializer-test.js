@@ -43,8 +43,7 @@ describe('GraphBinary.AnySerializer', () => {
         Let's follow existing structure/io/graph-serializer.GraphSON3Writer.adaptObject() logic
         of serializer/type selection and add the rest of the types.
 
-        These test suite is the documentation and set of examples of what type is inferred
-        for a given JavaScript value.
+        This test suite is the documentation and set of examples of type inference.
       */
 
       // NumberSerializer
@@ -59,8 +58,8 @@ describe('GraphBinary.AnySerializer', () => {
       { v:-2147483648, b:[DataType.INT,0x00, 0x80,0x00,0x00,0x00] }, // INT32_MIN
       { v:-1,          b:[DataType.INT,0x00, 0xFF,0xFF,0xFF,0xFF] },
 
-      // DateSerializer,
-      // TODO
+      // DateSerializer
+      { v:new Date(1651436603000), b:[DataType.DATE,0x00, 0x00,0x00,0x01,0x80,0x81,0x4A,0xC6,0x78] },
 
       // BytecodeSerializer
       // Traversal type
@@ -245,6 +244,10 @@ describe('GraphBinary.AnySerializer', () => {
       // STRING
       { v:null,                                   b:[0x03,0x01] },
       { v:'Ab0',                                  b:[0x03,0x00, 0x00,0x00,0x00,0x03, 0x41,0x62,0x30] },
+
+      // DATE
+      { v:null,                                   b:[0x04,0x01] },
+      { v:new Date('1969-12-31T23:59:59.999Z'),   b:[0x04,0x00, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF] },
 
       // LIST
       { v:null,                                   b:[0x09,0x01] },
