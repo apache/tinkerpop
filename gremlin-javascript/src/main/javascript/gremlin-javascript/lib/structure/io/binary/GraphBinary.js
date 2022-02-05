@@ -36,6 +36,7 @@ ioc.dateSerializer = new (require('./internals/DateSerializer'))(ioc);
 ioc.listSerializer = new (require('./internals/ListSerializer'))(ioc);
 ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);
 ioc.uuidSerializer = new (require('./internals/UuidSerializer'))(ioc);
+ioc.vertexSerializer = new (require('./internals/VertexSerializer'))(ioc);
 ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);
 ioc.pSerializer = new (require('./internals/PSerializer'))(ioc);
 ioc.traverserSerializer = new (require('./internals/TraverserSerializer'))(ioc);

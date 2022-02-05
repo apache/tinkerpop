@@ -25,6 +25,7 @@
 const assert = require('assert');
 const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
+const { Vertex } = require('../../../lib/structure/graph');
 const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
@@ -144,7 +145,14 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // VertexSerializer
-      // TODO
+      { v: new Vertex('A', 'Person', null),
+        b: [
+          DataType.VERTEX,0x00,
+          DataType.STRING,0x00, 0x00,0x00,0x00,0x01, 0x41, // {id}
+          0x00,0x00,0x00,0x06, ...from('Person'), // {label}
+          0xFE,0x01, // {properties}
+        ]
+      },
 
       // EdgeSerializer
       // TODO
@@ -260,6 +268,12 @@ describe('GraphBinary.AnySerializer', () => {
       // UUID
       { v:null,                                   b:[0x0C,0x01] },
       { v:'00010203-0405-0607-0809-0a0b0c0d0e0f', b:[0x0C,0x00, 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F] },
+
+      // VERTEX
+      { v:null,                                   b:[0x11,0x01] },
+      { v:new Vertex('00010203-0405-0607-0809-0a0b0c0d0e0f', 'A', null),
+        b:[0x11,0x00, 0x0C,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F, 0x00,0x00,0x00,0x01,0x41, 0xFE,0x01]
+      },
 
       // BARRIER
       { v:null,                                   b:[0x13,0x01] },
