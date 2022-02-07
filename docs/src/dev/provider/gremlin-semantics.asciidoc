@@ -490,22 +490,86 @@ understand implementation expectations.
 
 === mergeE()
 
+*Description:* Provides upsert-like functionality for edges.
 
+*Syntax:* `mergeE()` | `mergeE(Map)` | `mergeE(Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |`option()` |`Map`/`Vertex` |`Edge`
+|=========================================================
+
+*Arguments:*
+
+* `searchCreate` - A `Map` used to match an `Edge` and if not found will be the default set of data to create the new one.
+* `onCreate` - A `Map` that is the override to the default of `searchCreate`.
+* `onMatch` - A `Map` used to update the `Edge` that is found using the `searchCreate` criteria.
+
+The `searchCreate` and `onCreate` `Map` instances must consist of any combination of:
+
+* `T` - `id`, `label`
+* `Direction` - `IN` or `to`, `OUT` or `from`
+* Arbitrary `String` keys (which are assumed to be vertex properties).
+
+The `onMatch` `Map` instance only allows for `String` keys as the `id` and `label` of a `Vertex` are immutable as are
+the incident vertices. Values for these valid keys that are `null` will be treated according to the semantics of the
+`addE()` step.
+
+The incoming traverser to this step may be either a `Map` or a `Vertex`. If it is a `Vertex`, it will be assigned to
+the `IN` and `OUT` elements of the `searchCreate`. If it is a `Map` then it will be treated as though it were passed in
+as an argument to `mergeE()`. If `mergeV(Map)` is used, then it will override any settings determined from the incoming
+`Traverser` if `IN` or `OUT` is specified. If those keys are not present, then the assumption is that the `Map` search
+criteria applies to both incoming and outgoing edges of the traverser `Vertex`. If `mergeV(Traversal)` is used, the
+`Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+`onMatch` arguments are assigned via modulation as described below.
+
+[width="100%",options="header"]
+|=========================================================
+|Event |Null `Map` |Empty `Map`
+|Search |Filters all edges |Matches all edges
+|Create |No new edge |New edge with defaults
+|Update |No update to matched edge |No update to matched edge
+|=========================================================
+
+If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for edge creation if the `Graph` does not
+support user supplied identifiers.
+
+*Modulation:*
+
+* `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
+* `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
+resolve to a `Map`.
+
+*Exceptions*
+
+* `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
+* Use of `T.label` should always have a value that is a `String`.
+
+*Considerations:*
+
+* `mergeE()` (i.e. the zero-arg overload) can only be used mid-traversal. It is not a start step.
+* As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/master/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
+link:https://tinkerpop.apache.org/docs/current/reference/#mergee-step[reference]
 
 === mergeV()
 
 *Description:* Provides upsert-like functionality for vertices.
+
 *Syntax:* `mergeV()` | `mergeV(Map)` | `mergeV(Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
 |Y |Y |`option()` |`Map` |`Vertex`
+|=========================================================
 
 *Arguments:*
 
-* `searchCreate` - A `Map` used to match a `Vertex` and if not found be the default set of data to create the new one.
-* `onCreate` - A `Map` that is the override to the default of `searchCreate`
+* `searchCreate` - A `Map` used to match a `Vertex` and if not found will be the default set of data to create the new one.
+* `onCreate` - A `Map` that is the override to the default of `searchCreate`.
 * `onMatch` - A `Map` used to update the `Vertex` that is found using the `searchCreate` criteria.
 
 The `searchCreate` and `onCreate` `Map` instances must consists of any combination of `T.id`, `T.label`, or arbitrary
@@ -542,7 +606,7 @@ resolve to a `Map`.
 
 *Considerations:*
 
-* `mergeV()` Can only be used mid-traversal. It is not a start step.
+* `mergeV()` (i.e. the zero-arg overload) can only be used mid-traversal. It is not a start step.
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
 See: link:https://github.com/apache/tinkerpop/tree/master/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],

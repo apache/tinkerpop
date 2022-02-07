@@ -93,6 +93,220 @@ Feature: Step - mergeE()
   #   - mergeE() using the map of current traverser as reference
   #   - vertices already exists
   #   - results in two new edges
+  # g_mergeEXnullX
+  # g_V_mergeEXnullX
+  #   - mergeE(null) and no option
+  #   - vertices already exists
+  #   - results in no matched edges and no new edge
+  # g_mergeEXemptyX
+  #   - mergeE(empty) and no option
+  #   - vertex present and no edges
+  #   - results in error because empty map matches all edges and there are none so it creates but doesn't have a Vertex reference to use to create the edge
+  # g_V_mergeEXemptyX
+  #   - mergeE(empty) and no option
+  #   - two vertices exist
+  #   - results in one edge added to the first vertex and then the same edge being returned
+  # g_mergeEXemptyX
+  #   - mergeE(empty) and no option
+  #   - vertices already exists
+  #   - results in no matched edges and no new edge
+  # g_mergeEXemptyX_exists
+  #   - mergeE(empty) and no option
+  #   - vertex with self-edge already exists
+  #   - results in the matched self-edge
+  # g_V_mergeEXemptyX_two_exist
+  #   - mergeE(empty) and no option
+  #   - two vertices exist
+  #   - results in two new self edges, one for each vertex
+  # g_V_mergeEXlabel_knowsX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
+  #   - mergeE(Map) with onCreate(Map) and onMatch(Map)
+  #   - two vertices, two "knows" edges and one "friends" edge
+  #   - results in two returned "knows" edges where one has a property updated and the other a property added
+  # g_V_mergeEXemptyX_optionXonCreate_nullX
+  #   - mergeE(empty) with onCreate(null)
+  #   - one existing vertex
+  #   - results in no new edges because onCreate() was null
+  # g_V_mergeEXlabel_selfX_optionXonCreate_emptyX
+  #   - mergeE(Map) with onCreate(empty)
+  #   - one existing vertex
+  #   - results in one new edge with defaults because searchCreate is overridden
+  # g_V_mergeEXlabel_selfX_optionXonMatch_nullX
+  #   - mergeE(Map) with onMatch(null)
+  #   - one existing vertex and one edge
+  #   - results in one matched edge with no updates
+  # g_V_mergeEXlabel_selfX_optionXonMatch_emptyX
+  #   - mergeE(Map) with onMatch(null)
+  #   - one existing vertex and one edge
+  #   - results in one matched edge with no updates
+
+  Scenario: g_V_mergeEXlabel_selfX_optionXonMatch_emptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addE("self")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\"}]"
+    And the traversal of
+      """
+      g.V().mergeE(xx1).option(Merge.onMatch,[:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 0 for count of "g.E().properties()"
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_V_mergeEXlabel_selfX_optionXonMatch_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addE("self")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\"}]"
+    And the traversal of
+      """
+      g.V().mergeE(xx1).option(Merge.onMatch,null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 0 for count of "g.E().properties()"
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_V_mergeEXlabel_selfX_optionXonCreate_emptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\"}]"
+    And the traversal of
+      """
+      g.V().mergeE(xx1).option(Merge.onCreate,[:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 0 for count of "g.E().hasLabel(\"self\")"
+
+  Scenario: g_V_mergeEXemptyX_optionXonCreate_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().mergeE([:]).option(Merge.onCreate,null)
+      """
+    When iterated to list
+    Then the result should be empty
+    And the graph should return 0 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
+
+  @UserSuppliedVertexIds
+  Scenario: g_V_mergeEXlabel_knowsX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
+        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+        addE("knows").from("a").to("b").property("created","Y").
+        addE("knows").from("b").to("a").
+        addE("friends").from("b").to("a")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And the traversal of
+      """
+      g.V().mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 3 for count of "g.E()"
+    And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
+    And the graph should return 2 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
+    And the graph should return 1 for count of "g.E().hasLabel(\"friends\")"
+
+  Scenario: g_mergeEXemptyX_exists
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addE("self")
+      """
+    And the traversal of
+      """
+      g.mergeE([:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_mergeEXemptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.mergeE([:])
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  Scenario: g_V_mergeEXemptyX_two_exist
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And the traversal of
+      """
+      g.V().mergeE([:])
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.E()"
+    And the graph should return 2 for count of "g.V()"
+
+  Scenario: g_mergeEXnullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.mergeE(null)
+      """
+    When iterated to list
+    Then the result should be empty
+    And the graph should return 0 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_V_mergeEXnullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().mergeE(null)
+      """
+    When iterated to list
+    Then the result should be empty
+    And the graph should return 0 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
 
   Scenario: g_V_mergeEXlabel_self_weight_05X
     Given the empty graph
@@ -414,6 +628,29 @@ Feature: Step - mergeE()
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And the traversal of
+      """
+      g.withSideEffect("c",xx2).withSideEffect("m",xx3).
+        mergeE(xx1).option(Merge.onCreate, __.select("c")).option(Merge.onMatch, __.select("m"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
+    And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
+
+  @UserSuppliedVertexIds
+  Scenario: g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko1_in_vadas1X_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
+        addV("person").property(T.id, 101).property("name", "vadas").as("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"d[100].i\", \"D[IN]\":\"d[101].i\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"d[100].i\", \"D[IN]\":\"d[101].i\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """

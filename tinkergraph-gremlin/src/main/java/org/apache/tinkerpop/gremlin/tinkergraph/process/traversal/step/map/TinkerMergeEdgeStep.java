@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -54,7 +55,9 @@ public class TinkerMergeEdgeStep<S> extends MergeEdgeStep<S> {
 
         Stream<Edge> stream;
         // prioritize lookup by id but otherwise attempt an index lookup
-        if (search.containsKey(T.id)) {
+        if (null == search) {
+            return Stream.empty();
+        } else if (search.containsKey(T.id)) {
             stream = IteratorUtils.stream(graph.edges(search.get(T.id)));
         } else {
             // look for the first index we can find - that's the lucky winner. may or may not be the most selective
@@ -66,7 +69,18 @@ public class TinkerMergeEdgeStep<S> extends MergeEdgeStep<S> {
 
             // use the index if possible otherwise just in memory filter
             stream = firstIndex.map(s -> TinkerHelper.queryEdgeIndex(graph, s, search.get(s)).stream().map(e -> (Edge) e)).
-                    orElseGet(() -> IteratorUtils.stream(graph.edges()));
+                    orElseGet(() -> {
+                        if (search.containsKey(Direction.BOTH)) {
+                            // filter self-edges with distinct()
+                            return IteratorUtils.stream(graph.vertices(search.get(Direction.BOTH))).flatMap(v -> IteratorUtils.stream(v.edges(Direction.BOTH))).distinct();
+                        } else if (search.containsKey(Direction.OUT)) {
+                            return IteratorUtils.stream(graph.vertices(search.get(Direction.OUT))).flatMap(v -> IteratorUtils.stream(v.edges(Direction.OUT)));
+                        } else if (search.containsKey(Direction.IN)) {
+                            return IteratorUtils.stream(graph.vertices(search.get(Direction.IN))).flatMap(v -> IteratorUtils.stream(v.edges(Direction.IN)));
+                        } else {
+                            return IteratorUtils.stream(graph.edges());
+                        }
+                    });
         }
 
         final Optional<String> indexUsed = firstIndex;
@@ -84,7 +98,11 @@ public class TinkerMergeEdgeStep<S> extends MergeEdgeStep<S> {
                     // try to take advantage of string id conversions of the graph by doing a lookup rather
                     // than direct compare on id
                     final Iterator<Vertex> found = graph.vertices(kv.getValue());
-                    return found.hasNext() && e.vertices(direction).next().equals(found.next());
+                    final Iterator<Vertex> dfound = e.vertices(direction);
+                    final boolean matched = found.hasNext() && dfound.next().equals(found.next());
+                    CloseableIterator.closeIterator(found);
+                    CloseableIterator.closeIterator(dfound);
+                    return matched;
                 } else {
                     final Property<Object> vp = e.property(kv.getKey().toString());
                     return vp.isPresent() && kv.getValue().equals(vp.value());

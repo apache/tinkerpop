@@ -19,21 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223.ast
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bindings
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
-import org.apache.tinkerpop.gremlin.process.traversal.Order
-import org.apache.tinkerpop.gremlin.process.traversal.Translator
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
-import org.codehaus.groovy.ast.expr.*
-import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
+import org.codehaus.groovy.ast.expr.CastExpression
+import org.codehaus.groovy.ast.expr.ConstantExpression
+import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.syntax.Token
-import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
@@ -55,7 +51,7 @@ class AmbiguousMethodASTTransformation implements ASTTransformation {
 
             @Override
             void visitMethodCallExpression(MethodCallExpression call) {
-                currentMethod = call.methodAsString
+                currentMethod = call.methodAsString.trim()
                 call.getArguments().visit(this)
                 call.getObjectExpression().visit(this)
             }
@@ -65,7 +61,10 @@ class AmbiguousMethodASTTransformation implements ASTTransformation {
                 if (!expression.empty) {
                     expression.eachWithIndex{ Expression entry, int i ->
                         if (isNullExpression(entry)) {
-                            if (currentMethod in [GraphTraversal.Symbols.mergeV, GraphTraversal.Symbols.option]) {
+                            if (currentMethod in [GraphTraversal.Symbols.mergeV,
+                                                  GraphTraversal.Symbols.mergeE,
+                                                  GraphTraversal.Symbols.option]) {
+                                entry.type = new ClassNode(Map)
                                 expression.expressions[i] = new CastExpression(new ClassNode(Map), entry)
                             }
                         }

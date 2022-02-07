@@ -78,7 +78,8 @@ public class GremlinGroovyScriptEngineTest {
     private static final Object[] EMPTY_ARGS = new Object[0];
 
     private static final GremlinGroovyScriptEngine ambiguousNullEngine = new GremlinGroovyScriptEngine(
-            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()));
+            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
+                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
 
     @Test
     public void shouldNotCacheGlobalFunctions() throws Exception {
@@ -552,7 +553,18 @@ public class GremlinGroovyScriptEngineTest {
         final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
         final Bindings bindings = new SimpleBindings();
         bindings.put("g", g);
+        ambiguousNullEngine.eval("g.mergeV(null)", bindings);
         ambiguousNullEngine.eval("g.mergeV(null).option(Merge.onCreate, null)", bindings);
         ambiguousNullEngine.eval("g.mergeV([:]).option(Merge.onCreate, null)", bindings);
+    }
+
+    @Test
+    public void shouldHandleMergeEAmbiguousNull() throws Exception {
+        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+        ambiguousNullEngine.eval("g.mergeE(null)", bindings);
+        ambiguousNullEngine.eval("g.mergeE(null).option(Merge.onCreate, null)", bindings);
+        ambiguousNullEngine.eval("g.mergeE([:]).option(Merge.onCreate, null)", bindings);
     }
 }

@@ -65,26 +65,36 @@ Feature: Step - mergeV()
   #   - mergeV(Map) with no option() - testing child traversal usage
   #   - results in one new vertex and one existing vertex that was just created
   # g_mergeVXnullX
+  # g_V_mergeVXnullX
   #   - mergeV(null) with no option()
   #   - results in no new vertex and nothing returned
   # g_mergeVXemptyX
+  # g_V_mergeVXemptyX
   #   - mergeV(empty) with no option()
   #   - results in matched vertex with no updates
   # g_mergeVXemptyX_no_existing
+  # g_injectX0X_mergeVXemptyX_no_existing
   #   - mergeV(empty) with no option()
   #   - results in not matched updates and a creation of a vertex with default values
   # g_mergeVXnullX_optionXonCreate_emptyX
+  # g_V_mergeVXnullX_optionXonCreate_emptyX
   #   - mergeV(null) with onCreate(empty)
   #   - results in no matches and creates a default vertex
   # g_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
+  # g_V_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
   #   - mergeV(Map) with onCreate(null)
   #   - results in no match and no vertex creation
   # g_mergeVXnullX_optionXonCreate_label_null_name_markoX
+  # g_V_mergeVXnullX_optionXonCreate_label_null_name_markoX
   #   - mergeV(null) with onCreate(Map) where Map has a null label
   #   - results in error
   # g_mergeVXemptyX_optionXonMatch_nullX
+  # g_V_mergeVXemptyX_optionXonMatch_nullX
   #   - mergeV(empty) with onMatch(null)
   #   - results in a match and no vertex update
+  # g_V_mergeVXemptyX_two_exist
+  #  - mergeV(empty) with no option()
+  #  - results in matching two vertices
 
   Scenario: g_mergeVXemptyX_optionXonMatch_nullX
     Given the empty graph
@@ -100,6 +110,20 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",29)"
 
+  Scenario: g_V_mergeVXemptyX_optionXonMatch_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().mergeV([:]).option(Merge.onMatch, null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",29)"
+
   Scenario: g_mergeVXnullX_optionXonCreate_label_null_name_markoX
     Given the empty graph
     And the graph initializer of
@@ -110,6 +134,20 @@ Feature: Step - mergeV()
     And the traversal of
       """
       g.mergeV(null).option(Merge.onCreate,xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  Scenario: g_V_mergeVXnullX_optionXonCreate_label_null_name_markoX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": null, \"name\":\"marko\"}]"
+    And the traversal of
+      """
+      g.V().mergeV(null).option(Merge.onCreate,xx1)
       """
     When iterated to list
     Then the traversal will raise an error
@@ -130,6 +168,22 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
 
+  Scenario: g_V_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
+    And the traversal of
+      """
+      g.V().mergeV(xx1).option(Merge.onCreate, null)
+      """
+    When iterated to list
+    Then the result should have a count of 0
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+
   Scenario: g_mergeVXnullX_optionXonCreate_emptyX
     Given the empty graph
     And the graph initializer of
@@ -144,11 +198,35 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
 
+  Scenario: g_V_mergeVXnullX_optionXonCreate_emptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().mergeV(null).option(Merge.onCreate,[:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+
   Scenario: g_mergeVXemptyX_no_existing
     Given the empty graph
     And the traversal of
       """
       g.mergeV([:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_injectX0X_mergeVXemptyX_no_existing
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(0).mergeV([:])
       """
     When iterated to list
     Then the result should have a count of 1
@@ -168,6 +246,23 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",29)"
 
+  Scenario: g_V_mergeVXemptyX_two_exist
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And the traversal of
+      """
+      g.V().mergeV([:])
+      """
+    When iterated to list
+    Then the result should have a count of 4
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",29)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").has(\"age\",27)"
+
   Scenario: g_mergeVXnullX
     Given the empty graph
     And the graph initializer of
@@ -177,6 +272,20 @@ Feature: Step - mergeV()
     And the traversal of
       """
       g.mergeV(null)
+      """
+    When iterated to list
+    Then the result should have a count of 0
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_V_mergeVXnullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().mergeV(null)
       """
     When iterated to list
     Then the result should have a count of 0

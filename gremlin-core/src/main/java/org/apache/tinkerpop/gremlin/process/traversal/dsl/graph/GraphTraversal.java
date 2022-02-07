@@ -1118,7 +1118,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
         this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
-        final MergeVertexStep<S> step = new MergeVertexStep(this.asAdmin(), false, searchCreate.asAdmin());
+        final MergeVertexStep<S> step = null == searchCreate ? new MergeVertexStep(this.asAdmin(), false, (Map) null) :
+                new MergeVertexStep(this.asAdmin(), false, searchCreate.asAdmin());
         return this.asAdmin().addStep(step);
     }
 
@@ -1158,7 +1159,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> mergeE(final Traversal<?, Map<Object, Object>> searchCreate) {
         this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
-        final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate.asAdmin());
+
+        final MergeEdgeStep<S> step = null == searchCreate ? new MergeEdgeStep(this.asAdmin(), false,  (Map) null) :
+                new MergeEdgeStep(this.asAdmin(), false, searchCreate.asAdmin());
         return this.asAdmin().addStep(step);
     }
 

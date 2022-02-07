@@ -48,6 +48,8 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -187,9 +189,15 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
         final Optional<Direction> directionUsedInLookup;
         Stream<Edge> stream;
         // prioritize lookup by id, then use vertices as starting point if possible
-        if (search.containsKey(T.id)) {
+        if (null == search) {
+            return Stream.empty();
+        } else if (search.containsKey(T.id)) {
             stream = IteratorUtils.stream(graph.edges(search.get(T.id)));
             directionUsedInLookup = Optional.empty();
+        } else if (search.containsKey(Direction.BOTH)) {
+            // filter self-edges with distinct()
+            stream = IteratorUtils.stream(graph.vertices(search.get(Direction.BOTH))).flatMap(v -> IteratorUtils.stream(v.edges(Direction.BOTH))).distinct();
+            directionUsedInLookup = Optional.of(Direction.BOTH);
         } else if (search.containsKey(Direction.OUT)) {
             stream = IteratorUtils.stream(graph.vertices(search.get(Direction.OUT))).flatMap(v -> IteratorUtils.stream(v.edges(Direction.OUT)));
             directionUsedInLookup = Optional.of(Direction.OUT);
@@ -216,8 +224,10 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
                             // try to take advantage of string id conversions of the graph by doing a lookup rather
                             // than direct compare on id
                             final Iterator<Vertex> found = graph.vertices(kv.getValue());
-                            final boolean matched = found.hasNext() && e.vertices(direction).next().equals(found.next());
+                            final Iterator<Vertex> dfound = e.vertices(direction);
+                            final boolean matched = found.hasNext() && dfound.next().equals(found.next());
                             CloseableIterator.closeIterator(found);
+                            CloseableIterator.closeIterator(dfound);
                             return matched;
                         } else {
                             final Property<Object> vp = e.property(kv.getKey().toString());
@@ -238,7 +248,21 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
         final Vertex outV = resolveVertex(traverser, searchCreate, Direction.OUT);
         final Vertex inV = resolveVertex(traverser, searchCreate, Direction.IN);
 
-        Stream<Edge> stream = createSearchStream(searchCreate);
+        // need to copy searchCreate so that each traverser gets fresh search criteria if we use the traverser value
+        final Map<Object,Object> searchCreateCopy = null == searchCreate ? null : new HashMap<>();
+        if (searchCreateCopy != null) {
+            searchCreateCopy.putAll(searchCreate);
+
+            // out/in not specified in searchCreate so try to use the traverser. BOTH is not an accepted user input
+            // but helps with the search stream as it allows in/out to both be in the search stream. in other words,
+            // g.V().mergeE([label:'knows']) will end up traversing BOTH "knows" edges for each vertex
+            if (!searchCreateCopy.containsKey(Direction.OUT) && !searchCreateCopy.containsKey(Direction.IN) &&
+                    outV == inV && inV != PLACEHOLDER_VERTEX) {
+                searchCreateCopy.put(Direction.BOTH, outV);
+            }
+        }
+
+        Stream<Edge> stream = createSearchStream(searchCreateCopy);
         stream = stream.map(e -> {
             // if no onMatch is defined then there is no update - return the edge unchanged
             if (null == onMatchTraversal) return e;
@@ -247,18 +271,20 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             final Map<String, Object> onMatchMap = TraversalUtil.apply(traverser, onMatchTraversal);
             validateMapInput(onMatchMap, true);
 
-            onMatchMap.forEach((key, value) -> {
-                // trigger callbacks for eventing - in this case, it's a EdgePropertyChangedEvent. if there's no
-                // registry/callbacks then just set the property
-                if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                    final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                    final Property<?> p = e.property(key);
-                    final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(e.property(key)) : null;
-                    final Event.EdgePropertyChangedEvent vpce = new Event.EdgePropertyChangedEvent(eventStrategy.detach(e), oldValue, value);
-                    this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
-                }
-                e.property(key, value);
-            });
+            if (onMatchMap != null) {
+                onMatchMap.forEach((key, value) -> {
+                    // trigger callbacks for eventing - in this case, it's a EdgePropertyChangedEvent. if there's no
+                    // registry/callbacks then just set the property
+                    if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
+                        final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
+                        final Property<?> p = e.property(key);
+                        final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(e.property(key)) : null;
+                        final Event.EdgePropertyChangedEvent vpce = new Event.EdgePropertyChangedEvent(eventStrategy.detach(e), oldValue, value);
+                        this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
+                    }
+                    e.property(key, value);
+                });
+            }
 
             return e;
         });
@@ -274,53 +300,59 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             // if there is an onCreateTraversal then the search criteria is ignored for the creation as it is provided
             // by way of the traversal which will return the Map
             final boolean useOnCreate = onCreateTraversal != null;
-            final Map<Object,Object> m = useOnCreate ? TraversalUtil.apply(traverser, onCreateTraversal) : searchCreate;
+            final Map<Object,Object> onCreateMap = useOnCreate ? TraversalUtil.apply(traverser, onCreateTraversal) : searchCreateCopy;
 
-            // searchCreate should have alredy been validated so only do it if it is overridden
-            if (useOnCreate) validateMapInput(m, false);
+            // searchCreate should have already been validated so only do it if it is overridden
+            if (useOnCreate) validateMapInput(onCreateMap, false);
 
-            // check if from/to were already determined by traverser/searchMatch, and if not, then at least ensure that
-            // the from/to is set in m
-            if (outV == PLACEHOLDER_VERTEX && !m.containsKey(Direction.OUT))
-                throw new IllegalArgumentException("Out Vertex not specified - edge cannot be created");
-            if (inV == PLACEHOLDER_VERTEX && !m.containsKey(Direction.IN))
-                throw new IllegalArgumentException("In Vertex not specified - edge cannot be created");
+            if (onCreateMap != null) {
+                // check if from/to were already determined by traverser/searchMatch, and if not, then at least ensure that
+                // the from/to is set in onCreateMap
+                if (outV == PLACEHOLDER_VERTEX && !onCreateMap.containsKey(Direction.OUT))
+                    throw new IllegalArgumentException("Out Vertex not specified - edge cannot be created");
+                if (inV == PLACEHOLDER_VERTEX && !onCreateMap.containsKey(Direction.IN))
+                    throw new IllegalArgumentException("In Vertex not specified - edge cannot be created");
 
-            final List<Object> keyValues = new ArrayList<>();
-            String label = Edge.DEFAULT_LABEL;
+                final List<Object> keyValues = new ArrayList<>();
+                String label = Edge.DEFAULT_LABEL;
 
-            // assume the to/from vertices from traverser/searchMatch are what we want, but then
-            // consider the override dropping in from onCreate
-            Vertex fromV = outV;
-            Vertex toV = inV;
+                // assume the to/from vertices from traverser/searchMatch are what we want, but then
+                // consider the override dropping in from onCreate
+                Vertex fromV = outV;
+                Vertex toV = inV;
 
-            for (Map.Entry<Object, Object> entry : m.entrySet()) {
-                if (entry.getKey() instanceof Direction) {
-                    // only override if onCreate was specified otherwise stick to however traverser/searchMatch
-                    // was resolved
-                    if (useOnCreate && entry.getKey().equals(Direction.IN)) {
-                        toV = tryAttachVertex((Attachable<Vertex>) entry.getValue());
-                    } else if (useOnCreate && entry.getKey().equals(Direction.OUT)) {
-                        fromV = tryAttachVertex((Attachable<Vertex>) entry.getValue());
+                for (Map.Entry<Object, Object> entry : onCreateMap.entrySet()) {
+                    if (entry.getKey() instanceof Direction) {
+                        // only override if onCreate was specified otherwise stick to however traverser/searchMatch
+                        // was resolved
+                        if (useOnCreate && entry.getKey().equals(Direction.IN)) {
+                            final Object o = searchCreateCopy.getOrDefault(Direction.IN, entry.getValue());
+                            toV = tryAttachVertex(o instanceof Vertex ? (Vertex) o : new ReferenceVertex(o));
+                        } else if (useOnCreate && entry.getKey().equals(Direction.OUT)) {
+                            final Object o = searchCreateCopy.getOrDefault(Direction.OUT, entry.getValue());
+                            fromV = tryAttachVertex(o instanceof Vertex ? (Vertex) o : new ReferenceVertex(o));
+                        }
+                    } else if (entry.getKey().equals(T.label)) {
+                        label = (String) entry.getValue();
+                    } else {
+                        keyValues.add(entry.getKey());
+                        keyValues.add(entry.getValue());
                     }
-                } else if (entry.getKey().equals(T.label)) {
-                    label = (String) entry.getValue();
-                } else {
-                    keyValues.add(entry.getKey());
-                    keyValues.add(entry.getValue());
                 }
+
+                edge = fromV.addEdge(label, toV, keyValues.toArray(new Object[keyValues.size()]));
+
+                // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
+                if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
+                    final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
+                    final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(eventStrategy.detach(edge));
+                    this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+                }
+
+                return IteratorUtils.of(edge);
+            } else {
+                return Collections.emptyIterator();
             }
-
-            edge = fromV.addEdge(label, toV, keyValues.toArray(new Object[keyValues.size()]));
-
-            // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
-            if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(eventStrategy.detach(edge));
-                this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-            }
-
-            return IteratorUtils.of(edge);
         }
     }
 
@@ -336,11 +368,11 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
      */
     protected Vertex resolveVertex(final Traverser.Admin<S> traverser, final Map<Object, Object> searchCreate,
                                    final Direction direction) {
-        final S possibleVertex = traverser.get();
-        final Object o = searchCreate.getOrDefault(direction, possibleVertex);
+        final Vertex traverserVertex = traverser.get() instanceof Vertex ? (Vertex) traverser.get() : PLACEHOLDER_VERTEX;
+        final Object o = searchCreate != null ? searchCreate.getOrDefault(direction, traverserVertex) : traverserVertex;
         final Vertex v = o instanceof Vertex ? (Vertex) o : new ReferenceVertex(o);
         if (v != PLACEHOLDER_VERTEX && v instanceof Attachable) {
-            return tryAttachVertex((Attachable<Vertex>) v);
+            return tryAttachVertex(v);
         } else {
             return v;
         }
@@ -350,11 +382,15 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
      * Tries to attach a {@link Vertex} to its host {@link Graph} of the traversal. If the {@link Vertex} cannot be
      * found then an {@code IllegalArgumentException} is expected.
      */
-    protected Vertex tryAttachVertex(final Attachable<Vertex> attachable) {
-        try {
-            return attachable.attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-        } catch (IllegalStateException ise) {
-            throw new IllegalArgumentException(String.format("%s could not be found and edge could not be created", attachable));
+    protected Vertex tryAttachVertex(final Vertex maybeAttachable) {
+        if (maybeAttachable instanceof Attachable) {
+            try {
+                return ((Attachable<Vertex>) maybeAttachable).attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            } catch (IllegalStateException ise) {
+                throw new IllegalArgumentException(String.format("%s could not be found and edge could not be created", maybeAttachable));
+            }
+        } else {
+            return maybeAttachable;
         }
     }
 
@@ -363,6 +399,7 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
      * to immutable parts of an {@link Edge} (id, label, incident vertices) so those can be ignored in the validation.
      */
     public static void validateMapInput(final Map<?,Object> m, final boolean ignoreTokens) {
+        if (null == m) return;
         if (ignoreTokens) {
             m.entrySet().stream().filter(e -> {
                 final Object k = e.getKey();

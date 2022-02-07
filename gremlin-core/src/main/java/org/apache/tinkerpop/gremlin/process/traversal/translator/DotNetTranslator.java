@@ -376,7 +376,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         // trying to catch option(Merge,Traversal|Map)
                         convertToScript(instArgs[0]);
                         script.append(", ");
-                        if (instArgs[1] instanceof Traversal) {
+                        if (instArgs[1] instanceof Traversal || instArgs[1] instanceof Bytecode) {
                             script.append("(ITraversal) ");
                         } else {
                             script.append("(IDictionary<object,object>) ");

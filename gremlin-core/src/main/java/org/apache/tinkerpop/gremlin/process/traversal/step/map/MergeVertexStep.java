@@ -181,9 +181,9 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
 
         Stream<Vertex> stream;
         // prioritize lookup by id
-        if (null == search) {
+        if (null == search)
             return Stream.empty();
-        } else if (search.containsKey(T.id))
+        else if (search.containsKey(T.id))
             stream = IteratorUtils.stream(graph.vertices(search.get(T.id)));
         else
             stream = IteratorUtils.stream(graph.vertices());
@@ -251,15 +251,15 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
             // if there is an onCreateTraversal then the search criteria is ignored for the creation as it is provided
             // by way of the traversal which will return the Map
             final boolean useOnCreate = onCreateTraversal != null;
-            final Map<Object,Object> m = useOnCreate ? TraversalUtil.apply(traverser, onCreateTraversal) : searchCreate;
+            final Map<Object,Object> onCreateMap = useOnCreate ? TraversalUtil.apply(traverser, onCreateTraversal) : searchCreate;
 
             // searchCreate should have already been validated so only do it if it is overridden
-            if (useOnCreate) validateMapInput(m, false);
+            if (useOnCreate) validateMapInput(onCreateMap, false);
 
             // if onCreate is null then it's a do nothing
             final List<Object> keyValues = new ArrayList<>();
-            if (m != null) {
-                for (Map.Entry<Object, Object> entry : m.entrySet()) {
+            if (onCreateMap != null) {
+                for (Map.Entry<Object, Object> entry : onCreateMap.entrySet()) {
                     keyValues.add(entry.getKey());
                     keyValues.add(entry.getValue());
                 }
