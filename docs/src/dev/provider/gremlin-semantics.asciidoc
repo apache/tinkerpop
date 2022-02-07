@@ -480,3 +480,70 @@ The following table maps the notions proposed above to the various `P` operators
 
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Comparability.feature[Comparability Tests]
+
+== Steps
+
+While TinkerPop has a full test suite for validating functionality of Gremlin, tests alone aren't always exhaustive or
+fully demonstrative of Gremlin step semantics. It is also hard to simply read the tests to understand exactly how a
+step is meant to behave. This section discusses the semantics for individual steps to help users and providers
+understand implementation expectations.
+
+=== mergeE()
+
+
+
+=== mergeV()
+
+*Description:* Provides upsert-like functionality for vertices.
+*Syntax:* `mergeV()` | `mergeV(Map)` | `mergeV(Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |`option()` |`Map` |`Vertex`
+
+*Arguments:*
+
+* `searchCreate` - A `Map` used to match a `Vertex` and if not found be the default set of data to create the new one.
+* `onCreate` - A `Map` that is the override to the default of `searchCreate`
+* `onMatch` - A `Map` used to update the `Vertex` that is found using the `searchCreate` criteria.
+
+The `searchCreate` and `onCreate` `Map` instances must consists of any combination of `T.id`, `T.label`, or arbitrary
+`String` keys (which are assumed to be vertex properties). The `onMatch` `Map` instance only allows for `String` keys
+as the `id` and `label` of a `Vertex` are immutable. Values for these valid keys that are `null` will be treated
+according to the semantics of the `addV()` step.
+
+The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+`mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
+the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+`onMatch` arguments are assigned via modulation as described below.
+
+[width="100%",options="header"]
+|=========================================================
+|Event |Null `Map` |Empty `Map`
+|Search |Filters all vertices |Matches all vertices
+|Create |No new vertex |New vertex with defaults
+|Update |No update to matched vertex |No update to matched vertex
+|=========================================================
+
+If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for vertex creation if the `Graph` does not
+support user supplied identifiers.
+
+*Modulation:*
+
+* `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
+* `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
+resolve to a `Map`.
+
+*Exceptions*
+
+* `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
+* Use of `T.label` should always have a value that is a `String`.
+
+*Considerations:*
+
+* `mergeV()` Can only be used mid-traversal. It is not a start step.
+* As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/master/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
+link:https://tinkerpop.apache.org/docs/current/reference/#mergev-step[reference]

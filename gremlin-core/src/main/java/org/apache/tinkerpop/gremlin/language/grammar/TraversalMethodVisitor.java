@@ -94,6 +94,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_mergeV_Map(final GremlinParser.TraversalMethod_mergeV_MapContext ctx) {
+        if (ctx.nullLiteral() != null) {
+            return this.graphTraversal.mergeV((Map) null);
+        }
         return this.graphTraversal.mergeV(GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
     }
 
@@ -126,6 +129,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_mergeE_Map(final GremlinParser.TraversalMethod_mergeE_MapContext ctx) {
+        if (ctx.nullLiteral() != null) {
+            return this.graphTraversal.mergeE((Map) null);
+        }
         return this.graphTraversal.mergeE(GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
     }
 
@@ -1035,6 +1041,10 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_option_Merge_Map(final GremlinParser.TraversalMethod_option_Merge_MapContext ctx) {
+        if (ctx.nullLiteral() != null) {
+            return this.graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()), (Map) null);
+        }
+
         return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
                 (Map) new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx.genericLiteralMap()));
     }

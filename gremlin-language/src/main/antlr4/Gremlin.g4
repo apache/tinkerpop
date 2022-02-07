@@ -131,12 +131,12 @@ traversalSourceSpawnMethod_io
     ;
 
 traversalSourceSpawnMethod_mergeV
-    : 'mergeV' LPAREN genericLiteralMap RPAREN #traversalSourceSpawnMethod_mergeV_Map
+    : 'mergeV' LPAREN (genericLiteralMap | nullLiteral) RPAREN #traversalSourceSpawnMethod_mergeV_Map
     | 'mergeV' LPAREN nestedTraversal RPAREN #traversalSourceSpawnMethod_mergeV_Traversal
     ;
 
 traversalSourceSpawnMethod_mergeE
-    : 'mergeE' LPAREN genericLiteralMap RPAREN #traversalSourceSpawnMethod_mergeE_Map
+    : 'mergeE' LPAREN (genericLiteralMap | nullLiteral) RPAREN #traversalSourceSpawnMethod_mergeE_Map
     | 'mergeE' LPAREN nestedTraversal RPAREN #traversalSourceSpawnMethod_mergeE_Traversal
     ;
 
@@ -288,16 +288,15 @@ traversalMethod_addV
 
 traversalMethod_mergeV
     : 'mergeV' LPAREN RPAREN #traversalMethod_mergeV_empty
-    | 'mergeV' LPAREN genericLiteralMap RPAREN #traversalMethod_mergeV_Map
+    | 'mergeV' LPAREN (genericLiteralMap | nullLiteral) RPAREN #traversalMethod_mergeV_Map
     | 'mergeV' LPAREN nestedTraversal RPAREN #traversalMethod_mergeV_Traversal
     ;
 
 traversalMethod_mergeE
     : 'mergeE' LPAREN RPAREN #traversalMethod_mergeE_empty
-    | 'mergeE' LPAREN genericLiteralMap RPAREN #traversalMethod_mergeE_Map
+    | 'mergeE' LPAREN (genericLiteralMap | nullLiteral) RPAREN #traversalMethod_mergeE_Map
     | 'mergeE' LPAREN nestedTraversal RPAREN #traversalMethod_mergeE_Traversal
     ;
-
 
 traversalMethod_aggregate
 	: 'aggregate' LPAREN traversalScope COMMA stringLiteral RPAREN #traversalMethod_aggregate_Scope_String
@@ -558,7 +557,7 @@ traversalMethod_not
 
 traversalMethod_option
 	: 'option' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_option_Predicate_Traversal
-	| 'option' LPAREN traversalMerge COMMA genericLiteralMap RPAREN #traversalMethod_option_Merge_Map
+	| 'option' LPAREN traversalMerge COMMA (genericLiteralMap | nullLiteral) RPAREN #traversalMethod_option_Merge_Map
 	| 'option' LPAREN traversalMerge COMMA nestedTraversal RPAREN #traversalMethod_option_Merge_Traversal
 	| 'option' LPAREN genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_option_Object_Traversal
 	| 'option' LPAREN nestedTraversal RPAREN #traversalMethod_option_Traversal

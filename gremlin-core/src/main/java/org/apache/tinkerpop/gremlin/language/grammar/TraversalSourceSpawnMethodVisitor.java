@@ -119,6 +119,9 @@ public class TraversalSourceSpawnMethodVisitor extends GremlinBaseVisitor<GraphT
 
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_mergeV_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeV_MapContext ctx) {
+        if (ctx.nullLiteral() != null) {
+            return this.traversalSource.mergeV((Map) null);
+        }
         return this.traversalSource.mergeV(GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
     }
 
@@ -134,6 +137,9 @@ public class TraversalSourceSpawnMethodVisitor extends GremlinBaseVisitor<GraphT
 
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_mergeE_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeE_MapContext ctx) {
+        if (ctx.nullLiteral() != null) {
+            return this.traversalSource.mergeE((Map) null);
+        }
         return this.traversalSource.mergeE(GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
     }
 }

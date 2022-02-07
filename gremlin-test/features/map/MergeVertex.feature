@@ -64,7 +64,123 @@ Feature: Step - mergeV()
   # g_V_mapXmergeXlabel_person_name_joshXX
   #   - mergeV(Map) with no option() - testing child traversal usage
   #   - results in one new vertex and one existing vertex that was just created
+  # g_mergeVXnullX
+  #   - mergeV(null) with no option()
+  #   - results in no new vertex and nothing returned
+  # g_mergeVXemptyX
+  #   - mergeV(empty) with no option()
+  #   - results in matched vertex with no updates
+  # g_mergeVXemptyX_no_existing
+  #   - mergeV(empty) with no option()
+  #   - results in not matched updates and a creation of a vertex with default values
+  # g_mergeVXnullX_optionXonCreate_emptyX
+  #   - mergeV(null) with onCreate(empty)
+  #   - results in no matches and creates a default vertex
+  # g_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
+  #   - mergeV(Map) with onCreate(null)
+  #   - results in no match and no vertex creation
+  # g_mergeVXnullX_optionXonCreate_label_null_name_markoX
+  #   - mergeV(null) with onCreate(Map) where Map has a null label
+  #   - results in error
+  # g_mergeVXemptyX_optionXonMatch_nullX
+  #   - mergeV(empty) with onMatch(null)
+  #   - results in a match and no vertex update
 
+  Scenario: g_mergeVXemptyX_optionXonMatch_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onMatch, null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",29)"
+
+  Scenario: g_mergeVXnullX_optionXonCreate_label_null_name_markoX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": null, \"name\":\"marko\"}]"
+    And the traversal of
+      """
+      g.mergeV(null).option(Merge.onCreate,xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  Scenario: g_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(Merge.onCreate, null)
+      """
+    When iterated to list
+    Then the result should have a count of 0
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+
+  Scenario: g_mergeVXnullX_optionXonCreate_emptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.mergeV(null).option(Merge.onCreate,[:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+
+  Scenario: g_mergeVXemptyX_no_existing
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+
+  Scenario: g_mergeVXemptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.mergeV([:])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",29)"
+
+  Scenario: g_mergeVXnullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.mergeV(null)
+      """
+    When iterated to list
+    Then the result should have a count of 0
+    And the graph should return 1 for count of "g.V()"
 
   Scenario: g_mergeVXlabel_person_name_stephenX
     Given the empty graph

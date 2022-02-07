@@ -52,7 +52,9 @@ public class TinkerMergeVertexStep<S> extends MergeVertexStep<S> {
 
         Stream<Vertex> stream;
         // prioritize lookup by id but otherwise attempt an index lookup
-        if (search.containsKey(T.id)) {
+        if (null == search) {
+            return Stream.empty();
+        } else if (search.containsKey(T.id)) {
             stream = IteratorUtils.stream(graph.vertices(search.get(T.id)));
         } else {
             // look for the first index we can find - that's the lucky winner. may or may not be the most selective

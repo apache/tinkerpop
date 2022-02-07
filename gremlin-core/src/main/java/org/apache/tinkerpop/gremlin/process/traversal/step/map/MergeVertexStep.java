@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -180,7 +181,9 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
 
         Stream<Vertex> stream;
         // prioritize lookup by id
-        if (search.containsKey(T.id))
+        if (null == search) {
+            return Stream.empty();
+        } else if (search.containsKey(T.id))
             stream = IteratorUtils.stream(graph.vertices(search.get(T.id)));
         else
             stream = IteratorUtils.stream(graph.vertices());
@@ -216,21 +219,23 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
             final Map<String, Object> onMatchMap = TraversalUtil.apply(traverser, onMatchTraversal);
             validateMapInput(onMatchMap, true);
 
-            onMatchMap.forEach((key, value) -> {
-                // trigger callbacks for eventing - in this case, it's a VertexPropertyChangedEvent. if there's no
-                // registry/callbacks then just set the property
-                if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                    final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                    final Property<?> p = v.property(key);
-                    final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(v.property(key)) : null;
-                    final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(v), oldValue, value);
-                    this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
-                }
+            if (onMatchMap != null) {
+                onMatchMap.forEach((key, value) -> {
+                    // trigger callbacks for eventing - in this case, it's a VertexPropertyChangedEvent. if there's no
+                    // registry/callbacks then just set the property
+                    if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
+                        final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
+                        final Property<?> p = v.property(key);
+                        final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(v.property(key)) : null;
+                        final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(v), oldValue, value);
+                        this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
+                    }
 
-                // try to detect proper cardinality for the key according to the graph
-                final Graph graph = this.getTraversal().getGraph().get();
-                v.property(graph.features().vertex().getCardinality(key), key, value);
-            });
+                    // try to detect proper cardinality for the key according to the graph
+                    final Graph graph = this.getTraversal().getGraph().get();
+                    v.property(graph.features().vertex().getCardinality(key), key, value);
+                });
+            }
 
             return v;
         });
@@ -251,21 +256,26 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
             // searchCreate should have already been validated so only do it if it is overridden
             if (useOnCreate) validateMapInput(m, false);
 
+            // if onCreate is null then it's a do nothing
             final List<Object> keyValues = new ArrayList<>();
-            for (Map.Entry<Object, Object> entry : m.entrySet()) {
-                keyValues.add(entry.getKey());
-                keyValues.add(entry.getValue());
-            }
-            vertex = this.getTraversal().getGraph().get().addVertex(keyValues.toArray(new Object[keyValues.size()]));
+            if (m != null) {
+                for (Map.Entry<Object, Object> entry : m.entrySet()) {
+                    keyValues.add(entry.getKey());
+                    keyValues.add(entry.getValue());
+                }
+                vertex = this.getTraversal().getGraph().get().addVertex(keyValues.toArray(new Object[keyValues.size()]));
 
-            // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
-            if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
-                this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-            }
+                // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
+                if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
+                    final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
+                    final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
+                    this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+                }
 
-            return IteratorUtils.of(vertex);
+                return IteratorUtils.of(vertex);
+            } else {
+                return Collections.emptyIterator();
+            }
         }
     }
 
@@ -274,6 +284,7 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
      * to immutable parts of an {@link Edge} (id, label, incident vertices) so those can be ignored in the validation.
      */
     public static void validateMapInput(final Map<?,Object> m, final boolean ignoreTokens) {
+        if (null == m) return;
         if (ignoreTokens) {
             m.entrySet().stream().filter(e -> {
                 final Object k = e.getKey();
@@ -295,11 +306,24 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
         }
 
         if (!ignoreTokens) {
-            m.entrySet().stream().filter(e -> e.getKey() == T.label && !(e.getValue() instanceof String)).findFirst().map(e -> {
-                throw new IllegalArgumentException(String.format(
-                        "mergeV() expects T.label value to be of String - found: %s",
-                        e.getValue().getClass().getSimpleName()));
-            });
+            if (m.containsKey(T.id)) {
+                if (null == m.get(T.id)) {
+                    throw new IllegalArgumentException("Vertex id cannot be null");
+                }
+            }
+
+            if (m.containsKey(T.label)) {
+                final Object l = m.get(T.label);
+                if (null == l) {
+                    throw new IllegalArgumentException("Vertex label cannot be null");
+                }
+
+                if (!(l instanceof String)) {
+                    throw new IllegalArgumentException(String.format(
+                            "mergeV() expects T.label value to be of String - found: %s",
+                            l.getClass().getSimpleName()));
+                }
+            }
         }
     }
 
