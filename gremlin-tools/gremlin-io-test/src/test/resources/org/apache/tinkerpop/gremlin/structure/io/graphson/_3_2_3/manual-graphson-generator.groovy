@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.*
 import org.apache.tinkerpop.gremlin.driver.message.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
-import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 import org.apache.commons.configuration.BaseConfiguration
 
 import java.util.concurrent.TimeUnit

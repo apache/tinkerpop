@@ -154,32 +154,6 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>generate-io-files-gryo</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <properties>
-                                        <property>
-                                            <name>projectBuildDir</name>
-                                            <value>${project.build.directory}</value>
-                                        </property>
-                                        <property>
-                                            <name>projectBaseDir</name>
-                                            <value>${project.build.directory}</value>
-                                        </property>
-                                        <property>
-                                            <name>projectVersion</name>
-                                            <value>${project.version}</value>
-                                        </property>
-                                    </properties>
-                                    <scripts>
-                                        <script>${project.basedir}/scripts/generate-gryo-resources.groovy</script>
-                                    </scripts>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>generate-io-files-graphbinary</id>
                                 <phase>generate-test-resources</phase>
                                 <goals>

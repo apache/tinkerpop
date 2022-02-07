@@ -875,8 +875,8 @@ best for everyone's general purposes, so if changes are made please revert them 
 [[io]]
 == IO Documentation and Testing
 
-The link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML, GraphSON
-and Gryo with a special focus on the needs of developers who are working directly with these formats. GraphSON gets
+The link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML and GraphSON
+with a special focus on the needs of developers who are working directly with these formats. GraphSON gets
 the greatest focus here as it is used as the primary IO format for link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs].
 This documentation is largely generated from the `gremlin-io-test` module found under `gremlin-tools`. The
 `gremlin-io-test` module also includes a testing framework which validates that formats don't break between TinkerPop
@@ -903,8 +903,8 @@ test resources and the contents of the `dev-docs` contains asciidoc snippets tha
 Generating data files in the fashion mentioned above with Maven is only good for versions of TinkerPop on the 3.3.x
 line because the `gremlin-io-test` module did not exist in 3.2.x. Of course, compatibility is still tested back to
 those older versions. To generate test data from 3.2.x, there are Groovy scripts in the comments of the
-`gryo.asciidoc` and `graphson.asciidoc` files that can copy/pasted to the Gremlin Console. They will generate the
-batch of test files needed for `gremlin-io-test`.
+`graphson.asciidoc` files that can copy/pasted to the Gremlin Console. They will generate the batch of test files
+needed for `gremlin-io-test`.
 
 When does this command need to be executed?
 
@@ -925,14 +925,6 @@ V1_3_4_3("3.4.3", "1.0", "v1"),
 V1_3_4_4("3.4.4", "1.0", "v1");
 ----
 
-*GryoCompatibility* - Include new Gryo 1.0 and 3.0 enums for the current `SNAPSHOT`.
-
-[source,java]
-----
-V1D0_3_3_x("3.3.x", "1.0", "v1d0"),
-V3D0_3_3_x("3.3.x", "3.0", "v3d0")
-----
-
 *GraphSONCompatibility* - Include new GraphSON enums for each of the various GraphSON configurations and versions.
 
 [source,java]
@@ -945,9 +937,6 @@ V3D0_PARTIAL_3_3_x("3.3.x", "3.0", "v3d0");
 
 *GraphBinaryCompatibilityTest* - Add the newly included `GraphBinaryCompatibility` enums to the test parameters being
 careful to match the appropriate "mapper" to the right version.
-
-*GryoCompatibilityTest* - Add the newly included `GryoCompatibility` enums to the test parameters being careful to
-match the appropriate "mapper" to the right version.
 
 *GraphSONUntypedCompatibilityTest* - Add the newly included GraphSON 1.0 and 2.0 "untyped" enums to the test parameters
 being careful to match the appropriate "mapper" to the right version.

@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 public class CompatibilitiesTest {
 
     @Test
-    public void shouldFindGryoVersionsBeforeRelease3_2_4() {
+    public void shouldFindVersionsBeforeRelease3_2_4() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .beforeRelease("3.2.4").match();
         assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_3,
@@ -40,7 +40,7 @@ public class CompatibilitiesTest {
     }
 
     @Test
-    public void shouldFindGryoVersionsAfterRelease3_2_x() {
+    public void shouldFindVersionsAfterRelease3_2_x() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .afterRelease("3.2.7").match();
         assertThat(compatibilityList, containsInAnyOrder(
@@ -49,7 +49,7 @@ public class CompatibilitiesTest {
     }
 
     @Test
-    public void shouldFindGryoVersionsBetweenReleases3_2_3And3_2_5() {
+    public void shouldFindVersionsBetweenReleases3_2_3And3_2_5() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .betweenReleases("3.2.3", "3.2.5").match();
         assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4,
@@ -57,7 +57,7 @@ public class CompatibilitiesTest {
     }
 
     @Test
-    public void shouldFindGryoVersionsBefore3_0() {
+    public void shouldFindVersionsBefore3_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .before("3.0").match();
         assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_2,
@@ -69,14 +69,14 @@ public class CompatibilitiesTest {
     }
 
     @Test
-    public void shouldFindGryoVersionsAfter1_0() {
+    public void shouldFindVersionsAfter1_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .after("1.0").match();
         assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
     }
 
     @Test
-    public void shouldFindGryoVersionsAfterRelease3_2_4AndAfter1_0() {
+    public void shouldFindVersionsAfterRelease3_2_4AndAfter1_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .afterRelease("3.2.7")
                 .after("1.0")

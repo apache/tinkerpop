@@ -812,6 +812,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @org.junit.Ignore("No serializers now that Gryo is gone")
     public void shouldReadWriteStarGraph() throws Exception {
         final String resourceName = "stargraph";
         assumeCompatibility(resourceName);
@@ -919,6 +920,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @org.junit.Ignore("No serializers now that Gryo is gone")
     public void shouldReadWriteTree() throws Exception {
         final String resourceName = "tree";
         assumeCompatibility(resourceName);
