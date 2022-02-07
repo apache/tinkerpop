@@ -23,6 +23,7 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
@@ -38,7 +39,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslato
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -76,6 +76,9 @@ import static org.junit.Assert.fail;
  */
 public class GremlinGroovyScriptEngineTest {
     private static final Object[] EMPTY_ARGS = new Object[0];
+
+    private static final GremlinGroovyScriptEngine ambiguousNullEngine = new GremlinGroovyScriptEngine(
+            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()));
 
     @Test
     public void shouldNotCacheGlobalFunctions() throws Exception {
@@ -472,12 +475,8 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldProduceBindingsForVars() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new GroovyCustomizer() {
-            @Override
-            public CompilationCustomizer create() {
-                return new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation());
-            }
-        });
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
+                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
 
         final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
         final Bindings bindings = new SimpleBindings();
@@ -547,4 +546,13 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals("g.Inject(Double.NegativeInfinity,Double.NaN,xx1).Is(P.Eq(Double.PositiveInfinity).Or(P.Eq(Double.NaN)).Or(P.Eq(Double.PositiveInfinity)))", gremlinAsDn);
     }
 
+
+    @Test
+    public void shouldHandleMergeVAmbiguousNull() throws Exception {
+        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+        ambiguousNullEngine.eval("g.mergeV(null).option(Merge.onCreate, null)", bindings);
+        ambiguousNullEngine.eval("g.mergeV([:]).option(Merge.onCreate, null)", bindings);
+    }
 }

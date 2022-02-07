@@ -368,8 +368,8 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                                 script.append("(IDictionary<object,object>) ");
                             }
                             convertToScript(instArg);
-                            script.append(")");
                         }
+                        script.append(",");
                     } else if (methodName.equals(GraphTraversal.Symbols.option) &&
                             instruction.getArguments().length == 2 && instruction.getArguments()[0] instanceof Merge) {
                         final Object[] instArgs = instruction.getArguments();
@@ -382,7 +382,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                             script.append("(IDictionary<object,object>) ");
                         }
                         convertToScript(instArgs[1]);
-                        script.append(")");
+                        script.append(",");
                     } else {
                         final Object[] instArgs = instruction.getArguments();
                         for (int idx = 0; idx < instArgs.length; idx++) {

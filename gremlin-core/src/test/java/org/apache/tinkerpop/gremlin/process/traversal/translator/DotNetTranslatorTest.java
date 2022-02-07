@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -43,6 +44,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -188,6 +190,12 @@ public class DotNetTranslatorTest {
         assertEquals("g.V().Has(\"k\",(object) null)", script);
         script = translator.translate(g.V().has("l", "k", (Object) null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Has(\"l\",\"k\",(object) null)", script);
+    }
+
+    @Test
+    public void shouldTranslateMergeVNull() {
+        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).asAdmin().getBytecode()).getScript();
+        assertEquals("g.MergeV((IDictionary<object,object>) null).Option(Merge.OnCreate, (IDictionary<object,object>) null)", script);
     }
 
     @Test

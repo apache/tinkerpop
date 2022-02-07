@@ -3164,7 +3164,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <M, E2> GraphTraversal<S, E> option(final M token, final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, token, traversalOption);
-        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
+
+        // handle null similar to how option() with Map handles it, otherwise we get a NPE if this one gets used
+        final Traversal.Admin<E,E2> t = null == traversalOption ?
+                new ConstantTraversal<>(null) : (Traversal.Admin<E, E2>) traversalOption.asAdmin();
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, t);
         return this;
     }
 

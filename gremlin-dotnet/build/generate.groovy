@@ -20,6 +20,7 @@
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
 import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
@@ -40,6 +41,11 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 // special cases in that VarAsBindingASTTransformation class which might need to be adjusted. Editing the
 // GremlinGroovyScriptEngineTest#shouldProduceBindingsForVars() with the failing step and argument can typically make
 // this issue relatively easy to debug and enforce.
+//
+// getting an exception like:
+// > Ambiguous method overloading for method org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#mergeV.
+// likely requires changes to the AmbiguousMethodASTTransformation which forces a call to a particular method overload
+// and usually relates to use of null where the type isn't clear
 
 // file is overwritten on each generation
 radishGremlinFile = new File("${projectBaseDir}/gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Gherkin/Gremlin.cs")
@@ -48,6 +54,10 @@ radishGremlinFile = new File("${projectBaseDir}/gremlin-dotnet/test/Gremlin.Net.
 gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "features").toString())
 
 gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(new GroovyCustomizer() {
+    public CompilationCustomizer create() {
+        return new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation())
+    }
+}, new GroovyCustomizer() {
     public CompilationCustomizer create() {
         return new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation())
     }
