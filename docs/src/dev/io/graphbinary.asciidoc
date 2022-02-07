@@ -356,7 +356,7 @@ properties. Note that as TinkerPop currently send "references" only, this value 
 
 ==== Barrier
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Binding
 
@@ -386,31 +386,31 @@ Where:
 
 ==== Cardinality
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Column
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Direction
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Operator
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Order
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Pick
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Pop
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Lambda
 
@@ -433,11 +433,11 @@ Where:
 
 ==== Scope
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== T
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Traverser
 
