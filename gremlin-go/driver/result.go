@@ -38,7 +38,7 @@ func (r *Result) ToString() string {
 	return fmt.Sprintf("result{object=%v class=%T}", r.result, r.result)
 }
 
-// GetString gets the string representation of the result, equivalent to GetString()
+// GetString gets the string representation of the result
 func (r *Result) GetString() string {
 	return fmt.Sprintf("%v", r.result)
 }
