@@ -28,27 +28,22 @@ import (
 
 func TestResult(t *testing.T) {
 
-	t.Run("Test Result.AsString() string", func(t *testing.T) {
+	t.Run("Test Result.GetString() string", func(t *testing.T) {
 		r := Result{"foo"}
-		assert.Equal(t, "foo", r.AsString())
+		assert.Equal(t, "foo", r.GetString())
 	})
 
-	t.Run("Test Result.AsString() slice", func(t *testing.T) {
+	t.Run("Test Result.GetString() slice", func(t *testing.T) {
 		r := Result{[]int{1, 2, 3}}
-		assert.Equal(t, "[1 2 3]", r.AsString())
+		assert.Equal(t, "[1 2 3]", r.GetString())
 	})
 
-	t.Run("Test Result.AsString() int", func(t *testing.T) {
+	t.Run("Test Result.GetString() int", func(t *testing.T) {
 		r := Result{1}
-		assert.Equal(t, "1", r.AsString())
+		assert.Equal(t, "1", r.GetString())
 	})
 
-	t.Run("Test Result.AsString() float", func(t *testing.T) {
-		r := Result{1.2}
-		assert.Equal(t, "1.2", r.AsString())
-	})
-
-	t.Run("Test Result.GetString()", func(t *testing.T) {
+	t.Run("Test Result.GetString() float", func(t *testing.T) {
 		r := Result{1.2}
 		assert.Equal(t, "1.2", r.GetString())
 	})
@@ -75,85 +70,169 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetByte() error expected", func(t *testing.T) {
-		r := Result{"not byte"}
+		r := Result{-1}
 		res, err := r.GetByte()
 		assert.Error(t, err)
 		assert.Zero(t, res)
 	})
 
-	t.Run("Test Result.GetShort()", func(t *testing.T) {
+	t.Run("Test Result.GetUint()", func(t *testing.T) {
 		r := Result{100}
-		res, err := r.GetShort()
+		res, err := r.GetUint()
+		assert.Nil(t, err)
+		assert.Equal(t, uint(100), res)
+	})
+
+	t.Run("Test Result.GetUint() error expected", func(t *testing.T) {
+		r := Result{-1}
+		res, err := r.GetUint()
+		assert.Error(t, err)
+		assert.Zero(t, res)
+	})
+
+	t.Run("Test Result.GetUint16()", func(t *testing.T) {
+		r := Result{100}
+		res, err := r.GetUint16()
+		assert.Nil(t, err)
+		assert.Equal(t, uint16(100), res)
+	})
+
+	t.Run("Test Result.GetUint16() error expected", func(t *testing.T) {
+		r := Result{-1}
+		res, err := r.GetUint16()
+		assert.Error(t, err)
+		assert.Zero(t, res)
+	})
+
+	t.Run("Test Result.GetUint32()", func(t *testing.T) {
+		r := Result{100}
+		res, err := r.GetUint32()
+		assert.Nil(t, err)
+		assert.Equal(t, uint32(100), res)
+	})
+
+	t.Run("Test Result.GetUint32() error expected", func(t *testing.T) {
+		r := Result{-1}
+		res, err := r.GetUint32()
+		assert.Error(t, err)
+		assert.Zero(t, res)
+	})
+
+	t.Run("Test Result.GetUint64()", func(t *testing.T) {
+		r := Result{100}
+		res, err := r.GetUint64()
+		assert.Nil(t, err)
+		assert.Equal(t, uint64(100), res)
+	})
+
+	t.Run("Test Result.GetUint64() error expected", func(t *testing.T) {
+		r := Result{-1}
+		res, err := r.GetUint64()
+		assert.Error(t, err)
+		assert.Zero(t, res)
+	})
+
+	t.Run("Test Result.GetInt8()", func(t *testing.T) {
+		r := Result{100}
+		res, err := r.GetInt8()
+		assert.Nil(t, err)
+		assert.Equal(t, int8(100), res)
+	})
+
+	t.Run("Test Result.GetInt8() error expected", func(t *testing.T) {
+		r := Result{"not int8"}
+		res, err := r.GetInt8()
+		assert.Error(t, err)
+		assert.Zero(t, res)
+	})
+
+	t.Run("Test Result.GetInt16()", func(t *testing.T) {
+		r := Result{100}
+		res, err := r.GetInt16()
 		assert.Nil(t, err)
 		assert.Equal(t, int16(100), res)
 	})
 
-	t.Run("Test Result.GetShort() error expected", func(t *testing.T) {
-		r := Result{"not short"}
-		res, err := r.GetShort()
+	t.Run("Test Result.GetInt16() error expected", func(t *testing.T) {
+		r := Result{"not int16"}
+		res, err := r.GetInt16()
 		assert.Error(t, err)
 		assert.Zero(t, res)
 	})
 
-	t.Run("Test Result.GetLong()", func(t *testing.T) {
+	t.Run("Test Result.GetInt32()", func(t *testing.T) {
 		r := Result{100}
-		res, err := r.GetLong()
+		res, err := r.GetInt32()
+		assert.Nil(t, err)
+		assert.Equal(t, int32(100), res)
+	})
+
+	t.Run("Test Result.GetInt32() error expected", func(t *testing.T) {
+		r := Result{"not int32"}
+		res, err := r.GetInt32()
+		assert.Error(t, err)
+		assert.Zero(t, res)
+	})
+
+	t.Run("Test Result.GetInt64()", func(t *testing.T) {
+		r := Result{100}
+		res, err := r.GetInt64()
 		assert.Nil(t, err)
 		assert.Equal(t, int64(100), res)
 	})
 
-	t.Run("Test Result.GetLong() error expected", func(t *testing.T) {
-		r := Result{"not long"}
-		res, err := r.GetLong()
+	t.Run("Test Result.GetInt64() error expected", func(t *testing.T) {
+		r := Result{"not int64"}
+		res, err := r.GetInt64()
 		assert.Error(t, err)
 		assert.Zero(t, res)
 	})
 
-	t.Run("Test Result.GetFloat()", func(t *testing.T) {
+	t.Run("Test Result.GetFloat32()", func(t *testing.T) {
 		r := Result{100}
-		res, err := r.GetFloat()
+		res, err := r.GetFloat32()
 		assert.Nil(t, err)
 		assert.Equal(t, float32(100), res)
 	})
 
-	t.Run("Test Result.GetFloat() error expected", func(t *testing.T) {
-		r := Result{"not float"}
-		res, err := r.GetFloat()
+	t.Run("Test Result.GetFloat32() error expected", func(t *testing.T) {
+		r := Result{"not float32"}
+		res, err := r.GetFloat32()
 		assert.Error(t, err)
 		assert.Zero(t, res)
 	})
 
-	t.Run("Test Result.GetDouble()", func(t *testing.T) {
+	t.Run("Test Result.GetFloat64()", func(t *testing.T) {
 		r := Result{100}
-		res, err := r.GetDouble()
+		res, err := r.GetFloat64()
 		assert.Nil(t, err)
 		assert.Equal(t, float64(100), res)
 	})
 
-	t.Run("Test Result.GetDouble() error expected", func(t *testing.T) {
-		r := Result{"not double"}
-		res, err := r.GetDouble()
+	t.Run("Test Result.GetFloat64() error expected", func(t *testing.T) {
+		r := Result{"not float64"}
+		res, err := r.GetFloat64()
 		assert.Error(t, err)
 		assert.Zero(t, res)
 	})
 
-	t.Run("Test Result.GetBoolean() number representation", func(t *testing.T) {
+	t.Run("Test Result.GetBool() number representation", func(t *testing.T) {
 		r := Result{1}
-		res, err := r.GetBoolean()
+		res, err := r.GetBool()
 		assert.Nil(t, err)
 		assert.Equal(t, true, res)
 	})
 
-	t.Run("Test Result.GetBoolean() bool representation", func(t *testing.T) {
+	t.Run("Test Result.GetBool() bool representation", func(t *testing.T) {
 		r := Result{false}
-		res, err := r.GetBoolean()
+		res, err := r.GetBool()
 		assert.Nil(t, err)
 		assert.Equal(t, false, res)
 	})
 
-	t.Run("Test Result.GetBoolean() error expected", func(t *testing.T) {
-		r := Result{"not boolean"}
-		res, err := r.GetBoolean()
+	t.Run("Test Result.GetBool() error expected", func(t *testing.T) {
+		r := Result{"not bool"}
+		res, err := r.GetBool()
 		assert.Error(t, err)
 		assert.Zero(t, res)
 	})
@@ -286,5 +365,18 @@ func TestResult(t *testing.T) {
 		r := Result{element}
 		res := r.GetInterface()
 		assert.Equal(t, element, res)
+	})
+
+	t.Run("Test Result.NsNil() false", func(t *testing.T) {
+		element := Element{}
+		r := Result{element}
+		res := r.IsNil()
+		assert.False(t, res)
+	})
+
+	t.Run("Test Result.NsNil() true", func(t *testing.T) {
+		r := Result{nil}
+		res := r.IsNil()
+		assert.True(t, res)
 	})
 }

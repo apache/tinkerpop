@@ -54,7 +54,7 @@ func TestChannelResultSet(t *testing.T) {
 		idx := 0
 		for i := 0; i < 10; i++ {
 			result := channelResultSet.one()
-			assert.Equal(t, result.AsString(), fmt.Sprintf("%v", idx))
+			assert.Equal(t, result.GetString(), fmt.Sprintf("%v", idx))
 			idx++
 		}
 		go closeAfterTime(500, &channelResultSet)
@@ -67,7 +67,7 @@ func TestChannelResultSet(t *testing.T) {
 		idx := 0
 		for i := 0; i < 10; i++ {
 			result := channelResultSet.one()
-			assert.Equal(t, result.AsString(), fmt.Sprintf("%v", idx))
+			assert.Equal(t, result.GetString(), fmt.Sprintf("%v", idx))
 			idx++
 		}
 		go closeAfterTime(500, &channelResultSet)
@@ -85,7 +85,7 @@ func TestChannelResultSet(t *testing.T) {
 		go closeAfterTime(500, &channelResultSet)
 		results := channelResultSet.All()
 		for idx, result := range results {
-			assert.Equal(t, (*result).AsString(), fmt.Sprintf("%v", idx))
+			assert.Equal(t, (*result).GetString(), fmt.Sprintf("%v", idx))
 		}
 	})
 
@@ -96,7 +96,7 @@ func TestChannelResultSet(t *testing.T) {
 		results := channelResultSet.All()
 		assert.Equal(t, len(results), 10)
 		for idx, result := range results {
-			assert.Equal(t, (*result).AsString(), fmt.Sprintf("%v", idx))
+			assert.Equal(t, (*result).GetString(), fmt.Sprintf("%v", idx))
 		}
 	})
 }
@@ -104,18 +104,18 @@ func TestChannelResultSet(t *testing.T) {
 func AddResultsPause(resultSet *ResultSet, count int, ticks time.Duration) {
 	rs := *resultSet
 	for i := 0; i < count/2; i++ {
-		rs.addResult(newResult(i))
+		rs.addResult(&Result{i})
 	}
 	time.Sleep(ticks * time.Millisecond)
 	for i := count / 2; i < count; i++ {
-		rs.addResult(newResult(i))
+		rs.addResult(&Result{i})
 	}
 }
 
 func AddResults(resultSet *ResultSet, count int) {
 	rs := *resultSet
 	for i := 0; i < count; i++ {
-		rs.addResult(newResult(i))
+		rs.addResult(&Result{i})
 	}
 }
 

@@ -33,70 +33,111 @@ type Result struct {
 	result interface{}
 }
 
-func newResult(result interface{}) *Result {
-	return &Result{result}
-}
-
-// AsString returns the current result item formatted as a string.
-func (r *Result) AsString() string {
-	return fmt.Sprintf("%v", r.result)
-}
-
 // ToString returns the string representation of the Result struct in Go-syntax format
 func (r *Result) ToString() string {
 	return fmt.Sprintf("result{object=%v class=%T}", r.result, r.result)
 }
 
-// GetString gets the string representation of the result, equivalent to AsString()
+// GetString gets the string representation of the result, equivalent to GetString()
 func (r *Result) GetString() string {
-	return r.AsString()
+	return fmt.Sprintf("%v", r.result)
 }
 
 // GetInt gets the result by coercing it into an int, else returns an error if not parsable
 func (r *Result) GetInt() (int, error) {
-	return strconv.Atoi(r.AsString())
+	return strconv.Atoi(r.GetString())
 }
 
-// GetByte gets the result by coercing it into a byte, else returns an error if not parsable
+// GetByte gets the result by coercing it into a byte (uint8), else returns an error if not parsable
 func (r *Result) GetByte() (byte, error) {
-	res, err := strconv.ParseUint(r.AsString(), 10, 8)
+	res, err := strconv.ParseUint(r.GetString(), 10, 8)
 	if err != nil {
 		return 0, err
 	}
 	return byte(res), nil
 }
 
-// GetShort gets the result by coercing it into an int16, else returns an error if not parsable
-func (r *Result) GetShort() (int16, error) {
-	res, err := strconv.ParseInt(r.AsString(), 10, 16)
+// GetUint gets the result by coercing it into an int, else returns an error if not parsable
+func (r *Result) GetUint() (uint, error) {
+	res, err := strconv.ParseUint(r.GetString(), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return uint(res), nil
+}
+
+// GetUint16 gets the result by coercing it into an int16, else returns an error if not parsable
+func (r *Result) GetUint16() (uint16, error) {
+	res, err := strconv.ParseUint(r.GetString(), 10, 16)
+	if err != nil {
+		return 0, err
+	}
+	return uint16(res), nil
+}
+
+// GetUint32 gets the result by coercing it into a rune(int32), else returns an error if not parsable
+func (r *Result) GetUint32() (uint32, error) {
+	res, err := strconv.ParseUint(r.GetString(), 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return uint32(res), nil
+}
+
+// GetUint64 gets the result by coercing it into an int64, else returns an error if not parsable
+func (r *Result) GetUint64() (uint64, error) {
+	return strconv.ParseUint(r.GetString(), 10, 64)
+}
+
+// GetInt8 gets the result by coercing it into an int16, else returns an error if not parsable
+func (r *Result) GetInt8() (int8, error) {
+	res, err := strconv.ParseInt(r.GetString(), 10, 8)
+	if err != nil {
+		return 0, err
+	}
+	return int8(res), nil
+}
+
+// GetInt16 gets the result by coercing it into an int16, else returns an error if not parsable
+func (r *Result) GetInt16() (int16, error) {
+	res, err := strconv.ParseInt(r.GetString(), 10, 16)
 	if err != nil {
 		return 0, err
 	}
 	return int16(res), nil
 }
 
-// GetLong gets the result by coercing it into an int64, else returns an error if not parsable
-func (r *Result) GetLong() (int64, error) {
-	return strconv.ParseInt(r.AsString(), 10, 64)
+// GetInt32 gets the result by coercing it into a rune(int32), else returns an error if not parsable
+func (r *Result) GetInt32() (int32, error) {
+	res, err := strconv.ParseInt(r.GetString(), 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return int32(res), nil
 }
 
-// GetFloat gets the result by coercing it into a float32, else returns an error if not parsable
-func (r *Result) GetFloat() (float32, error) {
-	res, err := strconv.ParseFloat(r.AsString(), 32)
+// GetInt64 gets the result by coercing it into an int64, else returns an error if not parsable
+func (r *Result) GetInt64() (int64, error) {
+	return strconv.ParseInt(r.GetString(), 10, 64)
+}
+
+// GetFloat32 gets the result by coercing it into a float32, else returns an error if not parsable
+func (r *Result) GetFloat32() (float32, error) {
+	res, err := strconv.ParseFloat(r.GetString(), 32)
 	if err != nil {
 		return 0, err
 	}
 	return float32(res), nil
 }
 
-// GetDouble gets the result by coercing it into a float64, else returns an error if not parsable
-func (r *Result) GetDouble() (float64, error) {
-	return strconv.ParseFloat(r.AsString(), 64)
+// GetFloat64 gets the result by coercing it into a float64, else returns an error if not parsable
+func (r *Result) GetFloat64() (float64, error) {
+	return strconv.ParseFloat(r.GetString(), 64)
 }
 
-// GetBoolean gets the result by coercing it into a boolean, else returns an error if not parsable
-func (r *Result) GetBoolean() (bool, error) {
-	return strconv.ParseBool(r.AsString())
+// GetBool gets the result by coercing it into a boolean, else returns an error if not parsable
+func (r *Result) GetBool() (bool, error) {
+	return strconv.ParseBool(r.GetString())
 }
 
 // IsNil checks if the result is null

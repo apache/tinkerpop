@@ -29,7 +29,7 @@ func TestConnection(t *testing.T) {
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
-			assert.Equal(t, result.AsString(), "[0]")
+			assert.Equal(t, "[0]", result.GetString())
 		}
 	})
 
@@ -44,7 +44,7 @@ func TestConnection(t *testing.T) {
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
-			assert.Equal(t, result.AsString(), "[0]")
+			assert.Equal(t, "[0]", result.GetString())
 		}
 	})
 }
