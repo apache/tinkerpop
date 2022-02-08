@@ -44,7 +44,7 @@ func (r *Result) AsString() string {
 
 // ToString returns the string representation of the Result struct in Go-syntax format
 func (r *Result) ToString() string {
-	return fmt.Sprintf("%#v", *r)
+	return fmt.Sprintf("result{object=%v class=%T}", r.result, r.result)
 }
 
 // GetString gets the string representation of the result, equivalent to AsString()

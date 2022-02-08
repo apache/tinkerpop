@@ -251,7 +251,20 @@ func TestResult(t *testing.T) {
 	t.Run("Test Result.ToString()", func(t *testing.T) {
 		r := Result{[]int{1, 2, 3}}
 		res := r.ToString()
-		assert.Equal(t, "gremlingo.Result{result:[]int{1, 2, 3}}", res)
+		assert.Equal(t, "result{object=[1 2 3] class=[]int}", res)
+	})
+
+	t.Run("Test Result.ToString() null", func(t *testing.T) {
+		r := Result{nil}
+		res := r.ToString()
+		assert.Equal(t, "result{object=<nil> class=<nil>}", res)
+	})
+
+	t.Run("Test Result.ToString() empty custom struct", func(t *testing.T) {
+		element := Element{}
+		r := Result{element}
+		res := r.ToString()
+		assert.Equal(t, "result{object={[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] } class=gremlingo.Element}", res)
 	})
 
 	t.Run("Test Result.GetType() simple type", func(t *testing.T) {
@@ -262,16 +275,16 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetType() custom defined type", func(t *testing.T) {
-		vertexProperty := VertexProperty{}
-		r := Result{vertexProperty}
+		element := Element{}
+		r := Result{element}
 		res := r.GetType()
-		assert.Equal(t, reflect.TypeOf(vertexProperty), res)
+		assert.Equal(t, reflect.TypeOf(element), res)
 	})
 
 	t.Run("Test Result.GetInterface()", func(t *testing.T) {
-		vertexProperty := VertexProperty{}
-		r := Result{vertexProperty}
+		element := Element{}
+		r := Result{element}
 		res := r.GetInterface()
-		assert.Equal(t, vertexProperty, res)
+		assert.Equal(t, element, res)
 	})
 }
