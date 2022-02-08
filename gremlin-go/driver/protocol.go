@@ -86,12 +86,12 @@ func (protocol *gremlinServerWSProtocol) read(resultSets map[string]ResultSet) (
 		return responseID.String(), errors.New("authentication is not currently supported")
 	} else if statusCode == http.StatusNoContent {
 		// Add empty slice to result.
-		resultSet.addResult(newResult(make([]interface{}, 0)))
+		resultSet.addResult(&Result{make([]interface{}, 0)})
 		resultSet.Close()
 		return responseID.String(), nil
 	} else if statusCode == http.StatusOK || statusCode == http.StatusPartialContent {
 		// Add data to the ResultSet.
-		resultSet.addResult(newResult(data))
+		resultSet.addResult(&Result{data})
 		if statusCode == http.StatusOK {
 			resultSet.setStatusAttributes(response.responseStatus.attributes)
 		}
