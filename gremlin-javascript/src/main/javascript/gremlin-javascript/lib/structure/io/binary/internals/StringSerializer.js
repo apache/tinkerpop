@@ -24,9 +24,10 @@
 
 module.exports = class StringSerializer {
 
-  constructor(ioc) {
+  constructor(ioc, ID) {
     this.ioc = ioc;
-    this.ioc.serializers[ioc.DataType.STRING] = this;
+    this.ID = ID;
+    this.ioc.serializers[ID] = this;
   }
 
   canBeUsedFor(value) {
@@ -36,13 +37,13 @@ module.exports = class StringSerializer {
   serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
-        return Buffer.from([this.ioc.DataType.STRING, 0x01]);
+        return Buffer.from([this.ID, 0x01]);
       else
         return this.ioc.intSerializer.serialize(0, false);
 
     const bufs = [];
     if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.STRING, 0x00]) );
+      bufs.push( Buffer.from([this.ID, 0x00]) );
     const v = Buffer.from(String(item), 'utf8');
     bufs.push( this.ioc.intSerializer.serialize(v.length, false) ); // TODO: what if len > INT32_MAX, for now it's backed by logic of IntSerializer.serialize itself
     bufs.push( v );
@@ -62,7 +63,7 @@ module.exports = class StringSerializer {
 
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.STRING)
+        if (type_code !== this.ID)
           throw new Error('unexpected {type_code}');
       }
       if (fullyQualifiedFormat || nullable) {

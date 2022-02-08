@@ -22,4 +22,4 @@
  */
 'use strict';
 
-require('./DateSerializerTestSuite')({ ID: 0x04, name: 'Date' });
+require('./DateSerializerTestTemplate')({ ID: 0x04, name: 'Date' });

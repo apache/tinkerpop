@@ -22,4 +22,4 @@
  */
 'use strict';
 
-require('./DateSerializerTestTemplate')({ ID: 0x05, name: 'Timestamp' });
+require('./StringSerializerTestTemplate')({ ID: 0x06, name: 'Class' });

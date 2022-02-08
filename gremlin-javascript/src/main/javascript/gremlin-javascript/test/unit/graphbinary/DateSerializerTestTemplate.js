@@ -39,9 +39,9 @@ describe(`GraphBinary.${name}Serializer`, () => {
   const serializer = ioc.serializers[ID];
 
   const cases = [
-    { v:undefined, fq:1, b:[ID, 0x01],                                av:null },
+    { v:undefined, fq:1, b:[ID,0x01],                                 av:null },
     { v:undefined, fq:0, b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00], av:new Date(0) },
-    { v:null,      fq:1, b:[ID, 0x01] },
+    { v:null,      fq:1, b:[ID,0x01] },
     { v:null,      fq:0, b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00], av:new Date(0) },
 
     { v:new Date('1970-01-01T00:00:00.000Z'), b:[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00] },
