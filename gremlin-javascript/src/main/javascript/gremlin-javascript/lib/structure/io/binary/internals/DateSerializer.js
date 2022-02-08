@@ -26,9 +26,10 @@ const t = require('../../../../process/traversal');
 
 module.exports = class DateSerializer {
 
-  constructor(ioc) {
+  constructor(ioc, ID) {
     this.ioc = ioc;
-    this.ioc.serializers[ioc.DataType.DATE] = this;
+    this.ID = ID;
+    this.ioc.serializers[ID] = this;
   }
 
   canBeUsedFor(value) {
@@ -38,13 +39,13 @@ module.exports = class DateSerializer {
   serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
-        return Buffer.from([this.ioc.DataType.DATE, 0x01]);
+        return Buffer.from([this.ID, 0x01]);
       else
         return Buffer.from([0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]); // new Date(0)
 
     const bufs = [];
     if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.DATE, 0x00]) );
+      bufs.push( Buffer.from([this.ID, 0x00]) );
 
     const v = Buffer.alloc(8);
     v.writeBigInt64BE( BigInt(item.getTime()) );
@@ -65,7 +66,7 @@ module.exports = class DateSerializer {
 
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.DATE)
+        if (type_code !== this.ID)
           throw new Error('unexpected {type_code}');
 
         if (cursor.length < 1)
