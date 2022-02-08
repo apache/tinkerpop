@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { listSerializer, intSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 const t = require('../../../lib/process/traversal');
@@ -34,46 +35,44 @@ describe('GraphBinary.ListSerializer', () => {
   const value_flag = from([0x00]);
 
   const cases = [
-    { v:undefined,                                     fq:1, b:[0x09, 0x01],          av:null },
-    { v:undefined,                                     fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
-    { v:null,                                          fq:1, b:[0x09, 0x01] },
-    { v:null,                                          fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
+    { v:undefined,                          fq:1, b:[0x09, 0x01],          av:null },
+    { v:undefined,                          fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
+    { v:null,                               fq:1, b:[0x09, 0x01] },
+    { v:null,                               fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
 
-    { v:[],                                                  b:[0x00,0x00,0x00,0x00] },
-    { v:[2147483647],                                        b:[0x00,0x00,0x00,0x01, 0x01,0x00,0x7F,0xFF,0xFF,0xFF] },
-    { v:[-1,'A'],                                            b:[0x00,0x00,0x00,0x02, 0x01,0x00,0xFF,0xFF,0xFF,0xFF, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+    { v:[],                                       b:[0x00,0x00,0x00,0x00] },
+    { v:[2147483647],                             b:[0x00,0x00,0x00,0x01, 0x01,0x00,0x7F,0xFF,0xFF,0xFF] },
+    { v:[-1,'A'],                                 b:[0x00,0x00,0x00,0x02, 0x01,0x00,0xFF,0xFF,0xFF,0xFF, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
 
-    { des:1, err:/buffer is missing/,                  fq:1, b:undefined },
-    { des:1, err:/buffer is missing/,                  fq:0, b:undefined },
-    { des:1, err:/buffer is missing/,                  fq:1, b:null },
-    { des:1, err:/buffer is missing/,                  fq:0, b:null },
-    { des:1, err:/buffer is empty/,                    fq:1, b:[] },
-    { des:1, err:/buffer is empty/,                    fq:0, b:[] },
+    { des:1, err:/buffer is missing/,       fq:1, b:undefined },
+    { des:1, err:/buffer is missing/,       fq:0, b:undefined },
+    { des:1, err:/buffer is missing/,       fq:1, b:null },
+    { des:1, err:/buffer is missing/,       fq:0, b:null },
+    { des:1, err:/buffer is empty/,         fq:1, b:[] },
+    { des:1, err:/buffer is empty/,         fq:0, b:[] },
 
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x00] },
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x01] },
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x08] },
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x0A] },
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x89] },
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x19] },
-    { des:1, err:/unexpected {type_code}/,             fq:1, b:[0x90] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x00] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x01] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x08] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x0A] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x89] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x19] },
+    { des:1, err:/unexpected {type_code}/,  fq:1, b:[0x90] },
 
-    { des:1, err:/{value_flag} is missing/,            fq:1, b:[0x09] },
-    { des:1, err:/unexpected {value_flag}/,            fq:1, b:[0x09,0x10] },
-    { des:1, err:/unexpected {value_flag}/,            fq:1, b:[0x09,0x02] },
-    { des:1, err:/unexpected {value_flag}/,            fq:1, b:[0x09,0x0F] },
-    { des:1, err:/unexpected {value_flag}/,            fq:1, b:[0x09,0xFF] },
+    { des:1, err:/{value_flag} is missing/, fq:1, b:[0x09] },
+    { des:1, err:/unexpected {value_flag}/, fq:1, b:[0x09,0x10] },
+    { des:1, err:/unexpected {value_flag}/, fq:1, b:[0x09,0x02] },
+    { des:1, err:/unexpected {value_flag}/, fq:1, b:[0x09,0x0F] },
+    { des:1, err:/unexpected {value_flag}/, fq:1, b:[0x09,0xFF] },
 
-    { des:1, err:/{length} is less than zero/,               b:[0xFF,0xFF,0xFF,0xFF] },
-    { des:1, err:/{length} is less than zero/,               b:[0x80,0x00,0x00,0x00] },
+    { des:1, err:/{length} is less than zero/,    b:[0xFF,0xFF,0xFF,0xFF] },
+    { des:1, err:/{length} is less than zero/,    b:[0x80,0x00,0x00,0x00] },
   ];
 
-  describe('serialize', () => {
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () => {
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -95,8 +94,8 @@ describe('GraphBinary.ListSerializer', () => {
     ));
   });
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -127,7 +126,7 @@ describe('GraphBinary.ListSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
+  describe('#canBeUsedFor', () =>
     // most of the cases are implicitly tested via AnySerializer.serialize() tests
     [
       { v: null,              e: false },
@@ -137,7 +136,7 @@ describe('GraphBinary.ListSerializer', () => {
       { v: [],                e: true },
       { v: [0],               e: true },
       { v: [undefined],       e: true },
-    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
       assert.strictEqual( listSerializer.canBeUsedFor(v), e )
     ))
   );

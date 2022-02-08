@@ -22,9 +22,11 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { bytecodeSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
+const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
 const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
@@ -101,12 +103,10 @@ describe('GraphBinary.BytecodeSerializer', () => {
     { des:1, err:/{sources_length} is less than zero/,       b:[0x00,0x00,0x00,0x00, 0x80,0x00,0x00,0x00] },
   ];
 
-  describe('serialize', () =>
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () =>
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -122,8 +122,8 @@ describe('GraphBinary.BytecodeSerializer', () => {
     }))
   );
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -156,8 +156,23 @@ describe('GraphBinary.BytecodeSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
-    it.skip('')
+  describe('#canBeUsedFor', () =>
+    // most of the cases are implicitly tested via AnySerializer.serialize() tests
+    [
+      { v: null,              e: false },
+      { v: undefined,         e: false },
+      { v: {},                e: false },
+      { v: new t.Traverser(), e: false },
+      { v: [],                e: false },
+      { v: [0],               e: false },
+      { v: [undefined],       e: false },
+      { v: [new Bytecode()],  e: false },
+      { v: new Bytecode(),    e: true  },
+      { v: [new t.Traversal], e: false },
+      { v: new t.Traversal,   e: true  },
+    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      assert.strictEqual( bytecodeSerializer.canBeUsedFor(v), e )
+    ))
   );
 
 });

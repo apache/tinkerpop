@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
@@ -35,7 +36,7 @@ const { from, concat } = Buffer;
 
 describe('GraphBinary.AnySerializer', () => {
 
-  describe('serialize', () => {
+  describe('#serialize', () => {
     [
       /*
         This is the most complex part of GraphBinary,
@@ -216,7 +217,7 @@ describe('GraphBinary.AnySerializer', () => {
       { v:null,      fq:1, b:[0xFE,0x01] },
       { v:undefined, fq:1, b:[0xFE,0x01] },
 
-    ].forEach(({ v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
+    ].forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -237,7 +238,7 @@ describe('GraphBinary.AnySerializer', () => {
 
   });
 
-  describe('deserialize', () =>
+  describe('#deserialize', () =>
     [
       { err:/buffer is missing/,                  b:undefined },
       { err:/buffer is missing/,                  b:undefined },
@@ -367,7 +368,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // TODO: "register" other types
     ]
-    .forEach(({ v, b, err }, i) => it(`should be able to handle case #${i}`, () => {
+    .forEach(({ v, b, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 

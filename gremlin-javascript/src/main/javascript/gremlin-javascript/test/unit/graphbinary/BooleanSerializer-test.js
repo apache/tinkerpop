@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { booleanSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
@@ -69,12 +70,10 @@ describe('GraphBinary.BooleanSerializer', () => {
     { des:1, err:/unexpected boolean byte/,         b:[0xFF] },
   ];
 
-  describe('serialize', () =>
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () =>
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -89,8 +88,8 @@ describe('GraphBinary.BooleanSerializer', () => {
     }))
   );
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -121,7 +120,7 @@ describe('GraphBinary.BooleanSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
+  describe('#canBeUsedFor', () =>
     // most of the cases are implicitly tested via AnySerializer.serialize() tests
     [
       { v: null,              e: false },
@@ -135,7 +134,7 @@ describe('GraphBinary.BooleanSerializer', () => {
       { v: -1,                e: false },
       { v: true,              e: true  },
       { v: false,             e: true  },
-    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
       assert.strictEqual( booleanSerializer.canBeUsedFor(v), e )
     ))
   );

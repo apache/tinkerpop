@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { enumSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 const t = require('../../../lib/process/traversal');
@@ -50,6 +51,8 @@ describe('GraphBinary.EnumSerializer', () => {
     { v:null,      fq:1, b:[0x01] },
     { v:null,      fq:0, b:[0x03,0x00, 0x00,0x00,0x00,0x00], av:'' },
 
+    // real cases of serialization covered by AnySerializer#serialize tests
+
     { des:1, err:/buffer is missing/,       fq:1, B:undefined },
     { des:1, err:/buffer is missing/,       fq:0, B:undefined },
     { des:1, err:/buffer is missing/,       fq:1, B:null },
@@ -74,13 +77,11 @@ describe('GraphBinary.EnumSerializer', () => {
     { des:1, err:/elementName: .*StringSerializer.* unexpected {value} length/, B:[0x03,0x00, 0x00,0x00,0x00] },
   ];
 
-  describe('serialize', () =>
+  describe('#serialize', () =>
     types.forEach((type) => describe(`${type.name}`, () =>
-      cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-        // deserialize case only
-        if (des)
-          return; // keep it like passed test not to mess with case index
-
+      cases
+      .filter(({des}) => !des)
+      .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
         b = from(b);
         v = new t.EnumValue(type.name, v);
 
@@ -99,9 +100,9 @@ describe('GraphBinary.EnumSerializer', () => {
     ))
   );
 
-  describe('deserialize', () => {
+  describe('#deserialize', () => {
     types.forEach((type) => describe(`${type.name}`, () =>
-      cases.forEach(({ v, fq, b, B, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+      cases.forEach(({ v, fq, b, B, av, err }, i) => it(utils.des_title({i,b}), () => {
         if (B)
           b = B;
         if (Array.isArray(b)) {
@@ -151,7 +152,7 @@ describe('GraphBinary.EnumSerializer', () => {
     );
   });
 
-  describe('canBeUsedFor', () => {
+  describe('#canBeUsedFor', () => {
     it('should error if type name is not supported', () => assert.throws(
       () => enumSerializer.canBeUsedFor(new t.EnumValue('UnknownType', 'asc')),
       { message: /typeName=UnknownType is not supported/ }
@@ -163,7 +164,7 @@ describe('GraphBinary.EnumSerializer', () => {
       { v: undefined,                   e: false },
       { v: {},                          e: false },
       { v: new t.EnumValue('Barrier'),  e: true  },
-    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}`, () =>
+    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
       assert.strictEqual( enumSerializer.canBeUsedFor(v), e )
     ));
   });

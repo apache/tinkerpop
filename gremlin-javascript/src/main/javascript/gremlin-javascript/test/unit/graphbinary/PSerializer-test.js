@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { pSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 const t = require('../../../lib/process/traversal');
@@ -127,12 +128,10 @@ describe('GraphBinary.PSerializer', () => {
     { des:1, err:/unexpected {value_flag}/,            fq:1, b:[0x1E,0xFF] },
   ];
 
-  describe('serialize', () =>
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}: ${v}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () =>
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -147,8 +146,8 @@ describe('GraphBinary.PSerializer', () => {
     }))
   );
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}: ${v}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -179,7 +178,7 @@ describe('GraphBinary.PSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
+  describe('#canBeUsedFor', () =>
     // most of the cases are implicitly tested via AnySerializer.serialize() tests
     [
       { v: null,              e: false },
@@ -190,7 +189,7 @@ describe('GraphBinary.PSerializer', () => {
       { v: [],                e: false },
       { v: [0],               e: false },
       { v: [new t.P()],       e: false },
-    ].forEach(({ v, e }, i) => it(`should be able to handle case #${i}: ${v}`, () =>
+    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
       assert.strictEqual( pSerializer.canBeUsedFor(v), e )
     ))
   );

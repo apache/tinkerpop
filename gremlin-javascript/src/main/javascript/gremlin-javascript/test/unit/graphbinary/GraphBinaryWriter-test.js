@@ -33,7 +33,7 @@ const { from, concat } = Buffer;
 
 describe('GraphBinary.Writer', () => {
 
-  describe('writeRequest', () =>
+  describe('#writeRequest', () =>
     [
       {
         r: {

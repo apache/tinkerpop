@@ -22,4 +22,4 @@
  */
 'use strict';
 
-require('./DateSerializerTestSuite')({ ID: 0x05 });
+require('./DateSerializerTestSuite')({ ID: 0x05, name: 'Timestamp' });

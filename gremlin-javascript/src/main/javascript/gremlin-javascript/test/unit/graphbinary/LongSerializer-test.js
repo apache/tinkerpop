@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { longSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
@@ -75,12 +76,10 @@ describe('GraphBinary.LongSerializer', () => {
     { des:1, err:/unexpected {value} length/,       b:[0x11,0x22,0x33,0x44,0x55,0x66,0x77] },
   ];
 
-  describe('serialize', () =>
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () =>
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -95,8 +94,8 @@ describe('GraphBinary.LongSerializer', () => {
     }))
   );
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -127,7 +126,7 @@ describe('GraphBinary.LongSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
+  describe('#canBeUsedFor', () =>
     it.skip('')
   );
 

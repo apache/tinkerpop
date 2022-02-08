@@ -34,7 +34,7 @@ const { from } = Buffer;
 
 describe('GraphBinary.Reader', () => {
 
-  describe('readResponse', () => {
+  describe('#readResponse', () => {
 
     [ undefined, null ].forEach(buffer =>
       it(`should error if buffer is '${buffer}'`, () => assert.throws(

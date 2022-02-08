@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { uuidSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
@@ -37,7 +38,6 @@ describe('GraphBinary.UuidSerializer', () => {
     {        v:undefined,                     fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
     {        v:null,                          fq:1,       b:[0x0C,0x01] },
     {        v:null,                          fq:0,       b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:'00000000-0000-0000-0000-000000000000' },
-    { des:1, v:null,                          fq:0, na:1, b:[0x01] },
 
     { v:'00000000-0000-0000-0000-000000000000',           b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
     { v:'00010203-0405-0607-0809-0A0B0C0D0E0F',           b:[0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0A,0x0B, 0x0C,0x0D,0x0E,0x0F] },
@@ -82,14 +82,14 @@ describe('GraphBinary.UuidSerializer', () => {
     { des:1, err:/unexpected {value} length/, fq:0, na:1, b:[0x00] },
     { des:1, err:/unexpected {value} length/,             b:[0x00] },
     { des:1, err:/unexpected {value} length/,             b:[0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E] },
+
+    { des:1, v:null,                          fq:0, na:1, b:[0x01] },
   ];
 
-  describe('serialize', () =>
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () =>
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -104,8 +104,8 @@ describe('GraphBinary.UuidSerializer', () => {
     }))
   );
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, na, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, na, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -141,7 +141,7 @@ describe('GraphBinary.UuidSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
+  describe('#canBeUsedFor', () =>
     it.skip('')
   );
 

@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const utils = require('./utils');
 const assert = require('assert');
 const { stringSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
@@ -37,7 +38,6 @@ describe('GraphBinary.StringSerializer', () => {
     {        v:undefined,                      fq:0,       b:[0x00,0x00,0x00,0x00], av:'' },
     {        v:null,                           fq:1,       b:[0x03,0x01] },
     {        v:null,                           fq:0,       b:[0x00,0x00,0x00,0x00], av:'' },
-    { des:1, v:null,                           fq:0, na:1, b:[0x01] },
 
     { v:'',                                                b:[0x00,0x00,0x00,0x00] },
     { v:'Sun',                                             b:[0x00,0x00,0x00,0x03, 0x53,0x75,0x6E] },
@@ -79,14 +79,14 @@ describe('GraphBinary.StringSerializer', () => {
     { des:1, err:/unexpected {text_value} length/,         b:[0x00,0x00,0x00,0x01] },
     { des:1, err:/unexpected {text_value} length/,         b:[0x00,0x00,0x00,0x02, 0x41] },
     { des:1, err:/unexpected {text_value} length/,         b:[0x00,0x00,0x00,0x03, 0x41,0x42] },
+
+    { des:1, v:null,                           fq:0, na:1, b:[0x01] },
   ];
 
-  describe('serialize', () =>
-    cases.forEach(({ des, v, fq, b }, i) => it(`should be able to handle case #${i}`, () => {
-      // deserialize case only
-      if (des)
-        return; // keep it like passed test not to mess with case index
-
+  describe('#serialize', () =>
+    cases
+    .filter(({des}) => !des)
+    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -101,8 +101,8 @@ describe('GraphBinary.StringSerializer', () => {
     }))
   );
 
-  describe('deserialize', () =>
-    cases.forEach(({ v, fq, na, b, av, err }, i) => it(`should be able to handle case #${i}`, () => {
+  describe('#deserialize', () =>
+    cases.forEach(({ v, fq, na, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -136,7 +136,7 @@ describe('GraphBinary.StringSerializer', () => {
     }))
   );
 
-  describe('canBeUsedFor', () =>
+  describe('#canBeUsedFor', () =>
     [
       { v: 'some string',    e: true },
       { v: '',               e: true },
@@ -154,7 +154,7 @@ describe('GraphBinary.StringSerializer', () => {
       { v: +Infinity,        e: false },
       { v: -Infinity,        e: false },
       //{ v: Symbol(''), e: false },
-    ].forEach(({ v, e }, i) => it(`should return ${e} if value is '${v}', case #${i}`, () => assert.strictEqual(
+    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () => assert.strictEqual(
       stringSerializer.canBeUsedFor(v),
       e,
     )))
