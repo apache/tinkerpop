@@ -10,7 +10,7 @@ import (
 const runIntegration = false
 
 func TestConnection(t *testing.T) {
-	t.Run("Test connect", func(t *testing.T) {
+	t.Run("Test connection.connect()", func(t *testing.T) {
 		if runIntegration {
 			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
 			err := connection.connect()
@@ -18,7 +18,7 @@ func TestConnection(t *testing.T) {
 		}
 	})
 
-	t.Run("Test write", func(t *testing.T) {
+	t.Run("Test connection.write()", func(t *testing.T) {
 		if runIntegration {
 			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
 			err := connection.connect()
@@ -33,7 +33,7 @@ func TestConnection(t *testing.T) {
 		}
 	})
 
-	t.Run("Test client submit", func(t *testing.T) {
+	t.Run("Test client.submit()", func(t *testing.T) {
 		if runIntegration {
 			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
 			err := connection.connect()

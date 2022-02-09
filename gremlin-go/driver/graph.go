@@ -31,7 +31,7 @@ type Graph struct {
 }
 
 // TODO: Implement with TraversalStrategies (requires TraversalStrategies global cache).
-func (g *Graph) traversal() GraphTraversalSource {
+func (g *Graph) traversal() *GraphTraversalSource {
 	return nil
 }
 

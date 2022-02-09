@@ -19,40 +19,37 @@ under the License.
 
 package gremlingo
 
-type Traverser struct {
-}
-
 type Traversal struct {
 	graph               *Graph
 	traversalStrategies *TraversalStrategies
-	bytecode            bytecode
-	traverser           *Traverser
+	bytecode            *bytecode
 }
 
 const host string = "localhost"
 const port int = 8182
 
+// TODO use TraversalStrategies instead of direct remote after they are implemented
 var remote = DriverRemoteConnection{
 	client: NewClient(host, port),
 }
 
 // ToList returns the result in a list
-// TODO use TraversalStrategies instead of direct remote after they are implemented
-func (t *Traversal) ToList() []*Result {
-	results, _ := remote.Submit(t.bytecode.toString())
-	return results.All()
-}
+// TODO commenting out as remote.Submit doesn't support bytecode yet
+//func (t *Traversal) ToList() []*Result {
+//	results, _ := remote.Submit(t.bytecode)
+//	return results.All()
+//}
 
 // ToSet returns the results in a set.
 // TODO Go doesn't have sets, determine the best structure for this
-func (t *Traversal) ToSet() map[*Result]bool {
-	set := make(map[*Result]bool)
-	results, _ := remote.Submit(t.bytecode.toString())
-	for _, r := range results.All() {
-		set[r] = true
-	}
-	return set
-}
+//func (t *Traversal) ToSet() map[*Result]bool {
+//	set := make(map[*Result]bool)
+//	results, _ := remote.Submit(t.bytecode)
+//	for _, r := range results.All() {
+//		set[r] = true
+//	}
+//	return set
+//}
 
 // Iterate iterate all the Traverser instances in the traversal and returns the empty traversal
 // TODO complete this when Traverser is implemented

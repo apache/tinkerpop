@@ -19,33 +19,24 @@ under the License.
 
 package gremlingo
 
-type Graph struct {
-}
-
 type TraversalStrategies struct {
 }
 
 type GraphTraversalSource struct {
 	graph               *Graph
 	traversalStrategies *TraversalStrategies
-	bytecode            bytecode
-	g                   *GraphTraversal
+	bytecode            *bytecode
 	remoteConnection    *DriverRemoteConnection
 }
 
 // NewGraphTraversalSource creates a graph traversal source, the primary DSL of the Gremlin traversal machine
-func NewGraphTraversalSource(graph *Graph, traversalStrategies *TraversalStrategies, bytecode bytecode, graphTraversal *GraphTraversal) *GraphTraversalSource {
-	return &GraphTraversalSource{graph: graph, traversalStrategies: traversalStrategies, bytecode: bytecode, g: graphTraversal}
+func NewGraphTraversalSource(graph *Graph, traversalStrategies *TraversalStrategies, bytecode *bytecode) *GraphTraversalSource {
+	return &GraphTraversalSource{graph: graph, traversalStrategies: traversalStrategies, bytecode: newBytecode(bytecode)}
 }
 
 // GetBytecode gets the traversal bytecode associated with this graph traversal source
-func (gts *GraphTraversalSource) GetBytecode() bytecode {
+func (gts *GraphTraversalSource) GetBytecode() *bytecode {
 	return gts.bytecode
-}
-
-// GetGraphTraversal gets the graph traversal associated with this graph traversal source
-func (gts *GraphTraversalSource) GetGraphTraversal() *GraphTraversal {
-	return gts.g
 }
 
 // GetTraversalStrategies gets the graph traversal strategies associated with this graph traversal source
@@ -54,13 +45,16 @@ func (gts *GraphTraversalSource) GetTraversalStrategies() *TraversalStrategies {
 }
 
 func (gts *GraphTraversalSource) clone() *GraphTraversalSource {
-	return NewGraphTraversalSource(gts.graph, gts.traversalStrategies, gts.bytecode, gts.g)
+	return NewGraphTraversalSource(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 }
 
 // WithBulk allows for control of bulking operations
 func (gts *GraphTraversalSource) WithBulk(args ...interface{}) *GraphTraversalSource {
 	source := gts.clone()
-	source.bytecode.addSource("withBulk", args)
+	err := source.bytecode.addSource("withBulk", args)
+	if err != nil {
+		return nil
+	}
 	return source
 }
 
@@ -115,42 +109,42 @@ func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *Graph
 
 // E reads edges from the graph to start the traversal
 func (gts *GraphTraversalSource) E(args ...interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
+	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 	traversal.t.bytecode.addStep("E", args)
 	return traversal
 }
 
 // V reads vertices from the graph to start the traversal
 func (gts *GraphTraversalSource) V(args ...interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
+	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 	traversal.t.bytecode.addStep("V", args)
 	return traversal
 }
 
 // AddE adds an Edge to start the traversal
 func (gts *GraphTraversalSource) AddE(args ...interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
+	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 	traversal.t.bytecode.addStep("addE", args)
 	return traversal
 }
 
 // AddV adds a Vertex to start the traversal
 func (gts *GraphTraversalSource) AddV(args ...interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
+	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 	traversal.t.bytecode.addStep("addV", args)
 	return traversal
 }
 
 // Inject inserts arbitrary objects to start the traversal
 func (gts *GraphTraversalSource) Inject(args ...interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
+	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 	traversal.t.bytecode.addStep("inject", args)
 	return traversal
 }
 
 // Io adds the io steps to start the traversal
 func (gts *GraphTraversalSource) Io(args ...interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
+	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode))
 	traversal.t.bytecode.addStep("io", args)
 	return traversal
 }
