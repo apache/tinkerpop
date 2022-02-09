@@ -22,11 +22,12 @@
  */
 'use strict';
 
-module.exports = class ListSerializer {
+module.exports = class ArraySerializer {
 
-  constructor(ioc) {
+  constructor(ioc, ID) {
     this.ioc = ioc;
-    this.ioc.serializers[ioc.DataType.LIST] = this;
+    this.ID = ID;
+    this.ioc.serializers[ID] = this;
   }
 
   canBeUsedFor(value) {
@@ -36,20 +37,20 @@ module.exports = class ListSerializer {
   serialize(item, fullyQualifiedFormat=true) {
     if (item === undefined || item === null)
       if (fullyQualifiedFormat)
-        return Buffer.from([this.ioc.DataType.LIST, 0x01]);
+        return Buffer.from([this.ID, 0x01]);
       else
         return Buffer.from([0x00,0x00,0x00,0x00]); // {length} = 0
 
     const bufs = [];
     if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.LIST, 0x00]) );
+      bufs.push( Buffer.from([this.ID, 0x00]) );
 
     // {length}
     let length = item.length;
     if (length < 0)
       length = 0; // TODO: test it
     if (length > this.ioc.intSerializer.INT32_MAX)
-      throw new Error(`List length=${length} is greater than supported max_length=${this.ioc.intSerializer.INT32_MAX}.`);
+      throw new Error(`Array length=${length} is greater than supported max_length=${this.ioc.intSerializer.INT32_MAX}.`);
     bufs.push( this.ioc.intSerializer.serialize(length, false) );
 
     // {item_0}...{item_n}
@@ -71,7 +72,7 @@ module.exports = class ListSerializer {
 
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.LIST)
+        if (type_code !== this.ID)
           throw new Error('unexpected {type_code}');
 
         if (cursor.length < 1)

@@ -49,7 +49,7 @@ describe('GraphBinary.AnySerializer', () => {
       */
 
       // NumberSerializer
-      // Double (float is never not used during serialization)
+      // Double (Float is never used during serialization)
       { v:0.1,         b:[DataType.DOUBLE,0x00, 0x3F,0xB9,0x99,0x99,0x99,0x99,0x99,0x9A] },
       { v:0.375,       b:[DataType.DOUBLE,0x00, 0x3F,0xD8,0x00,0x00,0x00,0x00,0x00,0x00] },
       { v:0.00390625,  b:[DataType.DOUBLE,0x00, 0x3F,0x70,0x00,0x00,0x00,0x00,0x00,0x00] },
@@ -177,7 +177,7 @@ describe('GraphBinary.AnySerializer', () => {
       // LongSerializer
       // TODO +
 
-      // ListSerializer
+      // ListSerializer (Set is never used during serialization)
       { v:[],  b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x00] },
       { v:[1], b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x01, 0x01,0x00, 0x00,0x00,0x00,0x01] },
 
@@ -277,6 +277,14 @@ describe('GraphBinary.AnySerializer', () => {
       // TIMESTAMP
       { v:null,                                   b:[0x05,0x01] },
       { v:new Date('1969-12-31T23:59:59.999Z'),   b:[0x05,0x00, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF] },
+
+      // DOUBLE
+      { v:null,                                   b:[0x07,0x01] },
+      { v:0.00390625,                             b:[0x07,0x00, 0x3F,0x70,0x00,0x00,0x00,0x00,0x00,0x00] },
+
+      // FLOAT
+      { v:null,                                   b:[0x08,0x01] },
+      { v:0.375,                                  b:[0x08,0x00, 0x3E,0xC0,0x00,0x00] },
 
       // LIST
       { v:null,                                   b:[0x09,0x01] },
