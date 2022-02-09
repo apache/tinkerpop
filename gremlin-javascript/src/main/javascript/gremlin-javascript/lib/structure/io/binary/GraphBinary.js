@@ -42,6 +42,7 @@ ioc.mapSerializer = new (require('./internals/MapSerializer'))(ioc);
 ioc.setSerializer = new (require('./internals/ArraySerializer'))(ioc, ioc.DataType.SET);
 ioc.uuidSerializer = new (require('./internals/UuidSerializer'))(ioc);
 ioc.edgeSerializer = new (require('./internals/EdgeSerializer'))(ioc);
+ioc.pathSerializer = new (require('./internals/PathSerializer'))(ioc);
 ioc.vertexSerializer = new (require('./internals/VertexSerializer'))(ioc);
 ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);
 ioc.pSerializer = new (require('./internals/PSerializer'))(ioc);
