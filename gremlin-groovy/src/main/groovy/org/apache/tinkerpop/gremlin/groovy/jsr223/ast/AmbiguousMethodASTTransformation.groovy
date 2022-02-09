@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223.ast
 
+import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
@@ -59,13 +60,20 @@ class AmbiguousMethodASTTransformation implements ASTTransformation {
             @Override
             void visitArgumentlistExpression(ArgumentListExpression expression) {
                 if (!expression.empty) {
-                    expression.eachWithIndex{ Expression entry, int i ->
-                        if (isNullExpression(entry)) {
-                            if (currentMethod in [GraphTraversal.Symbols.mergeV,
-                                                  GraphTraversal.Symbols.mergeE,
-                                                  GraphTraversal.Symbols.option]) {
-                                entry.type = new ClassNode(Map)
-                                expression.expressions[i] = new CastExpression(new ClassNode(Map), entry)
+                    // hasId(null) is ambiguous because of hasId(object, object...) and hasId(P). use of the P
+                    // version calls the correct version of the other overload
+                    if (currentMethod == GraphTraversal.Symbols.hasId && expression.expressions.size() == 1 && isNullExpression(expression.expressions[0])) {
+                        expression.expressions[0] = createCast(P, expression.expressions[0])
+                    } else {
+                        expression.eachWithIndex { Expression entry, int i ->
+                            if (isNullExpression(entry)) {
+                                if (currentMethod in [GraphTraversal.Symbols.mergeV,
+                                                      GraphTraversal.Symbols.mergeE,
+                                                      GraphTraversal.Symbols.option]) {
+                                    expression.expressions[i] = createCast(Map, entry)
+                                } else if (currentMethod in [GraphTraversal.Symbols.inject]) {
+                                    expression.expressions[i] = createCast(Object, entry)
+                                }
                             }
                         }
                     }
@@ -73,7 +81,11 @@ class AmbiguousMethodASTTransformation implements ASTTransformation {
                 super.visitArgumentlistExpression(expression)
             }
 
-            private static boolean isNullExpression(Expression entry) {
+            private static createCast(Class<?> clazz, Expression exp) {
+                new CastExpression(new ClassNode(clazz), exp)
+            }
+
+            private static isNullExpression(Expression entry) {
                 entry instanceof ConstantExpression && ((ConstantExpression) entry).nullExpression
             }
         })

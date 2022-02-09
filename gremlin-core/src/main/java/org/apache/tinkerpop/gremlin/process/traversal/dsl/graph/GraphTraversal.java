@@ -1728,24 +1728,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             }
             int size = ids.length;
             int capacity = size;
-            for (final Object i : otherIds) {
-                if (i != null && i.getClass().isArray()) {
-                    final Object[] tmp = (Object[]) i;
-                    int newLength = size + tmp.length;
-                    if (capacity < newLength) {
-                        ids = Arrays.copyOf(ids, capacity = size + tmp.length);
+
+            if (otherIds != null) {
+                for (final Object i : otherIds) {
+                    if (i != null && i.getClass().isArray()) {
+                        final Object[] tmp = (Object[]) i;
+                        int newLength = size + tmp.length;
+                        if (capacity < newLength) {
+                            ids = Arrays.copyOf(ids, capacity = size + tmp.length);
+                        }
+                        System.arraycopy(tmp, 0, ids, size, tmp.length);
+                        size = newLength;
+                    } else {
+                        if (capacity == size) {
+                            ids = Arrays.copyOf(ids, capacity = size * 2);
+                        }
+                        ids[size++] = i;
                     }
-                    System.arraycopy(tmp, 0, ids, size, tmp.length);
-                    size = newLength;
-                } else {
-                    if (capacity == size) {
-                        ids = Arrays.copyOf(ids, capacity = size * 2);
-                    }
-                    ids[size++] = i;
                 }
-            }
-            if (capacity > size) {
-                ids = Arrays.copyOf(ids, size);
+                if (capacity > size) {
+                    ids = Arrays.copyOf(ids, size);
+                }
             }
             this.asAdmin().getBytecode().addStep(Symbols.hasId, ids);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.length == 1 ? P.eq(ids[0]) : P.within(ids)));

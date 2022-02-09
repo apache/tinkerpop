@@ -19,6 +19,7 @@
 
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
 import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator
+import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
@@ -122,15 +123,8 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
     // at runtime. using this approach for now as these are the only such situations encountered so far. a better
     // solution may become necessary as testing of nulls expands.
-    def staticTranslate = [
-            g_injectXnull_nullX: "    g_injectXnull_nullX: [function({g}) { return g.inject(null,null) }], ",
-            g_V_hasIdXnullX: "    g_V_hasIdXnullX: [function({g}) { return g.V().hasId(null) }], ",
-            g_V_hasIdX2_nullX: "    g_V_hasIdX2_nullX: [function({g, vid2}) { return g.V().hasId(vid2,null) }], ",
-            g_injectX1X_VXnullX: "    g_injectX1X_VXnullX: [function({g}) { return g.inject(1).V(null) }], ",
-            g_V_hasIdX2AsString_nullX: "    g_V_hasIdX2AsString_nullX: [function({g, vid2}) { return g.V().hasId(vid2, null) }], ",
-            g_injectX1X_VX1_nullX: "    g_injectX1X_VX1_nullX: [function({g, vid1}) { return g.inject(1).V(vid1,null) }], ",
-            g_VX1X_valuesXageX_injectXnull_nullX: "    g_VX1X_valuesXageX_injectXnull_nullX: [function({g, xx1}) { return g.V(xx1).values(\"age\").inject(null,null) }], "
-    ]
+    def staticTranslate = [:]
+    // SAMPLE: g_injectXnull_nullX: "    g_injectXnull_nullX: [function({g}) { return g.inject(null,null) }], ",
 
     writer.writeLine('const gremlins = {')
     gremlins.each { k,v ->

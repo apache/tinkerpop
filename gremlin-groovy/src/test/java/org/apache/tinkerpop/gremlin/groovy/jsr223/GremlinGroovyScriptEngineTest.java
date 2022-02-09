@@ -567,4 +567,13 @@ public class GremlinGroovyScriptEngineTest {
         ambiguousNullEngine.eval("g.mergeE(null).option(Merge.onCreate, null)", bindings);
         ambiguousNullEngine.eval("g.mergeE([:]).option(Merge.onCreate, null)", bindings);
     }
+
+    @Test
+    public void shouldHandleHasIdAmbiguousNull() throws Exception {
+        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+        ambiguousNullEngine.eval("g.V().hasId(null)", bindings);
+        ambiguousNullEngine.eval("g.V().hasId(P.eq(1), null)", bindings);
+    }
 }
