@@ -31,6 +31,7 @@ module.exports = class AnySerializer {
       ioc.unspecifiedNullSerializer,
 
       ioc.booleanSerializer,
+      ioc.doubleSerializer,
       ioc.intSerializer,
       ioc.dateSerializer,
       ioc.bytecodeSerializer,
