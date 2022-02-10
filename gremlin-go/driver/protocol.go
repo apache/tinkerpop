@@ -23,12 +23,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 type protocol interface {
-	connectionMade(transport transporter)
-	read(resultSets map[string]ResultSet) (string, error)
-	write(request *request, results map[string]ResultSet) (string, error)
+	readLoop(resultSets map[string]ResultSet, errorCallback func(), log *logHandler)
+	write(request *request) error
+	close() (err error)
 }
 
 type protocolBase struct {
@@ -45,83 +46,121 @@ type gremlinServerWSProtocol struct {
 	maxContentLength int
 	username         string
 	password         string
+	closed           bool
+	mux              sync.Mutex
 }
 
-func (protocol *protocolBase) connectionMade(transporter transporter) {
-	protocol.transporter = transporter
-}
-
-func (protocol *gremlinServerWSProtocol) read(resultSets map[string]ResultSet) (string, error) {
-	// Read data from transport layer.
-	msg, err := protocol.transporter.Read()
-	if err != nil || msg == nil {
-		if err != nil {
-			return "", err
+func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSet, errorCallback func(), log *logHandler) {
+	for {
+		// Read from transport layer. If the channel is closed, this will error out and exit.
+		msg, err := protocol.transporter.Read()
+		protocol.mux.Lock()
+		if protocol.closed {
+			protocol.mux.Unlock()
+			return
 		}
-		protocol.logHandler.log(Error, malformedURL)
-		return "", errors.New("malformed ws or wss URL")
-	}
-	// Deserialize message and unpack.
-	response, err := protocol.serializer.deserializeMessage(msg)
-	if err != nil {
-		return "", err
-	}
+		protocol.mux.Unlock()
+		if err != nil {
+			// Ignore error here, we already got an error on read, cannot do anything with this.
+			_ = protocol.transporter.Close()
+			log.logf(Error, readLoopError, err.Error())
+			readErrorHandler(resultSets, errorCallback, err, log)
+			return
+		}
 
+		// Deserialize message and unpack.
+		response, err := protocol.serializer.deserializeMessage(msg)
+		if err != nil {
+			log.logger.Log(Error, err)
+			readErrorHandler(resultSets, errorCallback, err, log)
+			return
+		}
+
+		err = responseHandler(resultSets, response)
+		if err != nil {
+			readErrorHandler(resultSets, errorCallback, err, log)
+			return
+		}
+	}
+}
+
+// If there is an error, we need to close the ResultSets and then pass the error back.
+func readErrorHandler(resultSets map[string]ResultSet, errorCallback func(), err error, log *logHandler) {
+	log.logf(Error, readLoopError, err.Error())
+	for _, resultSet := range resultSets {
+		resultSet.Close()
+	}
+	errorCallback()
+}
+
+func responseHandler(resultSets map[string]ResultSet, response response) error {
 	responseID, statusCode, metadata, data := response.responseID, response.responseStatus.code,
 		response.responseResult.meta, response.responseResult.data
-
-	resultSet := resultSets[responseID.String()]
-	if resultSet == nil {
-		resultSet = newChannelResultSet(responseID.String())
+	responseIDString := responseID.String()
+	if resultSets[responseIDString] == nil {
+		return errors.New("resultSet was not created before data was received")
 	}
-	resultSets[responseID.String()] = resultSet
 	if aggregateTo, ok := metadata["aggregateTo"]; ok {
-		resultSet.setAggregateTo(aggregateTo.(string))
+		resultSets[responseIDString].setAggregateTo(aggregateTo.(string))
 	}
 
 	// Handle status codes appropriately. If status code is http.StatusPartialContent, we need to re-read data.
-	if statusCode == http.StatusProxyAuthRequired {
-		// TODO AN-989: Implement authentication (including handshaking).
-		resultSet.Close()
-		return responseID.String(), errors.New("authentication is not currently supported")
-	} else if statusCode == http.StatusNoContent {
-		// Add empty slice to result.
-		resultSet.addResult(&Result{make([]interface{}, 0)})
-		resultSet.Close()
-		return responseID.String(), nil
-	} else if statusCode == http.StatusOK || statusCode == http.StatusPartialContent {
+	if statusCode == http.StatusNoContent {
+		resultSets[responseIDString].addResult(&Result{make([]interface{}, 0)})
+		resultSets[responseIDString].Close()
+	} else if statusCode == http.StatusOK {
+		// Add data and status attributes to the ResultSet.
+		resultSets[responseIDString].addResult(&Result{data})
+		resultSets[responseIDString].setStatusAttributes(response.responseStatus.attributes)
+		resultSets[responseIDString].Close()
+	} else if statusCode == http.StatusPartialContent {
 		// Add data to the ResultSet.
-		resultSet.addResult(&Result{data})
-		if statusCode == http.StatusOK {
-			resultSet.setStatusAttributes(response.responseStatus.attributes)
-		}
-
-		// More data coming, need to read again.
-		if statusCode == http.StatusPartialContent {
-			return protocol.read(resultSets)
-		}
-		resultSet.Close()
-		return responseID.String(), nil
+		resultSets[responseIDString].addResult(&Result{data})
+	} else if statusCode == http.StatusProxyAuthRequired {
+		// TODO AN-989: Implement authentication (including handshaking).
+		resultSets[responseIDString].Close()
+		return errors.New("authentication is not currently supported")
 	} else {
-		resultSet.Close()
-		return "", errors.New(fmt.Sprint("statusCode: ", statusCode))
+		resultSets[responseIDString].Close()
+		return errors.New(fmt.Sprint("statusCode: ", statusCode))
 	}
+	return nil
 }
 
-func (protocol *gremlinServerWSProtocol) write(request *request, results map[string]ResultSet) (string, error) {
+func (protocol *gremlinServerWSProtocol) write(request *request) error {
 	bytes, err := protocol.serializer.serializeMessage(request)
 	if err != nil {
-		return "", err
+		return err
 	}
-	err = protocol.transporter.Write(bytes)
-	if err != nil {
-		return "", err
-	}
-	results[request.requestID.String()] = newChannelResultSet(request.requestID.String())
-	go protocol.read(results)
-	return request.requestID.String(), nil
+	return protocol.transporter.Write(bytes)
 }
 
-func newGremlinServerWSProtocol(handler *logHandler) protocol {
-	return &gremlinServerWSProtocol{&protocolBase{}, newGraphBinarySerializer(handler), handler, 1, "", ""}
+func (protocol *gremlinServerWSProtocol) close() (err error) {
+	protocol.mux.Lock()
+	if !protocol.closed {
+		err = protocol.transporter.Close()
+	}
+	protocol.mux.Unlock()
+	return
+}
+
+func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, host string, port int, results map[string]ResultSet, errorCallback func()) (protocol, error) {
+	transporter, err := getTransportLayer(transporterType, host, port)
+	if err != nil {
+		return nil, err
+	}
+
+	gremlinProtocol := &gremlinServerWSProtocol{
+		protocolBase:     &protocolBase{transporter: transporter},
+		serializer:       newGraphBinarySerializer(handler),
+		logHandler:       handler,
+		maxContentLength: 1,
+		username:         "",
+		password:         "",
+		closed:           false,
+		mux:              sync.Mutex{},
+	}
+
+	go gremlinProtocol.readLoop(results, errorCallback, handler)
+	return gremlinProtocol, nil
 }

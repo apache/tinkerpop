@@ -104,4 +104,10 @@ const (
 	malformedURL             errorKey = "MALFORMED_URL"
 	transportCloseFailed     errorKey = "TRANSPORT_CLOSE_FAILED"
 	notSlice                 errorKey = "NOT_SLICE_TYPE"
+	closeConnection          errorKey = "CLOSING_CONNECTION"
+	connectConnection        errorKey = "OPENING_CONNECTION"
+	failedConnection         errorKey = "FAILED_CONNECTION"
+	writeRequest             errorKey = "WRITE_REQUEST"
+	readLoopError            errorKey = "READ_LOOP_ERROR"
+	errorCallback            errorKey = "ERROR_CALLBACK"
 )

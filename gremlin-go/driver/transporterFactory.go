@@ -19,6 +19,8 @@ under the License.
 
 package gremlingo
 
+import "errors"
+
 // TransporterType is an alias for valid transport protocols.
 type TransporterType int
 
@@ -27,11 +29,18 @@ const (
 	Gorilla TransporterType = iota
 )
 
-func getTransportLayer(transporterType TransporterType, host string, port int) transporter {
+func getTransportLayer(transporterType TransporterType, host string, port int) (transporter, error) {
+	var transporter transporter
 	switch transporterType {
 	case Gorilla:
-		return &gorillaTransporter{host: host, port: port}
+		transporter = &gorillaTransporter{host: host, port: port}
+		break
 	default:
-		return nil
+		return nil, errors.New("transport layer type was not specified and cannot be initialized")
 	}
+	err := transporter.Connect()
+	if err != nil {
+		return nil, err
+	}
+	return transporter, nil
 }

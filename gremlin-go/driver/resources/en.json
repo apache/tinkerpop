@@ -9,5 +9,11 @@
   "NOT_MAP_TYPE": "Did not get the expected map type as input.",
   "MALFORMED_URL": "Malformed ws or wss URL.",
   "TRANSPORT_CLOSE_FAILED": "Ignoring error when closing existing transporter to replace with a new one: %s",
-  "NOT_SLICE_TYPE": "Did not get the expected slice type as input."
+  "NOT_SLICE_TYPE": "Did not get the expected slice type as input.",
+  "CLOSING_CONNECTION": "Closing the connection.",
+  "FAILED_CONNECTION" : "Failed to connect, connection is closed.",
+  "OPENING_CONNECTION": "Connecting.",
+  "WRITE_REQUEST": "Writing request.",
+  "READ_LOOP_ERROR": "Read loop error '%s', closing read loop.",
+  "ERROR_CALLBACK": "Connection error callback invoked, closing protocol."
 }

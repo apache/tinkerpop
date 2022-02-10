@@ -45,7 +45,7 @@ type DriverRemoteConnection struct {
 func NewDriverRemoteConnection(
 	host string,
 	port int,
-	configurations ...func(settings *DriverRemoteConnectionSettings)) *DriverRemoteConnection {
+	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
 		TraversalSource: "g",
 		Username:        "",
@@ -63,15 +63,22 @@ func NewDriverRemoteConnection(
 		configuration(settings)
 	}
 
+	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
+	connection, err := createConnection(host, port, logHandler)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: Full constructor blocked on client
 	client := &Client{
 		host:            host,
 		port:            port,
 		transporterType: settings.TransporterType,
-		logHandler:      newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language),
+		logHandler:      logHandler,
+		connection:      connection,
 	}
 
-	return &DriverRemoteConnection{client: client}
+	return &DriverRemoteConnection{client: client}, nil
 }
 
 // Close closes the DriverRemoteConnection

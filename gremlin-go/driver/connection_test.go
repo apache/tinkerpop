@@ -7,22 +7,24 @@ import (
 	"golang.org/x/text/language"
 )
 
-const runIntegration = false
+const runIntegration = true
 
 func TestConnection(t *testing.T) {
-	t.Run("Test connection.connect()", func(t *testing.T) {
+	t.Run("Test createConnection", func(t *testing.T) {
 		if runIntegration {
-			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
-			err := connection.connect()
+			connection, err := createConnection("localhost", 8181, newLogHandler(&defaultLogger{}, Info, language.English))
+			assert.Nil(t, err)
+			assert.NotNil(t, connection)
+			err = connection.close()
 			assert.Nil(t, err)
 		}
 	})
 
 	t.Run("Test connection.write()", func(t *testing.T) {
 		if runIntegration {
-			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
-			err := connection.connect()
+			connection, err := createConnection("localhost", 8181, newLogHandler(&defaultLogger{}, Info, language.English))
 			assert.Nil(t, err)
+			assert.NotNil(t, connection)
 			request := makeStringRequest("g.V().count()")
 			resultSet, err := connection.write(&request)
 			assert.Nil(t, err)
@@ -30,21 +32,24 @@ func TestConnection(t *testing.T) {
 			result := resultSet.one()
 			assert.NotNil(t, result)
 			assert.Equal(t, "[0]", result.GetString())
+			err = connection.close()
+			assert.Nil(t, err)
 		}
 	})
 
 	t.Run("Test client.submit()", func(t *testing.T) {
 		if runIntegration {
-			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
-			err := connection.connect()
+			client, err := NewClient("localhost", 8181)
 			assert.Nil(t, err)
-			client := NewClient("localhost", 8181)
+			assert.NotNil(t, client)
 			resultSet, err := client.Submit("g.V().count()")
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
 			assert.Equal(t, "[0]", result.GetString())
+			err = client.Close()
+			assert.Nil(t, err)
 		}
 	})
 }
