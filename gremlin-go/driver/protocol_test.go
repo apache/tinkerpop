@@ -39,6 +39,6 @@ func Test(t *testing.T) {
 		request := makeStringRequest("1+1")
 		requestID, err := protocol.write(&request, nil)
 		assert.NotNil(t, err)
-		assert.Equal(t, requestID, "")
+		assert.Equal(t, "", requestID)
 	})
 }
