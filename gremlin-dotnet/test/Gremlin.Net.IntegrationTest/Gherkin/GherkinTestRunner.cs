@@ -46,15 +46,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 // Add here the name of scenarios to ignore and the reason, e.g.:
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
-
-                // they are not failing as a result of the Gremlin itself - they are failing because of shortcomings in
-                // the test suite.
-                // https://issues.apache.org/jira/browse/TINKERPOP-2518
-                {"g_V_hasIdX2_nullX", IgnoreReason.NoReason},
-                {"g_V_hasIdX2AsString_nullX", IgnoreReason.NoReason},
-                {"g_addVXpersonX_propertyXname_joshX_propertyXage_nullX", IgnoreReason.NoReason},
-                {"g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX", IgnoreReason.NoReason},
-                {"g_addEXknowsXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX", IgnoreReason.NoReason},
                 {"g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_injectX0X_mergeVXselectXcXX_optionXonMatch_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
                 {"g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
                 {"g_withSideEffectXc_label_person_name_stephenX_withSideEffectXm_label_person_name_stephen_age_19X_injectX0X_mergeVXselectXcXX_optionXonCreate_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
@@ -120,7 +111,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
-                    if (feature.Tags.Select(t => t.Name).ToList().Contains("@AllowNullPropertyValues"))
+                    if (scenario.Tags.Any(t => t.Name == "@AllowNullPropertyValues"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.NullPropertyValuesNotSupportedOnTestGraph));
                         continue;
