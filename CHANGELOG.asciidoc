@@ -58,19 +58,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a potential connection load balancing issue due to a race condition not updating the usage count.
 * Extended `property()`` to allow for setting a `Map` of property values.
 
-==== Improvements
-
-* TINKERPOP-2687 Boolean Value Expressions 2.0 (Comparability without errors)
-* TINKERPOP-2641 Allow orderability on any type and across types (Orderability without errors)
-
 == TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte Symphonique)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: NOT OFFICIALLY RELEASED YET)
-* Fixed issue with implicit conversion of Infinity numbers into BigDecimals.
 
+* Fixed issue with implicit conversion of Infinity numbers into BigDecimals.
 * Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
 
 [[release-3-5-2]]
