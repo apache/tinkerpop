@@ -73,8 +73,9 @@ type Property struct {
 // Path denotes a particular walk through a Graph as defined by a traversal.
 // A list of labels and a list of objects is maintained in the path.
 // The list of labels are the labels of the steps traversed, and the objects are the objects that are traversed.
+// TODO: change labels to be []<set of string> after implementing set in AN-1022 and update the GetPathObject accordingly
 type Path struct {
-	labels  []string
+	labels  [][]string
 	objects []interface{}
 }
 
@@ -103,10 +104,26 @@ func (p *Path) GetPathObject(key string) (interface{}, error) {
 	if len(p.objects) != len(p.labels) {
 		return nil, errors.New("Path is invalid because it does not contain an equal number of labels and objects.")
 	}
+	var objectList []interface{}
+	var object interface{}
 	for i := 0; i < len(p.labels); i++ {
-		if p.labels[i] == key {
-			return p.objects[i], nil
+		for j := 0; j < len(p.labels[i]); j++ {
+			if p.labels[i][j] == key {
+				if object == nil {
+					object = p.objects[i]
+				} else if objectList != nil {
+					objectList = append(objectList, p.objects[i])
+				} else {
+					objectList = []interface{}{object, p.objects[i]}
+				}
+			}
 		}
 	}
-	return nil, errors.New(fmt.Sprintf("Path does not contain a label of '%s'.", key))
+	if objectList != nil {
+		return objectList, nil
+	} else if object != nil {
+		return object, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("Path does not contain a label of '%s'.", key))
+	}
 }

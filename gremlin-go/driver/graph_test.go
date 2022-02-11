@@ -56,14 +56,14 @@ func TestGraphStructureFunctions(t *testing.T) {
 	})
 
 	t.Run("Test Path.String()", func(t *testing.T) {
-		keys := []string{"foo", "bar", "baz"}
+		keys := [][]string{{"foo"}, {"bar"}, {"baz"}}
 		data := []interface{}{1, 2, "hello"}
 		p := Path{keys, data}
 		assert.Equal(t, "path[1, 2, hello]", p.String())
 	})
 
 	t.Run("Test Path.GetPathObject() with valid Path", func(t *testing.T) {
-		keys := []string{"foo", "bar", "baz"}
+		keys := [][]string{{"foo"}, {"bar"}, {"baz"}}
 		data := []interface{}{1, 2, "hello"}
 		p := Path{keys, data}
 		v, err := p.GetPathObject("foo")
@@ -78,7 +78,7 @@ func TestGraphStructureFunctions(t *testing.T) {
 	})
 
 	t.Run("Test Path.GetPathObject() with invalid Path", func(t *testing.T) {
-		keys := []string{"foo", "bar", "baz"}
+		keys := [][]string{{"foo"}, {"bar"}, {"baz"}}
 		data := []interface{}{1, 2}
 		p := Path{keys, data}
 		val, err := p.GetPathObject("foo")
@@ -87,7 +87,7 @@ func TestGraphStructureFunctions(t *testing.T) {
 	})
 
 	t.Run("Test Path.GetPathObject() with invalid key", func(t *testing.T) {
-		keys := []string{"foo", "bar", "baz"}
+		keys := [][]string{{"foo"}, {"bar"}}
 		data := []interface{}{1, 2}
 		p := Path{keys, data}
 		val, err := p.GetPathObject("foobar")

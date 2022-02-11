@@ -150,6 +150,75 @@ func TestGraphBinaryV1(t *testing.T) {
 			writeToBuffer(x, &buff)
 			assert.Equal(t, x, readToValue(&buff))
 		})
+
+		t.Run("test Graph Types", func(t *testing.T) {
+			var m = map[interface{}]interface{}{
+				"marko": int32(666),
+				"noone": "blah",
+			}
+			t.Run("test vertex", func(t *testing.T) {
+				x := new(Vertex)
+				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+				x.label = "Test label"
+				writeToBuffer(x, &buff)
+				v := readToValue(&buff).(*Vertex)
+				assert.Equal(t, x, v)
+				assert.Equal(t, x.id, v.id)
+				assert.Equal(t, x.label, v.label)
+			})
+			t.Run("test edge", func(t *testing.T) {
+				x := new(Edge)
+				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+				x.label = "Test edge label"
+				v1 := new(Vertex)
+				v2 := new(Vertex)
+				v1.id, _ = uuid.Parse("8a591c22-8a06-11ec-a8a3-0242ac120002")
+				v1.label = "Test v1 label"
+				v2.id, _ = uuid.Parse("1274f224-8a08-11ec-a8a3-0242ac120002")
+				v2.label = "Test v2 label"
+				x.inV = *v1
+				x.outV = *v2
+				writeToBuffer(x, &buff)
+				e := readToValue(&buff).(*Edge)
+				assert.Equal(t, x, e)
+				assert.Equal(t, x.id, e.id)
+				assert.Equal(t, x.label, e.label)
+				assert.Equal(t, x.inV, e.inV)
+				assert.Equal(t, x.outV, e.outV)
+			})
+			t.Run("test property", func(t *testing.T) {
+				x := new(Property)
+				x.key = "TestKey"
+				x.value = m
+				writeToBuffer(x, &buff)
+				p := readToValue(&buff).(*Property)
+				assert.Equal(t, x, p)
+				assert.Equal(t, x.key, p.key)
+				assert.Equal(t, x.value, p.value)
+			})
+			t.Run("test vertex property", func(t *testing.T) {
+				x := new(VertexProperty)
+				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+				x.label = "Test label"
+				x.value = m
+				writeToBuffer(x, &buff)
+				v := readToValue(&buff).(*VertexProperty)
+				assert.Equal(t, x, v)
+				assert.Equal(t, x.id, v.id)
+				assert.Equal(t, x.label, v.label)
+				assert.Equal(t, x.value, v.value)
+			})
+			t.Run("test path", func(t *testing.T) {
+				x := new(Path)
+				x.labels = [][]string{{"str1", "str2", "str3"}, {"str4"}}
+				x.objects = []interface{}{"String1", m}
+				writeToBuffer(x, &buff)
+				p := readToValue(&buff).(*Path)
+				assert.Equal(t, x, p)
+				assert.Equal(t, x.labels, p.labels)
+				assert.Equal(t, x.objects, p.objects)
+			})
+		})
 	})
 
 	t.Run("test nested types", func(t *testing.T) {
