@@ -26,7 +26,7 @@ const utils = require('./utils');
 const assert = require('assert');
 const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
-const { Vertex, Edge, Path } = require('../../../lib/structure/graph');
+const { Vertex, Edge, Path, Property } = require('../../../lib/structure/graph');
 const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
@@ -49,7 +49,7 @@ describe('GraphBinary.AnySerializer', () => {
       */
 
       // NumberSerializer
-      // Double (Float is never used during serialization)
+      // Double, TODO: Float is never used during serialization, still okay here?
       { v:0.1,         b:[DataType.DOUBLE,0x00, 0x3F,0xB9,0x99,0x99,0x99,0x99,0x99,0x9A] },
       { v:0.375,       b:[DataType.DOUBLE,0x00, 0x3F,0xD8,0x00,0x00,0x00,0x00,0x00,0x00] },
       { v:0.00390625,  b:[DataType.DOUBLE,0x00, 0x3F,0x70,0x00,0x00,0x00,0x00,0x00,0x00] },
@@ -192,6 +192,18 @@ describe('GraphBinary.AnySerializer', () => {
           DataType.LIST,0x00, 0x00,0x00,0x00,0x02,
             0x01,0x00, 0x00,0x00,0x00,0x01,
             0x01,0x00, 0xFF,0xFF,0xFF,0xFF,
+        ]
+      },
+
+      // PropertySerializer
+      {
+        v:new Property('Key', [ 'value' ]),
+        b:[
+          DataType.PROPERTY,0x00,
+          0x00,0x00,0x00,0x03, ...from('Key'),
+          0x09,0x00, 0x00,0x00,0x00,0x01, // list
+            0x03,0x00, 0x00,0x00,0x00,0x05, ...from('value'),
+          0xFE,0x01, // parent
         ]
       },
 
@@ -352,6 +364,19 @@ describe('GraphBinary.AnySerializer', () => {
           // {objects}
           0x09,0x00, 0x00,0x00,0x00,0x01,
             0x01,0x00, 0xFF,0xFF,0xFF,0xFF,
+        ]
+      },
+
+      // PROPERTY
+      { v:null,                                   b:[0x0F,0x01] },
+      {
+        v:new Property('Key', [ 'value' ]),
+        b:[
+          0x0F,0x00,
+          0x00,0x00,0x00,0x03, ...from('Key'),
+          0x09,0x00, 0x00,0x00,0x00,0x01, // list
+            0x03,0x00, 0x00,0x00,0x00,0x05, ...from('value'),
+          0xFE,0x01, // parent
         ]
       },
 
