@@ -70,6 +70,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.5.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed issue with implicit conversion of Infinity numbers into BigDecimals.
 
+* Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
 
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: January 10, 2022)

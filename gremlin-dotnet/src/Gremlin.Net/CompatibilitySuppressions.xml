@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <!-- Added an optional parameter to the constructor. -->
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Gremlin.Net.Driver.GremlinClient.#ctor(Gremlin.Net.Driver.GremlinServer,Gremlin.Net.Driver.IMessageSerializer,Gremlin.Net.Driver.ConnectionPoolSettings,System.Action{System.Net.WebSockets.ClientWebSocketOptions},System.String)</Target>
+    <Left>lib/netstandard2.0/Gremlin.Net.dll</Left>
+    <Right>lib/netstandard2.0/Gremlin.Net.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>

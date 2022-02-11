@@ -21,6 +21,26 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
+== TinkerPop 3.5.3
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.3/CHANGELOG.asciidoc#release-3-5-3[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== .NET WebSocket Compression Support
+
+.NET 6 added support for WebSocket compression. This is now also enabled by default in Gremlin.NET.
+
+It should be noted however that compression might make an application susceptible to attacks like CRIME/BREACH.
+Compression should therefore be turned off if the application sends sensitive data to the server as well as data that
+could potentially be controlled by an untrusted user. Compression can be disabled via the `disableCompression`
+parameter on the `GremlinClient` constructor.
+
+See:link:https://issues.apache.org/jira/browse/TINKERPOP-2682[TINKERPOP-2682]
+
 == TinkerPop 3.5.2
 
 *Release Date: January 10, 2022*

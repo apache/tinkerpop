@@ -58,7 +58,7 @@ namespace Gremlin.Net.Driver
         private const int Closed = 1;
 
         public Connection(Uri uri, string username, string password, IMessageSerializer messageSerializer,
-            Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
+            WebSocketSettings webSocketSettings, string sessionId)
         {
             _uri = uri;
             _username = username;
@@ -69,7 +69,7 @@ namespace Gremlin.Net.Driver
                 _sessionEnabled = true;
             }
             _messageSerializer = messageSerializer;
-            _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
+            _webSocketConnection = new WebSocketConnection(webSocketSettings);
         }
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
@@ -244,6 +244,14 @@ namespace Gremlin.Net.Driver
                 message = RebuildSessionMessage(message);
             }
             var serializedMsg = await _messageSerializer.SerializeMessageAsync(message).ConfigureAwait(false);
+#if NET6_0_OR_GREATER
+            if (message.Processor == Tokens.OpsAuthentication)
+            {
+                // Don't compress a message that contains credentials to prevent attacks like CRIME or BREACH
+                await _webSocketConnection.SendMessageUncompressedAsync(serializedMsg).ConfigureAwait(false);
+                return;
+            }
+#endif
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
 
