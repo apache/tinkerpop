@@ -133,10 +133,14 @@ Feature: Orderability
     And using the parameter xx10 defined as "l[a,b,c,d]"
     And using the parameter xx11 defined as "m[{\"a\":\"a\", \"b\":false, \"c\":\"c\"}]"
     And using the parameter xx12 defined as "m[{\"a\":\"a\", \"b\":\"b\"}]"
+    And using the parameter xx13 defined as "d[Infinity]"
+    And using the parameter xx14 defined as "d[NaN]"
+    And using the parameter xx15 defined as "d[-Infinity]"
+
     # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject(xx8,xx7,xx10,xx4,xx9,xx12,xx1,xx5,xx11,xx6,xx3,xx2).order()
+      g.inject(xx8,xx7,xx10,xx4,xx9,xx12,xx1,xx5,xx11,xx6,xx3,xx2,xx13,xx14,xx15).order()
       """
     When iterated to list
     Then the result should be ordered
@@ -144,8 +148,11 @@ Feature: Orderability
       | null |
       | false |
       | true |
+      | d[-Infinity] |
       | d[1].i |
       | d[2.0].d |
+      | d[Infinity] |
+      | d[NaN] |
       | bar |
       | foo |
       | zzz |
@@ -169,10 +176,13 @@ Feature: Orderability
     And using the parameter xx10 defined as "l[a,b,c,d]"
     And using the parameter xx11 defined as "m[{\"a\":\"a\", \"b\":false, \"c\":\"c\"}]"
     And using the parameter xx12 defined as "m[{\"a\":\"a\", \"b\":\"b\"}]"
+    And using the parameter xx13 defined as "d[Infinity]"
+    And using the parameter xx14 defined as "d[NaN]"
+    And using the parameter xx15 defined as "d[-Infinity]"
     # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject(xx8,xx7,xx10,xx4,xx9,xx12,xx1,xx5,xx11,xx6,xx3,xx2).order().by(desc)
+      g.inject(xx8,xx7,xx10,xx4,xx9,xx12,xx1,xx5,xx11,xx6,xx3,xx2,xx13,xx14,xx15).order().by(desc)
       """
     When iterated to list
     Then the result should be ordered
@@ -184,8 +194,11 @@ Feature: Orderability
       | zzz |
       | foo |
       | bar |
+      | d[NaN] |
+      | d[Infinity] |
       | d[2.0].d |
       | d[1].i |
+      | d[-Infinity] |
       | true |
       | false |
       | null |

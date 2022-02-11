@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.lang.reflect.Method;
@@ -167,14 +168,21 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Number o) {
-            // todo: nan/inf
-            // all int/short/BigInteger/long are just python int/bignum
-            if (o instanceof Double || o instanceof Float || o instanceof BigDecimal)
+            if (o instanceof Double || o instanceof Float || o instanceof BigDecimal) {
+                if (NumberHelper.isNaN(o))
+                    return "float('nan')";
+                if (NumberHelper.isPositiveInfinity(o))
+                    return "float('inf')";
+                if (NumberHelper.isNegativeInfinity(o))
+                    return "float('-inf')";
+
                 return "float(" + o + ")";
-            else if (o instanceof Byte)
+            }
+            if (o instanceof Byte)
                 return "SingleByte(" + o + ")";
-            else
-                return o.toString();
+
+            // all int/short/BigInteger/long are just python int/bignum
+            return o.toString();
         }
 
         @Override

@@ -93,6 +93,9 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                 if (!expression.empty) {
                     expression.eachWithIndex{ Expression entry, int i ->
                         if (entry instanceof VariableExpression) {
+                            if (entry.getName() == "Infinity")
+                                return
+
                             // need a default binding value - any nonsense that satisfies the step argument should
                             // work typically. the string default works for a great many cases, but sometimes we
                             // need to get more specific. as it sits this list is incomplete and certain bindings

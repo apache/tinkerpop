@@ -199,6 +199,13 @@ public class CompareTest {
                 {Compare.gt, asList(0), asList(1), false},
                 {Compare.gte, asList(0), asList(1), false},
 
+                {Compare.eq, asList(1,2,3), asList(1,2,4), false},
+                {Compare.neq, asList(1,2,3), asList(1,2,4), true},
+                {Compare.lt, asList(1,2,3), asList(1,2,4), true},
+                {Compare.lte, asList(1,2,3), asList(1,2,4), true},
+                {Compare.gt, asList(1,2,3), asList(1,2,4), false},
+                {Compare.gte, asList(1,2,3), asList(1,2,4), false},
+
                 {Compare.eq, asList(Double.NaN), asList(Double.NaN), false},
                 {Compare.neq, asList(Double.NaN), asList(Double.NaN), true},
                 {Compare.lt, asList(Double.NaN), asList(Double.NaN), GremlinTypeErrorException.class},
@@ -226,6 +233,23 @@ public class CompareTest {
                 {Compare.lte, asList(0), asList("foo"), GremlinTypeErrorException.class},
                 {Compare.gt, asList(0), asList("foo"), GremlinTypeErrorException.class},
                 {Compare.gte, asList(0), asList("foo"), GremlinTypeErrorException.class},
+
+                // sets are sorted
+                {Compare.eq, asSet(1.0, 2.0), asSet(2, 1), true},
+                {Compare.neq, asSet(1.0, 2.0), asSet(2, 1), false},
+                {Compare.lt, asSet(1.0, 2.0), asSet(2, 1), false},
+                {Compare.lte, asSet(1.0, 2.0), asSet(2, 1), true},
+                {Compare.gt, asSet(1.0, 2.0), asSet(2, 1), false},
+                {Compare.gte, asSet(1.0, 2.0), asSet(2, 1), true},
+
+                // maps are sorted
+                {Compare.eq, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), true},
+                {Compare.neq, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), false},
+                {Compare.lt, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), false},
+                {Compare.lte, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), true},
+                {Compare.gt, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), false},
+                {Compare.gte, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), true},
+
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);

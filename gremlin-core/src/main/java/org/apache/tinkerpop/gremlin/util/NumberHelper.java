@@ -635,4 +635,13 @@ public final class NumberHelper {
         return isNaN(first) && isNaN(second);
     }
 
+    public static boolean isPositiveInfinity(final Object value) {
+        return (value instanceof Float && Float.POSITIVE_INFINITY == ((float) value)) ||
+                (value instanceof Double && Double.POSITIVE_INFINITY == ((double) value));
+    }
+
+    public static boolean isNegativeInfinity(final Object value) {
+        return (value instanceof Float && Float.NEGATIVE_INFINITY == ((float) value)) ||
+                (value instanceof Double && Double.NEGATIVE_INFINITY == ((double) value));
+    }
 }

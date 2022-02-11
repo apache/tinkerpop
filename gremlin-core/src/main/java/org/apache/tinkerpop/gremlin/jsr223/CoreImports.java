@@ -350,6 +350,16 @@ public final class CoreImports {
         Collections.addAll(ENUM_IMPORTS, Scope.values());
         Collections.addAll(ENUM_IMPORTS, T.values());
         Collections.addAll(ENUM_IMPORTS, TraversalOptionParent.Pick.values());
+
+        ////////////
+        // FIELDS //
+        ////////////
+
+        try {
+            FIELD_IMPORTS.add(Double.class.getField("NaN"));
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     private CoreImports() {

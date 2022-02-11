@@ -1195,6 +1195,14 @@ public class GremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@inheritDoc}
 	 */
 	@Override public T visitNullLiteral(final GremlinParser.NullLiteralContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitNanLiteral(GremlinParser.NanLiteralContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitInfLiteral(GremlinParser.InfLiteralContext ctx) { notImplemented(ctx); return null; }
 
 	/**
 	 * {@inheritDoc}

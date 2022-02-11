@@ -41,7 +41,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     eq {
         @Override
         public boolean test(final Object first, final Object second) {
-            return GremlinValueComparator.COMPARE.equals(first, second);
+            return GremlinValueComparator.COMPARABILITY.equals(first, second);
         }
 
         /**
@@ -81,7 +81,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     gt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return GremlinValueComparator.COMPARE.compare(first, second) > 0;
+            return GremlinValueComparator.COMPARABILITY.compare(first, second) > 0;
         }
 
         /**
@@ -101,7 +101,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     gte {
         @Override
         public boolean test(final Object first, final Object second) {
-            return GremlinValueComparator.COMPARE.compare(first, second) >= 0;
+            return GremlinValueComparator.COMPARABILITY.compare(first, second) >= 0;
         }
 
         /**
@@ -121,7 +121,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     lt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return GremlinValueComparator.COMPARE.compare(first, second) < 0;
+            return GremlinValueComparator.COMPARABILITY.compare(first, second) < 0;
         }
 
         /**
@@ -141,7 +141,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     lte {
         @Override
         public boolean test(final Object first, final Object second) {
-            return GremlinValueComparator.COMPARE.compare(first, second) <= 0;
+            return GremlinValueComparator.COMPARABILITY.compare(first, second) <= 0;
         }
 
         /**

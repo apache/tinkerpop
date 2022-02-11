@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -177,10 +178,14 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Number o) {
-            if (o instanceof Float && Float.isNaN((float) o) )
-                return "Single.NaN";
-            if (o instanceof Double && Double.isNaN((double) o) )
-                return "Double.NaN";
+            if (o instanceof Float || o instanceof Double) {
+                if (NumberHelper.isNaN(o))
+                    return (o instanceof Float ? "Single" : "Double") + ".NaN";
+                if (NumberHelper.isPositiveInfinity(o))
+                    return (o instanceof Float ? "Single" : "Double") + ".PositiveInfinity";
+                if (NumberHelper.isNegativeInfinity(o))
+                    return (o instanceof Float ? "Single" : "Double") + ".NegativeInfinity";
+            }
             return o.toString();
         }
 

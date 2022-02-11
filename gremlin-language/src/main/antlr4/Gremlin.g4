@@ -1305,6 +1305,8 @@ genericLiteral
 	| stringLiteral
 	| dateLiteral
 	| nullLiteral
+	| nanLiteral
+	| infLiteral
 	// Allow the generic literal to match specific gremlin tokens also
 	| traversalToken
 	| traversalCardinality
@@ -1346,6 +1348,14 @@ dateLiteral
 
 nullLiteral
     : NullLiteral
+    ;
+
+nanLiteral
+    : NaNLiteral
+    ;
+
+infLiteral
+    : SignedInfLiteral
     ;
 
 /*********************************************
@@ -1527,6 +1537,23 @@ BooleanLiteral
 NullLiteral
 	:	'null'
 	;
+
+// NaN Literal
+
+NaNLiteral
+	:	'NaN'
+	;
+
+// Inf Literal
+
+SignedInfLiteral
+	:	Sign? InfLiteral
+	;
+
+InfLiteral
+	:	'Infinity'
+	;
+
 
 // String Literals
 
