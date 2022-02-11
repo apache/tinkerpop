@@ -24,6 +24,8 @@ from six.moves import queue
 from gremlin_python.driver import connection, protocol, request, serializer
 from gremlin_python.process import traversal
 
+log = logging.getLogger("gremlinpython")
+
 # This is until concurrent.futures backport 3.1.0 release
 try:
     from multiprocessing import cpu_count
@@ -42,7 +44,7 @@ class Client:
                  message_serializer=None, username="", password="",
                  kerberized_service="", headers=None, session=None,
                  **transport_kwargs):
-        logging.info("Creating Client with url '%s'", url)
+        log.info("Creating Client with url '%s'", url)
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -112,7 +114,7 @@ class Client:
     def close(self):
         if self._session_enabled:
             self._close_session()
-        logging.info("Closing Client with url '%s'", self._url)
+        log.info("Closing Client with url '%s'", self._url)
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
@@ -143,7 +145,7 @@ class Client:
         self.submit_async(message, bindings, request_options)
 
     def submit_async(self, message, bindings=None, request_options=None):
-        logging.debug("message '%s'", str(message))
+        log.debug("message '%s'", str(message))
         args = {'gremlin': message, 'aliases': {'g': self._traversal_source}}
         processor = ''
         op = 'eval'
@@ -159,7 +161,7 @@ class Client:
             processor = 'session'
 
         if isinstance(message, traversal.Bytecode) or isinstance(message, str):
-            logging.debug("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
+            log.debug("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
             message = request.RequestMessage(processor=processor, op=op, args=args)
 
         conn = self._pool.get(True)
