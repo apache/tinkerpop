@@ -21,6 +21,9 @@
 
 #endregion
 
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Running;
 
 namespace Gremlin.Net.Benchmarks
@@ -31,5 +34,12 @@ namespace Gremlin.Net.Benchmarks
         {
             BenchmarkRunner.Run<MessageSerializerBenchmarks>();
         }
+        
+        // public static async Task Main()
+        // {
+        //     var watch = Stopwatch.StartNew();
+        //     await CompressionBenchmarks.GraphBinaryWithCompression();
+        //     Console.WriteLine(watch.Elapsed);
+        // }
     }
 }
