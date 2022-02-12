@@ -45,6 +45,7 @@ ioc.edgeSerializer = new (require('./internals/EdgeSerializer'))(ioc);
 ioc.pathSerializer = new (require('./internals/PathSerializer'))(ioc);
 ioc.propertySerializer = new (require('./internals/PropertySerializer'))(ioc);
 ioc.vertexSerializer = new (require('./internals/VertexSerializer'))(ioc);
+ioc.vertexPropertySerializer = new (require('./internals/VertexPropertySerializer'))(ioc);
 ioc.bytecodeSerializer = new (require('./internals/BytecodeSerializer'))(ioc);
 ioc.pSerializer = new (require('./internals/PSerializer'))(ioc);
 ioc.traverserSerializer = new (require('./internals/TraverserSerializer'))(ioc);

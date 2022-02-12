@@ -44,6 +44,7 @@ module.exports = class AnySerializer {
       ioc.pathSerializer,
       ioc.propertySerializer,
       ioc.vertexSerializer,
+      ioc.vertexPropertySerializer,
       ioc.stringSerializer,
 
       ioc.mapSerializer, // Map or any Object

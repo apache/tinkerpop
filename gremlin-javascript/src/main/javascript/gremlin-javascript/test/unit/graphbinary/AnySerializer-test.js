@@ -26,7 +26,7 @@ const utils = require('./utils');
 const assert = require('assert');
 const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
-const { Vertex, Edge, Path, Property } = require('../../../lib/structure/graph');
+const { Vertex, VertexProperty, Edge, Path, Property } = require('../../../lib/structure/graph');
 const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
@@ -207,6 +207,18 @@ describe('GraphBinary.AnySerializer', () => {
         ]
       },
 
+      // VertexPropertySerializer
+      { v:new VertexProperty('00010203-0405-0607-0809-0a0b0c0d0e0f', 'Label', 42),
+        b:[
+          0x12,0x00,
+          0x03,0x00, 0x00,0x00,0x00,0x24, ...from('00010203-0405-0607-0809-0a0b0c0d0e0f'),
+          0x00,0x00,0x00,0x05, ...from('Label'),
+          0x01,0x00, 0x00,0x00,0x00,0x2A,
+          0xFE,0x01,
+          0xFE,0x01,
+        ]
+      },
+
       // LongSerializer
       // TODO +
 
@@ -384,6 +396,19 @@ describe('GraphBinary.AnySerializer', () => {
       { v:null,                                   b:[0x11,0x01] },
       { v:new Vertex('00010203-0405-0607-0809-0a0b0c0d0e0f', 'A', null),
         b:[0x11,0x00, 0x0C,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F, 0x00,0x00,0x00,0x01,0x41, 0xFE,0x01]
+      },
+
+      // VERTEXPROPERTY
+      { v:null,                                   b:[0x12,0x01] },
+      { v:new VertexProperty('00010203-0405-0607-0809-0a0b0c0d0e0f', 'Label', 42, null),
+        b:[
+          0x12,0x00,
+          0x0C,0x00, 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
+          0x00,0x00,0x00,0x05, ...from('Label'),
+          0x01,0x00, 0x00,0x00,0x00,0x2A,
+          0xFE,0x01,
+          0xFE,0x01,
+        ]
       },
 
       // BARRIER
