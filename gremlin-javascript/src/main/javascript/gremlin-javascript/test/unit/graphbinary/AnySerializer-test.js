@@ -115,7 +115,14 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO
 
       // LambdaSerializer
-      // TODO
+      { v:function() { return 'Script_1'; },
+        b:[
+          DataType.LAMBDA,0x00,
+          0x00,0x00,0x00,0x0E, ...from('gremlin-groovy'),
+          0x00,0x00,0x00,0x08, ...from('Script_1'),
+          0xFF,0xFF,0xFF,0xFF,
+        ]
+      },
 
       // EnumSerializer (actually represents different enum like types)
       { v: new t.EnumValue('Barrier', 'normSack'),
@@ -446,6 +453,9 @@ describe('GraphBinary.AnySerializer', () => {
       // POP
       { v:null,                                   b:[0x1C,0x01] },
       { v:new t.EnumValue('Pop','first'),         b:[0x1C,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
+
+      // LAMBDA
+      // TODO: it's not expected to be deserialized, is it correct assumption?
 
       // P
       { v:t.P.eq(7),                              b:[0x1E,0x00, 0x00,0x00,0x00,0x02, ...from('eq'), 0x00,0x00,0x00,0x01, 0x01,0x00,0x00,0x00,0x00,0x07] },
