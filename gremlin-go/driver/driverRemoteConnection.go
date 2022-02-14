@@ -69,7 +69,6 @@ func NewDriverRemoteConnection(
 		return nil, err
 	}
 
-	// TODO: Full constructor blocked on client
 	client := &Client{
 		host:            host,
 		port:            port,
@@ -86,10 +85,14 @@ func (driver *DriverRemoteConnection) Close() error {
 	return driver.client.Close()
 }
 
-// Submit sends a traversal to the server
-// TODO: Take in Bytecode when implemented
+// Submit sends a string traversal to the server
 func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet, error) {
 	return driver.client.Submit(traversalString)
+}
+
+// SubmitBytecode sends a bytecode traversal to the server
+func (driver *DriverRemoteConnection) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
+	return driver.client.SubmitBytecode(bytecode)
 }
 
 // TODO: Bytecode, OptionsStrategy, RequestOptions

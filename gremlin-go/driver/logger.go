@@ -110,4 +110,6 @@ const (
 	writeRequest             errorKey = "WRITE_REQUEST"
 	readLoopError            errorKey = "READ_LOOP_ERROR"
 	errorCallback            errorKey = "ERROR_CALLBACK"
+	creatingRequest          errorKey = "CREATING_REQUEST"
+	readComplete             errorKey = "READ_COMPLETE"
 )

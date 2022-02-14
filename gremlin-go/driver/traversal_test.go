@@ -26,20 +26,20 @@ import (
 
 func TestTraversal(t *testing.T) {
 	t.Run("Test clone traversal", func(t *testing.T) {
-		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil))
+		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
 		original := g.V().Out("created")
 		clone := original.Clone().Out("knows")
 		cloneClone := clone.Clone().Out("created")
 
-		assert.Equal(t, 2, len(original.t.bytecode.stepInstructions))
-		assert.Equal(t, 3, len(clone.t.bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.t.bytecode.stepInstructions))
+		assert.Equal(t, 2, len(original.bytecode.stepInstructions))
+		assert.Equal(t, 3, len(clone.bytecode.stepInstructions))
+		assert.Equal(t, 4, len(cloneClone.bytecode.stepInstructions))
 
 		original.Has("person", "name", "marko")
 		clone.V().Out()
 
-		assert.Equal(t, 3, len(original.t.bytecode.stepInstructions))
-		assert.Equal(t, 5, len(clone.t.bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.t.bytecode.stepInstructions))
+		assert.Equal(t, 3, len(original.bytecode.stepInstructions))
+		assert.Equal(t, 5, len(clone.bytecode.stepInstructions))
+		assert.Equal(t, 4, len(cloneClone.bytecode.stepInstructions))
 	})
 }

@@ -239,7 +239,7 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.GetVertex()", func(t *testing.T) {
 		vertex := Vertex{}
-		r := Result{vertex}
+		r := Result{&vertex}
 		res, err := r.GetVertex()
 		assert.Nil(t, err)
 		assert.Equal(t, &vertex, res)
@@ -254,7 +254,7 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.GetEdge()", func(t *testing.T) {
 		edge := Edge{}
-		r := Result{edge}
+		r := Result{&edge}
 		res, err := r.GetEdge()
 		assert.Nil(t, err)
 		assert.Equal(t, &edge, res)
@@ -269,7 +269,7 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.GetElement()", func(t *testing.T) {
 		element := Element{}
-		r := Result{element}
+		r := Result{&element}
 		res, err := r.GetElement()
 		assert.Nil(t, err)
 		assert.Equal(t, &element, res)
@@ -284,7 +284,7 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.GetPath()", func(t *testing.T) {
 		path := Path{}
-		r := Result{path}
+		r := Result{&path}
 		res, err := r.GetPath()
 		assert.Nil(t, err)
 		assert.Equal(t, &path, res)
@@ -299,7 +299,7 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.GetProperty()", func(t *testing.T) {
 		property := Property{}
-		r := Result{property}
+		r := Result{&property}
 		res, err := r.GetProperty()
 		assert.Nil(t, err)
 		assert.Equal(t, &property, res)
@@ -314,7 +314,7 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.GetVertexProperty()", func(t *testing.T) {
 		vertexProperty := VertexProperty{}
-		r := Result{vertexProperty}
+		r := Result{&vertexProperty}
 		res, err := r.GetVertexProperty()
 		assert.Nil(t, err)
 		assert.Equal(t, &vertexProperty, res)
@@ -341,9 +341,9 @@ func TestResult(t *testing.T) {
 
 	t.Run("Test Result.ToString() empty custom struct", func(t *testing.T) {
 		element := Element{}
-		r := Result{element}
+		r := Result{&element}
 		res := r.ToString()
-		assert.Equal(t, "result{object={[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] } class=gremlingo.Element}", res)
+		assert.Equal(t, "result{object=&{<nil> } class=*gremlingo.Element}", res)
 	})
 
 	t.Run("Test Result.GetType() simple type", func(t *testing.T) {

@@ -23,7 +23,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"math/big"
+	"reflect"
 	"strings"
 
 	"github.com/google/uuid"
@@ -39,7 +41,7 @@ type serializer interface {
 
 // graphBinarySerializer serializes/deserializes message to/from GraphBinary
 type graphBinarySerializer struct {
-	serializer *graphBinaryTypeSerializer
+	ser *graphBinaryTypeSerializer
 }
 
 func newGraphBinarySerializer(handler *logHandler) serializer {
@@ -49,9 +51,37 @@ func newGraphBinarySerializer(handler *logHandler) serializer {
 
 const versionByte byte = 0x81
 
+func convertArgs(request *request, gs graphBinarySerializer) (map[string]interface{}, error) {
+	// TODO AN-981: Remote transaction session processor is same as bytecode
+	if request.processor == bytecodeProcessor {
+		// Convert to format:
+		// args["gremlin"]: <serialized args["gremlin"]>
+		gremlin := request.args["gremlin"]
+		switch gremlin.(type) {
+		case bytecode:
+			buffer := bytes.Buffer{}
+			gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
+			if err != nil {
+				return nil, err
+			}
+			request.args["gremlin"] = gremlinBuffer
+			return request.args, nil
+		default:
+			return nil, errors.New(fmt.Sprintf("Failed to find serializer for type '%s'.", reflect.TypeOf(gremlin).Name()))
+		}
+	} else {
+		// Use standard processor, which effectively does nothing.
+		return request.args, nil
+	}
+}
+
 // serializeMessage serializes a request message into GraphBinary
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
-	finalMessage, err := gs.buildMessage(request, 0x20)
+	args, err := convertArgs(request, gs)
+	if err != nil {
+		return nil, err
+	}
+	finalMessage, err := gs.buildMessage(request.requestID, byte(len(graphBinaryMimeType)), request.op, request.processor, args)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +97,7 @@ func writeStr(buffer bytes.Buffer, str string) error {
 	return err
 }
 
-func (gs *graphBinarySerializer) buildMessage(request *request, mimeLen byte) ([]byte, error) {
+func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op string, processor string, args map[string]interface{}) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	// mime header
@@ -78,7 +108,7 @@ func (gs *graphBinarySerializer) buildMessage(request *request, mimeLen byte) ([
 	buffer.WriteByte(versionByte)
 
 	// Request uuid
-	bigIntUUID := uuidToBigInt(request.requestID)
+	bigIntUUID := uuidToBigInt(id)
 	lower := bigIntUUID.Uint64()
 	upperBigInt := bigIntUUID.Rsh(&bigIntUUID, 64)
 	upper := upperBigInt.Uint64()
@@ -92,41 +122,47 @@ func (gs *graphBinarySerializer) buildMessage(request *request, mimeLen byte) ([
 	}
 
 	// op
-	err = binary.Write(&buffer, binary.BigEndian, uint32(len(request.op)))
+	err = binary.Write(&buffer, binary.BigEndian, uint32(len(op)))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = buffer.WriteString(request.op)
+	_, err = buffer.WriteString(op)
 	if err != nil {
 		return nil, err
 	}
 
 	// processor
-	err = binary.Write(&buffer, binary.BigEndian, uint32(len(request.processor)))
+	err = binary.Write(&buffer, binary.BigEndian, uint32(len(processor)))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = buffer.WriteString(request.processor)
+	_, err = buffer.WriteString(processor)
 	if err != nil {
 		return nil, err
 	}
 
 	// args
-	err = binary.Write(&buffer, binary.BigEndian, uint32(len(request.args)))
-	for k, v := range request.args {
-		_, err = gs.serializer.writeValue(k, &buffer, true)
+	err = binary.Write(&buffer, binary.BigEndian, uint32(len(args)))
+	for k, v := range args {
+		_, err = gs.ser.write(k, &buffer)
 		if err != nil {
 			return nil, err
 		}
 
-		_, err = gs.serializer.writeValue(v, &buffer, true)
+		switch v.(type) {
+		case []byte:
+			_, err = buffer.Write(v.([]byte))
+			break
+		default:
+			_, err = gs.ser.write(v, &buffer)
+			break
+		}
 		if err != nil {
 			return nil, err
 		}
 	}
-
 	return buffer.Bytes(), nil
 }
 
@@ -160,7 +196,7 @@ func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interf
 		if err != nil {
 			return nil, err
 		} else if keyType != StringType {
-			return nil, errors.New("expected string key for map")
+			return nil, errors.New(fmt.Sprintf("expected string key for map, got type='0x%x'", keyType))
 		}
 		var nullable byte
 		err = binary.Read(buffer, binary.BigEndian, &nullable)
@@ -172,7 +208,7 @@ func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interf
 		if err != nil {
 			return nil, err
 		}
-		mapData[k], err = gs.serializer.read(buffer)
+		mapData[k], err = gs.ser.read(buffer)
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +281,7 @@ func (gs graphBinarySerializer) deserializeMessage(responseMessage []byte) (resp
 	}
 
 	// Result data
-	data, err := gs.serializer.read(&buffer)
+	data, err := gs.ser.read(&buffer)
 	if err != nil {
 		return msg, err
 	}
@@ -272,19 +308,19 @@ func (gs *graphBinarySerializer) deserializeRequestMessage(requestMessage *[]byt
 	if err != nil {
 		return msg, err
 	}
-	msgUUID, err := gs.serializer.readValue(&buffer, byte(UUIDType), false)
+	msgUUID, err := gs.ser.readValue(&buffer, byte(UUIDType), false)
 	if err != nil {
 		return msg, err
 	}
-	msgOp, err := gs.serializer.readValue(&buffer, byte(StringType), false)
+	msgOp, err := gs.ser.readValue(&buffer, byte(StringType), false)
 	if err != nil {
 		return msg, err
 	}
-	msgProc, err := gs.serializer.readValue(&buffer, byte(StringType), false)
+	msgProc, err := gs.ser.readValue(&buffer, byte(StringType), false)
 	if err != nil {
 		return msg, err
 	}
-	msgArgs, err := gs.serializer.readValue(&buffer, byte(MapType), false)
+	msgArgs, err := gs.ser.readValue(&buffer, byte(MapType), false)
 	if err != nil {
 		return msg, err
 	}
@@ -305,32 +341,32 @@ func (gs *graphBinarySerializer) serializeResponseMessage(response *response) ([
 	buffer.WriteByte(versionByte)
 
 	// requestID
-	_, err := gs.serializer.writeValue(response.responseID, &buffer, true)
+	_, err := gs.ser.writeValue(response.responseID, &buffer, true)
 	if err != nil {
 		return nil, err
 	}
 	// Status Code
-	_, err = gs.serializer.writeValue(response.responseStatus.code, &buffer, false)
+	_, err = gs.ser.writeValue(response.responseStatus.code, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
 	// Status message
-	_, err = gs.serializer.writeValue(response.responseStatus.message, &buffer, true)
+	_, err = gs.ser.writeValue(response.responseStatus.message, &buffer, true)
 	if err != nil {
 		return nil, err
 	}
 	// Status attributes
-	_, err = gs.serializer.writeValue(response.responseStatus.attributes, &buffer, false)
+	_, err = gs.ser.writeValue(response.responseStatus.attributes, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
 	// Result meta
-	_, err = gs.serializer.writeValue(response.responseResult.meta, &buffer, false)
+	_, err = gs.ser.writeValue(response.responseResult.meta, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
 	// Result
-	_, err = gs.serializer.write(response.responseResult.data, &buffer)
+	_, err = gs.ser.write(response.responseResult.data, &buffer)
 	if err != nil {
 		return nil, err
 	}

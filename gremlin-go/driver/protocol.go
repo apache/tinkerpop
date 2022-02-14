@@ -69,14 +69,14 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSe
 		}
 
 		// Deserialize message and unpack.
-		response, err := protocol.serializer.deserializeMessage(msg)
+		resp, err := protocol.serializer.deserializeMessage(msg)
 		if err != nil {
 			log.logger.Log(Error, err)
 			readErrorHandler(resultSets, errorCallback, err, log)
 			return
 		}
 
-		err = responseHandler(resultSets, response)
+		err = responseHandler(resultSets, resp, log)
 		if err != nil {
 			readErrorHandler(resultSets, errorCallback, err, log)
 			return
@@ -93,7 +93,7 @@ func readErrorHandler(resultSets map[string]ResultSet, errorCallback func(), err
 	errorCallback()
 }
 
-func responseHandler(resultSets map[string]ResultSet, response response) error {
+func responseHandler(resultSets map[string]ResultSet, response response, log *logHandler) error {
 	responseID, statusCode, metadata, data := response.responseID, response.responseStatus.code,
 		response.responseResult.meta, response.responseResult.data
 	responseIDString := responseID.String()
@@ -108,21 +108,26 @@ func responseHandler(resultSets map[string]ResultSet, response response) error {
 	if statusCode == http.StatusNoContent {
 		resultSets[responseIDString].addResult(&Result{make([]interface{}, 0)})
 		resultSets[responseIDString].Close()
+		log.logger.Log(Info, "No content.")
+		log.logf(Info, readComplete, responseIDString)
 	} else if statusCode == http.StatusOK {
 		// Add data and status attributes to the ResultSet.
 		resultSets[responseIDString].addResult(&Result{data})
 		resultSets[responseIDString].setStatusAttributes(response.responseStatus.attributes)
 		resultSets[responseIDString].Close()
+		log.logger.Logf(Info, "OK %v===>%v", response.responseStatus, data)
+		log.logf(Info, readComplete, responseIDString)
 	} else if statusCode == http.StatusPartialContent {
 		// Add data to the ResultSet.
 		resultSets[responseIDString].addResult(&Result{data})
+		log.logger.Logf(Info, "Partial %v===>%v", response.responseStatus, data)
 	} else if statusCode == http.StatusProxyAuthRequired {
 		// TODO AN-989: Implement authentication (including handshaking).
 		resultSets[responseIDString].Close()
 		return errors.New("authentication is not currently supported")
 	} else {
 		resultSets[responseIDString].Close()
-		return errors.New(fmt.Sprint("statusCode: ", statusCode))
+		return errors.New(fmt.Sprint("Error in read loop, error message '", response.responseStatus, "'. statusCode: ", statusCode))
 	}
 	return nil
 }
@@ -145,13 +150,13 @@ func (protocol *gremlinServerWSProtocol) close() (err error) {
 }
 
 func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, host string, port int, results map[string]ResultSet, errorCallback func()) (protocol, error) {
-	transporter, err := getTransportLayer(transporterType, host, port)
+	transport, err := getTransportLayer(transporterType, host, port)
 	if err != nil {
 		return nil, err
 	}
 
 	gremlinProtocol := &gremlinServerWSProtocol{
-		protocolBase:     &protocolBase{transporter: transporter},
+		protocolBase:     &protocolBase{transporter: transport},
 		serializer:       newGraphBinarySerializer(handler),
 		logHandler:       handler,
 		maxContentLength: 1,
@@ -160,7 +165,10 @@ func newGremlinServerWSProtocol(handler *logHandler, transporterType Transporter
 		closed:           false,
 		mux:              sync.Mutex{},
 	}
-
+	err = gremlinProtocol.transporter.Connect()
+	if err != nil {
+		return nil, err
+	}
 	go gremlinProtocol.readLoop(results, errorCallback, handler)
 	return gremlinProtocol, nil
 }

@@ -60,7 +60,7 @@ func (connection *connection) close() (err error) {
 func (connection *connection) write(request *request) (ResultSet, error) {
 	connection.logHandler.log(Info, writeRequest)
 	requestID := request.requestID.String()
-	connection.logHandler.logger.Log(Info, "Created request with id ", requestID)
+	connection.logHandler.logf(Info, creatingRequest, requestID)
 	connection.results[requestID] = newChannelResultSet(requestID)
 	return connection.results[requestID], connection.protocol.write(request)
 }

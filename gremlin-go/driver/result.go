@@ -147,52 +147,68 @@ func (r *Result) IsNil() bool {
 
 // GetVertex returns the result if it is a vertex, otherwise returns an error
 func (r *Result) GetVertex() (*Vertex, error) {
-	res, ok := r.result.(Vertex)
+	res, ok := r.result.(*Vertex)
 	if !ok {
 		return nil, errors.New("result is not a Vertex")
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetEdge returns the result if it is an edge, otherwise returns an error
 func (r *Result) GetEdge() (*Edge, error) {
-	res, ok := r.result.(Edge)
+	res, ok := r.result.(*Edge)
 	if !ok {
 		return nil, errors.New("result is not an Edge")
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetElement returns the result if it is an element, otherwise returns an error
 func (r *Result) GetElement() (*Element, error) {
-	res, ok := r.result.(Element)
+	res, ok := r.result.(*Element)
 	if !ok {
 		return nil, errors.New("result is not an Element")
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetPath returns the result if it is a path, otherwise returns an error
 func (r *Result) GetPath() (*Path, error) {
-	res, ok := r.result.(Path)
+	res, ok := r.result.(*Path)
 	if !ok {
 		return nil, errors.New("result is not a Path")
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetProperty returns the result if it is a property, otherwise returns an error
 func (r *Result) GetProperty() (*Property, error) {
-	res, ok := r.result.(Property)
+	res, ok := r.result.(*Property)
 	if !ok {
 		return nil, errors.New("result is not a Property")
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetVertexProperty returns the result if it is a vertex property, otherwise returns an error
 func (r *Result) GetVertexProperty() (*VertexProperty, error) {
-	res, ok := r.result.(VertexProperty)
+	res, ok := r.result.(*VertexProperty)
+	if !ok {
+		return nil, errors.New("result is not a VertexProperty")
+	}
+	return res, nil
+}
+
+func (r *Result) GetTraverser() (*Traverser, error) {
+	res, ok := r.result.(Traverser)
+	if !ok {
+		return nil, errors.New("result is not a Traverser")
+	}
+	return &res, nil
+}
+
+func (r *Result) GetSlice() (*[]interface{}, error) {
+	res, ok := r.result.([]interface{})
 	if !ok {
 		return nil, errors.New("result is not a VertexProperty")
 	}

@@ -1,8 +1,8 @@
 {
   "READ_FAILED": "Reading message failed!",
   "WRITE_FAILED": "Writing request failed!",
-  "UNKNOWN_SER_DATATYPE": "Unknown data type to serialize.",
-  "UNKNOWN_DESER_DATATYPE": "Unknown data type to deserialize.",
+  "UNKNOWN_SER_DATATYPE": "Unknown data type to serialize type='%s'.",
+  "UNKNOWN_DESER_DATATYPE": "Unknown data type to deserialize code='%x'.",
   "NULL_INPUT": "Input cannot be null.",
   "UNMATCHED_DATATYPE": "Datatype read from input buffer different from requested datatype.",
   "UNEXPECTED_NULL_VALUE": "Unexpected null value to write when value is not nullable.",
@@ -15,5 +15,7 @@
   "OPENING_CONNECTION": "Connecting.",
   "WRITE_REQUEST": "Writing request.",
   "READ_LOOP_ERROR": "Read loop error '%s', closing read loop.",
-  "ERROR_CALLBACK": "Connection error callback invoked, closing protocol."
+  "ERROR_CALLBACK": "Connection error callback invoked, closing protocol.",
+  "CREATING_REQUEST": "Created request with id '%s'",
+  "READ_COMPLETE": "Read complete for response with id '%s'"
 }

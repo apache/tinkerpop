@@ -19,41 +19,81 @@ under the License.
 
 package gremlingo
 
+import (
+	"reflect"
+)
+
+type Traverser struct {
+	bulk  int64
+	value interface{}
+}
+
 type Traversal struct {
 	graph               *Graph
 	traversalStrategies *TraversalStrategies
 	bytecode            *bytecode
+	traverser           *Traverser
+	remote              *DriverRemoteConnection
 }
 
-const host string = "localhost"
-const port int = 8182
+// ToList returns the result in a list.
+func (t *Traversal) ToList() ([]*Result, error) {
+	results, err := t.remote.SubmitBytecode(t.bytecode)
+	if err != nil {
+		return nil, err
+	}
+	resultSlice := make([]*Result, 0)
+	for _, r := range results.All() {
+		if r.GetType().Kind() == reflect.Array || r.GetType().Kind() == reflect.Slice {
+			for _, v := range r.result.([]interface{}) {
+				if reflect.TypeOf(v) == reflect.TypeOf(&Traverser{}) {
+					resultSlice = append(resultSlice, &Result{(v.(*Traverser)).value})
+				} else {
+					resultSlice = append(resultSlice, &Result{v})
+				}
+			}
+		} else {
+			resultSlice = append(resultSlice, &Result{r.result})
+		}
+	}
 
-// TODO use TraversalStrategies instead of direct remote after they are implemented
-var remote = DriverRemoteConnection{
-	client: NewClient(host, port),
+	return resultSlice, nil
 }
-
-// ToList returns the result in a list
-// TODO commenting out as remote.Submit doesn't support bytecode yet
-//func (t *Traversal) ToList() []*Result {
-//	results, _ := remote.Submit(t.bytecode)
-//	return results.All()
-//}
 
 // ToSet returns the results in a set.
-// TODO Go doesn't have sets, determine the best structure for this
-//func (t *Traversal) ToSet() map[*Result]bool {
-//	set := make(map[*Result]bool)
-//	results, _ := remote.Submit(t.bytecode)
-//	for _, r := range results.All() {
-//		set[r] = true
-//	}
-//	return set
-//}
+func (t *Traversal) ToSet() (map[*Result]bool, error) {
+	list, err := t.ToList()
+	if err != nil {
+		return nil, err
+	}
 
-// Iterate iterate all the Traverser instances in the traversal and returns the empty traversal
-// TODO complete this when Traverser is implemented
-func (t *Traversal) Iterate() *Traversal {
-	t.bytecode.addStep("none")
-	return t
+	set := map[*Result]bool{}
+	for _, r := range list {
+		set[r] = true
+	}
+	return set, nil
+}
+
+// Iterate all the Traverser instances in the traversal and returns the empty traversal
+func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
+	err := t.bytecode.addStep("none")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	res, err := t.remote.SubmitBytecode(t.bytecode)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	r := make(chan bool)
+	go func() {
+		defer close(r)
+
+		// Force waiting until complete.
+		_ = res.All()
+		r <- true
+	}()
+
+	return t, r, nil
 }
