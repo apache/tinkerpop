@@ -40,7 +40,7 @@ its version compatibility requirements.
 
 Note that the Apache Software Foundation's link:https://www.apache.org/foundation/marks/linking[linking policy]
 supersede those stipulated by Apache TinkerPop. All things considered, if your project meets the requirements, please
-email Apache TinkerPop's link:+++https://lists.apache.org/list.html?dev@tinkerpop.apache.org+++[developer mailing list]
+email Apache TinkerPop's link:++https://lists.apache.org/list.html?dev@tinkerpop.apache.org++[developer mailing list]
 requesting that your project be added to a listing.
 
 [[policy-graphics]]
@@ -48,7 +48,7 @@ requesting that your project be added to a listing.
 
 Apache TinkerPop has a plethora of graphics that the community can use. There are four categories of graphics. These
 categories and their respective policies are presented below. If you are unsure of the category of a particular
-graphic, please ask on our link:+++https://lists.apache.org/list.html?dev@tinkerpop.apache.org+++[developer mailing list]
+graphic, please ask on our link:++https://lists.apache.org/list.html?dev@tinkerpop.apache.org++[developer mailing list]
 before using it. Finally, note that the Apache Software Foundation's
 link:https://www.apache.org/foundation/marks/[trademark policies] supersede those stipulated by Apache TinkerPop.
 
@@ -84,7 +84,7 @@ being used for technical explanatory purposes.
 === Character Scene Graphics
 
 Character scene graphics require permission before being used. Please ask for permission on the Apache TinkerPop
-link:+++https://lists.apache.org/list.html?dev@tinkerpop.apache.org+++[developer mailing list].
+link:++https://lists.apache.org/list.html?dev@tinkerpop.apache.org++[developer mailing list].
 
 [width="100%",cols="1,1,1",frame=none]
 |=========================================================

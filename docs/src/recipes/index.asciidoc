@@ -92,7 +92,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#docker-integration[D
 changes are complete, submit a pull request for review by TinkerPop committers.
 
 NOTE: Please review existing recipes and attempt to conform to their writing and visual style. It may also be a good
-idea to discuss ideas for a recipe on the link:+++https://lists.apache.org/list.html?dev@tinkerpop.apache.org+++[developer mailing list]
+idea to discuss ideas for a recipe on the link:++https://lists.apache.org/list.html?dev@tinkerpop.apache.org++[developer mailing list]
 prior to starting work on it, as the community might provide insight on the approach and idea that would be helpful.
 It is preferable that a link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA issue] be opened that describes the nature
 of the recipe so that the eventual pull request can be bound to that issue.

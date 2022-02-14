@@ -45,7 +45,7 @@ Development has not yet started on the 3.7.x release line with a targeted releas
 major feature improvements targeted for this release.  The scope for many of these items still needs to be defined.
 
 * Add support for traversals as parameters for `V()`, `is()`, and `has()`
-* Geospatial support for TinkerPop (link:https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial[DISCUSS Thread])
+* Geospatial support for TinkerPop (link:++https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial++[DISCUSS Thread])
 * Add mid-traversal `E()` support
 * Add `with()` option for traversal to not return reference vertices
 * Add subgraph/tree structure in all GLVs
