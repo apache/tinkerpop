@@ -279,8 +279,8 @@ Format: `{labels}{objects}`
 
 Where:
 
-- `{labels}` is a `List` in which each item is a `Set` of `String`.
-- `{objects}` is a `List` of fully qualified typed values.
+- `{labels}` is a fully qualified `List` in which each item is a fully qualified `Set` of `String`.
+- `{objects}` is a fully qualified `List` of fully qualified typed values.
 
 ==== Property
 
