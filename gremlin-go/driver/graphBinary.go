@@ -56,6 +56,7 @@ const (
 	PropertyType       DataType = 0x0f
 	VertexPropertyType DataType = 0x12
 	PathType           DataType = 0x0e
+	SetType            DataType = 0x0b
 )
 
 var nullBytes = []byte{NullType.getCodeByte(), 0x01}
@@ -542,6 +543,7 @@ func vertexPropertyReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeS
 }
 
 //Format: {labels}{objects}
+// TODO: Path serialization is currently incomplete as labels are represented as list of lists due to lack of native set types in go. Fully functional Path serialization will be implemented when set is implemented in AN-1032
 func pathWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	p := value.(*Path)
 	_, err := typeSerializer.write(p.labels, buffer)
@@ -762,7 +764,8 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*gra
 		return &graphBinaryTypeSerializer{dataType: PathType, writer: nil, reader: pathReader, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
 	case MapType.getCodeByte():
 		return &graphBinaryTypeSerializer{dataType: MapType, writer: mapWriter, reader: mapReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
-	case ListType.getCodeByte():
+	// TODO: Update after Set implementation
+	case ListType.getCodeByte(), SetType.getCodeByte():
 		return &graphBinaryTypeSerializer{dataType: IntType, writer: listWriter, reader: listReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
 	default:
 		serializer.logHandler.logf(Error, deserializeDataTypeError, int32(typ))
