@@ -41,7 +41,10 @@ type DriverRemoteConnection struct {
 	client *Client
 }
 
-// NewDriverRemoteConnection creates a new DriverRemoteConnection
+// NewDriverRemoteConnection creates a new DriverRemoteConnection.
+// If no custom connection settings are passed in, a connection will be created with "g" as the default TraversalSource,
+// Gorilla as the default Transporter, Info as the default LogVerbosity, a default logger stuct, and English and as the
+// default language
 func NewDriverRemoteConnection(
 	host string,
 	port int,

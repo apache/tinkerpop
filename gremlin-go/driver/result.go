@@ -210,7 +210,7 @@ func (r *Result) GetTraverser() (*Traverser, error) {
 func (r *Result) GetSlice() (*[]interface{}, error) {
 	res, ok := r.result.([]interface{})
 	if !ok {
-		return nil, errors.New("result is not a VertexProperty")
+		return nil, errors.New("result is not a Slice")
 	}
 	return &res, nil
 }
