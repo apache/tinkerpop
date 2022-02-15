@@ -148,7 +148,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
         private bool IsDictionaryType(Type type)
         {
-            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+            return type
+                .GetInterfaces()
+                .Any(@interface => @interface.IsConstructedGenericType && @interface.GetGenericTypeDefinition() == typeof(IEnumerable<>) && @interface.GenericTypeArguments[0] is { IsConstructedGenericType: true } genericArgument && genericArgument.GetGenericTypeDefinition() == typeof(KeyValuePair<,>));
         }
 
         private Dictionary<string, dynamic> DictToGraphSONDict(dynamic dict)
