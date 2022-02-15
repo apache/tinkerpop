@@ -32,7 +32,7 @@ type LogVerbosity int
 
 const (
 	// Debug verbosity will log everything, including fine details.
-	Debug LogVerbosity = iota
+	Debug LogVerbosity = iota + 1
 	// Info verbosity will log messages up to standard procedure flow.
 	Info
 	// Warning verbosity will log messages up to warnings.
@@ -112,4 +112,6 @@ const (
 	errorCallback            errorKey = "ERROR_CALLBACK"
 	creatingRequest          errorKey = "CREATING_REQUEST"
 	readComplete             errorKey = "READ_COMPLETE"
+	submitStartedString      errorKey = "SUBMIT_STARTED_STRING"
+	submitStartedBytecode    errorKey = "SUBMIT_STARTED_BYTECODE"
 )

@@ -26,7 +26,7 @@ import (
 type connectionState int
 
 const (
-	initialized connectionState = iota
+	initialized connectionState = iota + 1
 	established
 	closed
 	closedDueToError
@@ -45,16 +45,17 @@ func (connection *connection) errorCallback() {
 	_ = connection.protocol.close()
 }
 
-func (connection *connection) close() (err error) {
+func (connection *connection) close() error {
 	if connection.state != established {
 		return errors.New("cannot close connection that has already been closed or has not been connected")
 	}
 	connection.logHandler.log(Info, closeConnection)
+	var err error
 	if connection.protocol != nil {
 		err = connection.protocol.close()
 	}
 	connection.state = closed
-	return
+	return err
 }
 
 func (connection *connection) write(request *request) (ResultSet, error) {

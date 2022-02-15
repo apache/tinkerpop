@@ -75,12 +75,14 @@ func (client *Client) Close() error {
 // Submit submits a Gremlin script to the server and returns a ResultSet
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	// TODO AN-982: Obtain connection from pool of connections held by the client.
+	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString)
 	return client.connection.write(&request)
 }
 
 // SubmitBytecode submits bytecode to the server to execute and returns a ResultSet
 func (client *Client) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
+	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
 	request := makeBytecodeRequest(bytecode)
 	return client.connection.write(&request)
 }

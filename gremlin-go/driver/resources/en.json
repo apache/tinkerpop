@@ -17,5 +17,7 @@
   "READ_LOOP_ERROR": "Read loop error '%s', closing read loop.",
   "ERROR_CALLBACK": "Connection error callback invoked, closing protocol.",
   "CREATING_REQUEST": "Created request with id '%s'",
-  "READ_COMPLETE": "Read complete for response with id '%s'"
+  "READ_COMPLETE": "Read complete for response with id '%s'",
+  "SUBMIT_STARTED_STRING": "Client invoked Submit with string argument: %s",
+  "SUBMIT_STARTED_BYTECODE": "Client invoked Submit with bytecode argument: %+v\n"
 }

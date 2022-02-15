@@ -26,7 +26,7 @@ type TransporterType int
 
 const (
 	// Gorilla transport layer: github.com/gorilla/websocket
-	Gorilla TransporterType = iota
+	Gorilla TransporterType = iota + 1
 )
 
 func getTransportLayer(transporterType TransporterType, host string, port int) (transporter, error) {
