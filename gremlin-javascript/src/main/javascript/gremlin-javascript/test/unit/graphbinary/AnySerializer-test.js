@@ -214,6 +214,9 @@ describe('GraphBinary.AnySerializer', () => {
         ]
       },
 
+      // GraphSerializer
+      // TODO: it's ignored for now
+
       // VertexPropertySerializer
       { v:new VertexProperty('00010203-0405-0607-0809-0a0b0c0d0e0f', 'Label', 42),
         b:[
@@ -225,6 +228,9 @@ describe('GraphBinary.AnySerializer', () => {
           0xFE,0x01,
         ]
       },
+
+      // BindingSerializer
+      // TODO: it's ignored for now
 
       // LongSerializer
       // TODO +
@@ -399,6 +405,9 @@ describe('GraphBinary.AnySerializer', () => {
         ]
       },
 
+      // GRAPH
+      // TODO: it's ignored for now
+
       // VERTEX
       { v:null,                                   b:[0x11,0x01] },
       { v:new Vertex('00010203-0405-0607-0809-0a0b0c0d0e0f', 'A', null),
@@ -421,6 +430,9 @@ describe('GraphBinary.AnySerializer', () => {
       // BARRIER
       { v:null,                                   b:[0x13,0x01] },
       { v:new t.EnumValue('Barrier','normSack'),  b:[0x13,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('normSack')] },
+
+      // BINDING
+      // TODO: it's ignored for now
 
       // BYTECODE
       { v:null,                                   b:[0x15,0x01] },
