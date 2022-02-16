@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -53,6 +54,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -78,6 +80,26 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         } catch (VerificationException e) {
             // its okay if lambdas can't be serialized by the test suite
         }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldCloneTraversalForReuse() {
+        final DefaultTraversal<Vertex, Long> t = (DefaultTraversal) g.V().count();
+        assertEquals(6, t.next().intValue());
+        assertThat(t.hasNext(), is(false));
+
+        final DefaultTraversal<Vertex, Long> t1 = t.clone();
+        assertEquals(6, t1.next().intValue());
+        assertThat(t1.hasNext(), is(false));
+
+        final DefaultTraversal<Vertex, Long> t2 = t.clone();
+        assertEquals(6, t2.next().intValue());
+        assertThat(t2.hasNext(), is(false));
+
+        final DefaultTraversal<Vertex, Long> t3 = t1.clone();
+        assertEquals(6, t3.next().intValue());
+        assertThat(t3.hasNext(), is(false));
     }
 
     @Test

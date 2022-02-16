@@ -316,6 +316,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 clone.steps.add(clonedStep);
             }
             clone.finalEndStep = clone.getEndStep();
+            clone.closed = false;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);

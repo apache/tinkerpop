@@ -100,6 +100,7 @@ This release also includes changes from <<release-3-4-13, 3.4.13>>.
 * Fixed support for `SeedStrategy` in the Gremlin Grammar.
 * Fixed bug in `Translator` of `gremlin-javascript` around array translation.
 * Fixed bugs in `PythonTranslator`, `JavascriptTranslator` and `DotNetTranslator` when translating `TraversalStrategy` objects to Javascript.
+* Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
 * Prevented exception with `hasLabel(null)` and `hasKey(null)` and instead filter away traversers as these structural components can't ever be null.
 * Improved handling of `null` when passed to `P` predicates.
 * Handled `null` for mathematical reducing operations of `sum()`, `mean()`, `max()` and `min()`.
