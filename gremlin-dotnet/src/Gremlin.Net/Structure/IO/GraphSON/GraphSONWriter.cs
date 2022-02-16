@@ -150,7 +150,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         {
             return type
                 .GetInterfaces()
-                .Any(@interface => @interface.IsConstructedGenericType && @interface.GetGenericTypeDefinition() == typeof(IEnumerable<>) && @interface.GenericTypeArguments[0] is { IsConstructedGenericType: true } genericArgument && genericArgument.GetGenericTypeDefinition() == typeof(KeyValuePair<,>));
+                .Any(interfaceType => interfaceType.IsConstructedGenericType
+                    && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>) 
+                    && interfaceType.GenericTypeArguments[0] is { IsConstructedGenericType: true } genericArgument 
+                    && genericArgument.GetGenericTypeDefinition() == typeof(KeyValuePair<,>));
         }
 
         private Dictionary<string, dynamic> DictToGraphSONDict(dynamic dict)
