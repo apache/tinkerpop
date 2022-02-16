@@ -260,6 +260,9 @@ describe('GraphBinary.AnySerializer', () => {
       // ByteSerializer
       // TODO: it's ignored and not expected to be used from serialization point of view
 
+      // ByteBufferSerializer
+      { v:from([0x00,0x01,0xFF]), b:[DataType.BYTEBUFFER,0x00, 0x00,0x00,0x00,0x03, 0x00,0x01,0xFF]},
+
       // BooleanSerializer
       { v:true,  b:[DataType.BOOLEAN,0x00, 0x01] },
       { v:false, b:[DataType.BOOLEAN,0x00, 0x00] },
@@ -490,6 +493,10 @@ describe('GraphBinary.AnySerializer', () => {
       // BYTE
       { v:null,                                   b:[0x24,0x01] },
       { v:255,                                    b:[0x24,0x00, 0xFF] },
+
+      // BYTEBUFFER
+      { v:null,                                   b:[0x25,0x01] },
+      { v:from([0xFF,0x00,0x01]),                 b:[0x25,0x00, 0x00,0x00,0x00,0x03, 0xFF,0x00,0x01] },
 
       // BOOLEAN
       { v:null,                                   b:[0x27,0x01] },
