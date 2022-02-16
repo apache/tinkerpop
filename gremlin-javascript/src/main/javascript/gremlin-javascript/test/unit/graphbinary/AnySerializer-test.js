@@ -112,7 +112,14 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TextPSerializer
-      // TODO
+      { v: t.TextP.containing('ValuE'),
+        b: [
+          DataType.TEXTP,0x00,
+          0x00,0x00,0x00,0x0A, ...from('containing'),
+          0x00,0x00,0x00,0x01,
+          0x03,0x00, 0x00,0x00,0x00,0x05, ...from('ValuE'),
+        ]
+      },
 
       // LambdaSerializer
       { v:function() { return 'Script_1'; },
@@ -501,6 +508,17 @@ describe('GraphBinary.AnySerializer', () => {
       // BOOLEAN
       { v:null,                                   b:[0x27,0x01] },
       { v:true,                                   b:[0x27,0x00, 0x01] },
+
+      // TEXTP
+      { v:null,                                   b:[0x28,0x01] },
+      { v: t.TextP.containing('ValuE'),
+        b: [
+          0x28,0x00,
+          0x00,0x00,0x00,0x0A, ...from('containing'),
+          0x00,0x00,0x00,0x01,
+          0x03,0x00, 0x00,0x00,0x00,0x05, ...from('ValuE'),
+        ]
+      },
 
       // UNSPECIFIED_NULL
       { v:null,                                   b:[0xFE,0x01] },

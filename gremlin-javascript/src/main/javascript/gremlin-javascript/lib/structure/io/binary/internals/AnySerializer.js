@@ -46,6 +46,7 @@ module.exports = class AnySerializer {
       ioc.vertexSerializer,
       ioc.vertexPropertySerializer,
       ioc.stringSerializer,
+      ioc.textPSerializer,
 
       ioc.byteBufferSerializer, // Buffer instance
       ioc.lambdaSerializer, // any function
