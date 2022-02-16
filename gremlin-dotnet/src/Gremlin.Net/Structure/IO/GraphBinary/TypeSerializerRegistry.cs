@@ -212,10 +212,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             throw new InvalidOperationException($"No serializer found for type ${valueType}.");
         }
 
-        private bool IsDictionaryType(Type type, out Type keyType, out Type valueType)
+        private static bool IsDictionaryType(Type type, out Type keyType, out Type valueType)
         {
-            var maybeInterfaceType = type.GetInterfaces()
-                .FirstOrDefault(interfaceType => interfaceType.IsConstructedGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+            var maybeInterfaceType = type
+                .GetInterfaces()
+                .FirstOrDefault(implementedInterfaceType => implementedInterfaceType.IsConstructedGenericType && implementedInterfaceType.GetGenericTypeDefinition() == typeof(IDictionary<,>));
 
             if (maybeInterfaceType is { } interfaceType)
             {
