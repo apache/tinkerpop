@@ -146,6 +146,7 @@ func (protocol *gremlinServerWSProtocol) close() (err error) {
 	protocol.mux.Lock()
 	if !protocol.closed {
 		err = protocol.transporter.Close()
+		protocol.closed = true
 	}
 	protocol.mux.Unlock()
 	return
