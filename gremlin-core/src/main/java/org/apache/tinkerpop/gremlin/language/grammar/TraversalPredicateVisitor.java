@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class TraversalPredicateVisitor extends GremlinBaseVisitor<P> {
+public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     private static TraversalPredicateVisitor instance;
 
     public static TraversalPredicateVisitor getInstance() {

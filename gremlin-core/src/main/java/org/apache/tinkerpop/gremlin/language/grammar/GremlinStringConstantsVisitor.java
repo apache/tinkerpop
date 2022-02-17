@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 /**
  * Covers {@code String} oriented constants used as arguments to {@link GraphTraversal#with(String)} steps.
  */
-public class GremlinStringConstantsVisitor extends GremlinBaseVisitor<Object> {
+public class GremlinStringConstantsVisitor extends DefaultGremlinBaseVisitor<Object> {
 
     private GremlinStringConstantsVisitor() {}
 

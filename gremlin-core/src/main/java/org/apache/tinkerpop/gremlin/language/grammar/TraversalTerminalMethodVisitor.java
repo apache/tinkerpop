@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 /**
  * Traversal terminal method visitor
  */
-public class TraversalTerminalMethodVisitor extends GremlinBaseVisitor<Object> {
+public class TraversalTerminalMethodVisitor extends DefaultGremlinBaseVisitor<Object> {
 
     protected final Traversal<?,?> traversal;
 

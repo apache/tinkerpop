@@ -39,6 +39,7 @@ This release also includes changes from <<release-3-4-13, 3.4.13>>.
 * Added a `NoSugarTranslator` translator to `PythonTranslator` which translates Gremlin queries to Python without syntactic sugar (ex `g.V().limit(1)` instead of `g.V()[0:1]`)
 * Added support for `g.Tx()` in .NET.
 * Added support for `with()` constant options to `io()`.
+* Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
 * Changed `GroovyTranslator` to generate code more compatible to Java with `Date` and `Timestamp`.
 * Fixed bug in the processing of the `io()` step when constructing a `Traversal` from the grammar.
 * Added the `ConnectedComponent` tokens required to properly process the `with()` of the `connectedComponent()` step.

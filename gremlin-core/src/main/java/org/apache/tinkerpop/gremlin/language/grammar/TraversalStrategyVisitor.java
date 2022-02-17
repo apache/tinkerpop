@@ -33,10 +33,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class TraversalStrategyVisitor extends GremlinBaseVisitor<TraversalStrategy> {
-    protected final GremlinBaseVisitor<Traversal> tvisitor;
+public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<TraversalStrategy> {
+    protected final DefaultGremlinBaseVisitor<Traversal> tvisitor;
 
-    public TraversalStrategyVisitor(final GremlinBaseVisitor<Traversal> tvisitor) {
+    public TraversalStrategyVisitor(final DefaultGremlinBaseVisitor<Traversal> tvisitor) {
         this.tvisitor = tvisitor;
     }
 

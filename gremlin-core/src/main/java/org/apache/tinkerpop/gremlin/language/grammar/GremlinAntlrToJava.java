@@ -36,7 +36,7 @@ import java.util.function.Supplier;
  * as that instance may spawn specific {@link Traversal} or {@link TraversalSource} types. A new instance should be
  * created for each parse execution.
  */
-public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
+public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
 
     /**
      * The {@link Graph} instance to which this instance is bound.
@@ -49,25 +49,25 @@ public class GremlinAntlrToJava extends GremlinBaseVisitor<Object> {
     final GraphTraversalSource g;
 
     /**
-     * A {@link GremlinBaseVisitor} that processes {@link TraversalSource} methods.
+     * A {@link DefaultGremlinBaseVisitor} that processes {@link TraversalSource} methods.
      */
-    final GremlinBaseVisitor<GraphTraversalSource> gvisitor;
+    final DefaultGremlinBaseVisitor<GraphTraversalSource> gvisitor;
 
     /**
-     * A {@link GremlinBaseVisitor} that processes {@link Traversal} methods and is meant to construct traversals
+     * A {@link DefaultGremlinBaseVisitor} that processes {@link Traversal} methods and is meant to construct traversals
      * anonymously.
      */
-    final GremlinBaseVisitor<GraphTraversal> tvisitor;
+    final DefaultGremlinBaseVisitor<GraphTraversal> tvisitor;
 
     /**
-     * A {@link GremlinBaseVisitor} that is meant to construct a list of traversals anonymously.
+     * A {@link DefaultGremlinBaseVisitor} that is meant to construct a list of traversals anonymously.
      */
-    final GremlinBaseVisitor<Traversal[]> tListVisitor;
+    final DefaultGremlinBaseVisitor<Traversal[]> tListVisitor;
 
     /**
      * Handles transactions.
      */
-    final GremlinBaseVisitor<Void> txVisitor;
+    final DefaultGremlinBaseVisitor<Void> txVisitor;
 
     /**
      * Creates a {@link GraphTraversal} implementation that is meant to be anonymous. This provides a way to change the
