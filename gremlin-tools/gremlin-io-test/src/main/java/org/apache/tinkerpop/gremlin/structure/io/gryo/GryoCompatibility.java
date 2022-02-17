@@ -110,7 +110,9 @@ public enum GryoCompatibility implements Compatibility {
     V1D0_3_5_1("3.5.1", "1.0", "v1d0"),
     V3D0_3_5_1("3.5.1", "3.0", "v3d0"),
     V1D0_3_5_2("3.5.2", "1.0", "v1d0"),
-    V3D0_3_5_2("3.5.2", "3.0", "v3d0");
+    V3D0_3_5_2("3.5.2", "3.0", "v3d0"),
+    V1D0_3_5_3("3.5.3", "1.0", "v1d0"),
+    V3D0_3_5_3("3.5.3", "3.0", "v3d0");
 
     private static final String SEP = File.separator;
 
