@@ -40,13 +40,13 @@ import java.util.Objects;
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton
  * in cases where a {@link Traversal} object is not expected, otherwise a new instance must be constructed.
  */
-public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
+public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Limit for integer range result count. It is used to avoid OOM in JVM.
      */
     public static final int TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT = 1_000_000;
     protected final GremlinAntlrToJava antlr;
-    protected GremlinBaseVisitor<TraversalStrategy> traversalStrategyVisitor;
+    protected DefaultGremlinBaseVisitor<TraversalStrategy> traversalStrategyVisitor;
 
     private static GenericLiteralVisitor instance;
 
@@ -127,7 +127,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
      * Parse a TraversalStrategy literal list context and return a string array
      */
     public static TraversalStrategy[] getTraversalStrategyList(final GremlinParser.TraversalStrategyListContext traversalStrategyListContext,
-                                                               final GremlinBaseVisitor<TraversalStrategy> traversalStrategyVisitor) {
+                                                               final DefaultGremlinBaseVisitor<TraversalStrategy> traversalStrategyVisitor) {
         if (traversalStrategyListContext == null || traversalStrategyListContext.traversalStrategyExpr() == null) {
             return new TraversalStrategy[0];
         }
@@ -483,7 +483,7 @@ public class GenericLiteralVisitor extends GremlinBaseVisitor<Object> {
     @Override
     public Object visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         if (null == traversalStrategyVisitor)
-            traversalStrategyVisitor = new TraversalStrategyVisitor((GremlinBaseVisitor) antlr.tvisitor);
+            traversalStrategyVisitor = new TraversalStrategyVisitor((DefaultGremlinBaseVisitor) antlr.tvisitor);
 
         return traversalStrategyVisitor.visitTraversalStrategy(ctx);
     }

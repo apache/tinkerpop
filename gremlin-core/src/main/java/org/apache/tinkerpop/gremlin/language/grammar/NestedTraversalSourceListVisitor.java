@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
  * This class implements Gremlin grammar's nested-traversal-list methods that returns a {@link Traversal} {@code []}
  * to the callers.
  */
-public class NestedTraversalSourceListVisitor extends GremlinBaseVisitor<Traversal[]> {
+public class NestedTraversalSourceListVisitor extends DefaultGremlinBaseVisitor<Traversal[]> {
 
     protected final GremlinAntlrToJava context;
 

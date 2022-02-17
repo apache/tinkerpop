@@ -26,7 +26,7 @@ import java.util.function.Function;
 /**
  * Traversal Function parser parses Function enums.
  */
-public class TraversalFunctionVisitor extends GremlinBaseVisitor<Function> {
+public class TraversalFunctionVisitor extends DefaultGremlinBaseVisitor<Function> {
 
     private TraversalFunctionVisitor() {}
 

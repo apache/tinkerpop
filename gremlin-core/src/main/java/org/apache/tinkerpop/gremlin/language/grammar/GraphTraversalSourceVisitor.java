@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 /**
  * This class implements the {@link GraphTraversalSource} producing methods of Gremlin grammar.
  */
-public class GraphTraversalSourceVisitor extends GremlinBaseVisitor<GraphTraversalSource> {
+public class GraphTraversalSourceVisitor extends DefaultGremlinBaseVisitor<GraphTraversalSource> {
     public static final String TRAVERSAL_ROOT = "g";
     private final Graph graph;
     private final GremlinAntlrToJava antlr;
