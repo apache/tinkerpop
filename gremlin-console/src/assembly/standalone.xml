@@ -49,17 +49,6 @@ limitations under the License.
             <outputDirectory>/data</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../target/docs/htmlsingle</directory>
-            <outputDirectory>/docs</outputDirectory>
-            <excludes>
-                <exclude>**/*.graffle</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>../target/site/apidocs</directory>
-            <outputDirectory>/javadocs</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>target/*.jar</directory>
             <outputDirectory>/lib</outputDirectory>
         </fileSet>
