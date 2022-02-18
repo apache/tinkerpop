@@ -440,6 +440,8 @@ limitations under the License.
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
+                        <exclude>**/.eggs/**</exclude>
+                        <exclude>**/gremlinpython.egg-info/**</exclude>
                         <exclude>**/docfx/**</exclude>
                     </excludes>
                     <licenses>
