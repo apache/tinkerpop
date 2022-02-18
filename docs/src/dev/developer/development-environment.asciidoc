@@ -509,11 +509,21 @@ docker/gremlin-server.sh 3.4.2
 To be a bit more clear, the version can not be a Docker tag like "latest" because there is no such TinkerPop artifact
 that has been published with that version number.
 
-== IDE Setup with Intellij
+[[intellij]]
+== Intellij Usage
 
-This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which
-contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure
-that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
+Most core TinkerPop developers are using Intellij for their work so this section helps describe the mechanisms for
+best working with it as an IDE.
+
+=== Setup
+
+Installation and basic configuration of Intellij is beyond the scope of this writing and it is assumed that the
+TinkerPop GitHub repository has been cloned and the root of the repository is open in Intellij. From there, we can
+begin to look at configuration options specifically relevant to TinkerPop itself.
+
+TinkerPop has a module called `gremlin-shaded` which contains shaded dependencies for some libraries that are widely
+used and tend to introduce conflicts.  To ensure that Intellij properly interprets this module after importing the
+Maven `pom.xml` perform the following steps:
 
 . Build `gremlin-shaded` from the command line with `mvn clean install`.
 . Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module". If this menu
@@ -558,3 +568,58 @@ With these settings it should be possible to right-click `Gremlin.g4` and "Gener
 the generated code in where specified at `target/generated-sources/antlr4`. Be sure to right-click the `antlr4`
 directory and "Mark directory as" "Generated Sources Root" which should allow Intellij to recognize it.
 
+=== Debugging
+
+It is generally assumed that JVM-based debugging of TinkerPop code in Intellij is a relatively straightforward task
+for most developers, but it is worth pointing out a few important points related to it and to drill into some specifics
+for the non-JVM languages.
+
+[[debug-java]]
+==== Java
+
+There are generally no complexities to running the debugger for any JVM-based test in the repository, but the following
+tips are helpful to know when doing so:
+
+* It is not possible to run the tests in `gremlin-test` without an `Graph` implementation. For example, it is not
+possible to just right-click `org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest` and then select
+`Debug 'CoinTest'`. Instead, running that test would require opening `tinkergraph-gremlin` and executing the
+`TinkerGraphProcessStandardTest` (as an example) which runs the full Gremlin test suite to include `CoinTest`.
+* To run just `CoinTest`, set a `GREMLIN_TESTS` environment variable with the fully qualified path name to the test
+configuration in Intellij. Note that the fully qualified test name is really
+`org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest$Traversals`.
+* Gherkin tests have a similar pattern in that they require a `Graph` implementation to execute them. Therefore,
+debugging entails going to `tinkergraph-gremlin` and running `TinkerGraphFeatureTest` in the debugger.
+* It is possible to filter the Gherkin tests by adding a system property to the debug configuration that specifies the
+tags to use or ignore. For example to just run the `coin()` tests: `-Dcucumber.filter.tags="@StepCoin"`
+
+[[debug-python]]
+==== Python
+
+Debugging Python within this mainly JVM-based project structure requires a bit of configuration. The following steps
+will help get Intellij prepared for this task:
+
+1. Install the Python plugin from JetBrains which should provide PyCharm like functionality.
+1. Right-click the "tinkerpop" top-level module in Intellij's project explorer and "Open Module Settings".
+1. Select "Platform Settings | SDKs" and then click the "+" to "Add Python SDK..."
+1. Choose a "Virtualenv Environment" and a "New environment". Set the "Location" to
+"<project-root>/gremlin-python/src/main/python". Select a "Base interpreter" that matches the version required by
+`gremlin-python` and click "OK".
+1. Select "Project Settings | Modules" and then select "gremlin-python" from the listing. Change the "Module SDK" to
+the newly added Python SDK.
+1. Open a terminal to `gremlin-python/scr/main/python` and do `venv/bin/pip3 install -e .` to pull in all of the
+`gremlin-python` dependencies.
+
+At this stage, it should be possible to run unit tests in Python:
+
+1. Pull down the drop down in the toolbar for "Run/Debug Configurations" and select "Edit Configurations..."
+1. Click the "+" to "Python Tests | pytest" and browse to a test to supply the "Script path".
+1. Go to "Python interpreter" and select "Use SDK of module" and choose "gremlin-python" in the drop-down and click OK.
+1. The test should not appear in the "Run/Debug Configurations" and can be executed.
+
+NOTE: When the Debug button is pressed, Intellij may display a notification that using the debugger requires some
+additional downloads - confirm those installations as required.
+
+Many of the tests in `gremlin-python` require Gremlin Server. They are effectively integration tests. TinkerPop makes
+it easy to debug these tests by providing a Docker based test server which is rigged up with all the configurations
+required for the tests to execute. Start this server with `docker/gremlin-server.sh -n` where the `-n` will enable
+Neo4j for transaction based tests.
