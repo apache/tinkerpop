@@ -1078,6 +1078,11 @@ class Transaction:
     # Return whether or not transaction is open.
     # Allow camelcase function here to keep api consistent with other languages.
     def isOpen(self):
+        # if the underlying DriverRemoteConnection is closed then the Transaction can't be open
+        if (self._session_based_connection and self._session_based_connection.is_closed()) or \
+                self._remote_connection.is_closed():
+            self.__is_open = False
+
         return self.__is_open
 
     def __verify_transaction_state(self, state, error_message):

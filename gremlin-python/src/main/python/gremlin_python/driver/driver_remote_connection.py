@@ -54,6 +54,11 @@ class DriverRemoteConnection(RemoteConnection):
         self.__headers = headers
         self.__session = session
         self.__transport_kwargs = transport_kwargs
+
+        # keeps a list of sessions that have been spawned from this DriverRemoteConnection
+        # so that they can be closed if this parent session is closed.
+        self.__spawned_sessions = []
+
         if message_serializer is None:
             message_serializer = serializer.GraphSONMessageSerializer(
                 reader=graphson_reader,
@@ -74,7 +79,20 @@ class DriverRemoteConnection(RemoteConnection):
         self._traversal_source = self._client._traversal_source
 
     def close(self):
-        logging.info("closing DriverRemoteConnection with url '%s'", str(self._url))
+        # close this client and any DriverRemoteConnection instances spawned from this one
+        # for a session
+        if len(self.__spawned_sessions) > 0:
+            logging.info("closing spawned sessions from DriverRemoteConnection with url '%s'", str(self._url))
+            for spawned_session in self.__spawned_sessions:
+                spawned_session.close()
+            self.__spawned_sessions.clear()
+
+        if self.__session:
+            logging.info("closing DriverRemoteConnection with url '%s' with session '%s'",
+                         str(self._url), str(self.__session))
+        else:
+            logging.info("closing DriverRemoteConnection with url '%s'", str(self._url))
+
         self._client.close()
 
     def submit(self, bytecode):
@@ -106,6 +124,9 @@ class DriverRemoteConnection(RemoteConnection):
         future_result_set.add_done_callback(cb)
         return future
 
+    def is_closed(self):
+        return self._client.is_closed()
+
     def is_session_bound(self):
         return self.__session is not None
 
@@ -113,7 +134,7 @@ class DriverRemoteConnection(RemoteConnection):
         logging.info("Creating session based connection")
         if self.is_session_bound():
             raise Exception('Connection is already bound to a session - child sessions are not allowed')
-        return DriverRemoteConnection(self.__url,
+        conn = DriverRemoteConnection(self.__url,
                                       traversal_source=self.__traversal_source,
                                       protocol_factory=self.__protocol_factory,
                                       transport_factory=self.__transport_factory,
@@ -128,6 +149,8 @@ class DriverRemoteConnection(RemoteConnection):
                                       headers=self.__headers,
                                       session=uuid.uuid4(),
                                       **self.__transport_kwargs)
+        self.__spawned_sessions.append(conn)
+        return conn
 
     def commit(self):
         logging.info("Submitting commit graph operation.")

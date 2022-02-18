@@ -17,8 +17,6 @@
 # under the License.
 #
 
-import pytest
-
 from gremlin_python import statics
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
@@ -48,15 +46,15 @@ class TestDriverRemoteConnection(object):
         assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
         assert 1 == len(g.V(1).toList())
         assert isinstance(g.V(1).toList(), list)
-        results = g.V().repeat(out()).times(2).name
+        results = g.V().repeat(__.out()).times(2).name
         results = results.toList()
         assert 2 == len(results)
         assert "lop" in results
         assert "ripple" in results
         # #
-        assert 10 == g.V().repeat(both()).times(5)[0:10].count().next()
-        assert 1 == g.V().repeat(both()).times(5)[0:1].count().next()
-        assert 0 == g.V().repeat(both()).times(5)[0:0].count().next()
+        assert 10 == g.V().repeat(__.both()).times(5)[0:10].count().next()
+        assert 1 == g.V().repeat(__.both()).times(5)[0:1].count().next()
+        assert 0 == g.V().repeat(__.both()).times(5)[0:0].count().next()
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
         # #
@@ -92,11 +90,11 @@ class TestDriverRemoteConnection(object):
         # this test just validates that the underscored versions of steps conflicting with Gremlin work
         # properly and can be removed when the old steps are removed - TINKERPOP-2272
         results = g.V().filter_(__.values('age').sum_().and_(
-            __.max_().is_(gt(0)), __.min_().is_(gt(0)))).range_(0, 1).id_().next()
+            __.max_().is_(P.gt(0)), __.min_().is_(P.gt(0)))).range_(0, 1).id_().next()
         assert 1 == results
         # #
         # test binding in P
-        results = g.V().has('person', 'age', Bindings.of('x', lt(30))).count().next()
+        results = g.V().has('person', 'age', Bindings.of('x', P.lt(30))).count().next()
         assert 2 == results
         # #
         # test dict keys which can only work on GraphBinary and GraphSON3 which include specific serialization

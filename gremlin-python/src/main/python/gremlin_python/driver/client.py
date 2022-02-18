@@ -43,6 +43,7 @@ class Client:
                  kerberized_service="", headers=None, session=None,
                  **transport_kwargs):
         logging.info("Creating Client with url '%s'", url)
+        self._closed = False
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -108,7 +109,15 @@ class Client:
             conn = self._get_connection()
             self._pool.put_nowait(conn)
 
+    def is_closed(self):
+        return self._closed
+
     def close(self):
+        # prevent the Client from being closed more than once. it raises errors if new jobby jobs
+        # get submitted to the executor when it is shutdown
+        if self._closed:
+            return
+
         if self._session_enabled:
             self._close_session()
         logging.info("Closing Client with url '%s'", self._url)
@@ -116,6 +125,7 @@ class Client:
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
+        self._closed = True
 
     def _close_session(self):
         message = request.RequestMessage(
