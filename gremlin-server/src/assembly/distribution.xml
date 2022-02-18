@@ -49,14 +49,6 @@ limitations under the License.
             <outputDirectory>ext</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone/docs</directory>
-            <outputDirectory>docs</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone/javadocs</directory>
-            <outputDirectory>javadocs</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone/lib</directory>
             <outputDirectory>lib</outputDirectory>
         </fileSet>
