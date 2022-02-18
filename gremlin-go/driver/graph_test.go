@@ -21,9 +21,10 @@ package gremlingo
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGraphStructureFunctions(t *testing.T) {

@@ -441,6 +441,7 @@ limitations under the License.
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
                         <exclude>**/docfx/**</exclude>
+                        <exclude>**/go.sum</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

@@ -1,5 +1,5 @@
 name: build-test
-on: [] # push, pull_request
+on: [push, pull_request]
 jobs:
   smoke:
     name: smoke
@@ -202,3 +202,27 @@ jobs:
         run: |
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :neo4j-gremlin -DincludeNeo4j
+  go:
+    name: Go
+    timeout-minutes: 20
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Execute Go tests
+        working-directory: ./gremlin-go
+        run: |
+          docker-compose up --exit-code-from integration-tests integration-tests
+          docker-compose down
+      - name: Go-Lint
+        uses: grandcolline/golang-github-actions@v1.1.0
+        with:
+          run: lint
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Go-StaticCheck
+        uses: grandcolline/golang-github-actions@v1.1.0
+        with:
+          run: staticcheck
+          token: ${{ secrets.GITHUB_TOKEN }}
