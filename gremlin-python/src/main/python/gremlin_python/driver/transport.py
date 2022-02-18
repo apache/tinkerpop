@@ -17,13 +17,11 @@
 # under the License.
 #
 import abc
-import six
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AbstractBaseTransport:
+class AbstractBaseTransport(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def connect(self, url, headers=None):

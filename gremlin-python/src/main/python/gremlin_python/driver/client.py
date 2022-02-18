@@ -18,8 +18,8 @@
 #
 import logging
 import warnings
+import queue
 from concurrent.futures import ThreadPoolExecutor
-from six.moves import queue
 
 from gremlin_python.driver import connection, protocol, request, serializer
 from gremlin_python.process import traversal

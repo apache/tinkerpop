@@ -17,15 +17,13 @@
 # under the License.
 #
 import abc
-import six
 
 from gremlin_python.process import traversal
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RemoteConnection(object):
+class RemoteConnection(object, metaclass=abc.ABCMeta):
     def __init__(self, url, traversal_source):
         self._url = url
         self._traversal_source = traversal_source

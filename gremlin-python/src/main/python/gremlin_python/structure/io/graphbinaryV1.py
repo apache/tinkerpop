@@ -17,7 +17,6 @@ specific language governing permissions and limitations
 under the License.
 """
 
-import six
 import datetime
 import calendar
 import uuid
@@ -204,8 +203,7 @@ class GraphBinaryReader(object):
             return self.deserializers[data_type].objectify(buff, self, nullable)
 
 
-@six.add_metaclass(GraphBinaryTypeType)
-class _GraphBinaryTypeIO(object):
+class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
     python_type = None
     graphbinary_type = None
 

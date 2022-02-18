@@ -53,6 +53,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed previously deprecated `AuthenticationSettings.enableAuditLog`.
 * Removed previously deprecated `GroovyTranslator` from `gremlin-groovy` module.
 * Removed previously deprecated Gremlin steps that conflicted with Python keywords.
+* Removed the dependency on `six` from `gremlin-python`.
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.2.0.
 * Bumped node.js in `gremlin-javascript` to v16.13.0.

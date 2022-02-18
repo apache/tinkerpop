@@ -18,8 +18,8 @@
 #
 import concurrent.futures
 import sys
+import queue
 from threading import Thread
-from six.moves import queue
 
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)

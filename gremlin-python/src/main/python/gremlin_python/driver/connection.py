@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 import uuid
+import queue
 from concurrent.futures import Future
-from six.moves import queue
 
 from gremlin_python.driver import resultset
 

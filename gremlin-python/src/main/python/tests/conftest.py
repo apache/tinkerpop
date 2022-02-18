@@ -22,8 +22,7 @@ import ssl
 import pytest
 import socket
 import logging
-
-from six.moves import queue
+import queue
 
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection

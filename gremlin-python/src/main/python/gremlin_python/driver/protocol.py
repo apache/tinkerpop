@@ -22,7 +22,6 @@ import base64
 import struct
 
 # import kerberos    Optional dependency imported in relevant codeblock
-import six
 
 try:
     import ujson as json
@@ -52,8 +51,7 @@ class ConfigurationError(Exception):
     pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AbstractBaseProtocol:
+class AbstractBaseProtocol(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def connection_made(self, transport):

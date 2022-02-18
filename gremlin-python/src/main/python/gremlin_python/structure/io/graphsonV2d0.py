@@ -26,7 +26,6 @@ from collections import OrderedDict
 from decimal import *
 from datetime import timedelta
 
-import six
 from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
@@ -133,8 +132,7 @@ class GraphSONReader(object):
             return obj
 
 
-@six.add_metaclass(GraphSONTypeType)
-class _GraphSONTypeIO(object):
+class _GraphSONTypeIO(object, metaclass=GraphSONTypeType):
     python_type = None
     graphson_type = None
 
