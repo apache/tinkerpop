@@ -23,9 +23,6 @@ __author__ = 'Kelvin R. Lawrence (gfxman)'
 
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.traversal import *
-from gremlin_python.process.strategies import *
 from gremlin_python.process.translator import *
 from datetime import datetime
 
@@ -127,7 +124,7 @@ class TestTraversalStrategies(object):
         tests.append([g.V().match(__.as_('a').has('code', 'LHR').as_('b')).select('b').by('code'),
                      "g.V().match(__.as('a').has('code','LHR').as('b')).select('b').by('code')"])
         # 30
-        tests.append([g.V().has('test-using-keyword-as-property','repeat'),
+        tests.append([g.V().has('test-using-keyword-as-property', 'repeat'),
                      "g.V().has('test-using-keyword-as-property','repeat')"])
         # 31
         tests.append([g.V('1').addE('test').to(__.V('4')),
@@ -145,7 +142,7 @@ class TestTraversalStrategies(object):
         tests.append([g.V().values('runways').mean(),
                      "g.V().values('runways').mean()"])
         # 36
-        tests.append([g.withSack(0).V('3', '5').sack(Operator.sum).by('runways').sack(),
+        tests.append([g.withSack(0).V('3', '5').sack(Operator.sum_).by('runways').sack(),
                      "g.withSack(0).V('3','5').sack(Operator.sum).by('runways').sack()"])
         # 37
         tests.append([g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V('6').store('x').by(__.constant(1)).select('x').unfold().sum_(),
@@ -181,19 +178,19 @@ class TestTraversalStrategies(object):
         tests.append([g.V('1', '2').has('region', P.within('US-TX','US-GA')),
                      "g.V('1','2').has('region',within(['US-TX','US-GA']))"])
         # 48
-        tests.append([g.V().and_(__.has('runways', P.gt(5)), __.has('region','US-TX')),
+        tests.append([g.V().and_(__.has('runways', P.gt(5)), __.has('region', 'US-TX')),
                      "g.V().and(__.has('runways',gt(5)),__.has('region','US-TX'))"])
         # 49
-        tests.append([g.V().union(__.has('runways', gt(5)), __.has('region','US-TX')),
+        tests.append([g.V().union(__.has('runways', gt(5)), __.has('region', 'US-TX')),
                      "g.V().union(__.has('runways',gt(5)),__.has('region','US-TX'))"])
         # 50
-        tests.append([g.V('3').choose(__.values('runways').is_(3),__.constant('three'),__.constant('not three')),
+        tests.append([g.V('3').choose(__.values('runways').is_(3), __.constant('three'),__.constant('not three')),
                      "g.V('3').choose(__.values('runways').is(3),__.constant('three'),__.constant('not three'))"])
         # 51
-        tests.append([g.V('3').choose(__.values('runways')).option(1,__.constant('three')).option(2,__.constant('not three')),
+        tests.append([g.V('3').choose(__.values('runways')).option(1, __.constant('three')).option(2,__.constant('not three')),
                      "g.V('3').choose(__.values('runways')).option(1,__.constant('three')).option(2,__.constant('not three'))"])
         # 52
-        tests.append([g.V('3').choose(__.values('runways')).option(1.5,__.constant('one and a half')).option(2,__.constant('not three')),
+        tests.append([g.V('3').choose(__.values('runways')).option(1.5, __.constant('one and a half')).option(2,__.constant('not three')),
                      "g.V('3').choose(__.values('runways')).option(1.5,__.constant('one and a half')).option(2,__.constant('not three'))"])
         # 53
         tests.append([g.V('3').repeat(__.out().simplePath()).until(__.loops().is_(1)).count(),
@@ -265,7 +262,7 @@ class TestTraversalStrategies(object):
         # 73
         tests.append([g.withSack(0).
                         V('3').
-                        repeat(__.outE('route').sack(Operator.sum).by('dist').inV()).
+                        repeat(__.outE('route').sack(Operator.sum_).by('dist').inV()).
                         until(__.has('code', 'AGR').or_().loops().is_(4)).
                         has('code', 'AGR').
                         local(__.union(__.path().by('code').by('dist'),__.sack()).fold()).
@@ -330,7 +327,7 @@ class TestTraversalStrategies(object):
         tests.append([g.withStrategies(strategy).V().count(),
                       "g.withStrategies(new SubgraphStrategy(vertexProperties:__.hasNot('runways'))).V().count()"])
         # 92
-        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'),vertex_properties=__.hasNot('runways'))
+        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), vertex_properties=__.hasNot('runways'))
         tests.append([g.withStrategies(strategy).V().count(),
                       "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),vertexProperties:__.hasNot('runways'))).V().count()"])
         # 93

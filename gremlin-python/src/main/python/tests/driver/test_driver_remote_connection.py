@@ -17,8 +17,6 @@
 # under the License.
 #
 
-import pytest
-
 from gremlin_python import statics
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long

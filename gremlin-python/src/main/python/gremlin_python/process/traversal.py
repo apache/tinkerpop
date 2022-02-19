@@ -18,6 +18,7 @@
 #
 
 import copy
+import warnings
 from aenum import Enum
 from .. import statics
 from ..statics import long
@@ -54,9 +55,23 @@ class Traversal(object):
         return object
 
     def toList(self):
+        warnings.warn(
+            "gremlin_python.process.Traversal.toList will be replaced by "
+            "gremlin_python.process.Traversal.to_list.",
+            DeprecationWarning)
+        return self.to_list()
+
+    def to_list(self):
         return list(iter(self))
 
     def toSet(self):
+        warnings.warn(
+            "gremlin_python.process.Traversal.toSet will be replaced by "
+            "gremlin_python.process.Traversal.to_set.",
+            DeprecationWarning)
+        return self.to_set()
+
+    def to_set(self):
         return set(iter(self))
 
     def iterate(self):
@@ -66,6 +81,13 @@ class Traversal(object):
             except StopIteration: return self
 
     def nextTraverser(self):
+        warnings.warn(
+            "gremlin_python.process.Traversal.nextTraverser will be replaced by "
+            "gremlin_python.process.Traversal.next_traverser.",
+            DeprecationWarning)
+        return self.next_traverser()
+
+    def next_traverser(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
@@ -76,6 +98,13 @@ class Traversal(object):
             return temp
 
     def hasNext(self):
+        warnings.warn(
+            "gremlin_python.process.Traversal.hasNext will be replaced by "
+            "gremlin_python.process.Traversal.has_next.",
+            DeprecationWarning)
+        return self.has_next()
+
+    def has_next(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
@@ -120,9 +149,10 @@ class Traversal(object):
         return future
 
 
-Barrier = Enum('Barrier', ' normSack')
+Barrier = Enum('Barrier', ' normSack norm_sack')
 
 statics.add_static('normSack', Barrier.normSack)
+statics.add_static('norm_sack', Barrier.norm_sack)
 
 Cardinality = Enum('Cardinality', ' list_ set_ single')
 
@@ -154,10 +184,10 @@ GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
 statics.add_static('V1_0', GryoVersion.V1_0)
 statics.add_static('V3_0', GryoVersion.V3_0)
 
-Merge = Enum('Merge', ' onCreate onMatch')
+Merge = Enum('Merge', ' on_create on_match')
 
-statics.add_static('onCreate', Merge.onCreate)
-statics.add_static('onMatch', Merge.onMatch)
+statics.add_static('on_create', Merge.on_create)
+statics.add_static('on_match', Merge.on_match)
 
 Order = Enum('Order', ' asc desc shuffle')
 
@@ -192,10 +222,9 @@ statics.add_static('key', T.key)
 statics.add_static('value', T.value)
 
 
-Operator = Enum('Operator', ' addAll and_ assign div max max_ min min_ minus mult or_ sum sum_ sumLong')
+Operator = Enum('Operator', ' addAll add_all and_ assign div max max_ min min_ minus mult or_ sum_ sumLong sum_long')
 
 statics.add_static('sum_', Operator.sum_)
-statics.add_static('sum', Operator.sum_)
 statics.add_static('minus', Operator.minus)
 statics.add_static('mult', Operator.mult)
 statics.add_static('div', Operator.div)
@@ -206,7 +235,8 @@ statics.add_static('assign', Operator.assign)
 statics.add_static('and_', Operator.and_)
 statics.add_static('or_', Operator.or_)
 statics.add_static('addAll', Operator.addAll)
-statics.add_static('sumLong', Operator.sumLong)
+statics.add_static('add_all', Operator.add_all)
+statics.add_static('sum_long', Operator.sum_long)
 
 
 class P(object):
@@ -373,22 +403,62 @@ class TextP(P):
 
     @staticmethod
     def endingWith(*args):
+        warnings.warn(
+            "gremlin_python.process.TextP.endingWith will be replaced by "
+            "gremlin_python.process.TextP.ending_with.",
+            DeprecationWarning)
+        return TextP("endingWith", *args)
+
+    @staticmethod
+    def ending_with(*args):
         return TextP("endingWith", *args)
 
     @staticmethod
     def notContaining(*args):
+        warnings.warn(
+            "gremlin_python.process.TextP.notContaining will be replaced by "
+            "gremlin_python.process.TextP.not_containing.",
+            DeprecationWarning)
+        return TextP("notContaining", *args)
+
+    @staticmethod
+    def not_containing(*args):
         return TextP("notContaining", *args)
 
     @staticmethod
     def notEndingWith(*args):
+        warnings.warn(
+            "gremlin_python.process.TextP.notEndingWith will be replaced by "
+            "gremlin_python.process.TextP.not_ending_with.",
+            DeprecationWarning)
+        return TextP("notEndingWith", *args)
+
+    @staticmethod
+    def not_ending_with(*args):
         return TextP("notEndingWith", *args)
 
     @staticmethod
     def notStartingWith(*args):
+        warnings.warn(
+            "gremlin_python.process.TextP.notStartingWith will be replaced by "
+            "gremlin_python.process.TextP.not_starting_With.",
+            DeprecationWarning)
+        return TextP("notStartingWith", *args)
+
+    @staticmethod
+    def not_starting_with(*args):
         return TextP("notStartingWith", *args)
 
     @staticmethod
     def startingWith(*args):
+        warnings.warn(
+            "gremlin_python.process.TextP.startingWith will be replaced by "
+            "gremlin_python.process.TextP.startingWith.",
+            DeprecationWarning)
+        return TextP("startingWith", *args)
+
+    @staticmethod
+    def starting_with(*args):
         return TextP("startingWith", *args)
 
     def __eq__(self, other):
@@ -403,38 +473,66 @@ def containing(*args):
 
 
 def endingWith(*args):
-    return TextP.endingWith(*args)
+    return TextP.ending_with(*args)
+
+
+def ending_with(*args):
+    return TextP.ending_with(*args)
 
 
 def notContaining(*args):
-    return TextP.notContaining(*args)
+    return TextP.not_containing(*args)
+
+
+def not_containing(*args):
+    return TextP.not_containing(*args)
 
 
 def notEndingWith(*args):
-    return TextP.notEndingWith(*args)
+    return TextP.not_ending_with(*args)
+
+
+def not_ending_with(*args):
+    return TextP.not_ending_with(*args)
 
 
 def notStartingWith(*args):
-    return TextP.notStartingWith(*args)
+    return TextP.not_starting_with(*args)
+
+
+def not_starting_with(*args):
+    return TextP.not_starting_with(*args)
 
 
 def startingWith(*args):
-    return TextP.startingWith(*args)
+    return TextP.starting_with(*args)
+
+
+def starting_with(*args):
+    return TextP.starting_with(*args)
 
 
 statics.add_static('containing', containing)
 
 statics.add_static('endingWith', endingWith)
 
+statics.add_static('ending_with', ending_with)
+
 statics.add_static('notContaining', notContaining)
+
+statics.add_static('not_containing', not_containing)
 
 statics.add_static('notEndingWith', notEndingWith)
 
+statics.add_static('not_ending_with', not_ending_with)
+
 statics.add_static('notStartingWith', notStartingWith)
+
+statics.add_static('not_starting_with', not_starting_with)
 
 statics.add_static('startingWith', startingWith)
 
-
+statics.add_static('starting_with', starting_with)
 
 
 '''
@@ -470,6 +568,8 @@ class ConnectedComponent(object):
 
     propertyName = "~tinkerpop.connectedComponent.propertyName"
 
+    property_name = "~tinkerpop.connectedComponent.propertyName"
+
 
 '''
 ShortestPath
@@ -484,7 +584,11 @@ class ShortestPath(object):
 
     includeEdges = "~tinkerpop.shortestPath.includeEdges"
 
+    include_edges = "~tinkerpop.shortestPath.includeEdges"
+
     maxDistance = "~tinkerpop.shortestPath.maxDistance"
+
+    max_distance = "~tinkerpop.shortestPath.maxDistance"
 
     target = "~tinkerpop.shortestPath.target"
 
@@ -500,6 +604,8 @@ class PageRank(object):
 
     propertyName = "~tinkerpop.pageRank.propertyName"
 
+    property_name = "~tinkerpop.pageRank.propertyName"
+
     times = "~tinkerpop.pageRank.times"
 
 
@@ -513,6 +619,8 @@ class PeerPressure(object):
     edges = "~tinkerpop.peerPressure.edges"
 
     propertyName = "~tinkerpop.peerPressure.propertyName"
+
+    property_name = "~tinkerpop.pageRank.propertyName"
 
     times = "~tinkerpop.peerPressure.times"
 

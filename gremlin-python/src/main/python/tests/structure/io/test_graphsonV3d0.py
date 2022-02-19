@@ -29,19 +29,21 @@ from decimal import *
 from mock import Mock
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
+from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphsonV3d0 import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphsonV3d0
-from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import P, Merge, Barrier, Order, Operator, Direction
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
+
+from_ = Direction.OUT
 
 
 class TestGraphSONReader(object):
     graphson_reader = GraphSONReader()
 
     def test_collections(self):
-        x = self.graphson_reader.readObject(
+        x = self.graphson_reader.read_object(
             json.dumps({"@type": "g:List", "@value": [{"@type": "g:Int32", "@value": 1},
                                                       {"@type": "g:Int32", "@value": 2},
                                                       "3"]}))
@@ -51,7 +53,7 @@ class TestGraphSONReader(object):
         assert x[2] == "3"
         ##
 
-        x = self.graphson_reader.readObject(
+        x = self.graphson_reader.read_object(
             json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                                      {"@type": "g:Int32", "@value": 2},
                                                      "3"]}))
@@ -59,7 +61,7 @@ class TestGraphSONReader(object):
         assert isinstance(x, set)
         assert x == set([1, 2, "3"])
 
-        x = self.graphson_reader.readObject(
+        x = self.graphson_reader.read_object(
             json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                                     {"@type": "g:Int32", "@value": 2},
                                                     {"@type": "g:Float", "@value": 2.0},
@@ -69,7 +71,7 @@ class TestGraphSONReader(object):
         assert isinstance(x, list)
         assert x == list([1, 2, 2.0, "3"])
         ##
-        x = self.graphson_reader.readObject(
+        x = self.graphson_reader.read_object(
             json.dumps({"@type": "g:Map",
                         "@value": ['a', {"@type": "g:Int32", "@value": 1}, 'b', "marko"]}))
         assert isinstance(x, dict)
@@ -78,7 +80,7 @@ class TestGraphSONReader(object):
         assert len(x) == 2
 
         # BulkSet gets coerced to a List - both have the same behavior
-        x = self.graphson_reader.readObject(
+        x = self.graphson_reader.read_object(
             json.dumps({"@type": "g:BulkSet",
                         "@value": ["marko", {"@type": "g:Int64", "@value": 1}, "josh", {"@type": "g:Int64", "@value": 3}]}))
         assert isinstance(x, list)
@@ -87,104 +89,104 @@ class TestGraphSONReader(object):
         assert x.count("josh") == 3
 
     def test_number_input(self):
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:Byte",
             "@value": 1
         }))
         assert isinstance(x, SingleByte)
         assert 1 == x
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Int32",
             "@value": 31
         }))
         assert isinstance(x, int)
         assert 31 == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Int64",
             "@value": 31
         }))
         assert isinstance(x, long)
         assert long(31) == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Float",
             "@value": 31.3
         }))
         assert isinstance(x, float)
         assert 31.3 == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Double",
             "@value": 31.2
         }))
         assert isinstance(x, float)
         assert 31.2 == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Double",
             "@value": "NaN"
         }))
         assert isinstance(x, float)
         assert math.isnan(x)
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Double",
             "@value": "Infinity"
         }))
         assert isinstance(x, float)
         assert math.isinf(x) and x > 0
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Double",
             "@value": "-Infinity"
         }))
         assert isinstance(x, float)
         assert math.isinf(x) and x < 0
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigDecimal",
             "@value": 31.2
         }))
         assert isinstance(x, Decimal)
         assert Decimal(31.2) == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigDecimal",
             "@value": 123456789987654321123456789987654321
         }))
         assert isinstance(x, Decimal)
         assert Decimal('123456789987654321123456789987654321') == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigDecimal",
             "@value": "NaN"
         }))
         assert isinstance(x, Decimal)
         assert math.isnan(x)
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigDecimal",
             "@value": "Infinity"
         }))
         assert isinstance(x, Decimal)
         assert math.isinf(x) and x > 0
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigDecimal",
             "@value": "-Infinity"
         }))
         assert isinstance(x, Decimal)
         assert math.isinf(x) and x < 0
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigInteger",
             "@value": 31
         }))
         assert isinstance(x, long)
         assert 31 == x
         ##
-        x = self.graphson_reader.readObject(json.dumps({
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:BigInteger",
             "@value": 123456789987654321123456789987654321
         }))
@@ -192,7 +194,7 @@ class TestGraphSONReader(object):
         assert 123456789987654321123456789987654321 == x
 
     def test_graph(self):
-        vertex = self.graphson_reader.readObject("""
+        vertex = self.graphson_reader.read_object("""
         {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
@@ -200,7 +202,7 @@ class TestGraphSONReader(object):
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
         ##
-        vertex = self.graphson_reader.readObject("""
+        vertex = self.graphson_reader.read_object("""
         {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Float","@value":45.23}}}""")
         assert isinstance(vertex, Vertex)
         assert 45.23 == vertex.id
@@ -208,7 +210,7 @@ class TestGraphSONReader(object):
         assert "vertex" == vertex.label
         assert vertex == Vertex(45.23)
         ##
-        vertex_property = self.graphson_reader.readObject("""
+        vertex_property = self.graphson_reader.read_object("""
         {"@type":"g:VertexProperty", "@value":{"id":"anId","label":"aKey","value":true,"vertex":{"@type":"g:Int32","@value":9}}}""")
         assert isinstance(vertex_property, VertexProperty)
         assert "anId" == vertex_property.id
@@ -216,7 +218,7 @@ class TestGraphSONReader(object):
         assert vertex_property.value
         assert vertex_property.vertex == Vertex(9)
         ##
-        vertex_property = self.graphson_reader.readObject("""
+        vertex_property = self.graphson_reader.read_object("""
         {"@type":"g:VertexProperty", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"name","value":"marko"}}""")
         assert isinstance(vertex_property, VertexProperty)
         assert 1 == vertex_property.id
@@ -224,7 +226,7 @@ class TestGraphSONReader(object):
         assert "marko" == vertex_property.value
         assert vertex_property.vertex is None
         ##
-        edge = self.graphson_reader.readObject("""
+        edge = self.graphson_reader.read_object("""
         {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":17},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab","properties":{"aKey":"aValue","bKey":true}}}""")
         # print edge
         assert isinstance(edge, Edge)
@@ -233,7 +235,7 @@ class TestGraphSONReader(object):
         assert edge.inV == Vertex("x", "xLabel")
         assert edge.outV == Vertex("y", "vertex")
         ##
-        property = self.graphson_reader.readObject("""
+        property = self.graphson_reader.read_object("""
         {"@type":"g:Property", "@value":{"key":"aKey","value":{"@type":"g:Int64","@value":17},"element":{"@type":"g:Edge","@value":{"id":{"@type":"g:Int64","@value":122},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab"}}}}""")
         # print property
         assert isinstance(property, Property)
@@ -242,7 +244,7 @@ class TestGraphSONReader(object):
         assert Edge(122, Vertex("x"), "knows", Vertex("y")) == property.element
 
     def test_path(self):
-        path = self.graphson_reader.readObject(
+        path = self.graphson_reader.read_object(
             """{"@type":"g:Path","@value":{"labels":{"@type":"g:List","@value":[{"@type":"g:Set","@value":["a"]},{"@type":"g:Set","@value":["b","c"]},{"@type":"g:Set","@value":[]}]},"objects":{"@type":"g:List","@value":[{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},"value":"marko","label":"name"}}],"age":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29},"label":"age"}}]}}},{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":3},"label":"software","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":4},"value":"lop","label":"name"}}],"lang":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":5},"value":"java","label":"lang"}}]}}},"lop"]}}}"""
         )
         assert isinstance(path, Path)
@@ -269,7 +271,7 @@ class TestGraphSONReader(object):
         assert type_string not in gremlin_python.structure.io.graphsonV3d0._deserializers
 
         x = X()
-        o = reader.toObject({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: x})
+        o = reader.to_object({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: x})
         serdes.objectify.assert_called_once_with(x, reader)
         assert o is serdes.objectify()
 
@@ -281,7 +283,7 @@ class TestGraphSONReader(object):
             type_string]
 
         value = 3
-        o = reader.toObject({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: value})
+        o = reader.to_object({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: value})
         serdes.objectify.assert_called_once_with(value, reader)
         assert o is serdes.objectify()
 
@@ -289,29 +291,29 @@ class TestGraphSONReader(object):
         expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
         pts = calendar.timegm(expected.utctimetuple()) + expected.microsecond / 1e6
         ts = int(round(pts * 1000))
-        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": ts}))
+        dt = self.graphson_reader.read_object(json.dumps({"@type": "g:Date", "@value": ts}))
         assert isinstance(dt, datetime.datetime)
         # TINKERPOP-1848
         assert dt == expected
 
     def test_timestamp(self):
-        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))
+        dt = self.graphson_reader.read_object(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))
         assert isinstance(dt, timestamp)
         assert float(dt) == 1481750076.295
 
     def test_duration(self):
-        d = self.graphson_reader.readObject(json.dumps({"@type": "gx:Duration", "@value": "PT120H"}))
+        d = self.graphson_reader.read_object(json.dumps({"@type": "gx:Duration", "@value": "PT120H"}))
         assert isinstance(d, datetime.timedelta)
         assert d == datetime.timedelta(hours=120)
 
     def test_uuid(self):
-        prop = self.graphson_reader.readObject(
+        prop = self.graphson_reader.read_object(
             json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}))
         assert isinstance(prop, uuid.UUID)
         assert str(prop) == '41d2e28a-20a4-4ab0-b379-d810dede3786'
 
     def test_metrics(self):
-        prop = self.graphson_reader.readObject(
+        prop = self.graphson_reader.read_object(
             json.dumps([{'@type': 'g:TraversalMetrics', '@value': {'dur': 1.468594, 'metrics': [
                 {'@type': 'g:Metrics', '@value': {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'}},
                 {'@type': 'g:Metrics', '@value': {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}}
@@ -323,18 +325,18 @@ class TestGraphSONReader(object):
                 ]}]
 
     def test_bytebuffer(self):
-        bb = self.graphson_reader.readObject(
+        bb = self.graphson_reader.read_object(
             json.dumps({"@type": "gx:ByteBuffer", "@value": "c29tZSBieXRlcyBmb3IgeW91"}))
         assert isinstance(bb, ByteBufferType)
         assert ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8") == bb
 
     def test_char(self):
-        c = self.graphson_reader.readObject(json.dumps({"@type": "gx:Char", "@value": "L"}))
+        c = self.graphson_reader.read_object(json.dumps({"@type": "gx:Char", "@value": "L"}))
         assert isinstance(c, SingleChar)
         assert chr(76) == c
 
     def test_null(self):
-        c = self.graphson_reader.readObject(json.dumps(None))
+        c = self.graphson_reader.read_object(json.dumps(None))
         assert c is None
 
 
@@ -346,35 +348,44 @@ class TestGraphSONWriter(object):
         assert {"@type": "g:List", "@value": [{"@type": "g:Int32", "@value": 1},
                                               {"@type": "g:Int32", "@value": 2},
                                               {"@type": "g:Int32", "@value": 3}]} == json.loads(
-            self.graphson_writer.writeObject([1, 2, 3]))
+            self.graphson_writer.write_object([1, 2, 3]))
         assert {"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                              {"@type": "g:Int32", "@value": 2},
                                              {"@type": "g:Int32", "@value": 3}]} == json.loads(
-            self.graphson_writer.writeObject(set([1, 2, 3, 3])))
+            self.graphson_writer.write_object(set([1, 2, 3, 3])))
         assert {"@type": "g:Map",
                 "@value": ['a', {"@type": "g:Int32", "@value": 1}]} == json.loads(
-            self.graphson_writer.writeObject({'a': 1}))
+            self.graphson_writer.write_object({'a': 1}))
 
     def test_numbers(self):
-        assert {"@type": "gx:Byte", "@value": 1} == json.loads(self.graphson_writer.writeObject(int.__new__(SingleByte, 1)))
-        assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
-        assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.writeObject(long(851401972585122)))
-        assert {"@type": "g:Int64", "@value": -2} == json.loads(self.graphson_writer.writeObject(long(-2)))
-        assert {"@type": "g:Int64", "@value": -851401972585122} == json.loads(self.graphson_writer.writeObject(long(-851401972585122)))
-        assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
-        assert {"@type": "g:Int32", "@value": -1} == json.loads(self.graphson_writer.writeObject(-1))
-        assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.writeObject(851401972585122))
-        assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
-        assert {"@type": "g:Double", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(float('nan')))
-        assert {"@type": "g:Double", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(float('inf')))
-        assert {"@type": "g:Double", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(float('-inf')))
-        assert {"@type": "gx:BigDecimal", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(Decimal('123456789987654321123456789987654321')))
-        assert {"@type": "gx:BigDecimal", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(Decimal('nan')))
-        assert {"@type": "gx:BigDecimal", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(Decimal('inf')))
-        assert {"@type": "gx:BigDecimal", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(Decimal('-inf')))
-        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(long(123456789987654321123456789987654321)))
-        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(123456789987654321123456789987654321))
-        assert """true""" == self.graphson_writer.writeObject(True)
+        assert {"@type": "gx:Byte", "@value": 1} == json.loads(self.graphson_writer.write_object(int.__new__(SingleByte, 1)))
+        assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.write_object(long(2)))
+        assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.write_object(long(851401972585122)))
+        assert {"@type": "g:Int64", "@value": -2} == json.loads(self.graphson_writer.write_object(long(-2)))
+        assert {"@type": "g:Int64", "@value": -851401972585122} == json.loads(self.graphson_writer.write_object(long(-851401972585122)))
+        assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.write_object(1))
+        assert {"@type": "g:Int32", "@value": -1} == json.loads(self.graphson_writer.write_object(-1))
+        assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.write_object(851401972585122))
+        assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.write_object(3.2))
+        assert {"@type": "g:Double", "@value": "NaN"} == json.loads(self.graphson_writer.write_object(float('nan')))
+        assert {"@type": "g:Double", "@value": "Infinity"} == json.loads(self.graphson_writer.write_object(float('inf')))
+        assert {"@type": "g:Double", "@value": "-Infinity"} == json.loads(self.graphson_writer.write_object(float('-inf')))
+        assert {"@type": "gx:BigDecimal", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.write_object(Decimal('123456789987654321123456789987654321')))
+        assert {"@type": "gx:BigDecimal", "@value": "NaN"} == json.loads(self.graphson_writer.write_object(Decimal('nan')))
+        assert {"@type": "gx:BigDecimal", "@value": "Infinity"} == json.loads(self.graphson_writer.write_object(Decimal('inf')))
+        assert {"@type": "gx:BigDecimal", "@value": "-Infinity"} == json.loads(self.graphson_writer.write_object(Decimal('-inf')))
+        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.write_object(long(123456789987654321123456789987654321)))
+        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.write_object(123456789987654321123456789987654321))
+        assert """true""" == self.graphson_writer.write_object(True)
+
+    def test_enum(self):
+        assert {"@type": "g:Merge", "@value": "onMatch"} == json.loads(self.graphson_writer.write_object(Merge.on_match))
+        assert {"@type": "g:Order", "@value": "shuffle"} == json.loads(self.graphson_writer.write_object(Order.shuffle))
+        assert {"@type": "g:Barrier", "@value": "normSack"} == json.loads(self.graphson_writer.write_object(Barrier.norm_sack))
+        assert {"@type": "g:Operator", "@value": "sum"} == json.loads(self.graphson_writer.write_object(Operator.sum_))
+        assert {"@type": "g:Operator", "@value": "sumLong"} == json.loads(self.graphson_writer.write_object(Operator.sum_long))
+        assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(Direction.OUT))
+        assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(from_))
 
     def test_P(self):
         result = {'@type': 'g:P',
@@ -395,34 +406,34 @@ class TestGraphSONWriter(object):
                           {'@type': 'g:P', '@value': {'predicate': 'neq', 'value': 'd'}}]}}
 
         assert result == json.loads(
-            self.graphson_writer.writeObject(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
+            self.graphson_writer.write_object(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
 
         result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
             {"@type": "g:Int32", "@value": 1}, {"@type": "g:Int32", "@value": 2}]}}}
-        assert result == json.loads(self.graphson_writer.writeObject(P.within([1, 2])))
-        assert result == json.loads(self.graphson_writer.writeObject(P.within({1, 2})))
-        assert result == json.loads(self.graphson_writer.writeObject(P.within(1, 2)))
+        assert result == json.loads(self.graphson_writer.write_object(P.within([1, 2])))
+        assert result == json.loads(self.graphson_writer.write_object(P.within({1, 2})))
+        assert result == json.loads(self.graphson_writer.write_object(P.within(1, 2)))
 
         result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
             {"@type": "g:Int32", "@value": 1}]}}}
-        assert result == json.loads(self.graphson_writer.writeObject(P.within([1])))
-        assert result == json.loads(self.graphson_writer.writeObject(P.within({1})))
-        assert result == json.loads(self.graphson_writer.writeObject(P.within(1)))
+        assert result == json.loads(self.graphson_writer.write_object(P.within([1])))
+        assert result == json.loads(self.graphson_writer.write_object(P.within({1})))
+        assert result == json.loads(self.graphson_writer.write_object(P.within(1)))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the 
         # Gremlin traversal machine (yet)
         assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
-            self.graphson_writer.writeObject(SubgraphStrategy))
+            self.graphson_writer.write_object(SubgraphStrategy))
         assert {"@type": "g:SubgraphStrategy", "@value": {
             "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
-            self.graphson_writer.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
+            self.graphson_writer.write_object(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
     def test_graph(self):
         # TODO: this assert is not compatible with python 3 and now that we test with both 2 and 3 it fails
         assert {"@type": "g:Vertex",
                 "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(
-            self.graphson_writer.writeObject(Vertex(long(12), "person")))
+            self.graphson_writer.write_object(Vertex(long(12), "person")))
 
         assert {"@type": "g:Edge", "@value": {"id": {"@type": "g:Int32", "@value": 7},
                                               "outV": {"@type": "g:Int32", "@value": 0},
@@ -430,10 +441,10 @@ class TestGraphSONWriter(object):
                                               "label": "knows",
                                               "inV": {"@type": "g:Int32", "@value": 1},
                                               "inVLabel": "dog"}} == json.loads(
-            self.graphson_writer.writeObject(Edge(7, Vertex(0, "person"), "knows", Vertex(1, "dog"))))
+            self.graphson_writer.write_object(Edge(7, Vertex(0, "person"), "knows", Vertex(1, "dog"))))
         assert {"@type": "g:VertexProperty", "@value": {"id": "blah", "label": "keyA", "value": True,
                                                         "vertex": "stephen"}} == json.loads(
-            self.graphson_writer.writeObject(VertexProperty("blah", "keyA", True, Vertex("stephen"))))
+            self.graphson_writer.write_object(VertexProperty("blah", "keyA", True, Vertex("stephen"))))
 
         assert {"@type": "g:Property",
                 "@value": {"key": "name", "value": "marko", "element": {"@type": "g:VertexProperty",
@@ -441,27 +452,27 @@ class TestGraphSONWriter(object):
                                                                             "vertex": "vertexId",
                                                                             "id": {"@type": "g:Int32", "@value": 1234},
                                                                             "label": "aKey"}}}} == json.loads(
-            self.graphson_writer.writeObject(
+            self.graphson_writer.write_object(
                 Property("name", "marko", VertexProperty(1234, "aKey", 21345, Vertex("vertexId")))))
 
-        vertex = self.graphson_reader.readObject(self.graphson_writer.writeObject(Vertex(1, "person")))
+        vertex = self.graphson_reader.read_object(self.graphson_writer.write_object(Vertex(1, "person")))
         assert 1 == vertex.id
         assert "person" == vertex.label
 
-        edge = self.graphson_reader.readObject(
-            self.graphson_writer.writeObject(Edge(3, Vertex(1, "person"), "knows", Vertex(2, "dog"))))
+        edge = self.graphson_reader.read_object(
+            self.graphson_writer.write_object(Edge(3, Vertex(1, "person"), "knows", Vertex(2, "dog"))))
         assert "knows" == edge.label
         assert 3 == edge.id
         assert 1 == edge.outV.id
         assert 2 == edge.inV.id
 
-        vertex_property = self.graphson_reader.readObject(
-            self.graphson_writer.writeObject(VertexProperty(1, "age", 32, Vertex(1))))
+        vertex_property = self.graphson_reader.read_object(
+            self.graphson_writer.write_object(VertexProperty(1, "age", 32, Vertex(1))))
         assert 1 == vertex_property.id
         assert "age" == vertex_property.key
         assert 32 == vertex_property.value
 
-        property = self.graphson_reader.readObject(self.graphson_writer.writeObject(Property("age", 32.2, Edge(1,Vertex(2),"knows",Vertex(3)))))
+        property = self.graphson_reader.read_object(self.graphson_writer.write_object(Property("age", 32.2, Edge(1, Vertex(2), "knows", Vertex(3)))))
         assert "age" == property.key
         assert 32.2 == property.value
 
@@ -478,7 +489,7 @@ class TestGraphSONWriter(object):
         assert X not in gremlin_python.structure.io.graphsonV3d0._serializers
 
         obj = X()
-        d = writer.toDict(obj)
+        d = writer.to_dict(obj)
         serdes.dictify.assert_called_once_with(obj, writer)
         assert d is serdes.dictify()
 
@@ -488,51 +499,51 @@ class TestGraphSONWriter(object):
         assert gremlin_python.structure.io.graphsonV3d0._serializers[int] is not writer.serializers[int]
 
         value = 3
-        d = writer.toDict(value)
+        d = writer.to_dict(value)
         serdes.dictify.assert_called_once_with(value, writer)
         assert d is serdes.dictify()
 
     def test_write_long(self):
-        mapping = self.graphson_writer.toDict(1)
+        mapping = self.graphson_writer.to_dict(1)
         assert mapping['@type'] == 'g:Int32'
         assert mapping['@value'] == 1
 
-        mapping = self.graphson_writer.toDict(long(1))
+        mapping = self.graphson_writer.to_dict(long(1))
         assert mapping['@type'] == 'g:Int64'
         assert mapping['@value'] == 1
 
     def test_datetime(self):
         expected = json.dumps({"@type": "g:Date", "@value": 1481750076295}, separators=(',', ':'))
         dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000.0)
-        output = self.graphson_writer.writeObject(dt)
+        output = self.graphson_writer.write_object(dt)
         assert expected == output
 
     def test_timestamp(self):
         expected = json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}, separators=(',', ':'))
         ts = timestamp(1481750076295 / 1000.0)
-        output = self.graphson_writer.writeObject(ts)
+        output = self.graphson_writer.write_object(ts)
         assert expected == output
 
     def test_duration(self):
         expected = json.dumps({"@type": "gx:Duration", "@value": "P5D"}, separators=(',', ':'))
         d = datetime.timedelta(hours=120)
-        output = self.graphson_writer.writeObject(d)
+        output = self.graphson_writer.write_object(d)
         assert expected == output
 
     def test_uuid(self):
         expected = json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}, separators=(',', ':'))
         prop = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
-        output = self.graphson_writer.writeObject(prop)
+        output = self.graphson_writer.write_object(prop)
         assert expected == output
 
     def test_bytebuffer(self):
         expected = json.dumps({'@type': 'gx:ByteBuffer', '@value': 'c29tZSBieXRlcyBmb3IgeW91'}, separators=(',', ':'))
         bb = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8")
-        output = self.graphson_writer.writeObject(bb)
+        output = self.graphson_writer.write_object(bb)
         assert expected == output
 
     def test_char(self):
         expected = json.dumps({'@type': 'gx:Char', '@value': 'L'}, separators=(',', ':'))
         c = str.__new__(SingleChar, chr(76))
-        output = self.graphson_writer.writeObject(c)
+        output = self.graphson_writer.write_object(c)
         assert expected == output

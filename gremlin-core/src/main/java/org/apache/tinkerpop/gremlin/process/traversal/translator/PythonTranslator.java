@@ -419,6 +419,10 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("is", "is_");
             TO_PYTHON_MAP.put("list", "list_");
             TO_PYTHON_MAP.put("max", "max_");
+            TO_PYTHON_MAP.put("mergeE", "merge_e");
+            TO_PYTHON_MAP.put("mergeV", "merge_v");
+            TO_PYTHON_MAP.put("onCreate", "on_create");
+            TO_PYTHON_MAP.put("onMatch", "on_match");
             TO_PYTHON_MAP.put("min", "min_");
             TO_PYTHON_MAP.put("or", "or_");
             TO_PYTHON_MAP.put("not", "not_");
@@ -426,12 +430,6 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("set", "set_");
             TO_PYTHON_MAP.put("sum", "sum_");
             TO_PYTHON_MAP.put("with", "with_");
-            TO_PYTHON_MAP.put("range", "range_");
-            TO_PYTHON_MAP.put("filter", "filter_");
-            TO_PYTHON_MAP.put("id", "id_");
-            TO_PYTHON_MAP.put("max", "max_");
-            TO_PYTHON_MAP.put("min", "min_");
-            TO_PYTHON_MAP.put("sum", "sum_");
             //
             TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
         }
@@ -441,6 +439,8 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         }
 
         public static String toPython(final String symbol) {
+            // at some point we will want a camel to snake case converter here. for now the only step that needs
+            // this conversion is mergeE/V related as the rest still continue use in their deprecated forms.
             return TO_PYTHON_MAP.getOrDefault(symbol, symbol);
         }
 

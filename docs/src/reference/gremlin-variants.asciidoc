@@ -718,7 +718,7 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 
 [source,python]
 ----
-g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 ----
 
 If you need to send additional headers in the websockets connection, you can pass an optional `headers` parameter
@@ -726,7 +726,7 @@ to the `DriverRemoteConnection` constructor.
 
 [source,python]
 ----
-g = traversal().withRemote(DriverRemoteConnection(
+g = traversal().with_remote(DriverRemoteConnection(
     'ws://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
 ----
 
@@ -735,11 +735,11 @@ Gremlin-Python supports plain text and Kerberos SASL authentication, you can set
 [source,python]
 ----
 # Plain text authentication
-g = traversal().withRemote(DriverRemoteConnection(
+g = traversal().with_remote(DriverRemoteConnection(
     'ws://localhost:8182/gremlin', 'g', username='stephen', password='password'))
 
 # Kerberos authentication
-g = traversal().withRemote(DriverRemoteConnection(
+g = traversal().with_remote(DriverRemoteConnection(
     'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
 ----
 
@@ -766,7 +766,7 @@ Some connection options can also be set on individual requests made through the 
 
 [source,python]
 ----
-vertices = g.with_('evaluationTimeout', 500).V().out('knows').toList()
+vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
@@ -807,7 +807,7 @@ These can be used analogously to how they are used in Gremlin-Java.
 
 [source,python]
 ----
->>> g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.desc).toList()
+>>> g.V().has_label('person').has('age',P.gt(30)).order().by('age',Order.desc).to_list()
 [v[6], v[4]]
 ----
 
@@ -822,7 +822,7 @@ With statics loaded its possible to represent the above traversal as below.
 
 [source,python]
 ----
->>> g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
+>>> g.V().has_label('person').has('age',gt(30)).order().by('age',desc).to_list()
 [v[6], v[4]]
 ----
 
@@ -831,7 +831,7 @@ That is, without the `+__+`-prefix.
 
 [source,python]
 ----
->>> g.V().repeat(out()).times(2).name.fold().toList()
+>>> g.V().repeat(out()).times(2).name.fold().to_list()
 [['ripple', 'lop']]
 ----
 
@@ -879,7 +879,7 @@ and the ability to call the api from an event loop:
 ----
 import ssl
 ...
-g = traversal().withRemote(
+g = traversal().with_remote(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
                          transport_factory=lambda: AiohttpTransport(read_timeout=10,
                                                                     write_timeout=10,
@@ -901,20 +901,20 @@ In order to add and remove <<traversalstrategy,traversal strategies>> from a tra
 
 [source,python]
 ----
->>> g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
->>> g.V().name.toList()
+>>> g = g.with_strategies(SubgraphStrategy(vertices=has_label('person'),edges=has('weight',gt(0.5))))
+>>> g.V().name.to_list()
 ['marko', 'vadas', 'josh', 'peter']
->>> g.V().outE().elementMap().toList()
+>>> g.V().out_e().element_map().to_list()
 [{<T.id: 1>: 8, <T.label: 4>: 'knows', <Direction.IN: 2>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 1.0}]
->>> g = g.withoutStrategies(SubgraphStrategy)
->>> g.V().name.toList()
+>>> g = g.without_strategies(SubgraphStrategy)
+>>> g.V().name.to_list()
 ['marko', 'vadas', 'lop', 'josh', 'ripple', 'peter']
->>> g.V().outE().elementMap().toList()
+>>> g.V().out_e().element_map().to_list()
 [{<T.id: 1>: 9, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 3, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 0.4}, {<T.id: 1>: 7, <T.label: 4>: 'knows', <Direction.IN: 2>: {<T.id: 1>: 2, <T.label: 4>: 'person'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 0.5}, {<T.id: 1>: 8, <T.label: 4>: 'knows', <Direction.IN: 2>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 1.0}, {<T.id: 1>: 10, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 5, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, 'weight': 1.0}, {<T.id: 1>: 11, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 3, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, 'weight': 0.4}, {<T.id: 1>: 12, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 3, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 6, <T.label: 4>: 'person'}, 'weight': 0.2}]
->>> g = g.withComputer(workers=2,vertices=has('name','marko'))
->>> g.V().name.toList()
+>>> g = g.with_computer(workers=2,vertices=has('name','marko'))
+>>> g.V().name.to_list()
 ['marko']
->>> g.V().outE().valueMap().with_(WithOptions.tokens).toList()
+>>> g.V().out_e().value_map().with_(WithOptions.tokens).to_list()
 [{<T.id: 1>: 9, <T.label: 4>: 'created', 'weight': 0.4}, {<T.id: 1>: 7, <T.label: 4>: 'knows', 'weight': 0.5}, {<T.id: 1>: 8, <T.label: 4>: 'knows', 'weight': 1.0}]
 ----
 
@@ -932,7 +932,7 @@ builds on that content by demonstrating the transactional syntax for Python.
 
 [source,python]
 ----
-g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin'))
+g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin'))
 
 # Create a Transaction.
 tx = g.tx()
@@ -942,7 +942,7 @@ gtx = tx.begin()
 
 try:
     # Execute a traversal within the transaction.
-    gtx.addV("person").property("name", "Lyndon").iterate(),
+    gtx.add_v("person").property("name", "Lyndon").iterate(),
 
     # Commit the transaction. The transaction can no longer be used and cannot be re-used.
     # A new transaction can be spawned through g.tx().
@@ -966,7 +966,7 @@ use.
 
 [source,python]
 ----
->>> g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()
+>>> g.V().out().map(lambda: "it.get().value('name').length()").sum().to_list()
 [24]
 ----
 
@@ -981,9 +981,9 @@ instead of translating, compiling, and then executing each submitted bytecode, i
 
 [source,python]
 ----
->>> g.V(Bindings.of('x',1)).out('created').map(lambda: "it.get().value('name').length()").sum().toList()
+>>> g.V(Bindings.of('x',1)).out('created').map(lambda: "it.get().value('name').length()").sum_().to_list()
 [3]
->>> g.V(Bindings.of('x',4)).out('created').map(lambda: "it.get().value('name').length()").sum().toList()
+>>> g.V(Bindings.of('x',4)).out('created').map(lambda: "it.get().value('name').length()").sum_().to_list()
 [9]
 ----
 
@@ -1015,7 +1015,7 @@ future_results = result_set.all()  <2>
 results = future_results.result() <3>
 assert results == [1, 2, 3, 4] <4>
 
-future_result_set = client.submitAsync('[1,2,3,4]') <5>
+future_result_set = client.submit_async('[1,2,3,4]') <5>
 result_set = future_result_set.result() <6>
 result = result_set.one() <7>
 assert results == [1, 2, 3, 4] <8>
@@ -1086,13 +1086,13 @@ might look like this:
 class SocialTraversal(GraphTraversal):
 
     def knows(self, person_name):
-        return self.out('knows').hasLabel('person').has('name', person_name)
+        return self.out('knows').has_label('person').has('name', person_name)
 
-    def youngestFriendsAge(self):
-        return self.out('knows').hasLabel('person').values('age').min()
+    def youngest_friends_age(self):
+        return self.out('knows').has_label('person').values('age').min()
 
-    def createdAtLeast(self, number):
-        return self.outE('created').count().is_(P.gte(number))
+    def created_at_least(self, number):
+        return self.out_e('created').count().is_(P.gte(number))
 
 class __(AnonymousTraversal):
 
@@ -1103,12 +1103,12 @@ class __(AnonymousTraversal):
         return cls.graph_traversal(None, None, Bytecode()).knows(*args)
 
     @classmethod
-    def youngestFriendsAge(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).youngestFriendsAge(*args)
+    def youngest_friends_age(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).youngest_friends_age(*args)
 
     @classmethod
-    def createdAtLeast(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).createdAtLeast(*args)
+    def created_at_least(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).created_at_least(*args)
 
 
 class SocialTraversalSource(GraphTraversalSource):
@@ -1136,10 +1136,10 @@ be used:
 
 [source,python]
 ----
-social = traversal(SocialTraversalSource).withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+social = traversal(SocialTraversalSource).with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 social.persons('marko').knows('josh')
-social.persons('marko').youngestFriendsAge()
-social.persons().filter(__.createdAtLeast(2)).count()
+social.persons('marko').youngest_friends_age()
+social.persons().filter(__.created_at_least(2)).count()
 ----
 
 [[gremlin-python-sugar]]
@@ -1150,11 +1150,11 @@ that makes traversals a bit more concise.
 
 [source,python]
 ----
->>> g.V().both()[1:3].toList()
+>>> g.V().both()[1:3].to_list()
 [v[2], v[4]]
->>> g.V().both()[1].toList()
+>>> g.V().both()[1].to_list()
 [v[2]]
->>> g.V().both().name.toList()
+>>> g.V().both().name.to_list()
 ['lop', 'lop', 'lop', 'vadas', 'josh', 'josh', 'josh', 'marko', 'marko', 'marko', 'peter', 'ripple']
 ----
 
@@ -1164,11 +1164,12 @@ that makes traversals a bit more concise.
 In situations where Python reserved words and global functions overlap with standard Gremlin steps and tokens, those
 bits of conflicting Gremlin get an underscore appended as a suffix:
 
-*Steps* - <<and-step,and_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<from-step,from_()>>, <<id-step,id_()>>,
-<<is-step,is_()>>, <<in-step,in_()>>, <<max-step,max_()>>, <<min-step,min_()>>, <<not-step,not_()>>, <<or-step,or_()>>,
-<<range-step,range_()>>, <<sum-step,sum_()>>, <<with-step,with_()>>
+*Steps* - <<and-step,and_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<from-step,from_()>>,
+<<has-step,has_key_>>, <<id-step,id_()>>, <<is-step,is_()>>, <<in-step,in_()>>, <<max-step,max_()>>,
+<<min-step,min_()>>, <<not-step,not_()>>, <<or-step,or_()>>, <<range-step,range_()>>, <<sum-step,sum_()>>,
+<<with-step,with_()>>
 
-*Tokens* - <<a-note-on-scopes,Scope.global_>>, `Direction.from_`
+*Tokens* - <<a-note-on-scopes,Scope.global_>>, `Direction.from_`, `Operator.sum_`
 
 [[gremlin-python-limitations]]
 === Limitations
