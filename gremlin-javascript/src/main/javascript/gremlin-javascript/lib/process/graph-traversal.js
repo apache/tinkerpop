@@ -262,7 +262,17 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('io', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
+
+    /**
+     * call GraphTraversalSource step method.
+     * @param {...Object} args
+     * @returns {GraphTraversal}
+     */
+    call(...args) {
+      const b = new Bytecode(this.bytecode).addStep('call', args);
+      return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    }
+
 }
 
 /**
@@ -402,6 +412,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal call method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  call(...args) {
+    this.bytecode.addStep('call', args);
+    return this;
+  }
+
+  /**
    * Graph traversal cap method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -501,6 +521,16 @@ class GraphTraversal extends Traversal {
     return this;
   }
   
+  /**
+   * Graph traversal element method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  element(...args) {
+    this.bytecode.addStep('element', args);
+    return this;
+  }
+
   /**
    * Graph traversal elementMap method.
    * @param {...Object} args
@@ -1364,6 +1394,7 @@ const statics = {
   bothE: (...args) => callOnEmptyTraversal('bothE', args),
   bothV: (...args) => callOnEmptyTraversal('bothV', args),
   branch: (...args) => callOnEmptyTraversal('branch', args),
+  call: (...args) => callOnEmptyTraversal('call', args),
   cap: (...args) => callOnEmptyTraversal('cap', args),
   choose: (...args) => callOnEmptyTraversal('choose', args),
   coalesce: (...args) => callOnEmptyTraversal('coalesce', args),
@@ -1373,6 +1404,7 @@ const statics = {
   cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
+  element: (...args) => callOnEmptyTraversal('element', args),
   elementMap: (...args) => callOnEmptyTraversal('elementMap', args),
   emit: (...args) => callOnEmptyTraversal('emit', args),
   fail: (...args) => callOnEmptyTraversal('fail', args),

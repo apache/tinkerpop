@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.iterator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -253,6 +254,10 @@ public final class IteratorUtils {
         return () -> IteratorUtils.map(iterable.iterator(), function);
     }
 
+    public static <S, E> Iterator<E> cast(final Iterator<S> iterator) {
+        return map(iterator, s -> (E) s);
+    }
+
     ///////////////
 
     public static final <S> Iterator<S> filter(final Iterator<S> iterator, final Predicate<S> predicate) {
@@ -386,7 +391,8 @@ public final class IteratorUtils {
      * Construct a {@link Stream} from an {@link Iterator}.
      */
     public static <T> Stream<T> stream(final Iterator<T> iterator) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE | Spliterator.SIZED), false)
+                .onClose(() -> CloseableIterator.closeIterator(iterator));
     }
 
     public static <T> Stream<T> stream(final Iterable<T> iterable) {

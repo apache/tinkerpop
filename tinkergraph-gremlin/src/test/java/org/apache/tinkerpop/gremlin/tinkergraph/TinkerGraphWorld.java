@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerDegreeCentralityFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.AssumptionViolatedException;
@@ -45,16 +47,22 @@ import java.util.stream.Collectors;
  * by the Gherkin test suite.
  */
 public class TinkerGraphWorld implements World {
-    private static final TinkerGraph modern = TinkerFactory.createModern();
-    private static final TinkerGraph classic = TinkerFactory.createClassic();
-    private static final TinkerGraph crew = TinkerFactory.createTheCrew();
-    private static final TinkerGraph sink = TinkerFactory.createKitchenSink();
-    private static final TinkerGraph grateful = TinkerFactory.createGratefulDead();
+    private static final TinkerGraph modern = registerTestServices(TinkerFactory.createModern());
+    private static final TinkerGraph classic = registerTestServices(TinkerFactory.createClassic());
+    private static final TinkerGraph crew = registerTestServices(TinkerFactory.createTheCrew());
+    private static final TinkerGraph sink = registerTestServices(TinkerFactory.createKitchenSink());
+    private static final TinkerGraph grateful = registerTestServices(TinkerFactory.createGratefulDead());
+
+    private static TinkerGraph registerTestServices(final TinkerGraph graph) {
+        graph.getServiceRegistry().registerService(new TinkerTextSearchFactory(graph));
+        graph.getServiceRegistry().registerService(new TinkerDegreeCentralityFactory(graph));
+        return graph;
+    }
 
     @Override
     public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
         if (null == graphData)
-            return TinkerGraph.open(getNumberIdManagerConfiguration()).traversal();
+            return registerTestServices(TinkerGraph.open(getNumberIdManagerConfiguration())).traversal();
         else if (graphData == LoadGraphWith.GraphData.CLASSIC)
             return classic.traversal();
         else if (graphData == LoadGraphWith.GraphData.CREW)
@@ -113,7 +121,8 @@ public class TinkerGraphWorld implements World {
                 "@GraphComputerVerificationMidVNotSupported",
                 "@GraphComputerVerificationInjectionNotSupported",
                 "@GraphComputerVerificationStarGraphExceeded",
-                "@GraphComputerVerificationReferenceOnly");
+                "@GraphComputerVerificationReferenceOnly",
+                "@TinkerServiceRegistry");
 
         private static final List<String> SCENARIOS_TO_IGNORE = Arrays.asList(
                 "g_V_group_byXoutE_countX_byXnameX",

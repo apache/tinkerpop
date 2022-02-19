@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
@@ -45,6 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -475,6 +477,83 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, ids));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with a list of available services.
+     *
+     * @since 3.6.0
+     */
+    public <S> GraphTraversal<S, S> call() {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.call);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with no parameters.
+     *
+     * @param service the name of the service call
+     * @since 3.6.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.call, service);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true, service));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with the specified
+     * static parameters.
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @since 3.6.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final Map params) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with dynamic
+     * parameters produced by the specified child traversal.
+     *
+     * @param service the name of the service call
+     * @param childTraversal a traversal that will produce a Map of parameters for the service call when invoked.
+     * @since 3.6.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final Traversal<S, Map> childTraversal) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.call, service, childTraversal);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        final CallStep<S,S> step = null == childTraversal ? new CallStep(traversal, true, service) :
+                new CallStep(traversal, true, service, new LinkedHashMap(), childTraversal.asAdmin());
+        return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with both static and
+     * dynamic parameters produced by the specified child traversal. These parameters will be merged at execution time
+     * per the provider implementation. Reference implementation merges dynamic into static (dynamic will overwrite
+     * static).
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @param childTraversal a traversal that will produce a Map of parameters for the service call when invoked.
+     * @since 3.6.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final Map params, final Traversal<S, Map> childTraversal) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        final CallStep<S,S> step = null == childTraversal ? new CallStep(traversal, true, service, params) :
+                new CallStep(traversal, true, service, params, childTraversal.asAdmin());
+        return traversal.addStep(step);
     }
 
     /**

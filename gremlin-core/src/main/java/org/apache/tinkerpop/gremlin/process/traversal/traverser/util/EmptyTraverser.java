@@ -36,7 +36,7 @@ import java.util.function.Function;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
+public class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     private static final EmptyTraverser INSTANCE = new EmptyTraverser();
 
@@ -47,7 +47,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
         return INSTANCE;
     }
 
-    private EmptyTraverser() {
+    protected EmptyTraverser() {
 
     }
 

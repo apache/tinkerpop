@@ -59,7 +59,12 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly",
+        tags = "not @RemoteOnly and not @StepDrop and not @StepV and not @StepIndex and not @StepInject and " +
+               "not @GraphComputerVerificationOneBulk and not @GraphComputerVerificationStrategyNotSupported and " +
+               "not @GraphComputerVerificationMidVNotSupported and not @GraphComputerVerificationElementSupported and " +
+               "not @GraphComputerVerificationInjectionNotSupported and " +
+               "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
+               "not @TinkerServiceRegistry",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },
@@ -98,18 +103,6 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX", skipReasonOrdering));
         add(Pair.with("g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX", skipReasonOrdering));
     }};
-
-    private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
-            "@StepDrop",
-            "@StepV",
-            "@StepIndex", // doesn't look like this works with Spark atm - doesn't serialize (IndexTest not in the ProcessComputerSuite)
-            "@StepInject", // inject() not supported on GraphComputer
-            "@GraphComputerVerificationOneBulk",
-            "@GraphComputerVerificationStrategyNotSupported",
-            "@GraphComputerVerificationMidVNotSupported",
-            "@GraphComputerVerificationInjectionNotSupported",
-            "@GraphComputerVerificationStarGraphExceeded",
-            "@GraphComputerVerificationReferenceOnly");
 
     public static final class ServiceModule extends AbstractModule {
         @Override
@@ -158,10 +151,6 @@ public class SparkGraphFeatureIntegrateTest {
                     filter(s -> s.getValue0().equals(scenario.getName())).findFirst();
             if (skipped.isPresent())
                 throw new AssumptionViolatedException(skipped.get().getValue1());
-
-            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
-            if (!ignores.isEmpty())
-                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
         }
 
         private static void readIntoGraph(final Graph graph, final GraphData graphData) {

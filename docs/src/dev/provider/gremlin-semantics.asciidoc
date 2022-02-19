@@ -488,6 +488,110 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+=== call()
+
+*Description:* Provides support for provider-specific service calls.
+
+*Syntax:* `call()` | `call(String, Map)` | `call(String, Traversal)` | `call(String, Map, Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |`with()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `String` - The name of the service call.
+* `Map` - A collection of static parameters relevant to the particular service call. Keys and values can be any
+type currently supported by the Gremlin type system.
+* `Traversal` - A traversal used to dynamically build at query time a collection of parameters relevant to the service
+call.
+
+*Modulation:*
+
+* `with(key, value)` - Sets an additional static parameter relevant to the service call. Key and value can be any
+type currently supported by the Gremlin type system.
+* `with(key, Traversal)` - Sets an additional dynamic parameter relevant to the service call. Key can be any
+type currently supported by the Gremlin type system.
+
+How static and dynamic parameters are merged is a detail left to the provider implementation. The reference implementation
+(`CallStep`) uses effectively a "left to right" merge of the parameters - it starts with the static parameter `Map`
+argument, then merges in the parameters from the dynamic `Traversal` argument, then merges in each `with` modulation
+one by one in the order they appear.
+
+Service calls in the reference implementation can be specified as `Start` (start of traversal), `Streaming`
+(mid-traversal flat map step), and `Barrier` (mid-traversal barrier step). Furthermore, the `Barrier` type can be
+all-at-once or with a maximum chunk size. A single service can support more than one of these modes, and if it does,
+must provide semantics for how to configure the mode at query time via parameters.
+
+Providers using the reference implementation to support service call with need to provide a `ServiceFactory` for each
+named service that can create `Service` instances for execution during traversal. The `ServiceFactory` is a singleton
+that is registered with the `ServiceRegistry` located on the provider `Graph`. The `Service` instance is local to
+each traversal, although providers can choose to re-use instances across traversals provided there is no state.
+
+*Considerations:*
+
+Providers using the reference implementation can return `Traverser` output or raw value output - the `CallStep` will
+handle either case appropriately. In the case of a `Streaming` service, where there is exactly one input to each
+call, the reference implementation can preserve `Path` information by splitting the input `Traverser` when receiving
+raw output from the call. In the case of `Barrier` however, it is the responsiblity of the `Service` to preserve
+`Path` information by producing its own `Traversers` as output, since the `CallStep` cannot match input and ouput
+across a barrier. The ability to split input `Traversers` and generate output is provided by the reference
+implementation's `ServiceCallContext` object, which is supplied to the `Service` during execution.
+
+There are three execution methods in the reference implementation service call API:
+
+* `execute(ServiceCallContext, Map)` - execute a service call to start a traversal
+* `execute(ServiceCallContext, Traverser, Map)` - execute a service call mid-traversal streaming (one input)
+* `execute(ServiceCallContext, TraverserSet, Map)` - execute a service call mid-traversal barrier
+
+The Map is the merged collection of all static and dynamic parameters. In the case of `Barrier` execution, notice
+that there is one `Map` for many input. Since the `call()` API support dynamic parameters, this implies that all
+input must reduce to the same set of parameters for `Barrier` execution. In the reference implementation, if more
+than one parameter set is detected, this will cause an execution and the traversal will halt. Providers that
+implement their own version of a call operation may decide on other strategies to handle this case - for example
+it may be sensible to group traversers by Map in the case where multiple parameter sets are detected.
+
+The no-arg version of the `call()` API is meant to be a directory service and should only be used to start a traversal.
+The reference implementation provides a  default version, with will produce a list of service names or a service
+description if run with `verbose=true`. Providers using the own implementation of the call operation must provide their
+own directory listing service with the service name `"--list"`.
+
+*Exceptions*
+
+* If a named service does not support the execution mode implied by the traversal, for example, using a `Streaming` or
+`Barrier` step as a traversal source, this will result in an `UnsupportedOperationException`.
+* As mentioned above, dynamic property parameters (`Traversals`) that reduce to more than one property set for a chunk
+of input is not supported in the reference implementation and will result in an `UnsupportedOperationException`.
+* Use of the reference implementation's built-in directory service - `call()` or `call("--list")` - mid-traversal
+will result in an `UnsupportedOperationException`.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CallStep.java[CallStep],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/Service.java[Service],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
+
+=== element()
+
+*Description:* Traverse from `Property` to its `Element`.
+
+*Syntax:* `element()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Property` |`Element`
+|=========================================================
+
+*Arguments:*
+
+None
+
+*Modulation:*
+
+None
+
 === mergeE()
 
 *Description:* Provides upsert-like functionality for edges.
@@ -551,8 +655,8 @@ resolve to a `Map`.
 * `mergeE()` (i.e. the zero-arg overload) can only be used mid-traversal. It is not a start step.
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
-See: link:https://github.com/apache/tinkerpop/tree/master/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
-link:https://tinkerpop.apache.org/docs/current/reference/#mergee-step[reference]
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
 === mergeV()
 
@@ -609,5 +713,5 @@ resolve to a `Map`.
 * `mergeV()` (i.e. the zero-arg overload) can only be used mid-traversal. It is not a start step.
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
-See: link:https://github.com/apache/tinkerpop/tree/master/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
-link:https://tinkerpop.apache.org/docs/current/reference/#mergev-step[reference]
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]

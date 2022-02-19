@@ -194,6 +194,38 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, E2> Call<E2>(string service)
+        {
+            return new GraphTraversal<object, E2>().Call<E2>(service);
+        }
+        
+        /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, E2> Call<E2>(string service, IDictionary<object,object> m)
+        {
+            return new GraphTraversal<object, E2>().Call<E2>(service, m);
+        }
+
+        /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, E2> Call<E2>(string service, ITraversal t)
+        {
+            return new GraphTraversal<object, E2>().Call<E2>(service, t);
+        }
+        
+        /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, E2> Call<E2>(string service, IDictionary<object,object> m, ITraversal t)
+        {
+            return new GraphTraversal<object, E2>().Call<E2>(service, m, t);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the cap step to that traversal.
         /// </summary>
         public static GraphTraversal<object, E2> Cap<E2>(string sideEffectKey, params string[] sideEffectKeys)
@@ -329,6 +361,14 @@ namespace Gremlin.Net.Process.Traversal
             return new GraphTraversal<object, object>().Drop();            
         }
 
+        /// <summary>
+        ///     Adds the element step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public static GraphTraversal<object, Element> Element()
+        {
+            return new GraphTraversal<object, Element>().Element();
+        }
+        
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the elementMap step to that traversal.
         /// </summary>

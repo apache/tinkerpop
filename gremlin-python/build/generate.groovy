@@ -53,15 +53,11 @@ radishGremlinFile = new File("${projectBaseDir}/gremlin-python/src/main/python/r
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
 gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "features").toString())
 
-gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(new GroovyCustomizer() {
-    public CompilationCustomizer create() {
-        return new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation())
-    }
-}, new GroovyCustomizer() {
-    public CompilationCustomizer create() {
-        return new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation())
-    }
-})
+gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(
+        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()) },
+        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()) }
+)
+
 translator = PythonTranslator.of('g')
 g = traversal().withEmbedded(EmptyGraph.instance())
 bindings = new SimpleBindings()

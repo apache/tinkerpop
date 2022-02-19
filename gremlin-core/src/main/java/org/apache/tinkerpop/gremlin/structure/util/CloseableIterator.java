@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.util;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.io.Closeable;
 import java.util.Iterator;
@@ -35,7 +36,7 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
      * Wraps an existing {@code Iterator} in a {@code CloseableIterator}. If the {@code Iterator} is already of that
      * type then it will simply be returned as-is.
      */
-    public static <T> CloseableIterator<T> asCloseable(final Iterator<T> iterator) {
+    static <T> CloseableIterator<T> of(final Iterator<T> iterator) {
         if (iterator instanceof CloseableIterator)
             return (CloseableIterator<T>) iterator;
 
@@ -43,11 +44,11 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
     }
 
     @Override
-    public default void close() {
+    default void close() {
         // do nothing by default
     }
 
-    public static <T> void closeIterator(final Iterator<T> iterator) {
+    static <T> void closeIterator(final Iterator<T> iterator) {
         if (iterator instanceof AutoCloseable) {
             try {
                 ((AutoCloseable) iterator).close();
@@ -55,5 +56,19 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    class EmptyCloseableIterator<T> extends DefaultCloseableIterator<T> {
+
+        private static final EmptyCloseableIterator INSTANCE = new EmptyCloseableIterator();
+
+        public static <T> EmptyCloseableIterator<T> instance() {
+            return INSTANCE;
+        }
+
+        private EmptyCloseableIterator() {
+            super(EmptyIterator.instance());
+        }
+
     }
 }

@@ -372,6 +372,34 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                             convertToScript(instArg);
                         }
                         script.append(",");
+                    } else if (methodName.equals(GraphTraversal.Symbols.call)) {
+                        // call()
+                        // call(String)
+                        // call(String, Map)
+                        // call(String, Traversal)
+                        // call(String, Map, Traversal)
+                        final Object[] instArgs = instruction.getArguments();
+                        if (instArgs.length > 0) {
+                            // [0] always String
+                            convertToScript(instArgs[0]);
+                            script.append(",");
+                        }
+                        if (instArgs.length > 1) {
+                            // [1] could be Map or Traversal
+                            if (instArgs[1] instanceof Traversal || instArgs[1] instanceof Bytecode) {
+                                script.append("(ITraversal) ");
+                            } else {
+                                script.append("(IDictionary<object,object>) ");
+                            }
+                            convertToScript(instArgs[1]);
+                            script.append(",");
+                        }
+                        if (instArgs.length > 2) {
+                            // [2] always Traversal
+                            script.append("(ITraversal) ");
+                            convertToScript(instArgs[2]);
+                            script.append(",");
+                        }
                     } else if (methodName.equals(GraphTraversal.Symbols.option) &&
                             instruction.getArguments().length == 2 && instruction.getArguments()[0] instanceof Merge) {
                         final Object[] instArgs = instruction.getArguments();
@@ -474,6 +502,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         static {
             TO_CS_MAP.put(GraphTraversal.Symbols.branch, "Branch<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.call, "Call<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.cap, "Cap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.choose, "Choose<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.coalesce, "Coalesce<object>");

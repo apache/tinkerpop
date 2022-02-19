@@ -85,6 +85,24 @@ public class Parameters implements Cloneable, Serializable {
     }
 
     /**
+     * Returns the size of parameter set.
+     *
+     * @return number of parameters (keys)
+     */
+    public int size() {
+        return parameters.size();
+    }
+
+    /**
+     * Check if the parameter set is empty.
+     *
+     * @return {@code true} if the size is zero
+     */
+    public boolean isEmpty() {
+        return parameters.isEmpty();
+    }
+
+    /**
      * Renames a key in the parameter set.
      *
      * @param oldKey the key to rename

@@ -461,6 +461,63 @@ namespace Gremlin.Net.Process.Traversal
                 traversal.Bytecode.AddStep("io", file);
             return traversal;
         }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Call<S>()
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("call");
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Call<S>(string service)
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("call", service);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Call<S>(string service, IDictionary<object,object> m)
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("call", service, m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Call<S>(string service, ITraversal t)
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("call", service, t);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Call<S>(string service, IDictionary<object,object> m, ITraversal t)
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("call", service, m, t);
+            return traversal;
+        }
+
+
     }
     
 #pragma warning restore 1591

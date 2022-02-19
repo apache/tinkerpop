@@ -28,6 +28,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `TextP.regex` and `TextP.notRegex`.
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
+* Added `element()` step.
+* Added `call()` step.
 * Added `fail()` step.
 * Added `mergeV()` and `mergeE()` steps.
 * Added `Direction` aliases of `from` and `to`.

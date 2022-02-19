@@ -24,10 +24,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
@@ -337,6 +339,13 @@ public interface Graph extends AutoCloseable, Host {
     Configuration configuration();
 
     /**
+     * Get the {@link ServiceRegistry} associated with the graph. Used by {@link CallStep} to invoke service calls.
+     *
+     * @return The registry of callable services
+     */
+    default ServiceRegistry getServiceRegistry() { return ServiceRegistry.EMPTY; }
+
+    /**
      * Graph variables are a set of key/value pairs associated with the graph. The keys are String and the values
      * are Objects.
      */
@@ -459,6 +468,7 @@ public interface Graph extends AutoCloseable, Host {
             String FEATURE_IO_READ = "IoRead";
             String FEATURE_IO_WRITE = "IoWrite";
             String FEATURE_ORDERABILITY_SEMANTICS = "OrderabilitySemantics";
+            String FEATURE_SERVICE_CALL = "ServiceCall";
 
             /**
              * Determines if the {@code Graph} implementation supports {@link GraphComputer} based processing.
@@ -538,6 +548,14 @@ public interface Graph extends AutoCloseable, Host {
             @FeatureDescriptor(name = FEATURE_ORDERABILITY_SEMANTICS)
             default boolean supportsOrderabilitySemantics() {
                 return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementation supports the service call feature.
+             */
+            @FeatureDescriptor(name = FEATURE_SERVICE_CALL)
+            default boolean supportsServiceCall() {
+                return false;
             }
 
             /**

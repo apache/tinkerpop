@@ -869,6 +869,67 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`]
 
+[[call-step]]
+=== Call Step
+
+The `call()` step allows for custom, provider-specific service calls either at the start of a traversal or mid-traversal.
+This allows Graph providers to expose operations not natively built into the Gremlin language, such as full text search,
+custom analytics, notification triggers, etc.
+
+When called with no arguments, `call()` will produce a list of callable services available for the graph in use. This
+no-argument version is equivalent to `call('--list')`. This "directory service" is also capable of producing more
+verbose output describing all the services or an individual service:
+
+[gremlin-groovy]
+----
+g.call() <1>
+g.call('--list') <1>
+g.call().with('verbose') <2>
+g.call().with('verbose').with('service', 'xyz-service') <3>
+----
+
+<1> List available services by name
+<2> Produce a Map of detailed service information by name
+<3> Produce the detailed service information for the 'xyz-service'
+
+The first argument to `call()` is always the name of the service call. Additionally, service calls can accept both
+static and dynamically produced parameters. Static parameters can be passed as a `Map` to the `call()` as the second
+argument. Individual static parameters can also be added using the `.with()` modulator. Dynamic parameters can be
+passed as a `Map`-producing `Traversal` as the second argument (no static parameters) or third argument (static + dynamic
+parameters). Additional individual dynamic parameters can be added using the `.with()` modulator.
+
+[gremlin-groovy]
+----
+g.call('xyz-service') <1>
+g.call('xyz-service', ['a':'b']) <2>
+g.call('xyz-service').with('a', 'b') <2>
+g.call('xyz-service', __.inject(['a':'b'])) <3>
+g.call('xyz-service').with('a', __.inject('b')) <3>
+g.call('xyz-service', ['a':'b'], __.inject(['c':'d'])) <4>
+----
+
+<1> Call the 'xyz-service' with no parameters
+<2> Examples of static parameters (constants known before execution)
+<3> Examples of dynamic parameters (these will be computed at execution time)
+<4> Example of static + dynamic parameters (these will be computed and merged into one set of parameters at execution time)
+
+*Additional References*
+
+GraphTraversalSource:
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#call--++[`call()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#call-java.lang.String-++[`call(String)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#call-java.lang.String-java.util.Map-++[`call(String, Map)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#call-java.lang.String-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`call(String, Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#call-java.lang.String-java.util.Map-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`call(String, Map, Traversal)`]
+
+GraphTraversal:
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#call-java.lang.String-++[`call(String)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#call-java.lang.String-java.util.Map-++[`call(String, Map)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#call-java.lang.String-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`call(String, Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#call-java.lang.String-java.util.Map-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`call(String, Map, Traversal)`]
+
 [[cap-step]]
 === Cap Step
 
@@ -1189,6 +1250,26 @@ g.E().hasLabel('knows').has('weight', gt(0.75))
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E-java.lang.Object...-++[`E(Object...)`]
+
+[[element-step]]
+=== Element Step
+
+The `element()` step is a no-argument step that traverses from a `Property` to the `Element` that owns it.
+
+[gremlin-groovy]
+----
+g.V().properties().element() <1>
+g.E().properties().element() <2>
+g.V().properties().properties().element() <3>
+----
+
+<1> Traverse from `VertexProperty` to `Vertex`
+<2> Traverse from `Property` (edge property) to `Edge`
+<3> Traverse from `Property` (meta property) to `VertexProperty`
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#element--++[`element()`]
 
 [[elementmap-step]]
 === ElementMap Step

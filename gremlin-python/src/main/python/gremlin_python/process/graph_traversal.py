@@ -238,6 +238,11 @@ class GraphTraversalSource(object):
         traversal.bytecode.add_step("io", *args)
         return traversal
 
+    def call(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("call", *args)
+        return traversal
+
 
 class GraphTraversal(Traversal):
     def __init__(self, graph, traversal_strategies, bytecode):
@@ -341,6 +346,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("by", *args)
         return self
 
+    def call(self, *args):
+        self.bytecode.add_step("call", *args)
+        return self
+
     def cap(self, *args):
         self.bytecode.add_step("cap", *args)
         return self
@@ -393,6 +402,10 @@ class GraphTraversal(Traversal):
 
     def drop(self, *args):
         self.bytecode.add_step("drop", *args)
+        return self
+
+    def element(self, *args):
+        self.bytecode.add_step("element", *args)
         return self
 
     def elementMap(self, *args):
@@ -990,6 +1003,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).branch(*args)
 
     @classmethod
+    def call(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).call(*args)
+
+    @classmethod
     def cap(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).cap(*args)
 
@@ -1032,6 +1049,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def drop(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).drop(*args)
+
+    @classmethod
+    def element(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).element(*args)
 
     @classmethod
     def elementMap(cls, *args):
@@ -1621,6 +1642,10 @@ def branch(*args):
     return __.branch(*args)
 
 
+def call(*args):
+    return __.call(*args)
+
+
 def cap(*args):
     return __.cap(*args)
 
@@ -1659,6 +1684,10 @@ def dedup(*args):
 
 def drop(*args):
     return __.drop(*args)
+
+
+def element(*args):
+    return __.element(*args)
 
 
 def elementMap(*args):
@@ -2063,6 +2092,8 @@ statics.add_static('both_v', both_v)
 
 statics.add_static('branch', branch)
 
+statics.add_static('call', call)
+
 statics.add_static('cap', cap)
 
 statics.add_static('choose', choose)
@@ -2082,6 +2113,8 @@ statics.add_static('cyclicpath', cyclic_path)
 statics.add_static('dedup', dedup)
 
 statics.add_static('drop', drop)
+
+statics.add_static('element', element)
 
 statics.add_static('elementMap', elementMap)
 

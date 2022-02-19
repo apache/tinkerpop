@@ -794,5 +794,41 @@ Feature tags have been introduced for feature tests that stress these new semant
 A new GraphFeature has been added "OrderabilitySemantics" to signify compliance with the new comparability/orderability
 semantics.
 
-See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_gremlin_semantics[Gremlin Semantics]
-See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/developer/#_for_committers[Developer Documentation]
+See: link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#gremlin-semantics-concepts[Gremlin Semantics]
+
+===== Service Call API
+
+3.6 introduces a `call()` API that allows providers to provide custom service calls with their implementation. Providers
+using the reference implementation for `Traversal` execution will implement the `ServiceFactory` and `Service`
+interfaces for each named service they provide. Providers using their own query engines for traveral execution will need
+to provide a call operation that can list the available services (directory service) and execute named services.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2680[TINKERPOP-2680]
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#element-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_call[Provider Documentation]
+
+==== element() Step
+
+The new `element()` step provides a way to traverse from a `Property` to the `Element` that owns it:
+
+[source,text]
+----
+gremlin> g = traversal().withEmbedded(TinkerFactory.createTheCrew())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:14], standard]
+
+// VertexProperty -> Vertex
+gremlin> g.V(1).properties().element().limit(1)
+==>v[1]
+
+// (Edge)Property -> Edge
+gremlin> g.E(13).properties().element().limit(1)
+==>e[13][1-develops->10]
+
+// (Meta)Property -> VertexProperty
+gremlin> g.V(1).properties().properties().element().limit(1)
+==>vp[location->san diego]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2713[TINKERPOP-2713],
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#element-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.6.0/dev/provider/#_element[Provider Documentation]
