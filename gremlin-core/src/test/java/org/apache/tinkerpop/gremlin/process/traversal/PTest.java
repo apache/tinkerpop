@@ -177,11 +177,15 @@ public class PTest {
                     {TextP.endingWith(null), "abc", GremlinTypeErrorException.class},
                     {TextP.endingWith("abc"), null, GremlinTypeErrorException.class},
                     {TextP.endingWith(null), null, GremlinTypeErrorException.class},
+                    {TextP.regex("D"), "Dallas Fort Worth", true},
+                    {TextP.regex("d"), "Dallas Fort Worth", false},
                     {TextP.regex("^D"), "Dallas Fort Worth", true},
                     {TextP.regex("^d"), "Dallas Fort Worth", false},
                     {TextP.regex("^Da"), "Dallas Forth Worth", true},
                     {TextP.regex("^da"), "Dallas Forth Worth", false},
                     {TextP.regex("^x"), "Dallas Fort Worth", false},
+                    {TextP.regex("s"), "Dallas Fort Worth", true},
+                    {TextP.regex("x"), "Dallas Fort Worth", false},
                     {TextP.regex("Dal[l|x]as"), "Dallas Fort Worth", true},
                     {TextP.regex("Dal[f|x]as"), "Dallas Fort Worth", false},
                     {TextP.regex("[a-zA-Z]+ Fort"), "Dallas Fort Worth", true},
@@ -191,6 +195,7 @@ public class PTest {
                     {TextP.regex("(?i)[1-9]{3}-[a-z]{3}-[1-9]{3}"), "123-ABC-456", true},
                     {TextP.regex("(?i)abc"), "123-ABC-456", true},
                     {TextP.regex("(?i)[a-b]{3}-[1-9]{3}-[a-z]{3}"), "123-ABC-456", false},
+                    {TextP.regex("Tinker.*\\u00A9"), "Apache TinkerPop©", true},
             }));
         }
 

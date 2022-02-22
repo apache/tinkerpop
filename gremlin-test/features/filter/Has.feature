@@ -538,8 +538,37 @@ Feature: Step - has()
       | v[vadas] |
       | v[lop] |
       | v[ripple] |
-      | v[peter] |  
+      | v[peter] |
 
+  Scenario: g_V_hasXname_regexXTinkerXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("software").property("name", "Apache TinkerPop©")
+      """
+    And the traversal of
+      """
+      g.V().has("name", TextP.regex("Tinker")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | Apache TinkerPop© |
+
+  Scenario: g_V_hasXname_regexXTinkerUnicodeXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("software").property("name", "Apache TinkerPop©")
+      """
+    And the traversal of
+      """
+      g.V().has("name", TextP.regex("Tinker.*\u00A9")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | Apache TinkerPop© |
 
   Scenario: g_V_hasXp_neqXvXX
     Given the modern graph

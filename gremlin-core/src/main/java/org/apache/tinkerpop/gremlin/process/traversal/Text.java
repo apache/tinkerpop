@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern; 
 import java.util.regex.Matcher; 
 
 /**
- * {@link Text} is a {@link java.util.function.BiPredicate} that determines whether the first string starts with, starts
+ * {@link Text} is a {@code BiPredicate} that determines whether the first string starts with, starts
  * not with, ends with, ends not with, contains or does not contain the second string argument.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -31,46 +33,6 @@ import java.util.regex.Matcher;
  */
 public enum Text implements BiPredicate<String, String> {
 
-    /**
-     * Evaluates if the first string has a regex match with the second (pattern).
-     *
-     * @since 3.6.0
-     */
-    regex {
-        @Override
-        public boolean test(final String value, final String expression) {
-            final Pattern pattern = Pattern.compile(expression);
-            final Matcher matcher = pattern.matcher(value);
-            return matcher.find();   
-        }
-
-        /**
-         * The negative of {@code regex} is {@link #notRegex}.
-         */
-        @Override
-        public Text negate() {
-            return notRegex;
-        }
-    },
-    /**
-     * Evaluates if the first string does not have a regex match with the second (pattern).
-     *
-     * @since 3.6.0
-     */
-    notRegex {
-        @Override
-        public boolean test(final String value, final String expression) {
-	    return !regex.test(value,expression);   
-        }
-
-        /**
-         * The negative of {@code notRegex} is {@link #regex}.
-         */
-        @Override
-        public Text negate() {
-            return regex;
-        }
-    },
     /**
      * Evaluates if the first string starts with the second.
      *
@@ -194,7 +156,7 @@ public enum Text implements BiPredicate<String, String> {
         }
     };
 
-    private static final void checkNull(final String... args) {
+    private static void checkNull(final String... args) {
         for (String arg : args)
             if (arg == null)
                 throw new GremlinTypeErrorException();
@@ -205,4 +167,56 @@ public enum Text implements BiPredicate<String, String> {
      */
     @Override
     public abstract Text negate();
+
+    /**
+     * Allows for a compiled version of the regex pattern.
+     */
+    public static class RegexPredicate implements BiPredicate<String, String>, Serializable {
+
+        private final Pattern pattern;
+        private final boolean negate;
+
+        public RegexPredicate(final String expression, final boolean negate) {
+            pattern = Pattern.compile(expression);
+            this.negate = negate;
+        }
+
+        public boolean isNegate() {
+            return negate;
+        }
+
+        public String getPattern() {
+            return pattern.pattern();
+        }
+
+        @Override
+        public boolean test(final String value, final String expression) {
+            // expression can be ignored here since it was passed in on construction in TextP
+            final Matcher matcher = pattern.matcher(value);
+            return negate != matcher.find();
+        }
+
+        @Override
+        public BiPredicate<String, String> negate() {
+            return new RegexPredicate(pattern.pattern(), !negate);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            final RegexPredicate that = (RegexPredicate) o;
+            return negate == that.negate && pattern.pattern().equals(that.pattern.pattern());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(pattern.pattern(), negate);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("regex(%s)", pattern.pattern());
+        }
+    }
 }

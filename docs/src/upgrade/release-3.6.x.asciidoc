@@ -481,28 +481,26 @@ valid key, the appropriate change would be to propagate `null` explicitly as wit
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635]
 
-==== TextP enhancements
+==== TextP Regex
 
-Support for regular expressions was added to the  `TextP` text predicates.
-
-Given the following vertices:
-
-[source,text]
-----
-gremlin> g.addV('City').property('name','Dallas')
-==>v[2]
-gremlin> g.addV('City').property('name','Darwin')
-==>v[4]
-----
-
-Cities with names that start with `Dar` or `Dal` can be found using a regular expression such as:
+A number of graph databases have included support for regular expressions text predicates and now TinkerPop includes
+a `regex()` option to `TextP`:
 
 [source,text]
 ----
-gremlin> g.V().has('City','name',TextP.regex('^Da[r|l]')).values('name')
-==>Dallas
-==>Darwin
+gremlin> g.V().has('person', 'name', regex('peter')).values('name')
+==>peter
+gremlin> g.V().has('person', 'name', regex('r')).values('name')
+==>marko
+==>peter
+gremlin> g.V().has('person', 'name', regex('r$')).values('name')
+==>peter
+gremlin> g.V().has('person', 'name', regex('a[rd]')).values('name')
+==>marko
+==>vadas
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2652[TINKERPOP-2652]
 
 ==== gremlin-annotations
 

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -85,6 +86,13 @@ public class PythonTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateTextP() {
+        assertTranslation("TextP.containing('ark')", TextP.containing("ark"));
+        assertTranslation("TextP.regex('ark')", TextP.regex("ark"));
+        assertTranslation("TextP.not_regex('ark')", TextP.notRegex("ark"));
+    }
+
+    @Test
     public void shouldTranslateStrategies() {
         assertEquals("g.withStrategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.hasLabel('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
@@ -121,5 +129,10 @@ public class PythonTranslatorTest {
           .translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getBytecode())
           .getScript();
       assertEquals("g.V().range_(0,10).has('person','name','marko').limit(2).values('name')", gremlinAsPython);
+    }
+
+    private void assertTranslation(final String expectedTranslation, final Object... objs) {
+        final String script = translator.translate(g.inject(objs).asAdmin().getBytecode()).getScript();
+        assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
     }
 }

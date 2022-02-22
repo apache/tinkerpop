@@ -108,20 +108,24 @@ public class TextP extends P<String> {
     }
     
     /**           
-     * Determines if String has a match with the given REGEX pattern. 
+     * Determines if String has a match with the given regex pattern. The TinkerPop reference implementation uses
+     * Java syntax for regex. The string is considered a match to the pattern if any substring matches the pattern. It
+     * is therefore important to use the appropriate boundary matchers (e.g. `$` for end of a line) to ensure a proper
+     * match.
      *
      * @since 3.6.0
      */
     public static TextP regex(final String value) {
-        return new TextP(Text.regex, value);
+        return new TextP(new Text.RegexPredicate(value, false), value);
     }
 
     /**           
-     * Determines if String has no match with the given REGEX pattern. 
+     * Determines if String has no match with the given regex pattern and the reference implementation treats it as a
+     * simple negation of the evaluation of the pattern match of {@link #regex(String)}.
      *
      * @since 3.6.0
      */
     public static TextP notRegex(final String value) {
-        return new TextP(Text.notRegex, value);
+        return new TextP(new Text.RegexPredicate(value, true), value);
     }
 }

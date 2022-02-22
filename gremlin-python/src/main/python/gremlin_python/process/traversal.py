@@ -466,7 +466,7 @@ class TextP(P):
         return TextP("regex", *args)
 
     @staticmethod
-    def notRegex(*args):
+    def not_regex(*args):
         return TextP("notRegex", *args)
 
     def __eq__(self, other):
@@ -522,8 +522,8 @@ def starting_with(*args):
 def regex(*args):
     return TextP.regex(*args)
 
-def notRegex(*args):
-    return TextP.notRegex(*args)
+def not_regex(*args):
+    return TextP.not_regex(*args)
 
 statics.add_static('containing', containing)
 
@@ -549,7 +549,7 @@ statics.add_static('starting_with', starting_with)
 
 statics.add_static('regex', regex)
 
-statics.add_static('notRegex', notRegex)
+statics.add_static('not_regex', not_regex)
 
 
 
