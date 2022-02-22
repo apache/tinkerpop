@@ -102,6 +102,7 @@ public class DefaultTraversalTest {
         assertEquals(1, original.getSideEffects().<Integer>get("m").intValue());
         assertEquals(2, clone.getSideEffects().<Integer>get("m").intValue());
         assertNotSame(original.bytecode, clone.bytecode);
+        assertEquals(original.closed, clone.closed);
     }
 
     @Test

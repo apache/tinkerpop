@@ -279,8 +279,8 @@ Format: `{labels}{objects}`
 
 Where:
 
-- `{labels}` is a `List` in which each item is a `Set` of `String`.
-- `{objects}` is a `List` of fully qualified typed values.
+- `{labels}` is a fully qualified `List` in which each item is a fully qualified `Set` of `String`.
+- `{objects}` is a fully qualified `List` of fully qualified typed values.
 
 ==== Property
 
@@ -356,7 +356,7 @@ properties. Note that as TinkerPop currently send "references" only, this value 
 
 ==== Barrier
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Binding
 
@@ -386,31 +386,31 @@ Where:
 
 ==== Cardinality
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Column
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Direction
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Operator
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Order
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Pick
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Pop
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Lambda
 
@@ -433,11 +433,11 @@ Where:
 
 ==== Scope
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== T
 
-Format: a single `String` representing the enum value.
+Format: a fully qualified single `String` representing the enum value.
 
 ==== Traverser
 
@@ -445,7 +445,7 @@ Format: `{bulk}{value}`
 
 Where:
 
-- `{bulk}` is an `Int`.
+- `{bulk}` is a `Long`.
 - `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== BigDecimal

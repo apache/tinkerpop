@@ -1,0 +1,8 @@
+{
+  "@type" : "g:Lambda",
+  "@value" : {
+    "script" : "{ it.get() }",
+    "language" : "gremlin-groovy",
+    "arguments" : 1
+  }
+}

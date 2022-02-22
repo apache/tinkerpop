@@ -11,6 +11,8 @@ build_output.txt
 .project
 .settings
 .factorypath
+.eggs
+gremlinpython.egg-info
 _bsp/
 doc/out
 docs/*.asciidoc

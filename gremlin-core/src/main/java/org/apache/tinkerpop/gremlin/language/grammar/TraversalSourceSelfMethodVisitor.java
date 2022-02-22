@@ -29,9 +29,9 @@ import java.util.List;
 /**
  * A {@link GraphTraversalSource} self method visitor.
  */
-public class TraversalSourceSelfMethodVisitor extends GremlinBaseVisitor<GraphTraversalSource> {
+public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<GraphTraversalSource> {
 
-    private GremlinBaseVisitor<TraversalStrategy> traversalStrategyVisitor;
+    private DefaultGremlinBaseVisitor<TraversalStrategy> traversalStrategyVisitor;
     private GraphTraversalSource source;
     private final GremlinAntlrToJava antlr;
 
@@ -112,7 +112,7 @@ public class TraversalSourceSelfMethodVisitor extends GremlinBaseVisitor<GraphTr
     public GraphTraversalSource visitTraversalSourceSelfMethod_withStrategies(final GremlinParser.TraversalSourceSelfMethod_withStrategiesContext ctx) {
 
         if (null == traversalStrategyVisitor)
-            traversalStrategyVisitor = new TraversalStrategyVisitor((GremlinBaseVisitor) antlr.tvisitor);
+            traversalStrategyVisitor = new TraversalStrategyVisitor((DefaultGremlinBaseVisitor) antlr.tvisitor);
 
         // with 4 children withStrategies() was called with a single TraversalStrategy, otherwise multiple were
         // specified.

@@ -35,10 +35,16 @@ namespace Gremlin.Net.Driver
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
         private readonly ClientWebSocket _client;
 
-        public WebSocketConnection(Action<ClientWebSocketOptions> webSocketConfiguration)
+        public WebSocketConnection(WebSocketSettings settings)
         {
             _client = new ClientWebSocket();
-            webSocketConfiguration?.Invoke(_client.Options);
+#if NET6_0_OR_GREATER
+            if (settings.UseCompression)
+            {
+                _client.Options.DangerousDeflateOptions = settings.CompressionOptions;
+            }
+#endif
+            settings.WebSocketConfigurationCallback?.Invoke(_client.Options);
         }
 
         public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
@@ -65,7 +71,17 @@ namespace Gremlin.Net.Driver
         private bool CloseAlreadyInitiated => _client.State == WebSocketState.Closed ||
                                             _client.State == WebSocketState.Aborted ||
                                             _client.State == WebSocketState.CloseSent;
-
+        
+#if NET6_0_OR_GREATER
+        public async Task SendMessageUncompressedAsync(byte[] message)
+        {
+            await _client.SendAsync(new ArraySegment<byte>(message), MessageType,
+                    WebSocketMessageFlags.EndOfMessage | WebSocketMessageFlags.DisableCompression,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+#endif
+        
         public async Task SendMessageAsync(byte[] message)
         {
             await
@@ -75,20 +91,18 @@ namespace Gremlin.Net.Driver
 
         public async Task<byte[]> ReceiveMessageAsync()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            WebSocketReceiveResult received;
+            var buffer = new byte[ReceiveBufferSize];
+
+            do
             {
-                WebSocketReceiveResult received;
-                var buffer = new byte[ReceiveBufferSize];
+                var receiveBuffer = new ArraySegment<byte>(buffer);
+                received = await _client.ReceiveAsync(receiveBuffer, CancellationToken.None).ConfigureAwait(false);
+                ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
+            } while (!received.EndOfMessage);
 
-                do
-                {
-                    var receiveBuffer = new ArraySegment<byte>(buffer);
-                    received = await _client.ReceiveAsync(receiveBuffer, CancellationToken.None).ConfigureAwait(false);
-                    ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
-                } while (!received.EndOfMessage);
-
-                return ms.ToArray();
-            }
+            return ms.ToArray();
         }
 
         public bool IsOpen => _client.State == WebSocketState.Open;

@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Prod
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,7 +83,7 @@ public class TraversalStrategyVisitorTest {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.TraversalStrategyContext ctx = parser.traversalStrategy();
-        final TraversalStrategy strategy = new TraversalStrategyVisitor((GremlinBaseVisitor) antlrToLanguage.tvisitor).visitTraversalStrategy(ctx);
+        final TraversalStrategy strategy = new TraversalStrategyVisitor((DefaultGremlinBaseVisitor) antlrToLanguage.tvisitor).visitTraversalStrategy(ctx);
 
         assertEquals(expected, strategy);
         assertEquals(ConfigurationConverter.getMap(expected.getConfiguration()),

@@ -937,10 +937,10 @@ try:
     # Commit the transaction. The transaction can no longer be used and cannot be re-used.
     # A new transaction can be spawned through g.tx().
     # The context of g remains sessionless throughout the process.
-    gtx.commit()
-except Exception e:
+    tx.commit()
+except Exception as e:
     # Rollback the transaction if an error occurs.
-    gtx.rollback()
+    tx.rollback()
 
 ----
 
@@ -1275,6 +1275,18 @@ A `NoConnectionAvailableException` is thrown if all connections have reached the
 when a new request comes in.
 A `ServerUnavailableException` is thrown if no connection is available to the server to submit a request after
 `ReconnectionAttempts` retries.
+
+==== WebSocket Configuration
+
+The WebSocket connections can also be configured, directly as parameters of the `GremlinClient` constructor. It takes
+an optional delegate `webSocketConfiguration` that will be invoked for each connection. This makes it possible to
+configure more advanced options like the `KeepAliveInterval` or client certificates.
+
+Starting with .NET 6, it is also possible to use compression for WebSockets. This is enabled by default starting with
+TinkerPop 3.5.3 (again, only on .NET 6 or higher). Note that compression might make an application susceptible to
+attacks like CRIME/BREACH. Compression should therefore be turned off if the application sends sensitive data to the
+server as well as data that could potentially be controlled by an untrusted user. Compression can be disabled via the
+`disableCompression` parameter.
 
 [[gremlin-dotnet-serialization]]
 === Serialization

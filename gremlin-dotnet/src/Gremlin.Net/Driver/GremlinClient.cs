@@ -100,9 +100,10 @@ namespace Gremlin.Net.Driver
                 default:
                     throw new ArgumentException(nameof(mimeType), $"{mimeType} not supported");
             }
-            
+
             var connectionFactory =
-                new ConnectionFactory(gremlinServer, messageSerializer, webSocketConfiguration, sessionId);
+                new ConnectionFactory(gremlinServer, messageSerializer,
+                    new WebSocketSettings { WebSocketConfigurationCallback = webSocketConfiguration }, sessionId);
 
             // make sure one connection in pool as session mode
             if (!string.IsNullOrEmpty(sessionId))
@@ -145,13 +146,29 @@ namespace Gremlin.Net.Driver
         ///     object used to configure WebSocket connections.
         /// </param>
         /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
+        /// <param name="disableCompression">
+        ///     Whether to disable compression. Compression is only supported since .NET 6.
+        ///     There it is also enabled by default.
+        ///
+        ///     Note that compression might make your application susceptible to attacks like CRIME/BREACH. Compression
+        ///     should therefore be turned off if your application sends sensitive data to the server as well as data
+        ///     that could potentially be controlled by an untrusted user.
+        /// </param>
         public GremlinClient(GremlinServer gremlinServer, IMessageSerializer messageSerializer = null,
             ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null)
+            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null,
+            bool disableCompression = false)
         {
-            messageSerializer = messageSerializer ?? new GraphSON3MessageSerializer();
+            messageSerializer ??= new GraphSON3MessageSerializer();
+            var webSocketSettings = new WebSocketSettings
+            {
+                WebSocketConfigurationCallback = webSocketConfiguration
+#if NET6_0_OR_GREATER
+                , UseCompression = !disableCompression
+#endif
+            };
             var connectionFactory =
-                new ConnectionFactory(gremlinServer, messageSerializer, webSocketConfiguration, sessionId);
+                new ConnectionFactory(gremlinServer, messageSerializer, webSocketSettings, sessionId);
 
             // make sure one connection in pool as session mode
             if (!string.IsNullOrEmpty(sessionId))
@@ -159,7 +176,8 @@ namespace Gremlin.Net.Driver
                 if (connectionPoolSettings != null)
                 {
                     if (connectionPoolSettings.PoolSize != 1)
-                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings), "PoolSize must be 1 in session mode!");
+                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings),
+                            "PoolSize must be 1 in session mode!");
                 }
                 else
                 {
@@ -178,10 +196,8 @@ namespace Gremlin.Net.Driver
         /// <inheritdoc />
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
-            using (var connection = _connectionPool.GetAvailableConnection())
-            {
-                return await connection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
-            }
+            using var connection = _connectionPool.GetAvailableConnection();
+            return await connection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
         }
 
         #region IDisposable Support

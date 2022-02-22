@@ -25,14 +25,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 /**
  * Use a {@link GraphTraversalSource} as the source and returns a {@link GraphTraversal} object.
  */
-public class TraversalSourceSpawnMethodVisitor extends GremlinBaseVisitor<GraphTraversal> {
+public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor<GraphTraversal> {
 
     protected GraphTraversalSource traversalSource;
     protected GraphTraversal graphTraversal;
-    protected final GremlinBaseVisitor<Traversal> anonymousVisitor;
+    protected final DefaultGremlinBaseVisitor<Traversal> anonymousVisitor;
 
     public TraversalSourceSpawnMethodVisitor(final GraphTraversalSource traversalSource,
-                                             final GremlinBaseVisitor<Traversal> anonymousVisitor) {
+                                             final DefaultGremlinBaseVisitor<Traversal> anonymousVisitor) {
         this.traversalSource = traversalSource;
         this.anonymousVisitor = anonymousVisitor;
     }

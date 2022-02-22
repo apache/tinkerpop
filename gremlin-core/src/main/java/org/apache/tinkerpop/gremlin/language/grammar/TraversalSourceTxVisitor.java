@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 /**
  * Handles transactions via calls to {@code tx()}.
  */
-public class TraversalSourceTxVisitor extends GremlinBaseVisitor<Void> {
+public class TraversalSourceTxVisitor extends DefaultGremlinBaseVisitor<Void> {
     private GraphTraversalSource source;
     private final GremlinAntlrToJava antlr;
 

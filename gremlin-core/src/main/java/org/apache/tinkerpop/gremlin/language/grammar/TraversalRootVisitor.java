@@ -21,13 +21,12 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
 /**
  * This visitor handles the cases when a new traversal is getting started. It could either be a nested traversal
  * or a root traversal, but in either case should be anonymous.
  */
-public class TraversalRootVisitor<G extends Traversal> extends GremlinBaseVisitor<Traversal> {
+public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBaseVisitor<Traversal> {
     private Traversal traversal;
     protected final GremlinAntlrToJava antlr;
 
