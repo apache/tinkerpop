@@ -516,7 +516,7 @@ on the current `Traversal` that will be completed in the future.
 Finally, <<explain-step,`explain()`>>-step is also a terminal step and is described in its own section.
 
 [[addedge-step]]
-=== AddEdge Step
+=== AddE Step
 
 link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit what is implicit
 in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit
@@ -566,7 +566,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`addE(Traversal)`]
 
 [[addvertex-step]]
-=== AddVertex Step
+=== AddV Step
 
 The `addV()`-step is used to add vertices to the graph (*map*/*sideEffect*). For every incoming object, a vertex is
 created. Moreover, `GraphTraversalSource` maintains an `addV()` method.
@@ -585,40 +585,6 @@ g.V().has('name','nothing').bothE()
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV--++[`addV()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-java.lang.String-++[`addV(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`addV(Traversal)`]
-
-[[addproperty-step]]
-=== AddProperty Step
-
-The `property()`-step is used to add properties to the elements of the graph (*sideEffect*). Unlike `addV()` and
-`addE()`, `property()` is a full sideEffect step in that it does not return the property it created, but the element
-that streamed into it. Moreover, if `property()` follows an `addV()` or `addE()`, then it is "folded" into the
-previous step to enable vertex and edge creation with all its properties in one creation operation.
-
-[gremlin-groovy,modern]
-----
-g.V(1).property('country','usa')
-g.V(1).property('city','santa fe').property('state','new mexico').valueMap()
-g.V(1).property(['city': 'santa fe', 'state': 'new mexico'])  <1>
-g.V(1).property(list,'age',35)  <2>
-g.V(1).property(list, ['city': 'santa fe', 'state': 'new mexico'])  <3>
-g.V(1).valueMap()
-g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
-g.V(1).properties('friendWeight').valueMap() <5>
-g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
-----
-
-<1> Properties can also take a Map as an argument.
-<2> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
-<3> If a cardinality is specified for a Map then that cardinality will be used for all properties in the map.  If you need different cardinalities per property then you should individually add the property values.
-<4> It is possible to select the property value (as well as key) via a traversal.
-<5> For vertices, the `property()`-step can add meta-properties.
-<6> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
-
-*Additional References*
-
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property-java.lang.Object-java.lang.Object-java.lang.Object...-++[`property(Object, Object, Object...)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property-org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality-java.lang.Object-java.lang.Object-java.lang.Object...-++[`property(Cardinality, Object, Object, Object...)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/VertexProperty.Cardinality.html++[`Cardinality`]
 
 [[aggregate-step]]
 === [[store-step]]Aggregate Step
@@ -825,6 +791,16 @@ g.V().both().both().both().count().iterate().toString()  <2>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#barrier--++[`barrier()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#barrier-java.util.function.Consumer-++[`barrier(Consumer)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#barrier-int-++[`barrier(int)`]
+
+[[branch-step]]
+=== Branch Step
+
+The `branch()` step splits the traverser to all the child traversals provided to it. Please see the
+<<general-steps, General Steps>> section for more information.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`map(Traversal)`]
 
 [[by-step]]
 === By Step
@@ -1196,6 +1172,24 @@ g.V()
 
 * link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#drop--++[`drop()`]
 
+[[e-step]]
+=== E Step
+
+The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`. Unlike the related
+<<v-step,V()>> it cannot be used mid-traversal.
+
+[gremlin-groovy,modern]
+----
+g.E(11) <1>
+g.E().hasLabel('knows').has('weight', gt(0.75))
+----
+
+<1> Find the edge by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E-java.lang.Object...-++[`E(Object...)`]
+
 [[elementmap-step]]
 === ElementMap Step
 
@@ -1292,6 +1286,26 @@ with a particular "name" value prior to updating the property "k" and explicitly
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail--++[`fail()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail-java.lang.String-++[`fail(String)`]
 
+[[filter-step]]
+=== Filter Step
+
+The `filter()` step maps the traverser from the current object to either `true` or `false` where the latter will not
+pass the traverser to the next step in the process. Please see the <<general-steps, General Steps>> section for more
+information.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`map(Traversal)`]
+
+[[flatmap-step]]
+=== FlatMap Step
+
+The `flatMap()` step maps the traverser from the current object to an `Iterator` of objects for the next step in the
+process. Please see the <<general-steps, General Steps>> section for more information.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`map(Traversal)`]
 
 [[fold-step]]
 === Fold Step
@@ -1350,45 +1364,6 @@ The term `from` is a reserved word in Python, and therefore must be referred to 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-java.lang.String-++[`from(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`from(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-org.apache.tinkerpop.gremlin.structure.Vertex-++[`from(Vertex)`]
-
-[[graph-step]]
-=== Graph Step
-
-Graph steps are those that read vertices, `V()`, or edges, `E()`, from the graph. The `V()`-step is usually used to
-start a `GraphTraversal`, but can also be used mid-traversal. The `E()`-step on the other hand can only be used as a
-start step.
-
-[gremlin-groovy,modern]
-----
-g.V(1) <1>
-g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
-  V().has('name', within('lop', 'ripple')).addE('uses').from('person') <2>
-g.E(11) <3>
-g.E().hasLabel('knows').has('weight', gt(0.75))
-----
-
-<1> Find the vertex by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
-<2> An example where `V()` is used both as a start step and in the middle of a traversal.
-<3> Find the edge by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
-
-NOTE: Whether a mid-traversal `V()` uses an index or not, depends on a) whether suitable index exists and b) if the
-particular graph system provider implemented this functionality.
-
-[gremlin-groovy,modern]
-----
-g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
-  V().has('name', within('lop', 'ripple')).addE('uses').from('person').toString() <1>
-g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
-  V().has('name', within('lop', 'ripple')).addE('uses').from('person').iterate().toString() <2>
-----
-
-<1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold ``HasContainer``'s into a `GraphStep` to allow index lookups.
-<2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
-
-*Additional References*
-
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V-java.lang.Object...-++[`V(Object...)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E-java.lang.Object...-++[`E(Object...)`]
 
 [[group-step]]
 === Group Step
@@ -1963,9 +1938,18 @@ g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops--++[`loops()`]
-
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops--++[`loops()`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping[`Looping Recipes`]
+
+[[map-step]]
+=== Map Step
+
+The `map()` step maps the traverser from the current object to the next step in the process. Please see the
+<<general-steps, General Steps>> section for more information.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#map-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`map(Traversal)`]
 
 [[match-step]]
 === Match Step
@@ -2899,6 +2883,41 @@ g.V(1).properties('location').has('endTime').valueMap()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#properties-java.lang.String...-++[`properties(String...)`]
 
+anchor:addproperty-step[]
+[[property-step]]
+=== Property Step
+
+The `property()`-step is used to add properties to the elements of the graph (*sideEffect*). Unlike `addV()` and
+`addE()`, `property()` is a full sideEffect step in that it does not return the property it created, but the element
+that streamed into it. Moreover, if `property()` follows an `addV()` or `addE()`, then it is "folded" into the
+previous step to enable vertex and edge creation with all its properties in one creation operation.
+
+[gremlin-groovy,modern]
+----
+g.V(1).property('country','usa')
+g.V(1).property('city','santa fe').property('state','new mexico').valueMap()
+g.V(1).property(['city': 'santa fe', 'state': 'new mexico'])  <1>
+g.V(1).property(list,'age',35)  <2>
+g.V(1).property(list, ['city': 'santa fe', 'state': 'new mexico'])  <3>
+g.V(1).valueMap()
+g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
+g.V(1).properties('friendWeight').valueMap() <5>
+g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
+----
+
+<1> Properties can also take a Map as an argument.
+<2> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
+<3> If a cardinality is specified for a Map then that cardinality will be used for all properties in the map.  If you need different cardinalities per property then you should individually add the property values.
+<4> It is possible to select the property value (as well as key) via a traversal.
+<5> For vertices, the `property()`-step can add meta-properties.
+<6> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property-java.lang.Object-java.lang.Object-java.lang.Object...-++[`property(Object, Object, Object...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property-org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality-java.lang.Object-java.lang.Object-java.lang.Object...-++[`property(Cardinality, Object, Object, Object...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/VertexProperty.Cardinality.html++[`Cardinality`]
+
 [[propertymap-step]]
 === PropertyMap Step
 
@@ -3418,6 +3437,16 @@ g.inject(g.withComputer().V().shortestPath().
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#shortestPath--++[`shortestPath()`]
 
+[[sideeffect-step]]
+=== SideEffect Step
+
+The `sideEffect()` step performs some operation on the traverser and passes it to the next step in the process. Please
+see the <<general-steps, General Steps>> section for more information.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`map(Traversal)`]
+
 [[simplepath-step]]
 === SimplePath Step
 
@@ -3827,6 +3856,41 @@ documentation on the `until()` there).
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#until-java.util.function.Predicate-++[`until(Predicate)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#until-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`until(Traversal)`]
+
+anchor:graph-step[]
+[[v-step]]
+=== V Step
+
+The `V()`-step is meant to read vertices from the graph and is usually used to start a `GraphTraversal`, but can also
+be used mid-traversal.
+
+[gremlin-groovy,modern]
+----
+g.V(1) <1>
+g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person') <2>
+----
+
+<1> Find the vertex by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
+<2> An example where `V()` is used both as a start step and in the middle of a traversal.
+
+NOTE: Whether a mid-traversal `V()` uses an index or not, depends on a) whether suitable index exists and b) if the
+particular graph system provider implemented this functionality.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person').toString() <1>
+g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person').iterate().toString() <2>
+----
+
+<1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold ``HasContainer``'s into a `GraphStep` to allow index lookups.
+<2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V-java.lang.Object...-++[`V(Object...)`]
 
 [[value-step]]
 === Value Step
