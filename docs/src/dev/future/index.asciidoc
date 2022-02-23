@@ -37,12 +37,15 @@ some focus on. The most up-to-date version of this document will always be in th
 link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/developer/index.asciidoc[git repository].
 
 The sub-sections that follow only outline those release lines that expect to include significant new features. Other
-release lines may continue to be active with maintenance work and bug fixes, but won't be listed here.
+release lines may continue to be active with maintenance work and bug fixes, but won't be listed here. The items listed
+in each release line represent unreleased changes only. Once an official release is made for a line, the roadmap items
+are removed with new items taking their place as they are planned. The release line is removed from the roadmap
+completely when it is no longer maintained.
 
-== 3.7.x (Proposed - Target 22Q3)
+== 3.7.x - Target 22Q3
 
-Development has not yet started on the 3.7.x release line with a targeted release date of 22H2.  Below is some
-major feature improvements targeted for this release.  The scope for many of these items still needs to be defined.
+Development has not yet started on the 3.7.x release line with a targeted release date for the initial release of the
+line of 22H2.
 
 * Add support for traversals as parameters for `V()`, `is()`, and `has()`
 * Geospatial support for TinkerPop (link:++https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial++[DISCUSS Thread])
@@ -53,13 +56,13 @@ major feature improvements targeted for this release.  The scope for many of the
 * Define semantics for query federation across Gremlin servers (depends on `call()` step)
 * Gremlin debug support
 * Date/Time manipulation functions (`dateAdd()`, `dateDiff()`, etc.)
-* Add string manipulation functions (split()/substring()/etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
+* Add string manipulation functions (`split()`, `substring()` etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
 * Case-insensitive search (link:https://issues.apache.org/jira/browse/TINKERPOP-2673[TINKERPOP-2673])
 
-== 3.6.x (Proposed - Target 22Q1)
+== 3.6.x - Target 22Q1
 
-The development of the 3.6.x release line is currently under way with a target release date of 22Q1.  Below is some
-major feature improvements targeted for this release.
+The development of the 3.6.x release line is currently under way with a target release date for an initial release of
+the line of 22Q1.
 
 * Unify the Gremlin testing model by providing support for the Gherkin tests in Java so that they can be used by
 providers to validate their implementations.
@@ -75,11 +78,13 @@ providers to validate their implementations.
 * Add regular expression support to `TextP` (link:https://issues.apache.org/jira/browse/TINKERPOP-2652[TINKERPOP-2652])
 * Add ability for `property()` to take a Map of values (link:https://issues.apache.org/jira/browse/TINKERPOP-2665[TINKERPOP-2665])
 
-== 3.5.x
+== 3.5.x - Target 22Q1
 
-This initial release of this line was produced in May 2021.
+This initial release of this line was produced in May 2021 with the next follow-on release in the line targeted for
+22Q1.
 
-* Support for bytecode based sessions with `tx()` for Python and .NET.
+* GraphBinary support for Javascript (link:https://issues.apache.org/jira/browse/TINKERPOP-2229[TINKERPOP-2229])
+* Gremlin Language Variant for Go (link:https://issues.apache.org/jira/browse/TINKERPOP-2692[TINKERPOP-2692])
 
 = Proposals
 
@@ -114,7 +119,23 @@ story.
 
 = Appendix
 
-== 4.x Branching Methodology
+== TinkerPop4
+
+This space is currently a bit of a scratchpad for ideas and changes that might not fit well into TinkerPop3 and
+therefore might be best left to TinkerPop4.
+
+* *Transactions* - Redesign the transaction model so that it is better suited for all graphs.
+** Ensure that TinkerPop has a native implementation for transactions in TinkerGraph so that all tests can run from it.
+** Ensure that there is no difference between remote and embedded transaction usage and that the API is less tangled
+than it is today.
+* *Groovy* - Reconsider all dependencies on Groovy throughout TinkerPop
+** Remove Groovy support from Gremlin Server which should be possible now that `gremlin-language` and `call()` are
+available.
+** Investigate options for using JShell as a replacement for `groovysh` in Gremlin Console.
+** Investigate options for removing `ScriptEngine` support in general, which would include support from
+`gremlin-language`.
+
+=== 4.x Branching Methodology
 
 Development of 4.x occurs on the `4.0-dev` branch. This branch was created as an orphan branch and therefore has no
 history tied to any other branch in the repo including master. As such, there is no need to merge/rebase `4.0-dev`. When
