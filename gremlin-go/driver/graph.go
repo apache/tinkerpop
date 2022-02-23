@@ -95,7 +95,7 @@ func (p *Path) String() string {
 // GetPathObject returns the value that corresponds to the key for the Path and error if the value is not present or cannot be retrieved.
 func (p *Path) GetPathObject(key string) (interface{}, error) {
 	if len(p.objects) != len(p.labels) {
-		return nil, errors.New("Path is invalid because it does not contain an equal number of labels and objects.")
+		return nil, errors.New("path is invalid because it does not contain an equal number of labels and objects")
 	}
 	var objectList []interface{}
 	var object interface{}
@@ -117,6 +117,6 @@ func (p *Path) GetPathObject(key string) (interface{}, error) {
 	} else if object != nil {
 		return object, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("Path does not contain a label of '%s'.", key))
+		return nil, fmt.Errorf("path does not contain a label of '%s'", key)
 	}
 }

@@ -118,6 +118,7 @@ func readCount(t *testing.T, g *GraphTraversalSource, label string, expected int
 
 	// Get results from traversal.
 	results, err := traversal.ToList()
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(results))
 
 	// Read count from results.

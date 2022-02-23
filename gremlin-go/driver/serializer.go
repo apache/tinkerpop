@@ -67,7 +67,7 @@ func convertArgs(request *request, gs graphBinarySerializer) (map[string]interfa
 			request.args["gremlin"] = gremlinBuffer
 			return request.args, nil
 		default:
-			return nil, errors.New(fmt.Sprintf("Failed to find serializer for type '%s'.", reflect.TypeOf(gremlin).Name()))
+			return nil, fmt.Errorf("failed to find serializer for type '%s'", reflect.TypeOf(gremlin).Name())
 		}
 	} else {
 		// Use standard processor, which effectively does nothing.
@@ -86,15 +86,6 @@ func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, erro
 		return nil, err
 	}
 	return finalMessage, nil
-}
-
-func writeStr(buffer bytes.Buffer, str string) error {
-	err := binary.Write(&buffer, binary.BigEndian, int64(len(str)))
-	if err != nil {
-		return err
-	}
-	_, err = buffer.WriteString(str)
-	return err
 }
 
 func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op string, processor string, args map[string]interface{}) ([]byte, error) {
@@ -145,19 +136,20 @@ func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op str
 
 	// args
 	err = binary.Write(&buffer, binary.BigEndian, uint32(len(args)))
+	if err != nil {
+		return nil, err
+	}
 	for k, v := range args {
 		_, err = gs.ser.write(k, &buffer)
 		if err != nil {
 			return nil, err
 		}
 
-		switch v.(type) {
+		switch t := v.(type) {
 		case []byte:
-			_, err = buffer.Write(v.([]byte))
-			break
+			_, err = buffer.Write(t)
 		default:
-			_, err = gs.ser.write(v, &buffer)
-			break
+			_, err = gs.ser.write(t, &buffer)
 		}
 		if err != nil {
 			return nil, err
@@ -180,6 +172,9 @@ func readUUID(buffer *bytes.Buffer) (uuid.UUID, error) {
 	}
 	uuidBytes := make([]byte, 16)
 	err = binary.Read(buffer, binary.LittleEndian, uuidBytes)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
 	return uuid.FromBytes(uuidBytes)
 }
 
@@ -196,10 +191,13 @@ func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interf
 		if err != nil {
 			return nil, err
 		} else if keyType != StringType {
-			return nil, errors.New(fmt.Sprintf("expected string key for map, got type='0x%x'", keyType))
+			return nil, fmt.Errorf("expected string key for map, got type='0x%x'", keyType)
 		}
 		var nullable byte
 		err = binary.Read(buffer, binary.BigEndian, &nullable)
+		if err != nil {
+			return nil, err
+		}
 		if nullable != 0 {
 			return nil, errors.New("expected non-null key for map")
 		}
@@ -261,6 +259,9 @@ func (gs graphBinarySerializer) deserializeMessage(responseMessage []byte) (resp
 	var statusMessageNull byte
 	var statusMessage string
 	err = binary.Read(&buffer, binary.LittleEndian, &statusMessageNull)
+	if err != nil {
+		return msg, err
+	}
 	if statusMessageNull == 0 {
 		statusMessage, err = readString(&buffer)
 		if err != nil {
@@ -294,82 +295,4 @@ func (gs graphBinarySerializer) deserializeMessage(responseMessage []byte) (resp
 	msg.responseResult.data = data
 
 	return msg, nil
-}
-
-// private function for deserializing a request message for testing purposes
-func (gs *graphBinarySerializer) deserializeRequestMessage(requestMessage *[]byte) (request, error) {
-	buffer := bytes.Buffer{}
-	var msg request
-	buffer.Write(*requestMessage)
-	// skip headers
-	buffer.Next(33)
-	// version
-	_, err := buffer.ReadByte()
-	if err != nil {
-		return msg, err
-	}
-	msgUUID, err := gs.ser.readValue(&buffer, byte(UUIDType), false)
-	if err != nil {
-		return msg, err
-	}
-	msgOp, err := gs.ser.readValue(&buffer, byte(StringType), false)
-	if err != nil {
-		return msg, err
-	}
-	msgProc, err := gs.ser.readValue(&buffer, byte(StringType), false)
-	if err != nil {
-		return msg, err
-	}
-	msgArgs, err := gs.ser.readValue(&buffer, byte(MapType), false)
-	if err != nil {
-		return msg, err
-	}
-
-	msg.requestID = msgUUID.(uuid.UUID)
-	msg.op = msgOp.(string)
-	msg.processor = msgProc.(string)
-	msg.args = msgArgs.(map[string]interface{})
-
-	return msg, nil
-}
-
-// private function for serializing a response message for testing purposes
-func (gs *graphBinarySerializer) serializeResponseMessage(response *response) ([]byte, error) {
-	buffer := bytes.Buffer{}
-
-	// version
-	buffer.WriteByte(versionByte)
-
-	// requestID
-	_, err := gs.ser.writeValue(response.responseID, &buffer, true)
-	if err != nil {
-		return nil, err
-	}
-	// Status Code
-	_, err = gs.ser.writeValue(response.responseStatus.code, &buffer, false)
-	if err != nil {
-		return nil, err
-	}
-	// Status message
-	_, err = gs.ser.writeValue(response.responseStatus.message, &buffer, true)
-	if err != nil {
-		return nil, err
-	}
-	// Status attributes
-	_, err = gs.ser.writeValue(response.responseStatus.attributes, &buffer, false)
-	if err != nil {
-		return nil, err
-	}
-	// Result meta
-	_, err = gs.ser.writeValue(response.responseResult.meta, &buffer, false)
-	if err != nil {
-		return nil, err
-	}
-	// Result
-	_, err = gs.ser.write(response.responseResult.data, &buffer)
-	if err != nil {
-		return nil, err
-	}
-
-	return buffer.Bytes(), nil
 }

@@ -14,194 +14,6 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: mvn clean install -DskipTests -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-  java-jdk11:
-    name: mvn clean install - jdk11
-    timeout-minutes: 45
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Build with Maven
-        run: mvn clean install -pl -:gremlin-javascript -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-  java-jdk8:
-    name: mvn clean install - jdk8
-    timeout-minutes: 45
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: mvn clean install -pl -:gremlin-javascript -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-  gremlin-server-default:
-    name: gremlin-server default
-    timeout-minutes: 45
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j
-  gremlin-server-unified:
-    name: gremlin-server unified
-    timeout-minutes: 45
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -DtestUnified=true
-  spark-core:
-    name: spark core
-    timeout-minutes: 45
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'
-  spark-gryo:
-    name: spark gryo
-    timeout-minutes: 45
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest
-  gremlin-console:
-    name: gremlin-console
-    timeout-minutes: 20
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
-  javascript:
-    name: javascript
-    timeout-minutes: 15
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
-          mvn verify -pl :gremlin-javascript,:gremlint -DincludeNeo4j
-  python:
-    name: python
-    timeout-minutes: 20
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      - name: Setup Python requirements
-        run: |
-          sudo apt install gcc libkrb5-dev
-          python3 -m pip install --upgrade pip
-          pip install virtualenv
-      - name: Build with Maven
-        run: |
-          touch gremlin-python/.glv
-          mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl gremlin-python -DincludeNeo4j
-  dotnet:
-    name: .NET
-    timeout-minutes: 20
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Set up .NET 6.0.x
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
-      - name: Build with Maven
-        run: |
-          touch gremlin-dotnet/src/.glv
-          touch gremlin-dotnet/test/.glv
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet -DincludeNeo4j
-  neo4j-gremlin:
-    name: neo4j-gremlin
-    timeout-minutes: 20
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
-          mvn verify -pl :neo4j-gremlin -DincludeNeo4j
   go:
     name: Go
     timeout-minutes: 20
@@ -210,19 +22,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Execute Go tests
         working-directory: ./gremlin-go
         run: |
           docker-compose up --exit-code-from integration-tests integration-tests
           docker-compose down
-      - name: Go-Lint
-        uses: grandcolline/golang-github-actions@v1.1.0
-        with:
-          run: lint
-          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Go-Vet
+        working-directory: ./gremlin-go
+        run: go vet ./...
 
       - name: Go-StaticCheck
         uses: grandcolline/golang-github-actions@v1.1.0
         with:
           run: staticcheck
           token: ${{ secrets.GITHUB_TOKEN }}
+          directory: ./gremlin-go

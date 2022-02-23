@@ -21,7 +21,32 @@ for early testing purposes only.
  under the License.
 
 -->
+
 # Getting Started
+
+## Building the Source Code
+
+If you would like to build and/or test the source code, you can do so with docker or directly with the go compiler, the instructions for both are listed below.
+
+### Testing with Docker
+
+Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
+
+`docker-compose up --exit-code-from integration-tests integration-tests`
+
+### Building Directly
+
+To build the driver you must install `go`. The following command can be used to build the driver:
+`go build <path to source code>`
+
+### Using the Linter and staticcheck
+
+Before generating a pull request, you should manually run [go vet][https://pkg.go.dev/cmd/vet] and [staticcheck][https://staticcheck.io] and correct any errors.
+
+`go vet` is installed when you install go, and can be run with `go vet <path to source code>`.
+
+Please review the [staticcheck documentation][https://staticcheck.io/docs/getting-started] for more details on installing staticcheck. `staticcheck` can be run with `staticcheck <path to source code>`.
+
 ### Prerequisites
 
 * `gremlin-go` requires Golang 1.17 or later, please see [Go Download][go] for more details on installing Golang.

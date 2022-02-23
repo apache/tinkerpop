@@ -23,10 +23,10 @@ import "github.com/google/uuid"
 
 // request represents a request to the server
 type request struct {
-	requestID uuid.UUID              `json:"requestId"`
-	op        string                 `json:"op"`
-	processor string                 `json:"processor"`
-	args      map[string]interface{} `json:"args"`
+	requestID uuid.UUID
+	op        string
+	processor string
+	args      map[string]interface{}
 }
 
 const stringOp = "eval"

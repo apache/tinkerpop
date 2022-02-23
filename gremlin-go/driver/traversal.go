@@ -32,7 +32,6 @@ type Traversal struct {
 	graph               *Graph
 	traversalStrategies *TraversalStrategies
 	bytecode            *bytecode
-	traverser           *Traverser
 	remote              *DriverRemoteConnection
 }
 

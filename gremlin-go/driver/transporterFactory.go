@@ -34,7 +34,6 @@ func getTransportLayer(transporterType TransporterType, host string, port int) (
 	switch transporterType {
 	case Gorilla:
 		transporter = &gorillaTransporter{host: host, port: port}
-		break
 	default:
 		return nil, errors.New("transport layer type was not specified and cannot be initialized")
 	}

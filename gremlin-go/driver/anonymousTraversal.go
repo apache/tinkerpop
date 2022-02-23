@@ -19,9 +19,11 @@ under the License.
 
 package gremlingo
 
+// AnonymousTraversalSource struct used to generate anonymous traversals.
 type AnonymousTraversalSource struct {
 }
 
+// WithRemote used to set the DriverRemoteConnection within the AnonymousTraversalSource.
 func (ats *AnonymousTraversalSource) WithRemote(drc *DriverRemoteConnection) *GraphTraversalSource {
 	return NewDefaultGraphTraversalSource().WithRemote(drc)
 }
