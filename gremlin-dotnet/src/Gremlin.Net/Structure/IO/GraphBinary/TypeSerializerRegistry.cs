@@ -164,10 +164,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 return _serializerByType[valueType];
             }
             
-            if (IsDictionaryType(valueType))
+            if (IsDictionaryType(valueType, out var dictKeyType, out var dictValueType))
             {
-                var dictKeyType = valueType.GetGenericArguments()[0];
-                var dictValueType = valueType.GetGenericArguments()[1];
                 var serializerType = typeof(MapSerializer<,>).MakeGenericType(dictKeyType, dictValueType);
                 var serializer = (ITypeSerializer) Activator.CreateInstance(serializerType);
                 _serializerByType[valueType] = serializer;
@@ -214,11 +212,26 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             throw new InvalidOperationException($"No serializer found for type ${valueType}.");
         }
 
-        private static bool IsDictionaryType(Type type)
+        private static bool IsDictionaryType(Type type, out Type keyType, out Type valueType)
         {
-            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+            var maybeInterfaceType = type
+                .GetInterfaces()
+                .FirstOrDefault(implementedInterfaceType => implementedInterfaceType.IsConstructedGenericType && implementedInterfaceType.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+
+            if (maybeInterfaceType is { } interfaceType)
+            {
+                keyType = interfaceType.GetGenericArguments()[0];
+                valueType = interfaceType.GetGenericArguments()[1];
+
+                return true;
+            }
+
+            keyType = null;
+            valueType = null;
+
+            return false;
         }
-        
+
         private static bool IsSetType(Type type)
         {
             return type.GetInterfaces().Any(implementedInterface => implementedInterface.IsConstructedGenericType &&
