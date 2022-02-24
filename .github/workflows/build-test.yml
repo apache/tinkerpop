@@ -23,6 +23,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17'
+
       - name: Execute Go tests
         working-directory: ./gremlin-go
         run: |
@@ -34,8 +39,8 @@ jobs:
         run: go vet ./...
 
       - name: Go-StaticCheck
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: dominikh/staticcheck-action@v1.1.0
         with:
-          run: staticcheck
-          token: ${{ secrets.GITHUB_TOKEN }}
-          directory: ./gremlin-go
+          version: "2021.1.1"
+          install-go: false
+          cache-key: ${{ matrix.go }}
