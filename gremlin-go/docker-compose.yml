@@ -22,8 +22,8 @@ services:
     image: tinkerpop/gremlin-server
     ports:
       - "8182:8182"
-  integration-tests:
-    container_name: integration-tests
+  gremlin-go-integration-tests:
+    container_name: gremlin-go-integration-tests
     image: golang:1.17
     volumes:
       - .:/go_app
@@ -33,7 +33,23 @@ services:
       - RUN_INTEGRATION_TESTS=true
     working_dir: /go_app
     command: >
-        bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-        && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" | gotestfmt"
+      bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" | gotestfmt"
+    depends_on:
+      - gremlin-server
+  # TODO
+  gremlin-go-godog-tests:
+    container_name: gremlin-go-godog-tests
+    image: golang:1.17
+    volumes:
+      - .:/go_app
+    environment:
+      - GREMLIN_SERVER_HOSTNAME=gremlin-server
+      - GREMLIN_SERVER_PORT=8182
+      - RUN_INTEGRATION_TESTS=true
+    working_dir: /go_app
+    command: >
+      bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" | gotestfmt"
     depends_on:
       - gremlin-server

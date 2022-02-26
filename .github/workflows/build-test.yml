@@ -31,8 +31,15 @@ jobs:
       - name: Execute Go tests
         working-directory: ./gremlin-go
         run: |
-          docker-compose up --exit-code-from integration-tests integration-tests
+          docker-compose up --exit-code-from gremlin-go-integration-tests gremlin-go-integration-tests
           docker-compose down
+
+      # TODO AN 1045: Add test execution for godog. May not fully enable though because some will likely fail.
+      # - name: Execute Go tests
+      #   working-directory: ./gremlin-go
+      #   run: |
+      #     docker-compose up --exit-code-from gremlin-go-godog-tests gremlin-go-godog-tests
+      #     docker-compose down
 
       - name: Go-Vet
         working-directory: ./gremlin-go
