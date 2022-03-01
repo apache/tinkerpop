@@ -24,7 +24,7 @@ import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -266,7 +266,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             } catch (Exception ex) {
                 // send the error response here and don't rely on exception caught because it might not have the
                 // context on whether to close the connection or not, based on keepalive.
-                final Throwable t = ExceptionUtils.getRootCause(ex);
+                final Throwable t = ExceptionHelper.getRootCause(ex);
                 if (t instanceof TooLongFrameException) {
                     HttpHandlerUtil.sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
                 } else if (t != null){

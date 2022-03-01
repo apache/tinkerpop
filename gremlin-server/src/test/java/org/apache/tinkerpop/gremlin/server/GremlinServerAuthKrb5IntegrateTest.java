@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -153,7 +153,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             client.submit("1+1").all().get();
             fail("This should not succeed as the client config does not contain a JaasEntry");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertTrue(root instanceof ResponseException || root instanceof GSSException);
         } finally {
             cluster.close();
@@ -169,7 +169,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             client.submit("1+1").all().get();
             fail("This should not succeed as the client config does not contain a valid ticket cache");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(LoginException.class, root.getClass());
         } finally {
             cluster.close();

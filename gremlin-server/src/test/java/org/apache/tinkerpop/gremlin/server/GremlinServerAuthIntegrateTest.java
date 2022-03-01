@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
@@ -89,7 +89,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             fail("This should not succeed as the client did not enable SSL");
         } catch(Exception ex) {
             assertThat(ex, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(RuntimeException.class));
         } finally {
             cluster.close();
@@ -123,7 +123,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not provide credentials");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
 
             // depending on the configuration of the system environment you might get either of these
             assertThat(root, anyOf(instanceOf(GSSException.class), instanceOf(ResponseException.class)));
@@ -141,7 +141,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not provide valid credentials");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
             assertEquals("Username and/or password are incorrect", root.getMessage());
         } finally {
@@ -157,7 +157,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         try {
             client.submit("1+1").all().get();
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
             assertEquals("Username and/or password are incorrect", root.getMessage());
         } finally {

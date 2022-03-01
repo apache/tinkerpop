@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -862,7 +862,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("def class C { def C getC(){return this}}; new C()").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            final Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionHelper.getRootCause(re);
             assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
 
             // validate that we can still send messages to the server
@@ -881,7 +881,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("java.awt.Color.RED").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            final Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionHelper.getRootCause(re);
             assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Class is not registered: java.awt.Color"));
 
             // validate that we can still send messages to the server
@@ -909,7 +909,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // test is to ensure that the script isn't processed if it exceeds a certain size, so in this sense
             // it seems ok to pass in this case.
         } catch (Exception re) {
-            final Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionHelper.getRootCause(re);
 
             // went with two possible error messages here as i think that there is some either non-deterministic
             // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)

@@ -24,7 +24,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
@@ -181,7 +181,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(x);
+            final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(RuntimeException.class));
         } finally {
             cluster.close();
@@ -225,7 +225,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch (Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(x);
+            final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(SSLException.class));
         } finally {
             cluster.close();
@@ -243,7 +243,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch (Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(x);
+            final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(SSLException.class));
         } finally {
             cluster.close();
@@ -261,7 +261,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(x);
+            final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(SSLException.class));
         } finally {
             cluster.close();
@@ -279,7 +279,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
             assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(x);
+            final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(SSLException.class));
         } finally {
             cluster.close();
