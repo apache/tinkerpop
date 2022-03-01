@@ -2095,7 +2095,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Eagerly collects objects up to this step into a side-effect. Same as calling {@link #aggregate(Scope, String)}
-     * with a {@link Scope#local}.
+     * with a {@link Scope#global}.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
      * @return the traversal with an appended {@link AggregateGlobalStep}
