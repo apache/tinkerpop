@@ -23,11 +23,16 @@ import os
 import pytest
 from pytest import fail
 
+from gremlin_python.driver import serializer
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Binding, Bindings
 from gremlin_python.process.graph_traversal import __
+
+gremlin_server_url = 'ws://localhost:{}/gremlin'
+anonymous_url = gremlin_server_url.format(45940)
 
 
 def transactions_disabled():
@@ -327,6 +332,83 @@ class TestTraversal(object):
         tx2.rollback()
         verify_tx_state([tx1, tx2], False)
         assert g.V().count().next() == start_count + 2
+
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
+    def test_transaction_close_tx(self):
+        remote_conn = create_connection_to_gtx()
+        g = traversal().withRemote(remote_conn)
+
+        drop_graph_check_count(g)
+
+        tx1 = g.tx()
+        tx2 = g.tx()
+
+        # open up two sessions and create stuff
+        gtx1 = tx1.begin()
+        gtx2 = tx2.begin()
+
+        add_node_validate_transaction_state(g, gtx1, 0, 0, [tx1, tx2])
+        add_node_validate_transaction_state(g, gtx2, 0, 0, [tx1, tx2])
+        add_node_validate_transaction_state(g, gtx2, 0, 1, [tx1, tx2])
+        add_node_validate_transaction_state(g, gtx2, 0, 2, [tx1, tx2])
+
+        # someone gets lazy and doesn't commit/rollback and just calls close() - the graph
+        # will decide how to treat the transaction, but for neo4j/gremlin server in this
+        # test configuration it should rollback
+        tx1.close()
+        tx2.close()
+
+        assert not tx1.isOpen()
+        assert not tx2.isOpen()
+        verify_gtx_closed(gtx1)
+        verify_gtx_closed(gtx2)
+
+        remote_conn = create_connection_to_gtx()
+        g = traversal().withRemote(remote_conn)
+        assert g.V().count().next() == 0
+
+        drop_graph_check_count(g)
+
+    @pytest.mark.skipif(transactions_disabled(), reason="Transactions are not enabled.")
+    def test_transaction_close_tx_from_parent(self):
+        remote_conn = create_connection_to_gtx()
+        g = traversal().withRemote(remote_conn)
+
+        drop_graph_check_count(g)
+
+        tx1 = g.tx()
+        tx2 = g.tx()
+
+        # open up two sessions and create stuff
+        gtx1 = tx1.begin()
+        gtx2 = tx2.begin()
+
+        add_node_validate_transaction_state(g, gtx1, 0, 0, [tx1, tx2])
+        add_node_validate_transaction_state(g, gtx2, 0, 0, [tx1, tx2])
+        add_node_validate_transaction_state(g, gtx2, 0, 1, [tx1, tx2])
+        add_node_validate_transaction_state(g, gtx2, 0, 2, [tx1, tx2])
+
+        # someone gets lazy and doesn't commit/rollback and just calls close() but on the parent
+        # DriverRemoteConnection for all the session that were created via tx() - the graph
+        # will decide how to treat the transaction, but for neo4j/gremlin server in this
+        # test configuration it should rollback
+        remote_conn.close()
+
+        assert not tx1.isOpen()
+        assert not tx2.isOpen()
+        verify_gtx_closed(gtx1)
+        verify_gtx_closed(gtx2)
+
+        remote_conn = create_connection_to_gtx()
+        g = traversal().withRemote(remote_conn)
+        assert g.V().count().next() == 0
+
+        drop_graph_check_count(g)
+
+
+def create_connection_to_gtx():
+    return DriverRemoteConnection(anonymous_url, 'gtx',
+                                  message_serializer=serializer.GraphBinarySerializersV1())
 
 
 def add_node_validate_transaction_state(g, g_add_to, g_start_count, g_add_to_start_count, tx_verify_list):

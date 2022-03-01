@@ -40,6 +40,9 @@ class RemoteConnection(object, metaclass=abc.ABCMeta):
     def submit(self, bytecode):
         pass
 
+    def is_closed(self):
+        raise Exception('is_closed() must be implemented')
+
     def is_session_bound(self):
         return False
 

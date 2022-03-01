@@ -71,8 +71,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Fixed issue with implicit conversion of Infinity numbers into BigDecimals.
+* Fixed issue with implicit conversion of `Infinity` number instances into `BigDecimal`.
 * Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
+* Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
+* Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
+* Tracked transaction spawned connections and closed them when the parent connection was closed for `gremlin-python`.
 
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: January 10, 2022)
@@ -87,7 +90,6 @@ This release also includes changes from <<release-3-4-13, 3.4.13>>.
 * Added a `NoSugarTranslator` translator to `PythonTranslator` which translates Gremlin queries to Python without syntactic sugar (ex `g.V().limit(1)` instead of `g.V()[0:1]`)
 * Added support for `g.Tx()` in .NET.
 * Added support for `with()` constant options to `io()`.
-* Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
 * Changed `GroovyTranslator` to generate code more compatible to Java with `Date` and `Timestamp`.
 * Fixed bug in the processing of the `io()` step when constructing a `Traversal` from the grammar.
 * Added the `ConnectedComponent` tokens required to properly process the `with()` of the `connectedComponent()` step.
@@ -103,7 +105,6 @@ This release also includes changes from <<release-3-4-13, 3.4.13>>.
 * Fixed support for `SeedStrategy` in the Gremlin Grammar.
 * Fixed bug in `Translator` of `gremlin-javascript` around array translation.
 * Fixed bugs in `PythonTranslator`, `JavascriptTranslator` and `DotNetTranslator` when translating `TraversalStrategy` objects to Javascript.
-* Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
 * Prevented exception with `hasLabel(null)` and `hasKey(null)` and instead filter away traversers as these structural components can't ever be null.
 * Improved handling of `null` when passed to `P` predicates.
 * Handled `null` for mathematical reducing operations of `sum()`, `mean()`, `max()` and `min()`.
