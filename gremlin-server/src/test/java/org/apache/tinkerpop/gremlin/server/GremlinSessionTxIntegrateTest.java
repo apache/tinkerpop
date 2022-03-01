@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
@@ -91,7 +91,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             gtx.addV("software").iterate();
             fail("Should have failed since we committed the transaction");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
 
@@ -142,7 +142,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             gtx.addV("software").iterate();
             fail("Should have failed since we committed the transaction");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
 
@@ -172,7 +172,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             gtx.addV("software").iterate();
             fail("Should have failed since we committed the transaction");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
 
@@ -202,7 +202,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             gtx.addV("software").iterate();
             fail("Should have failed since we committed the transaction");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
 
@@ -309,7 +309,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             gtx1a.addV("software").iterate();
             fail("Should have failed since we committed the transaction");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
 
@@ -317,7 +317,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
             gtx1b.addV("software").iterate();
             fail("Should have failed since we committed the transaction");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Client is closed", root.getMessage());
         }
 

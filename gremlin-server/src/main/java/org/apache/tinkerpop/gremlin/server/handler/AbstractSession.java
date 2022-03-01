@@ -46,7 +46,7 @@ import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -295,7 +295,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
             throw new SessionException(special.getMessage(), specialResponseMsg.create());
         }
 
-        final Throwable root = ExceptionUtils.getRootCause(t);
+        final Throwable root = ExceptionHelper.getRootCause(t);
 
         if (root instanceof TimedInterruptTimeoutException) {
             // occurs when the TimedInterruptCustomizerProvider is in play

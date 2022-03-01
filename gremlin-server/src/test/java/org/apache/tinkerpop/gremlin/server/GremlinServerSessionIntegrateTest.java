@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
@@ -283,7 +283,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             clientReconnect.submit("x").all().join();
             fail("Should not have been successful as 'x' was only defined in the old session");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root.getMessage(), startsWith("No such property"));
         }
 
@@ -330,7 +330,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             clientReconnect.submit("x").all().join();
             fail("Should not have been successful as 'x' was only defined in the old session");
         } catch(Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root.getMessage(), startsWith("No such property"));
         }
 
@@ -358,7 +358,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             client.submit("sumItUp(1,2)").all().get().get(0).getInt();
             fail("Global functions should not be cached so the call to sumItUp() should fail");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root.getMessage(), startsWith("No signature of method"));
         } finally {
             cluster.close();
@@ -381,7 +381,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             client.submit("sumItUp(1,2)").all().get().get(0).getInt();
             fail("Global functions should not be cached so the call to addItUp() should fail");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root.getMessage(), startsWith("No signature of method"));
         } finally {
             cluster.close();
@@ -403,7 +403,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             client2.submit("2+2").all().join();
             fail("Can't have more than one client connecting to the same session");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("Session shouldNotAllowMoreThanOneClientPerSession is not bound to the connecting client", root.getMessage());
         }
 
@@ -428,7 +428,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             client.submit("graph.addVertex(); throw new Exception('no worky')").all().get();
             fail("Should have tossed the manually generated exception");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals("no worky", root.getMessage());
         }
 
@@ -467,7 +467,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             client.submit("x[1]+2").all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
         } finally {
             cluster.close();
@@ -516,7 +516,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             session.submit("x[1]+2").all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
-            final Throwable cause = ExceptionUtils.getCause(ex);
+            final Throwable cause = ex.getCause();
             assertThat(cause, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
 

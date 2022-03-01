@@ -16,26 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.util;
+package org.apache.tinkerpop.gremlin.util;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * Utility class for working with exceptions.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.5.3, replaced by {@link org.apache.tinkerpop.gremlin.util.ExceptionHelper} in {@code gremlin-core}
+ * Utility class with helpful functions for exceptions.
  */
-@Deprecated
 public final class ExceptionHelper {
 
     private ExceptionHelper() {}
 
-    @Deprecated
-    public static String getMessageOrName(final Throwable t) {
-        return (null == t.getMessage() || t.getMessage().isEmpty()) ?
-            t.getClass().getName() : t.getMessage();
+    /**
+     * A wrapper to Commons Lang {@code ExceptionUtils.getRootCause(Throwable)} which ensures that the root is either
+     * an inner cause to the exception or the exception itself (rather than {@code null}).
+     */
+    public static Throwable getRootCause(final Throwable t) {
+        final Throwable root = ExceptionUtils.getRootCause(t);
+        return null == root ? t : root;
     }
 
-    @Deprecated
+    public static String getMessageOrName(final Throwable t) {
+        return (null == t.getMessage() || t.getMessage().isEmpty()) ?
+                t.getClass().getName() : t.getMessage();
+    }
+
     public static String getMessageFromExceptionOrCause(final Throwable t) {
         return null == t.getCause() ? getMessageOrName(t) : getMessageOrName(t.getCause());
     }

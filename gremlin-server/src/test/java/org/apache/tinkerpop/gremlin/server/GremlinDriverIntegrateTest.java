@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -241,7 +241,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 client.submit("r", params).all().get();
                 fail("Should have thrown exception over bad serialization");
             } catch (Exception ex) {
-                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
                 assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
                 assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
@@ -362,7 +362,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 client.submit("def x = '';(0..<1024).each{x = x + '$it'};x").all().get();
                 fail("Request should have failed because it exceeded the max content length allowed");
             } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
+                final Throwable root = ExceptionHelper.getRootCause(ex);
                 assertThat(root.getMessage(), containsString("Max frame length of 64 has been exceeded."));
             }
 
@@ -385,7 +385,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                     client.submit("1 + 9 9").all().join().get(0).getInt();
                     fail("Should not have gone through due to syntax error");
                 } catch (Exception ex) {
-                    final Throwable root = ExceptionUtils.getRootCause(ex);
+                    final Throwable root = ExceptionHelper.getRootCause(ex);
                     assertThat(root, instanceOf(ResponseException.class));
                 }
             });
@@ -409,7 +409,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             assertThat(i, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionUtils.getRootCause(i);
+            final Throwable root = ExceptionHelper.getRootCause(i);
             assertThat(root, instanceOf(ConnectException.class));
         }
 
@@ -507,7 +507,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 results.all().join();
                 fail("Should have thrown exception over bad serialization");
             } catch (Exception ex) {
-                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
                 assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
             }
@@ -530,7 +530,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 results.all().join();
                 fail("Should have thrown exception over division by zero");
             } catch (Exception ex) {
-                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
                 assertThat(inner.getMessage(), endsWith("Division by zero"));
 
@@ -848,7 +848,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 results.all().join();
                 fail();
             } catch (Exception ex) {
-                final Throwable inner = ExceptionUtils.getRootCause(ex);
+                final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
                 assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
             }
@@ -1018,7 +1018,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("'" + fatty + "'").all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            final Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionHelper.getRootCause(re);
             assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
         } finally {
             cluster.close();
@@ -1036,7 +1036,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("1+1", m).all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            final Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionHelper.getRootCause(re);
             assertEquals("The [eval] message is using one or more invalid binding keys - they must be of type String and cannot be null", root.getMessage());
         } finally {
             cluster.close();
@@ -1102,7 +1102,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("x[0]+1").all().get();
             fail("Should have thrown an exception because the connection is closed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
         } finally {
             cluster.close();
@@ -1303,7 +1303,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client1.submit("x").all().get();
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             assertThat(root.getMessage(), containsString("No such property: x for class"));
         }
@@ -1312,7 +1312,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client2.submit("x").all().get();
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             assertThat(root.getMessage(), containsString("No such property: x for class"));
         }
@@ -1321,7 +1321,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client3.submit("x").all().get();
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             assertThat(root.getMessage(), containsString("No such property: x for class"));
         }
@@ -1373,7 +1373,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("1+1").all().get();
             fail("Should have tossed an exception because strict mode is on and no aliasing was performed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
@@ -1393,7 +1393,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
@@ -1415,7 +1415,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("g.addVertex(label,'person','name','stephen');").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
@@ -1437,7 +1437,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
                 fail("Should have tossed an exception because \"g\" is readonly in this context");
             } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
+                final Throwable root = ExceptionHelper.getRootCause(ex);
                 assertThat(root, instanceOf(ResponseException.class));
                 final ResponseException re = (ResponseException) root;
                 assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
@@ -1460,7 +1460,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
@@ -1486,7 +1486,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" is readonly in this context");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
@@ -1593,7 +1593,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             f.get();
             fail("Should have timed out");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) root).getResponseStatusCode());
             assertThat(root.getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("250 ms")));
@@ -1623,7 +1623,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             sessionlessOne.submit("1+1").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
             assertEquals("Client is closed", root.getMessage());
         }
@@ -1632,7 +1632,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             session.submit("1+1").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
             assertEquals("Client is closed", root.getMessage());
         }
@@ -1641,7 +1641,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             sessionlessTwo.submit("1+1").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
             assertEquals("Client is closed", root.getMessage());
         }
@@ -1650,7 +1650,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             sessionlessThree.submit("1+1").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
             assertEquals("Client is closed", root.getMessage());
         }
@@ -1659,7 +1659,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             sessionlessFour.submit("1+1").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(IllegalStateException.class));
             assertEquals("Client is closed", root.getMessage());
         }
@@ -1751,7 +1751,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Request should not have been sent due to duplicate id");
         } catch(Exception ex) {
             // should get a rejection here
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root.getMessage(), startsWith("There is already a request pending with an id of:"));
             assertEquals(100, result1.get().one().getInt());
         } finally {

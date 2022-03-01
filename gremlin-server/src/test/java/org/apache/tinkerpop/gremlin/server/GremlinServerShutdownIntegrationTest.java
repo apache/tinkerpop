@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.server.util.CheckedGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.junit.After;
@@ -69,7 +70,7 @@ public class GremlinServerShutdownIntegrationTest {
             startServer(settings).join();
             fail("Server should not have started");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
+            final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ClassNotFoundException.class, root.getClass());
         }
     }
