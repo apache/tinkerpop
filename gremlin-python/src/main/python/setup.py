@@ -68,7 +68,7 @@ setup(
     test_suite="tests",
     data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[
-        'pytest-runner==5.3.1',
+        'pytest-runner==6.0.0',
         'importlib-metadata<5.0.0'
     ],
     tests_require=[
