@@ -37,7 +37,7 @@ from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardina
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
-from gremlin_python.structure.io.util import HashableDict
+from gremlin_python.structure.io.util import HashableDict, SymbolUtil
 
 log = logging.getLogger(__name__)
 
@@ -150,10 +150,10 @@ class GraphBinaryWriter(object):
         if serializer_map:
             self.serializers.update(serializer_map)
 
-    def writeObject(self, objectData):
-        return self.toDict(objectData)
+    def write_object(self, object_data):
+        return self.to_dict(object_data)
 
-    def toDict(self, obj, to_extend=None):
+    def to_dict(self, obj, to_extend=None):
         if to_extend is None:
             to_extend = bytearray()
 
@@ -170,11 +170,11 @@ class GraphBinaryWriter(object):
                     return serializer.dictify(obj, self, to_extend)
 
         if isinstance(obj, dict):
-            return dict((self.toDict(k, to_extend), self.toDict(v, to_extend)) for k, v in obj.items())
+            return dict((self.to_dict(k, to_extend), self.to_dict(v, to_extend)) for k, v in obj.items())
         elif isinstance(obj, set):
-            return set([self.toDict(o, to_extend) for o in obj])
+            return set([self.to_dict(o, to_extend) for o in obj])
         elif isinstance(obj, list):
-            return [self.toDict(o, to_extend) for o in obj]
+            return [self.to_dict(o, to_extend) for o in obj]
         else:
             return obj
 
@@ -185,13 +185,13 @@ class GraphBinaryReader(object):
         if deserializer_map:
             self.deserializers.update(deserializer_map)
 
-    def readObject(self, b):
+    def read_object(self, b):
         if isinstance(b, bytearray):
-            return self.toObject(io.BytesIO(b))
+            return self.to_object(io.BytesIO(b))
         elif isinstance(b, io.BufferedIOBase):
-            return self.toObject(b)
+            return self.to_object(b)
 
-    def toObject(self, buff, data_type=None, nullable=True):
+    def to_object(self, buff, data_type=None, nullable=True):
         if data_type is None:
             bt = uint8_unpack(buff.read(1))
             if bt == DataType.null.value:
@@ -206,11 +206,6 @@ class GraphBinaryReader(object):
 class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
     python_type = None
     graphbinary_type = None
-
-    symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
-                 "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all", "with_": "with",
-                 "filter_": "filter", "id_": "id", "max_": "max", "min_": "min", "sum_": "sum"}
 
     @classmethod
     def prefix_bytes(cls, graphbin_type, as_value=False, nullable=True, to_extend=None):
@@ -228,10 +223,6 @@ class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
     @classmethod
     def read_int(cls, buff):
         return int32_unpack(buff.read(4))
-
-    @classmethod
-    def unmangle_keyword(cls, symbol):
-        return cls.symbolMap.get(symbol, symbol)
 
     @classmethod
     def is_null(cls, buff, reader, else_opt, nullable=True):
@@ -431,7 +422,7 @@ class ListIO(_GraphBinaryTypeIO):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         to_extend.extend(int32_pack(len(obj)))
         for item in obj:
-            writer.toDict(item, to_extend)
+            writer.to_dict(item, to_extend)
 
         return to_extend
 
@@ -444,7 +435,7 @@ class ListIO(_GraphBinaryTypeIO):
         size = cls.read_int(b)
         the_list = []
         while size > 0:
-            the_list.append(r.readObject(b))
+            the_list.append(r.read_object(b))
             size = size - 1
 
         return the_list
@@ -471,8 +462,8 @@ class MapIO(_GraphBinaryTypeIO):
 
         to_extend.extend(int32_pack(len(obj)))
         for k, v in obj.items():
-            writer.toDict(k, to_extend)
-            writer.toDict(v, to_extend)
+            writer.to_dict(k, to_extend)
+            writer.to_dict(v, to_extend)
 
         return to_extend
 
@@ -485,8 +476,8 @@ class MapIO(_GraphBinaryTypeIO):
         size = cls.read_int(b)
         the_dict = {}
         while size > 0:
-            k = HashableDict.of(r.readObject(b))
-            v = r.readObject(b)
+            k = HashableDict.of(r.read_object(b))
+            v = r.read_object(b)
             the_dict[k] = v
             size = size - 1
 
@@ -518,11 +509,11 @@ class EdgeIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
 
-        writer.toDict(obj.id, to_extend)
+        writer.to_dict(obj.id, to_extend)
         StringIO.dictify(obj.label, writer, to_extend, True, False)
-        writer.toDict(obj.inV.id, to_extend)
+        writer.to_dict(obj.inV.id, to_extend)
         StringIO.dictify(obj.inV.label, writer, to_extend, True, False)
-        writer.toDict(obj.outV.id, to_extend)
+        writer.to_dict(obj.outV.id, to_extend)
         StringIO.dictify(obj.outV.label, writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
@@ -535,10 +526,10 @@ class EdgeIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_edge(cls, b, r):
-        edgeid = r.readObject(b)
-        edgelbl = r.toObject(b, DataType.string, False)
-        inv = Vertex(r.readObject(b), r.toObject(b, DataType.string, False))
-        outv = Vertex(r.readObject(b), r.toObject(b, DataType.string, False))
+        edgeid = r.read_object(b)
+        edgelbl = r.to_object(b, DataType.string, False)
+        inv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
+        outv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
         edge = Edge(edgeid, outv, edgelbl, inv)
         b.read(4)
         return edge
@@ -552,13 +543,13 @@ class PathIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        writer.toDict(obj.labels, to_extend)
-        writer.toDict(obj.objects, to_extend)
+        writer.to_dict(obj.labels, to_extend)
+        writer.to_dict(obj.objects, to_extend)
         return to_extend
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: Path(r.readObject(b), r.readObject(b)), nullable)
+        return cls.is_null(buff, reader, lambda b, r: Path(r.read_object(b), r.read_object(b)), nullable)
 
 
 class PropertyIO(_GraphBinaryTypeIO):
@@ -570,7 +561,7 @@ class PropertyIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         StringIO.dictify(obj.key, writer, to_extend, True, False)
-        writer.toDict(obj.value, to_extend)
+        writer.to_dict(obj.value, to_extend)
         to_extend.extend(NULL_BYTES)
         return to_extend
 
@@ -580,7 +571,7 @@ class PropertyIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_property(cls, b, r):
-        p = Property(r.toObject(b, DataType.string, False), r.readObject(b), None)
+        p = Property(r.to_object(b, DataType.string, False), r.read_object(b), None)
         b.read(2)
         return p
 
@@ -607,7 +598,7 @@ class VertexIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        writer.toDict(obj.id, to_extend)
+        writer.to_dict(obj.id, to_extend)
         StringIO.dictify(obj.label, writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         return to_extend
@@ -618,7 +609,7 @@ class VertexIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_vertex(cls, b, r):
-        vertex = Vertex(r.readObject(b), r.toObject(b, DataType.string, False))
+        vertex = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
         b.read(2)
         return vertex
 
@@ -631,9 +622,9 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        writer.toDict(obj.id, to_extend)
+        writer.to_dict(obj.id, to_extend)
         StringIO.dictify(obj.label, writer, to_extend, True, False)
-        writer.toDict(obj.value, to_extend)
+        writer.to_dict(obj.value, to_extend)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
         return to_extend
@@ -644,7 +635,7 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_vertexproperty(cls, b, r):
-        vp = VertexProperty(r.readObject(b), r.toObject(b, DataType.string, False), r.readObject(b), None)
+        vp = VertexProperty(r.read_object(b), r.to_object(b, DataType.string, False), r.read_object(b), None)
         b.read(4)
         return vp
 
@@ -654,7 +645,7 @@ class _EnumIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        StringIO.dictify(cls.unmangle_keyword(str(obj.name)), writer, to_extend)
+        StringIO.dictify(SymbolUtil.to_camel_case(str(obj.name)), writer, to_extend)
         return to_extend
 
     @classmethod
@@ -663,8 +654,8 @@ class _EnumIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_enumval(cls, b, r):
-        enum_name = r.toObject(b)
-        return cls.python_type[enum_name]
+        enum_name = r.to_object(b)
+        return cls.python_type[SymbolUtil.to_snake_case(enum_name)]
 
 
 class BarrierIO(_EnumIO):
@@ -685,6 +676,13 @@ class ColumnIO(_EnumIO):
 class DirectionIO(_EnumIO):
     graphbinary_type = DataType.direction
     python_type = Direction
+
+    @classmethod
+    def _read_enumval(cls, b, r):
+        # Direction needs to retain all CAPS. note that to_/from_ are really just aliases of IN/OUT
+        # so they don't need to be accounted for in serialization
+        enum_name = r.to_object(b)
+        return cls.python_type[enum_name]
 
 
 class OperatorIO(_EnumIO):
@@ -716,13 +714,13 @@ class BindingIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         StringIO.dictify(obj.key, writer, to_extend, True, False)
-        writer.toDict(obj.value, to_extend)
+        writer.to_dict(obj.value, to_extend)
         return to_extend
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: Binding(r.toObject(b, DataType.string, False),
-                                                              reader.readObject(b)), nullable)
+        return cls.is_null(buff, reader, lambda b, r: Binding(r.to_object(b, DataType.string, False),
+                                                              reader.read_object(b)), nullable)
 
 
 class BytecodeIO(_GraphBinaryTypeIO):
@@ -739,7 +737,7 @@ class BytecodeIO(_GraphBinaryTypeIO):
             StringIO.dictify(inst_name, writer, to_extend, True, False)
             to_extend.extend(int32_pack(len(inst_args)))
             for arg in inst_args:
-                writer.toDict(arg, to_extend)
+                writer.to_dict(arg, to_extend)
 
         to_extend.extend(int32_pack(len(bc.source_instructions)))
         for inst in bc.source_instructions:
@@ -748,9 +746,9 @@ class BytecodeIO(_GraphBinaryTypeIO):
             to_extend.extend(int32_pack(len(inst_args)))
             for arg in inst_args:
                 if isinstance(arg, TypeType):
-                    writer.toDict(GremlinType(arg().fqcn), to_extend)
+                    writer.to_dict(GremlinType(arg().fqcn), to_extend)
                 else:
-                    writer.toDict(arg, to_extend)
+                    writer.to_dict(arg, to_extend)
         return to_extend
 
     @classmethod
@@ -764,11 +762,11 @@ class BytecodeIO(_GraphBinaryTypeIO):
         step_count = cls.read_int(b)
         ix = 0
         while ix < step_count:
-            inst = [r.toObject(b, DataType.string, False)]
+            inst = [r.to_object(b, DataType.string, False)]
             inst_ct = cls.read_int(b)
             iy = 0
             while iy < inst_ct:
-                inst.append(r.readObject(b))
+                inst.append(r.read_object(b))
                 iy += 1
             bytecode.step_instructions.append(inst)
             ix += 1
@@ -776,11 +774,11 @@ class BytecodeIO(_GraphBinaryTypeIO):
         source_count = cls.read_int(b)
         ix = 0
         while ix < source_count:
-            inst = [r.toObject(b, DataType.string, False)]
+            inst = [r.to_object(b, DataType.string, False)]
             inst_ct = cls.read_int(b)
             iy = 0
             while iy < inst_ct:
-                inst.append(r.readObject(b))
+                inst.append(r.read_object(b))
                 iy += 1
             bytecode.source_instructions.append(inst)
             ix += 1
@@ -844,7 +842,7 @@ class PSerializer(_GraphBinaryTypeIO):
 
         to_extend.extend(int32_pack(len(args)))
         for a in args:
-            writer.toDict(a, to_extend)
+            writer.to_dict(a, to_extend)
 
         return to_extend
 
@@ -872,7 +870,7 @@ class TraverserIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         to_extend.extend(int64_pack(obj.bulk))
-        writer.toDict(obj.object, to_extend)
+        writer.to_dict(obj.object, to_extend)
         return to_extend
 
     @classmethod
@@ -882,7 +880,7 @@ class TraverserIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_traverser(cls, b, r):
         bulk = int64_unpack(b.read(8))
-        obj = r.readObject(b)
+        obj = r.read_object(b)
         return Traverser(obj, bulk=bulk)
 
 
@@ -963,7 +961,7 @@ class TextPSerializer(_GraphBinaryTypeIO):
 
         to_extend.extend(int32_pack(len(args)))
         for a in args:
-            writer.toDict(a, to_extend)
+            writer.to_dict(a, to_extend)
 
         return to_extend
 
@@ -981,7 +979,7 @@ class BulkSetDeserializer(_GraphBinaryTypeIO):
         size = cls.read_int(b)
         the_list = []
         while size > 0:
-            itm = r.readObject(b)
+            itm = r.read_object(b)
             bulk = int64_unpack(b.read(8))
             for y in range(bulk):
                 the_list.append(itm)            
@@ -1000,12 +998,12 @@ class MetricsDeserializer(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_metrics(cls, b, r):
-        metricid = r.toObject(b, DataType.string, False)
-        name = r.toObject(b, DataType.string, False)
-        duration = r.toObject(b, DataType.long, nullable=False)
-        counts = r.toObject(b, DataType.map, nullable=False)
-        annotations = r.toObject(b, DataType.map, nullable=False)
-        metrics = r.toObject(b, DataType.list, nullable=False)
+        metricid = r.to_object(b, DataType.string, False)
+        name = r.to_object(b, DataType.string, False)
+        duration = r.to_object(b, DataType.long, nullable=False)
+        counts = r.to_object(b, DataType.map, nullable=False)
+        annotations = r.to_object(b, DataType.map, nullable=False)
+        metrics = r.to_object(b, DataType.list, nullable=False)
 
         return {"id": metricid,
                 "name": name,
@@ -1025,8 +1023,8 @@ class TraversalMetricsDeserializer(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_traversalmetrics(cls, b, r):
-        duration = r.toObject(b, DataType.long, nullable=False)
-        metrics = r.toObject(b, DataType.list, nullable=False)
+        duration = r.to_object(b, DataType.long, nullable=False)
+        metrics = r.to_object(b, DataType.list, nullable=False)
 
         return {"dur": duration,
                 "metrics": metrics}
@@ -1079,6 +1077,6 @@ class DurationIO(_GraphBinaryTypeIO):
     
     @classmethod
     def _read_duration(cls, b, r):
-        seconds = r.toObject(b, DataType.long, False)
-        nanos = r.toObject(b, DataType.int, False)
+        seconds = r.to_object(b, DataType.long, False)
+        nanos = r.to_object(b, DataType.int, False)
         return timedelta(seconds=seconds, microseconds=nanos / 1000)

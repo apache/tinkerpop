@@ -31,7 +31,7 @@ from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
-from gremlin_python.structure.io.util import HashableDict
+from gremlin_python.structure.io.util import HashableDict, SymbolUtil
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ log = logging.getLogger(__name__)
 # not a dict.
 _serializers = OrderedDict()
 _deserializers = {}
+
 
 class GraphSONTypeType(type):
     def __new__(mcs, name, bases, dct):
@@ -57,14 +58,14 @@ class GraphSONUtil(object):
     VALUE_KEY = "@value"
 
     @classmethod
-    def typedValue(cls, type_name, value, prefix="g"):
-        out = {cls.TYPE_KEY: cls.formatType(prefix, type_name)}
+    def typed_value(cls, type_name, value, prefix="g"):
+        out = {cls.TYPE_KEY: cls.format_type(prefix, type_name)}
         if value is not None:
             out[cls.VALUE_KEY] = value
         return out
 
     @classmethod
-    def formatType(cls, prefix, type_name):
+    def format_type(cls, prefix, type_name):
         return "%s:%s" % (prefix, type_name)
 
 
@@ -78,11 +79,11 @@ class GraphSONWriter(object):
         if serializer_map:
             self.serializers.update(serializer_map)
 
-    def writeObject(self, objectData):
+    def write_object(self, objectData):
         # to JSON
-        return json.dumps(self.toDict(objectData), separators=(',', ':'))
+        return json.dumps(self.to_dict(objectData), separators=(',', ':'))
 
-    def toDict(self, obj):
+    def to_dict(self, obj):
         """
         Encodes python objects in GraphSON type-tagged dict values
         """
@@ -94,11 +95,11 @@ class GraphSONWriter(object):
                     return serializer.dictify(obj, self)
 
         if isinstance(obj, dict):
-            return dict((self.toDict(k), self.toDict(v)) for k, v in obj.items())
+            return dict((self.to_dict(k), self.to_dict(v)) for k, v in obj.items())
         elif isinstance(obj, set):
-            return set([self.toDict(o) for o in obj])
+            return set([self.to_dict(o) for o in obj])
         elif isinstance(obj, list):
-            return [self.toDict(o) for o in obj]
+            return [self.to_dict(o) for o in obj]
         else:
             return obj
 
@@ -112,11 +113,11 @@ class GraphSONReader(object):
         if deserializer_map:
             self.deserializers.update(deserializer_map)
 
-    def readObject(self, jsonData):
+    def read_object(self, json_data):
         # from JSON
-        return self.toObject(json.loads(jsonData))
+        return self.to_object(json.loads(json_data))
 
-    def toObject(self, obj):
+    def to_object(self, obj):
         """
         Unpacks GraphSON type-tagged dict values into objects mapped in self.deserializers
         """
@@ -125,11 +126,11 @@ class GraphSONReader(object):
                 return self.deserializers[obj[GraphSONUtil.TYPE_KEY]].objectify(obj[GraphSONUtil.VALUE_KEY], self)
             except KeyError:
                 pass
-            return dict((self.toObject(k), self.toObject(v)) for k, v in obj.items())
+            return dict((self.to_object(k), self.to_object(v)) for k, v in obj.items())
         elif isinstance(obj, set):
-            return set([self.toObject(o) for o in obj])
+            return set([self.to_object(o) for o in obj])
         elif isinstance(obj, list):
-            return [self.toObject(o) for o in obj]
+            return [self.to_object(o) for o in obj]
         else:
             return obj
 
@@ -137,15 +138,6 @@ class GraphSONReader(object):
 class _GraphSONTypeIO(object, metaclass=GraphSONTypeType):
     python_type = None
     graphson_type = None
-
-    symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
-                 "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all", "with_": "with",
-                 "filter_": "filter", "id_": "id", "max_": "max", "min_": "min", "sum_": "sum"}
-
-    @classmethod
-    def unmangleKeyword(cls, symbol):
-        return cls.symbolMap.get(symbol, symbol)
 
     def dictify(self, obj, writer):
         raise NotImplementedError()
@@ -160,7 +152,7 @@ class _BytecodeSerializer(_GraphSONTypeIO):
         out = []
         for instruction in instructions:
             inst = [instruction[0]]
-            inst.extend(writer.toDict(arg) for arg in instruction[1:])
+            inst.extend(writer.to_dict(arg) for arg in instruction[1:])
             out.append(inst)
         return out
 
@@ -173,7 +165,7 @@ class _BytecodeSerializer(_GraphSONTypeIO):
             out["source"] = cls._dictify_instructions(bytecode.source_instructions, writer)
         if bytecode.step_instructions:
             out["step"] = cls._dictify_instructions(bytecode.step_instructions, writer)
-        return GraphSONUtil.typedValue("Bytecode", out)
+        return GraphSONUtil.typed_value("Bytecode", out)
 
 
 class TraversalSerializer(_BytecodeSerializer):
@@ -190,8 +182,8 @@ class VertexSerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, vertex, writer):
-        return GraphSONUtil.typedValue("Vertex", {"id": writer.toDict(vertex.id),
-                                                  "label": writer.toDict(vertex.label)})
+        return GraphSONUtil.typed_value("Vertex", {"id": writer.to_dict(vertex.id),
+                                                  "label": writer.to_dict(vertex.label)})
 
 
 class EdgeSerializer(_GraphSONTypeIO):
@@ -200,12 +192,12 @@ class EdgeSerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, edge, writer):
-        return GraphSONUtil.typedValue("Edge", {"id": writer.toDict(edge.id),
-                                                "outV": writer.toDict(edge.outV.id),
-                                                "outVLabel": writer.toDict(edge.outV.label),
-                                                "label": writer.toDict(edge.label),
-                                                "inV": writer.toDict(edge.inV.id),
-                                                "inVLabel": writer.toDict(edge.inV.label)})
+        return GraphSONUtil.typed_value("Edge", {"id": writer.to_dict(edge.id),
+                                                "outV": writer.to_dict(edge.outV.id),
+                                                "outVLabel": writer.to_dict(edge.outV.label),
+                                                "label": writer.to_dict(edge.label),
+                                                "inV": writer.to_dict(edge.inV.id),
+                                                "inVLabel": writer.to_dict(edge.inV.label)})
 
 
 class VertexPropertySerializer(_GraphSONTypeIO):
@@ -214,10 +206,10 @@ class VertexPropertySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, vertex_property, writer):
-        return GraphSONUtil.typedValue("VertexProperty", {"id": writer.toDict(vertex_property.id),
-                                                          "label": writer.toDict(vertex_property.label),
-                                                          "value": writer.toDict(vertex_property.value),
-                                                          "vertex": writer.toDict(vertex_property.vertex.id)})
+        return GraphSONUtil.typed_value("VertexProperty", {"id": writer.to_dict(vertex_property.id),
+                                                          "label": writer.to_dict(vertex_property.label),
+                                                          "value": writer.to_dict(vertex_property.value),
+                                                          "vertex": writer.to_dict(vertex_property.vertex.id)})
 
 
 class PropertySerializer(_GraphSONTypeIO):
@@ -226,7 +218,7 @@ class PropertySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, property, writer):
-        elementDict = writer.toDict(property.element)
+        elementDict = writer.to_dict(property.element)
         if elementDict is not None:
             valueDict = elementDict["@value"]
             if "outVLabel" in valueDict:
@@ -237,8 +229,8 @@ class PropertySerializer(_GraphSONTypeIO):
                 del valueDict["properties"]
             if "value" in valueDict:
                 del valueDict["value"]
-        return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
-                                                    "value": writer.toDict(property.value),
+        return GraphSONUtil.typed_value("Property", {"key": writer.to_dict(property.key),
+                                                    "value": writer.to_dict(property.value),
                                                     "element": elementDict})
 
 
@@ -249,8 +241,8 @@ class TraversalStrategySerializer(_GraphSONTypeIO):
     def dictify(cls, strategy, writer):
         configuration = {}
         for key in strategy.configuration:
-            configuration[key] = writer.toDict(strategy.configuration[key])
-        return GraphSONUtil.typedValue(strategy.strategy_name, configuration)
+            configuration[key] = writer.to_dict(strategy.configuration[key])
+        return GraphSONUtil.typed_value(strategy.strategy_name, configuration)
 
 
 class TraverserIO(_GraphSONTypeIO):
@@ -259,13 +251,13 @@ class TraverserIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, traverser, writer):
-        return GraphSONUtil.typedValue("Traverser", {"value": writer.toDict(traverser.object),
-                                                     "bulk": writer.toDict(traverser.bulk)})
+        return GraphSONUtil.typed_value("Traverser", {"value": writer.to_dict(traverser.object),
+                                                     "bulk": writer.to_dict(traverser.bulk)})
 
     @classmethod
     def objectify(cls, d, reader):
-        return Traverser(reader.toObject(d["value"]),
-                         reader.toObject(d["bulk"]))
+        return Traverser(reader.to_object(d["value"]),
+                         reader.to_object(d["bulk"]))
 
 
 class EnumSerializer(_GraphSONTypeIO):
@@ -273,8 +265,8 @@ class EnumSerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, enum, _):
-        return GraphSONUtil.typedValue(cls.unmangleKeyword(type(enum).__name__),
-                                       cls.unmangleKeyword(str(enum.name)))
+        return GraphSONUtil.typed_value(SymbolUtil.to_camel_case(type(enum).__name__),
+                                        SymbolUtil.to_camel_case(str(enum.name)))
 
 
 class PSerializer(_GraphSONTypeIO):
@@ -283,9 +275,9 @@ class PSerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, p, writer):
         out = {"predicate": p.operator,
-               "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
-               writer.toDict(p.value)}
-        return GraphSONUtil.typedValue("P", out)
+               "value": [writer.to_dict(p.value), writer.to_dict(p.other)] if p.other is not None else
+               writer.to_dict(p.value)}
+        return GraphSONUtil.typed_value("P", out)
 
 
 class TextPSerializer(_GraphSONTypeIO):
@@ -294,9 +286,9 @@ class TextPSerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, p, writer):
         out = {"predicate": p.operator,
-               "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
-               writer.toDict(p.value)}
-        return GraphSONUtil.typedValue("TextP", out)
+               "value": [writer.to_dict(p.value), writer.to_dict(p.other)] if p.other is not None else
+               writer.to_dict(p.value)}
+        return GraphSONUtil.typed_value("TextP", out)
 
 
 class BindingSerializer(_GraphSONTypeIO):
@@ -305,8 +297,8 @@ class BindingSerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, binding, writer):
         out = {"key": binding.key,
-               "value": writer.toDict(binding.value)}
-        return GraphSONUtil.typedValue("Binding", out)
+               "value": writer.to_dict(binding.value)}
+        return GraphSONUtil.typed_value("Binding", out)
 
 
 class LambdaSerializer(_GraphSONTypeIO):
@@ -327,7 +319,7 @@ class LambdaSerializer(_GraphSONTypeIO):
         else:
             out["arguments"] = -1
 
-        return GraphSONUtil.typedValue("Lambda", out)
+        return GraphSONUtil.typed_value("Lambda", out)
 
 
 class TypeSerializer(_GraphSONTypeIO):
@@ -335,7 +327,7 @@ class TypeSerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, typ, writer):
-        return writer.toDict(typ())
+        return writer.to_dict(typ())
 
 
 class UUIDIO(_GraphSONTypeIO):
@@ -345,7 +337,7 @@ class UUIDIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer):
-        return GraphSONUtil.typedValue(cls.graphson_base_type, str(obj))
+        return GraphSONUtil.typed_value(cls.graphson_base_type, str(obj))
 
     @classmethod
     def objectify(cls, d, reader):
@@ -366,7 +358,7 @@ class DateIO(_GraphSONTypeIO):
             pts = calendar.timegm(obj.timetuple()) * 1e3
 
         ts = int(round(pts))
-        return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
+        return GraphSONUtil.typed_value(cls.graphson_base_type, ts)
 
     @classmethod
     def objectify(cls, ts, reader):
@@ -387,7 +379,7 @@ class TimestampIO(_GraphSONTypeIO):
         # Java timestamp expects milliseconds integer
         # Have to use int because of legacy Python
         ts = int(round(obj * 1000))
-        return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
+        return GraphSONUtil.typed_value(cls.graphson_base_type, ts)
 
     @classmethod
     def objectify(cls, ts, reader):
@@ -400,7 +392,7 @@ class _NumberIO(_GraphSONTypeIO):
     def dictify(cls, n, writer):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
-        return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n)
 
     @classmethod
     def objectify(cls, v, _):
@@ -415,14 +407,14 @@ class ListIO(_GraphSONTypeIO):
     def dictify(cls, l, writer):
         new_list = []
         for obj in l:
-            new_list.append(writer.toDict(obj))
-        return GraphSONUtil.typedValue("List", new_list)
+            new_list.append(writer.to_dict(obj))
+        return GraphSONUtil.typed_value("List", new_list)
 
     @classmethod
     def objectify(cls, l, reader):
         new_list = []
         for obj in l:
-            new_list.append(reader.toObject(obj))
+            new_list.append(reader.to_object(obj))
         return new_list
 
 
@@ -434,8 +426,8 @@ class SetIO(_GraphSONTypeIO):
     def dictify(cls, s, writer):
         new_list = []
         for obj in s:
-            new_list.append(writer.toDict(obj))
-        return GraphSONUtil.typedValue("Set", new_list)
+            new_list.append(writer.to_dict(obj))
+        return GraphSONUtil.typed_value("Set", new_list)
 
     @classmethod
     def objectify(cls, s, reader):
@@ -446,7 +438,7 @@ class SetIO(_GraphSONTypeIO):
         python don't recognize, coerce and return a list.
         See comments of TINKERPOP-1844 for more details
         """
-        new_list = [reader.toObject(obj) for obj in s]
+        new_list = [reader.to_object(obj) for obj in s]
         new_set = set(new_list)
         if len(new_list) != len(new_set):
             log.warning("Coercing g:Set to list due to java numeric values. "
@@ -464,9 +456,9 @@ class MapType(_GraphSONTypeIO):
     def dictify(cls, d, writer):
         l = []
         for key in d:
-            l.append(writer.toDict(key))
-            l.append(writer.toDict(d[key]))
-        return GraphSONUtil.typedValue("Map", l)
+            l.append(writer.to_dict(key))
+            l.append(writer.to_dict(d[key]))
+        return GraphSONUtil.typed_value("Map", l)
 
     @classmethod
     def objectify(cls, l, reader):
@@ -474,7 +466,7 @@ class MapType(_GraphSONTypeIO):
         if len(l) > 0:
             x = 0
             while x < len(l):
-                new_dict[HashableDict.of(reader.toObject(l[x]))] = reader.toObject(l[x + 1])
+                new_dict[HashableDict.of(reader.to_object(l[x]))] = reader.to_object(l[x + 1])
                 x = x + 2
         return new_dict
 
@@ -492,8 +484,8 @@ class BulkSetIO(_GraphSONTypeIO):
         if len(l) > 0:
             x = 0
             while x < len(l):
-                obj = reader.toObject(l[x])
-                bulk = reader.toObject(l[x + 1])
+                obj = reader.to_object(l[x])
+                bulk = reader.to_object(l[x + 1])
                 for y in range(bulk):
                     new_list.append(obj)
                 x = x + 2
@@ -510,13 +502,13 @@ class FloatIO(_NumberIO):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
         elif math.isnan(n):
-            return GraphSONUtil.typedValue(cls.graphson_base_type, "NaN")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN")
         elif math.isinf(n) and n > 0:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, "Infinity")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity")
         elif math.isinf(n) and n < 0:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, "-Infinity")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity")
         else:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+            return GraphSONUtil.typed_value(cls.graphson_base_type, n)
 
     @classmethod
     def objectify(cls, v, _):
@@ -541,13 +533,13 @@ class BigDecimalIO(_NumberIO):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
         elif math.isnan(n):
-            return GraphSONUtil.typedValue(cls.graphson_base_type, "NaN", "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN", "gx")
         elif math.isinf(n) and n > 0:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, "Infinity", "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity", "gx")
         elif math.isinf(n) and n < 0:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, "-Infinity", "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity", "gx")
         else:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, str(n), "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, str(n), "gx")
 
     @classmethod
     def objectify(cls, v, _):
@@ -578,9 +570,9 @@ class Int64IO(_NumberIO):
         if isinstance(n, bool):
             return n
         elif n < -9223372036854775808 or n > 9223372036854775807:
-            return GraphSONUtil.typedValue("BigInteger", str(n), "gx")
+            return GraphSONUtil.typed_value("BigInteger", str(n), "gx")
         else:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+            return GraphSONUtil.typed_value(cls.graphson_base_type, n)
 
 
 class BigIntegerIO(Int64IO):
@@ -598,11 +590,11 @@ class Int32IO(Int64IO):
         if isinstance(n, bool):
             return n
         elif n < -9223372036854775808 or n > 9223372036854775807:
-            return GraphSONUtil.typedValue("BigInteger", str(n), "gx")
+            return GraphSONUtil.typed_value("BigInteger", str(n), "gx")
         elif n < -2147483648 or n > 2147483647:
-            return GraphSONUtil.typedValue("Int64", n)
+            return GraphSONUtil.typed_value("Int64", n)
         else:
-            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+            return GraphSONUtil.typed_value(cls.graphson_base_type, n)
 
 class ByteIO(_NumberIO):
     python_type = SingleByte
@@ -613,7 +605,7 @@ class ByteIO(_NumberIO):
     def dictify(cls, n, writer):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
-        return GraphSONUtil.typedValue(cls.graphson_base_type, n, "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n, "gx")
 
     @classmethod
     def objectify(cls, v, _):
@@ -627,7 +619,7 @@ class ByteBufferIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, n, writer):
-        return GraphSONUtil.typedValue(cls.graphson_base_type, "".join(chr(x) for x in n), "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, "".join(chr(x) for x in n), "gx")
 
     @classmethod
     def objectify(cls, v, _):
@@ -641,7 +633,7 @@ class CharIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, n, writer):
-        return GraphSONUtil.typedValue(cls.graphson_base_type, n, "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n, "gx")
 
     @classmethod
     def objectify(cls, v, _):
@@ -655,7 +647,7 @@ class DurationIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, n, writer):
-        return GraphSONUtil.typedValue(cls.graphson_base_type, duration_isoformat(n), "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, duration_isoformat(n), "gx")
 
     @classmethod
     def objectify(cls, v, _):
@@ -667,7 +659,7 @@ class VertexDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Vertex(reader.toObject(d["id"]), d.get("label", "vertex"))
+        return Vertex(reader.to_object(d["id"]), d.get("label", "vertex"))
 
 
 class EdgeDeserializer(_GraphSONTypeIO):
@@ -675,10 +667,10 @@ class EdgeDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Edge(reader.toObject(d["id"]),
-                    Vertex(reader.toObject(d["outV"]), d.get("outVLabel", "vertex")),
+        return Edge(reader.to_object(d["id"]),
+                    Vertex(reader.to_object(d["outV"]), d.get("outVLabel", "vertex")),
                     d.get("label", "edge"),
-                    Vertex(reader.toObject(d["inV"]), d.get("inVLabel", "vertex")))
+                    Vertex(reader.to_object(d["inV"]), d.get("inVLabel", "vertex")))
 
 
 class VertexPropertyDeserializer(_GraphSONTypeIO):
@@ -686,10 +678,10 @@ class VertexPropertyDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        vertex = Vertex(reader.toObject(d.get("vertex"))) if "vertex" in d else None
-        return VertexProperty(reader.toObject(d["id"]),
+        vertex = Vertex(reader.to_object(d.get("vertex"))) if "vertex" in d else None
+        return VertexProperty(reader.to_object(d["id"]),
                               d["label"],
-                              reader.toObject(d["value"]),
+                              reader.to_object(d["value"]),
                               vertex)
 
 
@@ -698,8 +690,8 @@ class PropertyDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        element = reader.toObject(d["element"]) if "element" in d else None
-        return Property(d["key"], reader.toObject(d["value"]), element)
+        element = reader.to_object(d["element"]) if "element" in d else None
+        return Property(d["key"], reader.to_object(d["value"]), element)
 
 
 class PathDeserializer(_GraphSONTypeIO):
@@ -707,7 +699,7 @@ class PathDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Path(reader.toObject(d["labels"]), reader.toObject(d["objects"]))
+        return Path(reader.to_object(d["labels"]), reader.to_object(d["objects"]))
 
 
 class TDeserializer(_GraphSONTypeIO):
@@ -725,7 +717,7 @@ class DirectionIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, d, writer):
-        return GraphSONUtil.typedValue(cls.graphson_base_type, d.name, "g")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, d.name, "g")
 
     @classmethod
     def objectify(cls, d, reader):
@@ -737,7 +729,7 @@ class TraversalMetricsDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return reader.toObject(d)
+        return reader.to_object(d)
 
 
 class MetricsDeserializer(_GraphSONTypeIO):
@@ -745,4 +737,4 @@ class MetricsDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return reader.toObject(d)
+        return reader.to_object(d)

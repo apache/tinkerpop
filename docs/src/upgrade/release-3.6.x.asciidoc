@@ -618,7 +618,7 @@ instead use `org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTra
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2657[TINKERPOP-2657]
 
-==== gremlin-python Deprecation Removal
+==== gremlin-python Step Naming
 
 When gremlin-python was first built, it followed the Gremlin step names perfectly and didn't account well for Python
 keywords that those steps conflicted with. As this conflict led to problems in usage, steps that matched keywords were
@@ -636,6 +636,10 @@ that may still be in use to instead prefer the underscore suffixed versions:
 
 The full list of steps with the suffix naming can be found in the
 link:https://tinkerpop.apache.org/docs/3.6.0/reference/#gremlin-python-differences[Reference Documentation].
+
+In addition to removing the conflicting names, camel cased naming has been deprecated for all Gremlin steps and
+replaced with more Pythonic snake cased names. As this change was merely deprecation, this change is non-breaking at
+this time, but the camel cased steps will be removed in some future major version.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2650[TINKERPOP-2650]
 

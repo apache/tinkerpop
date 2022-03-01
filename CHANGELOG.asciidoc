@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `mergeV()` and `mergeE()` steps.
 * Added `Direction` aliases of `from` and `to`.
 * Moved `TraversalOptionParent.Pick` to its own class as `Pick`.
+* Introduced Pythonic Gremlin step names using snake case and deprecated camel case naming.
 * Improved Gherkin test framework to allow for asserting traversal exceptions as a behavior.
 * Fixed query indentation for profile metrics where indent levels were not being respected.
 * `TraversalOpProcessor` no longer accepts a `String` representation of `Bytecode` for the "gremlin" argument which was left to support older versions of the drivers.

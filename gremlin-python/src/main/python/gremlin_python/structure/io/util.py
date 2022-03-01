@@ -15,6 +15,26 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import re
+
+
+class SymbolUtil:
+    camel_pattern = re.compile(r'(?<!^)(?=[A-Z])')
+
+    @classmethod
+    def to_snake_case(cls, symbol):
+        return cls.camel_pattern.sub('_', symbol).lower()
+
+    @classmethod
+    def to_camel_case(cls, symbol):
+        u = ''
+        first = True
+        for segment in symbol.split('_'):
+            u += segment if first else segment.title()
+            first = False
+
+        return u
+
 
 class HashableDict(dict):
     def __hash__(self):

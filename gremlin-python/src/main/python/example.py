@@ -37,15 +37,15 @@ def main():
     # add some data - be sure to use a terminating step like iterate() so that the traversal
     # "executes". iterate() does not return any data and is used to just generate side-effects
     # (i.e. write data to the database)
-    g.addV('person').property('name', 'marko').as_('m'). \
-        addV('person').property('name', 'vadas').as_('v'). \
-        addE('knows').from_('m').to('v').iterate()
+    g.add_v('person').property('name', 'marko').as_('m'). \
+        add_v('person').property('name', 'vadas').as_('v'). \
+        add_e('knows').from_('m').to('v').iterate()
 
     # retrieve the data from the "marko" vertex
-    print("marko: " + to_string(g.V().has('person', 'name', 'marko').valueMap().next()))
+    print("marko: " + to_string(g.V().has('person', 'name', 'marko').value_map().next()))
 
     # find the "marko" vertex and then traverse to the people he "knows" and return their data
-    print("who marko knows: " + to_string(g.V().has('person', 'name', 'marko').out('knows').valueMap().next()))
+    print("who marko knows: " + to_string(g.V().has('person', 'name', 'marko').out('knows').value_map().next()))
 
 
 if __name__ == "__main__":

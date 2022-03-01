@@ -41,7 +41,7 @@ class Translator:
     options = {
       WithOptions.tokens: 'tokens',
       WithOptions.none: 'none',
-      WithOptions.ids:'ids',
+      WithOptions.ids: 'ids',
       WithOptions.labels: 'labels',
       WithOptions.keys: 'keys',
       WithOptions.values: 'values',
@@ -110,7 +110,7 @@ class Translator:
             res += key + ':'
             val = s.configuration[key]
             if isinstance(val, Traversal):
-                res += self.translate(val.bytecode,child=True)
+                res += self.translate(val.bytecode, child=True)
             else:
                 res += self.fixup(val)
             c += 1
@@ -135,7 +135,7 @@ class Translator:
                     script += self.translate(p, True)
                 elif type(p) == P:
                     script += self.process_predicate(p)
-                elif type(p) in [Cardinality, Pop]:
+                elif type(p) in [Cardinality, Pop, Operator]:
                     tmp = str(p)
                     script += tmp[0:-1] if tmp.endswith('_') else tmp 
                 elif type(p) in [ReadOnlyStrategy, SubgraphStrategy, VertexProgramStrategy,
