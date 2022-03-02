@@ -68,7 +68,9 @@ setup(
     test_suite="tests",
     data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[
-        'pytest-runner==6.0.0',
+        # can't get to pytest-runner 6.0 without changing the docker image and the baseline version of python
+        # that is currently being tested - need to bump to 3.8.x perhaps
+        'pytest-runner==5.2',
         'importlib-metadata<5.0.0'
     ],
     tests_require=[
