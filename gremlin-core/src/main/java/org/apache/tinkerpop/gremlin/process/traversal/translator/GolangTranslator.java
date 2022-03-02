@@ -254,8 +254,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final String traversalSource, final Bytecode o) {
-            // TODO: AN-1042 Ensure translation matches Gremlin-Go implementation when done
-            final String source = traversalSource.equals("__") ? "gremlingo.AnonTrav__" : traversalSource;
+            final String source = traversalSource.equals("__") ? "gremlingo.T__" : traversalSource;
             script.append(source);
             for (final Bytecode.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();

@@ -254,7 +254,16 @@ func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSer
 //		{values_length} is an Int describing the amount values.
 //		{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
 func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	bc := value.(bytecode)
+	var bc bytecode
+	switch value.(type) {
+	case *GraphTraversal:
+		gt := value.(*GraphTraversal)
+		bc = *gt.bytecode
+	case bytecode:
+		bc = value.(bytecode)
+	default:
+		return nil, errors.New("need GraphTraversal or bytecode to write bytecode")
+	}
 
 	// Write {steps_length} and {step_0} through {step_n}, then {sources_length} and {source_0} through {source_n}
 	err := instructionWriter(bc.stepInstructions, buffer, typeSerializer)
@@ -640,7 +649,7 @@ const (
 // gets the type of the serializer based on the value
 func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{}) (*graphBinaryTypeSerializer, error) {
 	switch val.(type) {
-	case bytecode:
+	case bytecode, *GraphTraversal:
 		return &graphBinaryTypeSerializer{dataType: BytecodeType, writer: bytecodeWriter, logHandler: serializer.logHandler}, nil
 	case string:
 		return &graphBinaryTypeSerializer{dataType: StringType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
