@@ -41,9 +41,9 @@ namespace Gremlin.Net.Process.Traversal
 
         public static Direction Out => new Direction("OUT");
 
-        public static Direction from = Out;
+        public static Direction From => Out;
 
-        public static Direction to = In;
+        public static Direction To => In;
 
         private static readonly IDictionary<string, Direction> Properties = new Dictionary<string, Direction>
         {
