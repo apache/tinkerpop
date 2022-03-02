@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -224,9 +223,11 @@ namespace Gremlin.Net.Process.Traversal
 
         public GraphTraversalSource WithStrategies(params ITraversalStrategy[] traversalStrategies)
         {
+            if (traversalStrategies == null) throw new ArgumentNullException(nameof(traversalStrategies));
+            
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
-            var args = new List<object>(0 + traversalStrategies.Length) {};
+            var args = new List<object>(traversalStrategies.Length);
             args.AddRange(traversalStrategies);
             source.Bytecode.AddSource("withStrategies", args.ToArray());
             return source;
@@ -234,9 +235,11 @@ namespace Gremlin.Net.Process.Traversal
 
         public GraphTraversalSource WithoutStrategies(params Type[] traversalStrategyClasses)
         {
+            if (traversalStrategyClasses == null) throw new ArgumentNullException(nameof(traversalStrategyClasses));
+            
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
-            var args = new List<object>(0 + traversalStrategyClasses.Length) {};
+            var args = new List<object>(traversalStrategyClasses.Length);
             args.AddRange(traversalStrategyClasses);
             source.Bytecode.AddSource("withoutStrategies", args.ToArray());
             return source;
@@ -296,16 +299,16 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<Edge, Edge> E(params object[] edgesIds)
         {
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode));
-            var args = null == edgesIds ? new List<object>(1) {} : new List<object>(0 + edgesIds.Length) {};
-            if (null == edgesIds)
+            if (edgesIds == null)
             {
-                args.Add(null);
+                traversal.Bytecode.AddStep("E", new object[] { null });
             }
             else
             {
+                var args = new List<object>(edgesIds.Length);
                 args.AddRange(edgesIds);
+                traversal.Bytecode.AddStep("E", args.ToArray());
             }
-            traversal.Bytecode.AddStep("E", args.ToArray());
             return traversal;
         }
 
@@ -316,16 +319,16 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<Vertex, Vertex> V(params object[] vertexIds)
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode));
-            var args = null == vertexIds ? new List<object>(1) {} : new List<object>(0 + vertexIds.Length) {};
-            if (null == vertexIds)
+            if (vertexIds == null)
             {
-                args.Add(null);
+                traversal.Bytecode.AddStep("V", new object[] { null });
             }
             else
             {
+                var args = new List<object>(vertexIds.Length);
                 args.AddRange(vertexIds);
+                traversal.Bytecode.AddStep("V", args.ToArray());
             }
-            traversal.Bytecode.AddStep("V", args.ToArray());
             return traversal;
         }
 
@@ -439,11 +442,11 @@ namespace Gremlin.Net.Process.Traversal
             // null starts is treated as g.inject(null) meaning inject a single null traverser
             if (starts == null)
             {
-                traversal.Bytecode.AddStep("inject", new object[1] { null });
+                traversal.Bytecode.AddStep("inject", new object[] { null });
             }
             else
             {
-                var args = new List<object>(0 + starts.Length) {};
+                var args = new List<object>(starts.Length);
                 args.AddRange(starts.Cast<object>());
                 traversal.Bytecode.AddStep("inject", args.ToArray());
             }

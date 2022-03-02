@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
@@ -94,6 +95,22 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 
             Assert.Empty(bytecode.SourceInstructions);
             Assert.Empty(bytecode.StepInstructions);
+        }
+
+        [Fact]
+        public void AnonymousTraversal_VXnullX()
+        {
+            var bytecode = __.V(null).Bytecode;
+            
+            Assert.Single(bytecode.StepInstructions);
+            Assert.Single(bytecode.StepInstructions[0].Arguments);
+            Assert.Null(bytecode.StepInstructions[0].Arguments[0]);
+        }
+        
+        [Fact]
+        public void AnonymousTraversal_OutXnullX()
+        {
+            Assert.Throws<ArgumentNullException>(() => __.Out(null));
         }
     }
 }
