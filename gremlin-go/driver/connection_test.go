@@ -20,6 +20,7 @@ under the License.
 package gremlingo
 
 import (
+	"reflect"
 	"sort"
 	"testing"
 
@@ -41,7 +42,7 @@ func dropGraph(t *testing.T, g *GraphTraversalSource) {
 }
 
 func getTestNames() []string {
-	return []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey"}
+	return []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
 }
 
 func addTestData(t *testing.T, g *GraphTraversalSource) {
@@ -65,46 +66,28 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 
 func readTestDataVertexProperties(t *testing.T, g *GraphTraversalSource) {
 	// Read names from graph
-	var sortedNames []string
+	var names []string
 	results, err := g.V().HasLabel(personLabel).Properties(nameKey).ToList()
 	for _, result := range results {
 		vp, err := result.GetVertexProperty()
 		assert.Nil(t, err)
-		sortedNames = append(sortedNames, vp.value.(string))
+		names = append(names, vp.value.(string))
 	}
 	assert.Nil(t, err)
-	assert.NotNil(t, sortedNames)
-
-	// Sort names on both sides.
-	testNames := getTestNames()
-	sort.Slice(sortedNames, func(i, j int) bool {
-		return sortedNames[i] < sortedNames[j]
-	})
-	sort.Slice(testNames, func(i, j int) bool {
-		return testNames[i] < testNames[j]
-	})
-	assert.Equal(t, sortedNames, testNames)
+	assert.NotNil(t, names)
+	assert.True(t, sortAndCompareTwoStringSlices(names, getTestNames()))
 }
 
 func readTestDataValues(t *testing.T, g *GraphTraversalSource) {
 	// Read names from graph
-	var sortedNames []string
+	var names []string
 	results, err := g.V().HasLabel(personLabel).Values(nameKey).ToList()
 	for _, result := range results {
-		sortedNames = append(sortedNames, result.GetString())
+		names = append(names, result.GetString())
 	}
 	assert.Nil(t, err)
-	assert.NotNil(t, sortedNames)
-
-	// Sort names on both sides.
-	testNames := getTestNames()
-	sort.Slice(sortedNames, func(i, j int) bool {
-		return sortedNames[i] < sortedNames[j]
-	})
-	sort.Slice(testNames, func(i, j int) bool {
-		return testNames[i] < testNames[j]
-	})
-	assert.Equal(t, sortedNames, testNames)
+	assert.NotNil(t, names)
+	assert.True(t, sortAndCompareTwoStringSlices(names, getTestNames()))
 }
 
 func readCount(t *testing.T, g *GraphTraversalSource, label string, expected int) {
@@ -130,14 +113,24 @@ func readCount(t *testing.T, g *GraphTraversalSource, label string, expected int
 	assert.Equal(t, int32(expected), count)
 }
 
+func sortAndCompareTwoStringSlices(s1 []string, s2 []string) bool {
+	sort.Slice(s1, func(i, j int) bool {
+		return s1[i] < s1[j]
+	})
+	sort.Slice(s2, func(i, j int) bool {
+		return s2[i] < s2[j]
+	})
+	return reflect.DeepEqual(s1, s2)
+}
+
 func readUsingAnonymousTraversal(t *testing.T, g *GraphTraversalSource) {
 	results, err := g.V().Fold().
 		Project(testLabel, personLabel).
-			By(T__.Unfold().HasLabel(testLabel).Count()).
-			By(T__.Unfold().HasLabel(personLabel).Count()).
+		By(T__.Unfold().HasLabel(testLabel).Count()).
+		By(T__.Unfold().HasLabel(personLabel).Count()).
 		ToList()
 	assert.Nil(t, err)
-	assert.Equal(t,1, len(results))
+	assert.Equal(t, 1, len(results))
 	resultMap := results[0].GetInterface().(map[interface{}]interface{})
 	assert.Equal(t, int64(0), resultMap[testLabel])
 	assert.Equal(t, int64(len(getTestNames())), resultMap[personLabel])
@@ -200,7 +193,7 @@ func TestConnection(t *testing.T) {
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
-			assert.Equal(t, "[0]", result.GetString())
+			assert.Equal(t, "0", result.GetString())
 			err = connection.close()
 			assert.Nil(t, err)
 		}
@@ -216,9 +209,41 @@ func TestConnection(t *testing.T) {
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
-			assert.Equal(t, "[0]", result.GetString())
+			assert.Equal(t, "0", result.GetString())
 			err = client.Close()
 			assert.Nil(t, err)
+		}
+	})
+
+	t.Run("Test DriverRemoteConnection Next and HasNext", func(t *testing.T) {
+		if runIntegration {
+			// Add data
+
+			remote, err := NewDriverRemoteConnection(testHost, testPort)
+			assert.Nil(t, err)
+			assert.NotNil(t, remote)
+			g := Traversal_().WithRemote(remote)
+
+			dropGraph(t, g)
+			addTestData(t, g)
+
+			// Run traversal and test Next/HasNext calls
+			traversal := g.V().HasLabel(personLabel).Properties(nameKey)
+			var names []string
+			for i := 0; i < len(getTestNames()); i++ {
+				hasN, err := traversal.HasNext()
+				assert.Nil(t, err)
+				assert.True(t, hasN)
+				res, err := traversal.Next()
+				assert.Nil(t, err)
+				assert.NotNil(t, res)
+				vp, err := res.GetVertexProperty()
+				assert.Nil(t, err)
+				names = append(names, vp.value.(string))
+			}
+			hasN, _ := traversal.HasNext()
+			assert.False(t, hasN)
+			assert.True(t, sortAndCompareTwoStringSlices(names, getTestNames()))
 		}
 	})
 

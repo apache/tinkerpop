@@ -19,6 +19,11 @@ under the License.
 
 package gremlingo
 
+import (
+	"reflect"
+	"sync"
+)
+
 const defaultCapacity = 1000
 
 // ResultSet interface to define the functions of a ResultSet.
@@ -45,6 +50,7 @@ type channelResultSet struct {
 	statusAttributes map[string]interface{}
 	closed           bool
 	err              error
+	mux              sync.Mutex
 }
 
 func (channelResultSet *channelResultSet) GetError() error {
@@ -52,11 +58,15 @@ func (channelResultSet *channelResultSet) GetError() error {
 }
 
 func (channelResultSet *channelResultSet) IsEmpty() bool {
+	channelResultSet.mux.Lock()
+	defer channelResultSet.mux.Unlock()
 	return channelResultSet.closed && len(channelResultSet.channel) == 0
 }
 
 func (channelResultSet *channelResultSet) Close() {
 	if !channelResultSet.closed {
+		channelResultSet.mux.Lock()
+		defer channelResultSet.mux.Unlock()
 		channelResultSet.closed = true
 		close(channelResultSet.channel)
 	}
@@ -98,12 +108,22 @@ func (channelResultSet *channelResultSet) All() []*Result {
 	return results
 }
 
-func (channelResultSet *channelResultSet) addResult(result *Result) {
-	channelResultSet.channel <- result
+func (channelResultSet *channelResultSet) addResult(r *Result) {
+	if r.GetType().Kind() == reflect.Array || r.GetType().Kind() == reflect.Slice {
+		for _, v := range r.result.([]interface{}) {
+			if reflect.TypeOf(v) == reflect.TypeOf(&Traverser{}) {
+				channelResultSet.channel <- &Result{(v.(*Traverser)).value}
+			} else {
+				channelResultSet.channel <- &Result{v}
+			}
+		}
+	} else {
+		channelResultSet.channel <- &Result{r.result}
+	}
 }
 
 func newChannelResultSetCapacity(requestID string, channelSize int) ResultSet {
-	return &channelResultSet{make(chan *Result, channelSize), requestID, "", nil, false, nil}
+	return &channelResultSet{make(chan *Result, channelSize), requestID, "", nil, false, nil, sync.Mutex{}}
 }
 
 func newChannelResultSet(requestID string) ResultSet {
