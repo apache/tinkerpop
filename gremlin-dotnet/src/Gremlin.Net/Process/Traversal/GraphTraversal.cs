@@ -772,8 +772,16 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<S, E> HasId (object id, params object[] otherIds)
         {
-            var args = new List<object>(1 + otherIds.Length) {id};
-            args.AddRange(otherIds);
+            List<object> args;
+            if (otherIds == null)
+            {
+                args = new List<object> { id, null };
+            }
+            else
+            {
+                args = new List<object>(1 + otherIds.Length) { id };
+                args.AddRange(otherIds);
+            }
             Bytecode.AddStep("hasId", args.ToArray());
             return Wrap<S, E>(this);
         }
