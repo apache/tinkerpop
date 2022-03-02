@@ -20,12 +20,13 @@ under the License.
 package gremlingo
 
 import (
+	"os"
 	"reflect"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/avarf/getenvs"
 	"golang.org/x/text/language"
 )
 
@@ -136,10 +137,41 @@ func readUsingAnonymousTraversal(t *testing.T, g *GraphTraversalSource) {
 	assert.Equal(t, int64(len(getTestNames())), resultMap[personLabel])
 }
 
+func getEnvOrDefaultString(key string, defaultValue string) string {
+	// Missing value is returned as "".
+	value := os.Getenv(key)
+	if len(value) != 0 {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvOrDefaultBool(key string, defaultValue bool) bool {
+	value := getEnvOrDefaultString(key, "")
+	if len(value) != 0 {
+		boolValue, err := strconv.ParseBool(value)
+		if err == nil {
+			return boolValue
+		}
+	}
+	return defaultValue
+}
+
+func getEnvOrDefaultInt(key string, defaultValue int) int {
+	value := getEnvOrDefaultString(key, "")
+	if len(value) != 0 {
+		intValue, err := strconv.Atoi(value)
+		if err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
+}
+
 func TestConnection(t *testing.T) {
-	testHost := getenvs.GetEnvString("GREMLIN_SERVER_HOSTNAME", "localhost")
-	testPort, _ := getenvs.GetEnvInt("GREMLIN_SERVER_PORT", 8182)
-	runIntegration, _ := getenvs.GetEnvBool("RUN_INTEGRATION_TESTS", true)
+	testHost := getEnvOrDefaultString("GREMLIN_SERVER_HOSTNAME", "localhost")
+	testPort := getEnvOrDefaultInt("GREMLIN_SERVER_PORT", 8182)
+	runIntegration := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
 
 	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
 		if runIntegration {
