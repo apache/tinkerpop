@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
+ *  'License'); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -45,13 +45,13 @@ class Client {
    */
   constructor(url, options = {}) {
     this._options = options;
-    if (this._options.processor === "session") {
+    if (this._options.processor === 'session') {
       // compatibility with old 'session' processor setting
       this._options.session = options.session || utils.getUuid();
     }
     if (this._options.session) {
       // re-assign processor to 'session' when in session mode
-      this._options.processor = options.processor || "session";
+      this._options.processor = options.processor || 'session';
     }
     this._connection = new Connection(url, options);
   }
@@ -77,7 +77,7 @@ class Client {
    * @typedef {Object} RequestOptions
    * @property {String} requestId - User specified request identifier which must be a UUID.
    * @property {Number} batchSize - Indicates whether the Power component is present.
-   * @property {String} userAgent - The size in which the result of a request is to be "batched" back to the client
+   * @property {String} userAgent - The size in which the result of a request is to be 'batched' back to the client
    * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
    */
 
@@ -90,48 +90,30 @@ class Client {
    */
   submit(message, bindings, requestOptions) {
     const requestIdOverride = requestOptions && requestOptions.requestId;
-    if (requestIdOverride) delete requestOptions["requestId"];
+    if (requestIdOverride) delete requestOptions['requestId'];
 
-    const args = Object.assign(
-      {
+    const args = Object.assign({
         gremlin: message,
-        aliases: { g: this._options.traversalSource || "g" },
-      },
-      requestOptions
-    );
+        aliases: { g: this._options.traversalSource || 'g' },
+      }, requestOptions);
 
-    if (this._options.session && this._options.processor === "session") {
-      args["session"] = this._options.session;
+    if (this._options.session && this._options.processor === 'session') {
+      args['session'] = this._options.session;
     }
 
     if (message instanceof Bytecode) {
-      if (this._options.session && this._options.processor === "session") {
-        return this._connection.submit(
-          "session",
-          "bytecode",
-          args,
-          requestIdOverride
-        );
+      if (this._options.session && this._options.processor === 'session') {
+        return this._connection.submit( 'session', 'bytecode', args, requestIdOverride);
       } else {
-        return this._connection.submit(
-          "traversal",
-          "bytecode",
-          args,
-          requestIdOverride
-        );
+        return this._connection.submit('traversal', 'bytecode', args, requestIdOverride);
       }
-    } else if (typeof message === "string") {
-      args["bindings"] = bindings;
-      args["language"] = "gremlin-groovy";
-      args["accept"] = this._connection.mimeType;
-      return this._connection.submit(
-        this._options.processor || "",
-        "eval",
-        args,
-        requestIdOverride
-      );
+    } else if (typeof message === 'string') {
+      args['bindings'] = bindings;
+      args['language'] = 'gremlin-groovy';
+      args['accept'] = this._connection.mimeType;
+      return this._connection.submit(this._options.processor || '', 'eval', args, requestIdOverride);
     } else {
-      throw new TypeError("message must be of type Bytecode or string");
+      throw new TypeError('message must be of type Bytecode or string');
     }
   }
 
@@ -144,48 +126,30 @@ class Client {
    */
   stream(message, bindings, requestOptions) {
     const requestIdOverride = requestOptions && requestOptions.requestId;
-    if (requestIdOverride) delete requestOptions["requestId"];
+    if (requestIdOverride) delete requestOptions['requestId'];
 
-    const args = Object.assign(
-      {
+    const args = Object.assign({
         gremlin: message,
-        aliases: { g: this._options.traversalSource || "g" },
-      },
-      requestOptions
-    );
+        aliases: { g: this._options.traversalSource || 'g' },
+      }, requestOptions);
 
-    if (this._options.session && this._options.processor === "session") {
-      args["session"] = this._options.session;
+    if (this._options.session && this._options.processor === 'session') {
+      args['session'] = this._options.session;
     }
 
     if (message instanceof Bytecode) {
-      if (this._options.session && this._options.processor === "session") {
-        return this._connection.stream(
-          "session",
-          "bytecode",
-          args,
-          requestIdOverride
-        );
+      if (this._options.session && this._options.processor === 'session') {
+        return this._connection.stream('session', 'bytecode', args, requestIdOverride);
       } else {
-        return this._connection.stream(
-          "traversal",
-          "bytecode",
-          args,
-          requestIdOverride
-        );
+        return this._connection.stream('traversal', 'bytecode', args, requestIdOverride);
       }
-    } else if (typeof message === "string") {
-      args["bindings"] = bindings;
-      args["language"] = "gremlin-groovy";
-      args["accept"] = this._connection.mimeType;
-      return this._connection.stream(
-        this._options.processor || "",
-        "eval",
-        args,
-        requestIdOverride
-      );
+    } else if (typeof message === 'string') {
+      args['bindings'] = bindings;
+      args['language'] = 'gremlin-groovy';
+      args['accept'] = this._connection.mimeType;
+      return this._connection.stream(this._options.processor || '',  'eval', args, requestIdOverride);
     } else {
-      throw new TypeError("message must be of type Bytecode or string");
+      throw new TypeError('message must be of type Bytecode or string');
     }
   }
 
@@ -195,10 +159,10 @@ class Client {
    * @returns {Promise}
    */
   close() {
-    if (this._options.session && this._options.processor === "session") {
+    if (this._options.session && this._options.processor === 'session') {
       const args = { session: this._options.session };
       return this._connection
-        .submit(this._options.processor, "close", args, null)
+        .submit(this._options.processor, 'close', args, null)
         .then(() => this._connection.close());
     }
     return this._connection.close();

@@ -1777,8 +1777,8 @@ const readable = client.stream("g.V()", {}, { batchSize: 25 });
 
 try {
   for await (const result of readable) {
-      console.log('data', result.toArray()); // 25 vertices
-    }
+    console.log('data', result.toArray()); // 25 vertices
+  }
 } catch (err) {
   console.log(err);
 }
