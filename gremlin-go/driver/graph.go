@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -47,7 +48,7 @@ type Edge struct {
 	inV  Vertex
 }
 
-// VertexProperty is similar to propery in that it denotes a key/value pair associated with a Vertex, but is different
+// VertexProperty is similar to property in that it denotes a key/value pair associated with a Vertex, but is different
 // in that it also represents an entity that is an Element and can have properties of its own.
 type VertexProperty struct {
 	Element
@@ -68,7 +69,7 @@ type Property struct {
 // The list of labels are the labels of the steps traversed, and the objects are the objects that are traversed.
 // TODO: change labels to be []<set of string> after implementing set in AN-1022 and update the GetPathObject accordingly
 type Path struct {
-	labels  [][]string
+	labels  []Set
 	objects []interface{}
 }
 
@@ -99,9 +100,13 @@ func (p *Path) GetPathObject(key string) (interface{}, error) {
 	}
 	var objectList []interface{}
 	var object interface{}
-	for i := 0; i < len(p.labels); i++ {
-		for j := 0; j < len(p.labels[i]); j++ {
-			if p.labels[i][j] == key {
+	for i, labelSet := range p.labels {
+		for _, label := range labelSet.ToSlice() {
+			// Sets in labels can only contain string types
+			if reflect.TypeOf(label).Kind() != reflect.String {
+				return nil, errors.New("path is invalid because labels contains a non string type")
+			}
+			if label == key {
 				if object == nil {
 					object = p.objects[i]
 				} else if objectList != nil {
@@ -119,4 +124,59 @@ func (p *Path) GetPathObject(key string) (interface{}, error) {
 	} else {
 		return nil, fmt.Errorf("path does not contain a label of '%s'", key)
 	}
+}
+
+// Set describes the necessary methods that need to be implemented for Gremlin-Go to recognize for use as a Gremlin Set.
+type Set interface {
+	// ToSlice is the only method that needs to be implemented in order for a custom Set to operate properly.
+	// ToSlice must return a slice that contains all the elements of the underlying Set with no duplicates.
+	ToSlice() []interface{}
+}
+
+// SimpleSet is a basic implementation of a Set for use with Gremlin-Go.
+type SimpleSet struct {
+	objects []interface{}
+}
+
+func (s *SimpleSet) ToSlice() []interface{} {
+	return s.objects
+}
+
+// Add adds an item to the SimpleSet only if it is not already a part of it.
+func (s *SimpleSet) Add(val interface{}) {
+	if !s.Contains(val) {
+		s.objects = append(s.objects, val)
+	}
+}
+
+// Remove removes a value from the SimpleSet if it is in the set according to Golang equality operator rules.
+func (s *SimpleSet) Remove(val interface{}) {
+	for i, obj := range s.objects {
+		if val == obj {
+			// Deletion does not maintain ordering
+			s.objects[i] = s.objects[len(s.objects)-1]
+			s.objects = s.objects[:len(s.objects)-1]
+			break
+		}
+	}
+}
+
+// Contains checks if a value is contained in the SimpleSet or not.
+// Items are considered already contained in the set according to Golang equality operator rules.
+func (s *SimpleSet) Contains(val interface{}) bool {
+	for _, entry := range s.ToSlice() {
+		if val == entry {
+			return true
+		}
+	}
+	return false
+}
+
+// NewSimpleSet creates a new SimpleSet containing all passed in args with duplicates excluded according to Golang equality operator rules.
+func NewSimpleSet(args ...interface{}) *SimpleSet {
+	s := &SimpleSet{}
+	for _, arg := range args {
+		s.Add(arg)
+	}
+	return s
 }

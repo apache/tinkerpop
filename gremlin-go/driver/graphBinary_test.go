@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"bytes"
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -52,6 +51,11 @@ func readToValue(buff *bytes.Buffer) interface{} {
 }
 
 func TestGraphBinaryV1(t *testing.T) {
+	var m = map[interface{}]interface{}{
+		"marko": int32(666),
+		"none":  "blah",
+	}
+
 	t.Run("test simple types", func(t *testing.T) {
 		buff := bytes.Buffer{}
 		t.Run("test int", func(t *testing.T) {
@@ -153,10 +157,6 @@ func TestGraphBinaryV1(t *testing.T) {
 		})
 
 		t.Run("test Graph Types", func(t *testing.T) {
-			var m = map[interface{}]interface{}{
-				"marko": int32(666),
-				"noone": "blah",
-			}
 			t.Run("test vertex", func(t *testing.T) {
 				x := new(Vertex)
 				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
@@ -211,7 +211,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			})
 			t.Run("test path", func(t *testing.T) {
 				x := new(Path)
-				x.labels = [][]string{{"str1", "str2", "str3"}, {"str4"}}
+				l1 := NewSimpleSet("str1", "str2", "str3")
+				l2 := NewSimpleSet("str4")
+				x.labels = []Set{l1, l2}
 				x.objects = []interface{}{"String1", m}
 				writeToBuffer(x, &buff)
 				p := readToValue(&buff).(*Path)
@@ -238,11 +240,6 @@ func TestGraphBinaryV1(t *testing.T) {
 	t.Run("test nested types", func(t *testing.T) {
 		buff := bytes.Buffer{}
 		t.Run("test map", func(t *testing.T) {
-			var x int32 = 666
-			var m = map[interface{}]interface{}{
-				"marko": x,
-				"noone": "blah",
-			}
 			writeToBuffer(m, &buff)
 			assert.Equal(t, m, readToValue(&buff))
 		})
@@ -251,25 +248,11 @@ func TestGraphBinaryV1(t *testing.T) {
 			writeToBuffer(x, &buff)
 			assert.Equal(t, x, readToValue(&buff))
 		})
+		t.Run("test SimpleSet", func(t *testing.T) {
+			x := NewSimpleSet("a", "b", "c", "a", int32(1), int32(2), int32(3), int32(2), int32(3), int32(3))
+			writeToBuffer(x, &buff)
+			assert.Equal(t, x, readToValue(&buff))
+		})
 	})
 
-	t.Run("temp test to printout serialized and deserialized data", func(t *testing.T) {
-		var x = []interface{}{"a", "b", "c"}
-		//var y int32 = 100
-		//var z int64 = 100
-		//var s = "serialize this!"
-		//var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
-		//var a int64 = 666
-		//var m = map[interface{}]interface{}{
-		//	"marko": a,
-		//	"noone": "blah",
-		//}
-		buff := bytes.Buffer{}
-		writeToBuffer(x, &buff)
-		fmt.Println(buff.Bytes())
-		res := readToValue(&buff)
-		assert.Equal(t, x, res)
-		fmt.Println("expected: ", res)
-		fmt.Println("result: ", res)
-	})
 }
