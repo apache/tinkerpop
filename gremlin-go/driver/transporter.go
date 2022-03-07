@@ -19,6 +19,8 @@ under the License.
 
 package gremlingo
 
+import "time"
+
 const scheme = "ws"
 const path = "gremlin"
 
@@ -33,5 +35,8 @@ type transporter interface {
 type websocketConn interface {
 	WriteMessage(int, []byte) error
 	ReadMessage() (int, []byte, error)
+	SetPongHandler(h func(appData string) error)
 	Close() error
+	SetReadDeadline(t time.Time) error
+	SetWriteDeadline(t time.Time) error
 }

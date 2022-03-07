@@ -53,9 +53,9 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	var traversal *GraphTraversal
 	for _, name := range testNames {
 		if traversal == nil {
-			traversal = g.AddV(personLabel).Property(nameKey, name)
+			traversal = g.AddV(personLabel).Property(nameKey, name).Property("foo", 1)
 		} else {
-			traversal = traversal.AddV(personLabel).Property(nameKey, name)
+			traversal = traversal.AddV(personLabel).Property(nameKey, name).Property("foo", 1)
 		}
 	}
 
@@ -188,6 +188,7 @@ func TestConnection(t *testing.T) {
 
 			// Add data and check that the size of the graph is correct.
 			addTestData(t, g)
+
 			readCount(t, g, "", len(getTestNames()))
 			readCount(t, g, testLabel, 0)
 			readCount(t, g, personLabel, len(getTestNames()))
@@ -223,7 +224,8 @@ func TestConnection(t *testing.T) {
 			resultSet, err := connection.write(&request)
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
-			result := resultSet.one()
+			result, err := resultSet.one()
+			assert.Nil(t, err)
 			assert.NotNil(t, result)
 			assert.Equal(t, "0", result.GetString())
 			err = connection.close()
@@ -239,7 +241,8 @@ func TestConnection(t *testing.T) {
 			resultSet, err := client.Submit("g.V().count()")
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
-			result := resultSet.one()
+			result, err := resultSet.one()
+			assert.Nil(t, err)
 			assert.NotNil(t, result)
 			assert.Equal(t, "0", result.GetString())
 			err = client.Close()
@@ -247,10 +250,88 @@ func TestConnection(t *testing.T) {
 		}
 	})
 
-	t.Run("Test DriverRemoteConnection Next and HasNext", func(t *testing.T) {
+	t.Run("Test DriverRemoteConnection GraphTraversal With Label", func(t *testing.T) {
+		if runIntegration {
+			remote, err := NewDriverRemoteConnection(testHost, testPort)
+			assert.Nil(t, err)
+			assert.NotNil(t, remote)
+			g := Traversal_().WithRemote(remote)
+
+			// Drop the graph.
+			dropGraph(t, g)
+
+			// Add vertices and edges to graph.
+			_, i, err := g.AddV("company").
+				Property("name", "Bit-Quill").As("bq").
+				AddV("software").
+				Property("name", "GremlinServer").As("gs").
+				AddV("software").
+				Property("name", "TinkerPop").As("tp").
+				AddE("WORKS_ON").From("bq").To("tp").
+				AddE("IS_IN").From("gs").To("tp").
+				AddE("LIKES").From("bq").To("tp").Iterate()
+			assert.Nil(t, err)
+			<-i
+
+			results, errs := g.V().OutE().InV().Path().By("name").By(Label).ToList()
+			assert.Nil(t, errs)
+			assert.NotNil(t, results)
+			assert.Equal(t, 3, len(results))
+
+			possiblePaths := []string{"path[Bit-Quill, WORKS_ON, TinkerPop]", "path[Bit-Quill, LIKES, TinkerPop]", "path[GremlinServer, IS_IN, TinkerPop]"}
+			for _, result := range results {
+				found := false
+				for _, path := range possiblePaths {
+					p, err := result.GetPath()
+					assert.Nil(t, err)
+					if path == p.String() {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found)
+			}
+
+			// Drop the graph.
+			dropGraph(t, g)
+		}
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal P", func(t *testing.T) {
 		if runIntegration {
 			// Add data
+			remote, err := NewDriverRemoteConnection(testHost, testPort)
+			assert.Nil(t, err)
+			assert.NotNil(t, remote)
+			g := Traversal_().WithRemote(remote)
 
+			// Drop the graph and check that it is empty.
+			dropGraph(t, g)
+			readCount(t, g, "", 0)
+			readCount(t, g, testLabel, 0)
+			readCount(t, g, personLabel, 0)
+
+			// Add data and check that the size of the graph is correct.
+			addTestData(t, g)
+			readCount(t, g, "", len(getTestNames()))
+			readCount(t, g, testLabel, 0)
+			readCount(t, g, personLabel, len(getTestNames()))
+
+			// Read test data out of the graph and check that it is correct.
+			results, err := g.V().Has("name", P.Eq("Lyndon")).ValueMap("name").ToList()
+			assert.Nil(t, err)
+			assert.Equal(t, 1, len(results))
+
+			// Drop the graph and check that it is empty.
+			dropGraph(t, g)
+			readCount(t, g, "", 0)
+			readCount(t, g, testLabel, 0)
+			readCount(t, g, personLabel, 0)
+		}
+	})
+
+	t.Run("Test DriverRemoteConnection Next and HasNext", func(t *testing.T) {
+		if runIntegration {
 			remote, err := NewDriverRemoteConnection(testHost, testPort)
 			assert.Nil(t, err)
 			assert.NotNil(t, remote)
@@ -305,6 +386,37 @@ func TestConnection(t *testing.T) {
 			readCount(t, g, "", 0)
 			readCount(t, g, testLabel, 0)
 			readCount(t, g, personLabel, 0)
+		}
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal WithSack", func(t *testing.T) {
+		if runIntegration {
+			remote, err := NewDriverRemoteConnection(testHost, testPort)
+			assert.Nil(t, err)
+			assert.NotNil(t, remote)
+			g := Traversal_().WithRemote(remote)
+
+			// Drop the graph and check that it is empty.
+			dropGraph(t, g)
+
+			// Add data and check that the size of the graph is correct.
+			addTestData(t, g)
+
+			r, err := g.V().Has("name", "Lyndon").Values("foo").ToList()
+			assert.Nil(t, err)
+			assert.NotNil(t, r)
+			assert.Equal(t, 1, len(r))
+			val, err := r[0].GetInt32()
+			assert.Nil(t, err)
+			assert.Equal(t, int32(1), val)
+
+			r, err = g.WithSack(1).V().Has("name", "Lyndon").Values("foo").Sack(Sum).Sack().ToList()
+			assert.Nil(t, err)
+			assert.NotNil(t, r)
+			assert.Equal(t, 1, len(r))
+			val, err = r[0].GetInt32()
+			assert.Nil(t, err)
+			assert.Equal(t, int32(2), val)
 		}
 	})
 }

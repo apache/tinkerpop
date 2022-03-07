@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -51,6 +52,20 @@ func (conn *mockWebsocketConn) Close() error {
 	return args.Error(0)
 }
 
+func (conn *mockWebsocketConn) SetReadDeadline(time time.Time) error {
+	args := conn.Called(time)
+	return args.Error(0)
+}
+
+func (conn *mockWebsocketConn) SetWriteDeadline(time time.Time) error {
+	args := conn.Called(time)
+	return args.Error(0)
+}
+
+func (conn *mockWebsocketConn) SetPongHandler(h func(appData string) error) {
+	conn.Called(h)
+}
+
 func TestGorillaTransporter(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockConn := new(mockWebsocketConn)
@@ -69,6 +84,9 @@ func TestGorillaTransporter(t *testing.T) {
 
 		t.Run("Read", func(t *testing.T) {
 			mockConn.On("ReadMessage").Return(0, []byte(mockMessage), nil)
+			mockConn.On("SetPongHandler", mock.AnythingOfType("func(string) error")).Return(nil)
+			mockConn.On("SetReadDeadline", mock.Anything).Return(nil)
+			mockConn.On("SetWriteDeadline", mock.Anything).Return(nil)
 			message, err := transporter.Read()
 			assert.Nil(t, err)
 			assert.Equal(t, mockMessage, string(message[:]))
@@ -103,9 +121,13 @@ func TestGorillaTransporter(t *testing.T) {
 
 		t.Run("Read", func(t *testing.T) {
 			mockConn.On("ReadMessage").Return(0, []byte{}, errors.New(mockReadErrMessage))
+			mockConn.On("SetPongHandler", mock.AnythingOfType("func(string) error")).Return(nil)
+			mockConn.On("SetReadDeadline", mock.Anything).Return(nil)
+			mockConn.On("SetWriteDeadline", mock.Anything).Return(nil)
+			mockConn.On("WriteMessage", mock.Anything, mock.Anything).Return(nil)
 			_, err := transporter.Read()
 			assert.NotNil(t, err)
-			assert.Equal(t, mockReadErrMessage, err.Error())
+			assert.Equal(t, "failed to read from socket more than 3 times", err.Error())
 		})
 
 		t.Run("Close and IsClosed", func(t *testing.T) {

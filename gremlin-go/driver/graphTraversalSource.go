@@ -47,7 +47,7 @@ func (gts *GraphTraversalSource) GetBytecode() *bytecode {
 
 // GetGraphTraversal gets the graph traversal associated with this graph traversal source
 func (gts *GraphTraversalSource) GetGraphTraversal() *GraphTraversal {
-	return NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(nil), gts.remoteConnection)
+	return NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode), gts.remoteConnection)
 }
 
 // GetTraversalStrategies gets the graph traversal strategies associated with this graph traversal source
@@ -141,7 +141,7 @@ func (gts *GraphTraversalSource) AddE(args ...interface{}) *GraphTraversal {
 
 // AddV adds a Vertex to start the traversal
 func (gts *GraphTraversalSource) AddV(args ...interface{}) *GraphTraversal {
-	traversal := NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(nil), gts.remoteConnection)
+	traversal := gts.GetGraphTraversal()
 	traversal.bytecode.addStep("addV", args...)
 	return traversal
 }
