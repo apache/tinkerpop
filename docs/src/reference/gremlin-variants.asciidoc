@@ -1751,6 +1751,59 @@ IMPORTANT: The preferred method for setting a per-request timeout for scripts is
 with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
+
+==== Processing results as they are returned from the Gremlin server
+
+
+The Gremlin JavaScript driver maintains a WebSocket connection to the Gremlin server and receives messages according to the `batchSize` parameter on the per request settings or the `resultIterationBatchSize` value configured for the Gremlin server. When submitting scripts the default behavior is to wait for the entire result set to be returned from a query before allowing any processing on the result set. 
+
+The following examples assume that you have 100 vertices in your graph.
+
+[source,javascript]
+----
+const result = await client.submit("g.V()");
+console.log(result.toArray()); // 100 - all the vertices in your graph
+----
+
+When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can return a readable stream instead of waiting for the entire result set to be loaded.
+
+[source,javascript]
+----
+
+const readable =  client.stream("g.V()", {}, { batchSize: 25 });
+
+readable.on('data', (data) => {
+  console.log(data.toArray()); // 25 vertices
+})
+
+readable.on('error', (error) => {
+  console.log(error); // errors returned from gremlin server
+})
+
+readable.on('end', () => {
+  console.log('query complete'); // when the end event is received then all the results have been processed
+})
+----
+
+If you are using NodeJS >= 10.0, you can asynchronously iterate readable streams:
+
+
+[source,javascript]
+----
+
+const readable = client.stream("g.V()", {}, { batchSize: 25 });
+
+try {
+  for await (const result of readable) {
+    console.log('data', result.toArray()); // 25 vertices
+  }
+} catch (err) {
+  console.log(err);
+}
+
+----
+
+
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages
 
