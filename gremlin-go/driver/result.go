@@ -19,8 +19,6 @@ under the License.
 
 package gremlingo
 
-// AN-968 Finish Result implementation.
-
 import (
 	"errors"
 	"fmt"

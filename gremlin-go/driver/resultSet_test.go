@@ -107,6 +107,31 @@ func TestChannelResultSet(t *testing.T) {
 			assert.Equal(t, (*result).GetString(), fmt.Sprintf("%v", idx))
 		}
 	})
+
+	t.Run("Test ResultSet IsEmpty before signal.", func(t *testing.T) {
+		channelResultSet := newChannelResultSet(mockID)
+		go closeAfterTime(500, &channelResultSet)
+		empty := channelResultSet.IsEmpty()
+		assert.True(t, empty)
+	})
+
+	t.Run("Test ResultSet IsEmpty after signal.", func(t *testing.T) {
+		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet.Close()
+		empty := channelResultSet.IsEmpty()
+		assert.True(t, empty)
+	})
+
+	t.Run("Test ResultSet IsEmpty after close.", func(t *testing.T) {
+		channelResultSet := newChannelResultSet(mockID)
+		go addAfterTime(500, &channelResultSet)
+		empty := channelResultSet.IsEmpty()
+		assert.False(t, empty)
+		channelResultSet.one()
+		go closeAfterTime(500, &channelResultSet)
+		empty = channelResultSet.IsEmpty()
+		assert.True(t, empty)
+	})
 }
 
 func AddResultsPause(resultSet *ResultSet, count int, ticks time.Duration) {
@@ -127,7 +152,12 @@ func AddResults(resultSet *ResultSet, count int) {
 	}
 }
 
-func closeAfterTime(ticks time.Duration, resultSet *ResultSet) {
-	time.Sleep(ticks * time.Millisecond)
+func closeAfterTime(millisecondTicks time.Duration, resultSet *ResultSet) {
+	time.Sleep(millisecondTicks * time.Millisecond)
 	(*resultSet).Close()
+}
+
+func addAfterTime(millisecondTicks time.Duration, resultSet *ResultSet) {
+	time.Sleep(millisecondTicks * time.Millisecond)
+	(*resultSet).addResult(&Result{1})
 }
