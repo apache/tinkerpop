@@ -84,7 +84,13 @@ func (bytecode *bytecode) addStep(stepName string, args ...interface{}) error {
 }
 
 func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) {
+	if arg == nil {
+		return nil, nil
+	}
 	t := reflect.TypeOf(arg)
+	if t == nil {
+		return nil, nil
+	}
 	switch t.Kind() {
 	case reflect.Map:
 		newMap := make(map[interface{}]interface{})

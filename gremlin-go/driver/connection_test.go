@@ -72,7 +72,7 @@ func readTestDataVertexProperties(t *testing.T, g *GraphTraversalSource) {
 	for _, result := range results {
 		vp, err := result.GetVertexProperty()
 		assert.Nil(t, err)
-		names = append(names, vp.value.(string))
+		names = append(names, vp.Value.(string))
 	}
 	assert.Nil(t, err)
 	assert.NotNil(t, names)
@@ -352,7 +352,7 @@ func TestConnection(t *testing.T) {
 				assert.NotNil(t, res)
 				vp, err := res.GetVertexProperty()
 				assert.Nil(t, err)
-				names = append(names, vp.value.(string))
+				names = append(names, vp.Value.(string))
 			}
 			hasN, _ := traversal.HasNext()
 			assert.False(t, hasN)

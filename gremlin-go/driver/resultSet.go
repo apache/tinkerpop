@@ -162,7 +162,9 @@ func (channelResultSet *channelResultSet) addResult(r *Result) {
 	if r.GetType().Kind() == reflect.Array || r.GetType().Kind() == reflect.Slice {
 		for _, v := range r.result.([]interface{}) {
 			if reflect.TypeOf(v) == reflect.TypeOf(&Traverser{}) {
-				channelResultSet.channel <- &Result{(v.(*Traverser)).value}
+				for i := int64(0); i < (v.(*Traverser)).bulk; i++ {
+					channelResultSet.channel <- &Result{(v.(*Traverser)).value}
+				}
 			} else {
 				channelResultSet.channel <- &Result{v}
 			}

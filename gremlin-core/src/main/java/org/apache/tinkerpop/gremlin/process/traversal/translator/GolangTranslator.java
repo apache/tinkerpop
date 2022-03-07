@@ -26,11 +26,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -40,6 +43,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +60,7 @@ import java.util.stream.Stream;
 public final class GolangTranslator implements Translator.ScriptTranslator {
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
+    private final static  String GO_PACKAGE_NAME = "gremlingo.";
 
     private GolangTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
@@ -160,17 +165,17 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final SackFunctions.Barrier o) {
-            return "Barrier." + resolveSymbol(o.toString());
+            return GO_PACKAGE_NAME + resolveSymbol(o.toString());
         }
 
         @Override
         protected String getSyntax(final VertexProperty.Cardinality o) {
-            return "Cardinality." + resolveSymbol(o.toString());
+            return GO_PACKAGE_NAME + resolveSymbol(o.toString());
         }
 
         @Override
         protected String getSyntax(final TraversalOptionParent.Pick o) {
-            return "Pick." + resolveSymbol(o.toString());
+            return GO_PACKAGE_NAME + resolveSymbol(o.toString());
         }
 
         @Override
@@ -219,19 +224,19 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Enum<?> o) {
-            return script.append(o.getDeclaringClass().getSimpleName() + "." + resolveSymbol(o.toString()));
+            return script.append(GO_PACKAGE_NAME + resolveSymbol(o.toString()));
         }
 
         @Override
         protected Script produceScript(final Vertex o) {
-            script.append("gremlingo.Vertex{Element{");
+            script.append(GO_PACKAGE_NAME + "Vertex{Element{");
             convertToScript(o.id()).append(", ");
             return convertToScript(o.label()).append("}}");
         }
 
         @Override
         protected Script produceScript(final Edge o) {
-            script.append("gremlingo.Edge{Element{");
+            script.append(GO_PACKAGE_NAME + "Edge{Element{");
             convertToScript(o.id()).append(", ");
             convertToScript(o.label()).append("}, ");
             convertToScript(o.outVertex()).append(",");
@@ -240,7 +245,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final VertexProperty<?> o) {
-            script.append("gremlingo.VertexProperty{");
+            script.append(GO_PACKAGE_NAME + "VertexProperty{");
             convertToScript(o.id()).append(", ");
             convertToScript(o.label()).append("}, ");
             return convertToScript(o.value()).append("}");
@@ -254,7 +259,8 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final String traversalSource, final Bytecode o) {
-            final String source = traversalSource.equals("__") ? "gremlingo.T__" : traversalSource;
+            // TODO: AN-1042 Ensure translation matches Gremlin-Go implementation when done
+            final String source = traversalSource.equals("__") ? GO_PACKAGE_NAME + "T__" : traversalSource;
             script.append(source);
             for (final Bytecode.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
@@ -263,9 +269,15 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                 script.append(".").append(resolveSymbol(methodName)).append("(");
 
                 for (int i = 0; i < arguments.length; i++) {
-                    convertToScript(arguments[i]);
-                    if (i != arguments.length - 1) {
-                        script.append(", ");
+                    if (methodName.equals("times")) {
+                        script.append("int32(");
+                        convertToScript(arguments[i]);
+                        script.append(")");
+                    } else {
+                        convertToScript(arguments[i]);
+                        if (i != arguments.length - 1) {
+                            script.append(", ");
+                        }
                     }
                 }
 
@@ -276,8 +288,33 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final P<?> p) {
-            // TODO: Predicate support in Gremlin-go
-            throw new NotImplementedException("Predicate translation not currently supported");
+            if (p instanceof TextP) {
+                script.append(GO_PACKAGE_NAME + "TextP.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
+                convertToScript(p.getValue());
+            } else if (p instanceof ConnectiveP) {
+                // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
+                // generated the way it was written which was P.and(P).and(P)
+                final List<P<?>> list = ((ConnectiveP) p).getPredicates();
+                final String connector = p instanceof OrP ? "Or" : "And";
+                for (int i = 0; i < list.size(); i++) {
+                    produceScript(list.get(i));
+
+                    // For the first/last P there is no parent to close.
+                    if (i > 0 && i < list.size() - 1) {
+                        script.append(")");
+                    }
+
+                    // Add the connector for all but last P.
+                    if (i < list.size() - 1) {
+                        script.append(".").append(connector).append("(");
+                    }
+                }
+            } else {
+                script.append(GO_PACKAGE_NAME + "P.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
+                convertToScript(p.getValue());
+            }
+            script.append(")");
+            return script;
         }
 
         protected String resolveSymbol(final String methodName) {
@@ -287,16 +324,27 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
     static final class SymbolHelper {
 
+        private final static Map<String, String> TO_GO_MAP = new HashMap<>();
+        private final static Map<String, String> FROM_GO_MAP = new HashMap<>();
+
+        static {
+            TO_GO_MAP.put("OUT", "Out");
+            TO_GO_MAP.put("IN", "In");
+            TO_GO_MAP.put("BOTH", "Both");
+            TO_GO_MAP.put("set", "Set_");
+            TO_GO_MAP.forEach((k, v) -> FROM_GO_MAP.put(v, k));
+        }
+
         private SymbolHelper() {
             // static methods only, do not instantiate
         }
 
         public static String toGolang(final String symbol) {
-            return StringUtils.capitalize(symbol);
+            return TO_GO_MAP.getOrDefault(symbol, StringUtils.capitalize(symbol));
         }
 
         public static String toJava(final String symbol) {
-            return StringUtils.uncapitalize(symbol);
+            return FROM_GO_MAP.getOrDefault(symbol, StringUtils.uncapitalize(symbol));
         }
 
     }

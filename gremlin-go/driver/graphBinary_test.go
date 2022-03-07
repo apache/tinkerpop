@@ -159,67 +159,67 @@ func TestGraphBinaryV1(t *testing.T) {
 		t.Run("test Graph Types", func(t *testing.T) {
 			t.Run("test vertex", func(t *testing.T) {
 				x := new(Vertex)
-				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
-				x.label = "Test label"
+				x.Id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+				x.Label = "Test Label"
 				writeToBuffer(x, &buff)
 				v := readToValue(&buff).(*Vertex)
 				assert.Equal(t, x, v)
-				assert.Equal(t, x.id, v.id)
-				assert.Equal(t, x.label, v.label)
+				assert.Equal(t, x.Id, v.Id)
+				assert.Equal(t, x.Label, v.Label)
 			})
 			t.Run("test edge", func(t *testing.T) {
 				x := new(Edge)
-				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
-				x.label = "Test edge label"
+				x.Id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+				x.Label = "Test edge Label"
 				v1 := new(Vertex)
 				v2 := new(Vertex)
-				v1.id, _ = uuid.Parse("8a591c22-8a06-11ec-a8a3-0242ac120002")
-				v1.label = "Test v1 label"
-				v2.id, _ = uuid.Parse("1274f224-8a08-11ec-a8a3-0242ac120002")
-				v2.label = "Test v2 label"
-				x.inV = *v1
-				x.outV = *v2
+				v1.Id, _ = uuid.Parse("8a591c22-8a06-11ec-a8a3-0242ac120002")
+				v1.Label = "Test v1 Label"
+				v2.Id, _ = uuid.Parse("1274f224-8a08-11ec-a8a3-0242ac120002")
+				v2.Label = "Test v2 Label"
+				x.InV = *v1
+				x.OutV = *v2
 				writeToBuffer(x, &buff)
 				e := readToValue(&buff).(*Edge)
 				assert.Equal(t, x, e)
-				assert.Equal(t, x.id, e.id)
-				assert.Equal(t, x.label, e.label)
-				assert.Equal(t, x.inV, e.inV)
-				assert.Equal(t, x.outV, e.outV)
+				assert.Equal(t, x.Id, e.Id)
+				assert.Equal(t, x.Label, e.Label)
+				assert.Equal(t, x.InV, e.InV)
+				assert.Equal(t, x.OutV, e.OutV)
 			})
 			t.Run("test property", func(t *testing.T) {
 				x := new(Property)
-				x.key = "TestKey"
-				x.value = m
+				x.Key = "TestKey"
+				x.Value = m
 				writeToBuffer(x, &buff)
 				p := readToValue(&buff).(*Property)
 				assert.Equal(t, x, p)
-				assert.Equal(t, x.key, p.key)
-				assert.Equal(t, x.value, p.value)
+				assert.Equal(t, x.Key, p.Key)
+				assert.Equal(t, x.Value, p.Value)
 			})
-			t.Run("test vertex property", func(t *testing.T) {
+			t.Run("test Vertex property", func(t *testing.T) {
 				x := new(VertexProperty)
-				x.id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
-				x.label = "Test label"
-				x.value = m
+				x.Id, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+				x.Label = "Test Label"
+				x.Value = m
 				writeToBuffer(x, &buff)
 				v := readToValue(&buff).(*VertexProperty)
 				assert.Equal(t, x, v)
-				assert.Equal(t, x.id, v.id)
-				assert.Equal(t, x.label, v.label)
-				assert.Equal(t, x.value, v.value)
+				assert.Equal(t, x.Id, v.Id)
+				assert.Equal(t, x.Label, v.Label)
+				assert.Equal(t, x.Value, v.Value)
 			})
 			t.Run("test path", func(t *testing.T) {
 				x := new(Path)
 				l1 := NewSimpleSet("str1", "str2", "str3")
 				l2 := NewSimpleSet("str4")
-				x.labels = []Set{l1, l2}
-				x.objects = []interface{}{"String1", m}
+				x.Labels = []Set{l1, l2}
+				x.Objects = []interface{}{"String1", m}
 				writeToBuffer(x, &buff)
 				p := readToValue(&buff).(*Path)
 				assert.Equal(t, x, p)
-				assert.Equal(t, x.labels, p.labels)
-				assert.Equal(t, x.objects, p.objects)
+				assert.Equal(t, x.Labels, p.Labels)
+				assert.Equal(t, x.Objects, p.Objects)
 			})
 		})
 

@@ -30,7 +30,7 @@ import (
 func TestGraphStructureFunctions(t *testing.T) {
 	t.Run("Test Vertex.String()", func(t *testing.T) {
 		uid, _ := uuid.NewUUID()
-		v := Vertex{Element{uid, "vertex-label"}}
+		v := Vertex{Element{uid, "Vertex-Label"}}
 		assert.Equal(t, fmt.Sprintf("v[%s]", uid.String()), v.String())
 	})
 
@@ -45,15 +45,15 @@ func TestGraphStructureFunctions(t *testing.T) {
 	t.Run("Test VertexProperty.String()", func(t *testing.T) {
 		uidVProp, _ := uuid.NewUUID()
 		uidV, _ := uuid.NewUUID()
-		v := VertexProperty{Element{uidVProp, "vertex-prop"}, "vertex", []uint32{0, 1}, Vertex{Element{uidV, "vertex"}}}
-		assert.Equal(t, "vp[vertex-prop->[0 1]]", v.String())
+		v := VertexProperty{Element{uidVProp, "Vertex-prop"}, "Vertex", []uint32{0, 1}, Vertex{Element{uidV, "Vertex"}}}
+		assert.Equal(t, "vp[Vertex-prop->[0 1]]", v.String())
 	})
 
 	t.Run("Test Property.String()", func(t *testing.T) {
 		uidElement, _ := uuid.NewUUID()
 		data := []uint32{0, 1}
-		p := Property{"property-key", data, Element{uidElement, "prop"}}
-		assert.Equal(t, "p[property-key->[0 1]]", p.String())
+		p := Property{"property-Key", data, Element{uidElement, "prop"}}
+		assert.Equal(t, "p[property-Key->[0 1]]", p.String())
 	})
 
 	s1 := NewSimpleSet("foo")

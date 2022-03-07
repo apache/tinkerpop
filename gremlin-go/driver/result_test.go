@@ -246,7 +246,7 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetVertex() error expected", func(t *testing.T) {
-		r := Result{"not vertex"}
+		r := Result{"not Vertex"}
 		res, err := r.GetVertex()
 		assert.Nil(t, res)
 		assert.Error(t, err, "result is not a Vertex")
@@ -276,7 +276,7 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetElement() error expected", func(t *testing.T) {
-		r := Result{"not element"}
+		r := Result{"not Element"}
 		res, err := r.GetElement()
 		assert.Nil(t, res)
 		assert.Error(t, err, "result is not an Element")
@@ -321,7 +321,7 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetVertexProperty() error expected", func(t *testing.T) {
-		r := Result{"not vertex property"}
+		r := Result{"not Vertex property"}
 		res, err := r.GetVertexProperty()
 		assert.Nil(t, res)
 		assert.Error(t, err, "result is not a VertexProperty")

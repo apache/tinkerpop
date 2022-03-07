@@ -15,31 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-module github.com/lyndonb-bq/tinkerpop/gremlin-go
+module gremlin-godog-tests
 
 go 1.17
 
 require (
-	github.com/google/uuid v1.3.0
-	github.com/gorilla/websocket v1.4.2
-	github.com/nicksnyder/go-i18n/v2 v2.1.2
-	github.com/stretchr/testify v1.7.0
-	golang.org/x/text v0.3.7
+	github.com/cucumber/godog v0.12.4
+	github.com/lyndonb-bq/tinkerpop/gremlin-go v0.0.0-20220131225152-54920637bf94
 )
 
 require (
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
-	github.com/cucumber/godog v0.12.4 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
 	github.com/hashicorp/go-memdb v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/spf13/cobra v1.1.1 // indirect
+	github.com/nicksnyder/go-i18n/v2 v2.1.2 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/objx v0.1.1 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	golang.org/x/text v0.3.7 // indirect
 )
+
+replace github.com/lyndonb-bq/tinkerpop/gremlin-go => ../

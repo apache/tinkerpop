@@ -191,7 +191,7 @@ func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interf
 		if err != nil {
 			return nil, err
 		} else if keyType != StringType {
-			return nil, fmt.Errorf("expected string key for map, got type='0x%x'", keyType)
+			return nil, fmt.Errorf("expected string Key for map, got type='0x%x'", keyType)
 		}
 		var nullable byte
 		err = binary.Read(buffer, binary.BigEndian, &nullable)
@@ -199,7 +199,7 @@ func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interf
 			return nil, err
 		}
 		if nullable != 0 {
-			return nil, errors.New("expected non-null key for map")
+			return nil, errors.New("expected non-null Key for map")
 		}
 
 		k, err := readString(buffer)

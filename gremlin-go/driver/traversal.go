@@ -112,13 +112,12 @@ func (t *Traversal) Next() (*Result, error) {
 }
 
 func (t *Traversal) getResults() (ResultSet, error) {
-	var err error = nil
 	if t.results == nil {
-		var results ResultSet
-		results, err = t.remote.SubmitBytecode(t.bytecode)
-		t.results = results
+		var err error
+		t.results, err = t.remote.SubmitBytecode(t.bytecode)
+		return t.results, err
 	}
-	return t.results, err
+	return t.results, nil
 }
 
 type Barrier string
@@ -132,7 +131,7 @@ type Cardinality string
 const (
 	Single Cardinality = "single"
 	List   Cardinality = "list"
-	Set_    Cardinality = "set"
+	Set_   Cardinality = "set"
 )
 
 type Column string
@@ -338,6 +337,10 @@ type TextPredicate interface {
 	NotStartingWith(args ...interface{}) TextPredicate
 	// StartingWith TextPredicate determines if a string starts with a given value.
 	StartingWith(args ...interface{}) TextPredicate
+	// And TextPredicate returns a TextPredicate composed of two predicates (logical AND of them).
+	And(args ...interface{}) TextPredicate
+	// Or TextPredicate returns a TextPredicate composed of two predicates (logical OR of them).
+	Or(args ...interface{}) TextPredicate
 }
 
 type textP p
@@ -349,6 +352,15 @@ func newTextP(operator string, args ...interface{}) TextPredicate {
 	for _, arg := range args {
 		values = append(values, arg)
 	}
+	return &textP{operator: operator, values: values}
+}
+
+func newTextPWithP(operator string, tp textP, args ...interface{}) TextPredicate {
+	values := make([]interface{}, len(args)+1)
+	for _, arg := range args {
+		values = append(values, arg)
+	}
+	values[len(values)-1] = tp
 	return &textP{operator: operator, values: values}
 }
 
@@ -374,4 +386,12 @@ func (_ *textP) NotStartingWith(args ...interface{}) TextPredicate {
 
 func (_ *textP) StartingWith(args ...interface{}) TextPredicate {
 	return newTextP("startingWith", args...)
+}
+
+func (tp *textP) And(args ...interface{}) TextPredicate {
+	return newTextPWithP("and", *tp, args...)
+}
+
+func (tp *textP) Or(args ...interface{}) TextPredicate {
+	return newTextPWithP("or", *tp, args...)
 }

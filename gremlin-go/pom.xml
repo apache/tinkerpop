@@ -77,10 +77,6 @@ limitations under the License.
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <!--
-                                        Plugin to execute Godog tests.
-                                        TODO AN-1045: Verify this lifecycle works properly.
-                                    -->
                                     <executable>docker-compose</executable>
                                     <arguments>
                                         <argument>up</argument>
@@ -111,10 +107,39 @@ limitations under the License.
                         <groupId>org.codehaus.gmavenplus</groupId>
                         <artifactId>gmavenplus-plugin</artifactId>
                         <dependencies>
-                        <!--
-                            TODO AN-1045: Plugin to generate Cucumber Godog tests.
-                            Make sure appropriate dependencies are included.
-                        -->
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-server</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-test</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>neo4j-gremlin</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>commons-io</groupId>
+                                <artifactId>commons-io</artifactId>
+                                <version>${commons.io.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>${log4j.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <type>pom</type>
+                                <scope>runtime</scope>
+                            </dependency>
                         </dependencies>
                         <executions>
                             <execution>
@@ -131,11 +156,7 @@ limitations under the License.
                                         </property>
                                     </properties>
                                     <scripts>
-                                    <!--
-                                     TODO AN-1045: Plugin to generate Cucumber Godog tests.
-                                     Enable groovy script.
                                         <script>${project.basedir}/build/generate.groovy</script>
-                                    -->
                                     </scripts>
                                 </configuration>
                             </execution>

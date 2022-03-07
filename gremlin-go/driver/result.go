@@ -143,7 +143,7 @@ func (r *Result) IsNil() bool {
 	return nil == r.result
 }
 
-// GetVertex returns the result if it is a vertex, otherwise returns an error
+// GetVertex returns the result if it is a Vertex, otherwise returns an error
 func (r *Result) GetVertex() (*Vertex, error) {
 	res, ok := r.result.(*Vertex)
 	if !ok {
@@ -161,7 +161,7 @@ func (r *Result) GetEdge() (*Edge, error) {
 	return res, nil
 }
 
-// GetElement returns the result if it is an element, otherwise returns an error
+// GetElement returns the result if it is an Element, otherwise returns an error
 func (r *Result) GetElement() (*Element, error) {
 	res, ok := r.result.(*Element)
 	if !ok {
@@ -188,7 +188,7 @@ func (r *Result) GetProperty() (*Property, error) {
 	return res, nil
 }
 
-// GetVertexProperty returns the result if it is a vertex property, otherwise returns an error
+// GetVertexProperty returns the result if it is a Vertex property, otherwise returns an error
 func (r *Result) GetVertexProperty() (*VertexProperty, error) {
 	res, ok := r.result.(*VertexProperty)
 	if !ok {

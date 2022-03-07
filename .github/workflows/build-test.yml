@@ -34,12 +34,12 @@ jobs:
           docker-compose up --exit-code-from gremlin-go-integration-tests gremlin-go-integration-tests
           docker-compose down
 
-      # TODO AN 1045: Add test execution for godog. May not fully enable though because some will likely fail.
-      # - name: Execute Go tests
-      #   working-directory: ./gremlin-go
-      #   run: |
-      #     docker-compose up --exit-code-from gremlin-go-godog-tests gremlin-go-godog-tests
-      #     docker-compose down
+      # Note exit code is intentionally ignored here because not all these tests pass right now.
+      - name: Execute Godog tests
+        working-directory: ./gremlin-go
+        run: |
+          docker-compose up gremlin-go-godog-tests
+          docker-compose down
 
       - name: Go-Vet
         working-directory: ./gremlin-go
@@ -51,3 +51,10 @@ jobs:
           version: "2021.1.1"
           install-go: false
           cache-key: ${{ matrix.go }}
+
+      - name: Generate Cucumber Godog Test File
+        working-directory: .
+        run: |
+          mvn install -pl :gremlin-core -DskipTests -DskipIntegrationTests=true
+          mvn install -pl :gremlin-server -DskipTests -DskipIntegrationTests=true
+          mvn compile -pl :gremlin-go
