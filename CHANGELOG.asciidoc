@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added support for using a readable stream when submitting scripts through the JavaScript driver which allows processing each batch of result sets as they come in, rather than waiting for the entire result set to complete before allowing processing.
 * Fixed issue with implicit conversion of `Infinity` number instances into `BigDecimal`.
 * Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
 * Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
@@ -34,7 +35,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-13, 3.4.13>>.
 
-* Added support for using a readable stream when submitting scripts through the JavaScript driver which allows processing each batch of result sets as they come in, rather than waiting for the entire result set to complete before allowing processing.
 * Added an `AnonymizingTypeTranslator` for use with `GroovyTranslator` which strips PII (anonymizes any String, Numeric, Date, Timestamp, or UUID data)
 * Added support for `g.tx()` in Python.
 * Added logging in in Python.
