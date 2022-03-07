@@ -2903,6 +2903,8 @@ g.V(1).valueMap()
 g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
 g.V(1).properties('friendWeight').valueMap() <5>
 g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
+g.addV().property(null) <7>
+g.addV().property(set, null)
 ----
 
 <1> Properties can also take a Map as an argument.
@@ -2911,6 +2913,7 @@ g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
 <4> It is possible to select the property value (as well as key) via a traversal.
 <5> For vertices, the `property()`-step can add meta-properties.
 <6> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
+<7> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
 
 *Additional References*
 

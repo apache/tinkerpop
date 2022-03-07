@@ -285,6 +285,9 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
+        if (ctx==null) {
+            return null;
+        }
         final LinkedHashMap<Object, Object> literalMap = new LinkedHashMap<>();
         int childIndex = 1;
         while (childIndex < ctx.getChildCount() && ctx.getChildCount() > 3) {

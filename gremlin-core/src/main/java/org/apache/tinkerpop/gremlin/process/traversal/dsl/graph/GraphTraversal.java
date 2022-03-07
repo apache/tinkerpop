@@ -2473,6 +2473,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                     property(key, entry.getKey(), entry.getValue());
                 }
                 return this;
+            } else if (value == null) { // Just return the input if you pass a null
+                return this;
             } else {
                 return this.property((VertexProperty.Cardinality) key, value, null == keyValues ? null : keyValues[0],
                         keyValues != null && keyValues.length > 1 ?
@@ -2500,8 +2502,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> property(final Map<Object, Object> value) {
-        for (Map.Entry<Object, Object> entry : value.entrySet()) {
-            property(null, entry.getKey(), entry.getValue());
+        if (value != null) {
+            for (Map.Entry<Object, Object> entry : value.entrySet()) {
+                property(null, entry.getKey(), entry.getValue());
+            }
         }
         return this;
     }
