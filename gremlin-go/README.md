@@ -39,13 +39,30 @@ Docker allows you to test the driver without installing any dependencies. The fo
 To build the driver you must install `go`. The following command can be used to build the driver:
 `go build <path to source code>`
 
-### Using the Linter and staticcheck
+### Code Styling and Linting
+Before generating a pull request, you should manually run the following to ensure correct code styling and fix any issues indicated by the linters.
 
-Before generating a pull request, you should manually run [go vet][https://pkg.go.dev/cmd/vet] and [staticcheck][https://staticcheck.io] and correct any errors.
+#### Formatting files with Gofmt
+To ensure clean and readable code [Gofmt][gofmt] is used. 
 
-`go vet` is installed when you install go, and can be run with `go vet <path to source code>`.
+Navigate to file path in a terminal window and run:
 
-Please review the [staticcheck documentation][https://staticcheck.io/docs/getting-started] for more details on installing staticcheck. `staticcheck` can be run with `staticcheck <path to source code>`.
+`gofmt -s -w` 
+
+Gofmt will recursively check for and format `.go` files.
+
+Note: If your IDE of choice is [GoLand][goland], code can be automatically formatted with Gofmt on file save. Instructions on how to enable this feature can be found [here][fmtsave].
+
+#### Using the Linter and staticcheck
+Run [go vet][gvet] and [staticcheck][scheck] and correct any errors.
+
+[go vet][gvet] is installed when you install go, and can be run with:
+
+ `go vet <path to source code>`
+
+Please review the [staticcheck documentation][scheck docs] for more details on installing [staticcheck][scheck]. It can be run with:
+
+`staticcheck <path to source code>`
 
 ### Prerequisites
 
@@ -342,3 +359,9 @@ SetType             DataType = 0x0b     // see limitations
 [differences]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-go-differences
 [go]: https://go.dev/dl/
 [gomods]: https://go.dev/blog/using-go-modules
+[gvet]: https://pkg.go.dev/cmd/vet
+[scheck]: https://staticcheck.io
+[scheck docs]: https://staticcheck.io/docs/getting-started
+[gofmt]: https://pkg.go.dev/cmd/gofmt
+[goland]: https://www.jetbrains.com/go/
+[fmtsave]: https://www.jetbrains.com/help/go/reformat-and-rearrange-code.html#reformat-on-save
