@@ -197,6 +197,7 @@ func (r *Result) GetVertexProperty() (*VertexProperty, error) {
 	return res, nil
 }
 
+// GetTraverser returns the Result if it is a Traverser, otherwise returns an error
 func (r *Result) GetTraverser() (*Traverser, error) {
 	res, ok := r.result.(Traverser)
 	if !ok {
@@ -205,6 +206,7 @@ func (r *Result) GetTraverser() (*Traverser, error) {
 	return &res, nil
 }
 
+// GetSlice returns the Result if it is a Slice, otherwise returns an error
 func (r *Result) GetSlice() (*[]interface{}, error) {
 	res, ok := r.result.([]interface{})
 	if !ok {
