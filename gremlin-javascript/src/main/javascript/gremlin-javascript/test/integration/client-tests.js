@@ -74,5 +74,38 @@ describe('Client', function () {
           assert.ok(rs.attributes.get('host'));
         });
     });
+
+    it('should be able to stream results from the gremlin server', (done) => {
+      const output = [];
+      let calls = 0;
+      const readable = client.stream('g.V().limit(3)', {}, { batchSize: 2 });
+
+      readable.on('data', (data) => {
+        calls += 1;
+        data.toArray().forEach(v => output.push(v))
+      })
+
+      readable.on('end', () => {
+        assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
+        assert.strictEqual(output.length, 3);
+        assert.ok(output[0] instanceof graphModule.Vertex);
+        done();
+      })
+    });
+
+    it("should be able to iterate stream results async", async () => {
+      const output = [];
+      let calls = 0;
+      const readable = client.stream("g.V().limit(3)", {}, { batchSize: 2 });
+
+      for await (const result of readable) {
+        calls += 1;
+        result.toArray().forEach((v) => output.push(v));
+      }
+
+      assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
+      assert.strictEqual(output.length, 3);
+      assert.ok(output[0] instanceof graphModule.Vertex);
+    });
   });
 });

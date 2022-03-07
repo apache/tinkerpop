@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
+ *  'License'); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -26,7 +26,6 @@ const Bytecode = require('../process/bytecode');
  * A {@link Client} contains methods to send messages to a Gremlin Server.
  */
 class Client {
-
   /**
    * Creates a new instance of {@link Client}.
    * @param {String} url The resource uri.
@@ -74,24 +73,29 @@ class Client {
   }
 
   /**
+   * Configuration specific to the current request.
+   * @typedef {Object} RequestOptions
+   * @property {String} requestId - User specified request identifier which must be a UUID.
+   * @property {Number} batchSize - Indicates whether the Power component is present.
+   * @property {String} userAgent - The size in which the result of a request is to be 'batched' back to the client
+   * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
+   */
+
+  /**
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
-   * @param {Object} [requestOptions] Configuration specific to the current request.
-   * @param {String} [requestOptions.requestId] User specified request identifier which must be a UUID.
-   * @param {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
-   * @param {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
-   * @param {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
+   * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise}
    */
   submit(message, bindings, requestOptions) {
-    const requestIdOverride = requestOptions && requestOptions.requestId
+    const requestIdOverride = requestOptions && requestOptions.requestId;
     if (requestIdOverride) delete requestOptions['requestId'];
 
     const args = Object.assign({
-      gremlin: message,
-      aliases: { 'g': this._options.traversalSource || 'g' }
-    }, requestOptions)
+        gremlin: message,
+        aliases: { g: this._options.traversalSource || 'g' },
+      }, requestOptions);
 
     if (this._options.session && this._options.processor === 'session') {
       args['session'] = this._options.session;
@@ -99,7 +103,7 @@ class Client {
 
     if (message instanceof Bytecode) {
       if (this._options.session && this._options.processor === 'session') {
-        return this._connection.submit('session', 'bytecode', args, requestIdOverride);
+        return this._connection.submit( 'session', 'bytecode', args, requestIdOverride);
       } else {
         return this._connection.submit('traversal', 'bytecode', args, requestIdOverride);
       }
@@ -107,9 +111,45 @@ class Client {
       args['bindings'] = bindings;
       args['language'] = 'gremlin-groovy';
       args['accept'] = this._connection.mimeType;
-      return this._connection.submit(this._options.processor || '','eval', args, requestIdOverride);
+      return this._connection.submit(this._options.processor || '', 'eval', args, requestIdOverride);
     } else {
-      throw new TypeError("message must be of type Bytecode or string");
+      throw new TypeError('message must be of type Bytecode or string');
+    }
+  }
+
+  /**
+   * Send a request to the Gremlin Server and receive a stream for the results, can send a script or bytecode steps.
+   * @param {Bytecode|string} message The bytecode or script to send
+   * @param {Object} [bindings] The script bindings, if any.
+   * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
+   * @returns {ReadableStream}
+   */
+  stream(message, bindings, requestOptions) {
+    const requestIdOverride = requestOptions && requestOptions.requestId;
+    if (requestIdOverride) delete requestOptions['requestId'];
+
+    const args = Object.assign({
+        gremlin: message,
+        aliases: { g: this._options.traversalSource || 'g' },
+      }, requestOptions);
+
+    if (this._options.session && this._options.processor === 'session') {
+      args['session'] = this._options.session;
+    }
+
+    if (message instanceof Bytecode) {
+      if (this._options.session && this._options.processor === 'session') {
+        return this._connection.stream('session', 'bytecode', args, requestIdOverride);
+      } else {
+        return this._connection.stream('traversal', 'bytecode', args, requestIdOverride);
+      }
+    } else if (typeof message === 'string') {
+      args['bindings'] = bindings;
+      args['language'] = 'gremlin-groovy';
+      args['accept'] = this._connection.mimeType;
+      return this._connection.stream(this._options.processor || '',  'eval', args, requestIdOverride);
+    } else {
+      throw new TypeError('message must be of type Bytecode or string');
     }
   }
 
@@ -120,8 +160,10 @@ class Client {
    */
   close() {
     if (this._options.session && this._options.processor === 'session') {
-      const args = {'session': this._options.session};
-      return this._connection.submit(this._options.processor, 'close', args, null).then(() => this._connection.close());
+      const args = { session: this._options.session };
+      return this._connection
+        .submit(this._options.processor, 'close', args, null)
+        .then(() => this._connection.close());
     }
     return this._connection.close();
   }
@@ -132,7 +174,7 @@ class Client {
    * @param {Function} handler The callback to be called when the event occurs.
    */
   addListener(event, handler) {
-    this._connection.on(event, handler)
+    this._connection.on(event, handler);
   }
 
   /**
@@ -141,7 +183,7 @@ class Client {
    * @param {Function} handler The event handler to be removed.
    */
   removeListener(event, handler) {
-    this._connection.removeListener(event, handler)
+    this._connection.removeListener(event, handler);
   }
 }
 
