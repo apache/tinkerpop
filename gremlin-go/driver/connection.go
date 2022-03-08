@@ -70,13 +70,12 @@ func createConnection(host string, port int, logHandler *logHandler) (*connectio
 	conn := &connection{logHandler, nil, map[string]ResultSet{}, initialized}
 	logHandler.log(Info, connectConnection)
 	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, host, port, conn.results, conn.errorCallback)
-	conn.protocol = protocol
-	if err == nil {
-		conn.state = established
-		return conn, err
-	} else {
+	if err != nil {
 		logHandler.logf(Error, failedConnection)
 		conn.state = closedDueToError
 		return nil, err
 	}
+	conn.protocol = protocol
+	conn.state = established
+	return conn, err
 }

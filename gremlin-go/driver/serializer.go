@@ -53,25 +53,24 @@ const versionByte byte = 0x81
 
 func convertArgs(request *request, gs graphBinarySerializer) (map[string]interface{}, error) {
 	// TODO AN-981: Remote transaction session processor is same as bytecode
-	if request.processor == bytecodeProcessor {
-		// Convert to format:
-		// args["gremlin"]: <serialized args["gremlin"]>
-		gremlin := request.args["gremlin"]
-		switch gremlin.(type) {
-		case bytecode:
-			buffer := bytes.Buffer{}
-			gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
-			if err != nil {
-				return nil, err
-			}
-			request.args["gremlin"] = gremlinBuffer
-			return request.args, nil
-		default:
-			return nil, fmt.Errorf("failed to find serializer for type '%s'", reflect.TypeOf(gremlin).Name())
-		}
-	} else {
+	if request.processor != bytecodeProcessor {
 		// Use standard processor, which effectively does nothing.
 		return request.args, nil
+	}
+	// Convert to format:
+	// args["gremlin"]: <serialized args["gremlin"]>
+	gremlin := request.args["gremlin"]
+	switch gremlin.(type) {
+	case bytecode:
+		buffer := bytes.Buffer{}
+		gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
+		if err != nil {
+			return nil, err
+		}
+		request.args["gremlin"] = gremlinBuffer
+		return request.args, nil
+	default:
+		return nil, fmt.Errorf("failed to find serializer for type '%s'", reflect.TypeOf(gremlin).Name())
 	}
 }
 

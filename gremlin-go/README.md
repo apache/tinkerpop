@@ -163,8 +163,8 @@ Note: The exact import name as well as the module prefix for `NewDriverRemoteCon
 data-flow language that enables users to succinctly express complex traversals on (or queries of) their application's
 property graph.
 
-Gremlin-Go implements Gremlin within the Go language and can be used on any Go runtime greater than v1.17. One important distinction with Go and Java is that 
-the functions are capitalized, as is required to export functions is Go. 
+Gremlin-Go implements Gremlin within the Go language and can be used on any Go runtime greater than v1.17. One
+important distinction with Go and Java is that the functions are capitalized, as is required to export functions is Go. 
 
 Gremlin-Go is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"
 could be [Gremlin Server][gs] or a [remote Gremlin provider][rgp] that exposes protocols by which Gremlin-Go
@@ -280,10 +280,10 @@ Gremlin variant for that language.
 ### Create Vertex
 Adding a vertex with properties.
 ```go
-_, promise, err :=g.AddV("gremlin").Property("language", "java").Iterate()
+_, promise, err := g.AddV("gremlin").Property("language", "go").Iterate()
 // Handle error
 if err != nil {
-	fmt.Println(err)
+    fmt.Println(err)
     return
 }
 // Wait for all steps to finish execution
@@ -295,12 +295,12 @@ Getting the property value associated with the added vertex. We currently only s
 result, err := g.V().HasLabel("gremlin").Values("language").ToList()
 // Handle error
 if err != nil {
-fmt.Println(err)
-return
+    fmt.Println(err)
+    return
 }
 // Print result
 for _, r := range result {
-fmt.Println(r.GetString())
+    fmt.Println(r.GetString())
 }
 ```
 
