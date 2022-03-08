@@ -370,7 +370,6 @@ func TestConnection(t *testing.T) {
 			readCount(t, g, "", len(testNames))
 			readCount(t, g, testLabel, 0)
 			readCount(t, g, personLabel, len(testNames))
-			readCount(t, g, personLabel, len(testNames)) // todo: why 2 times?
 
 			readUsingAnonymousTraversal(t, g)
 
