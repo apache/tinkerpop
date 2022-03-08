@@ -24,9 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -138,6 +138,13 @@ public class DotNetTranslatorTest {
     @Test
     public void shouldTranslateP() {
         assertTranslation("P.Gt(1).And(P.Gt(2)).And(P.Gt(3))", P.gt(1).and(P.gt(2)).and(P.gt(3)));
+    }
+
+    @Test
+    public void shouldTranslateTextP() {
+        assertTranslation("TextP.Containing(\"ark\")", TextP.containing("ark"));
+        assertTranslation("TextP.Regex(\"ark\")", TextP.regex("ark"));
+        assertTranslation("TextP.NotRegex(\"ark\")", TextP.notRegex("ark"));
     }
 
     @Test

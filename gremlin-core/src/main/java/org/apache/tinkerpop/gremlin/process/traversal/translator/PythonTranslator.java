@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
+import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -327,7 +329,17 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                script.append("TextP.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
+                // special case the RegexPredicate since it isn't an enum. toString() for the final default will
+                // typically cover implementations (generally worked for Text prior to 3.6.0)
+                final BiPredicate<?, ?> tp = p.getBiPredicate();
+                if (tp instanceof Text.RegexPredicate) {
+                    final String regexToken = ((Text.RegexPredicate) p.getBiPredicate()).isNegate() ? "not_regex" : "regex";
+                    script.append("TextP.").append(regexToken).append("(");
+                } else if (tp instanceof Text) {
+                    script.append("TextP.").append(((Text) p.getBiPredicate()).name()).append("(");
+                } else {
+                    script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
+                }
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it

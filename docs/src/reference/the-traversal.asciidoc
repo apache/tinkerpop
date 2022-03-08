@@ -4150,7 +4150,8 @@ A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some
 the release of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
 text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
 The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
-<<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
+<<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc. Two new additional `TextP` predicate members were added in the
+TinkerPop 3.6.0 release that allow working with regular expressions. These are `TextP.regex` and `TextP.notRegex`
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
@@ -4172,7 +4173,13 @@ The provided predicates are outlined in the table below and are used in various 
 | `TextP.notStartingWith(string)` | Does the incoming `String` not start with the provided `String`?
 | `TextP.notEndingWith(string)` | Does the incoming `String` not end with the provided `String`?
 | `TextP.notContaining(string)` | Does the incoming `String` not contain the provided `String`?
+| `TextP.regex(string)` | Does the incoming `String` match the regular expression in the provided `String`?
+| `TextP.notRegex(string)` | Does the incoming `String` fail to match the regular expression in the provided `String`?
 |=========================================================
+
+NOTE: The TinkerPop reference implementation uses the Java `Pattern` and `Matcher` classes for it regular expression
+engine. Other implementations may decide to use a different regular expression engine. It's a good idea to check
+the documentation for the implementation you are using to verify the allowed regular expression syntax.
 
 [gremlin-groovy]
 ----
@@ -4197,6 +4204,17 @@ not(between(1,2))
 TIP: To reduce the verbosity of predicate expressions, it is good to
 `import static org.apache.tinkerpop.gremlin.process.traversal.P.*`.
 
+The following example demonstrates how the `regex()` predicate is used and it demonstrates an important point. When
+using `regex()`, the string is considered a match to the pattern if any substring matches the pattern. It is therefore
+important to use the appropriate boundary matchers (e.g. `$` for end of a line) to ensure a proper match.
+
+[gremlin-groovy,modern]
+----
+g.V().has('person', 'name', regex('peter')).values('name')
+g.V().has('person', 'name', regex('r')).values('name')
+g.V().has('person', 'name', regex('r$')).values('name')
+----
+
 Finally, note that <<where-step,`where()`>>-step takes a `P<String>`. The provided string value refers to a variable
 binding, not to the explicit string value.
 
@@ -4205,9 +4223,6 @@ binding, not to the explicit string value.
 g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
 ----
-
-NOTE: It is possible for graph system providers and users to extend `P` and provide new predicates. For instance, a
-`regex(pattern)` could be a graph system specific `P`.
 
 [[a-note-on-barrier-steps]]
 == A Note on Barrier Steps

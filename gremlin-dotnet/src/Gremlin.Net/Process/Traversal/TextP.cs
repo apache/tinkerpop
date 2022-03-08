@@ -75,6 +75,15 @@ namespace Gremlin.Net.Process.Traversal
             return new TextP("startingWith", value);
         }
 
+        public static TextP Regex(string value)
+        {
+            return new TextP("regex", value);
+        }
+
+        public static TextP NotRegex(string value)
+        {
+            return new TextP("notRegex", value);
+        }
 
         private static T[] ToGenericArray<T>(ICollection<T> collection)
         {

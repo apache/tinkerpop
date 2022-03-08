@@ -90,6 +90,11 @@ public class TraversalPredicateVisitorTest {
                 {"TextP.endingWith('hakuna')", TextP.endingWith("hakuna")},
                 {"TextP.notEndingWith('hakuna')", TextP.notEndingWith("hakuna")},
                 {"TextP.notStartingWith('hakuna')", TextP.notStartingWith("hakuna")},
+                {"TextP.regex('^h')", TextP.regex("^h")},
+                {"TextP.regex('~h')", TextP.regex("~h")},
+                {"TextP.regex('(?i)gfg')", TextP.regex("(?i)gfg")},
+                {"TextP.notRegex('^h')", TextP.notRegex("^h")},
+                {"TextP.regex('^h').negate()", TextP.regex("^h").negate()},
         });
     }
 

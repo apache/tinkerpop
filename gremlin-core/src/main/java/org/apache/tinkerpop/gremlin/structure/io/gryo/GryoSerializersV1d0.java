@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -46,6 +47,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 /**
  * This class holds serializers for graph-based objects such as vertices, edges, properties, and paths. These objects
@@ -232,7 +234,14 @@ public final class GryoSerializersV1d0 {
     public final static class TextPSerializer implements SerializerShim<TextP> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final TextP p) {
-            output.writeString(p.getBiPredicate().toString());
+            final BiPredicate<?,?> tp = p.getBiPredicate();
+            if (tp instanceof Text) {
+                output.writeString(((Text) tp).name());
+            } else if (tp instanceof Text.RegexPredicate) {
+                output.writeString(((Text.RegexPredicate) tp).isNegate() ? "notRegex" : "regex");
+            } else {
+                output.writeString(tp.toString());
+            }
             kryo.writeObject(output, p.getValue());
         }
 

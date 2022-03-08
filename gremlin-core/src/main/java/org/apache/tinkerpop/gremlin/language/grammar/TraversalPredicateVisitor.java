@@ -264,4 +264,14 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     public P visitTraversalPredicate_notStartingWith(final GremlinParser.TraversalPredicate_notStartingWithContext ctx) {
         return TextP.notStartingWith(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
     }
+
+    @Override
+    public P visitTraversalPredicate_regex(final GremlinParser.TraversalPredicate_regexContext ctx) {
+        return TextP.regex(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+    }
+
+    @Override
+    public P visitTraversalPredicate_notRegex(final GremlinParser.TraversalPredicate_notRegexContext ctx) {
+        return TextP.notRegex(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+    }
 }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
@@ -356,7 +357,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldHandleClass() throws Exception {
-        final Class clazz = java.io.File.class;
+        final Class<?> clazz = java.io.File.class;
         assertEquals(clazz, serializeDeserialize(clazz, Class.class));
     }
 
@@ -382,6 +383,14 @@ public class GryoMapperTest {
     public void shouldHandleMerge() throws Exception {
         final Merge merge = Merge.onCreate;
         assertEquals(merge, serializeDeserialize(merge, Merge.class));
+    }
+
+    @Test
+    public void shouldHandleTextP() throws Exception {
+        final TextP startingWith = TextP.startingWith("meh");
+        assertEquals(startingWith, serializeDeserialize(startingWith, TextP.class));
+        final TextP regex = TextP.regex("meh");
+        assertEquals(regex, serializeDeserialize(regex, TextP.class));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

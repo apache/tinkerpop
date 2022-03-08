@@ -940,6 +940,8 @@ traversalPredicate
     | traversalPredicate_notEndingWith
     | traversalPredicate_containing
     | traversalPredicate_notContaining
+    | traversalPredicate_regex
+    | traversalPredicate_notRegex
     | traversalPredicate DOT 'and' LPAREN traversalPredicate RPAREN
     | traversalPredicate DOT 'or' LPAREN traversalPredicate RPAREN
     | traversalPredicate DOT 'negate' LPAREN RPAREN
@@ -1052,6 +1054,14 @@ traversalPredicate_endingWith
 
 traversalPredicate_notEndingWith
     : ('TextP.notEndingWith' | 'notEndingWith') LPAREN stringLiteral RPAREN
+    ;
+
+traversalPredicate_regex
+    : ('TextP.regex' | 'regex') LPAREN stringLiteral RPAREN
+    ;
+
+traversalPredicate_notRegex
+    : ('TextP.notRegex' | 'notRegex') LPAREN stringLiteral RPAREN
     ;
 
 traversalTerminalMethod_explain

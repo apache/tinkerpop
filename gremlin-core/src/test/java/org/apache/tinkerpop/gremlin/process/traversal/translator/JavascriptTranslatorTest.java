@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
@@ -105,6 +106,13 @@ public class JavascriptTranslatorTest {
     @Test
     public void shouldTranslatePop() {
         assertTranslation("Pop.last", Pop.last);
+    }
+
+    @Test
+    public void shouldTranslateTextP() {
+        assertTranslation("TextP.containing(\"ark\")", TextP.containing("ark"));
+        assertTranslation("TextP.regex(\"ark\")", TextP.regex("ark"));
+        assertTranslation("TextP.notRegex(\"ark\")", TextP.notRegex("ark"));
     }
 
     @Test
