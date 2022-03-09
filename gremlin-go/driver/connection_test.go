@@ -34,6 +34,8 @@ const personLabel = "Person"
 const testLabel = "Test"
 const nameKey = "name"
 
+var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
+
 func dropGraph(t *testing.T, g *GraphTraversalSource) {
 	// Drop vertices that were added.
 	_, promise, err := g.V().Drop().Iterate()
@@ -42,13 +44,7 @@ func dropGraph(t *testing.T, g *GraphTraversalSource) {
 	<-promise
 }
 
-func getTestNames() []string {
-	return []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
-}
-
 func addTestData(t *testing.T, g *GraphTraversalSource) {
-	testNames := getTestNames()
-
 	// Add vertices to traversal.
 	var traversal *GraphTraversal
 	for _, name := range testNames {
@@ -76,7 +72,7 @@ func readTestDataVertexProperties(t *testing.T, g *GraphTraversalSource) {
 	}
 	assert.Nil(t, err)
 	assert.NotNil(t, names)
-	assert.True(t, sortAndCompareTwoStringSlices(names, getTestNames()))
+	assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
 }
 
 func readTestDataValues(t *testing.T, g *GraphTraversalSource) {
@@ -88,7 +84,7 @@ func readTestDataValues(t *testing.T, g *GraphTraversalSource) {
 	}
 	assert.Nil(t, err)
 	assert.NotNil(t, names)
-	assert.True(t, sortAndCompareTwoStringSlices(names, getTestNames()))
+	assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
 }
 
 func readCount(t *testing.T, g *GraphTraversalSource, label string, expected int) {
@@ -115,12 +111,8 @@ func readCount(t *testing.T, g *GraphTraversalSource, label string, expected int
 }
 
 func sortAndCompareTwoStringSlices(s1 []string, s2 []string) bool {
-	sort.Slice(s1, func(i, j int) bool {
-		return s1[i] < s1[j]
-	})
-	sort.Slice(s2, func(i, j int) bool {
-		return s2[i] < s2[j]
-	})
+	sort.Strings(s1)
+	sort.Strings(s2)
 	return reflect.DeepEqual(s1, s2)
 }
 
@@ -134,7 +126,7 @@ func readUsingAnonymousTraversal(t *testing.T, g *GraphTraversalSource) {
 	assert.Equal(t, 1, len(results))
 	resultMap := results[0].GetInterface().(map[interface{}]interface{})
 	assert.Equal(t, int64(0), resultMap[testLabel])
-	assert.Equal(t, int64(len(getTestNames())), resultMap[personLabel])
+	assert.Equal(t, int64(len(testNames)), resultMap[personLabel])
 }
 
 func getEnvOrDefaultString(key string, defaultValue string) string {
@@ -189,9 +181,9 @@ func TestConnection(t *testing.T) {
 			// Add data and check that the size of the graph is correct.
 			addTestData(t, g)
 
-			readCount(t, g, "", len(getTestNames()))
+			readCount(t, g, "", len(testNames))
 			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, len(getTestNames()))
+			readCount(t, g, personLabel, len(testNames))
 
 			// Read test data out of the graph and check that it is correct.
 			readTestDataVertexProperties(t, g)
@@ -313,9 +305,9 @@ func TestConnection(t *testing.T) {
 
 			// Add data and check that the size of the graph is correct.
 			addTestData(t, g)
-			readCount(t, g, "", len(getTestNames()))
+			readCount(t, g, "", len(testNames))
 			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, len(getTestNames()))
+			readCount(t, g, personLabel, len(testNames))
 
 			// Read test data out of the graph and check that it is correct.
 			results, err := g.V().Has("name", P.Eq("Lyndon")).ValueMap("name").ToList()
@@ -343,7 +335,7 @@ func TestConnection(t *testing.T) {
 			// Run traversal and test Next/HasNext calls
 			traversal := g.V().HasLabel(personLabel).Properties(nameKey)
 			var names []string
-			for i := 0; i < len(getTestNames()); i++ {
+			for i := 0; i < len(testNames); i++ {
 				hasN, err := traversal.HasNext()
 				assert.Nil(t, err)
 				assert.True(t, hasN)
@@ -356,7 +348,7 @@ func TestConnection(t *testing.T) {
 			}
 			hasN, _ := traversal.HasNext()
 			assert.False(t, hasN)
-			assert.True(t, sortAndCompareTwoStringSlices(names, getTestNames()))
+			assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
 		}
 	})
 
@@ -375,9 +367,9 @@ func TestConnection(t *testing.T) {
 
 			// Add data and check that the size of the graph is correct.
 			addTestData(t, g)
-			readCount(t, g, "", len(getTestNames()))
+			readCount(t, g, "", len(testNames))
 			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, len(getTestNames()))
+			readCount(t, g, personLabel, len(testNames))
 
 			readUsingAnonymousTraversal(t, g)
 

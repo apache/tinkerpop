@@ -40,7 +40,8 @@ type Client struct {
 	connection      *connection
 }
 
-// NewClient creates a Client and configures it with the given parameters.
+// NewClient creates a Client, configures it with the given parameters and creates connection.
+// Return a non-nil error if creating this connection fails.
 func NewClient(host string, port int, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
 		TransporterType: Gorilla,
@@ -67,12 +68,12 @@ func NewClient(host string, port int, configurations ...func(settings *ClientSet
 	return client, nil
 }
 
-// Close closes the client via connection
+// Close closes the client via connection.
 func (client *Client) Close() error {
 	return client.connection.close()
 }
 
-// Submit submits a Gremlin script to the server and returns a ResultSet
+// Submit submits a Gremlin script to the server and returns a ResultSet.
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	// TODO AN-982: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
@@ -80,7 +81,7 @@ func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	return client.connection.write(&request)
 }
 
-// SubmitBytecode submits bytecode to the server to execute and returns a ResultSet
+// SubmitBytecode submits bytecode to the server to execute and returns a ResultSet.
 func (client *Client) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
 	request := makeBytecodeRequest(bytecode)

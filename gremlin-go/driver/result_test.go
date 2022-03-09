@@ -327,22 +327,22 @@ func TestResult(t *testing.T) {
 		assert.Error(t, err, "result is not a VertexProperty")
 	})
 
-	t.Run("Test Result.ToString()", func(t *testing.T) {
+	t.Run("Test Result.String()", func(t *testing.T) {
 		r := Result{[]int{1, 2, 3}}
-		res := r.ToString()
+		res := r.String()
 		assert.Equal(t, "result{object=[1 2 3] class=[]int}", res)
 	})
 
-	t.Run("Test Result.ToString() null", func(t *testing.T) {
+	t.Run("Test Result.String() null", func(t *testing.T) {
 		r := Result{nil}
-		res := r.ToString()
+		res := r.String()
 		assert.Equal(t, "result{object=<nil> class=<nil>}", res)
 	})
 
-	t.Run("Test Result.ToString() empty custom struct", func(t *testing.T) {
+	t.Run("Test Result.String() empty custom struct", func(t *testing.T) {
 		element := Element{}
 		r := Result{&element}
-		res := r.ToString()
+		res := r.String()
 		assert.Equal(t, "result{object=&{<nil> } class=*gremlingo.Element}", res)
 	})
 

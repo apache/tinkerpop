@@ -31,8 +31,8 @@ type Result struct {
 	result interface{}
 }
 
-// ToString returns the string representation of the Result struct in Go-syntax format
-func (r *Result) ToString() string {
+// String returns the string representation of the Result struct in Go-syntax format
+func (r *Result) String() string {
 	return fmt.Sprintf("result{object=%v class=%T}", r.result, r.result)
 }
 
