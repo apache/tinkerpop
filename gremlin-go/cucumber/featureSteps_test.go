@@ -308,14 +308,16 @@ func (tg *tinkerPopGraph) theGraphShouldReturnForCountOf(expectedCount int, trav
 	return nil
 }
 
+func (tg *tinkerPopGraph) theResultShouldBeEmpty() error {
+	if len(tg.result) != 0 {
+		return errors.New("actual result is not empty as expected")
+	}
+	return nil
+}
+
 func (tg *tinkerPopGraph) theResultShouldBe(characterizedAs string, table *godog.Table) error {
 	ordered := characterizedAs == "ordered"
 	switch characterizedAs {
-	case "empty":
-		if len(tg.result) != 0 {
-			return errors.New("actual result is not empty as expected")
-		}
-		return nil
 	case "ordered", "unordered", "of":
 		var expectedResult []interface{}
 		for idx, row := range table.Rows {
@@ -443,7 +445,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the (.+) graph$`, tg.chooseGraph)
 	ctx.Step(`^the graph initializer of$`, tg.theGraphInitializerOf)
 	ctx.Step(`^the graph should return (\d+) for count of "(.+)"$`, tg.theGraphShouldReturnForCountOf)
-	ctx.Step(`^the result should be (\w+)$`, tg.theResultShouldBe)
+	ctx.Step(`^the result should be empty$`, tg.theResultShouldBeEmpty)
+	ctx.Step(`^the result should be (o\w+)$`, tg.theResultShouldBe)
+	ctx.Step(`^the result should be (u\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should have a count of (\d+)$`, tg.theResultShouldHaveACountOf)
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
