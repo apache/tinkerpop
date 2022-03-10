@@ -21,6 +21,7 @@
 
 #endregion
 
+using Gremlin.Net.Driver.Exceptions;
 using System;
 using System.IO;
 using System.Net.WebSockets;
@@ -33,11 +34,12 @@ namespace Gremlin.Net.Driver
     {
         private const int ReceiveBufferSize = 1024;
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
-        private readonly ClientWebSocket _client;
+        private readonly IClientWebSocket _client;
 
         public WebSocketConnection(WebSocketSettings settings)
         {
-            _client = new ClientWebSocket();
+            _client = CreateClientWebSocket(settings);
+
 #if NET6_0_OR_GREATER
             if (settings.UseCompression)
             {
@@ -99,6 +101,11 @@ namespace Gremlin.Net.Driver
             {
                 var receiveBuffer = new ArraySegment<byte>(buffer);
                 received = await _client.ReceiveAsync(receiveBuffer, CancellationToken.None).ConfigureAwait(false);
+                if (received.MessageType == WebSocketMessageType.Close)
+                {
+                    throw new ConnectionClosedException(received.CloseStatus, received.CloseStatusDescription);
+                }
+
                 ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
             } while (!received.EndOfMessage);
 
@@ -128,5 +135,61 @@ namespace Gremlin.Net.Driver
         }
 
         #endregion
+
+        private static IClientWebSocket CreateClientWebSocket(WebSocketSettings settings)
+        {
+            if (settings.WebSocketFactoryCallback != null)
+            {
+                return settings.WebSocketFactoryCallback(settings);
+            }
+
+            return new ProxyClientWebSocket(new ClientWebSocket());
+        }
+
+        private class ProxyClientWebSocket : IClientWebSocket
+        {
+            private readonly ClientWebSocket client;
+
+            public ProxyClientWebSocket(ClientWebSocket client)
+            {
+                this.client = client;
+            }
+
+            public WebSocketState State => this.client.State;
+
+            public ClientWebSocketOptions Options => this.client.Options;
+
+            public Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+            {
+                return this.client.CloseAsync(closeStatus, statusDescription, cancellationToken);
+            }
+
+            public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+            {
+                return this.client.ConnectAsync(uri, cancellationToken);
+            }
+
+            public void Dispose()
+            {
+                this.client.Dispose();
+            }
+
+            public Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+            {
+                return this.client.ReceiveAsync(buffer, cancellationToken);
+            }
+
+            public Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            {
+                return this.client.SendAsync(buffer, messageType, endOfMessage, cancellationToken);
+            }
+
+#if NET6_0_OR_GREATER
+            public ValueTask SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, WebSocketMessageFlags messageFlags, CancellationToken cancellationToken)
+            {
+                return this.client.SendAsync(buffer, messageType, messageFlags, cancellationToken);
+            }
+#endif
+        }
     }
 }

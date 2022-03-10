@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +87,7 @@ namespace Gremlin.Net.Driver
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
             _writeQueue.Enqueue(requestMessage);
             BeginSendingMessages();
+
             return receiver.Result;
         }
 
