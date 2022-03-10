@@ -19,7 +19,7 @@ version: "3.4"
 services:
   gremlin-server:
     container_name: gremlin-server
-    image: tinkerpop/gremlin-server
+    image: tinkerpop/gremlin-server:3.5
     ports:
       - "8182:8182"
   gremlin-go-integration-tests:
