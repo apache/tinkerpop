@@ -2383,6 +2383,281 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mean-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`mean(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+
+[[mergeedge-step]]
+=== MergeEdge Step
+
+The `mergeE()` -step is used to add edges and their properties to a graph in a "create
+if not exist" fashion. The `mergeE` step can also be used to find edges matching a given
+pattern. This step was added to Gremlin as part of the TinkerPop 3.6 release. Prior to
+that, it was necessary to write more complex queries using steps such as `coalesce`,
+`fold` and `unfold`, or injecting maps into queries and writing additional steps to
+manipulate them. The `mergeE` step makes these types of operation much simpler for the
+query writer. The input passed to `mergeE` can be either a map, or a child traversal that
+produces a map.
+
+NOTE: There is a corresponding `mergeV` step that can be used when creating vertices.
+
+Additionally, `optional` steps may be combined with `mergeE`, to take action depending on
+whether a vertex was created, or already existed. There are various ways that `mergeE` can
+be used. The simplest being to provide a single map of keys and values, along with the
+source and target vertex IDs, as a parameter.  An ID and a label may also be provided but
+this is optional. If the `T.id` or `T.label` are provided, they need to be enclosed in
+parenthesis. The `mergeE` step can be used directly from the GraphTraversalSource - `g`,
+or in the middle of a traversal. For a match with an existing vertex to occur, all values
+in the map must exist on a vertex; otherwise, a new vertex will be created. The examples
+that follow show how `mergeE` can be used to add relationships between dogs in the graph.       
+
+[gremlin-groovy]
+----
+g.mergeV([(T.id):1,(T.label):'Dog','name':'Toby'])
+g.mergeV([(T.id):2,(T.label):'Dog','name':'Brandy']) <1>
+g.mergeE([(T.label):'Sibling','created':'2022-02-07',(Direction.from):1,(Direction.to):2]) <2>
+g.E().elementMap()
+----
+
+<1> Create two vertices with ID values of 1 and 2.
+<2> Create a "Sibling" relationship between the vertices.
+
+For a `mergeE` step to succeed, both the `from` and `to` vertices must already exist. It
+is not possible to create new vertices directly using `mergeE`, but `mergeV` and `mergeE`
+steps can be combined, in a single query, to achieve that goal.
+
+NOTE: The `mergeE` step will not create vertices that do not exist. In those cases an
+error will be returned. 
+
+If the `Direction` enum has been statically included, its explicit use can be omitted from
+the query.
+
+[gremlin-groovy]
+----
+g.mergeV([(T.id):1,(T.label):'Dog','name':'Toby'])
+g.mergeV([(T.id):2,(T.label):'Dog','name':'Brandy'])
+g.mergeE([(T.label):'Sibling','created':'2022-02-07',(from):1,(to):2])
+g.E().elementMap()
+----
+
+One or more `option` steps can be used to control the behavior when an edge is created of
+updated.
+
+[gremlin-groovy]
+----
+g.mergeV([(T.id):1,(T.label):'Dog','name':'Toby'])
+g.mergeV([(T.id):2,(T.label):'Dog','name':'Brandy'])
+
+g.withSideEffect('map',[(T.label):'Sibling',(from):1,(to):2]).
+  mergeE(select('map')).
+    option(Merge.onCreate,['created':'2022-02-07']).  <1>
+    option(Merge.onMatch,['updated':'2022-02-07'])    <2>
+g.E().elementMap()
+----
+<1> The edge did not exist - set the created date.
+<2> The edge did exist - set the updated date.         
+
+
+More than one edge can be created by a single `mergeE` operation. This is done by
+injecting a list of maps into the traversal and letting them stream into the `mergeE`
+step.
+
+[gremlin-groovy]
+----
+maps=
+  [[(T.label):'Siblings',(from):1,(to):2],
+   [(T.label):'Siblings',(from):1,(to):3]]
+
+g.mergeV([(T.id):1,(T.label):'Dog','name':'Toby'])  <1>
+g.mergeV([(T.id):2,(T.label):'Dog','name':'Brandy'])
+g.mergeV([(T.id):3,(T.label):'Dog','name':'Dax'])
+
+g.inject(maps).unfold().mergeE() <2>
+g.E().elementMap()
+----
+
+<1> Create three dogs.
+<2> Stream the edge maps into `mergeE` steps.
+
+
+[[mergevertex-step]]
+=== MergeVertex Step
+
+The `mergeV()` -step is used to add vertices and their properties to a graph in a "create
+if not exist" fashion. The `mergeV` step can also be used to find vertices matching a given
+pattern. This step was added to Gremlin as part of the TinkerPop 3.6 release. Prior to
+that, it was necessary to write more complex queries using steps such as `coalesce`,
+`fold` and `unfold`, or injecting maps into queries and writing additional steps to
+manipulate them. The `mergeV` step makes these types of operation much simpler for the
+query writer. The input passed to `mergeV` can be either a map, or a child traversal that
+produces a map.
+
+NOTE: There is a corresponding `mergeE` step that can be used when creating edges.
+
+Additionally, `optional` steps may be combined with `mergeV`, to take action depending on
+whether a vertex was created, or already existed. There are various ways `mergeV` can
+be used. The simplest being to provide a single map of keys and values as a parameter.  An
+ID and a label may also be provided but this is optional. If the `T.id` or `T.label` are
+provided, they need to be enclosed in parenthesis. The `mergeV` step can be used directly
+from the GraphTraversalSource - `g`, or in the middle of a traversal. For a match with an
+existing vertex to occur, all values in the map must exist on a vertex; otherwise, a new
+vertex will be created. The examples that follow show how `mergeV` can be used to add some
+dogs to the graph.
+
+[gremlin-groovy]
+----
+g.mergeV(['name': 'Brandy']) <1>
+g.V().has('name','Brandy')
+g.mergeV([(T.label):'Dog','name':'Scamp', 'age':12]) <2>
+g.V().hasLabel('Dog').valueMap()
+g.mergeV([(T.id):300, (T.label):'Dog', 'name':'Toby', 'age':10]) <3>
+g.V().hasLabel('Dog').valueMap().with(WithOptions.tokens)
+----
+
+<1> Create a vertex for Brandy as no other matching ones exist yet.
+<2> Create a vertex for Scamp and also add a Dog label his age.
+<3> Create a vertex for Toby with an ID of 300.
+
+If a vertex already exists that matches the map passed to `mergeV`, the existing
+vertex will be returned, otherwise a new one will  be created. In this way, `mergeV`
+provides "get or create" semantics.
+
+[gremlin-groovy,existing]
+----
+g.mergeV(['name': 'Brandy']) <1>
+----
+
+<1> A vertex for Brandy already exists so return it. A new one is not created.
+
+It's important to note that every key/value pair passed to `mergeV` must already exist on
+one or more vertices for there to be a match. If a match is found, the vertex, or
+vertices, representing that match will be returned. If a vertex representing a dog called
+Brandy already exists, but it does not have an `age` property, the `mergeV` below will not
+find a match and a new vertex will be created.
+
+[gremlin-groovy]
+----
+g.addV('Dog').property('name','Brandy') <1>
+g.mergeV([(T.label):'Dog','name':'Brandy','age':13]) <2>
+----
+
+<1> Create a vertex for Brandy with no age property.
+<2> A new vertex is created as there is no exact match to any existing vertices.
+
+A common scenario is to search for a vertex with a known ID and if it exists return that
+vertex. If it does not exist, create it. As we have seen, one way to do this is to pass
+the ID and all properties directly to `mergeV`. Another is to use `Merge.onCreate`. Note
+that the map specified for `Match.onCreate` must include the ID if you want to create the
+vertex with the ID originally searched for. The values provided to the `mergeV` map are
+not combined with the map provided to `Merge.onCreate`.
+
+[gremlin-groovy]
+----
+g.mergeV([(T.id):300]).
+  option(Merge.onCreate,[[(T.id):300], (T.label):'Dog', 'name':'Toby', 'age':10])
+----
+
+To take specific action when the vertex already exists, `Merge.onMatch` can be used. The
+second parameter to the `option` step can be either a map whose values are used to update
+the vertex or another Gremlin traversal that generates a map.
+
+
+NOTE: If `mergeV` is given an empty map; such as `mergeV([:])`, it will match, and
+return, every vertex in the graph. This is the same behavior seen with `V([])`.
+
+[gremlin-groovy]
+----
+g.mergeV([(T.id):300]).
+  option(Merge.onCreate,[(T.id):300, (T.label):'Dog', 'name':'Toby', 'age':10]). <1>
+  option(Merge.onMatch,['age':11]) <2>
+    
+g.withSideEffect('new-data',['age':11]).
+  mergeV([(T.id):300]).
+  option(Merge.onCreate,[(T.label):'Dog', 'name':'Toby', 'age':10]).  
+  option(Merge.onMatch,select('new-data')) <3> 
+
+g.V(300).valueMap().with(WithOptions.tokens)
+
+g.mergeV([(T.id): 1]).
+    option(onCreate, fail("vertex did not exist")). <4>
+    option(onMatch, [modified: 2022]) <5>
+
+g.mergeV([(T.id):300]).
+  option(Merge.onCreate,(Map)null)  <6>
+----
+
+<1> If no match found create the vertex using these values.
+<2> If a match is found, change the age property value. 
+<3> Change the age property by selecting from the `new-data` map.
+<4> The vertex does not exist, generate an error.
+<5> The vertex does exist, add a modified property.
+<6> If the vertex does not exist, do nothing.
+
+In some cases, such as when adding multi-properties or meta-properties to a vertex, one or
+more `property` steps can follow the `mergeV` step. Note that meta-properties and
+multi-properties cannot be added directly using just `mergeV` as a key/value pair such as
+`'my-numbers:[1,2,3,4]` will be treated as a list object and not a set of multi-property
+values.
+
+[gremlin-groovy]
+----
+g.mergeV([(T.label):'Dog', 'name':'Max']). <1>
+  property(list,'alias','Maximus').
+  property(list,'alias','Maxamillion') <2>
+
+g.V().has('name','Max').valueMap().with(WithOptions.tokens)
+----
+
+<1> Find or create a vertex for Max.
+<2> Whether Max was found or created, add some aliases with list cardinality.
+
+More than one vertex can be created by a single `mergeV` operation. This is done by
+injecting a list of maps into the traversal and letting them stream into the `mergeV`
+step.
+
+[gremlin-groovy]
+----
+maps=
+  [[(T.label) : 'Dog', name: 'Toby'  , breed: 'Golden Retriever'],
+   [(T.label) : 'Dog', name: 'Brandy', breed: 'Golden Retriever'],
+   [(T.label) : 'Dog', name: 'Scamp' , breed: 'King Charles Spaniel'],
+   [(T.label) : 'Dog', name: 'Shadow', breed: 'Mixed'],
+   [(T.label) : 'Dog', name: 'Rocket', breed: 'Golden Retriever'],
+   [(T.label) : 'Dog', name: 'Dax'   , breed: 'Mixed'],
+   [(T.label) : 'Dog', name: 'Baxter', breed: 'Mixed'],
+   [(T.label) : 'Dog', name: 'Zoe'   , breed: 'Corgi'],
+   [(T.label) : 'Dog', name: 'Pixel' , breed: 'Mixed']] 
+
+g.inject(maps).unfold().mergeV()
+g.V().hasLabel('Dog').valueMap().with(WithOptions.tokens)
+----
+
+Another useful pattern that can be used with `mergeV` involves putting multiple maps in a
+list and selecting different maps based on the action being taken. The examples below use
+a list containing three maps. The first containing just the ID to be searched for. The
+second map contains all the information to use when the vertex is created. The third map
+contains additional information that will be applied if an existing vertex is found.
+
+[gremlin-groovy]
+----
+g.inject([[(T.id):400],[(T.id):400,(T.label):'Dog','name':'Pixel','age':1],['updated':'2022-02-1']]).
+  mergeV(limit(local,1)). <1>
+  option(Merge.onCreate,range(local,1,2)). <2>
+  option(Merge.onMatch,tail(local)) <3>
+
+g.V(400).valueMap().with(WithOptions.tokens)
+
+g.inject([[(T.id):400],[(T.id):400,(T.label):'Dog','name':'Pixel','age':1],['updated':'2022-02-1']]).
+  mergeV(limit(local,1)).
+  option(Merge.onCreate,range(local,1,2)).
+  option(Merge.onMatch,tail(local))  <4>
+
+g.V(400).valueMap().with(WithOptions.tokens)  <5>
+----
+
+<1> Use the first map to search for a vertex with an ID of 400.
+<2> If the vertex was not found, use the second map to create it.
+<3> If the vertex was found, add an `updated` property.
+<4> Pixel exists now, so we will take this option.
+<5> The `updated` property has now been added.
+
 [[min-step]]
 === Min Step
 
