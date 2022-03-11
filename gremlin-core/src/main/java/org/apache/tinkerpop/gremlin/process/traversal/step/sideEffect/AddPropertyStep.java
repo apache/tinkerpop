@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -111,22 +112,34 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
                 ? this.cardinality
                 : element.graph().features().vertex().getCardinality(key);
 
-        /* find property to remove */
-        Property removedProperty = element.property(key);
-        if (element instanceof Vertex && cardinality == VertexProperty.Cardinality.set) {
-            final Iterator<? extends Property> properties = element.properties(key);
-            while (properties.hasNext()) {
-                final Property property = properties.next();
-                if (Objects.equals(property.value(), value)) {
-                    removedProperty = property;
-                    break;
-                }
-            }
-        }
+        final Optional<EventStrategy> optEventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class);
+        final boolean eventingIsConfigured =  this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()
+                && optEventStrategy.isPresent();
+        final EventStrategy es = optEventStrategy.orElse(null);
 
-        /* detach removed property */
-        EventStrategy es = getTraversal().getStrategies().getStrategy(EventStrategy.class).orElse(null);
-        if (es != null) {
+        // find property to remove
+        Property removedProperty = VertexProperty.empty();
+
+        // only need to capture the removedProperty if eventing is configured
+        if (eventingIsConfigured) {
+            if (element instanceof Vertex) {
+                if (cardinality == VertexProperty.Cardinality.set) {
+                    final Iterator<? extends Property> properties = element.properties(key);
+                    while (properties.hasNext()) {
+                        final Property property = properties.next();
+                        if (Objects.equals(property.value(), value)) {
+                            removedProperty = property;
+                            break;
+                        }
+                    }
+                } else if (cardinality == VertexProperty.Cardinality.single) {
+                    removedProperty = element.property(key);
+                }
+            } else {
+                removedProperty = element.property(key);
+            }
+
+            // detach removed property
             if (removedProperty.isPresent()) {
                 removedProperty = es.detach(removedProperty);
             } else {
@@ -134,7 +147,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
             }
         }
 
-        /* update property */
+        // update property
         if (element instanceof Vertex) {
             if (null != this.cardinality) {
                 ((Vertex) element).property(this.cardinality, key, value, vertexPropertyKeyValues);
@@ -149,9 +162,9 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
             element.property(key, value);
         }
 
-        /* trigger event callbacks */
-        if (es != null) {
-            Event.ElementPropertyChangedEvent event = null;
+        // trigger event callbacks
+        if (eventingIsConfigured) {
+            final Event.ElementPropertyChangedEvent event;
             if (element instanceof Vertex) {
                 event = new Event.VertexPropertyChangedEvent(es.detach((Vertex) element), removedProperty, value, vertexPropertyKeyValues);
             } else if (element instanceof Edge) {
