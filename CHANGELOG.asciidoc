@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added support for using a readable stream when submitting scripts through the JavaScript driver which allows processing each batch of result sets as they come in, rather than waiting for the entire result set to complete before allowing processing.
 * Fixed issue with implicit conversion of `Infinity` number instances into `BigDecimal`.
+* Ensured that new properties are added before triggering the associated event.
 * Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
 * Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
 * Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
