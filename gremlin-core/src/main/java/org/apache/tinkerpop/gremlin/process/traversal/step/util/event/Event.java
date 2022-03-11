@@ -110,7 +110,7 @@ public interface Event {
     }
 
     /**
-     * Represents an action where a {@link Vertex} is removed from the {@link Graph}.
+     * Represents an action where a {@link Vertex} is added to the {@link Graph}.
      */
     class VertexAddedEvent implements Event {
 
