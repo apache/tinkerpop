@@ -54,10 +54,12 @@ type Logger interface {
 type defaultLogger struct {
 }
 
+// Log writes a message to the defaultLogger.
 func (logger *defaultLogger) Log(verbosity LogVerbosity, v ...interface{}) {
 	log.Print(v...)
 }
 
+// Logf writes a formatted message to the defaultLogger.
 func (logger *defaultLogger) Logf(verbosity LogVerbosity, format string, v ...interface{}) {
 	log.Printf(format, v...)
 }

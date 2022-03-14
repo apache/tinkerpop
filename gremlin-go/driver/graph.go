@@ -26,6 +26,7 @@ import (
 	"strings"
 )
 
+// Graph is used to store the graph.
 type Graph struct {
 }
 
@@ -73,22 +74,27 @@ type Path struct {
 	Objects []interface{}
 }
 
+// String returns the string representation of the vertex.
 func (v *Vertex) String() string {
 	return fmt.Sprintf("v[%s]", v.Id)
 }
 
+// String returns the string representation of the edge.
 func (e *Edge) String() string {
 	return fmt.Sprintf("e[%s][%s-%s->%s]", e.Id, e.OutV.Id, e.Label, e.InV.Id)
 }
 
+// String returns the string representation of the vertex property.
 func (vp *VertexProperty) String() string {
 	return fmt.Sprintf("vp[%s->%v]", vp.Label, vp.Value)
 }
 
+// String returns the string representation of the property.
 func (p *Property) String() string {
 	return fmt.Sprintf("p[%s->%v]", p.Key, p.Value)
 }
 
+// String returns the string representation of the path.
 func (p *Path) String() string {
 	return fmt.Sprintf("path[%s]", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(p.Objects)), ", "), "[]"))
 }
@@ -138,6 +144,7 @@ type SimpleSet struct {
 	objects []interface{}
 }
 
+// ToSlice must return a slice that contains all the elements of the underlying Set with no duplicates.
 func (s *SimpleSet) ToSlice() []interface{} {
 	return s.objects
 }

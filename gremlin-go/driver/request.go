@@ -21,7 +21,7 @@ package gremlingo
 
 import "github.com/google/uuid"
 
-// request represents a request to the server
+// request represents a request to the server.
 type request struct {
 	requestID uuid.UUID
 	op        string

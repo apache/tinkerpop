@@ -21,7 +21,7 @@ package gremlingo
 
 import "golang.org/x/text/language"
 
-// DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection
+// DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
 	TraversalSource string
 	Username        string
@@ -36,7 +36,7 @@ type DriverRemoteConnectionSettings struct {
 	Serializer serializer
 }
 
-// DriverRemoteConnection is a remote connection
+// DriverRemoteConnection is a remote connection.
 type DriverRemoteConnection struct {
 	client *Client
 }
@@ -83,17 +83,17 @@ func NewDriverRemoteConnection(
 	return &DriverRemoteConnection{client: client}, nil
 }
 
-// Close closes the DriverRemoteConnection
+// Close closes the DriverRemoteConnection.
 func (driver *DriverRemoteConnection) Close() error {
 	return driver.client.Close()
 }
 
-// Submit sends a string traversal to the server
+// Submit sends a string traversal to the server.
 func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet, error) {
 	return driver.client.Submit(traversalString)
 }
 
-// SubmitBytecode sends a bytecode traversal to the server
+// SubmitBytecode sends a bytecode traversal to the server.
 func (driver *DriverRemoteConnection) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
 	return driver.client.SubmitBytecode(bytecode)
 }
