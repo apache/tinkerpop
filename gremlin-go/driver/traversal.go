@@ -23,11 +23,13 @@ import (
 	"errors"
 )
 
+// Traverser is the objects propagating through the traversal.
 type Traverser struct {
 	bulk  int64
 	value interface{}
 }
 
+// Traversal is the primary way in which graphs are processed.
 type Traversal struct {
 	graph               *Graph
 	traversalStrategies *TraversalStrategies
@@ -64,7 +66,7 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 	return set, nil
 }
 
-// Iterate all the Traverser instances in the traversal and returns the empty traversal
+// Iterate all the Traverser instances in the traversal and returns the empty traversal.
 func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
 	// TODO: AN-979 This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
 	if t.remote == nil {
@@ -93,6 +95,7 @@ func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
 	return t, r, nil
 }
 
+// HasNext returns true if the result is not empty.
 func (t *Traversal) HasNext() (bool, error) {
 	results, err := t.getResults()
 	if err != nil {
@@ -101,6 +104,7 @@ func (t *Traversal) HasNext() (bool, error) {
 	return !results.IsEmpty(), nil
 }
 
+// Next returns next result.
 func (t *Traversal) Next() (*Result, error) {
 	results, err := t.getResults()
 	if err != nil {
@@ -120,12 +124,14 @@ func (t *Traversal) getResults() (ResultSet, error) {
 	return t.results, nil
 }
 
+// Barrier is any step that requires all left traversers to be processed prior to emitting result traversers to the right.
 type Barrier string
 
 const (
 	NormSack Barrier = "normSack"
 )
 
+// Cardinality of Vertex Properties.
 type Cardinality string
 
 const (
@@ -134,27 +140,38 @@ const (
 	Set_   Cardinality = "set"
 )
 
+// Column references a particular type of column in a complex data structure.
 type Column string
 
 const (
-	Keys   Column = "keys"
+	// Keys associated with the data structure.
+	Keys Column = "keys"
+	// Values associated with the data structure.
 	Values Column = "values"
 )
 
+// Direction is used to denote the direction of an Edge or location of a Vertex on an Edge.
 type Direction string
 
 const (
-	In   Direction = "IN"
-	Out  Direction = "OUT"
+	// In refers to an incoming direction.
+	In Direction = "IN"
+	// Out refers to an outgoing direction.
+	Out Direction = "OUT"
+	// Both refers to either direction In or Out.
 	Both Direction = "BOTH"
 )
 
+// Order provides comparator instances for ordering traversers.
 type Order string
 
 const (
+	// Shuffle is Order in a random fashion.
 	Shuffle Order = "shuffle"
-	Asc     Order = "asc"
-	Desc    Order = "desc"
+	// Asc is Order in ascending fashion.
+	Asc Order = "asc"
+	// Desc is Order in descending fashion.
+	Desc Order = "desc"
 )
 
 type Pick string
@@ -164,22 +181,32 @@ const (
 	None Pick = "none"
 )
 
+// Pop is used to determine whether the first value, last value, or all values are gathered.
 type Pop string
 
 const (
+	// First is the first item in an ordered collection.
 	First Pop = "first"
-	Last  Pop = "last"
-	All   Pop = "all"
+	// Last is the last item in an ordered collection.
+	Last Pop = "last"
+	// All the items in an ordered collection.
+	All Pop = "all"
+	// Mixed is either a list (for multiple) or an object (for singles).
 	Mixed Pop = "mixed"
 )
 
+// Scope is used in many Step instance can have a variable scope which alter the manner
+// in which the step will behave in relation to how the traversers are processed.
 type Scope string
 
 const (
+	// Global informs the step to operate on the entire traversal.
 	Global Scope = "global"
-	Local  Scope = "local"
+	// Local informs the step to operate on the current object in the step.
+	Local Scope = "local"
 )
 
+// T is string symbols.
 type T string
 
 const (
@@ -190,19 +217,33 @@ const (
 	Value T = "value"
 )
 
+// Operator is a set of operations for traversal steps.
 type Operator string
 
 const (
-	Sum     Operator = "sum"
-	Minus   Operator = "minus"
-	Mult    Operator = "mult"
-	Div     Operator = "div"
-	Min     Operator = "min"
-	Max     Operator = "max"
-	Assign  Operator = "assign"
-	And     Operator = "and"
-	Or      Operator = "or"
-	AddAll  Operator = "addAll"
+	// Sum is an addition.
+	Sum Operator = "sum"
+	// Minus is a subtraction.
+	Minus Operator = "minus"
+	// Mult is a multiplication.
+	Mult Operator = "mult"
+	// Div is a division.
+	Div Operator = "div"
+	// Min selects the smaller of the values.
+	Min Operator = "min"
+	// Max selects the larger of the values.
+	Max Operator = "max"
+	// Assign returns the second value to the function.
+	Assign Operator = "assign"
+	// And applies "and" to boolean values.
+	And Operator = "and"
+	// Or applies "or" to boolean values.
+	Or Operator = "or"
+	// AddAll Takes all objects in the second Slice and adds them to the first. If the first is null,
+	// then the second Slice is returned and if the second is null then the first is returned.
+	// If both are null then null is returned. Arguments must be of type Map or Slice.
+	AddAll Operator = "addAll"
+	// SumLong sums and adds long values.
 	SumLong Operator = "sumLong"
 )
 
@@ -211,7 +252,7 @@ type p struct {
 	values   []interface{}
 }
 
-// Predicate interface
+// Predicate interface.
 type Predicate interface {
 	// Between Predicate to determine if value is within (inclusive) the range of two specified values.
 	Between(args ...interface{}) Predicate
@@ -233,11 +274,11 @@ type Predicate interface {
 	Not(args ...interface{}) Predicate
 	// Outside Predicate to determine of value is not within range of specified values (exclusive).
 	Outside(args ...interface{}) Predicate
-	// Test Evalutes Predicate on given argument.
+	// Test evaluates Predicate on given argument.
 	Test(args ...interface{}) Predicate
 	// Within Predicate determines if value is within given list of values.
 	Within(args ...interface{}) Predicate
-	// Without Predicate determines if value is not within the specified
+	// Without Predicate determines if value is not within the specified.
 	Without(args ...interface{}) Predicate
 	// And Predicate returns a Predicate composed of two predicates (logical AND of them).
 	And(args ...interface{}) Predicate
@@ -264,62 +305,77 @@ func newPWithP(operator string, pp p, args ...interface{}) Predicate {
 	return &p{operator: operator, values: values}
 }
 
+// Between Predicate to determine if value is within (inclusive) the range of two specified values.
 func (_ *p) Between(args ...interface{}) Predicate {
 	return newP("between", args...)
 }
 
+// Eq Predicate to determine if equal to.
 func (_ *p) Eq(args ...interface{}) Predicate {
 	return newP("eq", args...)
 }
 
+// Gt Predicate to determine if greater than.
 func (_ *p) Gt(args ...interface{}) Predicate {
 	return newP("gt", args...)
 }
 
+// Gte Predicate to determine if greater than or equal to.
 func (_ *p) Gte(args ...interface{}) Predicate {
 	return newP("gte", args...)
 }
 
+// Inside Predicate to determine if value is within range of specified values (exclusive).
 func (_ *p) Inside(args ...interface{}) Predicate {
 	return newP("inside", args...)
 }
 
+// Lt Predicate to determine if less than.
 func (_ *p) Lt(args ...interface{}) Predicate {
 	return newP("lt", args...)
 }
 
+// Lte Predicate to determine if less than or equal to.
 func (_ *p) Lte(args ...interface{}) Predicate {
 	return newP("lte", args...)
 }
 
+// Neq Predicate to determine if not equal to.
 func (_ *p) Neq(args ...interface{}) Predicate {
 	return newP("neq", args...)
 }
 
+// Not Predicate gives the opposite of the specified Predicate.
 func (_ *p) Not(args ...interface{}) Predicate {
 	return newP("not", args...)
 }
 
+// Outside Predicate to determine of value is not within range of specified values (exclusive).
 func (_ *p) Outside(args ...interface{}) Predicate {
 	return newP("outside", args...)
 }
 
+// Test evaluates Predicate on given argument.
 func (_ *p) Test(args ...interface{}) Predicate {
 	return newP("test", args...)
 }
 
+// Within Predicate determines if value is within given list of values.
 func (_ *p) Within(args ...interface{}) Predicate {
 	return newP("within", args...)
 }
 
+// Without Predicate determines if value is not within the specified.
 func (_ *p) Without(args ...interface{}) Predicate {
 	return newP("without", args...)
 }
 
+// And Predicate returns a Predicate composed of two predicates (logical AND of them).
 func (pp *p) And(args ...interface{}) Predicate {
 	return newPWithP("and", *pp, args...)
 }
 
+// Or Predicate returns a Predicate composed of two predicates (logical OR of them).
 func (pp *p) Or(args ...interface{}) Predicate {
 	return newPWithP("or", *pp, args...)
 }
@@ -364,34 +420,42 @@ func newTextPWithP(operator string, tp textP, args ...interface{}) TextPredicate
 	return &textP{operator: operator, values: values}
 }
 
+// Containing TextPredicate determines if a string contains a given value.
 func (_ *textP) Containing(args ...interface{}) TextPredicate {
 	return newTextP("containing", args...)
 }
 
+// EndingWith TextPredicate determines if a string ends with a given value.
 func (_ *textP) EndingWith(args ...interface{}) TextPredicate {
 	return newTextP("endingWith", args...)
 }
 
+// NotContaining TextPredicate determines if a string does not contain a given value.
 func (_ *textP) NotContaining(args ...interface{}) TextPredicate {
 	return newTextP("notContaining", args...)
 }
 
+// NotEndingWith TextPredicate determines if a string does not end with a given value.
 func (_ *textP) NotEndingWith(args ...interface{}) TextPredicate {
 	return newTextP("notEndingWith", args...)
 }
 
+// NotStartingWith TextPredicate determines if a string does not start with a given value.
 func (_ *textP) NotStartingWith(args ...interface{}) TextPredicate {
 	return newTextP("notStartingWith", args...)
 }
 
+// StartingWith TextPredicate determines if a string starts with a given value.
 func (_ *textP) StartingWith(args ...interface{}) TextPredicate {
 	return newTextP("startingWith", args...)
 }
 
+// And TextPredicate returns a TextPredicate composed of two predicates (logical AND of them).
 func (tp *textP) And(args ...interface{}) TextPredicate {
 	return newTextPWithP("and", *tp, args...)
 }
 
+// Or TextPredicate returns a TextPredicate composed of two predicates (logical OR of them).
 func (tp *textP) Or(args ...interface{}) TextPredicate {
 	return newTextPWithP("or", *tp, args...)
 }

@@ -66,6 +66,7 @@ func (channelResultSet *channelResultSet) sendSignal() {
 	}
 }
 
+// GetError returns error from the channelResultSet.
 func (channelResultSet *channelResultSet) GetError() error {
 	return channelResultSet.err
 }
@@ -74,6 +75,7 @@ func (channelResultSet *channelResultSet) setError(err error) {
 	channelResultSet.err = err
 }
 
+// IsEmpty returns true when the channelResultSet is empty.
 func (channelResultSet *channelResultSet) IsEmpty() bool {
 	channelResultSet.channelMutex.Lock()
 	// If our channel is empty and we have no data in it, wait for signal that the state has been updated.
@@ -83,7 +85,7 @@ func (channelResultSet *channelResultSet) IsEmpty() bool {
 		return false
 	} else if channelResultSet.closed {
 		// Channel is empty and closed.
-                channelResultSet.channelMutex.Unlock()
+		channelResultSet.channelMutex.Unlock()
 		return true
 	} else {
 		// Channel is empty and not closed. Need to wait for signal that state has changed, otherwise
@@ -105,6 +107,7 @@ func (channelResultSet *channelResultSet) IsEmpty() bool {
 	}
 }
 
+// Close can be used to close the channelResultSet.
 func (channelResultSet *channelResultSet) Close() {
 	if !channelResultSet.closed {
 		channelResultSet.channelMutex.Lock()
@@ -119,6 +122,7 @@ func (channelResultSet *channelResultSet) setAggregateTo(val string) {
 	channelResultSet.aggregateTo = val
 }
 
+// GetAggregateTo returns aggregateTo for the channelResultSet.
 func (channelResultSet *channelResultSet) GetAggregateTo() string {
 	return channelResultSet.aggregateTo
 }
@@ -127,14 +131,17 @@ func (channelResultSet *channelResultSet) setStatusAttributes(val map[string]int
 	channelResultSet.statusAttributes = val
 }
 
+// GetStatusAttributes returns statusAttributes for the channelResultSet.
 func (channelResultSet *channelResultSet) GetStatusAttributes() map[string]interface{} {
 	return channelResultSet.statusAttributes
 }
 
+// GetRequestID returns requestID for the channelResultSet.
 func (channelResultSet *channelResultSet) GetRequestID() string {
 	return channelResultSet.requestID
 }
 
+// Channel returns channel for the channelResultSet.
 func (channelResultSet *channelResultSet) Channel() chan *Result {
 	return channelResultSet.channel
 }
@@ -146,6 +153,7 @@ func (channelResultSet *channelResultSet) one() (*Result, error) {
 	return <-channelResultSet.channel, channelResultSet.err
 }
 
+// All returns all results for the channelResultSet.
 func (channelResultSet *channelResultSet) All() ([]*Result, error) {
 	var results []*Result
 	if channelResultSet.err != nil {

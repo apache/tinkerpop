@@ -33,13 +33,13 @@ import (
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v1.0"
 
-// serializer interface for serializers
+// serializer interface for serializers.
 type serializer interface {
 	serializeMessage(request *request) ([]byte, error)
 	deserializeMessage(message []byte) (response, error)
 }
 
-// graphBinarySerializer serializes/deserializes message to/from GraphBinary
+// graphBinarySerializer serializes/deserializes message to/from GraphBinary.
 type graphBinarySerializer struct {
 	ser *graphBinaryTypeSerializer
 }
@@ -74,7 +74,7 @@ func convertArgs(request *request, gs graphBinarySerializer) (map[string]interfa
 	}
 }
 
-// serializeMessage serializes a request message into GraphBinary
+// serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
 	args, err := convertArgs(request, gs)
 	if err != nil {
@@ -228,7 +228,7 @@ func readString(buffer *bytes.Buffer) (string, error) {
 	return string(strBytes[:]), nil
 }
 
-// deserializeMessage deserializes a response message
+// deserializeMessage deserializes a response message.
 func (gs graphBinarySerializer) deserializeMessage(responseMessage []byte) (response, error) {
 	var msg response
 	buffer := bytes.Buffer{}

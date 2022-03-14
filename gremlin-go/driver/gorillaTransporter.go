@@ -40,6 +40,7 @@ type gorillaTransporter struct {
 	isClosed   bool
 }
 
+// Connect used to establish a connection.
 func (transporter *gorillaTransporter) Connect() (err error) {
 	if transporter.connection != nil {
 		return
@@ -61,6 +62,7 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 	return
 }
 
+// Write used to write data to the transporter. Opens connection if closed.
 func (transporter *gorillaTransporter) Write(data []byte) (err error) {
 	if transporter.connection == nil {
 		err = transporter.Connect()
@@ -73,6 +75,7 @@ func (transporter *gorillaTransporter) Write(data []byte) (err error) {
 	return err
 }
 
+// Read used to read data from the transporter. Opens connection if closed.
 func (transporter *gorillaTransporter) Read() ([]byte, error) {
 	if transporter.connection == nil {
 		err := transporter.Connect()
@@ -116,6 +119,7 @@ func (transporter *gorillaTransporter) Read() ([]byte, error) {
 	}
 }
 
+// Close used to close a connection if it is opened.
 func (transporter *gorillaTransporter) Close() (err error) {
 	if transporter.connection != nil && !transporter.isClosed {
 		transporter.isClosed = true
@@ -124,6 +128,7 @@ func (transporter *gorillaTransporter) Close() (err error) {
 	return
 }
 
+// IsClosed returns true when the transporter is closed.
 func (transporter *gorillaTransporter) IsClosed() bool {
 	return transporter.isClosed
 }
