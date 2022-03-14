@@ -31,7 +31,6 @@ const emptyMap = Object.freeze(new utils.ImmutableMap());
  * Represents the response returned from the execution of a Gremlin traversal or script.
  */
 class ResultSet {
-
   /**
    * Creates a new instance of {@link ResultSet}.
    * @param {Array} items

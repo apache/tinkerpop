@@ -33,8 +33,7 @@ class Bytecode {
     if (!toClone) {
       this.sourceInstructions = [];
       this.stepInstructions = [];
-    }
-    else {
+    } else {
       this.sourceInstructions = [...toClone.sourceInstructions];
       this.stepInstructions = [...toClone.stepInstructions];
     }
@@ -79,9 +78,12 @@ class Bytecode {
     instruction[0] = name;
     for (let i = 1; i < length; i++) {
       const val = values[i - 1];
-      if (val instanceof Traversal && val.graph != null)
-        throw new Error(`The child traversal of ${val} was not spawned anonymously - use ` +
-            `the __ class rather than a TraversalSource to construct the child traversal`);
+      if (val instanceof Traversal && val.graph != null) {
+        throw new Error(
+          `The child traversal of ${val} was not spawned anonymously - use ` +
+            'the __ class rather than a TraversalSource to construct the child traversal',
+        );
+      }
       instruction[i] = val;
     }
     return instruction;
@@ -113,8 +115,8 @@ class Bytecode {
    */
   static get GraphOp() {
     return {
-      commit: Bytecode._createGraphOp("tx", ["commit"]),
-      rollback: Bytecode._createGraphOp("tx", ["rollback"])
+      commit: Bytecode._createGraphOp('tx', ['commit']),
+      rollback: Bytecode._createGraphOp('tx', ['rollback']),
     };
   }
 }

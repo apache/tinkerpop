@@ -32,7 +32,6 @@ const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require(
  * Represents the primary DSL of the Gremlin traversal machine.
  */
 class GraphTraversalSource {
-
   /**
    * Creates a new instance of {@link GraphTraversalSource}.
    * @param {Graph} graph
@@ -51,7 +50,7 @@ class GraphTraversalSource {
     // in order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
     // TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
     // TODO: refactor this to be nicer in 3.6.0 when we can take a breaking change
-    const strat = traversalStrategies.strategies.find(ts => ts.fqcn === "js:RemoteStrategy");
+    const strat = traversalStrategies.strategies.find((ts) => ts.fqcn === 'js:RemoteStrategy');
     this.remoteConnection = strat !== undefined ? strat.connection : undefined;
   }
 
@@ -62,8 +61,13 @@ class GraphTraversalSource {
   withRemote(remoteConnection) {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode),
-      this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      traversalStrategy,
+      new Bytecode(this.bytecode),
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
 
   /**
@@ -73,7 +77,7 @@ class GraphTraversalSource {
   tx() {
     // you can't do g.tx().begin().tx() - no child transactions
     if (this.remoteConnection && this.remoteConnection.isSessionBound) {
-      throw new Error("This TraversalSource is already bound to a transaction - child transactions are not supported")
+      throw new Error('This TraversalSource is already bound to a transaction - child transactions are not supported');
     }
 
     return new Transaction(this);
@@ -90,9 +94,17 @@ class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withComputer(graphComputer, workers, result, persist, vertices, edges, configuration) {
-    return this.withStrategies(new VertexProgramStrategy({graphComputer: graphComputer,
-                           workers: workers, result: result, persist: persist, vertices: vertices, edges: edges,
-                           configuration: configuration}));
+    return this.withStrategies(
+      new VertexProgramStrategy({
+        graphComputer: graphComputer,
+        workers: workers,
+        result: result,
+        persist: persist,
+        vertices: vertices,
+        edges: edges,
+        configuration: configuration,
+      }),
+    );
   }
 
   /**
@@ -101,18 +113,23 @@ class GraphTraversalSource {
    * @param {Object} value if not specified, the value with default to {@code true}
    * @returns {GraphTraversalSource}
    */
-  with_(key, value=undefined) {
+  with_(key, value = undefined) {
     const val = value === undefined ? true : value;
     let optionsStrategy = this.bytecode.sourceInstructions.find(
-        i => i[0] === "withStrategies" && i[1] instanceof OptionsStrategy);
+      (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
+    );
     if (optionsStrategy === undefined) {
-      optionsStrategy = new OptionsStrategy({[key]: val});
+      optionsStrategy = new OptionsStrategy({ [key]: val });
       return this.withStrategies(optionsStrategy);
-    } else {
-      optionsStrategy[1].configuration[key] = val;
-      return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies),
-          this.bytecode, this.graphTraversalSourceClass, this.graphTraversalClass);
     }
+    optionsStrategy[1].configuration[key] = val;
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      this.bytecode,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
 
   /**
@@ -122,7 +139,7 @@ class GraphTraversalSource {
   toString() {
     return 'graphtraversalsource[' + this.graph.toString() + ']';
   }
-  
+
   /**
    * Graph Traversal Source withBulk method.
    * @param {...Object} args
@@ -130,9 +147,15 @@ class GraphTraversalSource {
    */
   withBulk(...args) {
     const b = new Bytecode(this.bytecode).addSource('withBulk', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      b,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
-  
+
   /**
    * Graph Traversal Source withPath method.
    * @param {...Object} args
@@ -140,9 +163,15 @@ class GraphTraversalSource {
    */
   withPath(...args) {
     const b = new Bytecode(this.bytecode).addSource('withPath', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      b,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
-  
+
   /**
    * Graph Traversal Source withSack method.
    * @param {...Object} args
@@ -150,9 +179,15 @@ class GraphTraversalSource {
    */
   withSack(...args) {
     const b = new Bytecode(this.bytecode).addSource('withSack', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      b,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
-  
+
   /**
    * Graph Traversal Source withSideEffect method.
    * @param {...Object} args
@@ -160,9 +195,15 @@ class GraphTraversalSource {
    */
   withSideEffect(...args) {
     const b = new Bytecode(this.bytecode).addSource('withSideEffect', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      b,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
-  
+
   /**
    * Graph Traversal Source withStrategies method.
    * @param {...Object} args
@@ -170,9 +211,15 @@ class GraphTraversalSource {
    */
   withStrategies(...args) {
     const b = new Bytecode(this.bytecode).addSource('withStrategies', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      b,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
-  
+
   /**
    * Graph Traversal Source withoutStrategies method.
    * @param {...Object} args
@@ -180,9 +227,15 @@ class GraphTraversalSource {
    */
   withoutStrategies(...args) {
     const b = new Bytecode(this.bytecode).addSource('withoutStrategies', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
+    return new this.graphTraversalSourceClass(
+      this.graph,
+      new TraversalStrategies(this.traversalStrategies),
+      b,
+      this.graphTraversalSourceClass,
+      this.graphTraversalClass,
+    );
   }
-  
+
   /**
    * E GraphTraversalSource step method.
    * @param {...Object} args
@@ -192,7 +245,7 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('E', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
+
   /**
    * V GraphTraversalSource step method.
    * @param {...Object} args
@@ -202,7 +255,7 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('V', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
+
   /**
    * addE GraphTraversalSource step method.
    * @param {...Object} args
@@ -212,7 +265,7 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('addE', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
+
   /**
    * addV GraphTraversalSource step method.
    * @param {...Object} args
@@ -222,7 +275,7 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('addV', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
+
   /**
    * inject GraphTraversalSource step method.
    * @param {...Object} args
@@ -232,7 +285,7 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('inject', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
+
   /**
    * io GraphTraversalSource step method.
    * @param {...Object} args
@@ -242,7 +295,6 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('io', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
-  
 }
 
 /**
@@ -260,7 +312,6 @@ class GraphTraversal extends Traversal {
     return new GraphTraversal(this.graph, this.traversalStrategies, this.getBytecode());
   }
 
-  
   /**
    * Graph traversal V method.
    * @param {...Object} args
@@ -270,7 +321,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('V', args);
     return this;
   }
-  
+
   /**
    * Graph traversal addE method.
    * @param {...Object} args
@@ -280,7 +331,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('addE', args);
     return this;
   }
-  
+
   /**
    * Graph traversal addV method.
    * @param {...Object} args
@@ -290,7 +341,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('addV', args);
     return this;
   }
-  
+
   /**
    * Graph traversal aggregate method.
    * @param {...Object} args
@@ -300,7 +351,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('aggregate', args);
     return this;
   }
-  
+
   /**
    * Graph traversal and method.
    * @param {...Object} args
@@ -310,7 +361,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('and', args);
     return this;
   }
-  
+
   /**
    * Graph traversal as method.
    * @param {...Object} args
@@ -320,7 +371,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('as', args);
     return this;
   }
-  
+
   /**
    * Graph traversal barrier method.
    * @param {...Object} args
@@ -330,7 +381,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('barrier', args);
     return this;
   }
-  
+
   /**
    * Graph traversal both method.
    * @param {...Object} args
@@ -340,7 +391,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('both', args);
     return this;
   }
-  
+
   /**
    * Graph traversal bothE method.
    * @param {...Object} args
@@ -350,7 +401,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('bothE', args);
     return this;
   }
-  
+
   /**
    * Graph traversal bothV method.
    * @param {...Object} args
@@ -360,7 +411,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('bothV', args);
     return this;
   }
-  
+
   /**
    * Graph traversal branch method.
    * @param {...Object} args
@@ -370,7 +421,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('branch', args);
     return this;
   }
-  
+
   /**
    * Graph traversal by method.
    * @param {...Object} args
@@ -380,7 +431,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('by', args);
     return this;
   }
-  
+
   /**
    * Graph traversal cap method.
    * @param {...Object} args
@@ -390,7 +441,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('cap', args);
     return this;
   }
-  
+
   /**
    * Graph traversal choose method.
    * @param {...Object} args
@@ -400,7 +451,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('choose', args);
     return this;
   }
-  
+
   /**
    * Graph traversal coalesce method.
    * @param {...Object} args
@@ -410,7 +461,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('coalesce', args);
     return this;
   }
-  
+
   /**
    * Graph traversal coin method.
    * @param {...Object} args
@@ -420,7 +471,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('coin', args);
     return this;
   }
-  
+
   /**
    * Graph traversal connectedComponent method.
    * @param {...Object} args
@@ -430,7 +481,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('connectedComponent', args);
     return this;
   }
-  
+
   /**
    * Graph traversal constant method.
    * @param {...Object} args
@@ -440,7 +491,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('constant', args);
     return this;
   }
-  
+
   /**
    * Graph traversal count method.
    * @param {...Object} args
@@ -450,7 +501,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('count', args);
     return this;
   }
-  
+
   /**
    * Graph traversal cyclicPath method.
    * @param {...Object} args
@@ -460,7 +511,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('cyclicPath', args);
     return this;
   }
-  
+
   /**
    * Graph traversal dedup method.
    * @param {...Object} args
@@ -470,7 +521,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('dedup', args);
     return this;
   }
-  
+
   /**
    * Graph traversal drop method.
    * @param {...Object} args
@@ -480,7 +531,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('drop', args);
     return this;
   }
-  
+
   /**
    * Graph traversal elementMap method.
    * @param {...Object} args
@@ -490,7 +541,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('elementMap', args);
     return this;
   }
-  
+
   /**
    * Graph traversal emit method.
    * @param {...Object} args
@@ -500,7 +551,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('emit', args);
     return this;
   }
-  
+
   /**
    * Graph traversal filter method.
    * @param {...Object} args
@@ -510,7 +561,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('filter', args);
     return this;
   }
-  
+
   /**
    * Graph traversal flatMap method.
    * @param {...Object} args
@@ -520,7 +571,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('flatMap', args);
     return this;
   }
-  
+
   /**
    * Graph traversal fold method.
    * @param {...Object} args
@@ -530,7 +581,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('fold', args);
     return this;
   }
-  
+
   /**
    * Graph traversal from method.
    * @param {...Object} args
@@ -540,7 +591,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('from', args);
     return this;
   }
-  
+
   /**
    * Graph traversal group method.
    * @param {...Object} args
@@ -550,7 +601,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('group', args);
     return this;
   }
-  
+
   /**
    * Graph traversal groupCount method.
    * @param {...Object} args
@@ -560,7 +611,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('groupCount', args);
     return this;
   }
-  
+
   /**
    * Graph traversal has method.
    * @param {...Object} args
@@ -570,7 +621,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('has', args);
     return this;
   }
-  
+
   /**
    * Graph traversal hasId method.
    * @param {...Object} args
@@ -580,7 +631,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('hasId', args);
     return this;
   }
-  
+
   /**
    * Graph traversal hasKey method.
    * @param {...Object} args
@@ -590,7 +641,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('hasKey', args);
     return this;
   }
-  
+
   /**
    * Graph traversal hasLabel method.
    * @param {...Object} args
@@ -600,7 +651,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('hasLabel', args);
     return this;
   }
-  
+
   /**
    * Graph traversal hasNot method.
    * @param {...Object} args
@@ -610,7 +661,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('hasNot', args);
     return this;
   }
-  
+
   /**
    * Graph traversal hasValue method.
    * @param {...Object} args
@@ -620,7 +671,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('hasValue', args);
     return this;
   }
-  
+
   /**
    * Graph traversal id method.
    * @param {...Object} args
@@ -630,7 +681,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('id', args);
     return this;
   }
-  
+
   /**
    * Graph traversal identity method.
    * @param {...Object} args
@@ -640,7 +691,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('identity', args);
     return this;
   }
-  
+
   /**
    * Graph traversal in method.
    * @param {...Object} args
@@ -650,7 +701,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('in', args);
     return this;
   }
-  
+
   /**
    * Graph traversal inE method.
    * @param {...Object} args
@@ -660,7 +711,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('inE', args);
     return this;
   }
-  
+
   /**
    * Graph traversal inV method.
    * @param {...Object} args
@@ -670,7 +721,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('inV', args);
     return this;
   }
-  
+
   /**
    * Graph traversal index method.
    * @param {...Object} args
@@ -680,7 +731,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('index', args);
     return this;
   }
-  
+
   /**
    * Graph traversal inject method.
    * @param {...Object} args
@@ -690,7 +741,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('inject', args);
     return this;
   }
-  
+
   /**
    * Graph traversal is method.
    * @param {...Object} args
@@ -700,7 +751,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('is', args);
     return this;
   }
-  
+
   /**
    * Graph traversal key method.
    * @param {...Object} args
@@ -710,7 +761,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('key', args);
     return this;
   }
-  
+
   /**
    * Graph traversal label method.
    * @param {...Object} args
@@ -720,7 +771,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('label', args);
     return this;
   }
-  
+
   /**
    * Graph traversal limit method.
    * @param {...Object} args
@@ -730,7 +781,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('limit', args);
     return this;
   }
-  
+
   /**
    * Graph traversal local method.
    * @param {...Object} args
@@ -740,7 +791,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('local', args);
     return this;
   }
-  
+
   /**
    * Graph traversal loops method.
    * @param {...Object} args
@@ -750,7 +801,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('loops', args);
     return this;
   }
-  
+
   /**
    * Graph traversal map method.
    * @param {...Object} args
@@ -760,7 +811,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('map', args);
     return this;
   }
-  
+
   /**
    * Graph traversal match method.
    * @param {...Object} args
@@ -770,7 +821,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('match', args);
     return this;
   }
-  
+
   /**
    * Graph traversal math method.
    * @param {...Object} args
@@ -780,7 +831,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('math', args);
     return this;
   }
-  
+
   /**
    * Graph traversal max method.
    * @param {...Object} args
@@ -790,7 +841,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('max', args);
     return this;
   }
-  
+
   /**
    * Graph traversal mean method.
    * @param {...Object} args
@@ -800,7 +851,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('mean', args);
     return this;
   }
-  
+
   /**
    * Graph traversal min method.
    * @param {...Object} args
@@ -810,7 +861,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('min', args);
     return this;
   }
-  
+
   /**
    * Graph traversal none method.
    * @param {...Object} args
@@ -820,7 +871,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('none', args);
     return this;
   }
-  
+
   /**
    * Graph traversal not method.
    * @param {...Object} args
@@ -830,7 +881,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('not', args);
     return this;
   }
-  
+
   /**
    * Graph traversal option method.
    * @param {...Object} args
@@ -840,7 +891,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('option', args);
     return this;
   }
-  
+
   /**
    * Graph traversal optional method.
    * @param {...Object} args
@@ -850,7 +901,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('optional', args);
     return this;
   }
-  
+
   /**
    * Graph traversal or method.
    * @param {...Object} args
@@ -860,7 +911,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('or', args);
     return this;
   }
-  
+
   /**
    * Graph traversal order method.
    * @param {...Object} args
@@ -870,7 +921,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('order', args);
     return this;
   }
-  
+
   /**
    * Graph traversal otherV method.
    * @param {...Object} args
@@ -880,7 +931,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('otherV', args);
     return this;
   }
-  
+
   /**
    * Graph traversal out method.
    * @param {...Object} args
@@ -890,7 +941,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('out', args);
     return this;
   }
-  
+
   /**
    * Graph traversal outE method.
    * @param {...Object} args
@@ -900,7 +951,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('outE', args);
     return this;
   }
-  
+
   /**
    * Graph traversal outV method.
    * @param {...Object} args
@@ -910,7 +961,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('outV', args);
     return this;
   }
-  
+
   /**
    * Graph traversal pageRank method.
    * @param {...Object} args
@@ -920,7 +971,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('pageRank', args);
     return this;
   }
-  
+
   /**
    * Graph traversal path method.
    * @param {...Object} args
@@ -930,7 +981,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('path', args);
     return this;
   }
-  
+
   /**
    * Graph traversal peerPressure method.
    * @param {...Object} args
@@ -940,7 +991,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('peerPressure', args);
     return this;
   }
-  
+
   /**
    * Graph traversal profile method.
    * @param {...Object} args
@@ -950,7 +1001,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('profile', args);
     return this;
   }
-  
+
   /**
    * Graph traversal program method.
    * @param {...Object} args
@@ -960,7 +1011,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('program', args);
     return this;
   }
-  
+
   /**
    * Graph traversal project method.
    * @param {...Object} args
@@ -970,7 +1021,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('project', args);
     return this;
   }
-  
+
   /**
    * Graph traversal properties method.
    * @param {...Object} args
@@ -980,7 +1031,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('properties', args);
     return this;
   }
-  
+
   /**
    * Graph traversal property method.
    * @param {...Object} args
@@ -990,7 +1041,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('property', args);
     return this;
   }
-  
+
   /**
    * Graph traversal propertyMap method.
    * @param {...Object} args
@@ -1000,7 +1051,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('propertyMap', args);
     return this;
   }
-  
+
   /**
    * Graph traversal range method.
    * @param {...Object} args
@@ -1010,7 +1061,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('range', args);
     return this;
   }
-  
+
   /**
    * Graph traversal read method.
    * @param {...Object} args
@@ -1020,7 +1071,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('read', args);
     return this;
   }
-  
+
   /**
    * Graph traversal repeat method.
    * @param {...Object} args
@@ -1030,7 +1081,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('repeat', args);
     return this;
   }
-  
+
   /**
    * Graph traversal sack method.
    * @param {...Object} args
@@ -1040,7 +1091,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('sack', args);
     return this;
   }
-  
+
   /**
    * Graph traversal sample method.
    * @param {...Object} args
@@ -1050,7 +1101,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('sample', args);
     return this;
   }
-  
+
   /**
    * Graph traversal select method.
    * @param {...Object} args
@@ -1060,7 +1111,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('select', args);
     return this;
   }
-  
+
   /**
    * Graph traversal shortestPath method.
    * @param {...Object} args
@@ -1070,7 +1121,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('shortestPath', args);
     return this;
   }
-  
+
   /**
    * Graph traversal sideEffect method.
    * @param {...Object} args
@@ -1080,7 +1131,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('sideEffect', args);
     return this;
   }
-  
+
   /**
    * Graph traversal simplePath method.
    * @param {...Object} args
@@ -1090,7 +1141,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('simplePath', args);
     return this;
   }
-  
+
   /**
    * Graph traversal skip method.
    * @param {...Object} args
@@ -1100,7 +1151,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('skip', args);
     return this;
   }
-  
+
   /**
    * Graph traversal store method.
    * @param {...Object} args
@@ -1110,7 +1161,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('store', args);
     return this;
   }
-  
+
   /**
    * Graph traversal subgraph method.
    * @param {...Object} args
@@ -1120,7 +1171,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('subgraph', args);
     return this;
   }
-  
+
   /**
    * Graph traversal sum method.
    * @param {...Object} args
@@ -1130,7 +1181,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('sum', args);
     return this;
   }
-  
+
   /**
    * Graph traversal tail method.
    * @param {...Object} args
@@ -1140,7 +1191,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('tail', args);
     return this;
   }
-  
+
   /**
    * Graph traversal timeLimit method.
    * @param {...Object} args
@@ -1150,7 +1201,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('timeLimit', args);
     return this;
   }
-  
+
   /**
    * Graph traversal times method.
    * @param {...Object} args
@@ -1160,7 +1211,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('times', args);
     return this;
   }
-  
+
   /**
    * Graph traversal to method.
    * @param {...Object} args
@@ -1170,7 +1221,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('to', args);
     return this;
   }
-  
+
   /**
    * Graph traversal toE method.
    * @param {...Object} args
@@ -1180,7 +1231,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('toE', args);
     return this;
   }
-  
+
   /**
    * Graph traversal toV method.
    * @param {...Object} args
@@ -1190,7 +1241,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('toV', args);
     return this;
   }
-  
+
   /**
    * Graph traversal tree method.
    * @param {...Object} args
@@ -1200,7 +1251,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('tree', args);
     return this;
   }
-  
+
   /**
    * Graph traversal unfold method.
    * @param {...Object} args
@@ -1210,7 +1261,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('unfold', args);
     return this;
   }
-  
+
   /**
    * Graph traversal union method.
    * @param {...Object} args
@@ -1220,7 +1271,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('union', args);
     return this;
   }
-  
+
   /**
    * Graph traversal until method.
    * @param {...Object} args
@@ -1230,7 +1281,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('until', args);
     return this;
   }
-  
+
   /**
    * Graph traversal value method.
    * @param {...Object} args
@@ -1240,7 +1291,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('value', args);
     return this;
   }
-  
+
   /**
    * Graph traversal valueMap method.
    * @param {...Object} args
@@ -1250,7 +1301,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('valueMap', args);
     return this;
   }
-  
+
   /**
    * Graph traversal values method.
    * @param {...Object} args
@@ -1260,7 +1311,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('values', args);
     return this;
   }
-  
+
   /**
    * Graph traversal where method.
    * @param {...Object} args
@@ -1270,7 +1321,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('where', args);
     return this;
   }
-  
+
   /**
    * Graph traversal with method.
    * @param {...Object} args
@@ -1280,7 +1331,7 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('with', args);
     return this;
   }
-  
+
   /**
    * Graph traversal write method.
    * @param {...Object} args
@@ -1290,7 +1341,6 @@ class GraphTraversal extends Traversal {
     this.bytecode.addStep('write', args);
     return this;
   }
-  
 }
 
 function callOnEmptyTraversal(fnName, args) {
@@ -1392,11 +1442,11 @@ const statics = {
   value: (...args) => callOnEmptyTraversal('value', args),
   valueMap: (...args) => callOnEmptyTraversal('valueMap', args),
   values: (...args) => callOnEmptyTraversal('values', args),
-  where: (...args) => callOnEmptyTraversal('where', args)
+  where: (...args) => callOnEmptyTraversal('where', args),
 };
 
 module.exports = {
   GraphTraversal,
   GraphTraversalSource,
-  statics
+  statics,
 };

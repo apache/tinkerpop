@@ -35,7 +35,7 @@ class SaslAuthenticator extends Authenticator {
       throw new Error('No Sasl Mechanism Specified');
     }
   }
-  
+
   /**
    * Evaluates the challenge from the server and returns appropriate response.
    * @param {String} challenge Challenge string presented by the server.

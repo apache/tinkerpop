@@ -20,9 +20,9 @@
 /**
  * @author Jorge Bay Gondra
  */
+
 'use strict';
 
-const utils = require('../utils');
 const itemDone = Object.freeze({ value: null, done: true });
 const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
@@ -63,19 +63,21 @@ class Traversal {
       }
       return result;
     });
-  };
+  }
 
   /**
    * Determines if there are any more items to iterate from the traversal.
    * @returns {Promise.<boolean>}
    */
-   hasNext() {
-     return this._applyStrategies().then(() => {
-       return this.traversers && this.traversers.length > 0 &&
-              this._traversersIteratorIndex < this.traversers.length &&
-              this.traversers[this._traversersIteratorIndex].bulk > 0;
-     });
-   }
+  hasNext() {
+    return this._applyStrategies().then(
+      () =>
+        this.traversers &&
+        this.traversers.length > 0 &&
+        this._traversersIteratorIndex < this.traversers.length &&
+        this.traversers[this._traversersIteratorIndex].bulk > 0,
+    );
+  }
 
   /**
    * Iterates all Traverser instances in the traversal.
@@ -86,6 +88,7 @@ class Traversal {
     return this._applyStrategies().then(() => {
       let it;
       while ((it = this._getNext()) && !it.done) {
+        //
       }
     });
   }
@@ -105,7 +108,7 @@ class Traversal {
    */
   _getNext() {
     while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
-      let traverser = this.traversers[this._traversersIteratorIndex];
+      const traverser = this.traversers[this._traversersIteratorIndex];
       if (traverser.bulk > 0) {
         traverser.bulk--;
         return { value: traverser.object, done: false };
@@ -120,14 +123,14 @@ class Traversal {
       // Apply strategies only once
       return this._traversalStrategiesPromise;
     }
-    return this._traversalStrategiesPromise = this.traversalStrategies.applyStrategies(this);
+    return (this._traversalStrategiesPromise = this.traversalStrategies.applyStrategies(this));
   }
 
   /**
    * Returns step instructions during JSON serialization
    * @returns {Array}
    */
-  toJSON(){
+  toJSON() {
     return this.bytecode.stepInstructions;
   }
 
@@ -137,105 +140,102 @@ class Traversal {
    */
   toString() {
     return this.bytecode.toString();
-  };
+  }
 }
-
 
 class IO {
+  static get graphml() {
+    return 'graphml';
+  }
 
- static get graphml() {
-   return "graphml"
- }
+  static get graphson() {
+    return 'graphson';
+  }
 
- static get graphson() {
-   return "graphson"
- }
+  static get gryo() {
+    return 'gryo';
+  }
 
- static get gryo() {
-   return "gryo"
- }
+  static get reader() {
+    return '~tinkerpop.io.reader';
+  }
 
- static get reader() {
-   return "~tinkerpop.io.reader"
- }
+  static get registry() {
+    return '~tinkerpop.io.registry';
+  }
 
- static get registry() {
-   return "~tinkerpop.io.registry"
- }
-
- static get writer() {
-   return "~tinkerpop.io.writer"
- }
+  static get writer() {
+    return '~tinkerpop.io.writer';
+  }
 }
 
+// eslint-disable-next-line no-unused-vars
 class ConnectedComponent {
+  static get component() {
+    return 'gremlin.connectedComponentVertexProgram.component';
+  }
 
- static get component() {
-   return "gremlin.connectedComponentVertexProgram.component"
- }
+  static get edges() {
+    return '~tinkerpop.connectedComponent.edges';
+  }
 
- static get edges() {
-   return "~tinkerpop.connectedComponent.edges"
- }
-
- static get propertyName() {
-   return "~tinkerpop.connectedComponent.propertyName"
- }
+  static get propertyName() {
+    return '~tinkerpop.connectedComponent.propertyName';
+  }
 }
 
+// eslint-disable-next-line no-unused-vars
 class ShortestPath {
+  static get distance() {
+    return '~tinkerpop.shortestPath.distance';
+  }
 
- static get distance() {
-   return "~tinkerpop.shortestPath.distance"
- }
+  static get edges() {
+    return '~tinkerpop.shortestPath.edges';
+  }
 
- static get edges() {
-   return "~tinkerpop.shortestPath.edges"
- }
+  static get includeEdges() {
+    return '~tinkerpop.shortestPath.includeEdges';
+  }
 
- static get includeEdges() {
-   return "~tinkerpop.shortestPath.includeEdges"
- }
+  static get maxDistance() {
+    return '~tinkerpop.shortestPath.maxDistance';
+  }
 
- static get maxDistance() {
-   return "~tinkerpop.shortestPath.maxDistance"
- }
-
- static get target() {
-   return "~tinkerpop.shortestPath.target"
- }
+  static get target() {
+    return '~tinkerpop.shortestPath.target';
+  }
 }
 
+// eslint-disable-next-line no-unused-vars
 class PageRank {
+  static get edges() {
+    return '~tinkerpop.pageRank.edges';
+  }
 
- static get edges() {
-   return "~tinkerpop.pageRank.edges"
- }
+  static get propertyName() {
+    return '~tinkerpop.pageRank.propertyName';
+  }
 
- static get propertyName() {
-   return "~tinkerpop.pageRank.propertyName"
- }
-
- static get times() {
-   return "~tinkerpop.pageRank.times"
- }
+  static get times() {
+    return '~tinkerpop.pageRank.times';
+  }
 }
 
+// eslint-disable-next-line no-unused-vars
 class PeerPressure {
+  static get edges() {
+    return '~tinkerpop.peerPressure.edges';
+  }
 
- static get edges() {
-   return "~tinkerpop.peerPressure.edges"
- }
+  static get propertyName() {
+    return '~tinkerpop.peerPressure.propertyName';
+  }
 
- static get propertyName() {
-   return "~tinkerpop.peerPressure.propertyName"
- }
-
- static get times() {
-   return "~tinkerpop.peerPressure.times"
- }
+  static get times() {
+    return '~tinkerpop.peerPressure.times';
+  }
 }
-
 
 class P {
   /**
@@ -253,16 +253,16 @@ class P {
    * @returns {string}
    */
   toString() {
-    function formatValue(value){
+    function formatValue(value) {
       if (Array.isArray(value)) {
-        let acc = [];
+        const acc = [];
         for (const item of value) {
           acc.push(formatValue(item));
         }
         return acc;
       }
-      if (value && typeof value === "string"){
-        return "'" + value + "'";
+      if (value && typeof value === 'string') {
+        return `'${value}'`;
       }
       return value;
     }
@@ -283,20 +283,17 @@ class P {
 
   static within(...args) {
     if (args.length === 1 && Array.isArray(args[0])) {
-      return new P("within", args[0], null);
-    } else {
-      return new P("within", args, null);
+      return new P('within', args[0], null);
     }
+    return new P('within', args, null);
   }
 
   static without(...args) {
     if (args.length === 1 && Array.isArray(args[0])) {
-      return new P("without", args[0], null);
-    } else {
-      return new P("without", args, null);
+      return new P('without', args[0], null);
     }
+    return new P('without', args, null);
   }
-
 
   /** @param {...Object} args */
   static between(...args) {
@@ -352,12 +349,11 @@ class P {
   static test(...args) {
     return createP('test', args);
   }
-
 }
 
 function createP(operator, args) {
   args.unshift(null, operator);
-  return new (Function.prototype.bind.apply(P, args));
+  return new (Function.prototype.bind.apply(P, args))();
 }
 
 class TextP {
@@ -376,9 +372,9 @@ class TextP {
    * @returns {string}
    */
   toString() {
-    function formatValue(value){
-      if (value && typeof value === "string"){
-        return "'" + value + "'";
+    function formatValue(value) {
+      if (value && typeof value === 'string') {
+        return `'${value}'`;
       }
       return value;
     }
@@ -426,12 +422,11 @@ class TextP {
   static startingWith(...args) {
     return createTextP('startingWith', args);
   }
-
 }
 
 function createTextP(operator, args) {
   args.unshift(null, operator);
-  return new (Function.prototype.bind.apply(TextP, args));
+  return new (Function.prototype.bind.apply(TextP, args))();
 }
 
 class Traverser {
@@ -441,26 +436,24 @@ class Traverser {
   }
 }
 
-class TraversalSideEffects {
-
-}
+class TraversalSideEffects {}
 
 const withOptions = {
-  tokens: "~tinkerpop.valueMap.tokens",
+  tokens: '~tinkerpop.valueMap.tokens',
   none: 0,
   ids: 1,
   labels: 2,
   keys: 4,
   values: 8,
   all: 15,
-  indexer: "~tinkerpop.index.indexer",
+  indexer: '~tinkerpop.index.indexer',
   list: 0,
-  map: 1
+  map: 1,
 };
 
 function toEnum(typeName, keys) {
   const result = {};
-  keys.split(' ').forEach(k => {
+  keys.split(' ').forEach((k) => {
     let jsKey = k;
     if (jsKey === jsKey.toUpperCase()) {
       jsKey = jsKey.toLowerCase();
@@ -501,5 +494,5 @@ module.exports = {
   pick: toEnum('Pick', 'any none'),
   pop: toEnum('Pop', 'all first last mixed'),
   scope: toEnum('Scope', 'global local'),
-  t: toEnum('T', 'id key label value')
+  t: toEnum('T', 'id key label value'),
 };

@@ -50,8 +50,8 @@ module.exports = {
     ResultSet,
     auth: {
       Authenticator,
-      PlainTextSaslAuthenticator
-    }
+      PlainTextSaslAuthenticator,
+    },
   },
   process: {
     Bytecode,
@@ -79,7 +79,7 @@ module.exports = {
     Translator,
     traversal: AnonymousTraversalSource.traversal,
     AnonymousTraversalSource,
-    withOptions: t.withOptions
+    withOptions: t.withOptions,
   },
   structure: {
     io: gs,
@@ -89,6 +89,6 @@ module.exports = {
     Property: graph.Property,
     Vertex: graph.Vertex,
     VertexProperty: graph.VertexProperty,
-    toLong: utils.toLong
-  }
+    toLong: utils.toLong,
+  },
 };

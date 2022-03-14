@@ -29,12 +29,12 @@ exports.toLong = function toLong(value) {
   return new Long(value);
 };
 
-const Long = exports.Long = function Long(value) {
+const Long = (exports.Long = function Long(value) {
   if (typeof value !== 'string' && typeof value !== 'number') {
     throw new TypeError('The value must be a string or a number');
   }
   this.value = value.toString();
-};
+});
 
 exports.getUuid = function getUuid() {
   const buffer = crypto.randomBytes(16);
@@ -48,11 +48,16 @@ exports.getUuid = function getUuid() {
   buffer[8] |= 0x80;
   const hex = buffer.toString('hex');
   return (
-    hex.substr(0, 8) + '-' +
-    hex.substr(8, 4) + '-' +
-    hex.substr(12, 4) + '-' +
-    hex.substr(16, 4) + '-' +
-    hex.substr(20, 12));
+    hex.substr(0, 8) +
+    '-' +
+    hex.substr(8, 4) +
+    '-' +
+    hex.substr(12, 4) +
+    '-' +
+    hex.substr(16, 4) +
+    '-' +
+    hex.substr(20, 12)
+  );
 };
 
 exports.emptyArray = Object.freeze([]);
@@ -62,15 +67,15 @@ class ImmutableMap extends Map {
     super(iterable);
   }
 
-  set(){
+  set() {
     return this;
   }
 
-  ['delete'](){
+  ['delete']() {
     return false;
   }
 
-  clear() { }
+  clear() {}
 }
 
 exports.ImmutableMap = ImmutableMap;
