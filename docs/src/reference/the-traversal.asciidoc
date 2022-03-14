@@ -2551,7 +2551,7 @@ not combined with the map provided to `Merge.onCreate`.
 [gremlin-groovy]
 ----
 g.mergeV([(T.id):300]).
-  option(Merge.onCreate,[[(T.id):300], (T.label):'Dog', 'name':'Toby', 'age':10])
+  option(Merge.onCreate,[(T.id):300, (T.label):'Dog', 'name':'Toby', 'age':10])
 ----
 
 To take specific action when the vertex already exists, `Merge.onMatch` can be used. The
@@ -2580,7 +2580,7 @@ g.mergeV([(T.id): 1]).
     option(onMatch, [modified: 2022]) <5>
 
 g.mergeV([(T.id):300]).
-  option(Merge.onCreate,(Map)null)  <6>
+  option(Merge.onCreate,(Map) null)  <6>
 ----
 
 <1> If no match found create the vertex using these values.

@@ -100,8 +100,8 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
         final int childIndexOfParameterKey = 2;
         final int childIndexOfParameterInitialValue = 4;
 
-        final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringLiteral(
-                (GremlinParser.StringLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
+        final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringBasedLiteral(
+                (GremlinParser.StringBasedLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
         final Object argument2 = GenericLiteralVisitor.instance().visitGenericLiteral(
                 (GremlinParser.GenericLiteralContext)(ctx.getChild(childIndexOfParameterInitialValue)));
 
@@ -136,14 +136,14 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
         final int childIndexOfParameterKey = 2;
 
         if (ctx.getChildCount() == 4) {
-            final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringLiteral(
-                    (GremlinParser.StringLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
+            final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringBasedLiteral(
+                    (GremlinParser.StringBasedLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
             return source.with(argument1);
         } else {
             final int childIndexOfParameterInitialValue = 4;
 
-            final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringLiteral(
-                    (GremlinParser.StringLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
+            final String argument1 = (String)(GenericLiteralVisitor.instance().visitStringBasedLiteral(
+                    (GremlinParser.StringBasedLiteralContext)(ctx.getChild(childIndexOfParameterKey))));
             final Object argument2 = GenericLiteralVisitor.instance().visitGenericLiteral(
                     (GremlinParser.GenericLiteralContext)(ctx.getChild(childIndexOfParameterInitialValue)));
             return source.with(argument1, argument2);

@@ -29,7 +29,6 @@ import org.junit.runners.Parameterized;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -238,12 +237,12 @@ public class GeneralLiteralVisitorTest {
         public void shouldParse() {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-            final GremlinParser.StringLiteralContext ctx = parser.stringLiteral();
+            final GremlinParser.StringBasedLiteralContext ctx = parser.stringBasedLiteral();
             if (expected.equals("Empty")) {
                 // handle special case for Empty string
-                assertEquals("", GenericLiteralVisitor.getInstance().visitStringLiteral(ctx));
+                assertEquals("", GenericLiteralVisitor.instance().visitStringBasedLiteral(ctx));
             } else {
-                assertEquals(expected, GenericLiteralVisitor.getInstance().visitStringLiteral(ctx));
+                assertEquals(expected, GenericLiteralVisitor.instance().visitStringBasedLiteral(ctx));
             }
         }
     }
@@ -282,8 +281,8 @@ public class GeneralLiteralVisitorTest {
             final String stringLiteral = quoteCharacter + inputChars + quoteCharacter;
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(stringLiteral));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-            final GremlinParser.StringLiteralContext ctx = parser.stringLiteral();
-            assertEquals(expectedOutputChars, GenericLiteralVisitor.getInstance().visitStringLiteral(ctx));
+            final GremlinParser.StringBasedLiteralContext ctx = parser.stringBasedLiteral();
+            assertEquals(expectedOutputChars, GenericLiteralVisitor.instance().visitStringBasedLiteral(ctx));
         }
     }
 
@@ -519,7 +518,13 @@ public class GeneralLiteralVisitorTest {
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
                     {"[\"name\":\"simba\"]", 1},
+                    {"[name:\"simba\", age: 29]", 2},
                     {"[:]", 0},
+                    {"[1:'a']", 1},
+                    {"[label: 'person', T.id: 1]", 2},
+                    {"[(label): 'person', (T.id): 1]", 2},
+                    {"[from: 'source', Direction.to: 'target']", 2},
+                    {"[(from): 'source', (Direction.to): 'target']", 2},
                     {"[\"name\":\"simba\",\"age\":32]", 2},
                     {"[\"name\":\"simba\",\"age\":[2,3]]", 2}
             });

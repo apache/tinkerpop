@@ -110,6 +110,7 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
         assumeThat("fill() terminator is not supported", query.contains("fill("), is(false));
         assumeThat("withoutStrategies() is not supported", query.contains("withoutStrategies("), is(false));
         assumeThat("program() is not supported", query.contains("program("), is(false));
+        assumeThat("Casts are not supported", query.contains("(Map)"), is(false));
 
         parse(query);
     }

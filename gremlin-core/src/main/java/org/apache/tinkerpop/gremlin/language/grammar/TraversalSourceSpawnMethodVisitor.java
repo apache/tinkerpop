@@ -52,8 +52,8 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addE(final GremlinParser.TraversalSourceSpawnMethod_addEContext ctx) {
-        if (ctx.stringLiteral() != null) {
-            return this.traversalSource.addE(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+        if (ctx.stringBasedLiteral() != null) {
+            return this.traversalSource.addE(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
         } else if (ctx.nestedTraversal() != null) {
             return this.traversalSource.addE(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
         } else {
@@ -66,8 +66,8 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
-        if (ctx.stringLiteral() != null) {
-            return this.traversalSource.addV(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+        if (ctx.stringBasedLiteral() != null) {
+            return this.traversalSource.addV(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
         } else if (ctx.nestedTraversal() != null) {
             return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
         } else {
@@ -112,7 +112,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_io(final GremlinParser.TraversalSourceSpawnMethod_ioContext ctx) {
         if (ctx.getChildCount() > 2) {
-            this.graphTraversal = this.traversalSource.io(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+            this.graphTraversal = this.traversalSource.io(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
         }
         return graphTraversal;
     }
