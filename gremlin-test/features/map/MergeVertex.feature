@@ -615,6 +615,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"josh\")"
     And the graph should return 3 for count of "g.V()"
 
+  @MultiMetaProperties
   Scenario: g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
     Given the empty graph
     And the graph initializer of
@@ -635,6 +636,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
 
+  @MultiMetaProperties
   Scenario: g_withSideEffectXm_age_19X_V_hasXperson_name_markoX_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
     Given the empty graph
     And the graph initializer of
