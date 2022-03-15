@@ -524,6 +524,9 @@ criteria applies to both incoming and outgoing edges of the traverser `Vertex`. 
 `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
+If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `Map`
+instance to be applied.
+
 [width="100%",options="header"]
 |=========================================================
 |Event |Null `Map` |Empty `Map`
@@ -581,6 +584,9 @@ The `Map` that is used as the argument for `searchCreate` may be assigned from t
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
 the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
+
+If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `Map`
+instance to be applied.
 
 [width="100%",options="header"]
 |=========================================================

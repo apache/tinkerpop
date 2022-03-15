@@ -72,7 +72,7 @@ Feature: Step - simplePath()
       | p[marko,josh,ripple] |
       | p[marko,josh,lop]    |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_injectX0X_V_both_coalesceXhasXname_markoX_both_constantX0XX_simplePath_path
     Given the modern graph
     And the traversal of
@@ -89,7 +89,7 @@ Feature: Step - simplePath()
       | p[d[0].i,v[josh],v[marko],v[lop]] |
       | p[d[0].i,v[josh],v[marko],v[vadas]] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_both_asXaX_both_asXbX_simplePath_path_byXageX__fromXaX_toXbX
     Given the modern graph
     And the traversal of

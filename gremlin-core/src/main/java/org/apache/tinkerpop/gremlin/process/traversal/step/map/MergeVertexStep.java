@@ -164,10 +164,14 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
         // when it's a start step a traverser needs to be created to kick off the traversal.
         if (isStart && first) {
             first = false;
-            final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
-            this.addStart(generator.generate(false, (Step) this, 1L));
+            generateTraverser(false);
         }
         return super.processNextStart();
+    }
+
+    private void generateTraverser(final Object o) {
+        final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
+        this.addStart(generator.generate(o, (Step) this, 1L));
     }
 
     /**
@@ -214,6 +218,10 @@ public class MergeVertexStep<S> extends FlatMapStep<S, Vertex> implements Mutati
         stream = stream.map(v -> {
             // if no onMatch is defined then there is no update - return the vertex unchanged
             if (null == onMatchTraversal) return v;
+
+            // if this was a start step the traverser is initialized with Boolean/false, so override that with
+            // the matched Vertex so that the option() traversal can operate on it properly
+            if (isStart) traverser.set((S) v);
 
             // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
             final Map<String, Object> onMatchMap = TraversalUtil.apply(traverser, onMatchTraversal);

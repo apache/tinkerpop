@@ -95,6 +95,12 @@ Feature: Step - mergeV()
   # g_V_mergeVXemptyX_two_exist
   #  - mergeV(empty) with no option()
   #  - results in matching two vertices
+  # g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
+  #  - mergeV() that has a match to a vertex with multiproperties
+  #  - results in all multiproperties removed to be replaced with one property
+  # g_withSideEffectXm_age_19X_V_hasXperson_name_markoX_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
+  #  - mergeV() that has a match to a vertex with multiproperties
+  #  - results in all multiproperties removed to be replaced with one property
 
   Scenario: g_mergeVXemptyX_optionXonMatch_nullX
     Given the empty graph
@@ -608,3 +614,42 @@ Feature: Step - mergeV()
     Then the result should have a count of 2
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"josh\")"
     And the graph should return 3 for count of "g.V()"
+
+  Scenario: g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
+    And using the parameter xx2 defined as "m[{\"age\": \"d[19].i\"}]"
+    And the traversal of
+      """
+      g.withSideEffect("c", xx1).
+        withSideEffect("m", xx2).
+        mergeV(__.select("c")).
+          option(Merge.onMatch, __.sideEffect(__.properties("age").drop()).select("m"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+
+  Scenario: g_withSideEffectXm_age_19X_V_hasXperson_name_markoX_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And using the parameter xx1 defined as "m[{\"age\": \"d[19].i\"}]"
+    And the traversal of
+      """
+      g.withSideEffect("m", xx1).
+        V().has("person", "name", "marko").
+        mergeV([:]).
+          option(Merge.onMatch, __.sideEffect(__.properties("age").drop()).select("m"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"

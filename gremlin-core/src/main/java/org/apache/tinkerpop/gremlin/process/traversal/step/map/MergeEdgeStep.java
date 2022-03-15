@@ -267,6 +267,10 @@ public class MergeEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<E
             // if no onMatch is defined then there is no update - return the edge unchanged
             if (null == onMatchTraversal) return e;
 
+            // if this was a start step the traverser is initialized with placeholder edge, so override that with
+            // the matched Edge so that the option() traversal can operate on it properly
+            if (isStart) traverser.set((S) e);
+
             // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
             final Map<String, Object> onMatchMap = TraversalUtil.apply(traverser, onMatchTraversal);
             validateMapInput(onMatchMap, true);

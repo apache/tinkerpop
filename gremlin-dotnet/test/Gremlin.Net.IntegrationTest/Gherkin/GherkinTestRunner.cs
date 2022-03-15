@@ -54,6 +54,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX_exists", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
                 {"g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
                 {"g_withSideEffectXc_label_person_name_stephenX_withSideEffectXm_label_person_name_stephen_age_19X_mergeVXselectXcXX_optionXonCreate_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
+                {"g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
             };
 
         private static class Keywords
