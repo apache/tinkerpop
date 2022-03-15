@@ -42,7 +42,7 @@ To build the driver you must install `go`. The following command can be used to 
 ### Code Styling and Linting
 Before generating a pull request, you should manually run the following to ensure correct code styling and fix any issues indicated by the linters.
 
-#### Formatting files with Gofmt
+### Formatting files with Gofmt
 To ensure clean and readable code [Gofmt][gofmt] is used. 
 
 Navigate to file path in a terminal window and run:
@@ -53,7 +53,7 @@ Gofmt will recursively check for and format `.go` files.
 
 Note: If your IDE of choice is [GoLand][goland], code can be automatically formatted with Gofmt on file save. Instructions on how to enable this feature can be found [here][fmtsave].
 
-#### Using the Linter and staticcheck
+### Using the Linter and staticcheck
 Run [go vet][gvet] and [staticcheck][scheck] and correct any errors.
 
 [go vet][gvet] is installed when you install go, and can be run with:
@@ -155,6 +155,10 @@ func main() {
 ```
 
 Note: The exact import name as well as the module prefix for `NewDriverRemoteConnection` may change in the future.
+
+### Design Architecture
+
+See [Gremlin-Go Design Overview](design.MD)
 
 # Go Gremlin Language Variant
 
