@@ -67,6 +67,39 @@ image::gremlin-variant-architecture.png[width=650]
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
+[[gremlin-groovy]]
+== Gremlin-Groovy
+
+image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
+link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
+<<gremlin-java,Gremlin-Java>> constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
+<<gremlin-console,Gremlin Console>> and <<gremlin-server,Gremlin Server>>.
+
+[source,groovy]
+----
+compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: 'x.y.z'
+compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: 'x.y.z'
+----
+
+[[gremlin-groovy-differences]]
+=== Differences
+
+In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
+statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
+`+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
+
+Since Groovy has access to the full JVM as Java does, it is possible to construct `Date`-like objects directly, but
+the Gremlin language does offer a `datetime()` function that is exposed in the Gremlin Console and as a function for
+Gremlin scripts sent to Gremlin Server. The function accepts the following forms of dates and times using a default
+time zone offset of UTC(+00:00):
+
+* `2018-03-22`
+* `2018-03-22T00:35:44`
+* `2018-03-22T00:35:44Z`
+* `2018-03-22T00:35:44.741`
+* `2018-03-22T00:35:44.741Z`
+* `2018-03-22T00:35:44.741+1600`
+
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]
 [[gremlin-java]]
@@ -649,38 +682,712 @@ This command will generate a new Maven project in a directory called "app" with 
 `com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and
 execute it.
 
-[[gremlin-groovy]]
-== Gremlin-Groovy
+[[gremlin-javascript]]
+== Gremlin-JavaScript
 
-image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
-link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
-Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
-<<gremlin-console,Gremlin Console>> and <<gremlin-server,Gremlin Server>>.
+image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
+JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 6 or
+above. Since the JavaScript naming conventions are very similar to that of Java, it should be very easy to switch
+between Gremlin-Java and Gremlin-JavaScript.
+
+[source,bash]
+npm install gremlin
+
+[[gremlin-javascript-connecting]]
+=== Connecting
+
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
+method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
+the remote end.
+
+[source,javascript]
+----
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+----
+
+Gremlin-JavaScript supports plain text SASL authentication, you can set it on the connection options.
+
+[source,javascript]
+----
+const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser', 'mypassword');
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
+----
+
+Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
+
+* `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
+* `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
+link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
+* `Traversal.iterate()`: Returns a `Promise` without a value.
+
+For example:
+
+[source,javascript]
+----
+g.V().hasLabel('person').values('name').toList()
+  .then(names => console.log(names));
+----
+
+When using `async` functions it is possible to `await` the promises:
+
+[source,javascript]
+----
+const names = await g.V().hasLabel('person').values('name').toList();
+console.log(names);
+----
+
+Some connection options can also be set on individual requests made through the using `with()` step on the
+`TraversalSource`. For instance to set request timeout to 500 milliseconds:
+
+[source,javascript]
+----
+const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+
+[[gremlin-javascript-imports]]
+=== Common Imports
+
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
+provide most of the typical functionality required to use Gremlin:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const __ = gremlin.process.statics;
+const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+const column = gremlin.process.column
+const direction = gremlin.process.direction
+const p = gremlin.process.P
+const textp = gremlin.process.TextP
+const pick = gremlin.process.pick
+const pop = gremlin.process.pop
+const order = gremlin.process.order
+const scope = gremlin.process.scope
+const t = gremlin.process.t
+----
+
+By defining these imports it becomes possible to write Gremlin in the more shorthand, canonical style that is
+demonstrated in most examples found here in the documentation:
+
+[source,javascript]
+----
+const { P: { gt } } = gremlin.process;
+const { order: { desc } } = gremlin.process;
+g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
+----
+
+[[gremlin-javascript-transactions]]
+=== Transactions
+
+To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
+section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
+builds on that content by demonstrating the transactional syntax for Javascript.
+
+[source,javascript]
+----
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const tx = g.tx(); // create a Transaction
+
+// spawn a new GraphTraversalSource binding all traversals established from it to tx
+const gtx = tx.begin();
+
+// execute traversals using gtx occur within the scope of the transaction held by tx. the
+// tx is closed after calls to commit or rollback and cannot be re-used. simply spawn a
+// new Transaction from g.tx() to create a new one as needed. the g context remains
+// accessible through all this as a sessionless connection.
+Promise.all([
+  gtx.addV("person").property("name", "jorge").iterate(),
+  gtx.addV("person").property("name", "josh").iterate()
+]).then(() => {
+  return tx.commit();
+}).catch(() => {
+  return tx.rollback();
+});
+----
+
+[[gremlin-javascript-lambda]]
+=== The Lambda Solution
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Javascript, a Gremlin lambda
+should be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
+traversal. The returned lambda should be written as a Gremlin-Groovy string. When the lambda is represented in
+`Bytecode` its language is encoded such that the remote connection host can infer which translator and ultimate
+execution engine to use.
+
+[source,javascript]
+----
+g.V().out().
+  map(() => "it.get().value('name').length()").
+  sum().
+  toList().then(total => console.log(total))
+----
+
+TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
+instance created, it will help to fully define the closure in the lambda expression - so rather than
+`() => "it.get().value('name')"`, prefer `() => "x -> x.get().value('name')"`.
+
+WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
+
+[[gremlin-javascript-scripts]]
+=== Submitting Scripts
+
+It is possible to submit parametrized Gremlin scripts to the server as strings, using the `Client` class:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+const result1 = await client.submit('g.V(vid)', { vid: 1 });
+const vertex = result1.first();
+
+const result2 = await client.submit('g.V().hasLabel(label).tail(n)', { label: 'person', n: 3 });
+
+// ResultSet is an iterable
+for (const vertex of result2) {
+  console.log(vertex.id);
+}
+----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,javascript]
+----
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
+----
+
+With this configuration, the state of variables within scripts are preserved between requests.
+
+==== Per Request Settings
+
+The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
+provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
+this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
+request.
+
+[source,javascript]
+----
+const result = await client.submit("g.V().repeat(both()).times(100)", null, { evaluationTimeout: 5000 })
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
+with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
+
+
+==== Processing results as they are returned from the Gremlin server
+
+
+The Gremlin JavaScript driver maintains a WebSocket connection to the Gremlin server and receives messages according to the `batchSize` parameter on the per request settings or the `resultIterationBatchSize` value configured for the Gremlin server. When submitting scripts the default behavior is to wait for the entire result set to be returned from a query before allowing any processing on the result set.
+
+The following examples assume that you have 100 vertices in your graph.
+
+[source,javascript]
+----
+const result = await client.submit("g.V()");
+console.log(result.toArray()); // 100 - all the vertices in your graph
+----
+
+When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can return a readable stream instead of waiting for the entire result set to be loaded.
+
+[source,javascript]
+----
+
+const readable =  client.stream("g.V()", {}, { batchSize: 25 });
+
+readable.on('data', (data) => {
+  console.log(data.toArray()); // 25 vertices
+})
+
+readable.on('error', (error) => {
+  console.log(error); // errors returned from gremlin server
+})
+
+readable.on('end', () => {
+  console.log('query complete'); // when the end event is received then all the results have been processed
+})
+----
+
+If you are using NodeJS >= 10.0, you can asynchronously iterate readable streams:
+
+
+[source,javascript]
+----
+
+const readable = client.stream("g.V()", {}, { batchSize: 25 });
+
+try {
+  for await (const result of readable) {
+    console.log('data', result.toArray()); // 25 vertices
+  }
+} catch (err) {
+  console.log(err);
+}
+
+----
+
+
+[[gremlin-javascript-dsl]]
+=== Domain Specific Languages
+
+Developing Gremlin DSLs in JavaScript largely requires extension of existing core classes with use of standalone
+functions for anonymous traversal spawning. The pattern is demonstrated in the following example:
+
+[source,javascript]
+----
+class SocialTraversal extends GraphTraversal {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode);
+  }
+
+  aged(age) {
+    return this.has('person', 'age', age);
+  }
+}
+
+class SocialTraversalSource extends GraphTraversalSource {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode, SocialTraversalSource, SocialTraversal);
+  }
+
+  person(name) {
+    return this.V().has('person', 'name', name);
+  }
+}
+
+function anonymous() {
+  return new SocialTraversal(null, null, new Bytecode());
+}
+
+function aged(age) {
+  return anonymous().aged(age);
+}
+----
+
+`SocialTraversal` extends the core `GraphTraversal` class and has a three argument constructor which is immediately
+proxied to the `GraphTraversal` constructor. New DSL steps are then added to this class using available steps to
+construct the underlying traversal to execute as demonstrated in the `aged()` step.
+
+The `SocialTraversal` is spawned from a `SocialTraversalSource` which is extended from `GraphTraversalSource`. Steps
+added here are meant to be start steps. In the above case, the `person()` start step find a "person" vertex to begin
+the traversal from.
+
+Typically, steps that are made available on a `GraphTraversal` (i.e. SocialTraversal in this example) should also be
+made available as spawns for anonymous traversals. The recommendation is that these steps be exposed in the module
+as standalone functions. In the example above, the standalone `aged()` step creates an anonymous traversal through
+an `anonymous()` utility function. The method for creating these standalone functions can be handled in other ways if
+desired.
+
+To use the DSL, simply initialize the `g` as follows:
+
+[source,javascript]
+----
+const g = traversal(SocialTraversalSource).withRemote(connection);
+g.person('marko').aged(29).values('name').toList().
+  then(names => console.log(names));
+----
+
+[[javascript-differences]]
+[[gremlin-javascript-differences]]
+=== Differences
+
+In situations where Javascript reserved words and global functions overlap with standard Gremlin steps and tokens, those
+bits of conflicting Gremlin get an underscore appended as a suffix:
+
+*Steps* - <<from-step,from_()>>, <<in-step,in_()>>, <<with-step,with_()>>
+
+Gremlin allows for `Map` instances to include `null` keys, but `null` keys in Javascript have some interesting behavior
+as in:
+
+[source,text]
+----
+> var a = { null: 'something', 'b': 'else' };
+> JSON.stringify(a)
+'{"null":"something","b":"else"}'
+> JSON.parse(JSON.stringify(a))
+{ null: 'something', b: 'else' }
+> a[null]
+'something'
+> a['null']
+'something'
+----
+
+This behavior needs to be considered when using Gremlin to return such results. A typical situation where this might
+happen is with `group()` or `groupCount()` as in:
+
+[source,javascript]
+----
+g.V().groupCount().by('age')
+----
+
+where "age" is not a valid key for all vertices. In these cases, it will return `null` for that key and group on that.
+It may bet better in Javascript to filter away those vertices to avoid the return of `null` in the returned `Map`:
+
+[source,javascript]
+----
+g.V().has('age').groupCount().by('age')
+g.V().hasLabel('person').groupCount().by('age')
+----
+
+Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
+the possibility of `null`.
+
+[[gremlin-javascript-limitations]]
+=== Limitations
+
+* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
+`aggregate(local)` and then convert those results to something the client can use locally.
+
+anchor:gremlin-DotNet[]
+[[gremlin-dotnet]]
+== Gremlin.Net
+
+image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
+language. It targets .NET Standard and can therefore be used on different operating systems and with different .NET
+frameworks, such as .NET Framework and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very
+similar to that of Java, it should be easy to switch between Gremlin-Java and Gremlin.Net. The only major syntactical
+difference is that all method names in Gremlin.Net use PascalCase as opposed to camelCase in Gremlin-Java in order
+to comply with .NET conventions.
+
+[source,powershell]
+nuget install Gremlin.Net
+
+[[gremlin-dotnet-connecting]]
+=== Connecting
+
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
+method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
+the remote end.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=connecting]
+----
+
+Some connection options can also be set on individual requests using the `With()` step on the `TraversalSource`.
+For instance to set request timeout to 500 milliseconds:
+
+[source,csharp]
+----
+var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
+available as constants on the `Gremlin.Net.Driver.Tokens` class.
+
+[[gremlin-dotnet-imports]]
+=== Common Imports
+
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
+provide most of the typical functionality required to use Gremlin:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=commonImports]
+----
+
+[[gremlin-dotnet-configuration]]
+=== Configuration
+
+The connection properties for the Gremlin.Net driver can be passed to the `GremlinServer` instance as keyword arguments:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|hostname |The hostname that the driver will connect to. |localhost
+|port |The port on which Gremlin Server can be reached. |8182
+|enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|username |The username to submit on requests that require authentication. |_none_
+|password |The password to submit on requests that require authentication. |_none_
+|=========================================================
+
+==== Connection Pool
+
+It is also possible to configure the `ConnectionPool` of the Gremlin.Net driver.
+These configuration options can be set as properties
+on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|PoolSize |The size of the connection pool. |4
+|MaxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |32
+|ReconnectionAttempts |The number of attempts to get an open connection from the pool to submit a request. |4
+|ReconnectionBaseDelay |The base delay used for the exponential backoff for the reconnection attempts. |1 s
+|=========================================================
+
+A `NoConnectionAvailableException` is thrown if all connections have reached the `MaxInProcessPerConnection` limit
+when a new request comes in.
+A `ServerUnavailableException` is thrown if no connection is available to the server to submit a request after
+`ReconnectionAttempts` retries.
+
+==== WebSocket Configuration
+
+The WebSocket connections can also be configured, directly as parameters of the `GremlinClient` constructor. It takes
+an optional delegate `webSocketConfiguration` that will be invoked for each connection. This makes it possible to
+configure more advanced options like the `KeepAliveInterval` or client certificates.
+
+Starting with .NET 6, it is also possible to use compression for WebSockets. This is enabled by default starting with
+TinkerPop 3.5.3 (again, only on .NET 6 or higher). Note that compression might make an application susceptible to
+attacks like CRIME/BREACH. Compression should therefore be turned off if the application sends sensitive data to the
+server as well as data that could potentially be controlled by an untrusted user. Compression can be disabled via the
+`disableCompression` parameter.
+
+[[gremlin-dotnet-serialization]]
+=== Serialization
+
+The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use another serialization format by passing a message serializer when creating the `GremlinClient`.
+
+GraphBinary can be configured like this:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationBinary]
+----
+
+and GraphSON 2.0 like this:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationGraphSon]
+----
+
+[[gremlin-dotnet-strategies]]
+=== Traversal Strategies
+
+In order to add and remove traversal strategies from a traversal source, Gremlin.Net has an `AbstractTraversalStrategy`
+class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=traversalStrategies]
+----
+
+NOTE: Many of the TraversalStrategy classes in Gremlin.Net are proxies to the respective strategy on Apache TinkerPop’s
+JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
+encoded in the Gremlin.Net bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
+
+[[gremlin-dotnet-transactions]]
+=== Transactions
+
+To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
+section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
+builds on that content by demonstrating the transactional syntax for C#.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=transactions]
+----
+
+[[gremlin-dotnet-lambda]]
+=== The Lambda Solution
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most languages do not support lambda introspection and thus, code analysis. While Gremlin.Net doesn't support C# lambdas, it
+is still able to represent lambdas in other languages. When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator and ultimate execution engine to use.
+
+[source,csharp]
+----
+g.V().Out().Map<int>(Lambda.Groovy("it.get().value('name').length()")).Sum<int>().ToList();      <1>
+g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<int>().ToList(); <2>
+----
+
+<1> `Lambda.Groovy()` can be used to create a Groovy lambda. 
+<2> `Lambda.Python()` can be used to create a Python lambda.
+
+The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
+their Java counterparts which makes it possible to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
+
+TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
+instance created, it will help to fully define the closure in the lambda expression - so rather than
+`Lambda.Groovy("it.get().value('name'))`, prefer `Lambda.Groovy("x -> x.get().value('name'))`.
+
+[[gremlin-dotnet-scripts]]
+=== Submitting Scripts
+
+Gremlin scripts are sent to the server from a `IGremlinClient` instance.  A `IGremlinClient` is created as follows:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScripts]
+----
+
+If the remote system has authentication and SSL enabled, then the `GremlinServer` object can be configured as follows:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithAuthentication]
+----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,csharp]
+----
+var gremlinServer = new GremlinServer("localhost", 8182);
+var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
+----
+
+==== Per Request Settings
+
+The `GremlinClient.Submit()` functions accept an option to build a raw `RequestMessage`. A good use-case for this
+feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current request.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
+available as constants on the `Gremlin.Net.Driver.Tokens` class.
+
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
+with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
+
+anchor:gremlin-net-dsl[]
+[[gremlin-dotnet-dsl]]
+=== Domain Specific Languages
+
+Developing a <<dsl,Domain Specific Language>> (DSL) for .Net is most easily implemented using
+link:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods[Extension Methods]
+as they don't require direct extension of classes in the TinkerPop hierarchy. Extension Method classes simply need to
+be constructed for the `GraphTraversal` and the `GraphTraversalSource`. Unfortunately, anonymous traversals (spawned
+from `+__+`) can't use the Extension Method approach as they do not work for static classes and static classes can't be
+extended. The only option is to re-implement the methods of `+__+` as a wrapper in the anonymous traversal for the DSL
+or to simply create a static class for the DSL and use the two anonymous traversals creators independently. The
+following example uses the latter approach as it saves a lot of boilerplate code with the minor annoyance of having a
+second static class to deal with when writing traversals rather than just calling `+__+` for everything.
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDsl.cs[tags=dsl]
+----
+
+Note the creation of `__Social` as the Social DSL's "extension" to the available ways in which to spawn anonymous
+traversals. The use of the double underscore prefix in the name is just a convention to consider using and is not a
+requirement. To use the DSL, bring it into scope with the `using` directive:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslUsing]
+----
+
+and then it can be called from the application as follows:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
+----
+
+anchor:gremlin-net-differences[]
+[[gremlin-dotnet-differences]]
+=== Differences
+
+The biggest difference between Gremlin in .NET and the canonical version in Java is the casing of steps. Canonical
+Gremlin utilizes `camelCase` as is typical in Java for function names, but C# utilizes `PascalCase` as it is more
+typical in that language. Therefore, when viewing a typical Gremlin example written in Gremlin Console, the conversion
+to C# usually just requires capitalization of the first letter in the step name, thus the following example in Groovy:
 
 [source,groovy]
 ----
-compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: 'x.y.z'
-compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: 'x.y.z'
+g.V().has('person','name','marko').
+  out('knows').
+  elementMap().toList()
 ----
 
-[[gremlin-groovy-differences]]
-=== Differences
+would become the following in C#:
 
-In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
-statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
-`+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
+[source,csharp]
+----
+g.V().Has("Person","name","marko").
+  Out("knows").
+  ElementMap().ToList();
+----
 
-Since Groovy has access to the full JVM as Java does, it is possible to construct `Date`-like objects directly, but
-the Gremlin language does offer a `datetime()` function that is exposed in the Gremlin Console and as a function for
-Gremlin scripts sent to Gremlin Server. The function accepts the following forms of dates and times using a default
-time zone offset of UTC(+00:00):
+In addition to the uppercase change, also note the conversion of the single quotes to double quotes as is expected for
+declaring string values in C# and the addition of the semi-colon at the end of the line. In short, don't forget to
+apply the common syntax expectations for C# when trying to convert an example of Gremlin from a different language.
 
-* `2018-03-22`
-* `2018-03-22T00:35:44`
-* `2018-03-22T00:35:44Z`
-* `2018-03-22T00:35:44.741`
-* `2018-03-22T00:35:44.741Z`
-* `2018-03-22T00:35:44.741+1600`
+Another common conversion issues lies in having to explicitly define generics, which can make canonical Gremlin appear
+much more complex in C# where type erasure is not a feature of the language. For example, the following example in
+Groovy:
+
+[source,groovy]
+----
+g.V().repeat(__.out()).times(2).values('name')
+----
+
+must be written as:
+
+[source,csharp]
+----
+g.V().Repeat(__.Out()).Times(2).Values<string>("name");
+----
+
+Gremlin allows for `Map` instances to include `null` keys, but `null` keys in C# `Dictionary` instances are not allowed.
+It is therefore necessary to rewrite a traversal such as:
+
+[source,javascript]
+----
+g.V().groupCount().by('age')
+----
+
+where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
+
+[source,javascript]
+----
+g.V().has('age').groupCount().by('age')
+g.V().hasLabel('person').groupCount().by('age')
+----
+
+Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
+the possibility of `null`.
+
+anchor:gremlin-net-limitations[]
+[[gremlin-dotnet-limitations]]
+=== Limitations
+
+* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
+`aggregate(local)` and then convert those results to something the client can use locally.
+
+anchor:gremlin-dotnet-template[]
+anchor:dotnet-application-examples[]
+anchor:gremlin-net-examples[]
+[[gremlin-dotnet-examples]]
+=== Application Examples
+
+This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
+<<gremlin-dotnet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
+<<gremlin-server,Gremlin Server>> with Gremlin.Net.
+
+You can install the template with the dotnet CLI tool:
+[source,shell]
+dotnet new -i Gremlin.Net.Template
+
+After the template is installed, a new project based on this template can be installed:
+
+[source,shell]
+dotnet new gremlin
+
+Specify the output directory for the new project which will then also be used as the name of the created project:
+
+[source,shell]
+dotnet new gremlin -o MyFirstGremlinProject
 
 [[gremlin-python]]
 == Gremlin-Python
@@ -1190,709 +1897,3 @@ pip install gremlinpython
 pip install aiohttp
 python example.py
 ----
-
-anchor:gremlin-DotNet[]
-[[gremlin-dotnet]]
-== Gremlin.Net
-
-image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
-language. It targets .NET Standard and can therefore be used on different operating systems and with different .NET
-frameworks, such as .NET Framework and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very
-similar to that of Java, it should be easy to switch between Gremlin-Java and Gremlin.Net. The only major syntactical
-difference is that all method names in Gremlin.Net use PascalCase as opposed to camelCase in Gremlin-Java in order
-to comply with .NET conventions.
-
-[source,powershell]
-nuget install Gremlin.Net
-
-[[gremlin-dotnet-connecting]]
-=== Connecting
-
-The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
-method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
-the remote end.
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=connecting]
-----
-
-Some connection options can also be set on individual requests using the `With()` step on the `TraversalSource`.
-For instance to set request timeout to 500 milliseconds:
-
-[source,csharp]
-----
-var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
-----
-
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
-available as constants on the `Gremlin.Net.Driver.Tokens` class.
-
-[[gremlin-dotnet-imports]]
-=== Common Imports
-
-There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
-provide most of the typical functionality required to use Gremlin:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=commonImports]
-----
-
-[[gremlin-dotnet-configuration]]
-=== Configuration
-
-The connection properties for the Gremlin.Net driver can be passed to the `GremlinServer` instance as keyword arguments:
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Key |Description |Default
-|hostname |The hostname that the driver will connect to. |localhost
-|port |The port on which Gremlin Server can be reached. |8182
-|enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
-|username |The username to submit on requests that require authentication. |_none_
-|password |The password to submit on requests that require authentication. |_none_
-|=========================================================
-
-==== Connection Pool
-
-It is also possible to configure the `ConnectionPool` of the Gremlin.Net driver.
-These configuration options can be set as properties
-on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`:
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Key |Description |Default
-|PoolSize |The size of the connection pool. |4
-|MaxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |32
-|ReconnectionAttempts |The number of attempts to get an open connection from the pool to submit a request. |4
-|ReconnectionBaseDelay |The base delay used for the exponential backoff for the reconnection attempts. |1 s
-|=========================================================
-
-A `NoConnectionAvailableException` is thrown if all connections have reached the `MaxInProcessPerConnection` limit
-when a new request comes in.
-A `ServerUnavailableException` is thrown if no connection is available to the server to submit a request after
-`ReconnectionAttempts` retries.
-
-==== WebSocket Configuration
-
-The WebSocket connections can also be configured, directly as parameters of the `GremlinClient` constructor. It takes
-an optional delegate `webSocketConfiguration` that will be invoked for each connection. This makes it possible to
-configure more advanced options like the `KeepAliveInterval` or client certificates.
-
-Starting with .NET 6, it is also possible to use compression for WebSockets. This is enabled by default starting with
-TinkerPop 3.5.3 (again, only on .NET 6 or higher). Note that compression might make an application susceptible to
-attacks like CRIME/BREACH. Compression should therefore be turned off if the application sends sensitive data to the
-server as well as data that could potentially be controlled by an untrusted user. Compression can be disabled via the
-`disableCompression` parameter.
-
-[[gremlin-dotnet-serialization]]
-=== Serialization
-
-The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use another serialization format by passing a message serializer when creating the `GremlinClient`.
-
-GraphBinary can be configured like this:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationBinary]
-----
-
-and GraphSON 2.0 like this:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationGraphSon]
-----
-
-[[gremlin-dotnet-strategies]]
-=== Traversal Strategies
-
-In order to add and remove traversal strategies from a traversal source, Gremlin.Net has an `AbstractTraversalStrategy`
-class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=traversalStrategies]
-----
-
-NOTE: Many of the TraversalStrategy classes in Gremlin.Net are proxies to the respective strategy on Apache TinkerPop’s
-JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
-encoded in the Gremlin.Net bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
-
-[[gremlin-dotnet-transactions]]
-=== Transactions
-
-To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
-section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
-builds on that content by demonstrating the transactional syntax for C#.
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=transactions]
-----
-
-[[gremlin-dotnet-lambda]]
-=== The Lambda Solution
-
-Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most languages do not support lambda introspection and thus, code analysis. While Gremlin.Net doesn't support C# lambdas, it
-is still able to represent lambdas in other languages. When the lambda is represented in `Bytecode` its language is encoded
-such that the remote connection host can infer which translator and ultimate execution engine to use.
-
-[source,csharp]
-----
-g.V().Out().Map<int>(Lambda.Groovy("it.get().value('name').length()")).Sum<int>().ToList();      <1>
-g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<int>().ToList(); <2>
-----
-
-<1> `Lambda.Groovy()` can be used to create a Groovy lambda. 
-<2> `Lambda.Python()` can be used to create a Python lambda.
-
-The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
-their Java counterparts which makes it possible to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
-
-TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
-instance created, it will help to fully define the closure in the lambda expression - so rather than
-`Lambda.Groovy("it.get().value('name'))`, prefer `Lambda.Groovy("x -> x.get().value('name'))`.
-
-[[gremlin-dotnet-scripts]]
-=== Submitting Scripts
-
-Gremlin scripts are sent to the server from a `IGremlinClient` instance.  A `IGremlinClient` is created as follows:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScripts]
-----
-
-If the remote system has authentication and SSL enabled, then the `GremlinServer` object can be configured as follows:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithAuthentication]
-----
-
-It is also possible to initialize the `Client` to use <<sessions,sessions>>:
-
-[source,csharp]
-----
-var gremlinServer = new GremlinServer("localhost", 8182);
-var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
-----
-
-==== Per Request Settings
-
-The `GremlinClient.Submit()` functions accept an option to build a raw `RequestMessage`. A good use-case for this
-feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current request.
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
-----
-
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
-available as constants on the `Gremlin.Net.Driver.Tokens` class.
-
-IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
-with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
-timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
-
-anchor:gremlin-net-dsl[]
-[[gremlin-dotnet-dsl]]
-=== Domain Specific Languages
-
-Developing a <<dsl,Domain Specific Language>> (DSL) for .Net is most easily implemented using
-link:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods[Extension Methods]
-as they don't require direct extension of classes in the TinkerPop hierarchy. Extension Method classes simply need to
-be constructed for the `GraphTraversal` and the `GraphTraversalSource`. Unfortunately, anonymous traversals (spawned
-from `+__+`) can't use the Extension Method approach as they do not work for static classes and static classes can't be
-extended. The only option is to re-implement the methods of `+__+` as a wrapper in the anonymous traversal for the DSL
-or to simply create a static class for the DSL and use the two anonymous traversals creators independently. The
-following example uses the latter approach as it saves a lot of boilerplate code with the minor annoyance of having a
-second static class to deal with when writing traversals rather than just calling `+__+` for everything.
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDsl.cs[tags=dsl]
-----
-
-Note the creation of `__Social` as the Social DSL's "extension" to the available ways in which to spawn anonymous
-traversals. The use of the double underscore prefix in the name is just a convention to consider using and is not a
-requirement. To use the DSL, bring it into scope with the `using` directive:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslUsing]
-----
-
-and then it can be called from the application as follows:
-
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
-----
-
-anchor:gremlin-net-differences[]
-[[gremlin-dotnet-differences]]
-=== Differences
-
-The biggest difference between Gremlin in .NET and the canonical version in Java is the casing of steps. Canonical
-Gremlin utilizes `camelCase` as is typical in Java for function names, but C# utilizes `PascalCase` as it is more
-typical in that language. Therefore, when viewing a typical Gremlin example written in Gremlin Console, the conversion
-to C# usually just requires capitalization of the first letter in the step name, thus the following example in Groovy:
-
-[source,groovy]
-----
-g.V().has('person','name','marko').
-  out('knows').
-  elementMap().toList()
-----
-
-would become the following in C#:
-
-[source,csharp]
-----
-g.V().Has("Person","name","marko").
-  Out("knows").
-  ElementMap().ToList();
-----
-
-In addition to the uppercase change, also note the conversion of the single quotes to double quotes as is expected for
-declaring string values in C# and the addition of the semi-colon at the end of the line. In short, don't forget to
-apply the common syntax expectations for C# when trying to convert an example of Gremlin from a different language.
-
-Another common conversion issues lies in having to explicitly define generics, which can make canonical Gremlin appear
-much more complex in C# where type erasure is not a feature of the language. For example, the following example in
-Groovy:
-
-[source,groovy]
-----
-g.V().repeat(__.out()).times(2).values('name')
-----
-
-must be written as:
-
-[source,csharp]
-----
-g.V().Repeat(__.Out()).Times(2).Values<string>("name");
-----
-
-Gremlin allows for `Map` instances to include `null` keys, but `null` keys in C# `Dictionary` instances are not allowed.
-It is therefore necessary to rewrite a traversal such as:
-
-[source,javascript]
-----
-g.V().groupCount().by('age')
-----
-
-where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
-
-[source,javascript]
-----
-g.V().has('age').groupCount().by('age')
-g.V().hasLabel('person').groupCount().by('age')
-----
-
-Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
-the possibility of `null`.
-
-anchor:gremlin-net-limitations[]
-[[gremlin-dotnet-limitations]]
-=== Limitations
-
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
-
-anchor:gremlin-dotnet-template[]
-anchor:dotnet-application-examples[]
-anchor:gremlin-net-examples[]
-[[gremlin-dotnet-examples]]
-=== Application Examples
-
-This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
-<<gremlin-dotnet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
-<<gremlin-server,Gremlin Server>> with Gremlin.Net.
-
-You can install the template with the dotnet CLI tool:
-[source,shell]
-dotnet new -i Gremlin.Net.Template
-
-After the template is installed, a new project based on this template can be installed:
-
-[source,shell]
-dotnet new gremlin
-
-Specify the output directory for the new project which will then also be used as the name of the created project:
-
-[source,shell]
-dotnet new gremlin -o MyFirstGremlinProject
-
-[[gremlin-javascript]]
-== Gremlin-JavaScript
-
-image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
-JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 6 or
-above. Since the JavaScript naming conventions are very similar to that of Java, it should be very easy to switch
-between Gremlin-Java and Gremlin-JavaScript.
-
-[source,bash]
-npm install gremlin
-
-[[gremlin-javascript-connecting]]
-=== Connecting
-
-The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
-method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
-the remote end.
-
-[source,javascript]
-----
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
-----
-
-Gremlin-JavaScript supports plain text SASL authentication, you can set it on the connection options.
-
-[source,javascript]
-----
-const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser', 'mypassword');
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
-----
-
-Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
-
-* `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
-* `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
-link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
-* `Traversal.iterate()`: Returns a `Promise` without a value.
-
-For example:
-
-[source,javascript]
-----
-g.V().hasLabel('person').values('name').toList()
-  .then(names => console.log(names));
-----
-
-When using `async` functions it is possible to `await` the promises:
-
-[source,javascript]
-----
-const names = await g.V().hasLabel('person').values('name').toList();
-console.log(names);
-----
-
-Some connection options can also be set on individual requests made through the using `with()` step on the
-`TraversalSource`. For instance to set request timeout to 500 milliseconds:
-
-[source,javascript]
-----
-const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
-----
-
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
-
-[[gremlin-javascript-imports]]
-=== Common Imports
-
-There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
-provide most of the typical functionality required to use Gremlin:
-
-[source,javascript]
-----
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const __ = gremlin.process.statics;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const column = gremlin.process.column
-const direction = gremlin.process.direction
-const p = gremlin.process.P
-const textp = gremlin.process.TextP
-const pick = gremlin.process.pick
-const pop = gremlin.process.pop
-const order = gremlin.process.order
-const scope = gremlin.process.scope
-const t = gremlin.process.t
-----
-
-By defining these imports it becomes possible to write Gremlin in the more shorthand, canonical style that is
-demonstrated in most examples found here in the documentation:
-
-[source,javascript]
-----
-const { P: { gt } } = gremlin.process;
-const { order: { desc } } = gremlin.process;
-g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
-----
-
-[[gremlin-javascript-transactions]]
-=== Transactions
-
-To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
-section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
-builds on that content by demonstrating the transactional syntax for Javascript.
-
-[source,javascript]
-----
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
-const tx = g.tx(); // create a Transaction
-
-// spawn a new GraphTraversalSource binding all traversals established from it to tx
-const gtx = tx.begin();
-
-// execute traversals using gtx occur within the scope of the transaction held by tx. the
-// tx is closed after calls to commit or rollback and cannot be re-used. simply spawn a
-// new Transaction from g.tx() to create a new one as needed. the g context remains
-// accessible through all this as a sessionless connection.
-Promise.all([
-  gtx.addV("person").property("name", "jorge").iterate(),
-  gtx.addV("person").property("name", "josh").iterate()
-]).then(() => {
-  return tx.commit();
-}).catch(() => {
-  return tx.rollback();
-});
-----
-
-[[gremlin-javascript-lambda]]
-=== The Lambda Solution
-
-Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most languages do not support lambda introspection and thus, code analysis. In Gremlin-Javascript, a Gremlin lambda
-should be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
-traversal. The returned lambda should be written as a Gremlin-Groovy string. When the lambda is represented in
-`Bytecode` its language is encoded such that the remote connection host can infer which translator and ultimate
-execution engine to use.
-
-[source,javascript]
-----
-g.V().out().
-  map(() => "it.get().value('name').length()").
-  sum().
-  toList().then(total => console.log(total))
-----
-
-TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
-instance created, it will help to fully define the closure in the lambda expression - so rather than
-`() => "it.get().value('name')"`, prefer `() => "x -> x.get().value('name')"`.
-
-WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
-
-[[gremlin-javascript-scripts]]
-=== Submitting Scripts
-
-It is possible to submit parametrized Gremlin scripts to the server as strings, using the `Client` class:
-
-[source,javascript]
-----
-const gremlin = require('gremlin');
-const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
-
-const result1 = await client.submit('g.V(vid)', { vid: 1 });
-const vertex = result1.first();
-
-const result2 = await client.submit('g.V().hasLabel(label).tail(n)', { label: 'person', n: 3 });
-
-// ResultSet is an iterable
-for (const vertex of result2) {
-  console.log(vertex.id);
-}
-----
-
-It is also possible to initialize the `Client` to use <<sessions,sessions>>:
-
-[source,javascript]
-----
-const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
-----
-
-With this configuration, the state of variables within scripts are preserved between requests.
-
-==== Per Request Settings
-
-The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
-provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
-
-[source,javascript]
-----
-const result = await client.submit("g.V().repeat(both()).times(100)", null, { evaluationTimeout: 5000 })
-----
-
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
-
-IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
-with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
-timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
-
-
-==== Processing results as they are returned from the Gremlin server
-
-
-The Gremlin JavaScript driver maintains a WebSocket connection to the Gremlin server and receives messages according to the `batchSize` parameter on the per request settings or the `resultIterationBatchSize` value configured for the Gremlin server. When submitting scripts the default behavior is to wait for the entire result set to be returned from a query before allowing any processing on the result set. 
-
-The following examples assume that you have 100 vertices in your graph.
-
-[source,javascript]
-----
-const result = await client.submit("g.V()");
-console.log(result.toArray()); // 100 - all the vertices in your graph
-----
-
-When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can return a readable stream instead of waiting for the entire result set to be loaded.
-
-[source,javascript]
-----
-
-const readable =  client.stream("g.V()", {}, { batchSize: 25 });
-
-readable.on('data', (data) => {
-  console.log(data.toArray()); // 25 vertices
-})
-
-readable.on('error', (error) => {
-  console.log(error); // errors returned from gremlin server
-})
-
-readable.on('end', () => {
-  console.log('query complete'); // when the end event is received then all the results have been processed
-})
-----
-
-If you are using NodeJS >= 10.0, you can asynchronously iterate readable streams:
-
-
-[source,javascript]
-----
-
-const readable = client.stream("g.V()", {}, { batchSize: 25 });
-
-try {
-  for await (const result of readable) {
-    console.log('data', result.toArray()); // 25 vertices
-  }
-} catch (err) {
-  console.log(err);
-}
-
-----
-
-
-[[gremlin-javascript-dsl]]
-=== Domain Specific Languages
-
-Developing Gremlin DSLs in JavaScript largely requires extension of existing core classes with use of standalone
-functions for anonymous traversal spawning. The pattern is demonstrated in the following example:
-
-[source,javascript]
-----
-class SocialTraversal extends GraphTraversal {
-  constructor(graph, traversalStrategies, bytecode) {
-    super(graph, traversalStrategies, bytecode);
-  }
-
-  aged(age) {
-    return this.has('person', 'age', age);
-  }
-}
-
-class SocialTraversalSource extends GraphTraversalSource {
-  constructor(graph, traversalStrategies, bytecode) {
-    super(graph, traversalStrategies, bytecode, SocialTraversalSource, SocialTraversal);
-  }
-
-  person(name) {
-    return this.V().has('person', 'name', name);
-  }
-}
-
-function anonymous() {
-  return new SocialTraversal(null, null, new Bytecode());
-}
-
-function aged(age) {
-  return anonymous().aged(age);
-}
-----
-
-`SocialTraversal` extends the core `GraphTraversal` class and has a three argument constructor which is immediately
-proxied to the `GraphTraversal` constructor. New DSL steps are then added to this class using available steps to
-construct the underlying traversal to execute as demonstrated in the `aged()` step.
-
-The `SocialTraversal` is spawned from a `SocialTraversalSource` which is extended from `GraphTraversalSource`. Steps
-added here are meant to be start steps. In the above case, the `person()` start step find a "person" vertex to begin
-the traversal from.
-
-Typically, steps that are made available on a `GraphTraversal` (i.e. SocialTraversal in this example) should also be
-made available as spawns for anonymous traversals. The recommendation is that these steps be exposed in the module
-as standalone functions. In the example above, the standalone `aged()` step creates an anonymous traversal through
-an `anonymous()` utility function. The method for creating these standalone functions can be handled in other ways if
-desired.
-
-To use the DSL, simply initialize the `g` as follows:
-
-[source,javascript]
-----
-const g = traversal(SocialTraversalSource).withRemote(connection);
-g.person('marko').aged(29).values('name').toList().
-  then(names => console.log(names));
-----
-
-[[javascript-differences]]
-[[gremlin-javascript-differences]]
-=== Differences
-
-In situations where Javascript reserved words and global functions overlap with standard Gremlin steps and tokens, those
-bits of conflicting Gremlin get an underscore appended as a suffix:
-
-*Steps* - <<from-step,from_()>>, <<in-step,in_()>>, <<with-step,with_()>>
-
-Gremlin allows for `Map` instances to include `null` keys, but `null` keys in Javascript have some interesting behavior
-as in:
-
-[source,text]
-----
-> var a = { null: 'something', 'b': 'else' };
-> JSON.stringify(a)
-'{"null":"something","b":"else"}'
-> JSON.parse(JSON.stringify(a))
-{ null: 'something', b: 'else' }
-> a[null]
-'something'
-> a['null']
-'something'
-----
-
-This behavior needs to be considered when using Gremlin to return such results. A typical situation where this might
-happen is with `group()` or `groupCount()` as in:
-
-[source,javascript]
-----
-g.V().groupCount().by('age')
-----
-
-where "age" is not a valid key for all vertices. In these cases, it will return `null` for that key and group on that.
-It may bet better in Javascript to filter away those vertices to avoid the return of `null` in the returned `Map`:
-
-[source,javascript]
-----
-g.V().has('age').groupCount().by('age')
-g.V().hasLabel('person').groupCount().by('age')
-----
-
-Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
-the possibility of `null`.
-[[gremlin-javascript-limitations]]
-=== Limitations
-
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
