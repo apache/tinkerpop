@@ -36,9 +36,9 @@ namespace Gremlin.Net.Driver
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
         private readonly IClientWebSocket _client;
 
-        public WebSocketConnection(WebSocketSettings settings)
+        public WebSocketConnection(IClientWebSocket client, WebSocketSettings settings)
         {
-            _client = CreateClientWebSocket(settings);
+            _client = client;
 
 #if NET6_0_OR_GREATER
             if (settings.UseCompression)
@@ -135,61 +135,5 @@ namespace Gremlin.Net.Driver
         }
 
         #endregion
-
-        private static IClientWebSocket CreateClientWebSocket(WebSocketSettings settings)
-        {
-            if (settings.WebSocketFactoryCallback != null)
-            {
-                return settings.WebSocketFactoryCallback(settings);
-            }
-
-            return new ProxyClientWebSocket(new ClientWebSocket());
-        }
-
-        private class ProxyClientWebSocket : IClientWebSocket
-        {
-            private readonly ClientWebSocket client;
-
-            public ProxyClientWebSocket(ClientWebSocket client)
-            {
-                this.client = client;
-            }
-
-            public WebSocketState State => this.client.State;
-
-            public ClientWebSocketOptions Options => this.client.Options;
-
-            public Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
-            {
-                return this.client.CloseAsync(closeStatus, statusDescription, cancellationToken);
-            }
-
-            public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
-            {
-                return this.client.ConnectAsync(uri, cancellationToken);
-            }
-
-            public void Dispose()
-            {
-                this.client.Dispose();
-            }
-
-            public Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
-            {
-                return this.client.ReceiveAsync(buffer, cancellationToken);
-            }
-
-            public Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
-            {
-                return this.client.SendAsync(buffer, messageType, endOfMessage, cancellationToken);
-            }
-
-#if NET6_0_OR_GREATER
-            public ValueTask SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, WebSocketMessageFlags messageFlags, CancellationToken cancellationToken)
-            {
-                return this.client.SendAsync(buffer, messageType, messageFlags, cancellationToken);
-            }
-#endif
-        }
     }
 }

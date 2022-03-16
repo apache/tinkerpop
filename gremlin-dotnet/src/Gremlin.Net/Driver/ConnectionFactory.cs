@@ -41,8 +41,8 @@ namespace Gremlin.Net.Driver
 
         public IConnection CreateConnection()
         {
-            return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password,
-                _messageSerializer, _webSocketSettings, _sessionId);
+            return new Connection(ProxyClientWebSocket.CreateClientWebSocket(), _gremlinServer.Uri, _gremlinServer.Username, 
+                _gremlinServer.Password, _messageSerializer, _webSocketSettings, _sessionId);
         }
     }
 }

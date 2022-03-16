@@ -41,12 +41,6 @@ namespace Gremlin.Net.Driver
         /// </summary>
         public Action<ClientWebSocketOptions> WebSocketConfigurationCallback { get; set; }
 
-        /// <summary>
-        /// Used for unit test to substitute a mocked <see cref="IClientWebSocket"/>. By default <see cref="WebSocketConnection.ProxyClientWebSocket"/> instance
-        /// is created which forwards calls to <see cref="ClientWebSocket"/>.
-        /// </summary>
-        internal Func<WebSocketSettings, IClientWebSocket> WebSocketFactoryCallback { get; set; }
-       
 #if NET6_0_OR_GREATER
         /// <summary>
         ///     Gets or sets whether compressions will be used. The default is true. (Only available since .NET 6.)

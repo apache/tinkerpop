@@ -39,10 +39,9 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task ShouldHandleCloseMessageAfterConnectAsync()
         {
-            var mockedConnectionFactory = new Mock<IConnectionFactory>();
             var mockedClientWebSocket = new Mock<IClientWebSocket>();
             mockedClientWebSocket
-                .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, WebSocketCloseStatus.MessageTooBig, "Message is too large"));
             mockedClientWebSocket
                 .SetupGet(m => m.Options).Returns(new ClientWebSocket().Options);
@@ -54,28 +53,27 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.False(connection.IsOpen);
             Assert.Equal(0, connection.NrRequestsInFlight);
-            mockedClientWebSocket.Verify(m => m.ConnectAsync(uri, CancellationToken.None), Times.Once);
-            mockedClientWebSocket.Verify(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None), Times.Once);
-            mockedClientWebSocket.Verify(m => m.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None), Times.Once);
+            mockedClientWebSocket.Verify(m => m.ConnectAsync(uri, It.IsAny<CancellationToken>()), Times.Once);
+            mockedClientWebSocket.Verify(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockedClientWebSocket.Verify(m => m.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public async Task ShouldThrowIfClosedMessageRecievedWithValidPropertiesAsync()
+        public async Task ShouldThrowIfClosedMessageReceivedWithValidPropertiesAsync()
         {
             var mockedClientWebSocket = new Mock<IClientWebSocket>();
             mockedClientWebSocket
                 .SetupGet(m => m.Options).Returns(new ClientWebSocket().Options);
 
-            WebSocketConnection webSocketConnection = new WebSocketConnection(new WebSocketSettings()
-            {
-                WebSocketFactoryCallback = (s) => mockedClientWebSocket.Object
-            });
+            WebSocketConnection webSocketConnection = new WebSocketConnection(
+                mockedClientWebSocket.Object,
+                new WebSocketSettings());
 
             // Test all known close statuses
             foreach (Enum closeStatus in Enum.GetValues(typeof(WebSocketCloseStatus)))
             {
                 mockedClientWebSocket
-                    .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                    .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, (WebSocketCloseStatus)closeStatus, closeStatus.ToString()));
     
                 await AssertExpectedConnectionClosedException((WebSocketCloseStatus?)closeStatus, closeStatus.ToString(), () => webSocketConnection.ReceiveMessageAsync());
@@ -83,12 +81,12 @@ namespace Gremlin.Net.UnitTest.Driver
 
             // Test null/empty close property values as well.
             mockedClientWebSocket
-                .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, null, null));
             await AssertExpectedConnectionClosedException(null, null, () => webSocketConnection.ReceiveMessageAsync());
             
             mockedClientWebSocket
-                .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                .Setup(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, null, String.Empty));
             await AssertExpectedConnectionClosedException(null, String.Empty, () => webSocketConnection.ReceiveMessageAsync());
         }
@@ -174,23 +172,21 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.False(connection.IsOpen);
             Assert.Equal(0, connection.NrRequestsInFlight);
-            mockedClientWebSocket.Verify(m => m.ConnectAsync(uri, CancellationToken.None), Times.Once);
-            mockedClientWebSocket.Verify(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None), Times.Once);
-            mockedClientWebSocket.Verify(m => m.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None), Times.Once);
+            mockedClientWebSocket.Verify(m => m.ConnectAsync(uri, It.IsAny<CancellationToken>()), Times.Once);
+            mockedClientWebSocket.Verify(m => m.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockedClientWebSocket.Verify(m => m.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, It.IsAny<CancellationToken>()), Times.Once);
         }
 
 
         private static Connection GetConnection(Mock<IClientWebSocket> mockedClientWebSocket, Uri uri)
         {
             return new Connection(
+                mockedClientWebSocket.Object,
                 uri: uri,
                 username: "user",
                 password: "password",
                 messageSerializer: new GraphSON3MessageSerializer(),
-                webSocketSettings: new WebSocketSettings()
-                {
-                    WebSocketFactoryCallback = (s) => mockedClientWebSocket.Object
-                },
+                webSocketSettings: new WebSocketSettings(),
                 sessionId: null);
         }
 

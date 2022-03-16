@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace Gremlin.Net.Driver
 {
-    interface IClientWebSocket : IDisposable
+    internal interface IClientWebSocket : IDisposable
     {
         WebSocketState State { get; }
         ClientWebSocketOptions Options { get; }
