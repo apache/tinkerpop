@@ -1643,14 +1643,64 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Traversal visitTraversalMethod_from_Vertex(final GremlinParser.TraversalMethod_from_VertexContext ctx) {
         return graphTraversal.from(StructureElementVisitor.instance().visitStructureVertex(ctx.structureVertex()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Traversal visitTraversalMethod_to_Vertex(final GremlinParser.TraversalMethod_to_VertexContext ctx) {
         return graphTraversal.to(StructureElementVisitor.instance().visitStructureVertex(ctx.structureVertex()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_element(final GremlinParser.TraversalMethod_elementContext ctx) {
+        return graphTraversal.element();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_call_string(final GremlinParser.TraversalMethod_call_stringContext ctx) {
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_call_string_map(final GremlinParser.TraversalMethod_call_string_mapContext ctx) {
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()),
+                                   GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_call_string_traversal(final GremlinParser.TraversalMethod_call_string_traversalContext ctx) {
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()),
+                antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Traversal visitTraversalMethod_call_string_map_traversal(final GremlinParser.TraversalMethod_call_string_map_traversalContext ctx) {
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()),
+                GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()),
+                antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
     public GraphTraversal[] getNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) {

@@ -69,6 +69,7 @@ class AmbiguousMethodASTTransformation implements ASTTransformation {
                             if (isNullExpression(entry)) {
                                 if (currentMethod in [GraphTraversal.Symbols.mergeV,
                                                       GraphTraversal.Symbols.mergeE,
+                                                      GraphTraversal.Symbols.call,
                                                       GraphTraversal.Symbols.option]) {
                                     expression.expressions[i] = createCast(Map, entry)
                                 } else if (currentMethod in [GraphTraversal.Symbols.inject]) {

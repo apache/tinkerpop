@@ -51,7 +51,7 @@ public class CloseableIteratorTest {
     @Test
     public void shouldWrapIteratorWithHelper() {
         final List<String> stuff = Arrays.asList("this stuff", "that stuff", "other stuff");
-        final CloseableIterator<String> itty = CloseableIterator.asCloseable(stuff.iterator());
+        final CloseableIterator<String> itty = CloseableIterator.of(stuff.iterator());
         assertThat(itty.hasNext(), is(true));
         assertEquals("this stuff", itty.next());
         assertThat(itty.hasNext(), is(true));
@@ -68,7 +68,7 @@ public class CloseableIteratorTest {
     public void shouldReturnSameInstance() {
         final List<String> stuff = Arrays.asList("this stuff", "that stuff", "other stuff");
         final CloseableIterator<String> itty = new DefaultCloseableIterator<>(stuff.iterator());
-        final CloseableIterator<String> same = CloseableIterator.asCloseable(itty);
+        final CloseableIterator<String> same = CloseableIterator.of(itty);
         assertSame(itty, same);
         assertThat(itty.hasNext(), is(true));
         assertEquals("this stuff", itty.next());

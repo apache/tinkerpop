@@ -31,6 +31,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.INTEGER;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.LONG;
 
 /**
  * Helps create a variety of different toy graphs for testing and learning purposes.
@@ -46,11 +49,7 @@ public final class TinkerFactory {
      * Create the "classic" graph which was the original toy graph from TinkerPop 2.x.
      */
     public static TinkerGraph createClassic() {
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        final TinkerGraph g = TinkerGraph.open(conf);
+        final TinkerGraph g = getTinkerGraphWithClassicNumberManager();
         generateClassic(g);
         return g;
     }
@@ -78,7 +77,7 @@ public final class TinkerFactory {
      * 3.x features like vertex labels.
      */
     public static TinkerGraph createModern() {
-        final TinkerGraph g = getTinkerGraphWithNumberManager();
+        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
         generateModern(g);
         return g;
     }
@@ -119,7 +118,7 @@ public final class TinkerFactory {
      * multi-properties and graph variables.
      */
     public static TinkerGraph createTheCrew() {
-        final Configuration conf = getNumberIdManagerConfiguration();
+        final Configuration conf = getConfigurationWithCurrentNumberManager();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         final TinkerGraph g = TinkerGraph.open(conf);
         generateTheCrew(g);
@@ -184,7 +183,7 @@ public final class TinkerFactory {
      * in other graphs and are useful for various testing scenarios.
      */
     public static TinkerGraph createKitchenSink() {
-        final TinkerGraph g = getTinkerGraphWithNumberManager();
+        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
         generateKitchenSink(g);
         return g;
     }
@@ -208,7 +207,7 @@ public final class TinkerFactory {
      * structure and application and is therefore useful for demonstrating more complex traversals.
      */
     public static TinkerGraph createGratefulDead() {
-        final TinkerGraph g = getTinkerGraphWithNumberManager();
+        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
         generateGratefulDead(g);
         return g;
     }
@@ -225,16 +224,28 @@ public final class TinkerFactory {
         }
     }
 
-    private static TinkerGraph getTinkerGraphWithNumberManager() {
-        final Configuration conf = getNumberIdManagerConfiguration();
-        return TinkerGraph.open(conf);
+    private static TinkerGraph getTinkerGraphWithCurrentNumberManager() {
+        return TinkerGraph.open(getConfigurationWithCurrentNumberManager());
     }
 
-    private static Configuration getNumberIdManagerConfiguration() {
+    private static Configuration getConfigurationWithCurrentNumberManager() {
+        return getNumberIdManagerConfiguration(INTEGER, INTEGER, LONG);
+    }
+
+    private static TinkerGraph getTinkerGraphWithClassicNumberManager() {
+        return TinkerGraph.open(getConfigurationHWithClassicNumberManager());
+    }
+
+    private static Configuration getConfigurationHWithClassicNumberManager() {
+        return getNumberIdManagerConfiguration(INTEGER, INTEGER, INTEGER);
+    }
+
+    private static Configuration getNumberIdManagerConfiguration(final DefaultIdManager v, final DefaultIdManager e,
+                                                                 final DefaultIdManager vp) {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.LONG.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, v.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, e.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, vp.name());
         return conf;
     }
 }

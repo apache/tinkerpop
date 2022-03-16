@@ -101,6 +101,7 @@ traversalSourceSpawnMethod
 	| traversalSourceSpawnMethod_mergeV
 	| traversalSourceSpawnMethod_inject
     | traversalSourceSpawnMethod_io
+    | traversalSourceSpawnMethod_call
     ;
 
 traversalSourceSpawnMethod_addE
@@ -138,6 +139,14 @@ traversalSourceSpawnMethod_mergeV
 traversalSourceSpawnMethod_mergeE
     : 'mergeE' LPAREN (genericLiteralMap | nullLiteral) RPAREN #traversalSourceSpawnMethod_mergeE_Map
     | 'mergeE' LPAREN nestedTraversal RPAREN #traversalSourceSpawnMethod_mergeE_Traversal
+    ;
+
+traversalSourceSpawnMethod_call
+    : 'call' LPAREN RPAREN #traversalSourceSpawnMethod_call_empty
+    | 'call' LPAREN stringLiteral RPAREN #traversalSourceSpawnMethod_call_string
+    | 'call' LPAREN stringLiteral COMMA genericLiteralMap RPAREN #traversalSourceSpawnMethod_call_string_map
+    | 'call' LPAREN stringLiteral COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_traversal
+    | 'call' LPAREN stringLiteral COMMA genericLiteralMap COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_map_traversal
     ;
 
 chainedTraversal
@@ -270,6 +279,8 @@ traversalMethod
 	| traversalMethod_where
 	| traversalMethod_with
 	| traversalMethod_write
+	| traversalMethod_element
+	| traversalMethod_call
 	;
 traversalMethod_V
 	: 'V' LPAREN genericLiteralList RPAREN
@@ -773,6 +784,18 @@ traversalMethod_with
 traversalMethod_write
 	: 'write' LPAREN RPAREN
 	;
+
+traversalMethod_element
+    : 'element' LPAREN RPAREN
+    ;
+
+traversalMethod_call
+    : 'call' LPAREN stringLiteral RPAREN #traversalMethod_call_string
+    | 'call' LPAREN stringLiteral COMMA genericLiteralMap RPAREN #traversalMethod_call_string_map
+    | 'call' LPAREN stringLiteral COMMA nestedTraversal RPAREN #traversalMethod_call_string_traversal
+    | 'call' LPAREN stringLiteral COMMA genericLiteralMap COMMA nestedTraversal RPAREN #traversalMethod_call_string_map_traversal
+    ;
+
 
 /*********************************************
     ARGUMENT AND TERMINAL RULES

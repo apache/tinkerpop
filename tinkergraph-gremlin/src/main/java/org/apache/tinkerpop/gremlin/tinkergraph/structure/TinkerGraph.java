@@ -40,9 +40,11 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerMergeEVStepStrategy;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -54,6 +56,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
+
+import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry.TinkerServiceFactory;
 
 /**
  * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
@@ -88,6 +92,7 @@ public final class TinkerGraph implements Graph {
     public static final String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
     public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
     public static final String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
+    public static final String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
@@ -105,6 +110,8 @@ public final class TinkerGraph implements Graph {
     protected final IdManager<?> vertexPropertyIdManager;
     protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
     protected final boolean allowNullPropertyValues;
+
+    protected final TinkerServiceRegistry serviceRegistry;
 
     private final Configuration configuration;
     private final String graphLocation;
@@ -130,6 +137,10 @@ public final class TinkerGraph implements Graph {
                     GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
 
         if (graphLocation != null) loadGraph();
+
+        serviceRegistry = new TinkerServiceRegistry(this);
+        configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
+                serviceRegistry.registerService(instantiate(serviceClass)));
     }
 
     /**
@@ -235,6 +246,8 @@ public final class TinkerGraph implements Graph {
     @Override
     public void close() {
         if (graphLocation != null) saveGraph();
+        // shutdown services
+        serviceRegistry.close();
     }
 
     @Override
@@ -245,6 +258,11 @@ public final class TinkerGraph implements Graph {
     @Override
     public Configuration configuration() {
         return configuration;
+    }
+
+    @Override
+    public TinkerServiceRegistry getServiceRegistry() {
+        return serviceRegistry;
     }
 
     @Override
@@ -447,6 +465,11 @@ public final class TinkerGraph implements Graph {
             return false;
         }
 
+        @Override
+        public boolean supportsServiceCall() {
+            return true;
+        }
+
     }
 
     public class TinkerGraphVertexPropertyFeatures implements Features.VertexPropertyFeatures {
@@ -540,6 +563,15 @@ public final class TinkerGraph implements Graph {
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("Could not configure TinkerGraph %s id manager with %s", clazz.getSimpleName(), vertexIdManagerConfigValue));
             }
+        }
+    }
+
+    private TinkerServiceFactory instantiate(final String className) {
+        try {
+            return (TinkerServiceFactory) Class.forName(className).getConstructor(TinkerGraph.class).newInstance(this);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                 NoSuchMethodException | InvocationTargetException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

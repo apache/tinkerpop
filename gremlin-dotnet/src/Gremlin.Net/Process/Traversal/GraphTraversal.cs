@@ -344,6 +344,42 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Call<E2> (string service)
+        {
+            Bytecode.AddStep("call", service);
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Call<E2> (string service, ITraversal t)
+        {
+            Bytecode.AddStep("call", service, t);
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Call<E2> (string service, IDictionary<object,object> m)
+        {
+            Bytecode.AddStep("call", service, m);
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
+        ///     Adds the call step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Call<E2> (string service, IDictionary<object,object> m, ITraversal t)
+        {
+            Bytecode.AddStep("call", service, m, t);
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
         ///     Adds the cap step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E2> Cap<E2> (string sideEffectKey, params string[] sideEffectKeys)
@@ -502,6 +538,15 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("drop");
             return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the element step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Element> Element ()
+        {
+            Bytecode.AddStep("element");
+            return Wrap<S, Element>(this);
         }
 
         /// <summary>
@@ -1150,7 +1195,6 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("mergeV", t);
             return Wrap<S, Vertex>(this);
         }
-
 
         /// <summary>
         ///     Adds the min step to this <see cref="GraphTraversal{SType, EType}" />.

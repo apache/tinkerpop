@@ -22,11 +22,14 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +39,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -211,4 +217,52 @@ public final class TinkerHelper {
     public static Map<Object, Edge> getEdges(final TinkerGraph graph) {
         return graph.edges;
     }
+
+    /**
+     * Search for {@link Property}s attached to {@link Element}s of the supplied element type using the supplied
+     * regex. This is a basic scan+filter operation, not a full text search against an index.
+     */
+    public static <E extends Element> Iterator<Property> search(final TinkerGraph graph, final String regex,
+                                                                final Optional<Class<E>> type) {
+
+        final Supplier<Iterator<Element>> vertices = () -> IteratorUtils.cast(graph.vertices());
+        final Supplier<Iterator<Element>> edges = () -> IteratorUtils.cast(graph.edges());
+        final Supplier<Iterator<Element>> vertexProperties =
+                () -> IteratorUtils.flatMap(vertices.get(), v -> IteratorUtils.cast(v.properties()));
+
+        Iterator it;
+        if (!type.isPresent()) {
+            it = IteratorUtils.concat(vertices.get(), edges.get(), vertexProperties.get());
+        } else switch (type.get().getSimpleName()) {
+            case "Edge":
+                it = edges.get();
+                break;
+            case "Vertex":
+                it = vertices.get();
+                break;
+            case "VertexProperty":
+                it = vertexProperties.get();
+                break;
+            default:
+                it = IteratorUtils.concat(vertices.get(), edges.get(), vertexProperties.get());
+        }
+
+        final Pattern pattern = Pattern.compile(regex);
+
+        // get properties
+        it = IteratorUtils.<Element, Property>flatMap(it, e -> IteratorUtils.cast(e.properties()));
+        // filter by regex
+        it = IteratorUtils.<Property>filter(it, p -> pattern.matcher(p.value().toString()).matches());
+
+        return it;
+    }
+
+    /**
+     * Search for {@link Property}s attached to any {@link Element} using the supplied regex. This
+     * is a basic scan+filter operation, not a full text search against an index.
+     */
+    public static Iterator<Property> search(final TinkerGraph graph, final String regex) {
+        return search(graph, regex, Optional.empty());
+    }
+
 }

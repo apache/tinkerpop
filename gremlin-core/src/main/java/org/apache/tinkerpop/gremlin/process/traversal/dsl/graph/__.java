@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -1209,5 +1211,40 @@ public class __ {
      */
     public static <A, B> GraphTraversal<A, B> index() {
         return __.<A>start().index();
+    }
+
+    /**
+     * @see GraphTraversal#element()
+     */
+    public static <A, B> GraphTraversal<A, Element> element() {
+        return __.<A>start().element();
+    }
+
+    /**
+     * @see GraphTraversal#call(String)
+     */
+    public static <A, B> GraphTraversal<A, B> call(final String service) {
+        return __.<A>start().call(service);
+    }
+
+    /**
+     * @see GraphTraversal#call(String, Map)
+     */
+    public static <A, B> GraphTraversal<A, B> call(final String service, final Map params) {
+        return __.<A>start().call(service, params);
+    }
+
+    /**
+     * @see GraphTraversal#call(String, Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> call(final String service, final Traversal<?, Map<?,?>> childTraversal) {
+        return __.<A>start().call(service, childTraversal);
+    }
+
+    /**
+     * @see GraphTraversal#call(String, Map, Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> call(final String service, final Map params, final Traversal<?, Map<?,?>> childTraversal) {
+        return __.<A>start().call(service, params, childTraversal);
     }
 }

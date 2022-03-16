@@ -42,4 +42,9 @@ public class DefaultCloseableIterator<T> implements CloseableIterator<T> {
     public T next() {
         return iterator.next();
     }
+
+    @Override
+    public void close() {
+        CloseableIterator.closeIterator(iterator);
+    }
 }

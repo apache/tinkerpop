@@ -78,6 +78,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
@@ -86,6 +87,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -1318,6 +1320,82 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Double> math(final String expression) {
         this.asAdmin().getBytecode().addStep(Symbols.math, expression);
         return this.asAdmin().addStep(new MathStep<>(this.asAdmin(), expression));
+    }
+
+    /**
+     * Map a {@link Property} to its {@link Element}.
+     *
+     * @return the traversal with an appended {@link ElementStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#element-step" target="_blank">Reference Documentation - Element Step</a>
+     * @since 3.6.0
+     */
+    default GraphTraversal<S, Element> element() {
+        this.asAdmin().getBytecode().addStep(Symbols.element);
+        return this.asAdmin().addStep(new ElementStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Perform the specified service call with no parameters.
+     *
+     * @param service the name of the service call
+     * @return the traversal with an appended {@link CallStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#call-step" target="_blank">Reference Documentation - Call Step</a>
+     * @since 3.6.0
+     */
+    default <E> GraphTraversal<S, E> call(final String service) {
+        this.asAdmin().getBytecode().addStep(Symbols.call, service);
+        final CallStep<S,E> call = new CallStep<>(this.asAdmin(), false, service);
+        return this.asAdmin().addStep(call);
+    }
+
+    /**
+     * Perform the specified service call with the specified static parameters.
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @return the traversal with an appended {@link CallStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#call-step" target="_blank">Reference Documentation - Call Step</a>
+     * @since 3.6.0
+     */
+    default <E> GraphTraversal<S, E> call(final String service, final Map params) {
+        this.asAdmin().getBytecode().addStep(Symbols.call, service, params);
+        final CallStep<S,E> call = new CallStep<>(this.asAdmin(), false, service, params);
+        return this.asAdmin().addStep(call);
+    }
+
+    /**
+     * Perform the specified service call with dynamic parameters produced by the specified child traversal.
+     *
+     * @param service the name of the service call
+     * @param childTraversal a traversal that will produce a Map of parameters for the service call when invoked.
+     * @return the traversal with an appended {@link CallStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#call-step" target="_blank">Reference Documentation - Call Step</a>
+     * @since 3.6.0
+     */
+    default <E> GraphTraversal<S, E> call(final String service, final Traversal<?, Map<?,?>> childTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.call, service, childTraversal);
+        final CallStep<S,E> step = null == childTraversal ? new CallStep(this.asAdmin(), false, service) :
+                new CallStep(this.asAdmin(), false, service, new LinkedHashMap(), childTraversal.asAdmin());
+        return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Perform the specified service call with both static and dynamic parameters produced by the specified child
+     * traversal. These parameters will be merged at execution time per the provider implementation. Reference
+     * implementation merges dynamic into static (dynamic will overwrite static).
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @param childTraversal a traversal that will produce a Map of parameters for the service call when invoked.
+     * @return the traversal with an appended {@link CallStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#call-step" target="_blank">Reference Documentation - Call Step</a>
+     * @since 3.6.0
+     */
+    default <E> GraphTraversal<S, E> call(final String service, final Map params, final Traversal<?, Map<?,?>> childTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.call, service, params, childTraversal);
+        final CallStep<S,E> step = null == childTraversal ? new CallStep(this.asAdmin(), false, service, params) :
+                new CallStep(this.asAdmin(), false, service, params, childTraversal.asAdmin());
+        return this.asAdmin().addStep(step);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -3337,6 +3415,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String io = "io";
         public static final String read = "read";
         public static final String write = "write";
+        public static final String call = "call";
+        public static final String element = "element";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

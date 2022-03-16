@@ -42,16 +42,18 @@ import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @GraphComputerOnly",
+        tags = "not @RemoteOnly and not @GraphComputerOnly and not @TinkerServiceRegistry and not @GraphComputerVerificationElementSupported",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "../gremlin-test/features" },

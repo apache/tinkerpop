@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.Translator
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings
+import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
@@ -121,10 +122,18 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                                     break
                                 case GraphTraversal.Symbols.mergeE:
                                 case GraphTraversal.Symbols.mergeV:
-                                    bindingValue = new MethodCallExpression(new ClassExpression(new ClassNode(Collections)), "emptyMap", new TupleExpression())
+                                    bindingValue = new MethodCallExpression(
+                                        new ClassExpression(new ClassNode(CollectionFactory)), "asMap",
+                                        new TupleExpression(new ConstantExpression(UUID.randomUUID().toString()),
+                                                            new ConstantExpression(UUID.randomUUID().toString())))
                                     break
+                                case GraphTraversal.Symbols.call:
                                 case GraphTraversal.Symbols.option:
-                                    if (i == 1) bindingValue = new MethodCallExpression(new ClassExpression(new ClassNode(Collections)), "emptyMap", new TupleExpression())
+                                    if (i == 1)
+                                        bindingValue = new MethodCallExpression(
+                                            new ClassExpression(new ClassNode(CollectionFactory)), "asMap",
+                                            new TupleExpression(new ConstantExpression(UUID.randomUUID().toString()),
+                                                                new ConstantExpression(UUID.randomUUID().toString())))
                                     break
                             }
                             def bindingExpression = createBindingFromVar(entry.text, bindingVariableName, bindingValue)
