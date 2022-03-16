@@ -125,7 +125,7 @@ func TestGorillaTransporter(t *testing.T) {
 			mockConn.On("WriteMessage", mock.Anything, mock.Anything).Return(nil)
 			_, err := transporter.Read()
 			assert.NotNil(t, err)
-			assert.Equal(t, "failed to read from socket more than 3 times", err.Error())
+			assert.Equal(t, mockReadErrMessage, err.Error())
 		})
 
 		t.Run("Close and IsClosed", func(t *testing.T) {

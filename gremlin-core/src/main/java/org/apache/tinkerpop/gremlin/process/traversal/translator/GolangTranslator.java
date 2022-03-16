@@ -28,8 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -40,17 +38,16 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
-import java.lang.reflect.Method;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Translates Gremlin {@link Bytecode} into a Golang string representation.
@@ -61,6 +58,9 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
     private final static  String GO_PACKAGE_NAME = "gremlingo.";
+    private final static Set<String> METHODS_TO_CHECK = new HashSet<>(Arrays.asList(
+            "inject", "withSack", "sample", "with", "constant")
+    );
 
     private GolangTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
@@ -153,9 +153,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Lambda o) {
-            // TODO: AN-1037 Lambda support in Gremlin-Go
-            // return "gremlingo.GroovyLambda(\"" + StringEscapeUtils.escapeEcmaScript(o.getLambdaScript().trim()) + "\")";
-            throw new NotImplementedException("Lambda translation not currently supported");
+            return "&gremlingo.Lambda{Script:\"" + o.getLambdaScript().trim() + "\", Language:\"\"}";
         }
 
         @Override
@@ -194,13 +192,12 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final List<?> o) {
             final Iterator<?> iterator = o.iterator();
-            script.append("[]interface{}{");
             while(iterator.hasNext()) {
                 convertToScript(iterator.next());
                 if (iterator.hasNext())
                     script.append(", ");
             }
-            return script.append("}");
+            return script;
         }
 
         @Override
@@ -273,6 +270,14 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                         script.append("int32(");
                         convertToScript(arguments[i]);
                         script.append(")");
+                    } else if (METHODS_TO_CHECK.contains(methodName)
+                            && arguments[i] instanceof Integer) {
+                        script.append("int32(");
+                        convertToScript(arguments[i]);
+                        script.append(")");
+                        if (i != arguments.length - 1) {
+                            script.append(", ");
+                        }
                     } else {
                         convertToScript(arguments[i]);
                         if (i != arguments.length - 1) {

@@ -75,7 +75,7 @@ func convertArgs(request *request, gs graphBinarySerializer) (map[string]interfa
 			typeName = reflect.TypeOf(gremlin).Name()
 		}
 
-		return nil, fmt.Errorf("failed to find serializer for type '%s'", typeName)
+		return nil, fmt.Errorf("failed to find serializer for type %q", typeName)
 	}
 }
 

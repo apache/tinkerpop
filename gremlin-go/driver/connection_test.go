@@ -38,7 +38,8 @@ const integrationTestSuiteName = "integration"
 const basicAuthIntegrationTestSuite = "basic authentication integration"
 const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
-const validHostvalidPortInvalidPath = "ws://localhost:8182/invalid"
+const validHostValidPortInvalidPath = "ws://localhost:8182/invalid"
+const testServerGraphAlias = "gmodern"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
 
@@ -229,6 +230,12 @@ func TestConnection(t *testing.T) {
 	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
 
+	// No authentication integration test with graphs loaded and alias configured server
+	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
+	testNoAuthWithAliasEnable := getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_ TESTS", false)
+	testNoAuthWithAliasAuthInfo := &AuthInfo{}
+	testNoAuthWithAliasTlsConfig := &tls.Config{}
+
 	// Basic authentication integration test variables.
 	testBasicAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_BASIC_AUTH_URL", "wss://localhost:8183/gremlin")
 	testBasicAuthEnable := getEnvOrDefaultBool("RUN_BASIC_AUTH_INTEGRATION_TESTS", false)
@@ -248,7 +255,7 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test createConnection without valid path", func(t *testing.T) {
-		connection, err := createConnection(validHostvalidPortInvalidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(validHostValidPortInvalidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
 		assert.NotNil(t, err)
 		assert.Nil(t, connection)
 	})
@@ -281,7 +288,7 @@ func TestConnection(t *testing.T) {
 		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
 		assert.Nil(t, err)
 		assert.NotNil(t, connection)
-		request := makeStringRequest("g.V().count()")
+		request := makeStringRequest("g.V().count()", "g")
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
@@ -509,5 +516,23 @@ func TestConnection(t *testing.T) {
 		assert.Equal(t, int32(2), val)
 
 		resetGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection To Server Configured with Modern Graph", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthWithAliasEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = testNoAuthWithAliasTlsConfig
+				settings.AuthInfo = testNoAuthWithAliasAuthInfo
+				settings.TraversalSource = testServerGraphAlias
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, remote)
+		g := Traversal_().WithRemote(remote)
+
+		r, err := g.V().Count().ToList()
+		for _, res := range r {
+			assert.Equal(t, int64(6), res.GetInterface())
+		}
 	})
 }

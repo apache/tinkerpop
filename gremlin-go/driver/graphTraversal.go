@@ -19,6 +19,11 @@ under the License.
 
 package gremlingo
 
+type Lambda struct {
+	Script   string
+	Language string
+}
+
 // GraphTraversal stores a Traversal.
 type GraphTraversal struct {
 	*Traversal

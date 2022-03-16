@@ -255,6 +255,11 @@ func TestGraphBinaryV1(t *testing.T) {
 			writeToBuffer(x, &buff)
 			assert.Equal(t, x, readToValue(&buff))
 		})
+		t.Run("test BulkSet", func(t *testing.T) {
+			buff.Write([]byte{0x2a, 00, 00, 00, 00, 02, 01, 00, 00, 00, 00, 01, 00, 00, 00, 00, 00, 00, 00, 02, 02, 00, 00, 00, 00, 00, 00, 00, 00, 03, 00, 00, 00, 00, 00, 00, 00, 03})
+			e := []interface{}{int32(1), int32(1), int64(3), int64(3), int64(3)}
+			assert.Equal(t, e, readToValue(&buff))
+		})
 	})
 
 	t.Run("test misc cases", func(t *testing.T) {
@@ -276,7 +281,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			var x Unknown
 			writeToBuffer(x, &buff)
 		})
-		
+
 		t.Run("test unknown datatype to deserialize failure", func(t *testing.T) {
 			defer func() {
 				if r := recover(); r == nil {
@@ -286,14 +291,14 @@ func TestGraphBinaryV1(t *testing.T) {
 			buff.Write([]byte{0xff})
 			readToValue(&buff)
 		})
-		
+
 		t.Run("test writeValue nil case failure", func(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.writeValue(value, &buff, false)
 			assert.Nil(t, val)
 			assert.NotNil(t, err)
 		})
-		
+
 		t.Run("test writeValue nil case success", func(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.writeValue(value, &buff, true)
@@ -303,7 +308,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, nil, x)
 		})
-		
+
 		t.Run("test write nil case success", func(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.write(value, &buff)
@@ -313,28 +318,28 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, value, x)
 		})
-		
+
 		t.Run("test read nil case isNull check failure", func(t *testing.T) {
 			buff.Write([]byte{0xfe, 0x02})
 			x, err := serializer.read(&buff)
 			assert.Nil(t, x)
 			assert.NotNil(t, err)
 		})
-		
+
 		t.Run("test null buffer failure", func(t *testing.T) {
 			var nullBuff *bytes.Buffer = nil
 			x, err := serializer.readValue(nullBuff, byte(NullType), true)
 			assert.Nil(t, x)
 			assert.NotNil(t, err)
 		})
-		
+
 		t.Run("test writeTypeValue unexpected null failure", func(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.writeTypeValue(value, &buff, &serializer, false)
 			assert.Nil(t, val)
 			assert.NotNil(t, err)
 		})
-		
+
 		t.Run("test writeTypeValue success", func(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.writeTypeValue(value, &buff, &serializer, true)

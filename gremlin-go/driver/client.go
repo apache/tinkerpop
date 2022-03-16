@@ -26,6 +26,7 @@ import (
 
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
+	TraversalSource string
 	TransporterType TransporterType
 	LogVerbosity    LogVerbosity
 	Logger          Logger
@@ -37,6 +38,7 @@ type ClientSettings struct {
 // Client is used to connect and interact with a Gremlin-supported server.
 type Client struct {
 	url             string
+	traversalSource string
 	logHandler      *logHandler
 	transporterType TransporterType
 	connection      *connection
@@ -45,6 +47,7 @@ type Client struct {
 // NewClient creates a Client and configures it with the given parameters.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
+		TraversalSource: "g",
 		TransporterType: Gorilla,
 		LogVerbosity:    Info,
 		Logger:          &defaultLogger{},
@@ -63,6 +66,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 	}
 	client := &Client{
 		url:             url,
+		traversalSource: "g",
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
 		connection:      conn,
@@ -79,13 +83,13 @@ func (client *Client) Close() error {
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	// TODO AN-982: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString)
+	request := makeStringRequest(traversalString, client.traversalSource)
 	return client.connection.write(&request)
 }
 
 // submitBytecode submits bytecode to the server to execute and returns a ResultSet.
 func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode)
+	request := makeBytecodeRequest(bytecode, client.traversalSource)
 	return client.connection.write(&request)
 }

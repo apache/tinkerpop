@@ -32,7 +32,7 @@ type request struct {
 const stringOp = "eval"
 const stringProcessor = ""
 
-func makeStringRequest(stringGremlin string) (req request) {
+func makeStringRequest(stringGremlin string, traversalSource string) (req request) {
 	return request{
 		requestID: uuid.New(),
 		op:        stringOp,
@@ -40,7 +40,7 @@ func makeStringRequest(stringGremlin string) (req request) {
 		args: map[string]interface{}{
 			"gremlin": stringGremlin,
 			"aliases": map[string]interface{}{
-				"g": "g",
+				"g": traversalSource,
 			},
 		},
 	}
@@ -51,7 +51,7 @@ const bytecodeProcessor = "traversal"
 const authOp = "authentication"
 const authProcessor = "traversal"
 
-func makeBytecodeRequest(bytecodeGremlin *bytecode) (req request) {
+func makeBytecodeRequest(bytecodeGremlin *bytecode, traversalSource string) (req request) {
 	return request{
 		requestID: uuid.New(),
 		op:        bytecodeOp,
@@ -59,7 +59,7 @@ func makeBytecodeRequest(bytecodeGremlin *bytecode) (req request) {
 		args: map[string]interface{}{
 			"gremlin": *bytecodeGremlin,
 			"aliases": map[string]interface{}{
-				"g": "g",
+				"g": traversalSource,
 			},
 		},
 	}

@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/url"
 	"time"
 
@@ -89,39 +88,11 @@ func (transporter *gorillaTransporter) Read() ([]byte, error) {
 			return nil, err
 		}
 	}
-	transporter.connection.SetPongHandler(func(string) error {
-		err := transporter.connection.SetReadDeadline(time.Now().Add(time.Second))
-		if err != nil {
-			return err
-		}
-		return nil
-	})
 
-	err := transporter.connection.SetReadDeadline(time.Now().Add(time.Second))
-	if err != nil {
-		return nil, err
-	}
-
-	failureCount := 0
 	for {
+		err := transporter.connection.SetReadDeadline(time.Now().Add(5 * time.Second))
 		_, bytes, err := transporter.connection.ReadMessage()
-		if err == nil {
-			return bytes, nil
-		}
-		failureCount += 1
-		if failureCount > maxFailCount {
-			return nil, fmt.Errorf("failed to read from socket more than %d times", maxFailCount)
-		}
-
-		// Try pinging server.
-		err = transporter.connection.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
-		if err != nil {
-			return nil, err
-		}
-		err = transporter.connection.WriteMessage(websocket.PingMessage, nil)
-		if err != nil {
-			return nil, err
-		}
+		return bytes, err
 	}
 }
 
