@@ -87,7 +87,6 @@ namespace Gremlin.Net.Driver
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
             _writeQueue.Enqueue(requestMessage);
             BeginSendingMessages();
-
             return receiver.Result;
         }
 
