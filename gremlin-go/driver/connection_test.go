@@ -61,6 +61,35 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	<-promise
 }
 
+func initializeGraph(t *testing.T, testHost string, testPort int) *GraphTraversalSource {
+	remote, err := NewDriverRemoteConnection(testHost, testPort)
+	assert.Nil(t, err)
+	assert.NotNil(t, remote)
+	g := Traversal_().WithRemote(remote)
+
+	// Drop the graph and check that it is empty.
+	dropGraph(t, g)
+	readCount(t, g, "", 0)
+	readCount(t, g, testLabel, 0)
+	readCount(t, g, personLabel, 0)
+
+	// Add data and check that the size of the graph is correct.
+	addTestData(t, g)
+	readCount(t, g, "", len(testNames))
+	readCount(t, g, testLabel, 0)
+	readCount(t, g, personLabel, len(testNames))
+
+	return g
+}
+
+func resetGraph(t *testing.T, g *GraphTraversalSource) {
+	// Drop the graph and check that it is empty.
+	dropGraph(t, g)
+	readCount(t, g, "", 0)
+	readCount(t, g, testLabel, 0)
+	readCount(t, g, personLabel, 0)
+}
+
 func readTestDataVertexProperties(t *testing.T, g *GraphTraversalSource) {
 	// Read names from graph
 	var names []string
@@ -129,6 +158,29 @@ func readUsingAnonymousTraversal(t *testing.T, g *GraphTraversalSource) {
 	assert.Equal(t, int64(len(testNames)), resultMap[personLabel])
 }
 
+func readWithNextAndHasNext(t *testing.T, g *GraphTraversalSource) {
+	traversal := g.V().HasLabel(personLabel).Properties(nameKey)
+	var names []string
+	for i := 0; i < len(testNames); i++ {
+		hasN, err := traversal.HasNext()
+		assert.Nil(t, err)
+		assert.True(t, hasN)
+		res, err := traversal.Next()
+		assert.Nil(t, err)
+		assert.NotNil(t, res)
+		vp, err := res.GetVertexProperty()
+		assert.Nil(t, err)
+		names = append(names, vp.Value.(string))
+	}
+	hasN, _ := traversal.HasNext()
+	assert.False(t, hasN)
+	// Check for Next error when no more elements left
+	res, err := traversal.Next()
+	assert.Nil(t, res)
+	assert.NotNil(t, err)
+	assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
+}
+
 func getEnvOrDefaultString(key string, defaultValue string) string {
 	// Missing value is returned as "".
 	value := os.Getenv(key)
@@ -167,33 +219,13 @@ func TestConnection(t *testing.T) {
 
 	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
 		if runIntegration {
-			remote, err := NewDriverRemoteConnection(testHost, testPort)
-			assert.Nil(t, err)
-			assert.NotNil(t, remote)
-			g := Traversal_().WithRemote(remote)
-
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-			readCount(t, g, "", 0)
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, 0)
-
-			// Add data and check that the size of the graph is correct.
-			addTestData(t, g)
-
-			readCount(t, g, "", len(testNames))
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, len(testNames))
-
+			// Initialize graph
+			g := initializeGraph(t, testHost, testPort)
 			// Read test data out of the graph and check that it is correct.
 			readTestDataVertexProperties(t, g)
 			readTestDataValues(t, g)
-
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-			readCount(t, g, "", 0)
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, 0)
+			// Reset Graph
+			resetGraph(t, g)
 		}
 	})
 
@@ -225,6 +257,17 @@ func TestConnection(t *testing.T) {
 		}
 	})
 
+	t.Run("Test connection.close() failure", func(t *testing.T) {
+		connection, err := createConnection(testHost, testPort, newLogHandler(&defaultLogger{}, Info, language.English))
+		assert.Nil(t, err)
+		err = connection.close()
+		assert.Nil(t, err)
+		err = connection.close()
+		assert.NotNil(t, err)
+		err = connection.close()
+		assert.NotNil(t, err)
+	})
+
 	t.Run("Test client.submit()", func(t *testing.T) {
 		if runIntegration {
 			client, err := NewClient(testHost, testPort)
@@ -239,6 +282,14 @@ func TestConnection(t *testing.T) {
 			assert.Equal(t, "0", result.GetString())
 			err = client.Close()
 			assert.Nil(t, err)
+		}
+	})
+
+	t.Run("Test Traversal. Next and HasNext", func(t *testing.T) {
+		if runIntegration {
+			g := initializeGraph(t, testHost, testPort)
+			readWithNextAndHasNext(t, g)
+			resetGraph(t, g)
 		}
 	})
 
@@ -291,34 +342,14 @@ func TestConnection(t *testing.T) {
 
 	t.Run("Test DriverRemoteConnection GraphTraversal P", func(t *testing.T) {
 		if runIntegration {
-			// Add data
-			remote, err := NewDriverRemoteConnection(testHost, testPort)
-			assert.Nil(t, err)
-			assert.NotNil(t, remote)
-			g := Traversal_().WithRemote(remote)
-
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-			readCount(t, g, "", 0)
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, 0)
-
-			// Add data and check that the size of the graph is correct.
-			addTestData(t, g)
-			readCount(t, g, "", len(testNames))
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, len(testNames))
+			g := initializeGraph(t, testHost, testPort)
 
 			// Read test data out of the graph and check that it is correct.
 			results, err := g.V().Has("name", P.Eq("Lyndon")).ValueMap("name").ToList()
 			assert.Nil(t, err)
 			assert.Equal(t, 1, len(results))
 
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-			readCount(t, g, "", 0)
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, 0)
+			resetGraph(t, g)
 		}
 	})
 
@@ -354,45 +385,30 @@ func TestConnection(t *testing.T) {
 
 	t.Run("Test anonymousTraversal", func(t *testing.T) {
 		if runIntegration {
-			remote, err := NewDriverRemoteConnection(testHost, testPort)
-			assert.Nil(t, err)
-			assert.NotNil(t, remote)
-			g := Traversal_().WithRemote(remote)
-
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-			readCount(t, g, "", 0)
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, 0)
-
-			// Add data and check that the size of the graph is correct.
-			addTestData(t, g)
-			readCount(t, g, "", len(testNames))
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, len(testNames))
-
+			g := initializeGraph(t, testHost, testPort)
 			readUsingAnonymousTraversal(t, g)
-
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-			readCount(t, g, "", 0)
-			readCount(t, g, testLabel, 0)
-			readCount(t, g, personLabel, 0)
+			resetGraph(t, g)
 		}
 	})
 
+	t.Run("Test Traversal.ToString fail", func(t *testing.T) {
+		anonTrav := T__.Unfold().HasLabel(testLabel)
+		slice, err := anonTrav.ToList()
+		assert.Nil(t, slice)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test Traversal.Iterate fail", func(t *testing.T) {
+		anonTrav := T__.Unfold().HasLabel(testLabel)
+		traversal, channel, err := anonTrav.Iterate()
+		assert.Nil(t, traversal)
+		assert.Nil(t, channel)
+		assert.NotNil(t, err)
+	})
+	
 	t.Run("Test DriverRemoteConnection GraphTraversal WithSack", func(t *testing.T) {
 		if runIntegration {
-			remote, err := NewDriverRemoteConnection(testHost, testPort)
-			assert.Nil(t, err)
-			assert.NotNil(t, remote)
-			g := Traversal_().WithRemote(remote)
-
-			// Drop the graph and check that it is empty.
-			dropGraph(t, g)
-
-			// Add data and check that the size of the graph is correct.
-			addTestData(t, g)
+			g := initializeGraph(t, testHost, testPort)
 
 			r, err := g.V().Has("name", "Lyndon").Values("foo").ToList()
 			assert.Nil(t, err)
@@ -409,6 +425,8 @@ func TestConnection(t *testing.T) {
 			val, err = r[0].GetInt32()
 			assert.Nil(t, err)
 			assert.Equal(t, int32(2), val)
+
+			resetGraph(t, g)
 		}
 	})
 }

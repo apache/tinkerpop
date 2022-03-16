@@ -143,17 +143,10 @@ func (serializer graphBinaryTypeSerializer) readTypeValue(buffer *bytes.Buffer, 
 // Format: {length}{item_0}...{item_n}
 func listWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	v := reflect.ValueOf(value)
-	if (v.Kind() != reflect.Array) && (v.Kind() != reflect.Slice) {
-		typeSerializer.logHandler.log(Error, notSlice)
-		return buffer.Bytes(), errors.New("did not get the expected array or slice type as input")
-	}
 	valLen := v.Len()
 	err := binary.Write(buffer, binary.BigEndian, int32(valLen))
 	if err != nil {
 		return nil, err
-	}
-	if valLen < 1 {
-		return buffer.Bytes(), nil
 	}
 	for i := 0; i < valLen; i++ {
 		_, err := typeSerializer.write(v.Index(i).Interface(), buffer)
@@ -185,11 +178,6 @@ func listReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer)
 // Format: {length}{item_0}...{item_n}
 func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	v := reflect.ValueOf(value)
-	if v.Kind() != reflect.Map {
-		typeSerializer.logHandler.log(Error, notMap)
-		return buffer.Bytes(), errors.New("did not get the expected map type as input")
-	}
-
 	keys := v.MapKeys()
 	err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
 	if err != nil {
@@ -289,12 +277,11 @@ func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSer
 //		{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
 func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	var bc bytecode
-	switch value.(type) {
+	switch typedVal := value.(type) {
 	case *GraphTraversal:
-		gt := value.(*GraphTraversal)
-		bc = *gt.bytecode
+		bc = *typedVal.bytecode
 	case bytecode:
-		bc = value.(bytecode)
+		bc = typedVal
 	default:
 		return nil, errors.New("need GraphTraversal or bytecode to write bytecode")
 	}
@@ -824,7 +811,7 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case bool:
-		return &graphBinaryTypeSerializer{dataType: ByteType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: BooleanType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value.(bool))
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
@@ -994,7 +981,7 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*gra
 	case DurationType.getCodeByte():
 		return &graphBinaryTypeSerializer{dataType: DurationType, reader: durationReader, nullFlagReturn: time.Duration(0), logHandler: serializer.logHandler}, nil
 	case MapType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: MapType, writer: mapWriter, reader: mapReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: MapType, reader: mapReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
 	default:
 		serializer.logHandler.logf(Error, deserializeDataTypeError, int32(typ))
 		return nil, errors.New("unknown data type to deserialize")

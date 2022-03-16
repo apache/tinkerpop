@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -104,7 +103,7 @@ func (transporter *gorillaTransporter) Read() ([]byte, error) {
 		}
 		failureCount += 1
 		if failureCount > maxFailCount {
-			return nil, errors.New(fmt.Sprintf("failed to read from socket more than %d times", maxFailCount))
+			return nil, fmt.Errorf("failed to read from socket more than %d times", maxFailCount)
 		}
 
 		// Try pinging server.

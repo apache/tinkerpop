@@ -20,6 +20,7 @@ under the License.
 package gremlingo
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -58,5 +59,42 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, map[string]interface{}{"host": "/127.0.0.1:62035"}, response.responseStatus.attributes)
 		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
 		assert.Equal(t, []interface{}{int64(0)}, response.responseResult.data)
+	})
+}
+
+func TestSerializerFailures(t *testing.T) {
+	t.Run("test convertArgs failure", func(t *testing.T) {
+		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+		testRequest := request{
+			requestID: u,
+			op:        "eval",
+			processor: "traversal",
+			// Invalid Input in args, so should fail
+			args: map[string]interface{}{"gremlin": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
+		}
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		resp, err := serializer.serializeMessage(&testRequest)
+		assert.Nil(t, resp)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("test map key not string failure", func(t *testing.T) {
+		buff := bytes.Buffer{}
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		buff.Write([]byte{0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01})
+		gs := serializer.(graphBinarySerializer)
+		m, err := readMap(&buff, &gs)
+		assert.Nil(t, m)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("test map key null failure", func(t *testing.T) {
+		buff := bytes.Buffer{}
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		buff.Write([]byte{0x00, 0x00, 0x00, 0x01, 0x03, 0x01})
+		gs := serializer.(graphBinarySerializer)
+		m, err := readMap(&buff, &gs)
+		assert.Nil(t, m)
+		assert.NotNil(t, err)
 	})
 }

@@ -139,4 +139,15 @@ func TestBytecode(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Nil(t, traversalBytecode)
 	})
+
+	t.Run("Test bytecode traversal argument multiple bindings", func(t *testing.T) {
+		bc := bytecode{}
+		bc.bindings = map[string]interface{}{}
+		testTraversal := Traversal{}
+		testTraversal.bytecode = &bytecode{}
+		testTraversal.bytecode.bindings = map[string]interface{}{"mock": "123"}
+		traversalBytecode, err := bc.convertArgument(testTraversal)
+		assert.Nil(t, err)
+		assert.Equal(t, testTraversal.bytecode, traversalBytecode)
+	})
 }

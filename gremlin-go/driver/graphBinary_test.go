@@ -69,7 +69,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			var boolArr = [2]bool{true, false}
 			for _, x := range boolArr {
 				writeToBuffer(x, &buff)
-				assert.Equal(t, x, readToValue(&buff).(uint8) != 0)
+				assert.Equal(t, x, readToValue(&buff))
 			}
 		})
 		t.Run("test byte(uint8)", func(t *testing.T) {
@@ -240,8 +240,10 @@ func TestGraphBinaryV1(t *testing.T) {
 	t.Run("test nested types", func(t *testing.T) {
 		buff := bytes.Buffer{}
 		t.Run("test map", func(t *testing.T) {
-			writeToBuffer(m, &buff)
-			assert.Equal(t, m, readToValue(&buff))
+			t.Run("test map read/write", func(t *testing.T) {
+				writeToBuffer(m, &buff)
+				assert.Equal(t, m, readToValue(&buff))
+			})
 		})
 		t.Run("test slice", func(t *testing.T) {
 			var x = []interface{}{"a", "b", "c"}
@@ -255,4 +257,94 @@ func TestGraphBinaryV1(t *testing.T) {
 		})
 	})
 
+	t.Run("test misc cases", func(t *testing.T) {
+		buff := bytes.Buffer{}
+		logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
+		serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, logHandler}
+
+		t.Run("test bytecode writer failure", func(t *testing.T) {
+			x, err := bytecodeWriter(int64(0), &buff, &serializer)
+			assert.Nil(t, x)
+			assert.NotNil(t, err)
+		})
+		t.Run("test unknown datatype to serialize failure", func(t *testing.T) {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("The code did not panic with an unknown datatype")
+				}
+			}()
+			var x Unknown
+			writeToBuffer(x, &buff)
+		})
+		
+		t.Run("test unknown datatype to deserialize failure", func(t *testing.T) {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("The code did not panic with an unknown datatype")
+				}
+			}()
+			buff.Write([]byte{0xff})
+			readToValue(&buff)
+		})
+		
+		t.Run("test writeValue nil case failure", func(t *testing.T) {
+			var value interface{} = nil
+			val, err := serializer.writeValue(value, &buff, false)
+			assert.Nil(t, val)
+			assert.NotNil(t, err)
+		})
+		
+		t.Run("test writeValue nil case success", func(t *testing.T) {
+			var value interface{} = nil
+			val, err := serializer.writeValue(value, &buff, true)
+			assert.Nil(t, err)
+			assert.NotNil(t, val)
+			x, err := serializer.readTypeValue(&buff, &serializer, true)
+			assert.Nil(t, err)
+			assert.Equal(t, nil, x)
+		})
+		
+		t.Run("test write nil case success", func(t *testing.T) {
+			var value interface{} = nil
+			val, err := serializer.write(value, &buff)
+			assert.Nil(t, err)
+			assert.NotNil(t, val)
+			x, err := serializer.read(&buff)
+			assert.Nil(t, err)
+			assert.Equal(t, value, x)
+		})
+		
+		t.Run("test read nil case isNull check failure", func(t *testing.T) {
+			buff.Write([]byte{0xfe, 0x02})
+			x, err := serializer.read(&buff)
+			assert.Nil(t, x)
+			assert.NotNil(t, err)
+		})
+		
+		t.Run("test null buffer failure", func(t *testing.T) {
+			var nullBuff *bytes.Buffer = nil
+			x, err := serializer.readValue(nullBuff, byte(NullType), true)
+			assert.Nil(t, x)
+			assert.NotNil(t, err)
+		})
+		
+		t.Run("test writeTypeValue unexpected null failure", func(t *testing.T) {
+			var value interface{} = nil
+			val, err := serializer.writeTypeValue(value, &buff, &serializer, false)
+			assert.Nil(t, val)
+			assert.NotNil(t, err)
+		})
+		
+		t.Run("test writeTypeValue success", func(t *testing.T) {
+			var value interface{} = nil
+			val, err := serializer.writeTypeValue(value, &buff, &serializer, true)
+			assert.Nil(t, err)
+			assert.NotNil(t, val)
+			x, err := serializer.readTypeValue(&buff, &serializer, true)
+			assert.Nil(t, err)
+			assert.Equal(t, x, value)
+		})
+	})
 }
+
+type Unknown struct{}
