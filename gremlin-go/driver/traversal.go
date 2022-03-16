@@ -45,7 +45,7 @@ func (t *Traversal) ToList() ([]*Result, error) {
 		return nil, errors.New("cannot invoke this method from an anonymous traversal")
 	}
 
-	results, err := t.remote.SubmitBytecode(t.bytecode)
+	results, err := t.remote.submitBytecode(t.bytecode)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
 		return nil, nil, err
 	}
 
-	res, err := t.remote.SubmitBytecode(t.bytecode)
+	res, err := t.remote.submitBytecode(t.bytecode)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,9 +118,11 @@ func (t *Traversal) Next() (*Result, error) {
 
 func (t *Traversal) getResults() (ResultSet, error) {
 	if t.results == nil {
-		var err error
-		t.results, err = t.remote.SubmitBytecode(t.bytecode)
-		return t.results, err
+		results, err := t.remote.submitBytecode(t.bytecode)
+		if err != nil {
+			return nil, err
+		}
+		t.results = results
 	}
 	return t.results, nil
 }

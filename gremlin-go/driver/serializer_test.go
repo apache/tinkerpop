@@ -67,10 +67,10 @@ func TestSerializerFailures(t *testing.T) {
 		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
 		testRequest := request{
 			requestID: u,
-			op:        "eval",
-			processor: "traversal",
+			op:        "traversal",
+			processor: "",
 			// Invalid Input in args, so should fail
-			args: map[string]interface{}{"gremlin": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
+			args: map[string]interface{}{"invalidInput": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
 		resp, err := serializer.serializeMessage(&testRequest)

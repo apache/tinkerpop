@@ -20,6 +20,7 @@ under the License.
 package gremlingo
 
 import (
+	"crypto/tls"
 	"errors"
 )
 
@@ -66,10 +67,10 @@ func (connection *connection) write(request *request) (ResultSet, error) {
 	return connection.results[requestID], connection.protocol.write(request)
 }
 
-func createConnection(host string, port int, logHandler *logHandler) (*connection, error) {
+func createConnection(url string, authInfo *AuthInfo, tlsConfig *tls.Config, logHandler *logHandler) (*connection, error) {
 	conn := &connection{logHandler, nil, map[string]ResultSet{}, initialized}
 	logHandler.log(Info, connectConnection)
-	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, host, port, conn.results, conn.errorCallback)
+	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, url, authInfo, tlsConfig, conn.results, conn.errorCallback)
 	if err != nil {
 		logHandler.logf(Error, failedConnection)
 		conn.state = closedDueToError

@@ -70,8 +70,7 @@ func TestGorillaTransporter(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockConn := new(mockWebsocketConn)
 		transporter := gorillaTransporter{
-			host:       "mockHost",
-			port:       8182,
+			url:        "ws://mockHost:8182/gremlin",
 			connection: mockConn,
 			isClosed:   false,
 		}
@@ -106,8 +105,7 @@ func TestGorillaTransporter(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		mockConn := new(mockWebsocketConn)
 		transporter := gorillaTransporter{
-			host:       "mockHost",
-			port:       8182,
+			url:        "ws://mockHost:8182/gremlin",
 			connection: mockConn,
 			isClosed:   false,
 		}

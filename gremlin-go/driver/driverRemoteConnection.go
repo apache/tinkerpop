@@ -19,17 +19,20 @@ under the License.
 
 package gremlingo
 
-import "golang.org/x/text/language"
+import (
+	"crypto/tls"
+	"golang.org/x/text/language"
+)
 
 // DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
 	TraversalSource string
-	Username        string
-	Password        string
 	TransporterType TransporterType
 	LogVerbosity    LogVerbosity
 	Logger          Logger
 	Language        language.Tag
+	AuthInfo        *AuthInfo
+	TlsConfig       *tls.Config
 
 	// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
 	Protocol   protocol
@@ -46,17 +49,16 @@ type DriverRemoteConnection struct {
 // Gorilla as the default Transporter, Info as the default LogVerbosity, a default logger stuct, and English and as the
 // default language
 func NewDriverRemoteConnection(
-	host string,
-	port int,
+	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
 		TraversalSource: "g",
-		Username:        "",
-		Password:        "",
 		TransporterType: Gorilla,
 		LogVerbosity:    Info,
 		Logger:          &defaultLogger{},
 		Language:        language.English,
+		AuthInfo:        &AuthInfo{},
+		TlsConfig:       &tls.Config{},
 
 		// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
 		Protocol:   nil,
@@ -67,14 +69,13 @@ func NewDriverRemoteConnection(
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	connection, err := createConnection(host, port, logHandler)
+	connection, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
-		host:            host,
-		port:            port,
+		url:             url,
 		transporterType: settings.TransporterType,
 		logHandler:      logHandler,
 		connection:      connection,
@@ -93,9 +94,9 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 	return driver.client.Submit(traversalString)
 }
 
-// SubmitBytecode sends a bytecode traversal to the server.
-func (driver *DriverRemoteConnection) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
-	return driver.client.SubmitBytecode(bytecode)
+// submitBytecode sends a bytecode traversal to the server.
+func (driver *DriverRemoteConnection) submitBytecode(bytecode *bytecode) (ResultSet, error) {
+	return driver.client.submitBytecode(bytecode)
 }
 
 // TODO: Bytecode, OptionsStrategy, RequestOptions

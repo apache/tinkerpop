@@ -20,9 +20,9 @@ under the License.
 package gremlingo
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -33,10 +33,11 @@ const maxFailCount = 3
 // Transport layer that uses gorilla/websocket: https://github.com/gorilla/websocket
 // Gorilla WebSocket is a widely used and stable Go implementation of the WebSocket protocol.
 type gorillaTransporter struct {
-	host       string
-	port       int
+	url        string
 	connection websocketConn
 	isClosed   bool
+	authInfo   *AuthInfo
+	tlsConfig  *tls.Config
 }
 
 // Connect used to establish a connection.
@@ -45,16 +46,18 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 		return
 	}
 
-	u := url.URL{
-		Scheme: scheme,
-		Host:   transporter.host + ":" + strconv.Itoa(transporter.port),
-		Path:   path,
+	var u *url.URL
+	u, err = url.Parse(transporter.url)
+	if err != nil {
+		return
 	}
 
 	dialer := websocket.DefaultDialer
+	dialer.TLSClientConfig = transporter.tlsConfig
 	// TODO: make this configurable from client; this currently does nothing since 4096 is the default
 	dialer.WriteBufferSize = 4096
-	conn, _, err := dialer.Dial(u.String(), nil)
+	// Nil is accepted as a valid header, so it can always be passed directly through.
+	conn, _, err := dialer.Dial(u.String(), transporter.authInfo.getHeader())
 	if err == nil {
 		transporter.connection = conn
 	}
@@ -71,7 +74,11 @@ func (transporter *gorillaTransporter) Write(data []byte) (err error) {
 	}
 
 	err = transporter.connection.WriteMessage(websocket.BinaryMessage, data)
-	return err
+	return
+}
+
+func (transporter *gorillaTransporter) getAuthInfo() *AuthInfo {
+	return transporter.authInfo
 }
 
 // Read used to read data from the transporter. Opens connection if closed.
