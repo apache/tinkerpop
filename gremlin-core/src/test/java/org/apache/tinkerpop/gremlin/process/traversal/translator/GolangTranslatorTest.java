@@ -60,7 +60,7 @@ public class GolangTranslatorTest {
     public void shouldTranslateCardinality() {
         final String gremlinAsGo = translator.translate(
                 g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
-        assertEquals("g.AddV(\"person\").Property(Cardinality.List, \"name\", \"marko\")", gremlinAsGo);
+        assertEquals("g.AddV(\"person\").Property(gremlingo.List, \"name\", \"marko\")", gremlinAsGo);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class GolangTranslatorTest {
         final String gremlinAsGo = translator.translate(
                 g.V().has("person", "name", "marko").
                         where(outE()).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.AnonTrav__.OutE())", gremlinAsGo);
+        assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE())", gremlinAsGo);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class GolangTranslatorTest {
         final String gremlinAsGo = translator.translate(
                 g.V().has("person", "name", "marko").
                         where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.AnonTrav__.OutE().Count().Is(2).And(gremlingo.AnonTrav__.Not(gremlingo.AnonTrav__.InE().Count().Is(3))))", gremlinAsGo);
+        assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE().Count().Is(2).And(gremlingo.T__.Not(gremlingo.T__.InE().Count().Is(3))))", gremlinAsGo);
     }
 
     // TODO AN-987: TraversalStrategy implementation in Gremlin-go
@@ -99,8 +99,6 @@ public class GolangTranslatorTest {
                         V().has("name").asAdmin().getBytecode()).getScript());
     }
 
-    // TODO: AN-1037 Lambda support in Gremlin-Go
-    @Ignore
     @Test
     public void shouldTranslateLambdas() {
         final Bytecode bytecode = g.withSideEffect("lengthSum", 0).withSack(1)
@@ -112,7 +110,13 @@ public class GolangTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
+        assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(int32(1)).V()." +
+                        "Filter(&gremlingo.Lambda{Script:\"x -> x.get().label() == 'person'\", Language:\"\"})." +
+                        "FlatMap(&gremlingo.Lambda{Script:\"it.get().vertices(Direction.OUT)\", Language:\"\"})." +
+                        "Map(&gremlingo.Lambda{Script:\"x -> x : len(x.get().value('name'))\", Language:\"\"})." +
+                        "SideEffect(&gremlingo.Lambda{Script:\"x -> x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())\", Language:\"\"})." +
+                        "Order().By(&gremlingo.Lambda{Script:\"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\", Language:\"\"})." +
+                        "Sack(&gremlingo.Lambda{Script:\"a,b -> a + b\", Language:\"\"})",
                 translator.translate(bytecode).getScript());
     }
 }
