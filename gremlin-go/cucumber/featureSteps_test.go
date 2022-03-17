@@ -713,7 +713,6 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		tg.scenario = sc
-		tg.loadEmptyDataGraph()
 		// Add tg.recreateAllDataGraphConnection() here and tg.closeAllDataGraphConnection() in an After scenario
 		// hook if necessary to isolate failing tests that closes the shared connection.
 		return ctx, nil
