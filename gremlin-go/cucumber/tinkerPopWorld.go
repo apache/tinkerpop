@@ -115,10 +115,6 @@ func (t *TinkerPopWorld) loadAllDataGraph() {
 }
 
 func (t *TinkerPopWorld) loadEmptyDataGraph() {
-	if _, ok := t.graphDataMap["empty"]; ok {
-		return
-	}
-
 	connection, _ := gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {
 		settings.TraversalSource = "ggraph"
 	})
