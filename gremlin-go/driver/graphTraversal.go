@@ -22,9 +22,10 @@ package gremlingo
 type TraversalStrategy struct {
 	name          string
 	configuration map[string]string
+	apply         func(connection DriverRemoteConnection)
 }
 
-// Name of the TraversalStrategy
+// Name of the TraversalStrategyBase
 func (ts *TraversalStrategy) Name() string {
 	return ts.name
 }
@@ -32,6 +33,11 @@ func (ts *TraversalStrategy) Name() string {
 // Configuration of the TraversalStrategy
 func (ts *TraversalStrategy) Configuration() map[string]string {
 	return ts.configuration
+}
+
+// Apply of the TraversalStrategy
+func (ts *TraversalStrategy) Apply() func(connection DriverRemoteConnection) {
+	return ts.apply
 }
 
 type Lambda struct {

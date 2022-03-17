@@ -24,3 +24,18 @@ func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMeta
 	}
 	return &TraversalStrategy{name: DecorationNamespace + "PartitionStrategy", configuration: config}
 }
+
+// todo: clarify. Code looks wrong
+func RemoteStrategy(g GraphTraversal) *TraversalStrategy {
+	a := func(connection DriverRemoteConnection) {
+		if true {
+			_, err := connection.submitBytecode(g.bytecode)
+			if err != nil {
+				return
+			}
+			// connection.Traversers = g.Traversers
+		}
+	}
+
+	return &TraversalStrategy{name: "RemoteStrategy", apply: a}
+}
