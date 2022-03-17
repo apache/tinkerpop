@@ -27,18 +27,9 @@ import (
 )
 
 func Test(t *testing.T) {
-	t.Run("Test protocol connectionMade", func(t *testing.T) {
-		protocol := newGremlinServerWSProtocol(newLogHandler(&defaultLogger{}, Info, language.English))
-		transport := getTransportLayer(Gorilla, "host", 1234)
-		assert.NotPanics(t, func() { protocol.connectionMade(transport) })
-	})
-
-	t.Run("Test dataReceived actual message", func(t *testing.T) {
-		protocol := newGremlinServerWSProtocol(newLogHandler(&defaultLogger{}, Info, language.English))
-		protocol.connectionMade(getTransportLayer(Gorilla, "host", 1234))
-		request := makeStringRequest("1+1")
-		requestID, err := protocol.write(&request, nil)
+	t.Run("Test protocol connect error.", func(t *testing.T) {
+		protocol, err := newGremlinServerWSProtocol(newLogHandler(&defaultLogger{}, Info, language.English), Gorilla, "localhost", 9000, nil, nil)
 		assert.NotNil(t, err)
-		assert.Equal(t, requestID, "")
+		assert.Nil(t, protocol)
 	})
 }

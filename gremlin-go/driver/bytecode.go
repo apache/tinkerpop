@@ -19,7 +19,10 @@ under the License.
 
 package gremlingo
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 type bytecode struct {
 	sourceInstructions []instruction
@@ -123,14 +126,14 @@ func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) 
 				key:   v.key,
 				value: convertedValue,
 			}, nil
-		// TODO: AN-970 Traversal
-		//case Traversal:
-		//if arg.graph != nil {
-		//	return errors.New()
-		//}
-		//for k, v := range arg.bytecode.bindings {
-		//	bytecode.bindings[k] = v
-		//}
+		case Traversal:
+			if v.graph != nil {
+				return nil, errors.New("the child traversal was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
+			}
+			for k, val := range v.bytecode.bindings {
+				bytecode.bindings[k] = val
+			}
+			return v.bytecode, nil
 		default:
 			return arg, nil
 		}

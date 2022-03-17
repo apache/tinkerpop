@@ -22,6 +22,8 @@ package gremlingo
 import (
 	"encoding/json"
 	"log"
+	"path/filepath"
+	"runtime"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -32,7 +34,7 @@ type LogVerbosity int
 
 const (
 	// Debug verbosity will log everything, including fine details.
-	Debug LogVerbosity = iota
+	Debug LogVerbosity = iota + 1
 	// Info verbosity will log messages up to standard procedure flow.
 	Info
 	// Warning verbosity will log messages up to warnings.
@@ -71,7 +73,9 @@ func newLogHandler(logger Logger, verbosity LogVerbosity, locale language.Tag) *
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
 	// Register resource package here for additional languages.
-	bundle.LoadMessageFile("resources/en.json")
+	_, path, _, _ := runtime.Caller(0)
+	path = filepath.Join(filepath.Dir(path), "resources/en.json")
+	bundle.LoadMessageFile(path)
 	localizer := i18n.NewLocalizer(bundle, locale.String())
 	return &logHandler{logger, verbosity, localizer}
 }
@@ -104,4 +108,14 @@ const (
 	malformedURL             errorKey = "MALFORMED_URL"
 	transportCloseFailed     errorKey = "TRANSPORT_CLOSE_FAILED"
 	notSlice                 errorKey = "NOT_SLICE_TYPE"
+	closeConnection          errorKey = "CLOSING_CONNECTION"
+	connectConnection        errorKey = "OPENING_CONNECTION"
+	failedConnection         errorKey = "FAILED_CONNECTION"
+	writeRequest             errorKey = "WRITE_REQUEST"
+	readLoopError            errorKey = "READ_LOOP_ERROR"
+	errorCallback            errorKey = "ERROR_CALLBACK"
+	creatingRequest          errorKey = "CREATING_REQUEST"
+	readComplete             errorKey = "READ_COMPLETE"
+	submitStartedString      errorKey = "SUBMIT_STARTED_STRING"
+	submitStartedBytecode    errorKey = "SUBMIT_STARTED_BYTECODE"
 )

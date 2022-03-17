@@ -19,50 +19,64 @@ under the License.
 
 package gremlingo
 
+import (
+	"errors"
+)
+
+type connectionState int
+
+const (
+	initialized connectionState = iota + 1
+	established
+	closed
+	closedDueToError
+)
+
 type connection struct {
-	host            string
-	port            int
-	transporterType TransporterType
-	logHandler      *logHandler
-	transporter     transporter
-	protocol        protocol
-	results         map[string]ResultSet
+	logHandler *logHandler
+	protocol   protocol
+	results    map[string]ResultSet
+	state      connectionState
 }
 
-func (connection *connection) close() (err error) {
-	if connection.transporter != nil {
-		err = connection.transporter.Close()
-	}
-	return
+func (connection *connection) errorCallback() {
+	connection.logHandler.log(Error, errorCallback)
+	connection.state = closedDueToError
+	_ = connection.protocol.close()
 }
 
-func (connection *connection) connect() error {
-	if connection.transporter != nil {
-		closeErr := connection.transporter.Close()
-		connection.logHandler.logf(Warning, transportCloseFailed, closeErr)
+func (connection *connection) close() error {
+	if connection.state != established {
+		return errors.New("cannot close connection that has already been closed or has not been connected")
 	}
-	connection.protocol = newGremlinServerWSProtocol(connection.logHandler)
-	connection.transporter = getTransportLayer(connection.transporterType, connection.host, connection.port)
-	err := connection.transporter.Connect()
-	if err != nil {
-		return err
+	connection.logHandler.log(Info, closeConnection)
+	var err error
+	if connection.protocol != nil {
+		err = connection.protocol.close()
 	}
-	connection.protocol.connectionMade(connection.transporter)
-	return nil
+	connection.state = closed
+	return err
 }
 
 func (connection *connection) write(request *request) (ResultSet, error) {
-	if connection.transporter == nil || connection.transporter.IsClosed() {
-		err := connection.connect()
-		if err != nil {
-			return nil, err
-		}
-	}
-	if connection.results == nil {
-		connection.results = map[string]ResultSet{}
-	}
+	connection.logHandler.log(Info, writeRequest)
+	requestID := request.requestID.String()
+	connection.logHandler.logf(Info, creatingRequest, requestID)
+	connection.results[requestID] = newChannelResultSet(requestID)
+	return connection.results[requestID], connection.protocol.write(request)
+}
 
-	// Write through protocol layer.
-	responseID, err := connection.protocol.write(request, connection.results)
-	return connection.results[responseID], err
+func createConnection(host string, port int, logHandler *logHandler) (*connection, error) {
+	conn := &connection{logHandler, nil, map[string]ResultSet{}, initialized}
+	logHandler.log(Info, connectConnection)
+	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, host, port, conn.results, conn.errorCallback)
+	conn.protocol = protocol
+	if err == nil {
+		conn.state = established
+		return conn, err
+	} else {
+		logHandler.logf(Error, failedConnection)
+		conn.state = closedDueToError
+		return nil, err
+	}
 }

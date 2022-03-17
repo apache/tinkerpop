@@ -1,50 +1,208 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
 package gremlingo
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/language"
 )
 
-const runIntegration = false
+const runIntegration = true
+const testHost string = "localhost"
+const testPort int = 8182
+const personLabel = "Person"
+const testLabel = "Test"
+const nameKey = "name"
+
+func dropGraph(t *testing.T, g *GraphTraversalSource) {
+	// Drop vertices that were added.
+	_, promise, err := g.V().Drop().Iterate()
+	assert.Nil(t, err)
+	assert.NotNil(t, promise)
+	<-promise
+}
+
+func getTestNames() []string {
+	return []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey"}
+}
+
+func addTestData(t *testing.T, g *GraphTraversalSource) {
+	testNames := getTestNames()
+
+	// Add vertices to traversal.
+	var traversal *GraphTraversal
+	for _, name := range testNames {
+		if traversal == nil {
+			traversal = g.AddV(personLabel).Property(nameKey, name)
+		} else {
+			traversal = traversal.AddV(personLabel).Property(nameKey, name)
+		}
+	}
+
+	// Commit traversal.
+	_, promise, err := traversal.Iterate()
+	assert.Nil(t, err)
+	<-promise
+}
+
+func readTestDataVertexProperties(t *testing.T, g *GraphTraversalSource) {
+	// Read names from graph
+	var sortedNames []string
+	results, err := g.V().HasLabel(personLabel).Properties(nameKey).ToList()
+	for _, result := range results {
+		vp, err := result.GetVertexProperty()
+		assert.Nil(t, err)
+		sortedNames = append(sortedNames, vp.value.(string))
+	}
+	assert.Nil(t, err)
+	assert.NotNil(t, sortedNames)
+
+	// Sort names on both sides.
+	testNames := getTestNames()
+	sort.Slice(sortedNames, func(i, j int) bool {
+		return sortedNames[i] < sortedNames[j]
+	})
+	sort.Slice(testNames, func(i, j int) bool {
+		return testNames[i] < testNames[j]
+	})
+	assert.Equal(t, sortedNames, testNames)
+}
+
+func readTestDataValues(t *testing.T, g *GraphTraversalSource) {
+	// Read names from graph
+	var sortedNames []string
+	results, err := g.V().HasLabel(personLabel).Values(nameKey).ToList()
+	for _, result := range results {
+		sortedNames = append(sortedNames, result.GetString())
+	}
+	assert.Nil(t, err)
+	assert.NotNil(t, sortedNames)
+
+	// Sort names on both sides.
+	testNames := getTestNames()
+	sort.Slice(sortedNames, func(i, j int) bool {
+		return sortedNames[i] < sortedNames[j]
+	})
+	sort.Slice(testNames, func(i, j int) bool {
+		return testNames[i] < testNames[j]
+	})
+	assert.Equal(t, sortedNames, testNames)
+}
+
+func readCount(t *testing.T, g *GraphTraversalSource, label string, expected int) {
+	// Generate traversal.
+	var traversal *GraphTraversal
+	if label != "" {
+		traversal = g.V().HasLabel(label).Count()
+	} else {
+		traversal = g.V().Count()
+	}
+
+	// Get results from traversal.
+	results, err := traversal.ToList()
+	assert.Equal(t, 1, len(results))
+
+	// Read count from results.
+	var count int32
+	count, err = results[0].GetInt32()
+	assert.Nil(t, err)
+
+	// Check count.
+	assert.Equal(t, int32(expected), count)
+}
 
 func TestConnection(t *testing.T) {
-	t.Run("Test connect", func(t *testing.T) {
+	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
 		if runIntegration {
-			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
-			err := connection.connect()
+			remote, err := NewDriverRemoteConnection(testHost, testPort)
+			assert.Nil(t, err)
+			assert.NotNil(t, remote)
+			g := Traversal_().WithRemote(remote)
+
+			// Drop the graph and check that it is empty.
+			dropGraph(t, g)
+			readCount(t, g, "", 0)
+			readCount(t, g, testLabel, 0)
+			readCount(t, g, personLabel, 0)
+
+			// Add data and check that the size of the graph is correct.
+			addTestData(t, g)
+			readCount(t, g, "", len(getTestNames()))
+			readCount(t, g, testLabel, 0)
+			readCount(t, g, personLabel, len(getTestNames()))
+
+			// Read test data out of the graph and check that it is correct.
+			readTestDataVertexProperties(t, g)
+			readTestDataValues(t, g)
+
+			// Drop the graph and check that it is empty.
+			dropGraph(t, g)
+			readCount(t, g, "", 0)
+			readCount(t, g, testLabel, 0)
+			readCount(t, g, personLabel, 0)
+		}
+	})
+
+	t.Run("Test createConnection", func(t *testing.T) {
+		if runIntegration {
+			connection, err := createConnection(testHost, testPort, newLogHandler(&defaultLogger{}, Info, language.English))
+			assert.Nil(t, err)
+			assert.NotNil(t, connection)
+			err = connection.close()
 			assert.Nil(t, err)
 		}
 	})
 
-	t.Run("Test write", func(t *testing.T) {
+	t.Run("Test connection.write()", func(t *testing.T) {
 		if runIntegration {
-			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
-			err := connection.connect()
+			connection, err := createConnection(testHost, testPort, newLogHandler(&defaultLogger{}, Info, language.English))
 			assert.Nil(t, err)
+			assert.NotNil(t, connection)
 			request := makeStringRequest("g.V().count()")
 			resultSet, err := connection.write(&request)
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
-			assert.Equal(t, result.AsString(), "[0]")
+			assert.Equal(t, "[0]", result.GetString())
+			err = connection.close()
+			assert.Nil(t, err)
 		}
 	})
 
-	t.Run("Test client submit", func(t *testing.T) {
+	t.Run("Test client.submit()", func(t *testing.T) {
 		if runIntegration {
-			connection := connection{"localhost", 8181, Gorilla, newLogHandler(&defaultLogger{}, Info, language.English), nil, nil, nil}
-			err := connection.connect()
+			client, err := NewClient(testHost, testPort)
 			assert.Nil(t, err)
-			client := NewClient("localhost", 8181)
+			assert.NotNil(t, client)
 			resultSet, err := client.Submit("g.V().count()")
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
 			result := resultSet.one()
 			assert.NotNil(t, result)
-			assert.Equal(t, result.AsString(), "[0]")
+			assert.Equal(t, "[0]", result.GetString())
+			err = client.Close()
+			assert.Nil(t, err)
 		}
 	})
 }

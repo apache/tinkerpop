@@ -56,8 +56,10 @@ func (channelResultSet *channelResultSet) IsEmpty() bool {
 }
 
 func (channelResultSet *channelResultSet) Close() {
-	close(channelResultSet.channel)
-	channelResultSet.closed = true
+	if !channelResultSet.closed {
+		channelResultSet.closed = true
+		close(channelResultSet.channel)
+	}
 }
 
 func (channelResultSet *channelResultSet) setAggregateTo(val string) {

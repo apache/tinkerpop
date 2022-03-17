@@ -41,7 +41,7 @@ type Client struct {
 }
 
 // NewClient creates a Client and configures it with the given parameters.
-func NewClient(host string, port int, configurations ...func(settings *ClientSettings)) *Client {
+func NewClient(host string, port int, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
 		TransporterType: Gorilla,
 		LogVerbosity:    Info,
@@ -53,14 +53,18 @@ func NewClient(host string, port int, configurations ...func(settings *ClientSet
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
+	conn, err := createConnection(host, port, logHandler)
+	if err != nil {
+		return nil, err
+	}
 	client := &Client{
 		host:            host,
 		port:            port,
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
-		connection:      nil,
+		connection:      conn,
 	}
-	return client
+	return client, nil
 }
 
 // Close closes the client via connection
@@ -71,17 +75,14 @@ func (client *Client) Close() error {
 // Submit submits a Gremlin script to the server and returns a ResultSet
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	// TODO AN-982: Obtain connection from pool of connections held by the client.
+	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString)
-	if client.connection == nil {
-		client.connection = &connection{
-			host:            client.host,
-			port:            client.port,
-			transporterType: client.transporterType,
-			logHandler:      client.logHandler,
-			transporter:     nil,
-			protocol:        nil,
-		}
-	}
+	return client.connection.write(&request)
+}
 
+// SubmitBytecode submits bytecode to the server to execute and returns a ResultSet
+func (client *Client) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
+	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
+	request := makeBytecodeRequest(bytecode)
 	return client.connection.write(&request)
 }

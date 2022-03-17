@@ -21,9 +21,6 @@ package gremlingo
 
 import "github.com/google/uuid"
 
-const op = "eval"
-const processor = ""
-
 // request represents a request to the server
 type request struct {
 	requestID uuid.UUID              `json:"requestId"`
@@ -32,11 +29,38 @@ type request struct {
 	args      map[string]interface{} `json:"args"`
 }
 
-func makeStringRequest(requestString string) (req request) {
-	return request{uuid.New(), op, processor, map[string]interface{}{
-		"gremlin": requestString,
-		"aliases": map[string]interface{}{
-			"g": "g",
+const stringOp = "eval"
+const stringProcessor = ""
+
+func makeStringRequest(stringGremlin string) (req request) {
+	return request{
+		requestID: uuid.New(),
+		op:        stringOp,
+		processor: stringProcessor,
+		args: map[string]interface{}{
+			"gremlin": stringGremlin,
+			"aliases": map[string]interface{}{
+				"g": "g",
+			},
 		},
-	}}
+	}
 }
+
+const bytecodeOp = "bytecode"
+const bytecodeProcessor = "traversal"
+
+func makeBytecodeRequest(bytecodeGremlin *bytecode) (req request) {
+	return request{
+		requestID: uuid.New(),
+		op:        bytecodeOp,
+		processor: bytecodeProcessor,
+		args: map[string]interface{}{
+			"gremlin": *bytecodeGremlin,
+			"aliases": map[string]interface{}{
+				"g": "g",
+			},
+		},
+	}
+}
+
+// TODO: AN-1029 - Enable configurable request aliases

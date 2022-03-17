@@ -117,4 +117,25 @@ func TestBytecode(t *testing.T) {
 			assert.Equal(t, testValue, bc.bindings[testKey])
 		})
 	})
+
+	t.Run("Test bytecode traversal argument conversion without Graph", func(t *testing.T) {
+		bc := bytecode{}
+		traversal := Traversal{}
+		traversal.graph = nil
+		traversal.bytecode = &bytecode{}
+		traversalBytecode, err := bc.convertArgument(traversal)
+		assert.Nil(t, err)
+		assert.Equal(t, traversal.bytecode, traversalBytecode)
+	})
+
+	t.Run("Test bytecode traversal argument conversion with Graph", func(t *testing.T) {
+		// This should fail.
+		bc := bytecode{}
+		traversal := Traversal{}
+		traversal.graph = &Graph{}
+		traversal.bytecode = &bytecode{}
+		traversalBytecode, err := bc.convertArgument(traversal)
+		assert.NotNil(t, err)
+		assert.Nil(t, traversalBytecode)
+	})
 }
