@@ -19,6 +19,21 @@ under the License.
 
 package gremlingo
 
+type TraversalStrategy struct {
+	name          string
+	configuration map[string]string
+}
+
+// Name of the TraversalStrategy
+func (ts *TraversalStrategy) Name() string {
+	return ts.name
+}
+
+// Configuration of the TraversalStrategy
+func (ts *TraversalStrategy) Configuration() map[string]string {
+	return ts.configuration
+}
+
 type Lambda struct {
 	Script   string
 	Language string

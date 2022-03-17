@@ -38,44 +38,45 @@ type DataType uint8
 
 // DataType defined as constants.
 const (
-	IntType            DataType = 0x01
-	LongType           DataType = 0x02
-	StringType         DataType = 0x03
-	DateType           DataType = 0x04
-	TimestampType      DataType = 0x05
-	DoubleType         DataType = 0x07
-	FloatType          DataType = 0x08
-	ListType           DataType = 0x09
-	MapType            DataType = 0x0a
-	SetType            DataType = 0x0b
-	UUIDType           DataType = 0x0c
-	EdgeType           DataType = 0x0d
-	PathType           DataType = 0x0e
-	PropertyType       DataType = 0x0f
-	VertexType         DataType = 0x11
-	VertexPropertyType DataType = 0x12
-	LambdaType         DataType = 0x1d
-	BarrierType        DataType = 0x13
-	CardinalityType    DataType = 0x16
-	BytecodeType       DataType = 0x15
-	ColumnType         DataType = 0x17
-	DirectionType      DataType = 0x18
-	OperatorType       DataType = 0x19
-	OrderType          DataType = 0x1a
-	PickType           DataType = 0x1b
-	PopType            DataType = 0x1c
-	PType              DataType = 0x1e
-	ScopeType          DataType = 0x1f
-	TType              DataType = 0x20
-	TraverserType      DataType = 0x21
-	BigIntegerType     DataType = 0x23
-	ByteType           DataType = 0x24
-	ShortType          DataType = 0x26
-	BooleanType        DataType = 0x27
-	TextPType          DataType = 0x28
-	BulkSetType        DataType = 0x2a
-	DurationType       DataType = 0x81
-	NullType           DataType = 0xFE
+	IntType               DataType = 0x01
+	LongType              DataType = 0x02
+	StringType            DataType = 0x03
+	DateType              DataType = 0x04
+	TimestampType         DataType = 0x05
+	DoubleType            DataType = 0x07
+	FloatType             DataType = 0x08
+	ListType              DataType = 0x09
+	MapType               DataType = 0x0a
+	SetType               DataType = 0x0b
+	UUIDType              DataType = 0x0c
+	EdgeType              DataType = 0x0d
+	PathType              DataType = 0x0e
+	PropertyType          DataType = 0x0f
+	VertexType            DataType = 0x11
+	VertexPropertyType    DataType = 0x12
+	LambdaType            DataType = 0x1d
+	BarrierType           DataType = 0x13
+	CardinalityType       DataType = 0x16
+	BytecodeType          DataType = 0x15
+	ColumnType            DataType = 0x17
+	DirectionType         DataType = 0x18
+	OperatorType          DataType = 0x19
+	OrderType             DataType = 0x1a
+	PickType              DataType = 0x1b
+	PopType               DataType = 0x1c
+	PType                 DataType = 0x1e
+	ScopeType             DataType = 0x1f
+	TType                 DataType = 0x20
+	TraverserType         DataType = 0x21
+	BigIntegerType        DataType = 0x23
+	ByteType              DataType = 0x24
+	ShortType             DataType = 0x26
+	BooleanType           DataType = 0x27
+	TextPType             DataType = 0x28
+	TraversalStrategyType DataType = 0x29
+	BulkSetType           DataType = 0x2a
+	DurationType          DataType = 0x81
+	NullType              DataType = 0xFE
 )
 
 var nullBytes = []byte{NullType.getCodeByte(), 0x01}
@@ -742,6 +743,45 @@ func lambdaWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graph
 	return buffer.Bytes(), nil
 }
 
+// Format: {strategy_class}{configuration}
+func traversalStrategyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	traversalStrategy := value.(*TraversalStrategy)
+
+	_, err := typeSerializer.writeValue(traversalStrategy.Name(), buffer, false)
+	if err != nil {
+		return nil, err
+	}
+
+	// todo: add mapWriter or keep as is?
+	if traversalStrategy.Configuration() == nil {
+		_, err = typeSerializer.writeValue(0, buffer, false)
+		if err != nil {
+			return nil, err
+		}
+
+		return buffer.Bytes(), nil
+	}
+
+	_, err = typeSerializer.writeValue(len(traversalStrategy.Configuration()), buffer, false)
+	if err != nil {
+		return nil, err
+	}
+
+	for key, element := range traversalStrategy.Configuration() {
+		_, err = typeSerializer.writeValue(key, buffer, false)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = typeSerializer.writeValue(element, buffer, false)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return buffer.Bytes(), nil
+}
+
 func pWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	var v p
 	if reflect.TypeOf(value).Kind() == reflect.Ptr {
@@ -928,6 +968,8 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 		return &graphBinaryTypeSerializer{dataType: VertexPropertyType, writer: vertexPropertyWriter, logHandler: serializer.logHandler}, nil
 	case *Lambda:
 		return &graphBinaryTypeSerializer{dataType: LambdaType, writer: lambdaWriter, logHandler: serializer.logHandler}, nil
+	case *TraversalStrategy:
+		return &graphBinaryTypeSerializer{dataType: TraversalStrategyType, writer: traversalStrategyWriter, logHandler: serializer.logHandler}, nil
 	case *Path:
 		return &graphBinaryTypeSerializer{dataType: PathType, writer: pathWriter, logHandler: serializer.logHandler}, nil
 	case Set:
