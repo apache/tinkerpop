@@ -233,13 +233,6 @@ jobs:
         working-directory: ./gremlin-go
         run: go vet ./...
 
-      - name: Go-StaticCheck
-        uses: dominikh/staticcheck-action@v1.1.0
-        with:
-          version: "2021.1.1"
-          install-go: false
-          cache-key: ${{ matrix.go }}
-
       - name: Generate Cucumber Godog Test File
         working-directory: .
         run: |
