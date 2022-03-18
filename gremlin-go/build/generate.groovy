@@ -75,7 +75,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         '\n' +
         'import (\n' +
         '\t \"errors\"\n' +
-        '\t \"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver\"\n' +
+        '\t \"github.com/apache/tinkerpop/gremlin-go/driver\"\n' +
         ')\n'
     )
 

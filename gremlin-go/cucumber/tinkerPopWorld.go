@@ -21,8 +21,8 @@ package gremlingo
 
 import (
 	"fmt"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 	"github.com/cucumber/godog"
-	gremlingo "github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
 	"os"
 	"reflect"
 	"strconv"
