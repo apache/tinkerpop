@@ -42,8 +42,9 @@ func TestReadOnlyStrategy(t *testing.T) {
 	t.Run("Test write with TestReadOnlyStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 
-		_, err := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").ToList()
+		_, promise, err := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
 
-		assert.NotNil(t, err)
+		assert.Nil(t, err)
+		assert.NotNil(t, <-promise)
 	})
 }
