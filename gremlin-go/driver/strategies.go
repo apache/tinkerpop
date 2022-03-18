@@ -20,14 +20,14 @@ under the License.
 package gremlingo
 
 const (
-	BaseNamespace         = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
-	DecorationNamespace   = BaseNamespace + "decoration."
-	FinalizationNamespace = BaseNamespace + "finalization."
-	OptimizationNamespace = BaseNamespace + "optimization."
-	VerificationNamespace = BaseNamespace + "verification."
+	baseNamespace         = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
+	decorationNamespace   = baseNamespace + "decoration."
+	finalizationNamespace = baseNamespace + "finalization."
+	optimizationNamespace = baseNamespace + "optimization."
+	verificationNamespace = baseNamespace + "verification."
 )
 
-func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMetaProperties string) *TraversalStrategy {
+func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMetaProperties string) *traversalStrategy {
 	config := make(map[string]string)
 	if partitionKey != "" {
 		config["partitionKey"] = partitionKey
@@ -41,20 +41,26 @@ func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMeta
 	if includeMetaProperties != "" {
 		config["includeMetaProperties"] = includeMetaProperties
 	}
-	return &TraversalStrategy{name: DecorationNamespace + "PartitionStrategy", configuration: config}
+	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: config}
 }
 
-// todo: clarify. Code looks wrong
-func RemoteStrategy(g GraphTraversal) *TraversalStrategy {
-	a := func(connection DriverRemoteConnection) {
-		if true {
-			_, err := connection.submitBytecode(g.bytecode)
-			if err != nil {
-				return
-			}
-			// connection.Traversers = g.Traversers
+func ReadOnlyStrategy() *traversalStrategy {
+	return &traversalStrategy{name: verificationNamespace + "ReadOnlyStrategy"}
+}
+
+func RemoteStrategy(connection DriverRemoteConnection) *traversalStrategy {
+	a := func(g GraphTraversal) {
+		result, err := g.getResults()
+		if err != nil || result != nil {
+			return
 		}
+
+		rs, err := connection.submitBytecode(g.bytecode)
+		if err != nil {
+			return
+		}
+		g.results = rs
 	}
 
-	return &TraversalStrategy{name: "RemoteStrategy", apply: a}
+	return &traversalStrategy{name: "RemoteStrategy", apply: a}
 }

@@ -171,6 +171,14 @@ func listReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer)
 
 // Format: {length}{item_0}...{item_n}
 func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	if value == nil {
+		_, err := typeSerializer.writeValue(int32(0), buffer, false)
+		if err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	}
+
 	v := reflect.ValueOf(value)
 	keys := v.MapKeys()
 	err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
@@ -745,41 +753,14 @@ func lambdaWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graph
 
 // Format: {strategy_class}{configuration}
 func traversalStrategyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	traversalStrategy := value.(*TraversalStrategy)
+	ts := value.(*traversalStrategy)
 
-	_, err := typeSerializer.writeValue(traversalStrategy.Name(), buffer, false)
+	_, err := typeSerializer.writeValue(ts.name, buffer, false)
 	if err != nil {
 		return nil, err
 	}
 
-	// todo: add mapWriter or keep as is?
-	if traversalStrategy.Configuration() == nil {
-		_, err = typeSerializer.writeValue(0, buffer, false)
-		if err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	_, err = typeSerializer.writeValue(len(traversalStrategy.Configuration()), buffer, false)
-	if err != nil {
-		return nil, err
-	}
-
-	for key, element := range traversalStrategy.Configuration() {
-		_, err = typeSerializer.writeValue(key, buffer, false)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = typeSerializer.writeValue(element, buffer, false)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return buffer.Bytes(), nil
+	return mapWriter(ts.configuration, buffer, typeSerializer)
 }
 
 func pWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
@@ -968,7 +949,7 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 		return &graphBinaryTypeSerializer{dataType: VertexPropertyType, writer: vertexPropertyWriter, logHandler: serializer.logHandler}, nil
 	case *Lambda:
 		return &graphBinaryTypeSerializer{dataType: LambdaType, writer: lambdaWriter, logHandler: serializer.logHandler}, nil
-	case *TraversalStrategy:
+	case *traversalStrategy:
 		return &graphBinaryTypeSerializer{dataType: TraversalStrategyType, writer: traversalStrategyWriter, logHandler: serializer.logHandler}, nil
 	case *Path:
 		return &graphBinaryTypeSerializer{dataType: PathType, writer: pathWriter, logHandler: serializer.logHandler}, nil

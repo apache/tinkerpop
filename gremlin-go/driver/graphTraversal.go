@@ -19,25 +19,10 @@ under the License.
 
 package gremlingo
 
-type TraversalStrategy struct {
+type traversalStrategy struct {
 	name          string
 	configuration map[string]string
-	apply         func(connection DriverRemoteConnection)
-}
-
-// Name of the TraversalStrategyBase
-func (ts *TraversalStrategy) Name() string {
-	return ts.name
-}
-
-// Configuration of the TraversalStrategy
-func (ts *TraversalStrategy) Configuration() map[string]string {
-	return ts.configuration
-}
-
-// Apply of the TraversalStrategy
-func (ts *TraversalStrategy) Apply() func(connection DriverRemoteConnection) {
-	return ts.apply
+	apply         func(g GraphTraversal)
 }
 
 type Lambda struct {
