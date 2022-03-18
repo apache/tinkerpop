@@ -668,6 +668,8 @@ const gremlins = {
     g_V_hasXageX_propertiesXage_nameX_value: [function({g}) { return g.V().has("age").properties("age","name").value() }], 
     g_V_propertiesXname_age_nullX_value: [function({g}) { return g.V().properties("name","age",null).value() }], 
     g_V_valuesXname_age_nullX: [function({g}) { return g.V().values("name","age",null) }], 
+    g_V_hasXageX_properties_hasXid_nameIdX_value: [function({g, xx1}) { return g.V().has("age").properties().has(T.id,xx1).value() }], 
+    g_V_hasXageX_properties_hasXid_nameIdAsStringX_value: [function({g, xx1}) { return g.V().has("age").properties().has(T.id,xx1).value() }], 
     g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX: [function({g, vid1}) { return g.V(vid1).as("a").out("knows").as("b").select("a","b") }], 
     g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX: [function({g, vid1}) { return g.V(vid1).as("a").out("knows").as("b").select("a","b").by("name") }], 
     g_VX1X_asXaX_outXknowsX_asXbX_selectXaX: [function({g, vid1}) { return g.V(vid1).as("a").out("knows").as("b").select("a") }], 

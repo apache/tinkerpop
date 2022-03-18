@@ -424,6 +424,17 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static VertexProperty ToVertexProperty(string triplet, string graphName)
         {
+            if (triplet.EndsWith('?'))
+            {
+                triplet = triplet.TrimEnd('?');
+                foreach (var pair in ScenarioData.GetByGraphName(graphName).VertexProperties)
+                {
+                    if (pair.Key.StartsWith(triplet))
+                    {
+                        return pair.Value;
+                    }
+                }
+            }
             return ScenarioData.GetByGraphName(graphName).VertexProperties[triplet];
         }
 

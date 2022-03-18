@@ -135,6 +135,9 @@ public final class StepDefinition {
         }));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> getEdgeIdString(g, s)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> getEdgeIdString(g, s)));
+        add(Pair.with(Pattern.compile("vp\\[(.+)\\]\\.id"), s -> getVertexPropertyIdString(g, s)));
+        add(Pair.with(Pattern.compile("vp\\[(.+)\\]\\.sid"), s -> getVertexPropertyIdString(g, s)));
+
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), s -> String.format("Direction.%s", s)));
 
@@ -491,17 +494,6 @@ public final class StepDefinition {
                    filter(edge -> g.V(edge.inVertex().id()).has("name", t.getValue2()).hasNext()).findFirst().get();
     }
 
-    /**
-     * Reuse edge triplet syntax for VertexProperty: vp[vertexName-key->value]
-     */
-    private VertexProperty getVertexProperty(final GraphTraversalSource g, final String e) {
-        final Triplet<String,String,String> t = getEdgeTriplet(e);
-        return (VertexProperty) g.V().has("name", t.getValue0())
-                                     .properties(t.getValue1())
-                                     .hasValue(convertToObject(t.getValue2()))
-                .tryNext().orElse(null);
-    }
-
     private static Object getEdgeId(final GraphTraversalSource g, final String e) {
         return getEdge(g, e).id();
     }
@@ -509,6 +501,31 @@ public final class StepDefinition {
     private static String getEdgeIdString(final GraphTraversalSource g, final String e) {
         return getEdgeId(g, e).toString();
     }
+
+    /**
+     * Reuse edge triplet syntax for VertexProperty: vp[vertexName-key->value]
+     */
+    private VertexProperty getVertexProperty(final GraphTraversalSource g, final String e) {
+        final Triplet<String,String,String> triplet = getEdgeTriplet(e);
+
+        GraphTraversal traversal = g.V().has("name", triplet.getValue0())
+                .properties(triplet.getValue1());
+
+        // allow wildcard '?' for value
+        if (!"?".equals(triplet.getValue2()))
+            traversal = traversal.hasValue(convertToObject(triplet.getValue2()));
+
+        return (VertexProperty) traversal.tryNext().orElse(null);
+    }
+
+    private Object getVertexPropertyId(final GraphTraversalSource g, final String e) {
+        return getVertexProperty(g, e).id();
+    }
+
+    private String getVertexPropertyIdString(final GraphTraversalSource g, final String e) {
+        return getVertexPropertyId(g, e).toString();
+    }
+
 
     private String applyParameters(final String docString) {
         String replaced = docString;

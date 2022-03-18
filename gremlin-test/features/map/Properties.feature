@@ -108,23 +108,43 @@ Feature: Step - properties()
       | lop |
       | ripple |
 
-  Scenario: g_injectXg_VX1X_propertiesXnameX_nextX_value
+  Scenario: g_injectXg_VX1X_propertiesXnameXX_value
     Given an unsupported test
     Then nothing should happen because
       """
-      The test suite doesn't do well with vertex property values.
+      There is no way to inject a VertexProperty via the parser
       """
+#    Given the modern graph
+#    And using the parameter xx1 defined as "vp[josh-name->?]"
+#    And the traversal of
+#      """
+#      g.inject(xx1).value()
+#      """
+#    When iterated to list
+#    Then the result should be unordered
+#      | result |
+#      | josh |
 
   Scenario: g_V_hasXageX_properties_hasXid_nameIdX_value
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And using the parameter xx1 defined as "vp[marko-name->?].id"
+    And the traversal of
       """
-      GLV suite doesn't support property identifiers and related assertions
+      g.V().has("age").properties().has(T.id, xx1).value()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
 
   Scenario: g_V_hasXageX_properties_hasXid_nameIdAsStringX_value
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And using the parameter xx1 defined as "vp[marko-name->?].sid"
+    And the traversal of
       """
-      GLV suite doesn't support property identifiers and related assertions
+      g.V().has("age").properties().has(T.id, xx1).value()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |

@@ -63,7 +63,7 @@ const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
-  vertexPropertyNotSupported: "Need a parser for vertex properties",
+  vertexPropertyNotSupported: "Need a Gherkin parser for vertex properties",
 };
 
 const ignoredScenarios = {
@@ -74,7 +74,9 @@ const ignoredScenarios = {
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_V_properties_order': new IgnoreError(ignoreReason.vertexPropertyNotSupported)
+  'g_V_properties_order': new IgnoreError(ignoreReason.vertexPropertyNotSupported),
+  'g_V_hasXageX_properties_hasXid_nameIdX_value': new IgnoreError(ignoreReason.vertexPropertyNotSupported),
+  'g_V_hasXageX_properties_hasXid_nameIdAsStringX_value': new IgnoreError(ignoreReason.vertexPropertyNotSupported)
 };
 
 Given(/^the (.+) graph$/, function (graphName) {

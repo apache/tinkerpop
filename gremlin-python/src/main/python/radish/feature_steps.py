@@ -40,8 +40,9 @@ direction = {
     "to": Direction.IN,
 }
 
-ignores = ["g.V().properties().order()"] # need a vertex property parser for result set: https://issues.apache.org/jira/browse/TINKERPOP-2686
-
+ignores = ["g.V().properties().order()", # need a Gherkin parser for VertexProperty: https://issues.apache.org/jira/browse/TINKERPOP-2686
+           "g.V().has(\"age\").properties().has(T.id, xx1).value()", # need a Gherkin parser for VertexProperty: https://issues.apache.org/jira/browse/TINKERPOP-2686
+          ]
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):

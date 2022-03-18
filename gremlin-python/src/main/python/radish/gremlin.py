@@ -650,6 +650,8 @@ world.gremlins = {
     'g_V_hasXageX_propertiesXage_nameX_value': [(lambda g:g.V().has('age').properties('age','name').value())], 
     'g_V_propertiesXname_age_nullX_value': [(lambda g:g.V().properties('name','age',None).value())], 
     'g_V_valuesXname_age_nullX': [(lambda g:g.V().values('name','age',None))], 
+    'g_V_hasXageX_properties_hasXid_nameIdX_value': [(lambda g, xx1=None:g.V().has('age').properties().has(T.id_,xx1).value())], 
+    'g_V_hasXageX_properties_hasXid_nameIdAsStringX_value': [(lambda g, xx1=None:g.V().has('age').properties().has(T.id_,xx1).value())], 
     'g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX': [(lambda g, vid1=None:g.V(vid1).as_('a').out('knows').as_('b').select('a','b'))], 
     'g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX': [(lambda g, vid1=None:g.V(vid1).as_('a').out('knows').as_('b').select('a','b').by('name'))], 
     'g_VX1X_asXaX_outXknowsX_asXbX_selectXaX': [(lambda g, vid1=None:g.V(vid1).as_('a').out('knows').as_('b').select('a'))], 
