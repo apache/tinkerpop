@@ -150,7 +150,8 @@ func PathProcessorStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathProcessorStrategy"}
 }
 
-// PathRetractionStrategy TODO.
+// PathRetractionStrategy will remove paths from the traversers and increase the likelihood of bulking
+// as path data is not required after select('b').
 func PathRetractionStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathRetractionStrategy"}
 }
