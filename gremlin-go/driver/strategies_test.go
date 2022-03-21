@@ -25,28 +25,8 @@ import (
 	"testing"
 )
 
-func TestReadOnlyStrategy(t *testing.T) {
+func TestStrategy(t *testing.T) {
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
-
-	t.Run("Test read with TestReadOnlyStrategy", func(t *testing.T) {
-		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
-
-		count, err := g.WithStrategies(ReadOnlyStrategy()).V().Count().ToList()
-		assert.Nil(t, err)
-		assert.NotNil(t, count)
-		assert.Equal(t, 1, len(count))
-		val, err := count[0].GetInt32()
-		assert.Equal(t, int32(6), val)
-	})
-
-	t.Run("Test write with TestReadOnlyStrategy", func(t *testing.T) {
-		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
-
-		_, promise, err := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
-
-		assert.Nil(t, err)
-		assert.NotNil(t, <-promise)
-	})
 
 	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
@@ -195,6 +175,71 @@ func TestReadOnlyStrategy(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 
 		count, err := g.WithStrategies(ProductiveByStrategy([]string{"a", "b"})).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with RepeatUnrollStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(RepeatUnrollStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with EdgeLabelVerificationStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(EdgeLabelVerificationStrategy(true, true)).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with LambdaRestrictionStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(LambdaRestrictionStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with TestReadOnlyStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(ReadOnlyStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test write with TestReadOnlyStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		_, promise, err := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
+
+		assert.Nil(t, err)
+		assert.NotNil(t, <-promise)
+	})
+
+	t.Run("Test read with ReservedKeysVerificationStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		strategy := ReservedKeysVerificationStrategy(true, true, []string{"xyz"})
+		count, err := g.WithStrategies(strategy).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))

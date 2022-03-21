@@ -48,8 +48,42 @@ func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMeta
 
 // Verification strategies
 
+// EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.
+// Providing one or more labels is considered to be a best practice, however, TinkerPop will not force
+// the specification of Edge labels; instead, providers or users will have to enable this strategy explicitly.
+func EdgeLabelVerificationStrategy(logWarning, throwException bool) *traversalStrategy {
+	config := map[string]interface{}{
+		"logWarning":     logWarning,
+		"throwException": throwException,
+	}
+
+	return &traversalStrategy{name: verificationNamespace + "EdgeLabelVerificationStrategy", configuration: config}
+}
+
+// LambdaRestrictionStrategy does not allow lambdas to be used in a Traversal. The contents of a lambda
+// cannot be analyzed/optimized and thus, reduces the ability of other TraversalStrategy instances to reason
+// about the traversal. This strategy is not activated by default. However, graph system providers may choose
+// to make this a default strategy in order to ensure their respective strategies are better able to operate.
+func LambdaRestrictionStrategy() *traversalStrategy {
+	return &traversalStrategy{name: verificationNamespace + "LambdaRestrictionStrategy"}
+}
+
+// ReadOnlyStrategy detects steps marked with Mutating and returns an error if one is found.
 func ReadOnlyStrategy() *traversalStrategy {
 	return &traversalStrategy{name: verificationNamespace + "ReadOnlyStrategy"}
+}
+
+// ReservedKeysVerificationStrategy detects property keys that should not be used by the traversal.
+// A term may be reserved by a particular graph implementation or as a convention given best practices.
+func ReservedKeysVerificationStrategy(logWarning, throwException bool, keys []string) *traversalStrategy {
+	config := map[string]interface{}{
+		"logWarning":     logWarning,
+		"throwException": throwException,
+	}
+	if keys != nil {
+		config["keys"] = keys
+	}
+	return &traversalStrategy{name: verificationNamespace + "ReservedKeysVerificationStrategy", configuration: config}
 }
 
 // Optimization strategies
