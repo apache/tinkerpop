@@ -65,7 +65,7 @@ func AdjacentToIncidentStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "AdjacentToIncidentStrategy"}
 }
 
-// ByModulatorOptimizationStrategy looks for standard traversals in by-modulators and replaces them with more
+// ByModulatorOptimizationStrategy looks for standard traversals in By-modulators and replaces them with more
 // optimized traversals (e.g. TokenTraversal) if possible.
 func ByModulatorOptimizationStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "ByModulatorOptimizationStrategy"}
@@ -88,8 +88,8 @@ func EarlyLimitStrategy() *traversalStrategy {
 
 // FilterRankingStrategy reorders filter- and order-steps according to their rank. Step ranks are defined within
 // the strategy and indicate when it is reasonable for a step to move in front of another. It will also do its best to
-// push step labels as far "right" as possible in order to keep traversers as small and bulkable as possible prior to
-// the absolute need for path-labeling.
+// push step labels as far "right" as possible in order to keep Traversers as small and bulkable as possible prior to
+// the absolute need for Path-labeling.
 func FilterRankingStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "FilterRankingStrategy"}
 }
@@ -121,8 +121,8 @@ func InlineFilterStrategy() *traversalStrategy {
 }
 
 // LazyBarrierStrategy is an OLTP-only strategy that automatically inserts a NoOpBarrierStep after every
-// FlatMapStep if neither path-tracking nor partial path-tracking is required, and the next step is not the
-// traversal's last step or a Barrier. NoOpBarrierSteps allow traversers to be bulked, thus this strategy
+// FlatMapStep if neither Path-tracking nor partial Path-tracking is required, and the next step is not the
+// traversal's last step or a Barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
 // is meant to reduce memory requirements and improve the overall query performance.
 func LazyBarrierStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "LazyBarrierStrategy"}
