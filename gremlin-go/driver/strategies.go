@@ -59,7 +59,7 @@ func ReadOnlyStrategy() *traversalStrategy {
 // or value-emitting step is the last step in a .Has(traversal), .And(traversal, ...) or .Or(traversal, ...)
 // child traversal, it is replaced by an appropriate Edge- or Property-emitting step.
 // Performing this replacement removes situations where the more expensive trip to an adjacent Graph Element (e.g.
-// the Vertex on the other side of an Edge) can be satisfied by trips to incident Graph elements (e.g. just the Edge
+// the Vertex on the other side of an Edge) can be satisfied by trips to incident Graph Elements (e.g. just the Edge
 // itself).
 func AdjacentToIncidentStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "AdjacentToIncidentStrategy"}
