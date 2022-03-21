@@ -47,4 +47,169 @@ func TestReadOnlyStrategy(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, <-promise)
 	})
+
+	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(AdjacentToIncidentStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with ByModulatorOptimizationStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(ByModulatorOptimizationStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with CountStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(CountStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with EarlyLimitStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(EarlyLimitStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with FilterRankingStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(FilterRankingStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with IdentityRemovalStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(IdentityRemovalStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with IncidentToAdjacentStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(IncidentToAdjacentStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with InlineFilterStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(InlineFilterStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with LazyBarrierStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(LazyBarrierStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with MatchPredicateStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(MatchPredicateStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with OrderLimitStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(OrderLimitStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with PathProcessorStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(PathProcessorStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with PathRetractionStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(PathRetractionStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with ProductiveByStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(ProductiveByStrategy([]string{"a", "b"})).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with RepeatUnrollStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(RepeatUnrollStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
 }

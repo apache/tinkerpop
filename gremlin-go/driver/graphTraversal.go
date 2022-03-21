@@ -21,7 +21,7 @@ package gremlingo
 
 type traversalStrategy struct {
 	name          string
-	configuration map[string]string
+	configuration map[string]interface{}
 	apply         func(g GraphTraversal)
 }
 

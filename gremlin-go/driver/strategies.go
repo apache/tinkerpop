@@ -30,7 +30,7 @@ const (
 // Decoration strategies
 
 func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMetaProperties string) *traversalStrategy {
-	config := make(map[string]string)
+	config := make(map[string]interface{})
 	if partitionKey != "" {
 		config["partitionKey"] = partitionKey
 	}
@@ -142,12 +142,12 @@ func OrderLimitStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "OrderLimitStrategy"}
 }
 
-// PathProcessStrategy  is an OLAP strategy that does its best to turn non-local children in where()
+// PathProcessorStrategy  is an OLAP strategy that does its best to turn non-local children in where()
 // and select() into local children by inlining components of the non-local child. In this way,
-// PathProcessStrategy helps to ensure that more traversals meet the local child constraint imposed
+// PathProcessorStrategy helps to ensure that more traversals meet the local child constraint imposed
 // on OLAP traversals.
-func PathProcessStrategy() *traversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "PathProcessStrategy"}
+func PathProcessorStrategy() *traversalStrategy {
+	return &traversalStrategy{name: optimizationNamespace + "PathProcessorStrategy"}
 }
 
 // PathRetractionStrategy TODO.
@@ -159,8 +159,11 @@ func PathRetractionStrategy() *traversalStrategy {
 // the initial Traversal argument or null. In this way, the by() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
-func ProductiveByStrategy() *traversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "ProductiveByStrategy"}
+func ProductiveByStrategy(productiveKeys []string) *traversalStrategy {
+	config := make(map[string]interface{})
+	config["productiveKeys"] = productiveKeys
+
+	return &traversalStrategy{name: optimizationNamespace + "ProductiveByStrategy", configuration: config}
 }
 
 // RepeatUnrollStrategy is an OLTP-only strategy that unrolls any RepeatStep if it uses a constant
@@ -172,6 +175,8 @@ func ProductiveByStrategy() *traversalStrategy {
 func RepeatUnrollStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "RepeatUnrollStrategy"}
 }
+
+//
 
 func RemoteStrategy(connection DriverRemoteConnection) *traversalStrategy {
 	a := func(g GraphTraversal) {
