@@ -55,7 +55,7 @@ func ReadOnlyStrategy() *traversalStrategy {
 // Optimization strategies
 
 // AdjacentToIncidentStrategy looks for Vertex- and value-emitting steps followed by a CountGlobalStep and replaces
-// the pattern with an edge- or property-emitting step followed by a CountGlobalStep. Furthermore, if a vertex-
+// the pattern with an Edge- or Property-emitting step followed by a CountGlobalStep. Furthermore, if a vertex-
 // or value-emitting step is the last step in a .Has(traversal), .And(traversal, ...) or .Or(traversal, ...)
 // child traversal, it is replaced by an appropriate edge- or property-emitting step.
 // Performing this replacement removes situations where the more expensive trip to an adjacent graph element (e.g.
