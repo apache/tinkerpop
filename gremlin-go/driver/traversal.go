@@ -40,7 +40,7 @@ type Traversal struct {
 
 // ToList returns the result in a list.
 func (t *Traversal) ToList() ([]*Result, error) {
-	// TODO: AN-979 This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
+	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
 	if t.remote == nil {
 		return nil, errors.New("cannot invoke this method from an anonymous traversal")
 	}
@@ -68,7 +68,7 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 
 // Iterate all the Traverser instances in the traversal and returns the empty traversal.
 func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
-	// TODO: AN-979 This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
+	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
 	if t.remote == nil {
 		return nil, nil, errors.New("cannot invoke this method from an anonymous traversal")
 	}

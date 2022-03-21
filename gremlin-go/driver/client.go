@@ -81,7 +81,7 @@ func (client *Client) Close() error {
 
 // Submit submits a Gremlin script to the server and returns a ResultSet.
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
-	// TODO AN-982: Obtain connection from pool of connections held by the client.
+	// TODO: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString, client.traversalSource)
 	return client.connection.write(&request)

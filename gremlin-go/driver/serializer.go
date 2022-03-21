@@ -52,7 +52,7 @@ func newGraphBinarySerializer(handler *logHandler) serializer {
 const versionByte byte = 0x81
 
 func convertArgs(request *request, gs graphBinarySerializer) (map[string]interface{}, error) {
-	// TODO AN-981: Remote transaction session processor is same as bytecode
+	// TODO: Remote transaction session processor is same as bytecode
 	if request.op != bytecodeProcessor {
 		return request.args, nil
 	}

@@ -152,7 +152,7 @@ type instruction struct {
 	arguments []interface{}
 }
 
-// TODO: AN-1018 Export this
+// TODO: Export this when implemented
 type binding struct {
 	key   string
 	value interface{}

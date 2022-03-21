@@ -612,7 +612,6 @@ func vertexPropertyReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeS
 }
 
 //Format: {Labels}{Objects}
-// TODO: Path serialization is currently incomplete as Labels are represented as list of lists due to lack of native set types in go. Fully functional Path serialization will be implemented when set is implemented in AN-1032
 func pathWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	p := value.(*Path)
 	_, err := typeSerializer.write(p.Labels, buffer)
