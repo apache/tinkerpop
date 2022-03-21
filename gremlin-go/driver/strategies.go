@@ -58,8 +58,8 @@ func ReadOnlyStrategy() *traversalStrategy {
 // the pattern with an Edge- or Property-emitting step followed by a CountGlobalStep. Furthermore, if a vertex-
 // or value-emitting step is the last step in a .Has(traversal), .And(traversal, ...) or .Or(traversal, ...)
 // child traversal, it is replaced by an appropriate Edge- or Property-emitting step.
-// Performing this replacement removes situations where the more expensive trip to an adjacent graph element (e.g.
-// the vertex on the other side of an edge) can be satisfied by trips to incident graph elements (e.g. just the edge
+// Performing this replacement removes situations where the more expensive trip to an adjacent Graph Element (e.g.
+// the Vertex on the other side of an Edge) can be satisfied by trips to incident Graph elements (e.g. just the Edge
 // itself).
 func AdjacentToIncidentStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "AdjacentToIncidentStrategy"}
@@ -101,19 +101,19 @@ func IdentityRemovalStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "IdentityRemovalStrategy"}
 }
 
-// IncidentToAdjacentStrategy looks for .outE().inV(), .inE().outV() and .bothE().otherV()
-// and replaces these step sequences with .out(), .in() or .both() respectively.
+// IncidentToAdjacentStrategy looks for .OutE().InV(), .InE().OutV() and .BothE().OtherV()
+// and replaces these step sequences with .Out(), .In() or .Both() respectively.
 // The strategy won't modify the traversal if:
-//   the edge step is labeled
-//   the traversal contains a path step
-//   the traversal contains a lambda step
+//   the Edge step is labeled
+//   the traversal contains a Path step
+//   the traversal contains a Lambda step
 func IncidentToAdjacentStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "IncidentToAdjacentStrategy"}
 }
 
 // InlineFilterStrategy analyzes filter-steps with child traversals that themselves are pure filters. If
 // the child traversals are pure filters then the wrapping parent filter is not needed and thus, the children
-// can be "inlined." Normalizing  pure filters with inlining reduces the number of variations of a filter that
+// can be "inlined". Normalizing  pure filters with inlining reduces the number of variations of a filter that
 // a graph provider may need to reason about when writing their own strategies. As a result, this strategy helps
 // increase the likelihood that a provider's filtering optimization will succeed at re-writing the traversal.
 func InlineFilterStrategy() *traversalStrategy {
@@ -128,8 +128,8 @@ func LazyBarrierStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "LazyBarrierStrategy"}
 }
 
-// MatchPredicateStrategy will fold any post-where() step that maintains a traversal constraint into
-// match(). MatchStep is intelligent with traversal constraint applications and thus, can more
+// MatchPredicateStrategy will fold any post-Where() step that maintains a traversal constraint into
+// Match(). MatchStep is intelligent with traversal constraint applications and thus, can more
 // efficiently use the constraint of WhereTraversalStep or WherePredicateStep.
 func MatchPredicateStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "MatchPredicateStrategy"}
@@ -142,22 +142,22 @@ func OrderLimitStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "OrderLimitStrategy"}
 }
 
-// PathProcessorStrategy  is an OLAP strategy that does its best to turn non-local children in where()
-// and select() into local children by inlining components of the non-local child. In this way,
+// PathProcessorStrategy  is an OLAP strategy that does its best to turn non-local children in Where()
+// and Select() into local children by inlining components of the non-local child. In this way,
 // PathProcessorStrategy helps to ensure that more traversals meet the local child constraint imposed
 // on OLAP traversals.
 func PathProcessorStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathProcessorStrategy"}
 }
 
-// PathRetractionStrategy will remove paths from the traversers and increase the likelihood of bulking
-// as path data is not required after select('b').
+// PathRetractionStrategy will remove Paths from the Traversers and increase the likelihood of bulking
+// as Path data is not required after Select('b').
 func PathRetractionStrategy() *traversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathRetractionStrategy"}
 }
 
 // ProductiveByStrategy takes an argument of by() and wraps it CoalesceStep so that the result is either
-// the initial Traversal argument or null. In this way, the by() is always "productive". This strategy
+// the initial Traversal argument or null. In this way, the By() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
 func ProductiveByStrategy(productiveKeys []string) *traversalStrategy {
@@ -168,8 +168,8 @@ func ProductiveByStrategy(productiveKeys []string) *traversalStrategy {
 }
 
 // RepeatUnrollStrategy is an OLTP-only strategy that unrolls any RepeatStep if it uses a constant
-// number of loops (times(x)) and doesn't emit intermittent elements. If any of the following 3 steps appears
-// within the repeat-traversal, the strategy will not be applied:
+// number of loops (Times(x)) and doesn't emit intermittent elements. If any of the following 3 steps appears
+// within the Repeat-traversal, the strategy will not be applied:
 //   DedupGlobalStep
 //   LoopsStep
 //   LambdaHolder
