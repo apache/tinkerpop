@@ -130,12 +130,12 @@ class AdjacentToIncidentStrategy(TraversalStrategy):
 
 class ByModulatorOptimizationStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy")
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy")
 
 
 class CountStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy")
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy")
 
 
 class FilterRankingStrategy(TraversalStrategy):
