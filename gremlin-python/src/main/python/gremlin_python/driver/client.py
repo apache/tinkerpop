@@ -152,7 +152,7 @@ class Client:
             "gremlin_python.driver.client.Client.submitAsync will be replaced by "
             "gremlin_python.driver.client.Client.submit_async.",
             DeprecationWarning)
-        self.submit_async(message, bindings, request_options)
+        return self.submit_async(message, bindings, request_options)
 
     def submit_async(self, message, bindings=None, request_options=None):
         log.debug("message '%s'", str(message))
