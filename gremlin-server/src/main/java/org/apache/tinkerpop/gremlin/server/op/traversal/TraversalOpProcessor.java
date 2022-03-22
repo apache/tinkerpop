@@ -401,22 +401,22 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         break;
                     }
 
+                    // track whether there is anything left in the iterator because it needs to be accessed after
+                    // the transaction could be closed - in that case a call to hasNext() could open a new transaction
+                    // unintentionally
+                    hasMore = itty.hasNext();
+
                     try {
                         // only need to reset the aggregation list if there's more stuff to write
-                        if (itty.hasNext())
+                        if (hasMore)
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         else {
                             // iteration and serialization are both complete which means this finished successfully. note that
                             // errors internal to script eval or timeout will rollback given GremlinServer's global configurations.
-                            // local errors will get rolledback below because the exceptions aren't thrown in those cases to be
+                            // local errors will get rolled back below because the exceptions aren't thrown in those cases to be
                             // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
                             // there are no more items to iterate and serialization is complete
                             onTraversalSuccess(graph, context);
-
-                            // exit the result iteration loop as there are no more results left.  using this external control
-                            // because of the above commit.  some graphs may open a new transaction on the call to
-                            // hasNext()
-                            hasMore = false;
                         }
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
@@ -425,7 +425,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         throw ex;
                     }
 
-                    if (!itty.hasNext()) iterateComplete(nettyContext, msg, itty);
+                    if (!hasMore) iterateComplete(nettyContext, msg, itty);
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
                     // required then it will be 100% complete before the client receives it. the "frame" at this point
