@@ -57,7 +57,7 @@ class Element {
    * @returns {boolean}
    */
   equals(other) {
-    return (other instanceof Element) && this.id === other.id;
+    return other instanceof Element && this.id === other.id;
   }
 }
 
@@ -119,7 +119,7 @@ class Property {
   }
 
   equals(other) {
-    return (other instanceof Property) && this.key === other.key && this.value === other.value;
+    return other instanceof Property && this.key === other.key && this.value === other.value;
   }
 }
 
@@ -136,7 +136,7 @@ class Path {
   }
 
   toString() {
-    return `path[${(this.objects || []).join(", ")}]`;
+    return `path[${(this.objects || []).join(', ')}]`;
   }
 
   equals(other) {
@@ -162,7 +162,7 @@ function areEqual(obj1, obj2) {
       return false;
     }
     for (let i = 0; i < obj1.length; i++) {
-      if (!areEqual(obj1[i], obj2[i])){
+      if (!areEqual(obj1[i], obj2[i])) {
         return false;
       }
     }
@@ -186,5 +186,5 @@ module.exports = {
   Path,
   Property,
   Vertex,
-  VertexProperty
+  VertexProperty,
 };

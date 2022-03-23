@@ -30,7 +30,6 @@ const Graph = require('../structure/graph').Graph;
  * instance or a <code>RemoteConnection</code>.
  */
 class AnonymousTraversalSource {
-
   /**
    * Creates a new instance of {@code AnonymousTraversalSource}.
    * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.

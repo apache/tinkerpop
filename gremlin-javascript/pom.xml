@@ -225,6 +225,18 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
                         </configuration>
                     </execution>
                     <execution>
+                      <id>npm lint</id>
+                      <phase>validate</phase>
+                      <goals>
+                        <goal>npm</goal>
+                      </goals>
+                      <configuration>
+                        <skip>${skipTests}</skip>
+                        <arguments>run lint</arguments>
+                        <failOnError>true</failOnError>
+                      </configuration>
+                    </execution>
+                    <execution>
                         <id>npm test</id>
                         <phase>integration-test</phase>
                         <goals>

@@ -33,15 +33,15 @@ class PlainTextSaslAuthenticator extends Authenticator {
   constructor(username, password, authzid) {
     const options = {
       mechanism: new SaslMechanismPlain({
-        'username': username,
-        'password': password,
-        'authzid': authzid
-      })
+        username: username,
+        password: password,
+        authzid: authzid,
+      }),
     };
 
     super(options);
   }
-  
+
   /**
    * Evaluates the challenge from the server and returns appropriate response.
    * @param {String} challenge Challenge string presented by the server.

@@ -30,7 +30,6 @@ const TraversalStrategy = require('../process/traversal-strategy').TraversalStra
  * returning results.
  */
 class RemoteConnection {
-
   /**
    * @param {String} url The resource uri.
    * @param {Object} [options] The connection options.
@@ -73,7 +72,7 @@ class RemoteConnection {
    */
   submit(bytecode) {
     throw new Error('submit() must be implemented');
-  };
+  }
 
   /**
    * Create a new <code>RemoteConnection</code> that is bound to a session using the configuration from this one.
@@ -128,7 +127,7 @@ class RemoteStrategy extends TraversalStrategy {
     // gave this a fqcn that has a local "js:" prefix since this strategy isn't sent as bytecode to the server.
     // this is a sort of local-only strategy that actually executes client side. not sure if this prefix is the
     // right way to name this or not, but it should have a name to identify it.
-    super("js:RemoteStrategy");
+    super('js:RemoteStrategy');
     this.connection = connection;
   }
 

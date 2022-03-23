@@ -25,7 +25,7 @@
 class ResponseError extends Error {
   constructor(message, responseStatus) {
     super(message);
-    this.name = "ResponseError";
+    this.name = 'ResponseError';
 
     /**
      * Gets the server status code.

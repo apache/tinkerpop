@@ -18,19 +18,18 @@
  */
 'use strict';
 
-module.exports = function(grunt) {
-
-    grunt.loadNpmTasks('grunt-jsdoc');
-    grunt.initConfig({
-        jsdoc : {
-            dist : {
-                src: ['lib'],
-                options: {
-                    destination: 'doc',
-                    recurse: true,
-                    readme: 'README.md'
-                }
-            }
-        }
-    });
-}
+module.exports = function (grunt) {
+  grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.initConfig({
+    jsdoc: {
+      dist: {
+        src: ['lib'],
+        options: {
+          destination: 'doc',
+          recurse: true,
+          readme: 'README.md',
+        },
+      },
+    },
+  });
+};
