@@ -4807,7 +4807,7 @@ columns represent the language that Gremlin can be generated in:
 |*Java* |- |X |X |X |X
 |*Groovy* | |X |X | |X
 |*Javascript* | |X |- | |
-|*.NET* | | | |- |
+|*.NET* | |X | |- |
 |*Python*  | |X | | |-
 |=========================================================
 
@@ -4850,7 +4850,7 @@ const t = g.V().has("person","name","marko").
             where(in_("knows")).
             values("age");
 
-// groovy
+// Groovy
 const translator = new gremlin.process.Translator('g');
 console.log(translator.translate(t));
 // OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
@@ -4868,6 +4868,16 @@ t = (g.V().has('person','name','marko').
 translator = Translator().of('g');
 print(translator.translate(t.bytecode));
 # OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+----
+[source,csharp]
+----
+var g = ...;
+var t = g.V().Has("person", "name", "marko").Where(In("knows")).Values<int>("age");
+
+// Groovy
+var translator = GroovyTranslator.Of("g");
+Console.WriteLine(translator.Translate(t));
+// OUTPUT: g.V().has('person', 'name', 'marko').where(__.in('knows')).values('age')
 ----
 
 The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to

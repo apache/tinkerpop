@@ -77,5 +77,8 @@ namespace Gremlin.Net.Process.Traversal
                        (EnumValue != null ? EnumValue.GetHashCode() : 0);
             }
         }
+
+        /// <inheritdoc />
+        public override string ToString() => $"{EnumName}.{EnumValue}";
     }
 }
