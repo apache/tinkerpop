@@ -34,7 +34,6 @@ const OptionsStrategy = require('../process/traversal-strategy').OptionsStrategy
  * Represents the default {@link RemoteConnection} implementation.
  */
 class DriverRemoteConnection extends RemoteConnection {
-
   /**
    * Creates a new instance of {@link DriverRemoteConnection}.
    * @param {String} url The resource uri.
@@ -68,28 +67,30 @@ class DriverRemoteConnection extends RemoteConnection {
 
   /** @override */
   submit(bytecode) {
-    let optionsStrategy = bytecode.sourceInstructions.find(
-        i => i[0] === "withStrategies" && i[1] instanceof OptionsStrategy);
+    const optionsStrategy = bytecode.sourceInstructions.find(
+      (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
+    );
     const allowedKeys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent'];
 
     let requestOptions = undefined;
     if (optionsStrategy !== undefined) {
       requestOptions = {};
       const conf = optionsStrategy[1].configuration;
-      for (let key in conf) {
+      for (const key in conf) {
         if (conf.hasOwnProperty(key) && allowedKeys.indexOf(key) > -1) {
           requestOptions[key] = conf[key];
         }
       }
     }
 
-    return this._client.submit(bytecode, null, requestOptions).then(result => new RemoteTraversal(result.toArray()));
+    return this._client.submit(bytecode, null, requestOptions).then((result) => new RemoteTraversal(result.toArray()));
   }
 
   /** @override */
   createSession() {
-    if (this.isSessionBound)
-      throw new Error("Connection is already bound to a session - child sessions are not allowed");
+    if (this.isSessionBound) {
+      throw new Error('Connection is already bound to a session - child sessions are not allowed');
+    }
 
     // make sure a fresh session is used when starting a new transaction
     const copiedOptions = Object.assign({}, this.options);
@@ -104,12 +105,12 @@ class DriverRemoteConnection extends RemoteConnection {
 
   /** @override */
   commit() {
-    return this._client.submit(Bytecode.GraphOp.commit, null)
+    return this._client.submit(Bytecode.GraphOp.commit, null);
   }
 
   /** @override */
   rollback() {
-    return this._client.submit(Bytecode.GraphOp.rollback, null)
+    return this._client.submit(Bytecode.GraphOp.rollback, null);
   }
 
   /** @override */

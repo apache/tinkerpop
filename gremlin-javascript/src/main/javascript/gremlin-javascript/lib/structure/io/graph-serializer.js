@@ -29,7 +29,6 @@ const Bytecode = require('../../process/bytecode');
  * GraphSON2 writer.
  */
 class GraphSON2Writer {
-
   /**
    * @param {Object} [options]
    * @param {Object} [options.serializers] An object used as an associative array with GraphSON 2 type name as keys and
@@ -39,7 +38,7 @@ class GraphSON2Writer {
   constructor(options) {
     this._options = options || {};
     // Create instance of the default serializers
-    this._serializers = this.getDefaultSerializers().map(serializerConstructor => {
+    this._serializers = this.getDefaultSerializers().map((serializerConstructor) => {
       const s = new serializerConstructor();
       s.writer = this;
       return s;
@@ -47,7 +46,7 @@ class GraphSON2Writer {
 
     const customSerializers = this._options.serializers || {};
 
-    Object.keys(customSerializers).forEach(key => {
+    Object.keys(customSerializers).forEach((key) => {
       const s = customSerializers[key];
       if (!s.serialize) {
         return;
@@ -84,7 +83,7 @@ class GraphSON2Writer {
     if (Array.isArray(value)) {
       // We need to handle arrays when there is no serializer
       // for older versions of GraphSON
-      return value.map(item => this.adaptObject(item));
+      return value.map((item) => this.adaptObject(item));
     }
 
     // Default (strings / objects / ...)
@@ -112,7 +111,7 @@ class GraphSON2Writer {
       req.args['gremlin'] = this.adaptObject(req.args['gremlin']);
     }
 
-    return Buffer.from( JSON.stringify(req) );
+    return Buffer.from(JSON.stringify(req));
   }
 
   /**
@@ -124,15 +123,16 @@ class GraphSON2Writer {
    */
   _adaptArgs(args, protocolLevel) {
     if (args instanceof Object) {
-      let newObj = {};
+      const newObj = {};
       Object.keys(args).forEach((key) => {
         // bindings key (at the protocol-level needs special handling. without this, it wraps the generated Map
         // in another map for types like EnumValue. Could be a nicer way to do this but for now it's solving the
         // problem with script submission of non JSON native types
-        if (protocolLevel && key === 'bindings')
+        if (protocolLevel && key === 'bindings') {
           newObj[key] = this._adaptArgs(args[key], false);
-        else
+        } else {
           newObj[key] = this.adaptObject(args[key]);
+        }
       });
 
       return newObj;
@@ -167,7 +167,7 @@ class GraphSON2Reader {
     this._deserializers = {};
 
     const defaultDeserializers = this.getDefaultDeserializers();
-    Object.keys(defaultDeserializers).forEach(typeName => {
+    Object.keys(defaultDeserializers).forEach((typeName) => {
       const serializerConstructor = defaultDeserializers[typeName];
       const s = new serializerConstructor();
       s.reader = this;
@@ -176,7 +176,7 @@ class GraphSON2Reader {
 
     if (this._options.serializers) {
       const customSerializers = this._options.serializers || {};
-      Object.keys(customSerializers).forEach(key => {
+      Object.keys(customSerializers).forEach((key) => {
         const s = customSerializers[key];
         if (!s.deserialize) {
           return;
@@ -203,7 +203,7 @@ class GraphSON2Reader {
       return null;
     }
     if (Array.isArray(obj)) {
-      return obj.map(item => this.read(item));
+      return obj.map((item) => this.read(item));
     }
     const type = obj[typeSerializers.typeKey];
     if (type) {
@@ -222,7 +222,7 @@ class GraphSON2Reader {
   }
 
   readResponse(buffer) {
-    return this.read( JSON.parse(buffer.toString()) );
+    return this.read(JSON.parse(buffer.toString()));
   }
 
   _deserializeObject(obj) {
@@ -247,9 +247,9 @@ class GraphSON3Reader extends GraphSON2Reader {
 const graphSON2Deserializers = {
   'g:Traverser': typeSerializers.TraverserSerializer,
   'g:TraversalStrategy': typeSerializers.TraversalStrategySerializer,
-  'g:Int32':  typeSerializers.NumberSerializer,
-  'g:Int64':  typeSerializers.NumberSerializer,
-  'g:Float':  typeSerializers.NumberSerializer,
+  'g:Int32': typeSerializers.NumberSerializer,
+  'g:Int64': typeSerializers.NumberSerializer,
+  'g:Float': typeSerializers.NumberSerializer,
   'g:Double': typeSerializers.NumberSerializer,
   'g:Date': typeSerializers.DateSerializer,
   'g:Direction': typeSerializers.DirectionSerializer,
@@ -260,13 +260,13 @@ const graphSON2Deserializers = {
   'g:Path': typeSerializers.Path3Serializer,
   'g:TextP': typeSerializers.TextPSerializer,
   'g:T': typeSerializers.TSerializer,
-  'g:BulkSet': typeSerializers.BulkSetSerializer
+  'g:BulkSet': typeSerializers.BulkSetSerializer,
 };
 
 const graphSON3Deserializers = Object.assign({}, graphSON2Deserializers, {
   'g:List': typeSerializers.ListSerializer,
   'g:Set': typeSerializers.SetSerializer,
-  'g:Map': typeSerializers.MapSerializer
+  'g:Map': typeSerializers.MapSerializer,
 });
 
 const graphSON2Serializers = [
@@ -281,13 +281,13 @@ const graphSON2Serializers = [
   typeSerializers.EnumSerializer,
   typeSerializers.VertexSerializer,
   typeSerializers.EdgeSerializer,
-  typeSerializers.LongSerializer
+  typeSerializers.LongSerializer,
 ];
 
 const graphSON3Serializers = graphSON2Serializers.concat([
   typeSerializers.ListSerializer,
   typeSerializers.SetSerializer,
-  typeSerializers.MapSerializer
+  typeSerializers.MapSerializer,
 ]);
 
 module.exports = {
@@ -296,5 +296,5 @@ module.exports = {
   GraphSON2Writer,
   GraphSON2Reader,
   GraphSONWriter: GraphSON3Writer,
-  GraphSONReader: GraphSON3Reader
+  GraphSONReader: GraphSON3Reader,
 };

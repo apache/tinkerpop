@@ -32,12 +32,13 @@ class SaslMechanismPlain extends SaslMechanismBase {
   constructor(options) {
     super(options);
 
-    if (this._options.username === undefined
-      || this._options.username === null
-      || this._options.username.length == 0
-      || this._options.password === undefined
-      || this._options.password === null
-      || this._options.password.length == 0
+    if (
+      this._options.username === undefined ||
+      this._options.username === null ||
+      this._options.username.length === 0 ||
+      this._options.password === undefined ||
+      this._options.password === null ||
+      this._options.password.length === 0
     ) {
       throw new Error('Missing credentials for SASL PLAIN mechanism');
     }
@@ -49,7 +50,7 @@ class SaslMechanismPlain extends SaslMechanismBase {
   get name() {
     return 'PLAIN';
   }
-  
+
   /**
    * Evaluates the challenge from the server and returns appropriate response.
    * @param {String} challenge Challenge string presented by the server.
@@ -58,12 +59,14 @@ class SaslMechanismPlain extends SaslMechanismBase {
   evaluateChallenge(challenge) {
     if (this._hasInitialResponse(challenge)) {
       return Promise.resolve({
-        'saslMechanism': this.name,
-        'sasl': this._saslArgument(this._options.authzid, this._options.username, this._options.password)
+        saslMechanism: this.name,
+        sasl: this._saslArgument(this._options.authzid, this._options.username, this._options.password),
       });
     }
-    
-    return Promise.resolve({ 'sasl': this._saslArgument(this._options.authzid, this._options.username, this._options.password) });
+
+    return Promise.resolve({
+      sasl: this._saslArgument(this._options.authzid, this._options.username, this._options.password),
+    });
   }
 
   /**
@@ -73,11 +76,17 @@ class SaslMechanismPlain extends SaslMechanismBase {
    * @param {String} password The password of user with access to server.
    */
   _saslArgument(authzid, username, password) {
-    if (authzid === undefined || authzid === null) authzid = '';
-    if (username === undefined || username === null) username = '';
-    if (password === undefined || password.length === null) password = '';
+    if (authzid === undefined || authzid === null) {
+      authzid = '';
+    }
+    if (username === undefined || username === null) {
+      username = '';
+    }
+    if (password === undefined || password.length === null) {
+      password = '';
+    }
 
-    return new Buffer(`${authzid}\0${username}\0${password}`).toString('base64');
+    return Buffer.from(`${authzid}\0${username}\0${password}`).toString('base64');
   }
 
   /**

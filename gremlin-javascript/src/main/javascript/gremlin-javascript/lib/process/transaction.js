@@ -40,14 +40,19 @@ class Transaction {
    */
   begin() {
     if (this._sessionBasedConnection) {
-      throw new Error("Transaction already started on this object");
+      throw new Error('Transaction already started on this object');
     }
 
     this._sessionBasedConnection = this._g.remoteConnection.createSession();
     const traversalStrategy = new TraversalStrategies();
     traversalStrategy.addStrategy(new remote.RemoteStrategy(this._sessionBasedConnection));
-    return new this._g.graphTraversalSourceClass(this._g.graph, traversalStrategy, new Bytecode(this._g.bytecode),
-      this._g.graphTraversalSourceClass, this._g.graphTraversalClass);
+    return new this._g.graphTraversalSourceClass(
+      this._g.graph,
+      traversalStrategy,
+      new Bytecode(this._g.bytecode),
+      this._g.graphTraversalSourceClass,
+      this._g.graphTraversalClass,
+    );
   }
 
   /**
@@ -69,18 +74,19 @@ class Transaction {
    * @returns {Boolean}
    */
   get isOpen() {
-    this._sessionBasedConnection.isOpen;
+    return this._sessionBasedConnection.isOpen;
   }
 
   /**
    * @returns {Promise}
    */
   close() {
-    if (this._sessionBasedConnection)
+    if (this._sessionBasedConnection) {
       this._sessionBasedConnection.close();
+    }
   }
 }
 
 module.exports = {
-  Transaction
+  Transaction,
 };

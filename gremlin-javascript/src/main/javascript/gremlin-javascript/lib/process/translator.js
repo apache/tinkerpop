@@ -34,7 +34,7 @@ class Translator {
   }
 
   getTargetLanguage() {
-    return "gremlin-groovy";
+    return 'gremlin-groovy';
   }
 
   of(traversalSource) {
@@ -48,10 +48,10 @@ class Translator {
    * @returns {string} Gremlin-Groovy script
    */
   translate(bytecodeOrTraversal, child = false) {
-    let script = child ? "__" : this._traversalSource;
+    let script = child ? '__' : this._traversalSource;
     const bc = bytecodeOrTraversal instanceof Bytecode ? bytecodeOrTraversal : bytecodeOrTraversal.getBytecode();
 
-    let instructions = bc.stepInstructions;
+    const instructions = bc.stepInstructions;
 
     // build the script from the glv instructions.
     for (let i = 0; i < instructions.length; i++) {
@@ -70,7 +70,7 @@ class Translator {
 
       script += ')';
     }
-    
+
     return script;
   }
 
@@ -86,10 +86,12 @@ class Translator {
         script += this.translate(anyObject.getBytecode(), true);
       } else if (anyObject.toString() === '[object Object]') {
         Object.keys(anyObject).forEach(function (key, index) {
-          if (index > 0) script += ', ';
-          script += '(\'' + key + '\', ';
+          if (index > 0) {
+            script += ', ';
+          }
+          script += `('${key}', `;
           if (anyObject[key] instanceof String || typeof anyObject[key] === 'string') {
-            script += '\'' + anyObject[key] + '\'';
+            script += `'${anyObject[key]}'`;
           } else {
             script += anyObject[key];
           }
@@ -109,7 +111,7 @@ class Translator {
     } else if (typeof anyObject === 'number' || typeof anyObject === 'boolean') {
       script += anyObject;
     } else {
-      script += '\'' + anyObject + '\'';
+      script += `'${anyObject}'`;
     }
 
     return script;
