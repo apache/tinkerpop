@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 )
 
 // protocol handles invoking serialization and deserialization, as well as handling the lifecycle of raw data passed to
@@ -35,6 +36,8 @@ type protocol interface {
 	write(request *request) error
 	close() (err error)
 }
+
+const authenticationFailed = uint16(151)
 
 type protocolBase struct {
 	protocol
@@ -123,7 +126,7 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets map[string]R
 		// Add data to the ResultSet.
 		resultSets[responseIDString].addResult(&Result{data})
 		log.logger.Logf(Info, "Partial %v===>%v", response.responseStatus, data)
-	} else if statusCode == http.StatusProxyAuthRequired || statusCode == 151 {
+	} else if statusCode == http.StatusProxyAuthRequired || statusCode == authenticationFailed {
 		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
 		// Server has requested basic auth.
 		authInfo := protocol.transporter.getAuthInfo()
@@ -173,8 +176,8 @@ func (protocol *gremlinServerWSProtocol) close() (err error) {
 	return
 }
 
-func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, authInfo *AuthInfo, tlsConfig *tls.Config, results map[string]ResultSet, errorCallback func()) (protocol, error) {
-	transport, err := getTransportLayer(transporterType, url, authInfo, tlsConfig)
+func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, authInfo *AuthInfo, tlsConfig *tls.Config, results map[string]ResultSet, errorCallback func(), keepAliveInterval time.Duration, writeDeadline time.Duration) (protocol, error) {
+	transport, err := getTransportLayer(transporterType, url, authInfo, tlsConfig, keepAliveInterval, writeDeadline)
 	if err != nil {
 		return nil, err
 	}

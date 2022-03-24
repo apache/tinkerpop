@@ -29,9 +29,10 @@ import (
 
 func TestChannelResultSet(t *testing.T) {
 	const mockID = "mockID"
+	mockContainer := make(map[string]ResultSet)
 
 	t.Run("Test ResultSet test getter/setters.", func(t *testing.T) {
-		r := newChannelResultSet(mockID)
+		r := newChannelResultSet(mockID, mockContainer)
 		testStatusAttribute := map[string]interface{}{
 			"1": 1234,
 			"2": "foo",
@@ -44,12 +45,12 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet close.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		assert.NotPanics(t, func() { channelResultSet.Close() })
 	})
 
 	t.Run("Test ResultSet one.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		AddResults(&channelResultSet, 10)
 		idx := 0
 		for i := 0; i < 10; i++ {
@@ -65,7 +66,7 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet one Paused.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		go AddResultsPause(&channelResultSet, 10, 500)
 		idx := 0
 		for i := 0; i < 10; i++ {
@@ -81,12 +82,12 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet one close.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		channelResultSet.Close()
 	})
 
 	t.Run("Test ResultSet All.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		AddResults(&channelResultSet, 10)
 		go closeAfterTime(500, &channelResultSet)
 		results, err := channelResultSet.All()
@@ -97,7 +98,7 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet All close before.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		AddResults(&channelResultSet, 10)
 		channelResultSet.Close()
 		results, err := channelResultSet.All()
@@ -109,21 +110,21 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet IsEmpty before signal.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		go closeAfterTime(500, &channelResultSet)
 		empty := channelResultSet.IsEmpty()
 		assert.True(t, empty)
 	})
 
 	t.Run("Test ResultSet IsEmpty after signal.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		channelResultSet.Close()
 		empty := channelResultSet.IsEmpty()
 		assert.True(t, empty)
 	})
 
 	t.Run("Test ResultSet IsEmpty after close.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet(mockID, mockContainer)
 		go addAfterTime(500, &channelResultSet)
 		empty := channelResultSet.IsEmpty()
 		assert.False(t, empty)
@@ -131,6 +132,16 @@ func TestChannelResultSet(t *testing.T) {
 		go closeAfterTime(500, &channelResultSet)
 		empty = channelResultSet.IsEmpty()
 		assert.True(t, empty)
+	})
+
+	t.Run("Test ResultSet removes self from container.", func(t *testing.T) {
+		container := map[string]ResultSet{}
+		assert.Equal(t, 0, len(container))
+		channelResultSet := newChannelResultSet(mockID, container)
+		container[mockID] = channelResultSet
+		assert.Equal(t, 1, len(container))
+		channelResultSet.Close()
+		assert.Equal(t, 0, len(container))
 	})
 }
 

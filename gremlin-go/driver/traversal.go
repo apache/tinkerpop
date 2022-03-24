@@ -67,7 +67,7 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 }
 
 // Iterate all the Traverser instances in the traversal and returns the empty traversal.
-func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
+func (t *Traversal) Iterate() (*Traversal, <-chan error, error) {
 	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
 	if t.remote == nil {
 		return nil, nil, errors.New("cannot invoke this method from an anonymous traversal")
@@ -83,13 +83,13 @@ func (t *Traversal) Iterate() (*Traversal, <-chan bool, error) {
 		return nil, nil, err
 	}
 
-	r := make(chan bool)
+	r := make(chan error)
 	go func() {
 		defer close(r)
 
 		// Force waiting until complete.
-		_, _ = res.All()
-		r <- true
+		_, err = res.All()
+		r <- err
 	}()
 
 	return t, r, nil

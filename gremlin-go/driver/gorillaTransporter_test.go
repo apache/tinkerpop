@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -70,9 +71,11 @@ func TestGorillaTransporter(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockConn := new(mockWebsocketConn)
 		transporter := gorillaTransporter{
-			url:        "ws://mockHost:8182/gremlin",
-			connection: mockConn,
-			isClosed:   false,
+			url:          "ws://mockHost:8182/gremlin",
+			connection:   mockConn,
+			isClosed:     false,
+			writeChannel: make(chan []byte, 100),
+			wg:           &sync.WaitGroup{},
 		}
 
 		t.Run("WriteMessage", func(t *testing.T) {
@@ -105,17 +108,11 @@ func TestGorillaTransporter(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		mockConn := new(mockWebsocketConn)
 		transporter := gorillaTransporter{
-			url:        "ws://mockHost:8182/gremlin",
-			connection: mockConn,
-			isClosed:   false,
+			url:          "ws://mockHost:8182/gremlin",
+			connection:   mockConn,
+			isClosed:     false,
+			writeChannel: make(chan []byte, 100),
 		}
-
-		t.Run("WriteMessage", func(t *testing.T) {
-			mockConn.On("WriteMessage", 2, make([]byte, 10)).Return(errors.New(mockWriteErrMessage))
-			err := transporter.Write(make([]byte, 10))
-			assert.NotNil(t, err)
-			assert.Equal(t, mockWriteErrMessage, err.Error())
-		})
 
 		t.Run("Read", func(t *testing.T) {
 			mockConn.On("ReadMessage").Return(0, []byte{}, errors.New(mockReadErrMessage))
@@ -129,12 +126,10 @@ func TestGorillaTransporter(t *testing.T) {
 		})
 
 		t.Run("Close and IsClosed", func(t *testing.T) {
-			mockConn.On("Close").Return(errors.New(mockCloseErrMessage))
 			isClosed := transporter.IsClosed()
 			assert.False(t, isClosed)
 			err := transporter.Close()
-			assert.NotNil(t, err)
-			assert.Equal(t, mockCloseErrMessage, err.Error())
+			assert.Nil(t, err)
 			isClosed = transporter.IsClosed()
 			assert.True(t, isClosed)
 		})

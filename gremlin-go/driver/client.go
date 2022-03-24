@@ -21,18 +21,22 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"fmt"
 	"golang.org/x/text/language"
+	"time"
 )
 
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
-	TraversalSource string
-	TransporterType TransporterType
-	LogVerbosity    LogVerbosity
-	Logger          Logger
-	Language        language.Tag
-	AuthInfo        *AuthInfo
-	TlsConfig       *tls.Config
+	TraversalSource   string
+	TransporterType   TransporterType
+	LogVerbosity      LogVerbosity
+	Logger            Logger
+	Language          language.Tag
+	AuthInfo          *AuthInfo
+	TlsConfig         *tls.Config
+	KeepAliveInterval time.Duration
+	WriteDeadline     time.Duration
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -44,25 +48,30 @@ type Client struct {
 	connection      *connection
 }
 
-// NewClient creates a Client and configures it with the given parameters.
+// NewClient creates a Client and configures it with the given parameters. During creation of the Client, a connection
+// is created, which establishes a websocket.
+// Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource: "g",
-		TransporterType: Gorilla,
-		LogVerbosity:    Info,
-		Logger:          &defaultLogger{},
-		Language:        language.English,
-		AuthInfo:        &AuthInfo{},
-		TlsConfig:       &tls.Config{},
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	conn, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler)
+	conn, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create client with url '%s' and transport type '%v'. Error message: '%s'",
+			url, settings.TransporterType, err.Error())
 	}
 	client := &Client{
 		url:             url,

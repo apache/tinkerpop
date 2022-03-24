@@ -29,6 +29,7 @@ import (
 	"sort"
 	"strconv"
 	"testing"
+	"time"
 )
 
 const personLabel = "Person"
@@ -40,6 +41,7 @@ const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
 const validHostValidPortInvalidPath = "ws://localhost:8182/invalid"
 const testServerGraphAlias = "gmodern"
+const manualTestSuiteName = "manual"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
 
@@ -48,7 +50,7 @@ func dropGraph(t *testing.T, g *GraphTraversalSource) {
 	_, promise, err := g.V().Drop().Iterate()
 	assert.Nil(t, err)
 	assert.NotNil(t, promise)
-	<-promise
+	assert.Nil(t, <-promise)
 }
 
 func addTestData(t *testing.T, g *GraphTraversalSource) {
@@ -65,7 +67,7 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	// Commit traversal.
 	_, promise, err := traversal.Iterate()
 	assert.Nil(t, err)
-	<-promise
+	assert.Nil(t, <-promise)
 }
 
 func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
@@ -94,6 +96,10 @@ func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) 
 }
 
 func resetGraph(t *testing.T, g *GraphTraversalSource) {
+	defer func(remoteConnection *DriverRemoteConnection) {
+		err := remoteConnection.Close()
+		assert.Nil(t, err)
+	}(g.remoteConnection)
 	// Drop the graph and check that it is empty.
 	dropGraph(t, g)
 	readCount(t, g, "", 0)
@@ -223,6 +229,10 @@ func skipTestsIfNotEnabled(t *testing.T, testSuiteName string, testSuiteEnabled 
 	}
 }
 
+func deferredCleanup(t *testing.T, connection *connection) {
+	assert.Nil(t, connection.close())
+}
+
 func TestConnection(t *testing.T) {
 	// Integration test variables.
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
@@ -242,20 +252,22 @@ func TestConnection(t *testing.T) {
 	testBasicAuthAuthInfo := getBasicAuthInfo()
 	testBasicAuthTlsConfig := &tls.Config{InsecureSkipVerify: true}
 
+	testManual := getEnvOrDefaultBool("RUN_MANUAL_TEST", false)
+
 	t.Run("Test createConnection without valid server", func(t *testing.T) {
-		connection, err := createConnection(invalidHostValidPortValidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(invalidHostValidPortValidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
 		assert.NotNil(t, err)
 		assert.Nil(t, connection)
 	})
 
 	t.Run("Test createConnection without valid port", func(t *testing.T) {
-		connection, err := createConnection(validHostInvalidPortValidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(validHostInvalidPortValidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
 		assert.NotNil(t, err)
 		assert.Nil(t, connection)
 	})
 
 	t.Run("Test createConnection without valid path", func(t *testing.T) {
-		connection, err := createConnection(validHostValidPortInvalidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(validHostValidPortInvalidPath, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
 		assert.NotNil(t, err)
 		assert.Nil(t, connection)
 	})
@@ -276,18 +288,20 @@ func TestConnection(t *testing.T) {
 
 	t.Run("Test createConnection", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
 		assert.Nil(t, err)
 		assert.NotNil(t, connection)
-		err = connection.close()
-		assert.Nil(t, err)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
 	})
 
 	t.Run("Test connection.write()", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
 		assert.Nil(t, err)
 		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
 		request := makeStringRequest("g.V().count()", "g")
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, err)
@@ -295,57 +309,49 @@ func TestConnection(t *testing.T) {
 		result, err := resultSet.one()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
-		err = connection.close()
-		assert.Nil(t, err)
 	})
 
 	t.Run("Test connection.close() failure", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English))
+		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
+		assert.Equal(t, established, connection.state)
 		assert.Nil(t, err)
 		err = connection.close()
 		assert.Nil(t, err)
+		assert.Equal(t, closed, connection.state)
 		err = connection.close()
 		assert.NotNil(t, err)
+		assert.Equal(t, closed, connection.state)
 		err = connection.close()
 		assert.NotNil(t, err)
+		assert.Equal(t, closed, connection.state)
 	})
 
-	t.Run("Test client.submit()", func(t *testing.T) {
+	t.Run("Test connection.write() after close() failure", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		client, err := NewClient(testNoAuthUrl,
-			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
-			})
+		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
+		assert.Equal(t, established, connection.state)
 		assert.Nil(t, err)
-		assert.NotNil(t, client)
-		resultSet, err := client.Submit("g.V().count()")
+		err = connection.close()
 		assert.Nil(t, err)
-		assert.NotNil(t, resultSet)
-		result, err := resultSet.one()
-		assert.Nil(t, err)
-		assert.NotNil(t, result)
-		err = client.Close()
-		assert.Nil(t, err)
+		assert.Equal(t, closed, connection.state)
+		request := makeStringRequest("g.V().count()", "g")
+		resultSet, err := connection.write(&request)
+		assert.Nil(t, resultSet)
+		assert.NotNil(t, err)
+		assert.Equal(t, closed, connection.state)
 	})
 
-	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
-
-		// Read test data out of the graph and check that it is correct.
-		readTestDataVertexProperties(t, g)
-		readTestDataValues(t, g)
-
-		// Drop the graph and check that it is empty.
-		dropGraph(t, g)
-		readCount(t, g, "", 0)
-		readCount(t, g, testLabel, 0)
-		readCount(t, g, personLabel, 0)
+	t.Run("Test server closes websocket", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, manualTestSuiteName, testManual)
+		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), 500*keepAliveIntervalDefault, writeDeadlineDefault)
+		assert.Equal(t, established, connection.state)
+		assert.Nil(t, err)
+		time.Sleep(120 * time.Second)
+		request := makeStringRequest("g.V().count()", "g")
+		resultSet, err := connection.write(&request)
+		assert.Nil(t, resultSet)
+		assert.NotNil(t, err)
 	})
 
 	t.Run("Test Traversal. Next and HasNext", func(t *testing.T) {
@@ -378,7 +384,7 @@ func TestConnection(t *testing.T) {
 			AddE("IS_IN").From("gs").To("tp").
 			AddE("LIKES").From("bq").To("tp").Iterate()
 		assert.Nil(t, err)
-		<-i
+		assert.Nil(t, <-i)
 
 		results, errs := g.V().OutE().InV().Path().By("name").By(Label).ToList()
 		assert.Nil(t, errs)
@@ -534,5 +540,27 @@ func TestConnection(t *testing.T) {
 		for _, res := range r {
 			assert.Equal(t, int64(6), res.GetInterface())
 		}
+	})
+
+	t.Run("Test DriverRemoteConnection Invalid GraphTraversal", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+
+		// Drop the graph.
+		dropGraph(t, g)
+
+		// Add vertices and edges to graph.
+		rs, err := g.AddV("person").Property("id", T__.Unfold().Property().AddV()).ToList()
+		assert.Nil(t, rs)
+		assert.NotNil(t, err)
+
+		rs, err = g.V().Count().ToList()
+		assert.NotNil(t, rs)
+		assert.Nil(t, err)
+
+		// Drop the graph.
+		dropGraph(t, g)
 	})
 }

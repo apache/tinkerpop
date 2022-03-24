@@ -247,8 +247,12 @@ func main() {
 		fmt.Println(err)
 		return 
 	}
-	// The returned promised is a go channel, to wait for all submitted steps to finish execution.
-	<-promise
+	
+	// The returned promised is a go channel to wait for all submitted steps to finish execution and return error.
+	if <-promise != nil {
+		fmt.Println(err)
+		return
+	}
 	
 	// Get the value of the property
 	result, err := g.V().HasLabel("gremlin").Values("language").ToList()
@@ -290,8 +294,11 @@ if err != nil {
     fmt.Println(err)
     return
 }
-// Wait for all steps to finish execution
-<-promise
+// Wait for all steps to finish execution and check for error.
+if <-promise != nil {
+    fmt.Println(err)
+    return
+}
 ```
 ### Find Vertices
 Getting the property value associated with the added vertex. We currently only support `ToList()` for submitting the remote traversal. Support for `Next()` will be implemented in the subsequent milestones. 
@@ -317,8 +324,11 @@ if err != nil {
 	fmt.Println(err)
     return
 }
-// Wait for all steps to finish execution
-<-promise
+// Wait for all steps to finish execution and check for error.
+if <-promise != nil {
+    fmt.Println(err)
+    return
+}
 ```
 
 # Specifications
