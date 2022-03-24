@@ -109,6 +109,10 @@ func (transporter *gorillaTransporter) Read() ([]byte, error) {
 	}
 
 	for {
+		err := transporter.connection.SetReadDeadline(time.Now().Add(transporter.keepAliveInterval * 2))
+		if err != nil {
+			return nil, err
+		}
 		_, bytes, err := transporter.connection.ReadMessage()
 		return bytes, err
 	}
@@ -123,7 +127,11 @@ func (transporter *gorillaTransporter) Close() (err error) {
 		if transporter.wg != nil {
 			transporter.wg.Wait()
 		}
+		err = transporter.connection.Close()
 		transporter.isClosed = true
+		if err != nil {
+			return err
+		}
 	}
 	return
 }

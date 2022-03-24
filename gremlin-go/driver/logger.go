@@ -125,4 +125,5 @@ const (
 	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"
 	failedToSetReadDeadline      errorKey = "FAILED_TO_SET_READ_DEADLINE"
 	failedToShutdownTransporter  errorKey = "FAILED_TO_SHUTDOWN_TRANSPORTER"
+	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
 )

@@ -26,6 +26,7 @@ import (
 	"golang.org/x/text/language"
 	"os"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"testing"
@@ -562,5 +563,24 @@ func TestConnection(t *testing.T) {
 
 		// Drop the graph.
 		dropGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection To Server Configured with Modern Graph", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		startCount := runtime.NumGoroutine()
+
+		connection, err := createConnection(testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig, newLogHandler(&defaultLogger{}, Info, language.English), keepAliveIntervalDefault, writeDeadlineDefault)
+		assert.Nil(t, err)
+		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+
+		// Read loop, write loop, this routine.
+		assert.Equal(t, startCount+2, runtime.NumGoroutine())
+
+		assert.Nil(t, connection.close())
+
+		// This routine.
+		assert.Equal(t, startCount, runtime.NumGoroutine())
 	})
 }
