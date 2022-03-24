@@ -76,6 +76,9 @@ func NewDriverRemoteConnection(
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 	connection, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
 	if err != nil {
+		if err != nil {
+			logHandler.logf(Error, logErrorGeneric, "NewDriverRemoteConnection", err.Error())
+		}
 		return nil, err
 	}
 
@@ -92,12 +95,20 @@ func NewDriverRemoteConnection(
 
 // Close closes the DriverRemoteConnection.
 func (driver *DriverRemoteConnection) Close() error {
-	return driver.client.Close()
+	err := driver.client.Close()
+	if err != nil {
+		driver.client.logHandler.logf(Error, logErrorGeneric, "Driver.Close()", err.Error())
+	}
+	return err
 }
 
 // Submit sends a string traversal to the server.
 func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet, error) {
-	return driver.client.Submit(traversalString)
+	result, err := driver.client.Submit(traversalString)
+	if err != nil {
+		driver.client.logHandler.logf(Error, logErrorGeneric, "Driver.Submit()", err.Error())
+	}
+	return result, err
 }
 
 // submitBytecode sends a bytecode traversal to the server.

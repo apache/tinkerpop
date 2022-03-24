@@ -84,8 +84,13 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 }
 
 // Close closes the client via connection.
+// The client close is idempotent because the underlying connection.close() call is.
 func (client *Client) Close() error {
-	return client.connection.close()
+	err := client.connection.close()
+	if err != nil {
+		client.logHandler.logf(Error, logErrorGeneric, "Client.Close()", err.Error())
+	}
+	return err
 }
 
 // Submit submits a Gremlin script to the server and returns a ResultSet.
@@ -93,7 +98,11 @@ func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	// TODO: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString, client.traversalSource)
-	return client.connection.write(&request)
+	result, err := client.connection.write(&request)
+	if err != nil {
+		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
+	}
+	return result, err
 }
 
 // submitBytecode submits bytecode to the server to execute and returns a ResultSet.

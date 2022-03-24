@@ -53,6 +53,7 @@ type gremlinServerWSProtocol struct {
 	maxContentLength int
 	closed           bool
 	mux              sync.Mutex
+	wg               *sync.WaitGroup
 }
 
 func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSet, errorCallback func(), log *logHandler) {
@@ -62,6 +63,7 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSe
 		protocol.mux.Lock()
 		if protocol.closed {
 			protocol.mux.Unlock()
+			protocol.wg.Done()
 			return
 		}
 		protocol.mux.Unlock()
@@ -70,6 +72,7 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSe
 			_ = protocol.transporter.Close()
 			log.logf(Error, readLoopError, err.Error())
 			readErrorHandler(resultSets, errorCallback, err, log)
+			protocol.wg.Done()
 			return
 		}
 
@@ -78,12 +81,14 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSe
 		if err != nil {
 			log.logger.Log(Error, err)
 			readErrorHandler(resultSets, errorCallback, err, log)
+			protocol.wg.Done()
 			return
 		}
 
 		err = protocol.responseHandler(resultSets, resp, log)
 		if err != nil {
 			readErrorHandler(resultSets, errorCallback, err, log)
+			protocol.wg.Done()
 			return
 		}
 	}
@@ -173,10 +178,12 @@ func (protocol *gremlinServerWSProtocol) close() (err error) {
 		protocol.closed = true
 	}
 	protocol.mux.Unlock()
+	protocol.wg.Wait()
 	return
 }
 
 func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, authInfo *AuthInfo, tlsConfig *tls.Config, results map[string]ResultSet, errorCallback func(), keepAliveInterval time.Duration, writeDeadline time.Duration) (protocol, error) {
+	wg := &sync.WaitGroup{}
 	transport, err := getTransportLayer(transporterType, url, authInfo, tlsConfig, keepAliveInterval, writeDeadline)
 	if err != nil {
 		return nil, err
@@ -189,11 +196,13 @@ func newGremlinServerWSProtocol(handler *logHandler, transporterType Transporter
 		maxContentLength: 1,
 		closed:           false,
 		mux:              sync.Mutex{},
+		wg:               wg,
 	}
 	err = gremlinProtocol.transporter.Connect()
 	if err != nil {
 		return nil, err
 	}
+	wg.Add(1)
 	go gremlinProtocol.readLoop(results, errorCallback, handler)
 	return gremlinProtocol, nil
 }

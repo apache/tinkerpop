@@ -126,6 +126,7 @@ func TestGorillaTransporter(t *testing.T) {
 		})
 
 		t.Run("Close and IsClosed", func(t *testing.T) {
+			mockConn.On("Close").Return(nil)
 			isClosed := transporter.IsClosed()
 			assert.False(t, isClosed)
 			err := transporter.Close()
