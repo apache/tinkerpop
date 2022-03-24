@@ -135,6 +135,16 @@ func VertexProgramStrategy(graphComputer, persist, result string, workers int,
 	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: config}
 }
 
+// Finalization strategies
+
+func MatchAlgorithmStrategy(matchAlgorithm string) *traversalStrategy {
+	config := make(map[string]interface{})
+	if matchAlgorithm != "" {
+		config["matchAlgorithm"] = matchAlgorithm
+	}
+	return &traversalStrategy{name: finalizationNamespace + "MatchAlgorithmStrategy", configuration: config}
+}
+
 // Verification strategies
 
 // EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.
