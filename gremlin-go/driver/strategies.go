@@ -20,30 +20,119 @@ under the License.
 package gremlingo
 
 const (
-	baseNamespace         = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
-	decorationNamespace   = baseNamespace + "decoration."
-	finalizationNamespace = baseNamespace + "finalization."
-	optimizationNamespace = baseNamespace + "optimization."
-	verificationNamespace = baseNamespace + "verification."
+	baseNamespace               = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
+	decorationNamespace         = baseNamespace + "decoration."
+	finalizationNamespace       = baseNamespace + "finalization."
+	optimizationNamespace       = baseNamespace + "optimization."
+	verificationNamespace       = baseNamespace + "verification."
+	computerDecorationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration."
 )
 
 // Decoration strategies
 
-func PartitionStrategy(partitionKey, writePartition, readPartitions, includeMetaProperties string) *traversalStrategy {
+// ConnectiveStrategy rewrites the binary conjunction form of a.And().b into a AndStep of
+// And(a,b) (likewise for OrStep).
+func ConnectiveStrategy() *traversalStrategy {
+	return &traversalStrategy{name: decorationNamespace + "ConnectiveStrategy"}
+}
+
+// ElementIdStrategy provides a degree of control over element identifier assignment as some Graphs don't provide
+// that feature. This strategy provides for identifier assignment by enabling users to utilize Vertex and Edge indices
+// under the hood, thus simulating that capability.
+// By default, when an identifier is not supplied by the user, newly generated identifiers are UUID objects.
+func ElementIdStrategy() *traversalStrategy {
+	return &traversalStrategy{name: decorationNamespace + "ElementIdStrategy"}
+}
+
+func HaltedTraverserStrategy(haltedTraverserFactoryName string) *traversalStrategy {
 	config := make(map[string]interface{})
+	if haltedTraverserFactoryName != "" {
+		config["haltedTraverserFactory"] = haltedTraverserFactoryName
+	}
+	return &traversalStrategy{name: decorationNamespace + "HaltedTraverserStrategy", configuration: config}
+}
+
+// OptionsStrategy will not alter the Traversal. It is only a holder for configuration options associated with the
+// Traversal meant to be accessed by steps or other classes that might have some interaction with it. It is
+// essentially a way for users to provide Traversal level configuration options that can be used in various ways
+// by different Graph providers.
+func OptionsStrategy(options map[string]interface{}) *traversalStrategy {
+	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: options}
+}
+
+// PartitionStrategy partitions the Vertices, Edges and Vertex properties of a Graph into String named
+// partitions (i.e. buckets, subgraphs, etc.).  It blinds a Traversal from "seeing" specified areas of
+// the graph. The Traversal will ignore all Graph elements not in those "read" partitions.
+func PartitionStrategy(partitionKey, writePartition string, readPartitions []string, includeMetaProperties bool) *traversalStrategy {
+	config := map[string]interface{}{"includeMetaProperties": includeMetaProperties}
 	if partitionKey != "" {
 		config["partitionKey"] = partitionKey
 	}
 	if writePartition != "" {
 		config["writePartition"] = writePartition
 	}
-	if readPartitions != "" {
+	if len(readPartitions) != 0 {
 		config["readPartitions"] = readPartitions
 	}
-	if includeMetaProperties != "" {
-		config["includeMetaProperties"] = includeMetaProperties
-	}
 	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: config}
+}
+
+// SeedStrategy resets the specified Seed value for Seedable steps, which in turn will produce deterministic
+// results from those steps. It is important to note that when using this strategy that it only guarantees
+// deterministic results from a step but not from an entire Traversal. For example, if a Graph does no guarantee
+// iteration order for g.V() then repeated runs of g.V().Coin(0.5) with this strategy will return the same number
+// of results but not necessarily the same ones. The same problem can occur in OLAP-based Taversals where
+// iteration order is not explicitly guaranteed. The only way to ensure completely deterministic results in that
+// sense is to apply some form of order() in these cases.
+func SeedStrategy(seed int64) *traversalStrategy {
+	config := map[string]interface{}{"seed": seed}
+	return &traversalStrategy{name: decorationNamespace + "SeedStrategy", configuration: config}
+}
+
+// SubgraphStrategy provides a way to limit the view of a Traversal. By providing Traversal representations that
+// represent a form of filtering criterion for Vertices and/or Edges, this strategy will inject that criterion into
+// the appropriate places of a Traversal thus restricting what it Traverses and returns.
+func SubgraphStrategy(vertices, edges, vertexProperties interface{}) *traversalStrategy { // all vars can be Traversal or null
+	config := make(map[string]interface{})
+	if vertices != nil {
+		config["vertices"] = vertices
+	}
+	if edges != nil {
+		config["edges"] = edges
+	}
+	if vertexProperties != nil {
+		config["vertexProperties"] = vertexProperties
+	}
+	return &traversalStrategy{name: decorationNamespace + "SubgraphStrategy", configuration: config}
+}
+
+func VertexProgramStrategy(graphComputer, persist, result string, workers int,
+	vertices, edges interface{}, configuration map[string]interface{}) *traversalStrategy {
+	config := make(map[string]interface{})
+	if graphComputer != "" {
+		config["graphComputer"] = graphComputer
+	}
+	if persist != "" {
+		config["persist"] = persist
+	}
+	if result != "" {
+		config["result"] = result
+	}
+	if workers != 0 {
+		config["workers"] = workers
+	}
+	if vertices != nil {
+		config["vertices"] = vertices
+	}
+	if edges != nil {
+		config["edges"] = edges
+	}
+	if configuration != nil {
+		for k, v := range configuration {
+			config[k] = v
+		}
+	}
+	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: config}
 }
 
 // Verification strategies

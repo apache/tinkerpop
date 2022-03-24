@@ -28,6 +28,61 @@ import (
 func TestStrategy(t *testing.T) {
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
 
+	t.Run("Test read with ConnectiveStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(ConnectiveStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with OptionsStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(OptionsStrategy(map[string]interface{}{"a": "b"})).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with PartitionStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(PartitionStrategy("partition", "write", []string{"read"}, true)).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(0), val)
+	})
+
+	t.Run("Test read with SeedStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(SeedStrategy(1)).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(6), val)
+	})
+
+	t.Run("Test read with SubgraphStrategy", func(t *testing.T) {
+		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+
+		count, err := g.WithStrategies(SubgraphStrategy(T__.HasLabel(testLabel), nil, nil)).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Equal(t, int32(0), val)
+	})
+
 	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 

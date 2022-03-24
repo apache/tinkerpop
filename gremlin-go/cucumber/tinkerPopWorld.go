@@ -215,3 +215,12 @@ func (t *TinkerPopWorld) closeAllDataGraphConnection() error {
 	}
 	return nil
 }
+
+func strategyFactory(strategyName string, params map[string]interface{}) interface{} {
+	switch strategyName {
+	case "VertexProgramStrategy":
+		graphComputer, _ := params["graphComputer"].(string)
+		return gremlingo.VertexProgramStrategy(graphComputer, "", "", 0, nil, nil, nil)
+	}
+	return nil
+}

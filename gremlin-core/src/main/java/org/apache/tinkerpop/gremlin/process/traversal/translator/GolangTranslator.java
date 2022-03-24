@@ -22,12 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
-import org.apache.tinkerpop.gremlin.process.traversal.Script;
-import org.apache.tinkerpop.gremlin.process.traversal.TextP;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -37,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -250,8 +246,24 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final TraversalStrategyProxy<?> o) {
-            // TODO AN-987: TraversalStrategy implementation in Gremlin-go
-            throw new NotImplementedException("TraversalStrategy translation not currently supported");
+            if (o.getConfiguration().isEmpty()) {
+                return script.append("strategyFactory(\"" + o.getStrategyClass().getSimpleName() + "\", map[string]interface{}{})");
+            } else {
+                script.append("strategyFactory(\"" + o.getStrategyClass().getSimpleName() + "\", map[string]interface{}{");
+                final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).
+                        filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
+                while (keys.hasNext()) {
+                    final String k = keys.next();
+                    script.append("\"");
+                    script.append(k);
+                    script.append("\": ");
+                    convertToScript(o.getConfiguration().getProperty(k));
+                    if (keys.hasNext())
+                        script.append(", ");
+                }
+
+                return script.append("})");
+            }
         }
 
         @Override
