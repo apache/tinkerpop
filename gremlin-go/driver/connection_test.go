@@ -243,7 +243,7 @@ func TestConnection(t *testing.T) {
 
 	// No authentication integration test with graphs loaded and alias configured server
 	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
-	testNoAuthWithAliasEnable := getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_ TESTS", false)
+	testNoAuthWithAliasEnable := getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", false)
 	testNoAuthWithAliasAuthInfo := &AuthInfo{}
 	testNoAuthWithAliasTlsConfig := &tls.Config{}
 
@@ -565,8 +565,10 @@ func TestConnection(t *testing.T) {
 		dropGraph(t, g)
 	})
 
-	t.Run("Test DriverRemoteConnection To Server Configured with Modern Graph", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+	// This test needs to be run as a standalone since other tests running can cause goroutine count to fluctuate.
+	// If this test is not run manually and isolated it will have floating failures.
+	t.Run("Test connection goroutine cleanup", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, manualTestSuiteName, testManual)
 
 		startCount := runtime.NumGoroutine()
 
