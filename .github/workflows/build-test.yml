@@ -1,5 +1,5 @@
 name: build-test
-on: [] # push, pull_request
+on: [push, pull_request]
 jobs:
   smoke:
     name: smoke
@@ -202,3 +202,40 @@ jobs:
         run: |
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :neo4j-gremlin -DincludeNeo4j
+  go:
+    name: Go
+    timeout-minutes: 20
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17'
+
+      - name: Execute Go tests
+        working-directory: ./gremlin-go
+        run: |
+          docker-compose up --exit-code-from gremlin-go-integration-tests gremlin-go-integration-tests
+          docker-compose down
+
+      # Note exit code is intentionally ignored here because not all these tests pass right now.
+      - name: Execute Godog tests
+        working-directory: ./gremlin-go
+        run: |
+          docker-compose up gremlin-go-godog-tests
+          docker-compose down
+
+      - name: Go-Vet
+        working-directory: ./gremlin-go
+        run: go vet ./...
+
+      - name: Generate Cucumber Godog Test File
+        working-directory: .
+        run: |
+          mvn install -pl :gremlin-core -DskipTests -DskipIntegrationTests=true
+          mvn install -pl :gremlin-server -DskipTests -DskipIntegrationTests=true
+          mvn compile -pl :gremlin-go

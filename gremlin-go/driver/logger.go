@@ -54,10 +54,12 @@ type Logger interface {
 type defaultLogger struct {
 }
 
+// Log writes a message to the defaultLogger.
 func (logger *defaultLogger) Log(verbosity LogVerbosity, v ...interface{}) {
 	log.Print(v...)
 }
 
+// Logf writes a formatted message to the defaultLogger.
 func (logger *defaultLogger) Logf(verbosity LogVerbosity, format string, v ...interface{}) {
 	log.Printf(format, v...)
 }
@@ -97,25 +99,30 @@ func (logHandler *logHandler) logf(verbosity LogVerbosity, errorKey errorKey, v 
 type errorKey string
 
 const (
-	readFailed               errorKey = "READ_FAILED"
-	writeFailed              errorKey = "WRITE_FAILED"
-	serializeDataTypeError   errorKey = "UNKNOWN_SER_DATATYPE"
-	deserializeDataTypeError errorKey = "UNKNOWN_DESER_DATATYPE"
-	nullInput                errorKey = "NULL_INPUT"
-	unmatchedDataType        errorKey = "UNMATCHED_DATATYPE"
-	unexpectedNull           errorKey = "UNEXPECTED_NULL_VALUE"
-	notMap                   errorKey = "NOT_MAP_TYPE"
-	malformedURL             errorKey = "MALFORMED_URL"
-	transportCloseFailed     errorKey = "TRANSPORT_CLOSE_FAILED"
-	notSlice                 errorKey = "NOT_SLICE_TYPE"
-	closeConnection          errorKey = "CLOSING_CONNECTION"
-	connectConnection        errorKey = "OPENING_CONNECTION"
-	failedConnection         errorKey = "FAILED_CONNECTION"
-	writeRequest             errorKey = "WRITE_REQUEST"
-	readLoopError            errorKey = "READ_LOOP_ERROR"
-	errorCallback            errorKey = "ERROR_CALLBACK"
-	creatingRequest          errorKey = "CREATING_REQUEST"
-	readComplete             errorKey = "READ_COMPLETE"
-	submitStartedString      errorKey = "SUBMIT_STARTED_STRING"
-	submitStartedBytecode    errorKey = "SUBMIT_STARTED_BYTECODE"
+	readFailed                   errorKey = "READ_FAILED"
+	writeFailed                  errorKey = "WRITE_FAILED"
+	serializeDataTypeError       errorKey = "UNKNOWN_SER_DATATYPE"
+	deserializeDataTypeError     errorKey = "UNKNOWN_DESER_DATATYPE"
+	nullInput                    errorKey = "NULL_INPUT"
+	unmatchedDataType            errorKey = "UNMATCHED_DATATYPE"
+	unexpectedNull               errorKey = "UNEXPECTED_NULL_VALUE"
+	notMap                       errorKey = "NOT_MAP_TYPE"
+	malformedURL                 errorKey = "MALFORMED_URL"
+	transportCloseFailed         errorKey = "TRANSPORT_CLOSE_FAILED"
+	notSlice                     errorKey = "NOT_SLICE_TYPE"
+	closeConnection              errorKey = "CLOSING_CONNECTION"
+	connectConnection            errorKey = "OPENING_CONNECTION"
+	failedConnection             errorKey = "FAILED_CONNECTION"
+	writeRequest                 errorKey = "WRITE_REQUEST"
+	readLoopError                errorKey = "READ_LOOP_ERROR"
+	errorCallback                errorKey = "ERROR_CALLBACK"
+	creatingRequest              errorKey = "CREATING_REQUEST"
+	readComplete                 errorKey = "READ_COMPLETE"
+	submitStartedString          errorKey = "SUBMIT_STARTED_STRING"
+	submitStartedBytecode        errorKey = "SUBMIT_STARTED_BYTECODE"
+	failedToCloseInErrorCallback errorKey = "FAILED_TO_CLOSE_IN_ERROR_CALLBACK"
+	failedToWriteMessage         errorKey = "FAILED_TO_WRITE_MESSAGE"
+	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"
+	failedToSetReadDeadline      errorKey = "FAILED_TO_SET_READ_DEADLINE"
+	failedToShutdownTransporter  errorKey = "FAILED_TO_SHUTDOWN_TRANSPORTER"
 )

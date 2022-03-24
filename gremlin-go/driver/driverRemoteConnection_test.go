@@ -19,25 +19,27 @@ under the License.
 
 package gremlingo
 
-import "time"
+import (
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"testing"
+)
 
-const scheme = "ws"
-const path = "gremlin"
+func TestAuthentication(t *testing.T) {
 
-type transporter interface {
-	Connect() error
-	Write(data []byte) error
-	Read() ([]byte, error)
-	Close() error
-	IsClosed() bool
-	getAuthInfo() *AuthInfo
-}
+	t.Run("Test BasicAuthInfo.", func(t *testing.T) {
+		header := BasicAuthInfo("Lyndon", "Bauto")
+		assert.Nil(t, header.getHeader())
+		assert.True(t, header.getUseBasicAuth())
+	})
 
-type websocketConn interface {
-	WriteMessage(int, []byte) error
-	ReadMessage() (int, []byte, error)
-	SetPongHandler(h func(appData string) error)
-	Close() error
-	SetReadDeadline(t time.Time) error
-	SetWriteDeadline(t time.Time) error
+	t.Run("Test getHeader.", func(t *testing.T) {
+		header := &AuthInfo{}
+		assert.Nil(t, header.getHeader())
+		header = nil
+		assert.Nil(t, header.getHeader())
+		httpHeader := http.Header{}
+		header = &AuthInfo{Header: httpHeader}
+		assert.Equal(t, httpHeader, header.getHeader())
+	})
 }

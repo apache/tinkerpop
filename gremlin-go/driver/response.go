@@ -21,20 +21,20 @@ package gremlingo
 
 import "github.com/google/uuid"
 
-// responseStatus contains the status info of the response
+// responseStatus contains the status info of the response.
 type responseStatus struct {
 	code       uint16
 	message    string
 	attributes map[string]interface{}
 }
 
-// responseResult contains the result info of the response
+// responseResult contains the result info of the response.
 type responseResult struct {
 	meta map[string]interface{}
 	data interface{}
 }
 
-// response represents a response from the server
+// response represents a response from the server.
 type response struct {
 	responseID     uuid.UUID
 	responseStatus responseStatus

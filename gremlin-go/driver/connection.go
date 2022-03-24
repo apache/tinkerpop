@@ -20,7 +20,9 @@ under the License.
 package gremlingo
 
 import (
+	"crypto/tls"
 	"errors"
+	"time"
 )
 
 type connectionState int
@@ -42,7 +44,10 @@ type connection struct {
 func (connection *connection) errorCallback() {
 	connection.logHandler.log(Error, errorCallback)
 	connection.state = closedDueToError
-	_ = connection.protocol.close()
+	err := connection.protocol.close()
+	if err != nil {
+		connection.logHandler.logf(Error, failedToCloseInErrorCallback, err.Error())
+	}
 }
 
 func (connection *connection) close() error {
@@ -59,24 +64,32 @@ func (connection *connection) close() error {
 }
 
 func (connection *connection) write(request *request) (ResultSet, error) {
+	if connection.state != established {
+		return nil, errors.New("cannot write connection that has already been closed or has not been connected")
+	}
 	connection.logHandler.log(Info, writeRequest)
 	requestID := request.requestID.String()
 	connection.logHandler.logf(Info, creatingRequest, requestID)
-	connection.results[requestID] = newChannelResultSet(requestID)
+	connection.results[requestID] = newChannelResultSet(requestID, connection.results)
 	return connection.results[requestID], connection.protocol.write(request)
 }
 
-func createConnection(host string, port int, logHandler *logHandler) (*connection, error) {
+// createConnection establishes a connection with the given parameters. A connection should always be closed to avoid
+// leaking connections. The connection has the following states:
+// 		initialized: connection struct is created but has not established communication with server
+// 		established: connection has established communication established with the server
+// 		closed: connection was closed by the user.
+//		closedDueToError: connection was closed internally due to an error.
+func createConnection(url string, authInfo *AuthInfo, tlsConfig *tls.Config, logHandler *logHandler, keepAliveInterval time.Duration, writeDeadline time.Duration) (*connection, error) {
 	conn := &connection{logHandler, nil, map[string]ResultSet{}, initialized}
 	logHandler.log(Info, connectConnection)
-	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, host, port, conn.results, conn.errorCallback)
-	conn.protocol = protocol
-	if err == nil {
-		conn.state = established
-		return conn, err
-	} else {
+	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, url, authInfo, tlsConfig, conn.results, conn.errorCallback, keepAliveInterval, writeDeadline)
+	if err != nil {
 		logHandler.logf(Error, failedConnection)
 		conn.state = closedDueToError
 		return nil, err
 	}
+	conn.protocol = protocol
+	conn.state = established
+	return conn, err
 }

@@ -21,18 +21,18 @@ package gremlingo
 
 import "github.com/google/uuid"
 
-// request represents a request to the server
+// request represents a request to the server.
 type request struct {
-	requestID uuid.UUID              `json:"requestId"`
-	op        string                 `json:"op"`
-	processor string                 `json:"processor"`
-	args      map[string]interface{} `json:"args"`
+	requestID uuid.UUID
+	op        string
+	processor string
+	args      map[string]interface{}
 }
 
 const stringOp = "eval"
 const stringProcessor = ""
 
-func makeStringRequest(stringGremlin string) (req request) {
+func makeStringRequest(stringGremlin string, traversalSource string) (req request) {
 	return request{
 		requestID: uuid.New(),
 		op:        stringOp,
@@ -40,7 +40,7 @@ func makeStringRequest(stringGremlin string) (req request) {
 		args: map[string]interface{}{
 			"gremlin": stringGremlin,
 			"aliases": map[string]interface{}{
-				"g": "g",
+				"g": traversalSource,
 			},
 		},
 	}
@@ -48,8 +48,10 @@ func makeStringRequest(stringGremlin string) (req request) {
 
 const bytecodeOp = "bytecode"
 const bytecodeProcessor = "traversal"
+const authOp = "authentication"
+const authProcessor = "traversal"
 
-func makeBytecodeRequest(bytecodeGremlin *bytecode) (req request) {
+func makeBytecodeRequest(bytecodeGremlin *bytecode, traversalSource string) (req request) {
 	return request{
 		requestID: uuid.New(),
 		op:        bytecodeOp,
@@ -57,10 +59,19 @@ func makeBytecodeRequest(bytecodeGremlin *bytecode) (req request) {
 		args: map[string]interface{}{
 			"gremlin": *bytecodeGremlin,
 			"aliases": map[string]interface{}{
-				"g": "g",
+				"g": traversalSource,
 			},
 		},
 	}
 }
 
-// TODO: AN-1029 - Enable configurable request aliases
+func makeBasicAuthRequest(auth string) (req request) {
+	return request{
+		requestID: uuid.New(),
+		op:        authOp,
+		processor: authProcessor,
+		args: map[string]interface{}{
+			"sasl": auth,
+		},
+	}
+}

@@ -19,24 +19,30 @@ under the License.
 
 package gremlingo
 
-import "golang.org/x/text/language"
+import (
+	"crypto/tls"
+	"golang.org/x/text/language"
+	"time"
+)
 
-// DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection
+// DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
-	TraversalSource string
-	Username        string
-	Password        string
-	TransporterType TransporterType
-	LogVerbosity    LogVerbosity
-	Logger          Logger
-	Language        language.Tag
+	TraversalSource   string
+	TransporterType   TransporterType
+	LogVerbosity      LogVerbosity
+	Logger            Logger
+	Language          language.Tag
+	AuthInfo          *AuthInfo
+	TlsConfig         *tls.Config
+	KeepAliveInterval time.Duration
+	WriteDeadline     time.Duration
 
 	// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
 	Protocol   protocol
 	Serializer serializer
 }
 
-// DriverRemoteConnection is a remote connection
+// DriverRemoteConnection is a remote connection.
 type DriverRemoteConnection struct {
 	client *Client
 }
@@ -46,17 +52,18 @@ type DriverRemoteConnection struct {
 // Gorilla as the default Transporter, Info as the default LogVerbosity, a default logger stuct, and English and as the
 // default language
 func NewDriverRemoteConnection(
-	host string,
-	port int,
+	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
-		TraversalSource: "g",
-		Username:        "",
-		Password:        "",
-		TransporterType: Gorilla,
-		LogVerbosity:    Info,
-		Logger:          &defaultLogger{},
-		Language:        language.English,
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
 
 		// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
 		Protocol:   nil,
@@ -67,14 +74,14 @@ func NewDriverRemoteConnection(
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	connection, err := createConnection(host, port, logHandler)
+	connection, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
-		host:            host,
-		port:            port,
+		url:             url,
+		traversalSource: settings.TraversalSource,
 		transporterType: settings.TransporterType,
 		logHandler:      logHandler,
 		connection:      connection,
@@ -83,19 +90,19 @@ func NewDriverRemoteConnection(
 	return &DriverRemoteConnection{client: client}, nil
 }
 
-// Close closes the DriverRemoteConnection
+// Close closes the DriverRemoteConnection.
 func (driver *DriverRemoteConnection) Close() error {
 	return driver.client.Close()
 }
 
-// Submit sends a string traversal to the server
+// Submit sends a string traversal to the server.
 func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet, error) {
 	return driver.client.Submit(traversalString)
 }
 
-// SubmitBytecode sends a bytecode traversal to the server
-func (driver *DriverRemoteConnection) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
-	return driver.client.SubmitBytecode(bytecode)
+// submitBytecode sends a bytecode traversal to the server.
+func (driver *DriverRemoteConnection) submitBytecode(bytecode *bytecode) (ResultSet, error) {
+	return driver.client.submitBytecode(bytecode)
 }
 
 // TODO: Bytecode, OptionsStrategy, RequestOptions

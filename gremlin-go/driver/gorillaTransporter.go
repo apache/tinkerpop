@@ -20,74 +20,164 @@ under the License.
 package gremlingo
 
 import (
+	"crypto/tls"
 	"net/url"
-	"strconv"
+	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
+const maxFailCount = 3
+
+const keepAliveIntervalDefault = 5 * time.Second
+const writeDeadlineDefault = 3 * time.Second
+const writeChannelSizeDefault = 100
+
 // Transport layer that uses gorilla/websocket: https://github.com/gorilla/websocket
 // Gorilla WebSocket is a widely used and stable Go implementation of the WebSocket protocol.
 type gorillaTransporter struct {
-	host       string
-	port       int
-	connection websocketConn
-	isClosed   bool
+	url               string
+	connection        websocketConn
+	isClosed          bool
+	logHandler        logHandler
+	authInfo          *AuthInfo
+	tlsConfig         *tls.Config
+	keepAliveInterval time.Duration
+	writeDeadline     time.Duration
+	writeChannel      chan []byte
+	wg                *sync.WaitGroup
 }
 
+// Connect used to establish a connection.
 func (transporter *gorillaTransporter) Connect() (err error) {
 	if transporter.connection != nil {
 		return
 	}
 
-	u := url.URL{
-		Scheme: scheme,
-		Host:   transporter.host + ":" + strconv.Itoa(transporter.port),
-		Path:   path,
+	var u *url.URL
+	u, err = url.Parse(transporter.url)
+	if err != nil {
+		return
 	}
 
 	dialer := websocket.DefaultDialer
+	dialer.TLSClientConfig = transporter.tlsConfig
 	// TODO: make this configurable from client; this currently does nothing since 4096 is the default
 	dialer.WriteBufferSize = 4096
-	conn, _, err := dialer.Dial(u.String(), nil)
-	if err == nil {
-		transporter.connection = conn
+	// Nil is accepted as a valid header, so it can always be passed directly through.
+	conn, _, err := dialer.Dial(u.String(), transporter.authInfo.getHeader())
+	if err != nil {
+		return err
 	}
+	transporter.connection = conn
+	transporter.connection.SetPongHandler(func(string) error {
+		err := transporter.connection.SetReadDeadline(time.Now().Add(2 * transporter.keepAliveInterval))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	transporter.wg.Add(1)
+	go transporter.writeLoop()
 	return
 }
 
-func (transporter *gorillaTransporter) Write(data []byte) (err error) {
+// Write used to write data to the transporter. Opens connection if closed.
+func (transporter *gorillaTransporter) Write(data []byte) error {
 	if transporter.connection == nil {
-		err = transporter.Connect()
+		err := transporter.Connect()
 		if err != nil {
-			return
+			return err
+		}
+	}
+	transporter.writeChannel <- data
+	return nil
+}
+
+func (transporter *gorillaTransporter) getAuthInfo() *AuthInfo {
+	return transporter.authInfo
+}
+
+// Read used to read data from the transporter. Opens connection if closed.
+func (transporter *gorillaTransporter) Read() ([]byte, error) {
+	if transporter.connection == nil {
+		err := transporter.Connect()
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	err = transporter.connection.WriteMessage(websocket.BinaryMessage, data)
-	return err
-}
-
-func (transporter *gorillaTransporter) Read() (bytes []byte, err error) {
-	if transporter.connection == nil {
-		err = transporter.Connect()
-		if err != nil {
-			return
-		}
+	for {
+		_, bytes, err := transporter.connection.ReadMessage()
+		return bytes, err
 	}
-
-	_, bytes, err = transporter.connection.ReadMessage()
-	return
 }
 
+// Close used to close a connection if it is opened.
 func (transporter *gorillaTransporter) Close() (err error) {
-	if transporter.connection != nil && !transporter.isClosed {
+	if !transporter.isClosed {
+		if transporter.writeChannel != nil {
+			close(transporter.writeChannel)
+		}
+		if transporter.wg != nil {
+			transporter.wg.Wait()
+		}
 		transporter.isClosed = true
-		return transporter.connection.Close()
 	}
 	return
 }
 
+// IsClosed returns true when the transporter is closed.
 func (transporter *gorillaTransporter) IsClosed() bool {
 	return transporter.isClosed
+}
+
+func (transporter *gorillaTransporter) writeLoop() {
+	ticker := time.NewTicker(transporter.keepAliveInterval)
+	defer func() {
+		ticker.Stop()
+	}()
+	for {
+		select {
+		case message, ok := <-transporter.writeChannel:
+			if !ok {
+				// Channel was closed, we can disconnect and exit.
+				transporter.wg.Done()
+				return
+			}
+
+			// Set write deadline.
+			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.writeDeadline))
+			if err != nil {
+				transporter.logHandler.logf(Error, failedToSetWriteDeadline, err.Error())
+				transporter.wg.Done()
+				return
+			}
+
+			// Write binary message that was submitted to channel.
+			err = transporter.connection.WriteMessage(websocket.BinaryMessage, message)
+			if err != nil {
+				transporter.logHandler.logf(Error, failedToWriteMessage, "BinaryMessage", err.Error())
+				transporter.wg.Done()
+				return
+			}
+		case <-ticker.C:
+			// Set write deadline.
+			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.keepAliveInterval))
+			if err != nil {
+				transporter.logHandler.logf(Error, failedToSetWriteDeadline, err.Error())
+				transporter.wg.Done()
+				return
+			}
+
+			// Write pong message.
+			err = transporter.connection.WriteMessage(websocket.PingMessage, nil)
+			if err != nil {
+				transporter.logHandler.logf(Error, failedToWriteMessage, "PingMessage", err.Error())
+				transporter.wg.Done()
+				return
+			}
+		}
+	}
 }

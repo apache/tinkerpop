@@ -19,5 +19,10 @@
   "CREATING_REQUEST": "Created request with id '%s'",
   "READ_COMPLETE": "Read complete for response with id '%s'",
   "SUBMIT_STARTED_STRING": "Client invoked Submit with string argument: %s",
-  "SUBMIT_STARTED_BYTECODE": "Client invoked Submit with bytecode argument: %+v\n"
+  "SUBMIT_STARTED_BYTECODE": "Client invoked Submit with bytecode argument: %+v\n",
+  "FAILED_TO_CLOSE_IN_ERROR_CALLBACK": "Failed to close protocol in error callback '%s'",
+  "FAILED_TO_WRITE_MESSAGE": "Failed to write message type: '%s', error: '%s'",
+  "FAILED_TO_SET_WRITE_DEADLINE": "Failed to set write deadline, error: '%s'",
+  "FAILED_TO_SET_READ_DEADLINE": "Failed to set read deadline, error: '%s'",
+  "FAILED_TO_SHUTDOWN_TRANSPORTER": "Failed to shut down connection with error: '%s'"
 }

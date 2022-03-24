@@ -20,46 +20,62 @@ under the License.
 package gremlingo
 
 import (
+	"crypto/tls"
+	"fmt"
 	"golang.org/x/text/language"
+	"time"
 )
 
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
-	TransporterType TransporterType
-	LogVerbosity    LogVerbosity
-	Logger          Logger
-	Language        language.Tag
+	TraversalSource   string
+	TransporterType   TransporterType
+	LogVerbosity      LogVerbosity
+	Logger            Logger
+	Language          language.Tag
+	AuthInfo          *AuthInfo
+	TlsConfig         *tls.Config
+	KeepAliveInterval time.Duration
+	WriteDeadline     time.Duration
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
 type Client struct {
-	host            string
-	port            int
+	url             string
+	traversalSource string
 	logHandler      *logHandler
 	transporterType TransporterType
 	connection      *connection
 }
 
-// NewClient creates a Client and configures it with the given parameters.
-func NewClient(host string, port int, configurations ...func(settings *ClientSettings)) (*Client, error) {
+// NewClient creates a Client and configures it with the given parameters. During creation of the Client, a connection
+// is created, which establishes a websocket.
+// Important note: to avoid leaking a connection, always close the Client.
+func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TransporterType: Gorilla,
-		LogVerbosity:    Info,
-		Logger:          &defaultLogger{},
-		Language:        language.English,
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	conn, err := createConnection(host, port, logHandler)
+	conn, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create client with url '%s' and transport type '%v'. Error message: '%s'",
+			url, settings.TransporterType, err.Error())
 	}
 	client := &Client{
-		host:            host,
-		port:            port,
+		url:             url,
+		traversalSource: "g",
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
 		connection:      conn,
@@ -67,22 +83,22 @@ func NewClient(host string, port int, configurations ...func(settings *ClientSet
 	return client, nil
 }
 
-// Close closes the client via connection
+// Close closes the client via connection.
 func (client *Client) Close() error {
 	return client.connection.close()
 }
 
-// Submit submits a Gremlin script to the server and returns a ResultSet
+// Submit submits a Gremlin script to the server and returns a ResultSet.
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
-	// TODO AN-982: Obtain connection from pool of connections held by the client.
+	// TODO: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString)
+	request := makeStringRequest(traversalString, client.traversalSource)
 	return client.connection.write(&request)
 }
 
-// SubmitBytecode submits bytecode to the server to execute and returns a ResultSet
-func (client *Client) SubmitBytecode(bytecode *bytecode) (ResultSet, error) {
+// submitBytecode submits bytecode to the server to execute and returns a ResultSet.
+func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode)
+	request := makeBytecodeRequest(bytecode, client.traversalSource)
 	return client.connection.write(&request)
 }

@@ -246,7 +246,7 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetVertex() error expected", func(t *testing.T) {
-		r := Result{"not vertex"}
+		r := Result{"not Vertex"}
 		res, err := r.GetVertex()
 		assert.Nil(t, res)
 		assert.Error(t, err, "result is not a Vertex")
@@ -276,7 +276,7 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetElement() error expected", func(t *testing.T) {
-		r := Result{"not element"}
+		r := Result{"not Element"}
 		res, err := r.GetElement()
 		assert.Nil(t, res)
 		assert.Error(t, err, "result is not an Element")
@@ -321,28 +321,28 @@ func TestResult(t *testing.T) {
 	})
 
 	t.Run("Test Result.GetVertexProperty() error expected", func(t *testing.T) {
-		r := Result{"not vertex property"}
+		r := Result{"not Vertex property"}
 		res, err := r.GetVertexProperty()
 		assert.Nil(t, res)
 		assert.Error(t, err, "result is not a VertexProperty")
 	})
 
-	t.Run("Test Result.ToString()", func(t *testing.T) {
+	t.Run("Test Result.String()", func(t *testing.T) {
 		r := Result{[]int{1, 2, 3}}
-		res := r.ToString()
+		res := r.String()
 		assert.Equal(t, "result{object=[1 2 3] class=[]int}", res)
 	})
 
-	t.Run("Test Result.ToString() null", func(t *testing.T) {
+	t.Run("Test Result.String() null", func(t *testing.T) {
 		r := Result{nil}
-		res := r.ToString()
+		res := r.String()
 		assert.Equal(t, "result{object=<nil> class=<nil>}", res)
 	})
 
-	t.Run("Test Result.ToString() empty custom struct", func(t *testing.T) {
+	t.Run("Test Result.String() empty custom struct", func(t *testing.T) {
 		element := Element{}
 		r := Result{&element}
-		res := r.ToString()
+		res := r.String()
 		assert.Equal(t, "result{object=&{<nil> } class=*gremlingo.Element}", res)
 	})
 

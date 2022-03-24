@@ -21,7 +21,49 @@ for early testing purposes only.
  under the License.
 
 -->
+
 # Getting Started
+
+## Building the Source Code
+
+If you would like to build and/or test the source code, you can do so with docker or directly with the go compiler, the instructions for both are listed below.
+
+### Testing with Docker
+
+Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
+
+`docker-compose up --exit-code-from integration-tests integration-tests`
+
+### Building Directly
+
+To build the driver you must install `go`. The following command can be used to build the driver:
+`go build <path to source code>`
+
+### Code Styling and Linting
+Before generating a pull request, you should manually run the following to ensure correct code styling and fix any issues indicated by the linters.
+
+### Formatting files with Gofmt
+To ensure clean and readable code [Gofmt][gofmt] is used. 
+
+Navigate to file path in a terminal window and run:
+
+`gofmt -s -w` 
+
+Gofmt will recursively check for and format `.go` files.
+
+Note: If your IDE of choice is [GoLand][goland], code can be automatically formatted with Gofmt on file save. Instructions on how to enable this feature can be found [here][fmtsave].
+
+### Using the Linter and staticcheck
+Run [go vet][gvet] and [staticcheck][scheck] and correct any errors.
+
+[go vet][gvet] is installed when you install go, and can be run with:
+
+ `go vet <path to source code>`
+
+Please review the [staticcheck documentation][scheck docs] for more details on installing [staticcheck][scheck]. It can be run with:
+
+`staticcheck <path to source code>`
+
 ### Prerequisites
 
 * `gremlin-go` requires Golang 1.17 or later, please see [Go Download][go] for more details on installing Golang.
@@ -30,9 +72,9 @@ for early testing purposes only.
 
 To install the Gremlin-Go as a dependency for your project, run the following in the root directory of your project that contains your `go.mod` file:
 
-`go get github.com/lyndonb-bq/tinkerpop/gremlin-go@gremlin-go-ms2`
+`go get github.com/apache/tinkerpop/gremlin-go[optionally append @<version>, note this requires GO111MODULE=on]`
 
-Note: Currently as of Milestone #2, Gremlin-Go exists in the `lyndonb-bq` fork on the `gremlin-go-ms2` branch. Expect this to change in the future when the project is closer to a completed state.
+Note: Currently as of Milestone #2, Gremlin-Go exists on the `gremlin-go` branch. Expect this to change in the future when the project is merged to .
 
 After running the `go get` command, your `go.mod` file should contain something similar to the following:
 
@@ -41,7 +83,7 @@ module gremlin-go-example
 
 go 1.17
 
-require github.com/lyndonb-bq/tinkerpop/gremlin-go v0.0.0-20220131225152-54920637bf94
+require github.com/apache/tinkerpop/gremlin-go v<version>
 ```
 
 If it does, then this means Gremlin-Go was successfully installed as a dependency of your project.
@@ -51,7 +93,7 @@ Here is a simple example of using Gremlin-Go as an import in a sample project's 
 package main
 
 import (
-	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 )
 
 func main() {
@@ -66,7 +108,7 @@ module gremlin-go-example
 
 go 1.17
 
-require github.com/lyndonb-bq/tinkerpop/gremlin-go v0.0.0-20220131225152-54920637bf94
+require github.com/apache/tinkerpop/gremlin-go v0.0.0-20220131225152-54920637bf94
 
 require (
 	github.com/google/uuid v1.3.0 // indirect
@@ -84,7 +126,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 )
 
 func main() {
@@ -114,6 +156,10 @@ func main() {
 
 Note: The exact import name as well as the module prefix for `NewDriverRemoteConnection` may change in the future.
 
+### Design Architecture
+
+See [Gremlin-Go Design Overview](design.MD)
+
 # Go Gremlin Language Variant
 
 [Apache TinkerPop™][tk] is a graph computing framework for both graph databases (OLTP) and graph analytic systems
@@ -121,8 +167,8 @@ Note: The exact import name as well as the module prefix for `NewDriverRemoteCon
 data-flow language that enables users to succinctly express complex traversals on (or queries of) their application's
 property graph.
 
-Gremlin-Go implements Gremlin within the Go language and can be used on any Go runtime greater than v1.17. One important distinction with Go and Java is that 
-the functions are capitalized, as is required to export functions is Go. 
+Gremlin-Go implements Gremlin within the Go language and can be used on any Go runtime greater than v1.17. One
+important difference between Go and Java is that the functions are capitalized, as is required to export functions is Go. 
 
 Gremlin-Go is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"
 could be [Gremlin Server][gs] or a [remote Gremlin provider][rgp] that exposes protocols by which Gremlin-Go
@@ -135,7 +181,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 )
 
 func main() {
@@ -156,7 +202,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 )
 
 func main() {
@@ -181,7 +227,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 )
 
 func main() {
@@ -201,8 +247,12 @@ func main() {
 		fmt.Println(err)
 		return 
 	}
-	// The returned promised is a go channel, to wait for all submitted steps to finish execution.
-	<-promise
+	
+	// The returned promised is a go channel to wait for all submitted steps to finish execution and return error.
+	if <-promise != nil {
+		fmt.Println(err)
+		return
+	}
 	
 	// Get the value of the property
 	result, err := g.V().HasLabel("gremlin").Values("language").ToList()
@@ -238,14 +288,17 @@ Gremlin variant for that language.
 ### Create Vertex
 Adding a vertex with properties.
 ```go
-_, promise, err :=g.AddV("gremlin").Property("language", "java").Iterate()
+_, promise, err := g.AddV("gremlin").Property("language", "go").Iterate()
 // Handle error
 if err != nil {
-	fmt.Println(err)
+    fmt.Println(err)
     return
 }
-// Wait for all steps to finish execution
-<-promise
+// Wait for all steps to finish execution and check for error.
+if <-promise != nil {
+    fmt.Println(err)
+    return
+}
 ```
 ### Find Vertices
 Getting the property value associated with the added vertex. We currently only support `ToList()` for submitting the remote traversal. Support for `Next()` will be implemented in the subsequent milestones. 
@@ -253,12 +306,12 @@ Getting the property value associated with the added vertex. We currently only s
 result, err := g.V().HasLabel("gremlin").Values("language").ToList()
 // Handle error
 if err != nil {
-fmt.Println(err)
-return
+    fmt.Println(err)
+    return
 }
 // Print result
 for _, r := range result {
-fmt.Println(r.GetString())
+    fmt.Println(r.GetString())
 }
 ```
 
@@ -271,8 +324,11 @@ if err != nil {
 	fmt.Println(err)
     return
 }
-// Wait for all steps to finish execution
-<-promise
+// Wait for all steps to finish execution and check for error.
+if <-promise != nil {
+    fmt.Println(err)
+    return
+}
 ```
 
 # Specifications
@@ -317,3 +373,9 @@ SetType             DataType = 0x0b     // see limitations
 [differences]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-go-differences
 [go]: https://go.dev/dl/
 [gomods]: https://go.dev/blog/using-go-modules
+[gvet]: https://pkg.go.dev/cmd/vet
+[scheck]: https://staticcheck.io
+[scheck docs]: https://staticcheck.io/docs/getting-started
+[gofmt]: https://pkg.go.dev/cmd/gofmt
+[goland]: https://www.jetbrains.com/go/
+[fmtsave]: https://www.jetbrains.com/help/go/reformat-and-rearrange-code.html#reformat-on-save

@@ -20,8 +20,9 @@ under the License.
 package gremlingo
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBytecode(t *testing.T) {
@@ -137,5 +138,16 @@ func TestBytecode(t *testing.T) {
 		traversalBytecode, err := bc.convertArgument(traversal)
 		assert.NotNil(t, err)
 		assert.Nil(t, traversalBytecode)
+	})
+
+	t.Run("Test bytecode traversal argument multiple bindings", func(t *testing.T) {
+		bc := bytecode{}
+		bc.bindings = map[string]interface{}{}
+		testTraversal := Traversal{}
+		testTraversal.bytecode = &bytecode{}
+		testTraversal.bytecode.bindings = map[string]interface{}{"mock": "123"}
+		traversalBytecode, err := bc.convertArgument(testTraversal)
+		assert.Nil(t, err)
+		assert.Equal(t, testTraversal.bytecode, traversalBytecode)
 	})
 }

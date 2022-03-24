@@ -20,19 +20,24 @@ under the License.
 package gremlingo
 
 import (
+	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 )
 
 // protocol handles invoking serialization and deserialization, as well as handling the lifecycle of raw data passed to
-// and received from the transport layer
+// and received from the transport layer.
 type protocol interface {
 	readLoop(resultSets map[string]ResultSet, errorCallback func(), log *logHandler)
 	write(request *request) error
 	close() (err error)
 }
+
+const authenticationFailed = uint16(151)
 
 type protocolBase struct {
 	protocol
@@ -46,8 +51,6 @@ type gremlinServerWSProtocol struct {
 	serializer       serializer
 	logHandler       *logHandler
 	maxContentLength int
-	username         string
-	password         string
 	closed           bool
 	mux              sync.Mutex
 }
@@ -78,7 +81,7 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets map[string]ResultSe
 			return
 		}
 
-		err = responseHandler(resultSets, resp, log)
+		err = protocol.responseHandler(resultSets, resp, log)
 		if err != nil {
 			readErrorHandler(resultSets, errorCallback, err, log)
 			return
@@ -95,7 +98,7 @@ func readErrorHandler(resultSets map[string]ResultSet, errorCallback func(), err
 	errorCallback()
 }
 
-func responseHandler(resultSets map[string]ResultSet, response response, log *logHandler) error {
+func (protocol *gremlinServerWSProtocol) responseHandler(resultSets map[string]ResultSet, response response, log *logHandler) error {
 	responseID, statusCode, metadata, data := response.responseID, response.responseStatus.code,
 		response.responseResult.meta, response.responseResult.data
 	responseIDString := responseID.String()
@@ -123,13 +126,34 @@ func responseHandler(resultSets map[string]ResultSet, response response, log *lo
 		// Add data to the ResultSet.
 		resultSets[responseIDString].addResult(&Result{data})
 		log.logger.Logf(Info, "Partial %v===>%v", response.responseStatus, data)
-	} else if statusCode == http.StatusProxyAuthRequired {
-		// TODO AN-989: Implement authentication (including handshaking).
-		resultSets[responseIDString].Close()
-		return errors.New("authentication is not currently supported")
+	} else if statusCode == http.StatusProxyAuthRequired || statusCode == authenticationFailed {
+		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
+		// Server has requested basic auth.
+		authInfo := protocol.transporter.getAuthInfo()
+		if authInfo.getUseBasicAuth() {
+			username := []byte(authInfo.Username)
+			password := []byte(authInfo.Password)
+
+			authBytes := make([]byte, 0)
+			authBytes = append(authBytes, 0)
+			authBytes = append(authBytes, username...)
+			authBytes = append(authBytes, 0)
+			authBytes = append(authBytes, password...)
+			encoded := base64.StdEncoding.EncodeToString(authBytes)
+			request := makeBasicAuthRequest(encoded)
+			err := protocol.write(&request)
+			if err != nil {
+				return err
+			}
+		} else {
+			resultSets[responseIDString].Close()
+			return errors.New(fmt.Sprintf("failed to authenticate %v : %v", response.responseStatus, response.responseResult))
+		}
 	} else {
+		errorMessage := fmt.Sprint("Error in read loop, error message '", response.responseStatus, "'. statusCode: ", statusCode)
+		resultSets[responseIDString].setError(errors.New(errorMessage))
 		resultSets[responseIDString].Close()
-		return errors.New(fmt.Sprint("Error in read loop, error message '", response.responseStatus, "'. statusCode: ", statusCode))
+		log.logger.Log(Info, errorMessage)
 	}
 	return nil
 }
@@ -146,13 +170,14 @@ func (protocol *gremlinServerWSProtocol) close() (err error) {
 	protocol.mux.Lock()
 	if !protocol.closed {
 		err = protocol.transporter.Close()
+		protocol.closed = true
 	}
 	protocol.mux.Unlock()
 	return
 }
 
-func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, host string, port int, results map[string]ResultSet, errorCallback func()) (protocol, error) {
-	transport, err := getTransportLayer(transporterType, host, port)
+func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, authInfo *AuthInfo, tlsConfig *tls.Config, results map[string]ResultSet, errorCallback func(), keepAliveInterval time.Duration, writeDeadline time.Duration) (protocol, error) {
+	transport, err := getTransportLayer(transporterType, url, authInfo, tlsConfig, keepAliveInterval, writeDeadline)
 	if err != nil {
 		return nil, err
 	}
@@ -162,8 +187,6 @@ func newGremlinServerWSProtocol(handler *logHandler, transporterType Transporter
 		serializer:       newGraphBinarySerializer(handler),
 		logHandler:       handler,
 		maxContentLength: 1,
-		username:         "",
-		password:         "",
 		closed:           false,
 		mux:              sync.Mutex{},
 	}

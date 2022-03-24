@@ -84,7 +84,13 @@ func (bytecode *bytecode) addStep(stepName string, args ...interface{}) error {
 }
 
 func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) {
+	if arg == nil {
+		return nil, nil
+	}
 	t := reflect.TypeOf(arg)
+	if t == nil {
+		return nil, nil
+	}
 	switch t.Kind() {
 	case reflect.Map:
 		newMap := make(map[interface{}]interface{})
@@ -128,7 +134,7 @@ func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) 
 			}, nil
 		case Traversal:
 			if v.graph != nil {
-				return nil, errors.New("the child traversal was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
+				return nil, errors.New("the child traversal was not spawned anonymously - use the T__ class rather than a TraversalSource to construct the child traversal")
 			}
 			for k, val := range v.bytecode.bindings {
 				bytecode.bindings[k] = val
@@ -146,7 +152,7 @@ type instruction struct {
 	arguments []interface{}
 }
 
-// TODO: AN-1018 Export this
+// TODO: Export this when implemented
 type binding struct {
 	key   string
 	value interface{}
