@@ -21,6 +21,7 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from radish import pick
 
+
 @pick
 def create_lookup_v(remote):
     g = traversal().withRemote(remote)
@@ -37,4 +38,25 @@ def create_lookup_e(remote):
     # outgoingV-label->incomingV
     return g.E().group(). \
         by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
+        by(__.tail()).next()
+
+
+@pick
+def create_lookup_vp(remote):
+    g = traversal().withRemote(remote)
+
+    # hold a map of the "name"/vertexproperty for use in asserting results - "name" in this context is in the form of
+    # vertexName-propName->propVal where the propVal must be typed according to the gherkin spec. note that the toy
+    # graphs only deal in String/Int/Float/Double types so none of the other types are accounted for here.
+    return g.V().properties().group(). \
+        by(lambda: ("{ it -> \n" +
+                    "  def val = it.value()\n" +
+                    "  if (val instanceof Integer)\n" +
+                    "    val = 'd[' + val + '].i'\n" +
+                    "  else if (val instanceof Float)\n" +
+                    "    val = 'd[' + val + '].f'\n" +
+                    "  else if (val instanceof Double)\n" +
+                    "    val = 'd[' + val + '].d'\n" +
+                    "  return it.element().value('name') + '-' + it.key() + '->' + val\n" +
+                    "}", "gremlin-groovy")). \
         by(__.tail()).next()

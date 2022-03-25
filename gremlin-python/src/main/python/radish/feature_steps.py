@@ -40,7 +40,7 @@ direction = {
     "to": Direction.IN,
 }
 
-ignores = ["g.V().properties().order()"] # need a vertex property parser for result set: https://issues.apache.org/jira/browse/TINKERPOP-2686
+ignores = []
 
 
 @given("the {graph_name:w} graph")
@@ -126,6 +126,7 @@ def next_the_traversal(step):
 def raise_an_error(step):
     assert_that(step.context.failed, equal_to(True))
 
+
 @then("the result should be {characterized_as:w}")
 def assert_result(step, characterized_as):
     if step.context.ignore:
@@ -207,6 +208,8 @@ def _convert(val, ctx):
         return str(__find_cached_element(ctx, graph_name, val[2:-5], "e").id)
     elif isinstance(val, str) and re.match(r"^e\[.*\]$", val):           # parse edge
         return __find_cached_element(ctx, graph_name, val[2:-1], "e")
+    elif isinstance(val, str) and re.match(r"^vp\[.*\]$", val):          # parse vertexproperty
+        return __find_cached_element(ctx, graph_name, val[3:-1], "vp")
     elif isinstance(val, str) and re.match(r"^m\[.*\]$", val):           # parse json as a map
         return _convert(json.loads(val[2:-1]), ctx)
     elif isinstance(val, str) and re.match(r"^p\[.*\]$", val):           # parse path
@@ -234,9 +237,19 @@ def __alias_direction(d):
 
 def __find_cached_element(ctx, graph_name, identifier, element_type):
     if graph_name == "empty":
-        cache = world.create_lookup_v(ctx.remote_conn["empty"]) if element_type == "v" else world.create_lookup_e(ctx.remote_conn["empty"])
+        if element_type == "v":
+            cache = world.create_lookup_v(ctx.remote_conn["empty"])
+        elif element_type == "vp":
+            cache = world.create_lookup_vp(ctx.remote_conn["empty"])
+        else:
+            cache = world.create_lookup_e(ctx.remote_conn["empty"])
     else:
-        cache = ctx.lookup_v[graph_name] if element_type == "v" else ctx.lookup_e[graph_name]
+        if element_type == "v":
+            cache = ctx.lookup_v[graph_name]
+        elif element_type == "vp":
+            cache = ctx.lookup_vp[graph_name]
+        else:
+            cache = ctx.lookup_e[graph_name]
 
     # try to lookup the element - if it can't be found then it must be a reference Vertex
     if identifier in cache:

@@ -23,9 +23,9 @@ from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from radish import before, after, world
 
-outV = __.outV
+outV = __.out_v
 label = __.label
-inV = __.inV
+inV = __.in_v
 project = __.project
 tail = __.tail
 
@@ -41,6 +41,7 @@ def prepare_static_traversal_source(features, marker):
         cache[graph_name[0]]["remote_conn"] = __create_remote(graph_name[1])
         cache[graph_name[0]]["lookup_v"] = world.create_lookup_v(remote)
         cache[graph_name[0]]["lookup_e"] = world.create_lookup_e(remote)
+        cache[graph_name[0]]["lookup_vp"] = world.create_lookup_vp(remote)
 
     # store the cache on the global context so that remotes can be shutdown cleanly at the end of the tests
     world.cache = cache
@@ -52,15 +53,18 @@ def prepare_static_traversal_source(features, marker):
             scenario.context.remote_conn = {}
             scenario.context.lookup_v = {}
             scenario.context.lookup_e = {}
+            scenario.context.lookup_vp = {}
 
             for graph_name in ("modern", "classic", "crew", "grateful", "sink"):
                 scenario.context.remote_conn[graph_name] = cache[graph_name]["remote_conn"]
                 scenario.context.lookup_v[graph_name] = cache[graph_name]["lookup_v"]
                 scenario.context.lookup_e[graph_name] = cache[graph_name]["lookup_e"]
+                scenario.context.lookup_vp[graph_name] = cache[graph_name]["lookup_vp"]
 
             # setup the "empty" lookups as needed
             scenario.context.lookup_v["empty"] = {}
             scenario.context.lookup_e["empty"] = {}
+            scenario.context.lookup_vp["empty"] = {}
 
 
 @before.each_scenario
