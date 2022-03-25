@@ -25,5 +25,13 @@
   "FAILED_TO_SET_WRITE_DEADLINE": "Failed to set write deadline, error: '%s'",
   "FAILED_TO_SET_READ_DEADLINE": "Failed to set read deadline, error: '%s'",
   "FAILED_TO_SHUTDOWN_TRANSPORTER": "Failed to shut down connection with error: '%s'",
-  "LOG_ERROR_GENERIC": "Error occurred during operation %s: '%s'"
+  "LOG_ERROR_GENERIC": "Error occurred during operation %s: '%s'",
+  "CREATING_SESSION_CONNECTION": "Creating Session based connection",
+  "CLOSING_SPAWNED_SESSIONS": "Closing spawned sessions from DriverRemoteConnection with url '%s'",
+  "CLOSE_SESSION": "Closing DriverRemoteConnection with url '%s' with session '%s'",
+  "CLOSE_SESSION_REQUEST_ERROR": "Error while closing DriverRemoteConnection with url '%s' and with session '%s': %s",
+  "CLOSE_SESSION_ERROR": "Error while closing Session: '%s'",
+  "CLOSE_DRIVER_REMOTE_CONNECTION": "Closing DriverRemoteConnection with url '%s'",
+  "CLOSE_CLIENT": "Closing Client with url '%s'",
+  "CLOSE_CLIENT_ERROR": "Error while closing Client: '%s'"
 }

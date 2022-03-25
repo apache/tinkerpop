@@ -152,7 +152,7 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets map[string]R
 			}
 		} else {
 			resultSets[responseIDString].Close()
-			return errors.New(fmt.Sprintf("failed to authenticate %v : %v", response.responseStatus, response.responseResult))
+			return fmt.Errorf("failed to authenticate %v : %v", response.responseStatus, response.responseResult)
 		}
 	} else {
 		errorMessage := fmt.Sprint("Error in read loop, error message '", response.responseStatus, "'. statusCode: ", statusCode)

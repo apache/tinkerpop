@@ -845,7 +845,7 @@ func bulkSetReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializ
 }
 
 // Format: a single string representing the enum value
-func enumReader(buffer *bytes.Buffer, serializer *graphBinaryTypeSerializer) (interface{}, error) {
+func enumReader(buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) (interface{}, error) {
 	var typeCode uint8
 	err := binary.Read(buffer, binary.BigEndian, &typeCode)
 	if err != nil {

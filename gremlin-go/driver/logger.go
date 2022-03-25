@@ -55,12 +55,12 @@ type defaultLogger struct {
 }
 
 // Log writes a message to the defaultLogger.
-func (logger *defaultLogger) Log(verbosity LogVerbosity, v ...interface{}) {
+func (logger *defaultLogger) Log(_ LogVerbosity, v ...interface{}) {
 	log.Print(v...)
 }
 
 // Logf writes a formatted message to the defaultLogger.
-func (logger *defaultLogger) Logf(verbosity LogVerbosity, format string, v ...interface{}) {
+func (logger *defaultLogger) Logf(_ LogVerbosity, format string, v ...interface{}) {
 	log.Printf(format, v...)
 }
 
@@ -126,4 +126,12 @@ const (
 	failedToSetReadDeadline      errorKey = "FAILED_TO_SET_READ_DEADLINE"
 	failedToShutdownTransporter  errorKey = "FAILED_TO_SHUTDOWN_TRANSPORTER"
 	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
+	creatingSessionConnection   errorKey = "CREATING_SESSION_CONNECTION"
+	closeSession                errorKey = "CLOSE_SESSION"
+	closeSessionRequestError    errorKey = "CLOSE_SESSION_REQUEST_ERROR"
+	closeSessionError           errorKey = "CLOSE_SESSION_ERROR"
+	closeDriverRemoteConnection errorKey = "CLOSE_DRIVER_REMOTE_CONNECTION"
+	closingSpawnedSessions      errorKey = "CLOSING_SPAWNED_SESSIONS"
+	closeClient                 errorKey = "CLOSE_CLIENT"
+	closeClientError            errorKey = "CLOSE_CLIENT_ERROR"
 )

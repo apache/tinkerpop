@@ -37,6 +37,7 @@ type ClientSettings struct {
 	TlsConfig         *tls.Config
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
+	Session         string
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -46,6 +47,7 @@ type Client struct {
 	logHandler      *logHandler
 	transporterType TransporterType
 	connection      *connection
+	session         string
 }
 
 // NewClient creates a Client and configures it with the given parameters. During creation of the Client, a connection
@@ -62,6 +64,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		TlsConfig:         &tls.Config{},
 		KeepAliveInterval: keepAliveIntervalDefault,
 		WriteDeadline:     writeDeadlineDefault,
+		Session:         "",
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -84,20 +87,28 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 }
 
 // Close closes the client via connection.
-// The client close is idempotent because the underlying connection.close() call is.
-func (client *Client) Close() error {
+// This is idempotent due to the underlying close() methods being idempotent as well.
+func (client *Client) Close() {
+	// If it is a Session, call closeSession
+	if client.session != "" {
+		err := client.closeSession()
+		if err != nil {
+			client.logHandler.logf(Warning, closeSessionRequestError, client.url, client.session, err.Error())
+		}
+		client.session = ""
+	}
+	client.logHandler.logf(Info, closeClient, client.url)
 	err := client.connection.close()
 	if err != nil {
-		client.logHandler.logf(Error, logErrorGeneric, "Client.Close()", err.Error())
+		client.logHandler.logf(Warning, closeClientError, err.Error())
 	}
-	return err
 }
 
 // Submit submits a Gremlin script to the server and returns a ResultSet.
 func (client *Client) Submit(traversalString string) (ResultSet, error) {
 	// TODO: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource)
+	request := makeStringRequest(traversalString, client.traversalSource, client.session)
 	result, err := client.connection.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
@@ -108,6 +119,12 @@ func (client *Client) Submit(traversalString string) (ResultSet, error) {
 // submitBytecode submits bytecode to the server to execute and returns a ResultSet.
 func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode, client.traversalSource)
+	request := makeBytecodeRequest(bytecode, client.traversalSource, client.session)
 	return client.connection.write(&request)
+}
+
+func (client *Client) closeSession() error {
+	message := makeCloseSessionRequest(client.session)
+	_, err := client.connection.write(&message)
+	return err
 }
