@@ -50,6 +50,7 @@ const parsers = [
   [ 'e\\[(.+)\\]', toEdge ],
   [ 'e\\[(.+)\\]\\.id', toEdgeId ],
   [ 'e\\[(.+)\\]\\.sid', toEdgeIdString ],
+  [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'p\\[(.+)\\]', toPath ],
   [ 'l\\[(.*)\\]', toArray ],
   [ 's\\[(.*)\\]', toArray ],
@@ -63,7 +64,6 @@ const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
-  vertexPropertyNotSupported: "Need a parser for vertex properties",
 };
 
 const ignoredScenarios = {
@@ -74,7 +74,6 @@ const ignoredScenarios = {
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_V_properties_order': new IgnoreError(ignoreReason.vertexPropertyNotSupported)
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
@@ -314,19 +313,17 @@ function toEdgeIdString(name) {
   return toEdge.call(this, name).id.toString();
 }
 
+function toVertexProperty(name) {
+  const vp = this.getData().vertexProperties[name];
+  if (!vp) {
+    throw new Error(util.format('VertexProperty with key "%s" not found', name));
+  }
+  return vp;
+}
+
 function toPath(value) {
   const parts = value.split(',');
   return new Path(new Array(0), parts.map(x => parseValue.call(this, x)));
-}
-
-/*
- * TODO Implement me.
- *   vp[vertexName-propkey->propVal]
- *   vertexName and propKey are simple strings, propVal must be parsed (e.g. numeric property values)
- *   https://issues.apache.org/jira/browse/TINKERPOP-2686
- */
-function toVertexProperty(triplet) {
-  return null;
 }
 
 function toT(value) {
