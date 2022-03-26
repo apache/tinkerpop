@@ -1672,7 +1672,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public Traversal visitTraversalMethod_call_string(final GremlinParser.TraversalMethod_call_stringContext ctx) {
-        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
     }
 
     /**
@@ -1680,7 +1680,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public Traversal visitTraversalMethod_call_string_map(final GremlinParser.TraversalMethod_call_string_mapContext ctx) {
-        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()),
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()),
                                    GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()));
     }
 
@@ -1689,7 +1689,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public Traversal visitTraversalMethod_call_string_traversal(final GremlinParser.TraversalMethod_call_string_traversalContext ctx) {
-        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()),
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()),
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
@@ -1698,7 +1698,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public Traversal visitTraversalMethod_call_string_map_traversal(final GremlinParser.TraversalMethod_call_string_map_traversalContext ctx) {
-        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()),
+        return graphTraversal.call(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()),
                 GenericLiteralVisitor.getMapLiteral(ctx.genericLiteralMap()),
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
