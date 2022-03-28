@@ -105,6 +105,7 @@ public class DocumentationReader {
                 replace("vMarko", "\"marko\"").
                 replace("vPeter", "\"peter\"").
                 replace("vStephen", "\"stephen\"").
+                replace("maps", "[:]").
                 replace("v1", "new Vertex(1,\"vertex\")").
                 replace("v2", "new Vertex(2,\"vertex\")").
                 replace("input.head()", "\"head\"").

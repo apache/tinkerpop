@@ -120,10 +120,10 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                     builder.readPartitions(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
                     break;
                 case PartitionStrategy.WRITE_PARTITION:
-                    builder.writePartition(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+                    builder.writePartition(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
                     break;
                 case PartitionStrategy.PARTITION_KEY:
-                    builder.partitionKey(GenericLiteralVisitor.getStringLiteral(ctx.stringLiteral()));
+                    builder.partitionKey(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
                     break;
             }
         });

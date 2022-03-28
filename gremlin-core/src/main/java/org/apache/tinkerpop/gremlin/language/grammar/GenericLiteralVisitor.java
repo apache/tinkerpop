@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -76,8 +77,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Parse a string literal context and return the string literal
      */
-    public static String getStringLiteral(final GremlinParser.StringLiteralContext stringLiteral) {
-        return (String) (instance().visitStringLiteral(stringLiteral));
+    public static String getStringLiteral(final GremlinParser.StringBasedLiteralContext stringLiteral) {
+        return (String) (instance().visitStringBasedLiteral(stringLiteral));
     }
 
     /**
@@ -101,10 +102,10 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         if (stringLiteralList == null || stringLiteralList.stringLiteralExpr() == null) {
             return new String[0];
         }
-        return stringLiteralList.stringLiteralExpr().stringLiteral()
+        return stringLiteralList.stringLiteralExpr().stringBasedLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(stringLiteral -> instance().visitStringLiteral(stringLiteral))
+                .map(stringLiteral -> instance().visitStringBasedLiteral(stringLiteral))
                 .toArray(String[]::new);
     }
 
@@ -284,22 +285,47 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
-        if (ctx==null) {
+        if (ctx == null) {
             return null;
         }
+
         final LinkedHashMap<Object, Object> literalMap = new LinkedHashMap<>();
-        int childIndex = 1;
-        while (childIndex < ctx.getChildCount() && ctx.getChildCount() > 3) {
-            Object key = visitGenericLiteral((GremlinParser.GenericLiteralContext) ctx.getChild(childIndex));
-            // skip colon
-            childIndex += 2;
-            Object value = visitGenericLiteral((GremlinParser.GenericLiteralContext) ctx.getChild(childIndex));
+
+        // filter out tokens and just grab map entries
+        ctx.children.stream().filter(c -> c instanceof GremlinParser.MapEntryContext).forEach(c -> {
+            // [key : value] - index 0 is key, index 1 is COLON, index 2 is value
+            // also note that a child count of 5 indicates the key is an expression wrapped
+            // in parens as in `[(T.id): 1]`
+            final boolean isKeyExpression = c.getChildCount() == 5;
+            final Object kctx = isKeyExpression ? c.getChild(1) : c.getChild(0);
+            final Object key;
+            if (kctx instanceof GremlinParser.StringLiteralContext) {
+                key = visitStringLiteral((GremlinParser.StringLiteralContext) kctx);
+            } else if (kctx instanceof GremlinParser.NumericLiteralContext) {
+                key = visitNumericLiteral((GremlinParser.NumericLiteralContext) kctx);
+            } else if (kctx instanceof GremlinParser.TraversalTokenContext) {
+                key = visitTraversalToken((GremlinParser.TraversalTokenContext) kctx);
+            } else if (kctx instanceof GremlinParser.TraversalDirectionContext) {
+                key = visitTraversalDirection((GremlinParser.TraversalDirectionContext) kctx);
+            } else if (kctx instanceof GremlinParser.GenericLiteralCollectionContext) {
+                key = visitGenericLiteralCollection((GremlinParser.GenericLiteralCollectionContext) kctx);
+            } else if (kctx instanceof GremlinParser.GenericLiteralMapContext) {
+                key = visitGenericLiteralMap((GremlinParser.GenericLiteralMapContext) kctx);
+            } else if (kctx instanceof TerminalNode) {
+                key = ((TerminalNode) kctx).getText();
+            } else {
+                throw new GremlinParserException("Invalid key for map" + ((ParseTree) kctx).getText());
+            }
+
+            final int valueIndex = isKeyExpression ? 4 : 2;
+            final Object value = visitGenericLiteral((GremlinParser.GenericLiteralContext) c.getChild(valueIndex));
             literalMap.put(key, value);
-            // skip comma
-            childIndex += 2;
-        }
+        });
+
         return literalMap;
     }
+
+
 
     /**
      * {@inheritDoc}
@@ -428,14 +454,24 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
-        return DatetimeHelper.parse(getStringLiteral(ctx.stringLiteral()));
+        return DatetimeHelper.parse((String) visitStringLiteral(ctx.stringLiteral()));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Object visitStringLiteral(final GremlinParser.StringLiteralContext ctx) {
+    public Object visitNumericLiteral(final GremlinParser.NumericLiteralContext ctx) {
+        if (ctx.floatLiteral() != null) return visitFloatLiteral(ctx.floatLiteral());
+        if (ctx.integerLiteral() != null) return visitIntegerLiteral(ctx.integerLiteral());
+        throw new GremlinParserException("Invalid numeric");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitStringBasedLiteral(final GremlinParser.StringBasedLiteralContext ctx) {
         // Using Java string unescaping because it coincides with the Groovy rules:
         // https://docs.oracle.com/javase/tutorial/java/data/characters.html
         // http://groovy-lang.org/syntax.html#_escaping_special_characters
@@ -447,6 +483,14 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             return GremlinStringConstantsVisitor.instance().visitChildren(ctx);
         }
 
+        return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitStringLiteral(final GremlinParser.StringLiteralContext ctx) {
         return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
     }
 

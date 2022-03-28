@@ -104,7 +104,7 @@ Unless otherwise noted, all "publications" are externally managed:
 |image:business-gremlin.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/[Contributors] +
 Provides information on ways to contribute to TinkerPop as well as details on building the project and other specific information for contributors.
 |image:tinkerpop-enabled.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Providers] +
-Documentation for providers who implement the TinkerPop interfaces, develop plugins or drivers, or provide other third-party libraries for TinkerPop.
+Documentation for providers who implement the TinkerPop interfaces, develop plugins or drivers, or provide other third-party libraries for TinkerPop. It also include information on semantics of the Gremlin language itself.
 |image:gremlin-io2.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference] +
 Reference Documentation for providers and users of the various IO formats that TinkerPop has: GraphML, GraphSON, GraphBinary and Gryo.
 |image:gremlin-explorer-old-photo.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/future/[Future] +
