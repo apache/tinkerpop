@@ -182,11 +182,11 @@ public class DotNetTranslatorTest {
         String script = translator.translate(g.V().hasLabel(null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().HasLabel((string) null)", script);
         script = translator.translate(g.V().hasLabel(null, null).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().HasLabel((string) null,(string) null)", script);
+        assertEquals("g.V().HasLabel(null,null)", script);
         script = translator.translate(g.V().hasLabel(null, "person").asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().HasLabel((string) null,\"person\")", script);
+        assertEquals("g.V().HasLabel(null,\"person\")", script);
         script = translator.translate(g.V().hasLabel(null, "person", null).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().HasLabel((string) null,\"person\",(string) null)", script);
+        assertEquals("g.V().HasLabel(null,\"person\",null)", script);
         script = translator.translate(g.V().has(T.label, (Object) null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Has(T.Label,(object) null)", script);
     }
