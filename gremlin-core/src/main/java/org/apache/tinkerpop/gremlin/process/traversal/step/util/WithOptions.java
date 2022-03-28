@@ -63,7 +63,7 @@ public class WithOptions {
     public static int keys = 4;
 
     /**
-     * Include keys (affects all {@link VertexProperty} value maps).
+     * Include values (affects all {@link VertexProperty} value maps).
      */
     public static int values = 8;
 

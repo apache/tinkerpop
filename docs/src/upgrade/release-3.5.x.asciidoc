@@ -39,7 +39,25 @@ Compression should therefore be turned off if the application sends sensitive da
 could potentially be controlled by an untrusted user. Compression can be disabled via the `disableCompression`
 parameter on the `GremlinClient` constructor.
 
-See:link:https://issues.apache.org/jira/browse/TINKERPOP-2682[TINKERPOP-2682]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2682[TINKERPOP-2682]
+
+==== .NET: Translator to Groovy
+
+A `Translator` can translate a Gremlin traversal from one programming language to another. Gremlin.NET now comes with
+a `GroovyTranslator` which translates a Gremlin.NET traversal into a string that contains a Gremlin-Groovy traversal:
+
+[source,csharp]
+----
+var g = ...;
+var t = g.V().Has("person", "name", "marko").Where(In("knows")).Values<int>("age");
+
+// Groovy
+var translator = GroovyTranslator.Of("g");
+Console.WriteLine(translator.Translate(t));
+// OUTPUT: g.V().has('person', 'name', 'marko').where(__.in('knows')).values('age')
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2367[TINKERPOP-2367]
 
 == TinkerPop 3.5.2
 
