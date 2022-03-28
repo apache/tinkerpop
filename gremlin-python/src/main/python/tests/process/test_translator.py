@@ -41,7 +41,7 @@ class TestTraversalStrategies(object):
                      "g.V('1','2','3','4')"])
         # 2
         tests.append([g.V('3').valueMap(True),
-                     "g.V('3').valueMap(True)"])
+                     "g.V('3').valueMap(true)"])
         # 3
         tests.append([g.V().constant(5),
                      "g.V().constant(5)"])

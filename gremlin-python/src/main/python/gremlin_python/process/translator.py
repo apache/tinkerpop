@@ -148,6 +148,8 @@ class Translator:
                     with_opts = True
                 elif type(p) == str:
                     script += f'\'{p}\''
+                elif type(p) == bool:
+                    script += 'true' if p else 'false'
                 else:
                     script += str(p)
                 c += 1

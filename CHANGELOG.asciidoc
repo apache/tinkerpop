@@ -83,6 +83,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
 * Tracked transaction spawned connections and closed them when the parent connection was closed for `gremlin-python`.
 * Prevented unintentionally opening another transaction in `TraversalOpProcessor`` and `SessionOpProcessor` of Gremlin Server.
+* Fixed bug in `Translator` of `gremlin-python` around translation of Booleans.
 
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: January 10, 2022)
