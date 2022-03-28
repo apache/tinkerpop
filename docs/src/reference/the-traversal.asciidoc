@@ -1423,6 +1423,8 @@ g.V().has('name',not(within('josh','marko'))).elementMap() <5>
 g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
 g.V().has('person','name', startingWith('m')) <8>
+g.V().has(null, 'vadas') <9>
+g.V().has(label, __.is('person')) <10>
 ----
 
 <1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
@@ -1434,6 +1436,15 @@ the key,value pairs for those vertices.
 <6> Find all age-properties and emit their value.
 <7> Find all vertices that do not have an age-property and emit their name.
 <8> Find all "person" vertices that have a name property that starts with the letter "m".
+<9> Property key is always stored as `String` and therefore an equality check with `null` will produce no result.
+<10> An example of `has()` where the argument is a `Traversal` and does not quite behave the way most expect.
+
+Item 10 in the above set of examples bears some discussion. The behavior is not such that the result of the `Traversal`
+is used as the comparing value for `has()`, but the current `Traverser`, which in this case is the vertex `label`, is
+given to the `Traversal` to behave as a filter itself. In other words, if the `Traversal` (i.e. `is('person')`) returns
+a value then the `has()` is effectively `true`. A common mistake is to try to use `select()` in this context where one
+would do `has('name', select('n'))` to try to inject the value of "n" into the step to get `has('name', <value-of-n>)`,
+but this would instead simply produce an always `true` filter for `has()`.
 
 TinkerPop does not support a regular expression predicate, although specific graph databases that leverage TinkerPop
 may provide a partial match extension.
