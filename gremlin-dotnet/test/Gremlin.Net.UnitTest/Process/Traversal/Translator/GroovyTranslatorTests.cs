@@ -454,9 +454,9 @@ public class GroovyTranslatorTests
                 "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'), edges: __.hasLabel('route'))).V().count()"
             },
             {
-                _g.WithStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.Has("region", "US-TX"))).V()
+                _g.WithStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.Has("region", "US-TX"), checkAdjacentVertices: true)).V()
                     .Count(),
-                "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'))).V().count()"
+                "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'), checkAdjacentVertices: true)).V().count()"
             },
             {
                 _g.With("evaluationTimeout", 500).V().Count(),

@@ -137,9 +137,6 @@ public class ProcessLimitedComputerSuite extends AbstractGremlinSuite {
             // creations
             TranslationStrategyProcessTest.class,
 
-            // decorations
-            SubgraphStrategyProcessTest.class,
-
             // optimizations
             IncidentToAdjacentStrategyProcessTest.class,
             EarlyLimitStrategyProcessTest.class

@@ -78,7 +78,7 @@ class SeedStrategy(TraversalStrategy):
 
 class SubgraphStrategy(TraversalStrategy):
 
-    def __init__(self, vertices=None, edges=None, vertex_properties=None):
+    def __init__(self, vertices=None, edges=None, vertex_properties=None, check_adjacent_vertices=None):
         TraversalStrategy.__init__(self, fqcn=decoration_namespace + 'SubgraphStrategy')
         if vertices is not None:
             self.configuration["vertices"] = vertices
@@ -86,6 +86,8 @@ class SubgraphStrategy(TraversalStrategy):
             self.configuration["edges"] = edges
         if vertex_properties is not None:
             self.configuration["vertexProperties"] = vertex_properties
+        if check_adjacent_vertices is not None:
+            self.configuration["checkAdjacentProperties"] = check_adjacent_vertices
 
 
 class VertexProgramStrategy(TraversalStrategy):
