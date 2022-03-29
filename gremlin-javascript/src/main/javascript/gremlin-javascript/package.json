@@ -14,7 +14,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "^6.2.2"
+    "ws": "^8.5.0"
   },
   "devDependencies": {
     "chai": "~4.1.2",
