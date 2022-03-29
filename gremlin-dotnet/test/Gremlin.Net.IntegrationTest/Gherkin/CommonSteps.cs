@@ -219,6 +219,30 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _error = null;
         }
 
+        [Then("the traversal will raise an error with message (\\w+) text of \"(.*)\"")]
+        public void TraversalWillRaiseErrorWithMessage(string comparison, string expectedMessage)
+        {
+            Assert.NotNull(_error);
+
+            switch (comparison) {
+                case "containing":
+                    Assert.Equal(true, _error.Message.Contains(expectedMessage));
+                    break;
+                case "starting":
+                    Assert.Equal(true, _error.Message.StartsWith(expectedMessage));
+                    break;
+                case "ending":
+                    Assert.Equal(true, _error.Message.EndsWith(expectedMessage));
+                    break;
+                default:
+                    throw new NotSupportedException(
+                            "Unknown comparison of " + comparison + " - must be one of: containing, starting or ending");
+            }
+
+            // consume the error now that it has been asserted
+            _error = null;
+        }
+
         [Then("the result should be (\\w+)")]
         public void AssertResult(string characterizedAs, DataTable table = null)
         {

@@ -96,6 +96,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                      'using Gremlin.Net.Structure;\n' +
                      'using Gremlin.Net.Process.Traversal;\n' +
                      'using Gremlin.Net.Process.Traversal.Strategy.Optimization;\n' +
+                     'using Gremlin.Net.Process.Traversal.Strategy.Verification;\n' +
                      'using Gremlin.Net.Process.Traversal.Strategy.Decoration;\n')
     writer.writeLine('namespace Gremlin.Net.IntegrationTest.Gherkin\n' +
             '{\n' +

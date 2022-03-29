@@ -82,6 +82,7 @@ Feature: Step - sum()
       | d[123].i |
 
   # null values are ignored in sum() which is similar to sum aggregation works in SQL
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_sumXlocalX
     Given the modern graph
     And the traversal of
@@ -106,6 +107,7 @@ Feature: Step - sum()
       | d[123].l |
 
   # null values are ignored in sum() which is similar to sum aggregation works in SQL
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_unfold_sum
     Given the modern graph
     And the traversal of
@@ -127,6 +129,7 @@ Feature: Step - sum()
     Then the result should be empty
 
   # if all values are null then the result is null
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_sumXlocalX
     Given the modern graph
     And the traversal of
@@ -149,6 +152,7 @@ Feature: Step - sum()
     Then the result should be empty
 
   # if all values are null then the result is null
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_unfold_sum
     Given the modern graph
     And the traversal of

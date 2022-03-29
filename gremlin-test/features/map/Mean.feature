@@ -82,6 +82,7 @@ Feature: Step - mean()
       | d[30.75].d |
 
   # null values are ignored in mean() which is similar to sum aggregation works in SQL
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_meanXlocalX
     Given the modern graph
     And the traversal of
@@ -106,6 +107,7 @@ Feature: Step - mean()
       | d[30.75].d |
 
   # null values are ignored in mean() which is similar to sum aggregation works in SQL
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_unfold_mean
     Given the modern graph
     And the traversal of
@@ -128,6 +130,7 @@ Feature: Step - mean()
     Then the result should be empty
 
   # if all values are null then the result is null
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_meanXlocalX
     Given the modern graph
     And the traversal of
@@ -150,6 +153,7 @@ Feature: Step - mean()
     Then the result should be empty
 
   # if all values are null then the result is null
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_unfold_mean
     Given the modern graph
     And the traversal of

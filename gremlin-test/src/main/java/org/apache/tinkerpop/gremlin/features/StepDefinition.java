@@ -57,6 +57,9 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -365,6 +368,29 @@ public final class StepDefinition {
     @Then("the traversal will raise an error")
     public void theTraversalWillRaiseAnError() {
         assertNotNull(error);
+
+        // consume the error now that it has been asserted
+        error = null;
+    }
+
+    @Then("the traversal will raise an error with message {word} text of {string}")
+    public void theTraversalWillRaiseAnErrorWithMessage(final String comparison, final String expectedMessage) {
+        assertNotNull(error);
+
+        switch (comparison) {
+            case "containing":
+                assertThat(error.getMessage(), containsString(expectedMessage));
+                break;
+            case "starting":
+                assertThat(error.getMessage(), startsWith(expectedMessage));
+                break;
+            case "ending":
+                assertThat(error.getMessage(), endsWith(expectedMessage));
+                break;
+            default:
+                throw new IllegalStateException(String.format(
+                        "Unknown comparison of %s - must be one of: containing, starting or ending", comparison));
+        }
 
         // consume the error now that it has been asserted
         error = null;

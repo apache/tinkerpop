@@ -124,6 +124,7 @@ Feature: Step - aggregate()
       | d[32].i |
       | d[35].i |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXlocal_xX_byXageX_capXxX
     Given the modern graph
     And the traversal of
@@ -222,6 +223,7 @@ Feature: Step - aggregate()
       | d[32].i |
       | d[35].i |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX
     Given the modern graph
     And the traversal of
@@ -252,7 +254,7 @@ Feature: Step - aggregate()
       | v[lop] |
       | v[lop] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXxX_byXout_order_byXnameXX_capXxX
     Given the modern graph
     And the traversal of

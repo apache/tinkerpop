@@ -345,7 +345,7 @@ Feature: Step - where()
     Then the result should be empty
 
   # comparison of null "age" values in where()
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name
     Given the modern graph
     And using the parameter vid3 defined as "v[lop].id"

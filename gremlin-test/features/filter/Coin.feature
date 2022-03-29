@@ -43,7 +43,7 @@ Feature: Step - coin()
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationStrategyNotSupported
+  @GraphComputerVerificationStrategyNotSupported @WithSeedStrategy
   Scenario: g_withStrategiesXSeedStrategyX_V_coinX50X
     Given the modern graph
     And the traversal of

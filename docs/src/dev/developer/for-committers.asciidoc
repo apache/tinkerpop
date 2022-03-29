@@ -452,6 +452,8 @@ The "Then" options handle the assertion of the result. There are several options
 in it
 * "the result should be empty" - no results
 * "the traversal will raise an error" - an exception is thrown as a result of traversal iteration
+* "the traversal will raise an error with message _comparison_ text of _message_" - an exception is thrown as a result
+of traversal iteration where "_comparison_" may be one of "containing", "starting", or "ending".
 * "the result should be ordered" - the exact results and should appear in the order presented
 * "the result should be unordered" - the exact results but can appear any order
 * "the result should be of" - results can be any of the specified values and in any order (use when guarantees
@@ -535,6 +537,10 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
 * `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.
+* `@With*` - The scenario uses some `with()` based configuration like strategies:
+** `@WithProductiveByStrategy`
+** `@WithReadOnlyStrategy`
+** `@WithSeedStrategy`
 
 Tag filters can be applied to Intellij at execution time by adding a system properties of
 `-Dcucumber.filter.tags=<step-filter>`.

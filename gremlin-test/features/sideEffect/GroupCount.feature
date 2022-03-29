@@ -40,6 +40,7 @@ Feature: Step - groupCount()
       | result |
       | m[{"d[27].i":"d[1].l", "d[29].i":"d[1].l", "d[32].i":"d[1].l", "d[35].i":"d[1].l"}] |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX
     Given the modern graph
     And the traversal of

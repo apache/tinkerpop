@@ -313,6 +313,7 @@ Feature: Step - dedup()
       | marko |
       | josh  |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_order_byXname_descX_barrier_dedup_age_name
     Given the modern graph
     And the traversal of

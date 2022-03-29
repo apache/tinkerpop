@@ -34,7 +34,7 @@ Feature: Step - fail()
       g.V().fail("msg")
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "msg"
 
   Scenario: g_V_unionXout_failX
     Given the modern graph

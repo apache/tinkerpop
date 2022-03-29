@@ -40,6 +40,7 @@ Feature: Step - group()
       | result |
       | m[{"d[35].i":"l[v[peter]]", "d[27].i":"l[v[vadas]]", "d[32].i": "l[v[josh]]", "d[29].i":"l[v[marko]]"}] |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_group_byXageX
     Given the modern graph
     And the traversal of

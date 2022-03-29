@@ -123,7 +123,7 @@ Feature: Step - path()
       | p[d[29].i,d[27].i] |
       | p[d[29].i,d[32].i] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_VX1X_out_path_byXageX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

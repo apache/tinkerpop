@@ -45,6 +45,7 @@ Feature: Step - sample()
     When iterated to list
     Then the result should have a count of 3
 
+  @WithSeedStrategy
   Scenario: g_withStrategiesXSeedStrategyX_V_group_byXlabelX_byXbothE_weight_order_sampleX2X_foldXunfold
     Given the modern graph
     And the traversal of
@@ -57,6 +58,7 @@ Feature: Step - sample()
       | m[{"software":"l[d[1.0].d,d[0.4].d]"}] |
       | m[{"person":"l[d[0.5].d,d[1.0].d]"}] |
 
+  @WithSeedStrategy
   Scenario: g_withStrategiesXSeedStrategyX_V_group_byXlabelX_byXbothE_weight_order_fold_sampleXlocal_5XXunfold
     Given the modern graph
     And the traversal of
@@ -69,6 +71,7 @@ Feature: Step - sample()
       | m[{"software":"l[d[0.2].d,d[0.4].d,d[0.4].d,d[1.0].d]"}] |
       | m[{"person":"l[d[0.5].d,d[1.0].d,d[0.4].d,d[0.2].d,d[1.0].d]"}] |
 
+  @WithSeedStrategy
   Scenario: g_withStrategiesXSeedStrategyX_V_order_byXlabel_descX_sampleX1X_byXageX
     Given the modern graph
     And the traversal of

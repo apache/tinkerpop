@@ -23,7 +23,9 @@
 'use strict';
 
 const {Given, Then, When} = require('cucumber');
-const expect = require('chai').expect;
+const chai = require('chai')
+chai.use(require('chai-string'));
+const expect = chai.expect;
 const util = require('util');
 const gremlin = require('./gremlin').gremlin;
 const graphModule = require('../../lib/structure/graph');
@@ -145,6 +147,19 @@ When('iterated next', function () {
 
 Then('the traversal will raise an error', function() {
   expect(this.result).to.be.a.instanceof(Error);
+});
+
+Then(/^the traversal will raise an error with message (\w+) text of "(.+)"$/, function(comparison, expectedMessage) {
+  expect(this.result).to.be.a.instanceof(Error);
+  if (comparison === "containing") {
+    expect(this.result.message).to.contain(expectedMessage)
+  } else if (comparison === "starting") {
+    expect(this.result.message).to.startWith(expectedMessage)
+  } else if (comparison === "ending") {
+    expect(this.result.message).to.endWith(expectedMessage)
+  } else {
+    throw new Error('unknown comparison \'' + comparison + '\'- must be: containing, ending or starting');
+  }
 });
 
 Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resultTable) {

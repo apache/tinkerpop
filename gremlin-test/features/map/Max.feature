@@ -71,6 +71,7 @@ Feature: Step - max()
       | result |
       | d[35].i |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_maxXlocalX
     Given the modern graph
     And the traversal of
@@ -93,6 +94,7 @@ Feature: Step - max()
       | result |
       | d[35].i |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXageX_capXaX_unfold_max
     Given the modern graph
     And the traversal of
@@ -113,6 +115,7 @@ Feature: Step - max()
     When iterated to list
     Then the result should be empty
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_maxXlocalX
     Given the modern graph
     And the traversal of
@@ -133,6 +136,7 @@ Feature: Step - max()
     When iterated to list
     Then the result should be empty
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXaX_byXfooX_capXaX_unfold_max
     Given the modern graph
     And the traversal of

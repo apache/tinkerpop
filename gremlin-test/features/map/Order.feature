@@ -368,6 +368,7 @@ Feature: Step - order()
       | v[peter] |
 
   # tests order().by() where a property isn't present to ensure null comes first
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX
     Given the modern graph
     And the traversal of

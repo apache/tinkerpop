@@ -847,7 +847,7 @@ Feature: Step - select()
       | m[{"a":"d[32].i","n":"josh"}] |
       | m[{"a":"d[35].i","n":"peter"}] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_asXaX_selectXaX_byXageX
     Given the modern graph
     And the traversal of

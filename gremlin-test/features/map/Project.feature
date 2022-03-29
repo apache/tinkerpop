@@ -89,6 +89,7 @@ Feature: Step - project()
       | m[{"a":"d[1].l", "b":"d[32].i"}] |
       | m[{"a":"d[0].l", "b":"d[35].i"}] |
 
+  @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_projectXa_bX_byXinE_countX_byXageX
     Given the modern graph
     And the traversal of
