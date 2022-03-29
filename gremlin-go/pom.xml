@@ -1,0 +1,164 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.tinkerpop</groupId>
+        <artifactId>tinkerpop</artifactId>
+        <version>3.5.3-SNAPSHOT</version>
+    </parent>
+    <artifactId>gremlin-go</artifactId>
+    <name>Apache TinkerPop :: Gremlin Go</name>
+    <properties>
+        <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping go tests -->
+        <maven.test.skip>false</maven.test.skip>
+        <skipTests>${maven.test.skip}</skipTests>
+        <TEST_TRANSACTIONS>false</TEST_TRANSACTIONS>
+        <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
+    </properties>
+    <build>
+    </build>
+
+    <profiles>
+        <!-- Activates the testing of Go Docker -->
+        <profile>
+            <id>glv-go</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>.glv</exists>
+                </file>
+            </activation>
+            <build>
+                <directory>${basedir}/target</directory>
+                <finalName>${project.artifactId}-${project.version}</finalName>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>Run Integration tests</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>up</argument>
+                                        <argument>--exit-code-from</argument>
+                                        <argument>gremlin-go-integration-tests</argument>
+                                        <argument>gremlin-go-integration-tests</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>Run Godog tests</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>up</argument>
+                                        <argument>--exit-code-from</argument>
+                                        <argument>gremlin-go-godog-tests</argument>
+                                        <argument>gremlin-go-godog-tests</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>Shutdown container</id>
+                                <phase>verify</phase>
+                                <configuration>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>down</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-server</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-test</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>neo4j-gremlin</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>commons-io</groupId>
+                                <artifactId>commons-io</artifactId>
+                                <version>${commons.io.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>${log4j.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <type>pom</type>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>generate-radish-support</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>projectBaseDir</name>
+                                            <value>${project.basedir}/../</value>
+                                        </property>
+                                    </properties>
+                                    <scripts>
+                                        <script>${project.basedir}/build/generate.groovy</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
