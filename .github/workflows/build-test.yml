@@ -232,10 +232,3 @@ jobs:
       - name: Go-Vet
         working-directory: ./gremlin-go
         run: go vet ./...
-
-      - name: Generate Cucumber Godog Test File
-        working-directory: .
-        run: |
-          mvn install -pl :gremlin-core -DskipTests -DskipIntegrationTests=true
-          mvn install -pl :gremlin-server -DskipTests -DskipIntegrationTests=true
-          mvn compile -pl :gremlin-go
