@@ -493,7 +493,7 @@ Intellij should be able to detect the processor automatically on build.
 Intellij by default then simply right-click on them use the "Mark Directory with" option to make the appropriate
 selections.
 
-The `gremlin-grammar` module requires ANTLR processing. While this processing is configured to execute with Maven, it
+The `gremlin-language` module requires ANTLR processing. While this processing is configured to execute with Maven, it
 can also be setup to generate parser files within Intellij itself on command:
 
 . Install the ANTLR4 Grammar Plugin for Intellij
