@@ -536,7 +536,7 @@ Projects" side panel, right click the `gremlin-shaded` module and select "Ignore
 
 Note that it may be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
 
-You will initially see lots of errors related to the Gremlin lexer/parser. The `gremlin-grammar` module requires
+You will initially see lots of errors related to the Gremlin lexer/parser. The `gremlin-language` module requires
 ANTLR processing. While this processing is configured to execute with Maven, it can also be setup to generate parser
 files within Intellij itself on command:
 
