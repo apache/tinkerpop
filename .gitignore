@@ -41,3 +41,4 @@ BenchmarkDotNet.Artifacts/
 /Dockerfile
 docs/gremlint/
 gremlint/
+coverage.out

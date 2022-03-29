@@ -141,6 +141,7 @@ limitations under the License.
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
+        <module>gremlin-go</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -443,6 +444,8 @@ limitations under the License.
                         <exclude>**/.eggs/**</exclude>
                         <exclude>**/gremlinpython.egg-info/**</exclude>
                         <exclude>**/docfx/**</exclude>
+                        <exclude>**/go.sum</exclude>
+                        <exclude>**/coverage.out</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
