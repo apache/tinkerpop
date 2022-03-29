@@ -524,7 +524,7 @@ func TestConnection(t *testing.T) {
 		readCount(t, g, personLabel, 0)
 	})
 
-	t.Run("Test Traversal.ToString fail", func(t *testing.T) {
+	t.Run("Test Traversal.ToList fail", func(t *testing.T) {
 		anonTrav := T__.Unfold().HasLabel(testLabel)
 		slice, err := anonTrav.ToList()
 		assert.Nil(t, slice)
@@ -595,7 +595,8 @@ func TestConnection(t *testing.T) {
 		assert.NotNil(t, remote)
 		g := Traversal_().WithRemote(remote)
 
-		r, _ := g.V().Count().ToList()
+		r, err := g.V().Count().ToList()
+		assert.Nil(t, err)
 		for _, res := range r {
 			assert.Equal(t, int64(6), res.GetInterface())
 		}
@@ -673,6 +674,52 @@ func TestConnection(t *testing.T) {
 			assert.Nil(t, s1)
 			assert.NotNil(t, err)
 		})
+	})
+
+	t.Run("Test Client.Submit() Simple String Query with Bindings", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		resultSet, err := client.Submit("x + x", map[string]interface{}{"x": 2})
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, err := resultSet.one()
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+		res, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 4, res)
+		client.Close()
+	})
+
+	t.Run("Test Bindings To Server Configured with Modern Graph", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthWithAliasEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = testNoAuthWithAliasTlsConfig
+				settings.AuthInfo = testNoAuthWithAliasAuthInfo
+				settings.TraversalSource = testServerGraphAlias
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, remote)
+		g := Traversal_().WithRemote(remote)
+
+		r, err := g.V((&Bindings{}).Of("x", 1)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
+		assert.Nil(t, err)
+		for _, res := range r {
+			assert.Equal(t, int64(3), res.GetInterface())
+		}
+		r, err = g.V((&Bindings{}).Of("x", 4)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
+		assert.Nil(t, err)
+		for _, res := range r {
+			assert.Equal(t, int64(9), res.GetInterface())
+		}
 	})
 
 	t.Run("Test DriverRemoteConnection Invalid GraphTraversal", func(t *testing.T) {

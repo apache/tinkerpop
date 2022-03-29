@@ -208,10 +208,7 @@ func (t *TinkerPopWorld) recreateAllDataGraphConnection() error {
 
 func (t *TinkerPopWorld) closeAllDataGraphConnection() error {
 	for _, name := range graphNames {
-		err := t.getDataGraphFromMap(name).connection.Close()
-		if err != nil {
-			return err
-		}
+		t.getDataGraphFromMap(name).connection.Close()
 	}
 	return nil
 }

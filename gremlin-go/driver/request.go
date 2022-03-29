@@ -34,7 +34,8 @@ const sessionProcessor = "session"
 const stringOp = "eval"
 const stringProcessor = ""
 
-func makeStringRequest(stringGremlin string, traversalSource string, sessionId string) (req request) {
+// Bindings should be a key-object map (different from Binding class in bytecode).
+func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, bindings ...map[string]interface{}) (req request) {
 	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": stringGremlin,
@@ -45,6 +46,9 @@ func makeStringRequest(stringGremlin string, traversalSource string, sessionId s
 	if sessionId != "" {
 		newProcessor = sessionProcessor
 		newArgs["session"] = sessionId
+	}
+	if len(bindings) > 0 {
+		newArgs["bindings"] = bindings[0]
 	}
 	return request{
 		requestID: uuid.New(),

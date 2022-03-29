@@ -105,10 +105,10 @@ func (client *Client) Close() {
 }
 
 // Submit submits a Gremlin script to the server and returns a ResultSet.
-func (client *Client) Submit(traversalString string) (ResultSet, error) {
+func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
 	// TODO: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource, client.session)
+	request := makeStringRequest(traversalString, client.traversalSource, client.session, bindings...)
 	result, err := client.connection.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())

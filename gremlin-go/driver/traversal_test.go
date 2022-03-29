@@ -43,4 +43,23 @@ func TestTraversal(t *testing.T) {
 		assert.Equal(t, 5, len(clone.bytecode.stepInstructions))
 		assert.Equal(t, 4, len(cloneClone.bytecode.stepInstructions))
 	})
+
+	t.Run("Test traversal with bindings", func(t *testing.T) {
+		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
+		bytecode := g.V((&Bindings{}).Of("a", []int32{1, 2, 3})).
+			Out((&Bindings{}).Of("b", "created")).
+			Where(T__.In((&Bindings{}).Of("c", "created"), (&Bindings{}).Of("d", "knows")).
+				Count().Is((&Bindings{}).Of("e", P.Gt(2)))).bytecode
+		assert.Equal(t, 5, len(bytecode.bindings))
+		assert.Equal(t, []int32{1, 2, 3}, bytecode.bindings["a"])
+		assert.Equal(t, "created", bytecode.bindings["b"])
+		assert.Equal(t, "created", bytecode.bindings["c"])
+		assert.Equal(t, "knows", bytecode.bindings["d"])
+		assert.Equal(t, P.Gt(2), bytecode.bindings["e"])
+		assert.Equal(t, &Binding{
+			Key:   "b",
+			Value: "created",
+		}, bytecode.stepInstructions[1].arguments[0])
+		assert.Equal(t, "binding[b=created]", bytecode.stepInstructions[1].arguments[0].(*Binding).String())
+	})
 }

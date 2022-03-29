@@ -246,7 +246,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			})
 		})
 		t.Run("test slice", func(t *testing.T) {
-			var x = []interface{}{"a", "b", "c"}
+			x := []interface{}{"a", "b", "c"}
 			writeToBuffer(x, &buff)
 			assert.Equal(t, x, readToValue(&buff))
 		})
@@ -259,6 +259,14 @@ func TestGraphBinaryV1(t *testing.T) {
 			buff.Write([]byte{0x2a, 00, 00, 00, 00, 02, 01, 00, 00, 00, 00, 01, 00, 00, 00, 00, 00, 00, 00, 02, 02, 00, 00, 00, 00, 00, 00, 00, 00, 03, 00, 00, 00, 00, 00, 00, 00, 03})
 			e := []interface{}{int32(1), int32(1), int64(3), int64(3), int64(3)}
 			assert.Equal(t, e, readToValue(&buff))
+		})
+		t.Run("test Binding", func(t *testing.T) {
+			x := &Binding{
+				Key:   "key",
+				Value: "value",
+			}
+			writeToBuffer(x, &buff)
+			assert.Equal(t, x, readToValue(&buff))
 		})
 	})
 

@@ -54,8 +54,8 @@ const (
 	PropertyType          DataType = 0x0f
 	VertexType            DataType = 0x11
 	VertexPropertyType    DataType = 0x12
-	LambdaType            DataType = 0x1d
 	BarrierType           DataType = 0x13
+	BindingType           DataType = 0x14
 	CardinalityType       DataType = 0x16
 	BytecodeType          DataType = 0x15
 	ColumnType            DataType = 0x17
@@ -64,6 +64,7 @@ const (
 	OrderType             DataType = 0x1a
 	PickType              DataType = 0x1b
 	PopType               DataType = 0x1c
+	LambdaType            DataType = 0x1d
 	PType                 DataType = 0x1e
 	ScopeType             DataType = 0x1f
 	TType                 DataType = 0x20
@@ -286,6 +287,8 @@ func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *gra
 		bc = *typedVal.bytecode
 	case bytecode:
 		bc = typedVal
+	case *bytecode:
+		bc = *typedVal
 	default:
 		return nil, errors.New("need GraphTraversal or bytecode to write bytecode")
 	}
@@ -873,10 +876,51 @@ func enumReader(buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) (interface{}
 	return string(valBytes), err
 }
 
+// Format: {key}{value}
+func bindingWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	var v Binding
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*Binding))
+	} else {
+		v = value.(Binding)
+	}
+
+	// Not fully qualified.
+	_, err := typeSerializer.writeValue(v.Key, buffer, false)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = typeSerializer.write(v.Value, buffer)
+	if err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
+func bindingReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	b := new(Binding)
+
+	// Not fully qualified.
+	newKey, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	if err != nil {
+		return nil, err
+	}
+	b.Key = newKey.(string)
+
+	newValue, err := typeSerializer.read(buffer)
+	if err != nil {
+		return nil, err
+	}
+	b.Value = newValue
+
+	return b, nil
+}
+
 // gets the type of the serializer based on the value
 func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{}) (*graphBinaryTypeSerializer, error) {
 	switch val.(type) {
-	case bytecode, *GraphTraversal:
+	case *bytecode, bytecode, *GraphTraversal:
 		return &graphBinaryTypeSerializer{dataType: BytecodeType, writer: bytecodeWriter, logHandler: serializer.logHandler}, nil
 	case string:
 		return &graphBinaryTypeSerializer{dataType: StringType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
@@ -983,6 +1027,8 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 		return &graphBinaryTypeSerializer{dataType: PType, writer: pWriter, logHandler: serializer.logHandler}, nil
 	case textP, TextPredicate:
 		return &graphBinaryTypeSerializer{dataType: TextPType, writer: textPWriter, logHandler: serializer.logHandler}, nil
+	case *Binding, Binding:
+		return &graphBinaryTypeSerializer{dataType: BindingType, writer: bindingWriter, logHandler: serializer.logHandler}, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:
@@ -1101,6 +1147,8 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*gra
 		return &graphBinaryTypeSerializer{dataType: DirectionType, reader: enumReader, logHandler: serializer.logHandler}, nil
 	case TType.getCodeByte():
 		return &graphBinaryTypeSerializer{dataType: BulkSetType, reader: enumReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+	case BindingType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: BulkSetType, reader: bindingReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
 	default:
 		serializer.logHandler.logf(Error, deserializeDataTypeError, int32(typ))
 		return nil, fmt.Errorf("unknown data type to deserialize %x", typ)

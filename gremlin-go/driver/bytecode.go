@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -122,17 +123,17 @@ func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) 
 		return newSlice, nil
 	default:
 		switch v := arg.(type) {
-		case binding:
-			convertedValue, err := bytecode.convertArgument(v.value)
+		case *Binding:
+			convertedValue, err := bytecode.convertArgument(v.Value)
 			if err != nil {
 				return nil, err
 			}
-			bytecode.bindings[v.key] = v.value
-			return binding{
-				key:   v.key,
-				value: convertedValue,
+			bytecode.bindings[v.Key] = v.Value
+			return &Binding{
+				Key:   v.Key,
+				Value: convertedValue,
 			}, nil
-		case Traversal:
+		case *GraphTraversal:
 			if v.graph != nil {
 				return nil, errors.New("the child traversal was not spawned anonymously - use the T__ class rather than a TraversalSource to construct the child traversal")
 			}
@@ -152,8 +153,27 @@ type instruction struct {
 	arguments []interface{}
 }
 
-// TODO: Export this when implemented
-type binding struct {
-	key   string
-	value interface{}
+// Binding associates a string variable with a value
+type Binding struct {
+	Key   string
+	Value interface{}
+}
+
+// String returns the key value binding in string format
+func (b *Binding) String() string {
+	return fmt.Sprintf("binding[%v=%v]", b.Key, b.Value)
+}
+
+// Bindings are used to associate a variable with a value. They enable the creation of Binding, usually used with
+// Lambda scripts to avoid continued recompilation costs. Bindings allow a remote engine to cache traversals that
+// will be reused over and over again save that some parameterization may change.
+// Used as g.V().Out(&Bindings{}.Of("key", value))
+type Bindings struct{}
+
+// Of creates a Binding
+func (*Bindings) Of(key string, value interface{}) *Binding {
+	return &Binding{
+		Key:   key,
+		Value: value,
+	}
 }
