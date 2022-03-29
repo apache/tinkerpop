@@ -16,3 +16,19 @@ updates:
     labels:
       - "python"
       - "dependencies"
+  - package-ecosystem: "npm"
+    directory: "/gremlin-javascript/src/main/javascript/gremlin-javascript"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - "javascript"
+      - "dependencies"
+  - package-ecosystem: "npm"
+    directory: "/gremlint"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - "javascript"
+      - "dependencies"
