@@ -35,7 +35,7 @@
   },
   "homepage": "https://tinkerpop.apache.org/",
   "devDependencies": {
-    "@types/jest": "^26.0.15",
+    "@types/jest": "^27.4.1",
     "jest": "^26.6.1",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.2",
