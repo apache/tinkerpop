@@ -23,8 +23,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"golang.org/x/text/language"
-	"time"
-)
+	"runtime")
 
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
@@ -37,6 +36,11 @@ type ClientSettings struct {
 	TlsConfig         *tls.Config
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
+	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
+	NewConnectionThreshold int
+	// Maximum number of concurrent connections. Default: number of runtime processors
+	MaximumConcurrentConnections int
+	
 	Session         string
 }
 
@@ -46,7 +50,7 @@ type Client struct {
 	traversalSource string
 	logHandler      *logHandler
 	transporterType TransporterType
-	connection      *connection
+	connections     connectionPool
 	session         string
 }
 
@@ -64,25 +68,36 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		TlsConfig:         &tls.Config{},
 		KeepAliveInterval: keepAliveIntervalDefault,
 		WriteDeadline:     writeDeadlineDefault,
-		Session:         "",
+		NewConnectionThreshold:       defaultNewConnectionThreshold,
+		MaximumConcurrentConnections: runtime.NumCPU(),
+		Session:                      "",
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	conn, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
+	if settings.Session != "" {
+		logHandler.log(Info, sessionDetected)
+		settings.MaximumConcurrentConnections = 1
+	}
+
+	pool, err := newLoadBalancingPool(url, settings.AuthInfo, settings.TlsConfig, settings.KeepAliveInterval, settings.WriteDeadline, settings.NewConnectionThreshold,
+		settings.MaximumConcurrentConnections, logHandler)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client with url '%s' and transport type '%v'. Error message: '%s'",
 			url, settings.TransporterType, err.Error())
 	}
+
 	client := &Client{
 		url:             url,
-		traversalSource: "g",
+		traversalSource: settings.TraversalSource,
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
-		connection:      conn,
+		connections:     pool,
+		session:         settings.Session,
 	}
+
 	return client, nil
 }
 
@@ -98,18 +113,14 @@ func (client *Client) Close() {
 		client.session = ""
 	}
 	client.logHandler.logf(Info, closeClient, client.url)
-	err := client.connection.close()
-	if err != nil {
-		client.logHandler.logf(Warning, closeClientError, err.Error())
-	}
+	client.connections.close()
 }
 
 // Submit submits a Gremlin script to the server and returns a ResultSet.
 func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
-	// TODO: Obtain connection from pool of connections held by the client.
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString, client.traversalSource, client.session, bindings...)
-	result, err := client.connection.write(&request)
+	return client.connections.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
 	}
@@ -120,11 +131,11 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
 	request := makeBytecodeRequest(bytecode, client.traversalSource, client.session)
-	return client.connection.write(&request)
+	return client.connections.write(&request)
 }
 
 func (client *Client) closeSession() error {
 	message := makeCloseSessionRequest(client.session)
-	_, err := client.connection.write(&message)
+	_, err := client.connections.write(&message)
 	return err
 }

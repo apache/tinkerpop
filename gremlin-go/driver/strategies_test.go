@@ -30,6 +30,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with ConnectiveStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ConnectiveStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -41,6 +42,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with OptionsStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(OptionsStrategy(map[string]interface{}{"a": "b"})).V().Count().ToList()
 		assert.Nil(t, err)
@@ -52,6 +54,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with PartitionStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(PartitionStrategy("partition", "write", []string{"read"}, true)).V().Count().ToList()
 		assert.Nil(t, err)
@@ -63,6 +66,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with SeedStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(SeedStrategy(1)).V().Count().ToList()
 		assert.Nil(t, err)
@@ -74,6 +78,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with SubgraphStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(SubgraphStrategy(T__.HasLabel(testLabel), nil, nil)).V().Count().ToList()
 		assert.Nil(t, err)
@@ -85,6 +90,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test bytecode generation for MatchAlgorithmStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		bytecode := g.WithStrategies(MatchAlgorithmStrategy("greedy")).bytecode
 		assert.Equal(t, 1, len(bytecode.sourceInstructions))
@@ -98,6 +104,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(AdjacentToIncidentStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -109,6 +116,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with ByModulatorOptimizationStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ByModulatorOptimizationStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -120,6 +128,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with CountStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(CountStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -131,6 +140,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with EarlyLimitStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(EarlyLimitStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -142,6 +152,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with FilterRankingStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(FilterRankingStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -153,6 +164,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with IdentityRemovalStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(IdentityRemovalStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -164,6 +176,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with IncidentToAdjacentStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(IncidentToAdjacentStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -175,6 +188,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with InlineFilterStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(InlineFilterStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -186,6 +200,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with LazyBarrierStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(LazyBarrierStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -197,6 +212,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with MatchPredicateStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(MatchPredicateStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -208,6 +224,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with OrderLimitStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(OrderLimitStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -219,6 +236,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with PathProcessorStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(PathProcessorStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -230,6 +248,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with PathRetractionStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(PathRetractionStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -241,6 +260,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with ProductiveByStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ProductiveByStrategy([]string{"a", "b"})).V().Count().ToList()
 		assert.Nil(t, err)
@@ -252,6 +272,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with RepeatUnrollStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(RepeatUnrollStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -263,6 +284,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with EdgeLabelVerificationStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(EdgeLabelVerificationStrategy(true, true)).V().Count().ToList()
 		assert.Nil(t, err)
@@ -274,6 +296,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with LambdaRestrictionStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(LambdaRestrictionStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -285,6 +308,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with TestReadOnlyStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ReadOnlyStrategy()).V().Count().ToList()
 		assert.Nil(t, err)
@@ -296,6 +320,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test write with TestReadOnlyStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		_, promise, err := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
 
@@ -305,6 +330,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with ReservedKeysVerificationStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		strategy := ReservedKeysVerificationStrategy(true, true, []string{"xyz"})
 		count, err := g.WithStrategies(strategy).V().Count().ToList()
@@ -317,6 +343,7 @@ func TestStrategy(t *testing.T) {
 
 	t.Run("Test read with RepeatUnrollStrategy", func(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(RepeatUnrollStrategy()).V().Count().ToList()
 		assert.Nil(t, err)

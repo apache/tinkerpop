@@ -24,6 +24,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/text/language"
+	"runtime"
 	"time"
 )
 
@@ -38,6 +39,10 @@ type DriverRemoteConnectionSettings struct {
 	TlsConfig         *tls.Config
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
+	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
+	NewConnectionThreshold int
+	// Maximum number of concurrent connections. Default: number of runtime processors
+	MaximumConcurrentConnections int
 	Session         string
 
 	// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
@@ -68,6 +73,8 @@ func NewDriverRemoteConnection(
 		TlsConfig:         &tls.Config{},
 		KeepAliveInterval: keepAliveIntervalDefault,
 		WriteDeadline:     writeDeadlineDefault,
+		NewConnectionThreshold:       defaultNewConnectionThreshold,
+		MaximumConcurrentConnections: runtime.NumCPU(),
 		Session:         "",
 
 		// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
@@ -79,7 +86,13 @@ func NewDriverRemoteConnection(
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	connection, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
+	if settings.Session != "" {
+		logHandler.log(Info, sessionDetected)
+		settings.MaximumConcurrentConnections = 1
+	}
+
+	pool, err := newLoadBalancingPool(url, settings.AuthInfo, settings.TlsConfig, settings.KeepAliveInterval, settings.WriteDeadline, settings.NewConnectionThreshold,
+		settings.MaximumConcurrentConnections, logHandler)
 	if err != nil {
 		if err != nil {
 			logHandler.logf(Error, logErrorGeneric, "NewDriverRemoteConnection", err.Error())
@@ -92,7 +105,7 @@ func NewDriverRemoteConnection(
 		traversalSource: settings.TraversalSource,
 		transporterType: settings.TransporterType,
 		logHandler:      logHandler,
-		connection:      connection,
+		connections:     pool,
 		session:         settings.Session,
 	}
 

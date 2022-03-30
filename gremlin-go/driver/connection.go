@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"errors"
+	"sync"
 	"time"
 )
 
@@ -37,7 +38,7 @@ const (
 type connection struct {
 	logHandler *logHandler
 	protocol   protocol
-	results    map[string]ResultSet
+	results    *synchronizedMap
 	state      connectionState
 }
 
@@ -70,8 +71,13 @@ func (connection *connection) write(request *request) (ResultSet, error) {
 	connection.logHandler.log(Info, writeRequest)
 	requestID := request.requestID.String()
 	connection.logHandler.logf(Info, creatingRequest, requestID)
-	connection.results[requestID] = newChannelResultSet(requestID, connection.results)
-	return connection.results[requestID], connection.protocol.write(request)
+	resultSet := newChannelResultSet(requestID, connection.results)
+	connection.results.store(requestID, resultSet)
+	return resultSet, connection.protocol.write(request)
+}
+
+func (connection *connection) activeResults() int {
+	return connection.results.size()
 }
 
 // createConnection establishes a connection with the given parameters. A connection should always be closed to avoid
@@ -81,7 +87,12 @@ func (connection *connection) write(request *request) (ResultSet, error) {
 // 		closed: connection was closed by the user.
 //		closedDueToError: connection was closed internally due to an error.
 func createConnection(url string, authInfo *AuthInfo, tlsConfig *tls.Config, logHandler *logHandler, keepAliveInterval time.Duration, writeDeadline time.Duration) (*connection, error) {
-	conn := &connection{logHandler, nil, map[string]ResultSet{}, initialized}
+	conn := &connection{
+		logHandler,
+		nil,
+		&synchronizedMap{map[string]ResultSet{}, sync.Mutex{}},
+		initialized,
+	}
 	logHandler.log(Info, connectConnection)
 	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, url, authInfo, tlsConfig, conn.results, conn.errorCallback, keepAliveInterval, writeDeadline)
 	if err != nil {
@@ -92,4 +103,41 @@ func createConnection(url string, authInfo *AuthInfo, tlsConfig *tls.Config, log
 	conn.protocol = protocol
 	conn.state = established
 	return conn, err
+}
+
+type synchronizedMap struct {
+	internalMap map[string]ResultSet
+	syncLock    sync.Mutex
+}
+
+func (s *synchronizedMap) store(key string, value ResultSet) {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	s.internalMap[key] = value
+}
+
+func (s *synchronizedMap) load(key string) ResultSet {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	return s.internalMap[key]
+}
+
+func (s *synchronizedMap) delete(key string) {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	delete(s.internalMap, key)
+}
+
+func (s *synchronizedMap) size() int {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	return len(s.internalMap)
+}
+
+func (s *synchronizedMap) synchronizedRange(f func(key string, value ResultSet)) {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	for k, v := range s.internalMap {
+		f(k, v)
+	}
 }

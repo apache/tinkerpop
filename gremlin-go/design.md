@@ -42,18 +42,17 @@ The `Client` has two main responsibilities:
 
 ##### Cardinalities
 
-* One `connection` (as of milestone 3).
-  * Will own multiple connections with eventual connection pooling logic.
+* One `connectionPool
 
 ##### Lifecycle and States
 
 * The `Client` does not track or have any real state.
-* However, `Close()` can be invoked on a `Client` in order to close any instances of `connection` that it owns.
+* However, `Close()` can be invoked on a `Client` in order to close any instances of `connection` that in its current `connectionPool`.
 
 ```mermaid
 classDiagram
 	class Client
-	Client: connection *connection
+	Client: pool connectionPool
 	Client: NewClient(host, configurations) Client
 	Client: Close()
 	Client: Submit(traversal) ResultSet
@@ -69,6 +68,18 @@ sequenceDiagram
 	Client-->>User: ResultSet
 	
 ```
+
+#### connectionPool
+
+A `connectionPool` is a collection of `connection`. The implementation used is a `loadBalancingPool`. It attempts to evenly load balance traversals by delegating it to the least-busy connection in the pool. The `loadBalancingPool` has a maximum connection count, and a `newConnectionTheshold`, where if the currently least-used connection has reached, will trigger the creation of a new `connection` for use. If there are multiple `connection` that sit unused, all but one will be `closed` and removed from the pool.
+
+##### Cardinalities
+
+* Many `connection`
+
+##### Lifecycle and States
+
+* No states, but when `close()` in invoked, all `connection` have their respective `close()` method invoked asynchronously and are removed from the pool.
 
 #### connection
 
@@ -101,9 +112,9 @@ classDiagram
 
 ```mermaid
 sequenceDiagram
-	Client->>connection: write()
+	Client->>connection(Pool): write()
 	connection->>protocol: write(ResultSet)
-	protocol-->>connection: ResultSet
+	protocol-->>connection(Pool): ResultSet
 	loop Readloop
 		protocol->>protocol: Async population of ResultSet
 	end

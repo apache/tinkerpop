@@ -98,7 +98,7 @@ import (
 
 func main() {
 	// Simple stub to use the import. See subsequent section for actual usage. 
-	_, _ = gremlingo.NewDriverRemoteConnection("localhost", 8182)
+    _, _ = gremlingo.NewDriverRemoteConnection("ws://localhost:8182")
 }
 ```
 You will need to run `go mod tidy` to import the remaining dependencies of the `gremlin-go` driver (if your IDE does not do so automatically), after which you should see an updated `go.mod` file:
@@ -131,7 +131,7 @@ import (
 
 func main() {
 	// Creating the connection to the server.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("localhost", 8182)
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -186,7 +186,7 @@ import (
 
 func main() {
 	// Creating the connection to the server with default settings.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("localhost", 8182)
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182")
 	// Handle error
 	if err != nil {
 		fmt.Println(err)
@@ -196,7 +196,7 @@ func main() {
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 }
 ```
-We can also customize the remote connection settings. (See code documentation for additional parameters and their usage).
+We can also customize the remote connection settings. (See code documentation for additional parameters and their usage). In this case we are modifying the connection pool settings. We are setting the maximum concurrent connections and the connection usage threshold at which new connections are created to balance the load.
 ```go
 package main
 
@@ -206,9 +206,11 @@ import (
 )
 
 func main() {
-	// Creating the connection to the server, changing the log verbosity to Debug.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("localhost", 8182, func(settings *gremlingo.DriverRemoteConnectionSettings) {
+	// Creating the connection to the server, changing the log verbosity to Debug and setting connection pool properties.
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182", func(settings *gremlingo.DriverRemoteConnectionSettings) {
 		settings.LogVerbosity = gremlingo.Debug
+        settings.NewConnectionThreshold = 2
+        settings.MaximumConcurrentConnections = 4
 	})
 	// Handle error
 	if err != nil {
@@ -232,7 +234,7 @@ import (
 
 func main() {
 	// Creating the connection to the server.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("localhost", 8182)
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182")
 	// Handle error
 	if err != nil {
 		fmt.Println(err)

@@ -1,15 +1,8 @@
 {
-  "READ_FAILED": "Reading message failed!",
-  "WRITE_FAILED": "Writing request failed!",
   "UNKNOWN_SER_DATATYPE": "Unknown data type to serialize type='%s'.",
   "UNKNOWN_DESER_DATATYPE": "Unknown data type to deserialize code='%x'.",
   "NULL_INPUT": "Input cannot be null.",
-  "UNMATCHED_DATATYPE": "Datatype read from input buffer different from requested datatype.",
   "UNEXPECTED_NULL_VALUE": "Unexpected null value to write when value is not nullable.",
-  "NOT_MAP_TYPE": "Did not get the expected map type as input.",
-  "MALFORMED_URL": "Malformed ws or wss URL.",
-  "TRANSPORT_CLOSE_FAILED": "Ignoring error when closing existing transporter to replace with a new one: %s",
-  "NOT_SLICE_TYPE": "Did not get the expected slice type as input.",
   "CLOSING_CONNECTION": "Closing the connection.",
   "FAILED_CONNECTION" : "Failed to connect, connection is closed.",
   "OPENING_CONNECTION": "Connecting.",
@@ -30,8 +23,10 @@
   "CLOSING_SPAWNED_SESSIONS": "Closing spawned sessions from DriverRemoteConnection with url '%s'",
   "CLOSE_SESSION": "Closing DriverRemoteConnection with url '%s' with session '%s'",
   "CLOSE_SESSION_REQUEST_ERROR": "Error while closing DriverRemoteConnection with url '%s' and with session '%s': %s",
-  "CLOSE_SESSION_ERROR": "Error while closing Session: '%s'",
   "CLOSE_DRIVER_REMOTE_CONNECTION": "Closing DriverRemoteConnection with url '%s'",
   "CLOSE_CLIENT": "Closing Client with url '%s'",
-  "CLOSE_CLIENT_ERROR": "Error while closing Client: '%s'"
+  "ERROR_CLOSING_CONNECTION": "Ignoring error closing connection: %s",
+  "CLOSE_UNUSED_POOL_CONNECTION": "Closing and removing unused connection from connection pool.",
+  "PURGING_DEAD_CONNECTION": "Removing dead connection from connection pool.",
+  "SESSION_DETECTED": "Session detected. Setting connection pool size maximum to 1."
 }
