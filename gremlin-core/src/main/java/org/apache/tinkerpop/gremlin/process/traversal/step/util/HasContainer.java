@@ -46,7 +46,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         this.key = key;
         this.predicate = predicate;
 
-        if (!this.key.equals(T.id.getAccessor()))
+        if (this.key != null && !this.key.equals(T.id.getAccessor()))
             testingIdString = false;
         else {
             // the values should be homogenous if a collection is submitted
@@ -65,7 +65,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
             // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
             // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
             // the constructor.  the original value in P is maintained separately
-            this.testingIdString = this.key.equals(T.id.getAccessor()) && valueInstance instanceof String;
+            this.testingIdString = this.key != null && this.key.equals(T.id.getAccessor()) && valueInstance instanceof String;
             if (this.testingIdString)
                 this.predicate.setValue(this.predicate.getValue() instanceof Collection ?
                         IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) :
@@ -77,10 +77,12 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         // it is OK to evaluate equality of ids via toString(), given that the test suite enforces the value of
         // id().toString() to be a first class representation of the identifier. a string test is only executed
         // if the predicate value is a String.  this allows stuff like: g.V().has(id,lt(10)) to work properly
-        if (this.key.equals(T.id.getAccessor()))
-            return testingIdString ? testIdAsString(element) : testId(element);
-        if (this.key.equals(T.label.getAccessor()))
-            return testLabel(element);
+        if (this.key != null) {
+            if (this.key.equals(T.id.getAccessor()))
+                return testingIdString ? testIdAsString(element) : testId(element);
+            if (this.key.equals(T.label.getAccessor()))
+                return testLabel(element);
+        }
 
         final Iterator<? extends Property> itty = element.properties(this.key);
         try {

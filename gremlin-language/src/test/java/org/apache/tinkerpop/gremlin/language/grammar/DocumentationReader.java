@@ -51,7 +51,7 @@ public class DocumentationReader {
                         final List<String> lines = Files.readAllLines(f, StandardCharsets.UTF_8);
                         for (String line : lines) {
                             // trim and remove callouts
-                            String cleanLine = line.replaceAll("<\\d>", "").trim();
+                            String cleanLine = line.replaceAll("<\\d*>", "").trim();
 
                             // remove line comments
                             int pos = cleanLine.indexOf("//");

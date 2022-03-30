@@ -777,6 +777,15 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  Scenario: g_V_hasXnull_testnullkeyX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has(null, "test-null-key")
+    """
+    When iterated to list
+    Then the result should be empty
+
   Scenario: g_E_hasXnullX
     Given the modern graph
     And the traversal of
@@ -803,6 +812,48 @@ Feature: Step - has()
     """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_hasXlabel_personX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has(T.label, "person")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_V_hasXlabel_eqXpersonXX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has(T.label, eq("person"))
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_V_hasXlabel_isXpersonXX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has(T.label, __.is("person"))
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
 
   Scenario: g_V_hasLabelXnull_nullX
     Given the modern graph

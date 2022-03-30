@@ -361,7 +361,12 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                                     script.append("(object) ");
                                 } else if (methodName.equals(GraphTraversal.Symbols.has)) {
                                     if (instArgs.length == 2) {
-                                        if ((instArgs[0] instanceof T || instArgs[0] instanceof String) && idx == 1) {
+                                        if (null == instArgs[0] && idx == 0) {
+                                            // need to avoid a null T accessor or else GraphTraversal gets
+                                            // IllegalArgumentException and when called by way of reflection through
+                                            // JavaTranslator
+                                            script.append("(string)" );
+                                        } else if ((instArgs[0] instanceof T || instArgs[0] instanceof String) && idx == 1) {
                                             script.append("(object) ");
                                         }
                                     } else if (instArgs.length == 3) {
