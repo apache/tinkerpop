@@ -182,16 +182,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 foreach (var resultScenario in resultFeature.Scenarios)
                 {
                     totalScenarios++;
-                    WriteOutput($"  Scenario: {resultScenario.Key.Name}");
                     foreach (var step in resultScenario.Key.Steps)
                     {
                         resultScenario.Value.TryGetValue(step, out var failure);
-                        if (failure == null)
+                        if (failure != null)
                         {
-                            WriteOutput($"    {step.Keyword} {step.Text}");
-                        }
-                        else
-                        {
+                            WriteOutput($"  Scenario: {resultScenario.Key.Name}");
                             if (failure is IgnoreException)
                             {
                                 totalIgnored++;

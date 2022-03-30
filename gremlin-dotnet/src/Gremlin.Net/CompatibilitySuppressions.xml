@@ -8,4 +8,12 @@
     <Right>lib/netstandard2.0/Gremlin.Net.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
+  <Suppression>
+    <!-- Added an optional parameter to the constructor. -->
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Gremlin.Net.Process.Traversal.Strategy.Decoration.SubgraphStrategy.#ctor(Gremlin.Net.Process.Traversal.ITraversal,Gremlin.Net.Process.Traversal.ITraversal,Gremlin.Net.Process.Traversal.ITraversal)</Target>
+    <Left>lib/netstandard2.0/Gremlin.Net.dll</Left>
+    <Right>lib/netstandard2.0/Gremlin.Net.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
 </Suppressions>

@@ -80,7 +80,6 @@ public class ProcessLimitedStandardSuite extends AbstractGremlinSuite {
             ElementIdStrategyProcessTest.class,
             EventStrategyProcessTest.class,
             PartitionStrategyProcessTest.class,
-            SubgraphStrategyProcessTest.class,
 
             // optimizations
             IncidentToAdjacentStrategyProcessTest.class,
