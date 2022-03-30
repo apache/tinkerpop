@@ -150,6 +150,13 @@ func (gts *GraphTraversalSource) AddV(args ...interface{}) *GraphTraversal {
 	return traversal
 }
 
+// Call starts the traversal by executing a procedure
+func (gts *GraphTraversalSource) Call(args ...interface{}) *GraphTraversal {
+	traversal := gts.GetGraphTraversal()
+	traversal.bytecode.addStep("call", args...)
+	return traversal
+}
+
 // Inject inserts arbitrary objects to start the traversal.
 func (gts *GraphTraversalSource) Inject(args ...interface{}) *GraphTraversal {
 	traversal := gts.GetGraphTraversal()
@@ -161,5 +168,19 @@ func (gts *GraphTraversalSource) Inject(args ...interface{}) *GraphTraversal {
 func (gts *GraphTraversalSource) Io(args ...interface{}) *GraphTraversal {
 	traversal := gts.GetGraphTraversal()
 	traversal.bytecode.addStep("io", args...)
+	return traversal
+}
+
+// MergeE uses an upsert-like operation to add an Edge to start the traversal.
+func (gts *GraphTraversalSource) MergeE(args ...interface{}) *GraphTraversal {
+	traversal := gts.GetGraphTraversal()
+	traversal.bytecode.addStep("mergeE", args...)
+	return traversal
+}
+
+// MergeV uses an upsert-like operation to add a Vertex to start the traversal.
+func (gts *GraphTraversalSource) MergeV(args ...interface{}) *GraphTraversal {
+	traversal := gts.GetGraphTraversal()
+	traversal.bytecode.addStep("mergeV", args...)
 	return traversal
 }

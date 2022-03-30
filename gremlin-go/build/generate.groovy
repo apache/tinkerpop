@@ -20,27 +20,44 @@
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GolangTranslator
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
 import org.codehaus.groovy.control.customizers.CompilationCustomizer
-import org.apache.tinkerpop.gremlin.features.FeatureReader
+import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
 import javax.script.SimpleBindings
+import java.nio.file.Paths
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
+
+// getting an exception like:
+// > InvocationTargetException: javax.script.ScriptException: groovy.lang.MissingMethodException: No signature of
+// > method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.mergeE() is applicable for
+// > argument types: (String) values: [4ffdea36-4a0e-4681-acba-e76875d1b25b]
+// usually means bindings are not being extracted properly by VarAsBindingASTTransformation which typically happens
+// when a step is taking an argument that cannot properly resolve to the type required by the step itself. there are
+// special cases in that VarAsBindingASTTransformation class which might need to be adjusted. Editing the
+// GremlinGroovyScriptEngineTest#shouldProduceBindingsForVars() with the failing step and argument can typically make
+// this issue relatively easy to debug and enforce.
+//
+// getting an exception like:
+// > Ambiguous method overloading for method org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#mergeV.
+// likely requires changes to the AmbiguousMethodASTTransformation which forces a call to a particular method overload
+// and usually relates to use of null where the type isn't clear
 
 // file is overwritten on each generation
 radishGremlinFile = new File("${projectBaseDir}/gremlin-go/cucumber/gremlin.go")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
-gremlins = FeatureReader.parse("${projectBaseDir}")
+gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "features").toString())
 
-gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(new GroovyCustomizer() {
-    public CompilationCustomizer create() {
-        return new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation())
-    }
-})
+gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(
+        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()) },
+        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()) }
+)
+
 translator = GolangTranslator.of('g')
 g = traversal().withEmbedded(EmptyGraph.instance())
 bindings = new SimpleBindings()

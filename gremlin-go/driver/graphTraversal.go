@@ -119,6 +119,12 @@ func (g *GraphTraversal) By(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Call adds the call step to the GraphTraversal.
+func (g *GraphTraversal) Call(args ...interface{}) *GraphTraversal {
+	g.bytecode.addStep("call", args...)
+	return g
+}
+
 // Cap adds the cap step to the GraphTraversal.
 func (g *GraphTraversal) Cap(args ...interface{}) *GraphTraversal {
 	g.bytecode.addStep("cap", args...)
@@ -179,6 +185,12 @@ func (g *GraphTraversal) Drop(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Element adds the element step to the GraphTraversal.
+func (g *GraphTraversal) Element(args ...interface{}) *GraphTraversal {
+	g.bytecode.addStep("element", args...)
+	return g
+}
+
 // ElementMap adds the elementMap step to the GraphTraversal.
 func (g *GraphTraversal) ElementMap(args ...interface{}) *GraphTraversal {
 	g.bytecode.addStep("elementMap", args...)
@@ -188,6 +200,12 @@ func (g *GraphTraversal) ElementMap(args ...interface{}) *GraphTraversal {
 // Emit adds the emit step to the GraphTraversal.
 func (g *GraphTraversal) Emit(args ...interface{}) *GraphTraversal {
 	g.bytecode.addStep("emit", args...)
+	return g
+}
+
+// Fail adds the fail step to the GraphTraversal.
+func (g *GraphTraversal) Fail(args ...interface{}) *GraphTraversal {
+	g.bytecode.addStep("fail", args...)
 	return g
 }
 
@@ -368,6 +386,18 @@ func (g *GraphTraversal) Max(args ...interface{}) *GraphTraversal {
 // Mean adds the mean step to the GraphTraversal.
 func (g *GraphTraversal) Mean(args ...interface{}) *GraphTraversal {
 	g.bytecode.addStep("mean", args...)
+	return g
+}
+
+// MergeE adds the mergeE step to the GraphTraversal.
+func (g *GraphTraversal) MergeE(args ...interface{}) *GraphTraversal {
+	g.bytecode.addStep("mergeE", args...)
+	return g
+}
+
+// MergeV adds the mergeE step to the GraphTraversal.
+func (g *GraphTraversal) MergeV(args ...interface{}) *GraphTraversal {
+	g.bytecode.addStep("mergeV", args...)
 	return g
 }
 

@@ -445,6 +445,16 @@ func (*textP) StartingWith(args ...interface{}) TextPredicate {
 	return newTextP("startingWith", args...)
 }
 
+// NotRegex TextPredicate determines if a string matches the specified regex expression.
+func (*textP) NotRegex(args ...interface{}) TextPredicate {
+	return newTextP("notRegex", args...)
+}
+
+// Regex TextPredicate determines if a string matches the specified regex expression.
+func (*textP) Regex(args ...interface{}) TextPredicate {
+	return newTextP("regex", args...)
+}
+
 // And TextPredicate returns a TextPredicate composed of two predicates (logical AND of them).
 func (tp *textP) And(args ...interface{}) TextPredicate {
 	return newTextPWithP("and", *tp, args...)
