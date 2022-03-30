@@ -32,7 +32,7 @@ If you would like to build and/or test the source code, you can do so with docke
 
 Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
 
-`docker-compose up --exit-code-from integration-tests integration-tests`
+`docker-compose up --exit-code-from gremlin-go-integration-tests gremlin-go-integration-tests`
 
 ### Building Directly
 
