@@ -62,7 +62,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to Apache Hadoop 3.3.1.
 * Bumped to Apache Spark 3.2.0.
 * Bumped node.js in `gremlin-javascript` to v16.13.0.
-* Bumped to `jackson-databind` 2.13.1.
 * Changed `NumberHelper` to properly cast to `byte` and `short` rather than default coercing to `Integer`.
 * Modified some driver defaults (maximum content length, pool size, maximum in process) to be more consistent with one another.
 * Fixed a potential connection load balancing issue due to a race condition not updating the usage count.
@@ -80,6 +79,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Ensured that new properties are added before triggering the associated event.
 * Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
 * Added Groovy `Translator` for .NET.
+* Bumped to `jackson-databind` 2.13.2.2.
 * Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
 * Fixed bug in `JavaTranslator` that did not handle `has()` well where `null` was the first argument.
 * Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
