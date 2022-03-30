@@ -21,6 +21,7 @@
 
 #endregion
 
+using Gremlin.Net.Driver.Exceptions;
 using System;
 using System.IO;
 using System.Net.WebSockets;
@@ -33,11 +34,12 @@ namespace Gremlin.Net.Driver
     {
         private const int ReceiveBufferSize = 1024;
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
-        private readonly ClientWebSocket _client;
+        private readonly IClientWebSocket _client;
 
-        public WebSocketConnection(WebSocketSettings settings)
+        public WebSocketConnection(IClientWebSocket client, WebSocketSettings settings)
         {
-            _client = new ClientWebSocket();
+            _client = client;
+
 #if NET6_0_OR_GREATER
             if (settings.UseCompression)
             {
@@ -99,6 +101,11 @@ namespace Gremlin.Net.Driver
             {
                 var receiveBuffer = new ArraySegment<byte>(buffer);
                 received = await _client.ReceiveAsync(receiveBuffer, CancellationToken.None).ConfigureAwait(false);
+                if (received.MessageType == WebSocketMessageType.Close)
+                {
+                    throw new ConnectionClosedException(received.CloseStatus, received.CloseStatusDescription);
+                }
+
                 ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
             } while (!received.EndOfMessage);
 

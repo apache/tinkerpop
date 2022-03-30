@@ -40,6 +40,7 @@ namespace Gremlin.Net.Driver
         ///     object used to configure WebSocket connections.
         /// </summary>
         public Action<ClientWebSocketOptions> WebSocketConfigurationCallback { get; set; }
+
 #if NET6_0_OR_GREATER
         /// <summary>
         ///     Gets or sets whether compressions will be used. The default is true. (Only available since .NET 6.)

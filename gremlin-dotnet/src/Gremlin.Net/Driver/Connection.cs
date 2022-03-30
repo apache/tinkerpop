@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,7 +56,7 @@ namespace Gremlin.Net.Driver
         private int _writeInProgress = 0;
         private const int Closed = 1;
 
-        public Connection(Uri uri, string username, string password, IMessageSerializer messageSerializer,
+        public Connection(IClientWebSocket clientWebSocket, Uri uri, string username, string password, IMessageSerializer messageSerializer,
             WebSocketSettings webSocketSettings, string sessionId)
         {
             _uri = uri;
@@ -69,7 +68,7 @@ namespace Gremlin.Net.Driver
                 _sessionEnabled = true;
             }
             _messageSerializer = messageSerializer;
-            _webSocketConnection = new WebSocketConnection(webSocketSettings);
+            _webSocketConnection = new WebSocketConnection(clientWebSocket, webSocketSettings);
         }
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
