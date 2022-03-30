@@ -1486,7 +1486,7 @@ offered].
 
 [source,yaml]
 authentication: {
-  className: org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator,
+  authenticator: org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator,
   config: {
     principal: gremlinserver/hostname.your.org@YOUR.REALM,
     keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
