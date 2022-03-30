@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -266,6 +267,23 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                 }
                             }
                         }
+
+                        // special case has() where the first arg is null - sometimes this can end up with the T being
+                        // null and in 3.5.x that generates an exception which raises badly in the translator. it is
+                        // safer to force this to the String form by letting this "found" version pass. In java this
+                        // form of GraphTraversal can't be produced because of validations for has(T, ...) but in
+                        // other language it might be allowed which means that has((T) null, ...) from something like
+                        // python will end up as has((String) null, ...) which filters rather than generates an
+                        // exception. calling the T version even in a non-JVM language seems odd and more likely the
+                        // caller was shooting for the String one, but ugh who knows. this issue showcases again how
+                        // badly bytecode should either change to use gremlin-language and go away or bytecode should
+                        // get a safer way to be translated to a traversal with more explicit calls that don't rely
+                        // on reflection.
+                        if (methodName.equals(GraphTraversal.Symbols.has) && newArguments.length > 0 && null == newArguments[0] &&
+                            method.getParameterTypes()[0].isAssignableFrom(org.apache.tinkerpop.gremlin.structure.T.class)) {
+                            found = false;
+                        }
+
                         if (found) {
                             return 0 == newArguments.length ? method.invoke(delegate) : method.invoke(delegate, newArguments);
                         }

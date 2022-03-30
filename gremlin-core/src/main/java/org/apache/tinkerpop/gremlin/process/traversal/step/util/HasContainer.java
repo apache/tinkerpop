@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -51,10 +52,12 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         // it is OK to evaluate equality of ids via toString(), given that the test suite enforces the value of
         // id().toString() to be a first class representation of the identifier. a string test is only executed
         // if the predicate value is a String.  this allows stuff like: g.V().has(id,lt(10)) to work properly
-        if (this.key.equals(T.id.getAccessor()))
-            return testingIdString ? testIdAsString(element) : testId(element);
-        if (this.key.equals(T.label.getAccessor()))
-            return testLabel(element);
+        if (this.key != null) {
+            if (this.key.equals(T.id.getAccessor()))
+                return testingIdString ? testIdAsString(element) : testId(element);
+            if (this.key.equals(T.label.getAccessor()))
+                return testLabel(element);
+        }
 
         final Iterator<? extends Property> itty = element.properties(this.key);
         try {
@@ -69,10 +72,12 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     public final boolean test(final Property property) {
-        if (this.key.equals(T.value.getAccessor()))
-            return testValue(property);
-        if (this.key.equals(T.key.getAccessor()))
-            return testKey(property);
+        if (this.key != null) {
+            if (this.key.equals(T.value.getAccessor()))
+                return testValue(property);
+            if (this.key.equals(T.key.getAccessor()))
+                return testKey(property);
+        }
         if (property instanceof Element)
             return test((Element) property);
         return false;
@@ -99,7 +104,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     public final String toString() {
-        return this.key + '.' + this.predicate;
+        return Objects.toString(this.key) + '.' + this.predicate;
     }
 
     public HasContainer clone() {
@@ -144,7 +149,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
      * is only relevant if the has relates to an {@link T#id}.
      */
     private boolean isStringTestable() {
-        if (this.key.equals(T.id.getAccessor())) {
+        if (this.key != null && this.key.equals(T.id.getAccessor())) {
             final Object predicateValue = null == this.predicate ? null : this.predicate.getValue();
             if (predicateValue instanceof Collection) {
                 final Collection collection = (Collection) predicateValue;

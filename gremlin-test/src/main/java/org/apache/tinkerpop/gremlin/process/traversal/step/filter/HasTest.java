@@ -70,6 +70,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXnullX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXnull_testnullkeyX();
+
     public abstract Traversal<Edge, Edge> get_g_E_hasXnullX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXnullX();
@@ -384,6 +386,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_hasXnullX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXnullX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXnull_testnullkeyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXnull_testnullkeyX();
         printTraversalForm(traversal);
         assertThat(traversal.hasNext(), is(false));
     }
@@ -913,6 +923,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXnullX() {
             return g.V().has(null);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXnull_testnullkeyX() {
+            return g.V().has((String) null, "test-null-key");
         }
 
         @Override

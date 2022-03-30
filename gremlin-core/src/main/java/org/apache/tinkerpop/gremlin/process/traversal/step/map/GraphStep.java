@@ -202,7 +202,8 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
      * @return true if the {@link HasContainer} updated ids and thus, was processed.
      */
     public static boolean processHasContainerIds(final GraphStep<?, ?> graphStep, final HasContainer hasContainer) {
-        if (hasContainer.getKey().equals(T.id.getAccessor()) && graphStep.ids.length == 0 &&
+        final String key = hasContainer.getKey();
+        if (key != null && key.equals(T.id.getAccessor()) && graphStep.ids.length == 0 &&
                 (hasContainer.getBiPredicate() == Compare.eq || hasContainer.getBiPredicate() == Contains.within)) {
             graphStep.addIds(hasContainer.getValue());
             return true;

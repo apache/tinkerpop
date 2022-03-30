@@ -79,14 +79,14 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
         graph.tx().readWrite();
         // get a label being search on
         Optional<String> label = hasContainers.stream()
-                .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                .filter(hasContainer -> hasContainer.getKey() != null && hasContainer.getKey().equals(T.label.getAccessor()))
                 .filter(hasContainer -> Compare.eq == hasContainer.getBiPredicate())
                 .filter(hasContainer -> hasContainer.getValue() != null)
                 .map(hasContainer -> (String) hasContainer.getValue())
                 .findAny();
         if (!label.isPresent())
             label = hasContainers.stream()
-                    .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                    .filter(hasContainer -> hasContainer.getKey() != null && hasContainer.getKey().equals(T.label.getAccessor()))
                     .filter(hasContainer -> hasContainer.getPredicate() instanceof LabelP)
                     .filter(hasContainer -> hasContainer.getValue() != null)
                     .map(hasContainer -> (String) hasContainer.getValue())
@@ -99,7 +99,7 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
             for (final HasContainer hasContainer : hasContainers) {
                 final String key = hasContainer.getKey();
                 final Object value = hasContainer.getValue();
-                if (!key.equals(T.label.getAccessor()) && baseGraph.hasSchemaIndex(labelValue, key)) {
+                if (key != null && !key.equals(T.label.getAccessor()) && baseGraph.hasSchemaIndex(labelValue, key)) {
                     final BiPredicate<?, ?> predicate = hasContainer.getBiPredicate();
                     Iterable<Neo4jNode> nodes = null;
                     if (Compare.eq == predicate) {
