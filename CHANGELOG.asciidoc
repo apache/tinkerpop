@@ -28,6 +28,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Ensured that new properties are added before triggering the associated event.
 * Added support for WebSocket compression in the .NET driver. (Only available on .NET 6.)
 * Added Groovy `Translator` for .NET.
+* Bumped to `jackson-databind` 2.13.2.2.
 * Fixed bug in `DefaultTraversal.clone()` where the resulting `Traversal` copy could not be re-iterated.
 * Fixed bug in `JavaTranslator` that did not handle `has()` well where `null` was the first argument.
 * Renamed `GremlinBaseVisitor` to `DefaultGremlinBaseVisitor` in `gremlin-core` to prevent conflict with the generated `GremlinBaseVisitor` in `gremlin-language`.
