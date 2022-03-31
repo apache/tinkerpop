@@ -43,6 +43,8 @@ Please see the link:https://tinkerpop.apache.org/docs/current/dev/developer/#_co
 
 === Get Started
 
+Download link:https://tinkerpop.apache.org/download.html[Gremlin Console] (compatible with Java 8/11) and unzip to a directory, then:
+
 [source,bash]
 ----
 $ bin/gremlin.sh
