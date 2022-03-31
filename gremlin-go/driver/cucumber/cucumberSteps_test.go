@@ -30,11 +30,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"testing"
 )
 
-// TODO proper error handling
 type tinkerPopGraph struct {
-	*TinkerPopWorld
+	*CucumberWorld
 }
 
 var parsers map[*regexp.Regexp]func(string, string) interface{}
@@ -695,7 +695,7 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 }
 
 var tg = &tinkerPopGraph{
-	NewTinkerPopWorld(),
+	NewCucumberWorld(),
 }
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
@@ -732,4 +732,39 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
 	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)
+}
+
+func skipTestsIfNotEnabled(t *testing.T, testSuiteName string, testSuiteEnabled bool) {
+	if !testSuiteEnabled {
+		t.Skip(fmt.Sprintf("Skipping %s because %s tests are not enabled.", t.Name(), testSuiteName))
+	}
+}
+
+func getEnvOrDefaultBool(key string, defaultValue bool) bool {
+	value := getEnvOrDefaultString(key, "")
+	if len(value) != 0 {
+		boolValue, err := strconv.ParseBool(value)
+		if err == nil {
+			return boolValue
+		}
+	}
+	return defaultValue
+}
+
+func TestCucumberFeatures(t *testing.T) {
+	skipTestsIfNotEnabled(t, "cucumber godog tests",
+		getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", false))
+	suite := godog.TestSuite{
+		TestSuiteInitializer: InitializeTestSuite,
+		ScenarioInitializer:  InitializeScenario,
+		Options: &godog.Options{
+			Format:   "pretty",
+			Paths:    []string{"../../../gremlin-test/features"},
+			TestingT: t, // Testing instance that will run subtests.
+		},
+	}
+
+	if suite.Run() != 0 {
+		t.Fatal("non-zero status returned, failed to run feature tests")
+	}
 }

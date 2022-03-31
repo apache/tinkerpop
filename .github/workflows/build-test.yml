@@ -222,13 +222,6 @@ jobs:
           docker-compose up --exit-code-from gremlin-go-integration-tests gremlin-go-integration-tests
           docker-compose down
 
-      # Note exit code is intentionally ignored here because server is not set up on docker property yet.
-      - name: Execute Godog tests
-        working-directory: ./gremlin-go
-        run: |
-          docker-compose up gremlin-go-godog-tests
-          docker-compose down
-
       - name: Go-Vet
         working-directory: ./gremlin-go
         run: go vet ./...

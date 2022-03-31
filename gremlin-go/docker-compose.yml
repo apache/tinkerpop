@@ -30,26 +30,10 @@ services:
     environment:
       - GREMLIN_SERVER_URL=ws://gremlin-server:8182/gremlin
       - RUN_INTEGRATION_TESTS=true
+      - RUN_INTEGRATION_WITH_ALIAS_TESTS=false
     working_dir: /go_app
     command: >
       bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" | gotestfmt"
-    depends_on:
-      - gremlin-server
-  # TODO
-  gremlin-go-godog-tests:
-    container_name: gremlin-go-godog-tests
-    image: golang:1.17
-    volumes:
-      - .:/go_app
-      - ./../gremlin-test:/var/gremlin-test
-    environment:
-      - GREMLIN_SERVER_URL=ws://gremlin-server:8182/gremlin
-      - RUN_INTEGRATION_TESTS=true
-    working_dir: /go_app
-    command: >
-      bash -c "go get github.com/cucumber/godog/cmd/godog
-      && cd cucumber
-      && godog /var/gremlin-test/features"
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
     depends_on:
       - gremlin-server
