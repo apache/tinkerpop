@@ -88,7 +88,7 @@ limitations under the License.
                         <version>1.2.1</version>
                         <executions>
                             <execution>
-                                <id>Run Integration tests</id>
+                                <id>run integration tests</id>
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>exec</goal>
@@ -104,7 +104,7 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>Run Godog tests</id>
+                                <id>run godog tests</id>
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>exec</goal>
@@ -134,7 +134,7 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>Shutdown container</id>
+                                <id>shutdown container</id>
                                 <phase>verify</phase>
                                 <configuration>
                                     <executable>docker-compose</executable>
