@@ -23,7 +23,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"golang.org/x/text/language"
-	"runtime")
+	"runtime"
+	"time"
+)
 
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
@@ -82,8 +84,8 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		settings.MaximumConcurrentConnections = 1
 	}
 
-	pool, err := newLoadBalancingPool(url, settings.AuthInfo, settings.TlsConfig, settings.KeepAliveInterval, settings.WriteDeadline, settings.NewConnectionThreshold,
-		settings.MaximumConcurrentConnections, logHandler)
+	pool, err := newLoadBalancingPool(url, logHandler, settings.AuthInfo, settings.TlsConfig, settings.KeepAliveInterval,
+		settings.WriteDeadline, settings.NewConnectionThreshold, settings.MaximumConcurrentConnections)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client with url '%s' and transport type '%v'. Error message: '%s'",
 			url, settings.TransporterType, err.Error())
@@ -120,7 +122,7 @@ func (client *Client) Close() {
 func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString, client.traversalSource, client.session, bindings...)
-	return client.connections.write(&request)
+	result, err := client.connections.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
 	}

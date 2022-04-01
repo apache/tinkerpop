@@ -142,13 +142,13 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet removes self from container.", func(t *testing.T) {
-		container := map[string]ResultSet{}
-		assert.Equal(t, 0, len(container))
+		container := getSyncMap()
+		assert.Equal(t, 0, container.size())
 		channelResultSet := newChannelResultSet(mockID, container)
-		container[mockID] = channelResultSet
-		assert.Equal(t, 1, len(container))
+		container.store(mockID, channelResultSet)
+		assert.Equal(t, 1, container.size())
 		channelResultSet.Close()
-		assert.Equal(t, 0, len(container))
+		assert.Equal(t, 0, container.size())
 	})
 }
 

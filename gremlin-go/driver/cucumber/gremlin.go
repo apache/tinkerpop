@@ -25,7 +25,7 @@ package gremlingo
 
 import (
 	"errors"
-	"github.com/lyndonb-bq/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/driver"
 )
 
 var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal{

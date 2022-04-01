@@ -47,7 +47,6 @@ func TestClient(t *testing.T) {
 		result, err := resultSet.one()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
-		err = client.Close()
-		assert.Nil(t, err)
+		client.Close()
 	})
 }

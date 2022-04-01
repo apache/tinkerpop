@@ -91,8 +91,8 @@ func NewDriverRemoteConnection(
 		settings.MaximumConcurrentConnections = 1
 	}
 
-	pool, err := newLoadBalancingPool(url, settings.AuthInfo, settings.TlsConfig, settings.KeepAliveInterval, settings.WriteDeadline, settings.NewConnectionThreshold,
-		settings.MaximumConcurrentConnections, logHandler)
+	pool, err := newLoadBalancingPool(url, logHandler, settings.AuthInfo, settings.TlsConfig, settings.KeepAliveInterval,
+		settings.WriteDeadline, settings.NewConnectionThreshold, settings.MaximumConcurrentConnections)
 	if err != nil {
 		if err != nil {
 			logHandler.logf(Error, logErrorGeneric, "NewDriverRemoteConnection", err.Error())
@@ -128,11 +128,7 @@ func (driver *DriverRemoteConnection) Close() {
 	} else {
 		driver.client.logHandler.logf(Info, closeDriverRemoteConnection, driver.client.url)
 	}
-	return driver.client.Close()
-	if err != nil {
-		driver.client.logHandler.logf(Error, logErrorGeneric, "Driver.Close()", err.Error())
-	}
-	return err
+	driver.client.Close()
 }
 
 // Submit sends a string traversal to the server.

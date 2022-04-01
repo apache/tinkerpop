@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"sync"
+	"time"
 )
 
 type connectionPool interface {
@@ -41,9 +42,12 @@ const defaultNewConnectionThreshold = 4
 // removed from the pool.
 type loadBalancingPool struct {
 	url        string
+	logHandler *logHandler
 	authInfo   *AuthInfo
 	tlsConfig  *tls.Config
-	logHandler *logHandler
+	keepAliveInterval time.Duration
+	writeDeadline time.Duration
+
 
 	newConnectionThreshold int
 	connections            []*connection
@@ -123,7 +127,8 @@ func (pool *loadBalancingPool) getLeastUsedConnection() (*connection, error) {
 }
 
 func (pool *loadBalancingPool) newConnection() (*connection, error) {
-	connection, err := createConnection(pool.url, pool.authInfo, pool.tlsConfig, pool.logHandler)
+	connection, err := createConnection(pool.url, pool.logHandler, pool.authInfo, pool.tlsConfig,
+		pool.keepAliveInterval, pool.writeDeadline)
 	if err != nil {
 		return nil, err
 	}
@@ -131,19 +136,22 @@ func (pool *loadBalancingPool) newConnection() (*connection, error) {
 	return connection, nil
 }
 
-func newLoadBalancingPool(url string, authInfo *AuthInfo, tlsConfig *tls.Config, newConnectionThreshold int,
-	maximumConcurrentConnections int, logHandler *logHandler) (connectionPool, error) {
+func newLoadBalancingPool(url string, logHandler *logHandler, authInfo *AuthInfo, tlsConfig *tls.Config,
+	keepAliveInterval time.Duration, writeDeadline time.Duration, newConnectionThreshold int,
+	maximumConcurrentConnections int) (connectionPool, error) {
 	pool := make([]*connection, 0, maximumConcurrentConnections)
-	initialConnection, err := createConnection(url, authInfo, tlsConfig, logHandler)
+	initialConnection, err := createConnection(url, logHandler, authInfo, tlsConfig, keepAliveInterval, writeDeadline)
 	if err != nil {
 		return nil, err
 	}
 	pool = append(pool, initialConnection)
 	return &loadBalancingPool{
 		url:                    url,
+		logHandler:             logHandler,
 		authInfo:               authInfo,
 		tlsConfig:              tlsConfig,
-		logHandler:             logHandler,
+		keepAliveInterval: keepAliveInterval,
+		writeDeadline: writeDeadline,
 		newConnectionThreshold: newConnectionThreshold,
 		connections:            pool,
 	}, nil
