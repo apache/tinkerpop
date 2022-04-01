@@ -307,16 +307,51 @@ limitations under the License.
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
                                 <img src="img/community/go.png" class="img-fluid me-3" alt="img">Go
-                                <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
-                                                                       class="img-fluid me-2 " alt="img"> <img
-                                        src="img/community/tool.png" class="img-fluid " alt="img"></div>
+                                <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
+                                                                       class="img-fluid me-2 " alt="img">
+                                                                  <img src="img/community/third-party.png"
+                                                                       class="img-fluid me-2 " alt="img">
+                                                                  <img src="img/community/tool.png"
+                                                                       class="img-fluid " alt="img"></div>
                             </button>
                         </h2>
                         <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3"
                              data-bs-parent="#accordionExample">
                             <div class="accordion-body">
-
                                 <div class="d-flex align-items-start">
+                                    <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
+                                         alt="img">
+                                    <div>
+                                        <p class="ft-17">
+                                            Apache TinkerPop’s Gremlin-Go implements Gremlin for the Go programming
+                                            language. It offers the features of the Gremlin language in a form familiar
+                                            to Go developers.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <pre><code class="language-go">g := gremlingo.Traversal_().WithRemote(...)
+result, err := g.V().Out("knows").In("created").ToList()
+</code></pre>
+                                                </div>
+                                                <p class="medium black">Example</p>
+                                            </div>
+                                            <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
+                                                <div class="code-box">
+                                                    <code class="language-go-module">COMING SOON</code>
+                                                </div>
+                                                <p class="medium black">Go Module</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  </div>
+
+                                  <div class="mt-4 text-center text-blue ft-17">
+                                      <a href="https://github.com/apache/tinkerpop/blob/master/gremlin-go/README.md"
+                                         target="_blank"><u>Learn More</u></a>
+                                  </div>
+
+                                  <div class="d-flex align-items-start">
                                     <img src="img/community/arrow-right-circle-fill.svg" class="img-fluid me-3 pt-1"
                                          alt="img">
                                     <div>
@@ -375,7 +410,7 @@ def l = g.V().out('knows').in('created').toList()
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
                                                     <code class="language-groovy">implementation
-                                                        'org.apache.tinkerpop:gremlin-groovy:3.5.1'</code>
+                                                        'org.apache.tinkerpop:gremlin-groovy:3.5.2'</code>
                                                 </div>
                                                 <p class="medium black">Gradle</p>
                                             </div>
@@ -463,7 +498,7 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
 &lt;dependency&gt;
   &lt;groupId&gt;org.apache.tinkerpop&lt;/groupId&gt;
   &lt;artifactId&gt;gremlin-driver&lt;/artifactId&gt;
-  &lt;version&gt;3.5.1&lt;/version&gt;
+  &lt;version&gt;3.5.2&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
                                                 </div>
                                                 <p class="medium black">Maven</p>
@@ -655,7 +690,7 @@ var l = await g.V().Out("knows").In("created").ToList();</code></pre>
                                             </div>
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
-                                                    <pre><code class="language-plain">dotnet add package Gremlin.Net --version 3.5.1</code></pre>
+                                                    <pre><code class="language-plain">dotnet add package Gremlin.Net --version 3.5.2</code></pre>
                                                 </div>
                                                 <p class="medium black">NuGet</p>
                                             </div>
@@ -1093,10 +1128,6 @@ l = g.V().both()[1:3].toList()</code></pre>
         </div>
     </div>
 </div>
-
-</div>
-</div>
-
 
 <!-- footer -->
 

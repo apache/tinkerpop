@@ -1,5 +1,5 @@
-/* PrismJS 1.26.0
-https://prismjs.com/download.html#themes=prism-tomorrow&languages=markup+css+clike+javascript+csharp+groovy+java+python */
+/* PrismJS 1.27.0
+https://prismjs.com/download.html#themes=prism-tomorrow&languages=markup+css+clike+javascript+csharp+go+go-module+groovy+java+python */
 /// <reference lib="WebWorker"/>
 
 var _self = (typeof window !== 'undefined')
@@ -661,6 +661,9 @@ var Prism = (function (_self) {
 				language: language
 			};
 			_.hooks.run('before-tokenize', env);
+			if (!env.grammar) {
+				throw new Error('The language "' + env.language + '" has no grammar.');
+			}
 			env.tokens = _.tokenize(env.code, env.grammar);
 			_.hooks.run('after-tokenize', env);
 			return Token.stringify(_.util.encode(env.tokens), env.language);
@@ -1597,8 +1600,24 @@ Prism.languages.javascript['class-name'][0].pattern = /(\b(?:class|extends|imple
 
 Prism.languages.insertBefore('javascript', 'keyword', {
 	'regex': {
-		// eslint-disable-next-line regexp/no-dupe-characters-character-class
-		pattern: /((?:^|[^$\w\xA0-\uFFFF."'\])\s]|\b(?:return|yield))\s*)\/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\\[\r\n])+\/[dgimyus]{0,7}(?=(?:\s|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/,
+		pattern: RegExp(
+			// lookbehind
+			// eslint-disable-next-line regexp/no-dupe-characters-character-class
+			/((?:^|[^$\w\xA0-\uFFFF."'\])\s]|\b(?:return|yield))\s*)/.source +
+			// Regex pattern:
+			// There are 2 regex patterns here. The RegExp set notation proposal added support for nested character
+			// classes if the `v` flag is present. Unfortunately, nested CCs are both context-free and incompatible
+			// with the only syntax, so we have to define 2 different regex patterns.
+			/\//.source +
+			'(?:' +
+			/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\\[\r\n])+\/[dgimyus]{0,7}/.source +
+			'|' +
+			// `v` flag syntax. This supports 3 levels of nested character classes.
+			/(?:\[(?:[^[\]\\\r\n]|\\.|\[(?:[^[\]\\\r\n]|\\.|\[(?:[^[\]\\\r\n]|\\.)*\])*\])*\]|\\.|[^/\\\[\r\n])+\/[dgimyus]{0,7}v[dgimyus]{0,7}/.source +
+			')' +
+			// lookahead
+			/(?=(?:\s|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/.source
+		),
 		lookbehind: true,
 		greedy: true,
 		inside: {
@@ -2066,85 +2085,136 @@ Prism.languages.js = Prism.languages.javascript;
 
 }(Prism));
 
-Prism.languages.groovy = Prism.languages.extend('clike', {
-	'string': [
-		{
-			// https://groovy-lang.org/syntax.html#_dollar_slashy_string
-			pattern: /("""|''')(?:[^\\]|\\[\s\S])*?\1|\$\/(?:[^/$]|\$(?:[/$]|(?![/$]))|\/(?!\$))*\/\$/,
-			greedy: true
-		},
-		{
-			// TODO: Slash strings (e.g. /foo/) can contain line breaks but this will cause a lot of trouble with
-			// simple division (see JS regex), so find a fix maybe?
-			pattern: /(["'/])(?:\\.|(?!\1)[^\\\r\n])*\1/,
-			greedy: true
-		}
+Prism.languages.go = Prism.languages.extend('clike', {
+	'string': {
+		pattern: /(^|[^\\])"(?:\\.|[^"\\\r\n])*"|`[^`]*`/,
+		lookbehind: true,
+		greedy: true
+	},
+	'keyword': /\b(?:break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go(?:to)?|if|import|interface|map|package|range|return|select|struct|switch|type|var)\b/,
+	'boolean': /\b(?:_|false|iota|nil|true)\b/,
+	'number': [
+		// binary and octal integers
+		/\b0(?:b[01_]+|o[0-7_]+)i?\b/i,
+		// hexadecimal integers and floats
+		/\b0x(?:[a-f\d_]+(?:\.[a-f\d_]*)?|\.[a-f\d_]+)(?:p[+-]?\d+(?:_\d+)*)?i?(?!\w)/i,
+		// decimal integers and floats
+		/(?:\b\d[\d_]*(?:\.[\d_]*)?|\B\.\d[\d_]*)(?:e[+-]?[\d_]+)?i?(?!\w)/i
 	],
-	'keyword': /\b(?:abstract|as|assert|boolean|break|byte|case|catch|char|class|const|continue|def|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|in|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|trait|transient|try|void|volatile|while)\b/,
-	'number': /\b(?:0b[01_]+|0x[\da-f_]+(?:\.[\da-f_p\-]+)?|[\d_]+(?:\.[\d_]+)?(?:e[+-]?\d+)?)[glidf]?\b/i,
-	'operator': {
-		pattern: /(^|[^.])(?:~|==?~?|\?[.:]?|\*(?:[.=]|\*=?)?|\.[@&]|\.\.<|\.\.(?!\.)|-[-=>]?|\+[+=]?|!=?|<(?:<=?|=>?)?|>(?:>>?=?|=)?|&[&=]?|\|[|=]?|\/=?|\^=?|%=?)/,
+	'operator': /[*\/%^!=]=?|\+[=+]?|-[=-]?|\|[=|]?|&(?:=|&|\^=?)?|>(?:>=?|=)?|<(?:<=?|=|-)?|:=|\.\.\./,
+	'builtin': /\b(?:append|bool|byte|cap|close|complex|complex(?:64|128)|copy|delete|error|float(?:32|64)|u?int(?:8|16|32|64)?|imag|len|make|new|panic|print(?:ln)?|real|recover|rune|string|uintptr)\b/
+});
+
+Prism.languages.insertBefore('go', 'string', {
+	'char': {
+		pattern: /'(?:\\.|[^'\\\r\n]){0,10}'/,
+		greedy: true
+	}
+});
+
+delete Prism.languages.go['class-name'];
+
+// https://go.dev/ref/mod#go-mod-file-module
+
+Prism.languages['go-mod'] = Prism.languages['go-module'] = {
+	'comment': {
+		pattern: /\/\/.*/,
+		greedy: true
+	},
+	'version': {
+		pattern: /(^|[\s()[\],])v\d+\.\d+\.\d+(?:[+-][-+.\w]*)?(?![^\s()[\],])/,
+		lookbehind: true,
+		alias: 'number'
+	},
+	'go-version': {
+		pattern: /((?:^|\s)go\s+)\d+(?:\.\d+){1,2}/,
+		lookbehind: true,
+		alias: 'number'
+	},
+	'keyword': {
+		pattern: /^([ \t]*)(?:exclude|go|module|replace|require|retract)\b/m,
 		lookbehind: true
 	},
-	'punctuation': /\.+|[{}[\];(),:$]/
-});
-
-Prism.languages.insertBefore('groovy', 'string', {
-	'shebang': {
-		pattern: /#!.+/,
-		alias: 'comment'
-	}
-});
-
-Prism.languages.insertBefore('groovy', 'punctuation', {
-	'spock-block': /\b(?:and|cleanup|expect|given|setup|then|when|where):/
-});
-
-Prism.languages.insertBefore('groovy', 'function', {
-	'annotation': {
-		pattern: /(^|[^.])@\w+/,
-		lookbehind: true,
-		alias: 'punctuation'
-	}
-});
-
-// Handle string interpolation
-Prism.hooks.add('wrap', function (env) {
-	if (env.language === 'groovy' && env.type === 'string') {
-		var delimiter = env.content[0];
-
-		if (delimiter != "'") {
-			var pattern = /([^\\])(?:\$(?:\{.*?\}|[\w.]+))/;
-			if (delimiter === '$') {
-				pattern = /([^\$])(?:\$(?:\{.*?\}|[\w.]+))/;
-			}
-
-			// To prevent double HTML-encoding we have to decode env.content first
-			env.content = env.content.replace(/&lt;/g, '<').replace(/&amp;/g, '&');
-
-			env.content = Prism.highlight(env.content, {
-				'expression': {
-					pattern: pattern,
-					lookbehind: true,
-					inside: Prism.languages.groovy
-				}
-			});
-
-			env.classes.push(delimiter === '/' ? 'regex' : 'gstring');
-		}
-	}
-});
+	'operator': /=>/,
+	'punctuation': /[()[\],]/
+};
 
 (function (Prism) {
 
-	var keywords = /\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|non-sealed|null|open|opens|package|permits|private|protected|provides|public|record|requires|return|sealed|short|static|strictfp|super|switch|synchronized|this|throw|throws|to|transient|transitive|try|uses|var|void|volatile|while|with|yield)\b/;
+	var interpolation = {
+		pattern: /((?:^|[^\\$])(?:\\{2})*)\$(?:\w+|\{[^{}]*\})/,
+		lookbehind: true,
+		inside: {
+			'interpolation-punctuation': {
+				pattern: /^\$\{?|\}$/,
+				alias: 'punctuation'
+			},
+			'expression': {
+				pattern: /[\s\S]+/,
+				inside: null // see below
+			}
+		}
+	};
+
+	Prism.languages.groovy = Prism.languages.extend('clike', {
+		'string': {
+			// https://groovy-lang.org/syntax.html#_dollar_slashy_string
+			pattern: /'''(?:[^\\]|\\[\s\S])*?'''|'(?:\\.|[^\\'\r\n])*'/,
+			greedy: true
+		},
+		'keyword': /\b(?:abstract|as|assert|boolean|break|byte|case|catch|char|class|const|continue|def|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|in|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|trait|transient|try|void|volatile|while)\b/,
+		'number': /\b(?:0b[01_]+|0x[\da-f_]+(?:\.[\da-f_p\-]+)?|[\d_]+(?:\.[\d_]+)?(?:e[+-]?\d+)?)[glidf]?\b/i,
+		'operator': {
+			pattern: /(^|[^.])(?:~|==?~?|\?[.:]?|\*(?:[.=]|\*=?)?|\.[@&]|\.\.<|\.\.(?!\.)|-[-=>]?|\+[+=]?|!=?|<(?:<=?|=>?)?|>(?:>>?=?|=)?|&[&=]?|\|[|=]?|\/=?|\^=?|%=?)/,
+			lookbehind: true
+		},
+		'punctuation': /\.+|[{}[\];(),:$]/
+	});
+
+	Prism.languages.insertBefore('groovy', 'string', {
+		'shebang': {
+			pattern: /#!.+/,
+			alias: 'comment',
+			greedy: true
+		},
+		'interpolation-string': {
+			// TODO: Slash strings (e.g. /foo/) can contain line breaks but this will cause a lot of trouble with
+			// simple division (see JS regex), so find a fix maybe?
+			pattern: /"""(?:[^\\]|\\[\s\S])*?"""|(["/])(?:\\.|(?!\1)[^\\\r\n])*\1|\$\/(?:[^/$]|\$(?:[/$]|(?![/$]))|\/(?!\$))*\/\$/,
+			greedy: true,
+			inside: {
+				'interpolation': interpolation,
+				'string': /[\s\S]+/
+			}
+		}
+	});
+
+	Prism.languages.insertBefore('groovy', 'punctuation', {
+		'spock-block': /\b(?:and|cleanup|expect|given|setup|then|when|where):/
+	});
+
+	Prism.languages.insertBefore('groovy', 'function', {
+		'annotation': {
+			pattern: /(^|[^.])@\w+/,
+			lookbehind: true,
+			alias: 'punctuation'
+		}
+	});
+
+	interpolation.inside.expression.inside = Prism.languages.groovy;
+
+}(Prism));
+
+(function (Prism) {
+
+	var keywords = /\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|non-sealed|null|open|opens|package|permits|private|protected|provides|public|record(?!\s*[(){}[\]<>=%~.:,;?+\-*/&|^])|requires|return|sealed|short|static|strictfp|super|switch|synchronized|this|throw|throws|to|transient|transitive|try|uses|var|void|volatile|while|with|yield)\b/;
 
 	// full package (optional) + parent classes (optional)
-	var classNamePrefix = /(^|[^\w.])(?:[a-z]\w*\s*\.\s*)*(?:[A-Z]\w*\s*\.\s*)*/.source;
+	var classNamePrefix = /(?:[a-z]\w*\s*\.\s*)*(?:[A-Z]\w*\s*\.\s*)*/.source;
 
 	// based on the java naming conventions
 	var className = {
-		pattern: RegExp(classNamePrefix + /[A-Z](?:[\d_A-Z]*[a-z]\w*)?\b/.source),
+		pattern: RegExp(/(^|[^\w.])/.source + classNamePrefix + /[A-Z](?:[\d_A-Z]*[a-z]\w*)?\b/.source),
 		lookbehind: true,
 		inside: {
 			'namespace': {
@@ -2166,9 +2236,16 @@ Prism.hooks.add('wrap', function (env) {
 		'class-name': [
 			className,
 			{
-				// variables and parameters
+				// variables, parameters, and constructor references
 				// this to support class names (or generic parameters) which do not contain a lower case letter (also works for methods)
-				pattern: RegExp(classNamePrefix + /[A-Z]\w*(?=\s+\w+\s*[;,=()])/.source),
+				pattern: RegExp(/(^|[^\w.])/.source + classNamePrefix + /[A-Z]\w*(?=\s+\w+\s*[;,=()]|\s*(?:\[[\s,]*\]\s*)?::\s*new\b)/.source),
+				lookbehind: true,
+				inside: className.inside
+			},
+			{
+				// class names based on keyword
+				// this to support class names (or generic parameters) which do not contain a lower case letter (also works for methods)
+				pattern: RegExp(/(\b(?:class|enum|extends|implements|instanceof|interface|new|record|throws)\s+)/.source + classNamePrefix + /[A-Z]\w*\b/.source),
 				lookbehind: true,
 				inside: className.inside
 			}
@@ -2216,6 +2293,30 @@ Prism.hooks.add('wrap', function (env) {
 				'operator': /[?&|]/
 			}
 		},
+		'import': [
+			{
+				pattern: RegExp(/(\bimport\s+)/.source + classNamePrefix + /(?:[A-Z]\w*|\*)(?=\s*;)/.source),
+				lookbehind: true,
+				inside: {
+					'namespace': className.inside.namespace,
+					'punctuation': /\./,
+					'operator': /\*/,
+					'class-name': /\w+/
+				}
+			},
+			{
+				pattern: RegExp(/(\bimport\s+static\s+)/.source + classNamePrefix + /(?:\w+|\*)(?=\s*;)/.source),
+				lookbehind: true,
+				alias: 'static',
+				inside: {
+					'namespace': className.inside.namespace,
+					'static': /\b\w+$/,
+					'punctuation': /\./,
+					'operator': /\*/,
+					'class-name': /\w+/
+				}
+			}
+		],
 		'namespace': {
 			pattern: RegExp(
 				/(\b(?:exports|import(?:\s+static)?|module|open|opens|package|provides|requires|to|transitive|uses|with)\s+)(?!<keyword>)[a-z]\w*(?:\.[a-z]\w*)*\.?/
@@ -2293,4 +2394,3 @@ Prism.languages.python = {
 Prism.languages.python['string-interpolation'].inside['interpolation'].inside.rest = Prism.languages.python;
 
 Prism.languages.py = Prism.languages.python;
-

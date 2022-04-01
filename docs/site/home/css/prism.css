@@ -1,5 +1,10 @@
-/* PrismJS 1.26.0
-https://prismjs.com/download.html#themes=prism-tomorrow&languages=markup+css+clike+javascript+csharp+groovy+java+python */
+/**
+ * When adding a new language, be sure to note the changes to the background colors that have been customized to fit
+ * the TinkerPop website style.
+ */
+
+/* PrismJS 1.27.0
+https://prismjs.com/download.html#themes=prism-tomorrow&languages=markup+css+clike+javascript+csharp+go+go-module+groovy+java+python */
 /**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
  * Based on https://github.com/chriskempson/tomorrow-theme
@@ -122,4 +127,3 @@ pre[class*="language-"] {
 .token.inserted {
 	color: green;
 }
-

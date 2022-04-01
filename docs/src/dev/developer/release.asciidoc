@@ -263,6 +263,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
 .. Typically, this need only be done on the `master` branch as we only publish from there.
 .. Update `index.html`.
+.. Update `community.html`, specifically the version numbers for our official releases.
 .. Update link:https://tinkerpop.apache.org/download.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
