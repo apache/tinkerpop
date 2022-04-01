@@ -131,6 +131,7 @@ limitations under the License.
         <module>gremlin-javascript</module>
         <module>gremlin-python</module>
         <module>gremlin-dotnet</module>
+        <module>gremlin-go</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>neo4j-gremlin</module>
@@ -141,7 +142,6 @@ limitations under the License.
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
-        <module>gremlin-go</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
