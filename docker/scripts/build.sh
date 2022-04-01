@@ -67,7 +67,7 @@ if [ -d "${TINKERMEM_PATH}" ]; then
   cd ${TINKERMEM_PATH}
 fi
 
-touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
+touch {gremlin-dotnet,gremlin-go,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
 
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
