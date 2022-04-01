@@ -116,4 +116,4 @@ Update Vertex
         g.V(vid).property(single, 'name', name).next()
 
 NOTE that versions suffixed with "rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and
-thus for early testing purposes only.
+thus for early testing purposes only. These releases are not suitable for production.

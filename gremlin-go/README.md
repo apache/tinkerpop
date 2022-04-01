@@ -1,6 +1,3 @@
-NOTE that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and thus
-for early testing purposes only.
-
 <!--
 
  Licensed to the Apache Software Foundation (ASF) under one
@@ -21,6 +18,9 @@ for early testing purposes only.
  under the License.
 
 -->
+
+__NOTE__ that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and thus
+for early testing purposes only. These releases are not suitable for production.
 
 # Getting Started
 

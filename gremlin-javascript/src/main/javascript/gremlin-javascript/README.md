@@ -136,8 +136,8 @@ const updateVertex = async (vertexId, label, name) => {
 };
 ```
 
-NOTE that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and 
-thus for early testing purposes only.
+__NOTE__ that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and thus
+for early testing purposes only. These releases are not suitable for production.
 
 [tk]: https://tinkerpop.apache.org
 [gremlin]: https://tinkerpop.apache.org/gremlin.html
