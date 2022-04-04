@@ -74,6 +74,7 @@ const (
 	BooleanType        DataType = 0x27
 	TextPType          DataType = 0x28
 	BulkSetType        DataType = 0x2a
+	MergeType          DataType = 0x2e
 	DurationType       DataType = 0x81
 	NullType           DataType = 0xFE
 )
@@ -956,6 +957,8 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 		return &graphBinaryTypeSerializer{dataType: BarrierType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Scope:
 		return &graphBinaryTypeSerializer{dataType: ScopeType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+	case Merge:
+		return &graphBinaryTypeSerializer{dataType: MergeType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case p, Predicate:
 		return &graphBinaryTypeSerializer{dataType: PType, writer: pWriter, logHandler: serializer.logHandler}, nil
 	case textP, TextPredicate:

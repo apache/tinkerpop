@@ -92,6 +92,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         '\n' +
         'import (\n' +
         '\t \"errors\"\n' +
+        '\t \"math\"\n' +
         '\t \"github.com/apache/tinkerpop/gremlin-go/driver\"\n' +
         ')\n'
     )
@@ -129,27 +130,11 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                 writer.write("func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return ")
                 try {
                     writer.write(translator.translate(t.bytecode).script.
-                            replace("xx1", "p[\"xx1\"]").
-                            replace("xx2", "p[\"xx2\"]").
-                            replace("xx3", "p[\"xx3\"]").
-                            replace("v1", "p[\"v1\"]").
-                            replace("v2", "p[\"v2\"]").
-                            replace("v3", "p[\"v3\"]").
-                            replace("v4", "p[\"v4\"]").
-                            replace("v5", "p[\"v5\"]").
-                            replace("v6", "p[\"v6\"]").
-                            replace("vid1", "p[\"vid1\"]").
-                            replace("vid2", "p[\"vid2\"]").
-                            replace("vid3", "p[\"vid3\"]").
-                            replace("vid4", "p[\"vid4\"]").
-                            replace("vid5", "p[\"vid5\"]").
-                            replace("vid6", "p[\"vid6\"]").
-                            replace("e7", "p[\"e7\"]").
-                            replace("e10", "p[\"e10\"]").
-                            replace("e11", "p[\"e11\"]").
-                            replace("eid7", "p[\"eid7\"]").
-                            replace("eid10", "p[\"eid10\"]").
-                            replace("eid11", "p[\"eid11\"]").
+                            replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
+                            replaceAll("v([0-9]+)", "p[\"v\$1\"]").
+                            replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
+                            replaceAll("e([0-9]+)", "p[\"e\$1\"]").
+                            replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").
                             replace("l1", "p[\"l1\"]").
                             replace("l2", "p[\"l2\"]").
                             replace("pred1", "p[\"pred1\"]").

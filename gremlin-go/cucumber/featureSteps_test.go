@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"github.com/apache/tinkerpop/gremlin-go/driver"
 	"github.com/cucumber/godog"
+	"math"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -41,30 +42,47 @@ var parsers map[*regexp.Regexp]func(string, string) interface{}
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
-		regexp.MustCompile(`^d\[(.*)]\.[lfdm]$`): toNumeric,
-		regexp.MustCompile(`^d\[(.*)]\.[i]$`):    toInt32,
-		regexp.MustCompile(`^v\[(.+)]$`):         toVertex,
-		regexp.MustCompile(`^v\[(.+)]\.id$`):     toVertexId,
-		regexp.MustCompile(`^e\[(.+)]$`):         toEdge,
-		regexp.MustCompile(`^v\[(.+)]\.sid$`):    toVertexIdString,
-		regexp.MustCompile(`^e\[(.+)]\.id$`):     toEdgeId,
-		regexp.MustCompile(`^e\[(.+)]\.sid$`):    toEdgeIdString,
-		regexp.MustCompile(`^p\[(.+)]$`):         toPath,
-		regexp.MustCompile(`^l\[(.*)]$`):         toList,
-		regexp.MustCompile(`^s\[(.*)]$`):         toSet,
-		regexp.MustCompile(`^m\[(.+)]$`):         toMap,
-		regexp.MustCompile(`^c\[(.+)]$`):         toLambda,
-		regexp.MustCompile(`^t\[(.+)]$`):         toT,
-		regexp.MustCompile(`^D\[(.+)]$`):         toDirection,
+		regexp.MustCompile(`^d\[(.*)]\.[bslfdmn]$`): toNumeric,
+		regexp.MustCompile(`^d\[(.*)]\.[i]$`):       toInt32,
+		regexp.MustCompile(`^vp\[(.+)]$`):           toVertexProperty,
+		regexp.MustCompile(`^v\[(.+)]$`):            toVertex,
+		regexp.MustCompile(`^v\[(.+)]\.id$`):        toVertexId,
+		regexp.MustCompile(`^e\[(.+)]$`):            toEdge,
+		regexp.MustCompile(`^v\[(.+)]\.sid$`):       toVertexIdString,
+		regexp.MustCompile(`^e\[(.+)]\.id$`):        toEdgeId,
+		regexp.MustCompile(`^e\[(.+)]\.sid$`):       toEdgeIdString,
+		regexp.MustCompile(`^p\[(.+)]$`):            toPath,
+		regexp.MustCompile(`^l\[(.*)]$`):            toList,
+		regexp.MustCompile(`^s\[(.*)]$`):            toSet,
+		regexp.MustCompile(`^m\[(.+)]$`):            toMap,
+		regexp.MustCompile(`^c\[(.+)]$`):            toLambda,
+		regexp.MustCompile(`^t\[(.+)]$`):            toT,
+		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
 	}
 }
 
 func parseValue(value string, graphName string) interface{} {
+	var extractedValue string
+	var parser func(string, string) interface{}
 	if regexp.MustCompile(`^null$`).MatchString(value) {
 		return nil
 	}
-	var extractedValue string
-	var parser func(string, string) interface{}
+	if regexp.MustCompile(`^true$`).MatchString(value) {
+		return true
+	}
+	if regexp.MustCompile(`^false$`).MatchString(value) {
+		return false
+	}
+	if regexp.MustCompile(`^d\[NaN]$`).MatchString(value) {
+		return math.NaN()
+	}
+	if regexp.MustCompile(`^d\[Infinity]$`).MatchString(value) {
+		return math.Inf(1)
+	}
+	if regexp.MustCompile(`^d\[-Infinity]$`).MatchString(value) {
+		return math.Inf(-1)
+	}
+
 	for key, element := range parsers {
 		var match = key.FindAllStringSubmatch(value, -1)
 		if len(match) > 0 {
@@ -105,9 +123,24 @@ func toInt32(stringVal, graphName string) interface{} {
 	return int32(val)
 }
 
+// Parse vertex property.
+func toVertexProperty(name, graphName string) interface{} {
+	if vp, ok := tg.getDataGraphFromMap(graphName).vertexProperties[name]; ok {
+		return vp
+	} else {
+		return fmt.Errorf("VertexProperty with key %s not found", name)
+	}
+}
+
 // Parse vertex.
 func toVertex(name, graphName string) interface{} {
-	return tg.getDataGraphFromMap(graphName).vertices[name]
+	if v, ok := tg.getDataGraphFromMap(graphName).vertices[name]; ok {
+		return v
+	} else {
+		return &gremlingo.Vertex{
+			Element: gremlingo.Element{Id: name, Label: "vertex"},
+		}
+	}
 }
 
 // Parse vertex id.
@@ -128,7 +161,11 @@ func toVertexIdString(name, graphName string) interface{} {
 
 // Parse edge.
 func toEdge(name, graphName string) interface{} {
-	return tg.getDataGraphFromMap(graphName).edges[name]
+	if e, ok := tg.getDataGraphFromMap(graphName).edges[name]; ok {
+		return e
+	} else {
+		return fmt.Errorf("edge with key %s not found", name)
+	}
 }
 
 // Parse edge id.
@@ -240,12 +277,34 @@ func toLambda(name, graphName string) interface{} {
 
 func toT(name, graphName string) interface{} {
 	// Return as is, since T values are just strings.
-	return name
+	if name == "label" {
+		return gremlingo.Label
+	} else if name == "id" {
+		return gremlingo.Id
+	} else if name == "key" {
+		return gremlingo.Key
+	} else if name == "value" {
+		return gremlingo.Value
+	} else {
+		return name
+	}
 }
 
 func toDirection(name, graphName string) interface{} {
 	// Return as is, since Direction values are just strings.
-	return name
+	if name == "IN" {
+		return gremlingo.In
+	} else if name == "OUT" {
+		return gremlingo.Out
+	} else if name == "BOTH" {
+		return gremlingo.Both
+	} else if name == "from" {
+		return gremlingo.From
+	} else if name == "to" {
+		return gremlingo.To
+	} else {
+		return name
+	}
 }
 
 func (tg *tinkerPopGraph) anUnsupportedTest() error {
@@ -259,7 +318,8 @@ func (tg *tinkerPopGraph) iteratedNext() error {
 	}
 	result, err := tg.traversal.Next()
 	if err != nil {
-		return err
+		tg.error[true] = err.Error()
+		return nil
 	}
 	var nextResults []interface{}
 	switch result.GetType().Kind() {
@@ -288,7 +348,8 @@ func (tg *tinkerPopGraph) iteratedToList() error {
 	}
 	results, err := tg.traversal.ToList()
 	if err != nil {
-		return err
+		tg.error[true] = err.Error()
+		return nil
 	}
 	var listResults []interface{}
 	for _, res := range results {
@@ -311,6 +372,18 @@ func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 		err := tg.cleanEmptyDataGraph(tg.g)
 		if err != nil {
 			return err
+		}
+	}
+
+	// TODO: Uncoment code here to use WithComputer once this is implemented.
+	// In this version strategies are not implemented (and therefore WithComputer also isn't implmented).
+	for _, tag := range tg.scenario.Tags {
+		if tag.Name == "@GraphComputerOnly" {
+			return godog.ErrPending
+			// tg.g.WithComputer()
+		} else if tag.Name == "@AllowNullPropertyValues" {
+			// The GLV suite does not test against a graph that has null property values enabled, skipping via Pending Error
+			return godog.ErrPending
 		}
 	}
 	return nil
@@ -361,7 +434,7 @@ func (tg *tinkerPopGraph) theGraphShouldReturnForCountOf(expectedCount int, trav
 		return err
 	}
 	if len(results) != expectedCount {
-		return errors.New("graph did not return the correct count")
+		return errors.New(fmt.Sprintf("graph returned count of %d when %d was expected", len(results), expectedCount))
 	}
 	return nil
 }
@@ -544,6 +617,11 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 	//		2. Create a new slice with the index removed when we fix the item we want to delete.
 	// To do an orderless copy, a copy of the expected result is created. Results are removed as they are found. This stops
 	// the following from returning equal [1 2 2 2] and [1 1 1 2]
+
+	// Shortcut.
+	if fmt.Sprint(expected) == fmt.Sprint(actual) {
+		return true
+	}
 	expectedCopy := make([]interface{}, len(expected))
 	copy(expectedCopy, expected)
 	for _, a := range actual {
@@ -694,6 +772,41 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 	return nil
 }
 
+func (tg *tinkerPopGraph) theTraversalWillRaiseAnError() error {
+	if _, ok := tg.error[true]; ok {
+		return nil
+	}
+	return fmt.Errorf("expected the traversal to raise an error")
+}
+
+func (tg *tinkerPopGraph) theTraversalWillRaiseAnErrorWithMessageContainingTextOf(comparison, expectedMessage string) error {
+	if _, ok := tg.error[true]; !ok {
+		return fmt.Errorf("expected the traversal to raise an error")
+	}
+	switch comparison {
+	case "containing":
+		if strings.Contains(tg.error[true], expectedMessage) {
+			return nil
+		} else {
+			return fmt.Errorf("traversal error message must contain %s", expectedMessage)
+		}
+	case "starting":
+		if strings.Contains(tg.error[true], expectedMessage) {
+			return nil
+		} else {
+			return fmt.Errorf("traversal error message must contain %s", expectedMessage)
+		}
+	case "ending":
+		if strings.Contains(tg.error[true], expectedMessage) {
+			return nil
+		} else {
+			return fmt.Errorf("traversal error message must contain %s", expectedMessage)
+		}
+	default:
+		return fmt.Errorf("unknow comparison %s - must be: containing, ending or starting", comparison)
+	}
+}
+
 var tg = &tinkerPopGraph{
 	NewTinkerPopWorld(),
 }
@@ -732,4 +845,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
 	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)
+	ctx.Step(`^the traversal will raise an error$`, tg.theTraversalWillRaiseAnError)
+	ctx.Step(`^the traversal will raise an error with message (\w+) text of "(.+)"$`, tg.theTraversalWillRaiseAnErrorWithMessageContainingTextOf)
 }

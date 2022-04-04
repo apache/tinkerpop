@@ -570,7 +570,7 @@ func (anonymousTraversal *anonymousTraversal) MergeE(args ...interface{}) *Graph
 
 // MergeV adds the mergeV step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) MergeV(args ...interface{}) *GraphTraversal {
-	return anonymousTraversal.graphTraversal().MergeE(args...)
+	return anonymousTraversal.graphTraversal().MergeV(args...)
 }
 
 // Min adds the min step to the GraphTraversal.

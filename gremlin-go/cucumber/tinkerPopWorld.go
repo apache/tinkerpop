@@ -34,15 +34,17 @@ type TinkerPopWorld struct {
 	graphName    string
 	traversal    *gremlingo.GraphTraversal
 	result       []interface{}
+	error        map[bool]string
 	graphDataMap map[string]*DataGraph
 	parameters   map[string]interface{}
 }
 
 type DataGraph struct {
-	name       string
-	connection *gremlingo.DriverRemoteConnection
-	vertices   map[string]*gremlingo.Vertex
-	edges      map[string]*gremlingo.Edge
+	name             string
+	connection       *gremlingo.DriverRemoteConnection
+	vertices         map[string]*gremlingo.Vertex
+	vertexProperties map[string]*gremlingo.VertexProperty
+	edges            map[string]*gremlingo.Edge
 }
 
 func getEnvOrDefaultString(key string, defaultValue string) string {
@@ -76,6 +78,7 @@ func NewTinkerPopWorld() *TinkerPopWorld {
 		graphName:    "",
 		traversal:    nil,
 		result:       nil,
+		error:        make(map[bool]string),
 		graphDataMap: make(map[string]*DataGraph),
 		parameters:   make(map[string]interface{}),
 	}
@@ -105,10 +108,11 @@ func (t *TinkerPopWorld) loadAllDataGraph() {
 			}
 			g := gremlingo.Traversal_().WithRemote(connection)
 			t.graphDataMap[name] = &DataGraph{
-				name:       name,
-				connection: connection,
-				vertices:   getVertices(g),
-				edges:      getEdges(g),
+				name:             name,
+				connection:       connection,
+				vertices:         getVertices(g),
+				vertexProperties: getVertexProperties(g),
+				edges:            getEdges(g),
 			}
 		}
 	}
@@ -185,6 +189,41 @@ func getEdges(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Edge {
 
 func getEdgeKey(edgeKeyMap map[interface{}]interface{}) string {
 	return fmt.Sprint(edgeKeyMap["o"], "-", edgeKeyMap["l"], "->", edgeKeyMap["i"])
+}
+
+func getVertexProperties(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.VertexProperty {
+	vertexPropertyMap := make(map[string]*gremlingo.VertexProperty)
+	res, err := g.V().Properties().Group().By(&gremlingo.Lambda{
+		Script: "{ it -> \n" +
+			"  def val = it.value()\n" +
+			"  if (val instanceof Integer)\n" +
+			"    val = 'd[' + val + '].i'\n" +
+			"  else if (val instanceof Float)\n" +
+			"    val = 'd[' + val + '].f'\n" +
+			"  else if (val instanceof Double)\n" +
+			"    val = 'd[' + val + '].d'\n" +
+			"  return it.element().value('name') + '-' + it.key() + '->' + val\n" +
+			"}",
+		Language: "",
+	}).By(gremlingo.T__.Tail()).Next()
+	if res == nil {
+		return nil
+	}
+	if err != nil {
+		return nil
+	}
+	v := reflect.ValueOf(res.GetInterface())
+	if v.Kind() != reflect.Map {
+		fmt.Printf("Expecting to get a map as a result, got %v instead.", v.Kind())
+		return nil
+	}
+	keys := v.MapKeys()
+	for _, k := range keys {
+		convKey := k.Convert(v.Type().Key())
+		val := v.MapIndex(convKey)
+		vertexPropertyMap[k.Interface().(string)] = val.Interface().(*gremlingo.VertexProperty)
+	}
+	return vertexPropertyMap
 }
 
 // This function is used to isolate connection problems to each scenario, and used in the Before context hook to prevent

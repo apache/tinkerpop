@@ -161,6 +161,10 @@ const (
 	In Direction = "IN"
 	// Out refers to an outgoing direction.
 	Out Direction = "OUT"
+	// From refers to an incoming direction.
+	From Direction = "OUT"
+	// To refers to an outgoing direction.
+	To Direction = "IN"
 	// Both refers to either direction In or Out.
 	Both Direction = "BOTH"
 )
@@ -218,6 +222,16 @@ const (
 	Id_   T = "id_"
 	Key   T = "key"
 	Value T = "value"
+)
+
+// Merge is a set of operations for Vertex merging.
+type Merge string
+
+const (
+	// OnCreate Merges on create.
+	OnCreate Merge = "onCreate"
+	// OnMatch Merges on match.
+	OnMatch Merge = "onMatch"
 )
 
 // Operator is a set of operations for traversal steps.
@@ -396,6 +410,10 @@ type TextPredicate interface {
 	And(args ...interface{}) TextPredicate
 	// Or TextPredicate returns a TextPredicate composed of two predicates (logical OR of them).
 	Or(args ...interface{}) TextPredicate
+	// Regex TextPredicate determines if a string matches the specified regex expression.
+	Regex(args ...interface{}) TextPredicate
+	// NotRegex TextPredicate determines if a string does not match the specified regex expression.
+	NotRegex(args ...interface{}) TextPredicate
 }
 
 type textP p
@@ -445,7 +463,7 @@ func (*textP) StartingWith(args ...interface{}) TextPredicate {
 	return newTextP("startingWith", args...)
 }
 
-// NotRegex TextPredicate determines if a string matches the specified regex expression.
+// NotRegex TextPredicate determines if a string does not match the specified regex expression.
 func (*textP) NotRegex(args ...interface{}) TextPredicate {
 	return newTextP("notRegex", args...)
 }
