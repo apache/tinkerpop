@@ -76,7 +76,7 @@ func newLogHandler(logger Logger, verbosity LogVerbosity, locale language.Tag) *
 
 	// Register resource package here for additional languages.
 	_, path, _, _ := runtime.Caller(0)
-	path = filepath.Join(filepath.Dir(path), "resources/en.json")
+	path = filepath.Join(filepath.Dir(path), "resources/logger-messages/en.json")
 	bundle.LoadMessageFile(path)
 	localizer := i18n.NewLocalizer(bundle, locale.String())
 	return &logHandler{logger, verbosity, localizer}
@@ -99,34 +99,34 @@ func (logHandler *logHandler) logf(verbosity LogVerbosity, errorKey errorKey, v 
 type errorKey string
 
 const (
-	serializeDataTypeError      errorKey = "UNKNOWN_SER_DATATYPE"
-	deserializeDataTypeError    errorKey = "UNKNOWN_DESER_DATATYPE"
-	nullInput                   errorKey = "NULL_INPUT"
-	unexpectedNull              errorKey = "UNEXPECTED_NULL_VALUE"
-	closeConnection             errorKey = "CLOSING_CONNECTION"
-	connectConnection           errorKey = "OPENING_CONNECTION"
-	failedConnection            errorKey = "FAILED_CONNECTION"
-	writeRequest                errorKey = "WRITE_REQUEST"
-	readLoopError               errorKey = "READ_LOOP_ERROR"
-	errorCallback               errorKey = "ERROR_CALLBACK"
-	creatingRequest             errorKey = "CREATING_REQUEST"
-	readComplete                errorKey = "READ_COMPLETE"
-	submitStartedString         errorKey = "SUBMIT_STARTED_STRING"
-	submitStartedBytecode       errorKey = "SUBMIT_STARTED_BYTECODE"
+	serializeDataTypeError       errorKey = "UNKNOWN_SER_DATATYPE"
+	deserializeDataTypeError     errorKey = "UNKNOWN_DESER_DATATYPE"
+	nullInput                    errorKey = "NULL_INPUT"
+	unexpectedNull               errorKey = "UNEXPECTED_NULL_VALUE"
+	closeConnection              errorKey = "CLOSING_CONNECTION"
+	connectConnection            errorKey = "OPENING_CONNECTION"
+	failedConnection             errorKey = "FAILED_CONNECTION"
+	writeRequest                 errorKey = "WRITE_REQUEST"
+	readLoopError                errorKey = "READ_LOOP_ERROR"
+	errorCallback                errorKey = "ERROR_CALLBACK"
+	creatingRequest              errorKey = "CREATING_REQUEST"
+	readComplete                 errorKey = "READ_COMPLETE"
+	submitStartedString          errorKey = "SUBMIT_STARTED_STRING"
+	submitStartedBytecode        errorKey = "SUBMIT_STARTED_BYTECODE"
 	failedToCloseInErrorCallback errorKey = "FAILED_TO_CLOSE_IN_ERROR_CALLBACK"
 	failedToWriteMessage         errorKey = "FAILED_TO_WRITE_MESSAGE"
 	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"
 	failedToSetReadDeadline      errorKey = "FAILED_TO_SET_READ_DEADLINE"
 	failedToShutdownTransporter  errorKey = "FAILED_TO_SHUTDOWN_TRANSPORTER"
 	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
-	creatingSessionConnection   errorKey = "CREATING_SESSION_CONNECTION"
-	closeSession                errorKey = "CLOSE_SESSION"
-	closeSessionRequestError    errorKey = "CLOSE_SESSION_REQUEST_ERROR"
-	closeDriverRemoteConnection errorKey = "CLOSE_DRIVER_REMOTE_CONNECTION"
-	closingSpawnedSessions      errorKey = "CLOSING_SPAWNED_SESSIONS"
-	closeClient                 errorKey = "CLOSE_CLIENT"
-	errorClosingConnection      errorKey = "ERROR_CLOSING_CONNECTION"
-	closeUnusedPoolConnection   errorKey = "CLOSE_UNUSED_POOL_CONNECTION"
-	purgingDeadConnection       errorKey = "PURGING_DEAD_CONNECTION"
-	sessionDetected             errorKey = "SESSION_DETECTED"
+	creatingSessionConnection    errorKey = "CREATING_SESSION_CONNECTION"
+	closeSession                 errorKey = "CLOSE_SESSION"
+	closeSessionRequestError     errorKey = "CLOSE_SESSION_REQUEST_ERROR"
+	closeDriverRemoteConnection  errorKey = "CLOSE_DRIVER_REMOTE_CONNECTION"
+	closingSpawnedSessions       errorKey = "CLOSING_SPAWNED_SESSIONS"
+	closeClient                  errorKey = "CLOSE_CLIENT"
+	errorClosingConnection       errorKey = "ERROR_CLOSING_CONNECTION"
+	closeUnusedPoolConnection    errorKey = "CLOSE_UNUSED_POOL_CONNECTION"
+	purgingDeadConnection        errorKey = "PURGING_DEAD_CONNECTION"
+	sessionDetected              errorKey = "SESSION_DETECTED"
 )

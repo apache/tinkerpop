@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"errors"
 	"sync"
 	"time"
 )
@@ -53,7 +52,7 @@ func (connection *connection) errorCallback() {
 
 func (connection *connection) close() error {
 	if connection.state != established {
-		return errors.New("cannot close connection that has already been closed or has not been connected")
+		return newError(err0101ConnectionCloseError)
 	}
 	connection.logHandler.log(Info, closeConnection)
 	var err error
@@ -66,7 +65,7 @@ func (connection *connection) close() error {
 
 func (connection *connection) write(request *request) (ResultSet, error) {
 	if connection.state != established {
-		return nil, errors.New("cannot write connection that has already been closed or has not been connected")
+		return nil, newError(err0102WriteConnectionClosedError)
 	}
 	connection.logHandler.log(Info, writeRequest)
 	requestID := request.requestID.String()

@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -101,7 +100,7 @@ func (p *Path) String() string {
 // GetPathObject returns the Value that corresponds to the Key for the Path and error if the Value is not present or cannot be retrieved.
 func (p *Path) GetPathObject(key string) (interface{}, error) {
 	if len(p.Objects) != len(p.Labels) {
-		return nil, errors.New("path is invalid because it does not contain an equal number of Labels and Objects")
+		return nil, newError(err0301GetPathObjectInvalidPathUnequalLengthsError)
 	}
 	var objectList []interface{}
 	var object interface{}
@@ -109,7 +108,7 @@ func (p *Path) GetPathObject(key string) (interface{}, error) {
 		for _, label := range labelSet.ToSlice() {
 			// Sets in labels can only contain string types
 			if reflect.TypeOf(label).Kind() != reflect.String {
-				return nil, errors.New("path is invalid because labels contains a non string type")
+				return nil, newError(err0302GetPathObjectInvalidPathNonStringLabelError)
 			}
 			if label == key {
 				if object == nil {
@@ -127,7 +126,7 @@ func (p *Path) GetPathObject(key string) (interface{}, error) {
 	} else if object != nil {
 		return object, nil
 	} else {
-		return nil, fmt.Errorf("path does not contain a Label of '%s'", key)
+		return nil, newError(err0303GetPathNoLabelFoundError, key)
 	}
 }
 

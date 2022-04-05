@@ -140,7 +140,7 @@ func TestBytecode(t *testing.T) {
 		traversal.graph = &Graph{}
 		traversal.bytecode = &bytecode{}
 		traversalBytecode, err := bc.convertArgument(traversal)
-		assert.NotNil(t, err)
+		assert.Equal(t, newError(err1001ConvertArgumentChildTraversalNotFromAnonError), err)
 		assert.Nil(t, traversalBytecode)
 	})
 

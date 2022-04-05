@@ -22,8 +22,6 @@ package gremlingo
 import (
 	"crypto/tls"
 	"encoding/base64"
-	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -108,7 +106,7 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 		response.responseResult.meta, response.responseResult.data
 	responseIDString := responseID.String()
 	if resultSets.load(responseIDString) == nil {
-		return errors.New("resultSet was not created before data was received")
+		return newError(err0501ResponseHandlerResultSetNotCreatedError)
 	}
 	if aggregateTo, ok := metadata["aggregateTo"]; ok {
 		resultSets.load(responseIDString).setAggregateTo(aggregateTo.(string))
@@ -152,13 +150,13 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 			}
 		} else {
 			resultSets.load(responseIDString).Close()
-			return fmt.Errorf("failed to authenticate %v : %v", response.responseStatus, response.responseResult)
+			return newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
 		}
 	} else {
-		errorMessage := fmt.Sprint("Error in read loop, error message '", response.responseStatus, "'. statusCode: ", statusCode)
-		resultSets.load(responseIDString).setError(errors.New(errorMessage))
+		newError := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
+		resultSets.load(responseIDString).setError(newError)
 		resultSets.load(responseIDString).Close()
-		log.logger.Log(Info, errorMessage)
+		log.logger.Log(Info, newError.Error())
 	}
 	return nil
 }

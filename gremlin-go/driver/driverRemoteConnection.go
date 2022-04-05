@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/text/language"
 	"runtime"
@@ -43,7 +42,7 @@ type DriverRemoteConnectionSettings struct {
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
 	MaximumConcurrentConnections int
-	Session         string
+	Session                      string
 
 	// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
 	Protocol   protocol
@@ -64,18 +63,18 @@ func NewDriverRemoteConnection(
 	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
-		TraversalSource:   "g",
-		TransporterType:   Gorilla,
-		LogVerbosity:      Info,
-		Logger:            &defaultLogger{},
-		Language:          language.English,
-		AuthInfo:          &AuthInfo{},
-		TlsConfig:         &tls.Config{},
-		KeepAliveInterval: keepAliveIntervalDefault,
-		WriteDeadline:     writeDeadlineDefault,
+		TraversalSource:              "g",
+		TransporterType:              Gorilla,
+		LogVerbosity:                 Info,
+		Logger:                       &defaultLogger{},
+		Language:                     language.English,
+		AuthInfo:                     &AuthInfo{},
+		TlsConfig:                    &tls.Config{},
+		KeepAliveInterval:            keepAliveIntervalDefault,
+		WriteDeadline:                writeDeadlineDefault,
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
-		Session:         "",
+		Session:                      "",
 
 		// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
 		Protocol:   nil,
@@ -152,9 +151,9 @@ func (driver *DriverRemoteConnection) isSession() bool {
 // CreateSession generates a new Session. sessionId stores the optional UUID param. It can be used to create a Session with a specific UUID.
 func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*DriverRemoteConnection, error) {
 	if len(sessionId) > 1 {
-		return nil, errors.New("more than one Session ID specified. Cannot create Session with multiple UUIDs")
+		return nil, newError(err0201CreateSessionMultipleIdsError)
 	} else if driver.isSession() {
-		return nil, errors.New("connection is already bound to a Session - child sessions are not allowed")
+		return nil, newError(err0202CreateSessionFromSessionError)
 	}
 
 	driver.client.logHandler.log(Info, creatingSessionConnection)

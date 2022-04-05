@@ -37,6 +37,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -49,6 +50,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -61,6 +63,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(0), val)
 	})
 
@@ -73,6 +76,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -85,6 +89,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(0), val)
 	})
 
@@ -111,6 +116,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -123,6 +129,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -135,6 +142,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -147,6 +155,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -159,6 +168,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -171,6 +181,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -183,6 +194,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -195,6 +207,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -207,6 +220,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -219,6 +233,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -231,6 +246,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -243,6 +259,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -255,6 +272,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -267,6 +285,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -279,6 +298,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -291,6 +311,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -303,6 +324,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -315,6 +337,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -338,6 +361,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 
@@ -350,6 +374,7 @@ func TestStrategy(t *testing.T) {
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
 		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
 }

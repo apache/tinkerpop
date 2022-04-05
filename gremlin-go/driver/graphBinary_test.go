@@ -278,7 +278,7 @@ func TestGraphBinaryV1(t *testing.T) {
 		t.Run("test bytecode writer failure", func(t *testing.T) {
 			x, err := bytecodeWriter(int64(0), &buff, &serializer)
 			assert.Nil(t, x)
-			assert.NotNil(t, err)
+			assert.Equal(t, newError(err0402BytecodeWriterError), err)
 		})
 		t.Run("test unknown datatype to serialize failure", func(t *testing.T) {
 			defer func() {
@@ -304,7 +304,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.writeValue(value, &buff, false)
 			assert.Nil(t, val)
-			assert.NotNil(t, err)
+			assert.Equal(t, newError(err0403WriteValueUnexpectedNullError), err)
 		})
 
 		t.Run("test writeValue nil case success", func(t *testing.T) {
@@ -331,21 +331,21 @@ func TestGraphBinaryV1(t *testing.T) {
 			buff.Write([]byte{0xfe, 0x02})
 			x, err := serializer.read(&buff)
 			assert.Nil(t, x)
-			assert.NotNil(t, err)
+			assert.Equal(t, newError(err0404ReadNullTypeError), err)
 		})
 
 		t.Run("test null buffer failure", func(t *testing.T) {
 			var nullBuff *bytes.Buffer = nil
 			x, err := serializer.readValue(nullBuff, byte(NullType), true)
 			assert.Nil(t, x)
-			assert.NotNil(t, err)
+			assert.Equal(t, newError(err0405ReadValueInvalidNullInputError), err)
 		})
 
 		t.Run("test writeTypeValue unexpected null failure", func(t *testing.T) {
 			var value interface{} = nil
 			val, err := serializer.writeTypeValue(value, &buff, &serializer, false)
 			assert.Nil(t, val)
-			assert.NotNil(t, err)
+			assert.Equal(t, newError(err0401WriteTypeValueUnexpectedNullError), err)
 		})
 
 		t.Run("test writeTypeValue success", func(t *testing.T) {

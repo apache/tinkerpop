@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"errors"
 	"sync"
 	"time"
 )
@@ -40,7 +39,7 @@ func getTransportLayer(transporterType TransporterType, url string, authInfo *Au
 	case Gorilla:
 		transporter = &gorillaTransporter{url: url, authInfo: authInfo, tlsConfig: tlsConfig, keepAliveInterval: keepAliveInterval, writeDeadline: writeDeadline, writeChannel: make(chan []byte, writeChannelSizeDefault), wg: &sync.WaitGroup{}}
 	default:
-		return nil, errors.New("transport layer type was not specified and cannot be initialized")
+		return nil, newError(err0801GetTransportLayerNoTypeError)
 	}
 	err := transporter.Connect()
 	if err != nil {

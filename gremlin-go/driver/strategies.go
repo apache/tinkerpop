@@ -127,10 +127,8 @@ func VertexProgramStrategy(graphComputer, persist, result string, workers int,
 	if edges != nil {
 		config["edges"] = edges
 	}
-	if configuration != nil {
-		for k, v := range configuration {
-			config[k] = v
-		}
+	for k, v := range configuration {
+		config[k] = v
 	}
 	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: config}
 }

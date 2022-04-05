@@ -28,8 +28,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const maxFailCount = 3
-
 const keepAliveIntervalDefault = 5 * time.Second
 const writeDeadlineDefault = 3 * time.Second
 const writeChannelSizeDefault = 100
@@ -108,14 +106,13 @@ func (transporter *gorillaTransporter) Read() ([]byte, error) {
 		}
 	}
 
-	for {
-		err := transporter.connection.SetReadDeadline(time.Now().Add(transporter.keepAliveInterval * 2))
-		if err != nil {
-			return nil, err
-		}
-		_, bytes, err := transporter.connection.ReadMessage()
-		return bytes, err
+	err := transporter.connection.SetReadDeadline(time.Now().Add(transporter.keepAliveInterval * 2))
+	if err != nil {
+		return nil, err
 	}
+	_, bytes, err := transporter.connection.ReadMessage()
+	return bytes, err
+
 }
 
 // Close used to close a connection if it is opened.
