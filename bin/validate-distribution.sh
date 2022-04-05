@@ -118,12 +118,6 @@ done
 [ ${verified} -eq 1 ] || { echo "failed"; exit 1; }
 echo "OK"
 
-#echo -n "  * MD5 checksum ... "
-#EXPECTED=`cat ${ZIP_FILENAME}.md5`
-#ACTUAL=`md5sum ${ZIP_FILENAME} | awk '{print $1}'`
-#[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
-#echo "OK"
-
 echo -n "  * SHA512 checksum ... "
 EXPECTED=`cat ${ZIP_FILENAME}.sha512`
 ACTUAL=`sha512sum ${ZIP_FILENAME} | awk '{print $1}'`
@@ -166,14 +160,7 @@ echo "OK"
 exit 0
 fi
 
-# validate docs/ and javadocs/ directories
-echo -n "* validating ${COMPONENT}'s docs ... "
 cd ${DIR_NAME}
-[ -d "docs" ] && [ -f "docs/reference/index.html" ] && [ -d "docs/images" ] || { echo "docs/ directory is incomplete or not present"; exit 1; }
-[ -d "javadocs/core" ] && [ -d "javadocs/full" ] || { echo "javadocs/ directory is incomplete or not present"; exit 1; }
-x=`find javadocs -name 'GraphTraversal.html' | wc -l`
-[[ ${x} -eq 4 ]] || { echo "${COMPONENT}'s javadocs/ directory is incomplete"; exit 1; }
-echo "OK"
 
 echo -n "* validating ${COMPONENT}'s binaries ... "
 [ -d "bin" ] || { echo "bin/ directory is not present"; exit 1; }
