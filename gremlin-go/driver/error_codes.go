@@ -37,8 +37,9 @@ const (
 	err0102WriteConnectionClosedError errorCode = "E0102_CONNECTION_WRITE_CLOSED_ERROR"
 
 	// driverRemoteConnection.go errors
-	err0201CreateSessionMultipleIdsError errorCode = "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR"
-	err0202CreateSessionFromSessionError errorCode = "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR"
+	err0201CreateSessionMultipleIdsError         errorCode = "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR"
+	err0202CreateSessionFromSessionError         errorCode = "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR"
+	err0203SubmitBytecodeToClosedConnectionError errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR"
 
 	// graph.go errors
 	err0301GetPathObjectInvalidPathUnequalLengthsError errorCode = "E0301_GRAPH_GETPATHOBJECT_UNEQUAL_LABELS_OBJECTS_LENGTH_ERROR"
@@ -85,6 +86,12 @@ const (
 
 	// bytecode.go errors
 	err1001ConvertArgumentChildTraversalNotFromAnonError errorCode = "E1001_BYTECODE_CHILD_T_NOT_ANON_ERROR"
+
+	// graphTraversal.go errors
+	err1101TransactionRepeatedOpenError      errorCode = "E1101_TRANSACTION_REPEATED_OPEN_ERROR"
+	err1102TransactionRollbackNotOpenedError errorCode = "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR"
+	err1103TransactionCommitNotOpenedError   errorCode = "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR"
+	err1104TransactionRepeatedCloseError     errorCode = "E1104_TRANSACTION_REPEATED_CLOSE_ERROR"
 )
 
 func initializeLocalizer(locale language.Tag) {

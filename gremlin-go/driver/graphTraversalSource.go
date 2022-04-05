@@ -163,3 +163,7 @@ func (gts *GraphTraversalSource) Io(args ...interface{}) *GraphTraversal {
 	traversal.bytecode.addStep("io", args...)
 	return traversal
 }
+
+func (gts *GraphTraversalSource) Tx() *Transaction {
+	return &Transaction{g: gts, remoteConnection: gts.remoteConnection}
+}

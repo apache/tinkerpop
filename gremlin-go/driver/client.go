@@ -42,8 +42,7 @@ type ClientSettings struct {
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
 	MaximumConcurrentConnections int
-	
-	Session         string
+	Session                      string
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -61,15 +60,15 @@ type Client struct {
 // Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource:   "g",
-		TransporterType:   Gorilla,
-		LogVerbosity:      Info,
-		Logger:            &defaultLogger{},
-		Language:          language.English,
-		AuthInfo:          &AuthInfo{},
-		TlsConfig:         &tls.Config{},
-		KeepAliveInterval: keepAliveIntervalDefault,
-		WriteDeadline:     writeDeadlineDefault,
+		TraversalSource:              "g",
+		TransporterType:              Gorilla,
+		LogVerbosity:                 Info,
+		Logger:                       &defaultLogger{},
+		Language:                     language.English,
+		AuthInfo:                     &AuthInfo{},
+		TlsConfig:                    &tls.Config{},
+		KeepAliveInterval:            keepAliveIntervalDefault,
+		WriteDeadline:                writeDeadlineDefault,
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
 		Session:                      "",
@@ -138,6 +137,10 @@ func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
 
 func (client *Client) closeSession() error {
 	message := makeCloseSessionRequest(client.session)
-	_, err := client.connections.write(&message)
+	result, err := client.connections.write(&message)
+	if err != nil {
+		return err
+	}
+	_, err = result.All()
 	return err
 }

@@ -4,6 +4,7 @@
 
   "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR": "E0201: more than one Session ID specified. Cannot create Session with multiple UUIDs",
   "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR": "E0202: connection is already bound to a Session - child sessions are not allowed",
+  "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR": "E0203: cannot submit bytecode to closed connection",
 
   "E0301_GRAPH_GETPATHOBJECT_UNEQUAL_LABELS_OBJECTS_LENGTH_ERROR": "E0301: path is invalid because it does not contain an equal number of Labels and Objects",
   "E0302_GRAPH_GETPATHOBJECT_NON_STRING_VALUE_IN_LABELS_ERROR": "E0302: path is invalid because labels contains a non string type",
@@ -41,5 +42,10 @@
   "E0902_TRAVERSAL_ITERATE_ANON_TRAVERSAL_ERROR": "E0902: cannot invoke this method from an anonymous traversal",
   "E0903_TRAVERSAL_NEXT_NO_RESULTS_LEFT_ERROR":"E0903: there are no results left",
 
-  "E1001_BYTECODE_CHILD_T_NOT_ANON_ERROR": "E1001: the child traversal was not spawned anonymously - use the T__ class rather than a TraversalSource to construct the child traversal"
+  "E1001_BYTECODE_CHILD_T_NOT_ANON_ERROR": "E1001: the child traversal was not spawned anonymously - use the T__ class rather than a TraversalSource to construct the child traversal",
+
+  "E1101_TRANSACTION_REPEATED_OPEN_ERROR": "E1101: transaction already started on this object",
+  "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR": "E1102: cannot rollback a transaction that is not started",
+  "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR": "E1103: cannot commit a transaction that is not started",
+  "E1104_TRANSACTION_REPEATED_CLOSE_ERROR": "E1104: cannot close a transaction that has previously been closed"
 }

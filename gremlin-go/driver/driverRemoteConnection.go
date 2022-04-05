@@ -53,6 +53,7 @@ type DriverRemoteConnectionSettings struct {
 type DriverRemoteConnection struct {
 	client          *Client
 	spawnedSessions []*DriverRemoteConnection
+	isClosed        bool
 }
 
 // NewDriverRemoteConnection creates a new DriverRemoteConnection.
@@ -108,7 +109,7 @@ func NewDriverRemoteConnection(
 		session:         settings.Session,
 	}
 
-	return &DriverRemoteConnection{client: client}, nil
+	return &DriverRemoteConnection{client: client, isClosed: false}, nil
 }
 
 // Close closes the DriverRemoteConnection.
@@ -120,6 +121,7 @@ func (driver *DriverRemoteConnection) Close() {
 		for _, session := range driver.spawnedSessions {
 			session.Close()
 		}
+		driver.spawnedSessions = driver.spawnedSessions[:0]
 	}
 
 	if driver.isSession() {
@@ -128,6 +130,7 @@ func (driver *DriverRemoteConnection) Close() {
 		driver.client.logHandler.logf(Info, closeDriverRemoteConnection, driver.client.url)
 	}
 	driver.client.Close()
+	driver.isClosed = true
 }
 
 // Submit sends a string traversal to the server.
@@ -141,6 +144,9 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 
 // submitBytecode sends a bytecode traversal to the server.
 func (driver *DriverRemoteConnection) submitBytecode(bytecode *bytecode) (ResultSet, error) {
+	if driver.isClosed {
+		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
+	}
 	return driver.client.submitBytecode(bytecode)
 }
 
@@ -158,6 +164,7 @@ func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*Drive
 
 	driver.client.logHandler.log(Info, creatingSessionConnection)
 	drc, err := NewDriverRemoteConnection(driver.client.url, func(settings *DriverRemoteConnectionSettings) {
+		settings.TraversalSource = driver.client.traversalSource
 		if len(sessionId) == 1 {
 			settings.Session = sessionId[0]
 		} else {
@@ -173,6 +180,18 @@ func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*Drive
 
 func (driver *DriverRemoteConnection) GetSessionId() string {
 	return driver.client.session
+}
+
+func (driver *DriverRemoteConnection) commit() (ResultSet, error) {
+	bc := &bytecode{}
+	bc.addSource("tx", "commit")
+	return driver.submitBytecode(bc)
+}
+
+func (driver *DriverRemoteConnection) rollback() (ResultSet, error) {
+	bc := &bytecode{}
+	bc.addSource("tx", "rollback")
+	return driver.submitBytecode(bc)
 }
 
 // TODO: Bytecode, OptionsStrategy, RequestOptions
