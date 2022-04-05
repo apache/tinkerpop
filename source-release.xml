@@ -100,7 +100,8 @@
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/etc/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node_modules/**</exclude>
-
+                <exclude>gremlin-go/.glv</exclude>
+                <exclude>gremlin-go/coverage.out</exclude>
             </excludes>
         </fileSet>
         <!-- license, readme, etc. calculated at build time -->

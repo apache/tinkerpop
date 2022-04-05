@@ -72,7 +72,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-3]]
-=== TinkerPop 3.5.3 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.3 (Release Date: April 4, 2022)
 
 * Added support for using a readable stream when submitting scripts through the JavaScript driver which allows processing each batch of result sets as they come in, rather than waiting for the entire result set to complete before allowing processing.
 * Fixed issue with implicit conversion of `Infinity` number instances into `BigDecimal`.
@@ -86,6 +86,29 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Tracked transaction spawned connections and closed them when the parent connection was closed for `gremlin-python`.
 * Prevented unintentionally opening another transaction in `TraversalOpProcessor`` and `SessionOpProcessor` of Gremlin Server.
 * Fixed bug in `Translator` of `gremlin-python` around translation of Booleans.
+
+==== Bugs
+
+* TINKERPOP-2694 Bug of TinkerGraph gremlin api "has()"
+* TINKERPOP-2706 Traversal clone() not resetting the close state
+* TINKERPOP-2712 PropertyChangedEvent is triggered before Property is actually changed
+* TINKERPOP-2717 Gremlin.NET : WebSocketConnection does not check for MessageType.Close, causing error InvalidOperationException: "Received data deserialized into null object message. Cannot operate on it."
+* TINKERPOP-2719 hasNext is called on TraverserIterator after transaction is committed
+* TINKERPOP-2726 Python's GroovyTranslator translates boolean wrong
+
+==== Improvements
+
+* TINKERPOP-2367 Gremlin Translators for .NET
+* TINKERPOP-2518 Enhance .NET gherkin framework to deal with more advanced assertions
+* TINKERPOP-2651 Update to .NET 6
+* TINKERPOP-2679 Update JavaScript driver to support processing messages as a stream
+* TINKERPOP-2682 Enable WebSocket compression in .NET by default
+* TINKERPOP-2707 Closing parent connection in python should close tx() connections
+* TINKERPOP-2711 Make gremlin-language optional as it brings in CDDL/GPL dependencies
+* TINKERPOP-2716 Enable eslint for gremlin-javascript project
+* TINKERPOP-2725 Traversal Strategy Mix Up In Gremlin-Python
+* TINKERPOP-2727 HasContainer should allow a null key
+* TINKERPOP-2728 jackson-databind high security issue identified
 
 [[release-3-5-2]]
 === TinkerPop 3.5.2 (Release Date: January 10, 2022)
