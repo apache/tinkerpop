@@ -30,7 +30,7 @@ import (
 // protocol handles invoking serialization and deserialization, as well as handling the lifecycle of raw data passed to
 // and received from the transport layer.
 type protocol interface {
-	readLoop(resultSets *synchronizedMap, errorCallback func(), log *logHandler)
+	readLoop(resultSets *synchronizedMap, errorCallback func())
 	write(request *request) error
 	close() (err error)
 }
@@ -54,7 +54,7 @@ type gremlinServerWSProtocol struct {
 	wg               *sync.WaitGroup
 }
 
-func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, errorCallback func(), log *logHandler) {
+func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, errorCallback func()) {
 	for {
 		// Read from transport layer. If the channel is closed, this will error out and exit.
 		msg, err := protocol.transporter.Read()
@@ -68,8 +68,8 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 		if err != nil {
 			// Ignore error here, we already got an error on read, cannot do anything with this.
 			_ = protocol.transporter.Close()
-			log.logf(Error, readLoopError, err.Error())
-			readErrorHandler(resultSets, errorCallback, err, log)
+			protocol.logHandler.logf(Error, readLoopError, err.Error())
+			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
 			protocol.wg.Done()
 			return
 		}
@@ -77,15 +77,15 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 		// Deserialize message and unpack.
 		resp, err := protocol.serializer.deserializeMessage(msg)
 		if err != nil {
-			log.logger.Log(Error, err)
-			readErrorHandler(resultSets, errorCallback, err, log)
+			protocol.logHandler.logf(Error, logErrorGeneric, "gremlinServerWSProtocol.readLoop()", err.Error())
+			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
 			protocol.wg.Done()
 			return
 		}
 
-		err = protocol.responseHandler(resultSets, resp, log)
+		err = protocol.responseHandler(resultSets, resp)
 		if err != nil {
-			readErrorHandler(resultSets, errorCallback, err, log)
+			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
 			protocol.wg.Done()
 			return
 		}
@@ -101,7 +101,7 @@ func readErrorHandler(resultSets *synchronizedMap, errorCallback func(), err err
 	errorCallback()
 }
 
-func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronizedMap, response response, log *logHandler) error {
+func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronizedMap, response response) error {
 	responseID, statusCode, metadata, data := response.responseID, response.responseStatus.code,
 		response.responseResult.meta, response.responseResult.data
 	responseIDString := responseID.String()
@@ -116,19 +116,16 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 	if statusCode == http.StatusNoContent {
 		resultSets.load(responseIDString).addResult(&Result{make([]interface{}, 0)})
 		resultSets.load(responseIDString).Close()
-		log.logger.Log(Info, "No content.")
-		log.logf(Info, readComplete, responseIDString)
+		protocol.logHandler.logf(Info, readComplete, responseIDString)
 	} else if statusCode == http.StatusOK {
 		// Add data and status attributes to the ResultSet.
 		resultSets.load(responseIDString).addResult(&Result{data})
 		resultSets.load(responseIDString).setStatusAttributes(response.responseStatus.attributes)
 		resultSets.load(responseIDString).Close()
-		log.logger.Logf(Info, "OK %v===>%v", response.responseStatus, data)
-		log.logf(Info, readComplete, responseIDString)
+		protocol.logHandler.logf(Info, readComplete, responseIDString)
 	} else if statusCode == http.StatusPartialContent {
 		// Add data to the ResultSet.
 		resultSets.load(responseIDString).addResult(&Result{data})
-		log.logger.Logf(Info, "Partial %v===>%v", response.responseStatus, data)
 	} else if statusCode == http.StatusProxyAuthRequired || statusCode == authenticationFailed {
 		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
 		// Server has requested basic auth.
@@ -156,7 +153,7 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 		newError := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
 		resultSets.load(responseIDString).setError(newError)
 		resultSets.load(responseIDString).Close()
-		log.logger.Log(Info, newError.Error())
+		protocol.logHandler.logf(Error, logErrorGeneric, "gremlinServerWSProtocol.responseHandler()", newError.Error())
 	}
 	return nil
 }
@@ -203,6 +200,6 @@ func newGremlinServerWSProtocol(handler *logHandler, transporterType Transporter
 		return nil, err
 	}
 	wg.Add(1)
-	go gremlinProtocol.readLoop(results, errorCallback, handler)
+	go gremlinProtocol.readLoop(results, errorCallback)
 	return gremlinProtocol, nil
 }
