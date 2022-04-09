@@ -26,7 +26,7 @@ import (
 )
 
 func TestTraversal(t *testing.T) {
-	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", true)
+	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", false)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
 		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
