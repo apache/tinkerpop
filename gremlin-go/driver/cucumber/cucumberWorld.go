@@ -129,12 +129,8 @@ func (t *CucumberWorld) reloadEmptyData() {
 }
 
 func (t *CucumberWorld) cleanEmptyDataGraph(g *gremlingo.GraphTraversalSource) error {
-	_, future, err := g.V().Drop().Iterate()
-	if err != nil {
-		return err
-	}
-	<-future
-	return nil
+	future := g.V().Drop().Iterate()
+	return <-future
 }
 
 func getVertices(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Vertex {

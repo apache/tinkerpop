@@ -26,7 +26,7 @@ import (
 )
 
 func TestTraversal(t *testing.T) {
-	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", false)
+	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", true)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
 		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
@@ -44,6 +44,13 @@ func TestTraversal(t *testing.T) {
 		assert.Equal(t, 3, len(original.bytecode.stepInstructions))
 		assert.Equal(t, 5, len(clone.bytecode.stepInstructions))
 		assert.Equal(t, 4, len(cloneClone.bytecode.stepInstructions))
+	})
+
+	t.Run("Test Iterate with empty removeConnection", func(t *testing.T) {
+		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
+
+		promise := g.V().Count().Iterate()
+		assert.NotNil(t, <-promise)
 	})
 
 	t.Run("Test traversal with bindings", func(t *testing.T) {
@@ -382,8 +389,7 @@ func verifyTxState(t *testing.T, expected bool, gtxList ...*Transaction) {
 }
 
 func addV(t *testing.T, g *GraphTraversalSource, name string) {
-	_, promise, err := g.AddV("person").Property("name", name).Iterate()
-	assert.Nil(t, err)
+	promise := g.AddV("person").Property("name", name).Iterate()
 	assert.Nil(t, <-promise)
 }
 
@@ -395,9 +401,8 @@ func dropGraphCheckCount(t *testing.T, g *GraphTraversalSource) {
 func verifyGtxClosed(t *testing.T, gtx *GraphTraversalSource) {
 	// Attempt to add an additional vertex to the transaction. This should return an error since it
 	// has been closed.
-	_, promise, err := gtx.AddV("failure").Iterate()
-	assert.NotNil(t, err)
-	assert.Nil(t, promise)
+	promise := gtx.AddV("failure").Iterate()
+	assert.NotNil(t, <-promise)
 }
 
 func getCount(t *testing.T, g *GraphTraversalSource) int32 {

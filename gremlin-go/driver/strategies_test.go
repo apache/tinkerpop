@@ -345,9 +345,7 @@ func TestStrategy(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		_, promise, err := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
-
-		assert.Nil(t, err)
+		promise := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
 		assert.NotNil(t, <-promise)
 	})
 

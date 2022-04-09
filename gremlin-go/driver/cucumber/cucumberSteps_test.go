@@ -321,12 +321,8 @@ func (tg *tinkerPopGraph) theGraphInitializerOf(arg1 *godog.DocString) error {
 	if err != nil {
 		return err
 	}
-	_, future, err := traversal.Iterate()
-	if err != nil {
-		return err
-	}
-	<-future
-	return nil
+	future := traversal.Iterate()
+	return <-future
 }
 
 func (tg *tinkerPopGraph) theResultShouldHaveACountOf(expectedCount int) error {

@@ -49,8 +49,7 @@ var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valenty
 
 func dropGraph(t *testing.T, g *GraphTraversalSource) {
 	// Drop vertices that were added.
-	_, promise, err := g.V().Drop().Iterate()
-	assert.Nil(t, err)
+	promise := g.V().Drop().Iterate()
 	assert.NotNil(t, promise)
 	assert.Nil(t, <-promise)
 }
@@ -67,8 +66,7 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	}
 
 	// Commit traversal.
-	_, promise, err := traversal.Iterate()
-	assert.Nil(t, err)
+	promise := traversal.Iterate()
 	assert.Nil(t, <-promise)
 }
 
@@ -581,7 +579,7 @@ func TestConnection(t *testing.T) {
 		dropGraph(t, g)
 
 		// Add vertices and edges to graph.
-		_, i, err := g.AddV("company").
+		i := g.AddV("company").
 			Property("name", "Bit-Quill").As("bq").
 			AddV("software").
 			Property("name", "GremlinServer").As("gs").
@@ -590,7 +588,6 @@ func TestConnection(t *testing.T) {
 			AddE("WORKS_ON").From("bq").To("tp").
 			AddE("IS_IN").From("gs").To("tp").
 			AddE("LIKES").From("bq").To("tp").Iterate()
-		assert.Nil(t, err)
 		assert.Nil(t, <-i)
 
 		results, errs := g.V().OutE().InV().Path().By("name").By(Label).ToList()
@@ -683,9 +680,9 @@ func TestConnection(t *testing.T) {
 
 	t.Run("Test Traversal.Iterate fail", func(t *testing.T) {
 		anonTrav := T__.Unfold().HasLabel(testLabel)
-		traversal, channel, err := anonTrav.Iterate()
-		assert.Nil(t, traversal)
-		assert.Nil(t, channel)
+		channel := anonTrav.Iterate()
+		assert.NotNil(t, channel)
+		err := <-channel
 		assert.Equal(t, newError(err0902IterateAnonTraversalError), err)
 	})
 
