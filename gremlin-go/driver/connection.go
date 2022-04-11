@@ -67,9 +67,9 @@ func (connection *connection) write(request *request) (ResultSet, error) {
 	if connection.state != established {
 		return nil, newError(err0102WriteConnectionClosedError)
 	}
-	connection.logHandler.log(Info, writeRequest)
+	connection.logHandler.log(Debug, writeRequest)
 	requestID := request.requestID.String()
-	connection.logHandler.logf(Info, creatingRequest, requestID)
+	connection.logHandler.logf(Debug, creatingRequest, requestID)
 	resultSet := newChannelResultSet(requestID, connection.results)
 	connection.results.store(requestID, resultSet)
 	return resultSet, connection.protocol.write(request)

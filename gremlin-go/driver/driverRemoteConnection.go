@@ -87,7 +87,7 @@ func NewDriverRemoteConnection(
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 	if settings.Session != "" {
-		logHandler.log(Info, sessionDetected)
+		logHandler.log(Debug, sessionDetected)
 		settings.MaximumConcurrentConnections = 1
 	}
 
@@ -117,7 +117,7 @@ func NewDriverRemoteConnection(
 func (driver *DriverRemoteConnection) Close() {
 	// If DriverRemoteConnection has spawnedSessions then they must be closed as well.
 	if len(driver.spawnedSessions) > 0 {
-		driver.client.logHandler.logf(Info, closingSpawnedSessions, driver.client.url)
+		driver.client.logHandler.logf(Debug, closingSpawnedSessions, driver.client.url)
 		for _, session := range driver.spawnedSessions {
 			session.Close()
 		}

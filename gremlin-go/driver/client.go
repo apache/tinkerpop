@@ -79,7 +79,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 	if settings.Session != "" {
-		logHandler.log(Info, sessionDetected)
+		logHandler.log(Debug, sessionDetected)
 		settings.MaximumConcurrentConnections = 1
 	}
 

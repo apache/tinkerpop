@@ -41,13 +41,12 @@ const defaultNewConnectionThreshold = 4
 // multiple active connections with no active traversals on them, one will be used and the others will be closed and
 // removed from the pool.
 type loadBalancingPool struct {
-	url        string
-	logHandler *logHandler
-	authInfo   *AuthInfo
-	tlsConfig  *tls.Config
+	url               string
+	logHandler        *logHandler
+	authInfo          *AuthInfo
+	tlsConfig         *tls.Config
 	keepAliveInterval time.Duration
-	writeDeadline time.Duration
-
+	writeDeadline     time.Duration
 
 	newConnectionThreshold int
 	connections            []*connection
@@ -86,7 +85,7 @@ func (pool *loadBalancingPool) getLeastUsedConnection() (*connection, error) {
 				if leastUsed != nil && (leastUsed.activeResults() == 0 && connection.activeResults() == 0) {
 					// Close the connection asynchronously since it is a high-latency method
 					go func() {
-						pool.logHandler.log(Info, closeUnusedPoolConnection)
+						pool.logHandler.log(Debug, closeUnusedPoolConnection)
 						err := connection.close()
 						if err != nil {
 							pool.logHandler.logf(Warning, errorClosingConnection, err.Error())
@@ -105,7 +104,7 @@ func (pool *loadBalancingPool) getLeastUsedConnection() (*connection, error) {
 					leastUsed = connection
 				}
 			} else {
-				pool.logHandler.log(Info, purgingDeadConnection)
+				pool.logHandler.log(Debug, purgingDeadConnection)
 			}
 		}
 
@@ -150,8 +149,8 @@ func newLoadBalancingPool(url string, logHandler *logHandler, authInfo *AuthInfo
 		logHandler:             logHandler,
 		authInfo:               authInfo,
 		tlsConfig:              tlsConfig,
-		keepAliveInterval: keepAliveInterval,
-		writeDeadline: writeDeadline,
+		keepAliveInterval:      keepAliveInterval,
+		writeDeadline:          writeDeadline,
 		newConnectionThreshold: newConnectionThreshold,
 		connections:            pool,
 	}, nil

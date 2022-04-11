@@ -116,13 +116,13 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 	if statusCode == http.StatusNoContent {
 		resultSets.load(responseIDString).addResult(&Result{make([]interface{}, 0)})
 		resultSets.load(responseIDString).Close()
-		protocol.logHandler.logf(Info, readComplete, responseIDString)
+		protocol.logHandler.logf(Debug, readComplete, responseIDString)
 	} else if statusCode == http.StatusOK {
 		// Add data and status attributes to the ResultSet.
 		resultSets.load(responseIDString).addResult(&Result{data})
 		resultSets.load(responseIDString).setStatusAttributes(response.responseStatus.attributes)
 		resultSets.load(responseIDString).Close()
-		protocol.logHandler.logf(Info, readComplete, responseIDString)
+		protocol.logHandler.logf(Debug, readComplete, responseIDString)
 	} else if statusCode == http.StatusPartialContent {
 		// Add data to the ResultSet.
 		resultSets.load(responseIDString).addResult(&Result{data})
