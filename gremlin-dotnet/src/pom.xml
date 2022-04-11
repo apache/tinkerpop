@@ -264,7 +264,7 @@ file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
                                         <if>
                                             <available file="${nugetExe}"/>
@@ -289,7 +289,7 @@ file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&
                                         <exec executable="mono" failonerror="true">
                                             <arg line="${nugetExe} push Gremlin.Net.Template.${project.version}.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
