@@ -63,32 +63,34 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 }
 
 // Iterate all the Traverser instances in the traversal and returns the empty traversal.
-func (t *Traversal) Iterate() (*Traversal, <-chan error, error) {
-	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
-	if t.remote == nil {
-		return nil, nil, newError(err0902IterateAnonTraversalError)
-	}
-
-	err := t.bytecode.addStep("none")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	res, err := t.remote.submitBytecode(t.bytecode)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func (t *Traversal) Iterate() <-chan error {
 	r := make(chan error)
+
 	go func() {
 		defer close(r)
+
+		if t.remote == nil {
+			r <- newError(err0902IterateAnonTraversalError)
+			return
+		}
+
+		if err := t.bytecode.addStep("none"); err != nil {
+			r <- err
+			return
+		}
+
+		res, err := t.remote.submitBytecode(t.bytecode)
+		if err != nil {
+			r <- err
+			return
+		}
 
 		// Force waiting until complete.
 		_, err = res.All()
 		r <- err
 	}()
 
-	return t, r, nil
+	return r
 }
 
 // HasNext returns true if the result is not empty.
