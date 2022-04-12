@@ -16,9 +16,15 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-== TinkerPop 3.6.0 (Tinkerheart)
+== TinkerPop 3.7.0 (NOT OFFICIALLY NAMED YET)
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+
+[[release-3-7.0]]
+=== TinkerPop 3.7.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
+
 
 [[release-3-6-1]]
 === TinkerPop 3.6.1 (Release Date: NOT OFFICIALLY RELEASED YET)
