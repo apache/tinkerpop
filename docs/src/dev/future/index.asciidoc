@@ -42,7 +42,7 @@ in each release line represent unreleased changes only. Once an official release
 are removed with new items taking their place as they are planned. The release line is removed from the roadmap
 completely when it is no longer maintained.
 
-== 3.7.x - Target 22Q3
+== 3.7.x - Target 22Q4
 
 Development has not yet started on the 3.7.x release line with a targeted release date for the initial release of the
 line of 22H2.
@@ -59,29 +59,15 @@ line of 22H2.
 * Add string manipulation functions (`split()`, `substring()` etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
 * Case-insensitive search (link:https://issues.apache.org/jira/browse/TINKERPOP-2673[TINKERPOP-2673])
 
-== 3.6.x - Target 22Q1
+== 3.6.x - Target 22Q3
 
-The development of the 3.6.x release line is currently under way with a target release date for an initial release of
-the line of 22Q1.
+The initial release of this line was produced April 2022 with the next follow-on release targeted for 22Q3.
 
-* Unify the Gremlin testing model by providing support for the Gherkin tests in Java so that they can be used by
-providers to validate their implementations.
-* Equality, Equivalence, Comparability and Orderability
-** Document Gremlin semantics in this area and develop additional tests to enforce existing behaviors.
-** Allow orderability on any type (link:https://issues.apache.org/jira/browse/TINKERPOP-2641[TINKERPOP-2641])
-** Modify comparability around `NaN` and `nulltype` (link:https://issues.apache.org/jira/browse/TINKERPOP-2642[TINKERPOP-2642])
-** Modify equality around `NaN` and `BigDecimal` (link:https://issues.apache.org/jira/browse/TINKERPOP-2643[TINKERPOP-2643])
-* Create `merge()` step to codify the best practice for upsert pattern (link:https://issues.apache.org/jira/browse/TINKERPOP-2681[TINKERPOP-2681])
-* Create `call()` step to allow for invocation of implementation specific procedures (link:https://issues.apache.org/jira/browse/TINKERPOP-2680[TINKERPOP-2680])
-* Deprecation of Gryo message serialization for network use cases (link:https://issues.apache.org/jira/browse/TINKERPOP-2398[TINKERPOP-2398])
-* Consistent by() behavior (link:https://issues.apache.org/jira/browse/TINKERPOP-2635[TINKERPOP-2635])
-* Add regular expression support to `TextP` (link:https://issues.apache.org/jira/browse/TINKERPOP-2652[TINKERPOP-2652])
-* Add ability for `property()` to take a Map of values (link:https://issues.apache.org/jira/browse/TINKERPOP-2665[TINKERPOP-2665])
 
-== 3.5.x - Target 22Q1
 
-This initial release of this line was produced in May 2021 with the next follow-on release in the line targeted for
-22Q1.
+== 3.5.x - Target 22Q3
+
+This initial release of this line was produced in May 2021 with the next follow-on release targeted for 22Q3.
 
 * GraphBinary support for Javascript (link:https://issues.apache.org/jira/browse/TINKERPOP-2229[TINKERPOP-2229])
 * Gremlin Language Variant for Go (link:https://issues.apache.org/jira/browse/TINKERPOP-2692[TINKERPOP-2692])
