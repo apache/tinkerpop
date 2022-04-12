@@ -61,8 +61,11 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
                 {GraphBinaryCompatibility.V1_3_5_1, readerV1, writerV1 },
                 {GraphBinaryCompatibility.V1_3_5_2, readerV1, writerV1 },
                 {GraphBinaryCompatibility.V1_3_5_3, readerV1, writerV1 },
+                {GraphBinaryCompatibility.V1_3_5_4, readerV1, writerV1 },
 
                 {GraphBinaryCompatibility.V1_3_6_0, readerV1, writerV1 },
+                {GraphBinaryCompatibility.V1_3_6_1, readerV1, writerV1 },
+
         });
     }
 
