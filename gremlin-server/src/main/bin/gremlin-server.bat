@@ -41,7 +41,7 @@ if "%1" == "install" goto install
 :server
 
 :: Launch the application
-java -Dlogback.configurationFile=conf/log4back.xml %JAVA_OPTIONS% %JAVA_ARGS% -cp "%LIBDIR%/*;%EXTDIR%;" org.apache.tinkerpop.gremlin.server.GremlinServer %*
+java -Dlogback.configurationFile=conf/logback.xml %JAVA_OPTIONS% %JAVA_ARGS% -cp "%LIBDIR%/*;%EXTDIR%;" org.apache.tinkerpop.gremlin.server.GremlinServer %*
 
 :install
 
