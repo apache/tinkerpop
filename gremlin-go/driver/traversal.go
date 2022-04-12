@@ -27,16 +27,14 @@ type Traverser struct {
 
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
-	graph               *Graph
-	traversalStrategies *TraversalStrategies
-	bytecode            *bytecode
-	remote              *DriverRemoteConnection
-	results             ResultSet
+	graph    *Graph
+	bytecode *bytecode
+	remote   *DriverRemoteConnection
+	results  ResultSet
 }
 
 // ToList returns the result in a list.
 func (t *Traversal) ToList() ([]*Result, error) {
-	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
 	if t.remote == nil {
 		return nil, newError(err0901ToListAnonTraversalError)
 	}

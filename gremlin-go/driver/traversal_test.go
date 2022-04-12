@@ -29,7 +29,7 @@ func TestTraversal(t *testing.T) {
 	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", false)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
-		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, newBytecode(nil), nil)
 		original := g.V().Out("created")
 		clone := original.Clone().Out("knows")
 		cloneClone := clone.Clone().Out("created")
@@ -47,14 +47,14 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Iterate with empty removeConnection", func(t *testing.T) {
-		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
+		g := NewGraphTraversalSource(&Graph{}, nil, newBytecode(nil))
 
 		promise := g.V().Count().Iterate()
 		assert.NotNil(t, <-promise)
 	})
 
 	t.Run("Test traversal with bindings", func(t *testing.T) {
-		g := NewGraphTraversalSource(&Graph{}, &TraversalStrategies{}, newBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, newBytecode(nil), nil)
 		bytecode := g.V((&Bindings{}).Of("a", []int32{1, 2, 3})).
 			Out((&Bindings{}).Of("b", "created")).
 			Where(T__.In((&Bindings{}).Of("c", "created"), (&Bindings{}).Of("d", "knows")).

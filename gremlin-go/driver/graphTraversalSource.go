@@ -19,27 +19,35 @@ under the License.
 
 package gremlingo
 
-// TraversalStrategies is interceptor methods to alter the execution of the traversal (e.g. query re-writing).
-type TraversalStrategies struct {
+func convertStrategyVarargs(strategies []TraversalStrategy) []interface{} {
+	converted := make([]interface{}, 0)
+	for _, strategy := range strategies {
+		converted = append(converted, strategy)
+	}
+	return converted
 }
 
 // GraphTraversalSource can be used to start GraphTraversal.
 type GraphTraversalSource struct {
-	graph               *Graph
-	traversalStrategies *TraversalStrategies
-	bytecode            *bytecode
-	remoteConnection    *DriverRemoteConnection
-	graphTraversal      *GraphTraversal
+	graph            *Graph
+	bytecode         *bytecode
+	remoteConnection *DriverRemoteConnection
+	graphTraversal   *GraphTraversal
 }
 
-// NewGraphTraversalSource creates a graph traversal source, the primary DSL of the Gremlin traversal machine.
-func NewGraphTraversalSource(graph *Graph, traversalStrategies *TraversalStrategies, bytecode *bytecode, remoteConnection *DriverRemoteConnection) *GraphTraversalSource {
-	return &GraphTraversalSource{graph: graph, traversalStrategies: traversalStrategies, bytecode: bytecode, remoteConnection: remoteConnection}
+// NewGraphTraversalSource creates a new GraphTraversalSource from a Graph, DriverRemoteConnection, and any TraversalStrategy.
+// Graph and DriverRemoteConnection can be set to nil as valid default values.
+func NewGraphTraversalSource(graph *Graph, remoteConnection *DriverRemoteConnection,
+	traversalStrategies ...TraversalStrategy) *GraphTraversalSource {
+	convertedArgs := convertStrategyVarargs(traversalStrategies)
+	bc := newBytecode(nil)
+	bc.addSource("withStrategies", convertedArgs...)
+	return &GraphTraversalSource{graph: graph, bytecode: bc, remoteConnection: remoteConnection}
 }
 
 // NewDefaultGraphTraversalSource creates a new graph GraphTraversalSource without a graph, strategy, or existing traversal.
 func NewDefaultGraphTraversalSource() *GraphTraversalSource {
-	return &GraphTraversalSource{graph: nil, traversalStrategies: nil, bytecode: newBytecode(nil)}
+	return &GraphTraversalSource{graph: nil, bytecode: newBytecode(nil), remoteConnection: nil}
 }
 
 // GetBytecode gets the traversal bytecode associated with this graph traversal source.
@@ -49,16 +57,18 @@ func (gts *GraphTraversalSource) GetBytecode() *bytecode {
 
 // GetGraphTraversal gets the graph traversal associated with this graph traversal source.
 func (gts *GraphTraversalSource) GetGraphTraversal() *GraphTraversal {
-	return NewGraphTraversal(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode), gts.remoteConnection)
-}
-
-// GetTraversalStrategies gets the graph traversal strategies associated with this graph traversal source.
-func (gts *GraphTraversalSource) GetTraversalStrategies() *TraversalStrategies {
-	return gts.traversalStrategies
+	return NewGraphTraversal(gts.graph, newBytecode(gts.bytecode), gts.remoteConnection)
 }
 
 func (gts *GraphTraversalSource) clone() *GraphTraversalSource {
-	return NewGraphTraversalSource(gts.graph, gts.traversalStrategies, newBytecode(gts.bytecode), gts.remoteConnection)
+	return cloneGraphTraversalSource(gts.graph, newBytecode(gts.bytecode), gts.remoteConnection)
+}
+
+func cloneGraphTraversalSource(graph *Graph, bc *bytecode, remoteConnection *DriverRemoteConnection) *GraphTraversalSource {
+	return &GraphTraversalSource{graph: graph,
+		bytecode:         bc,
+		remoteConnection: remoteConnection,
+	}
 }
 
 // WithBulk allows for control of bulking operations.
@@ -93,16 +103,18 @@ func (gts *GraphTraversalSource) WithSideEffect(args ...interface{}) *GraphTrave
 }
 
 // WithStrategies adds an arbitrary collection of TraversalStrategies instances to the traversal source.
-func (gts *GraphTraversalSource) WithStrategies(args ...interface{}) *GraphTraversalSource {
+func (gts *GraphTraversalSource) WithStrategies(args ...TraversalStrategy) *GraphTraversalSource {
+	convertedArgs := convertStrategyVarargs(args)
 	source := gts.clone()
-	source.bytecode.addSource("withStrategies", args...)
+	source.bytecode.addSource("withStrategies", convertedArgs...)
 	return source
 }
 
 // WithoutStrategies removes an arbitrary collection of TraversalStrategies instances to the traversal source.
-func (gts *GraphTraversalSource) WithoutStrategies(args ...interface{}) *GraphTraversalSource {
+func (gts *GraphTraversalSource) WithoutStrategies(args ...TraversalStrategy) *GraphTraversalSource {
+	convertedArgs := convertStrategyVarargs(args)
 	source := gts.clone()
-	source.bytecode.addSource("withoutStrategies", args...)
+	source.bytecode.addSource("withoutStrategies", convertedArgs...)
 	return source
 }
 

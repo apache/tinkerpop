@@ -23,12 +23,6 @@ import (
 	"sync"
 )
 
-type traversalStrategy struct {
-	name          string
-	configuration map[string]interface{}
-	apply         func(g GraphTraversal)
-}
-
 type Lambda struct {
 	Script   string
 	Language string
@@ -40,13 +34,12 @@ type GraphTraversal struct {
 }
 
 // NewGraphTraversal make a new GraphTraversal.
-func NewGraphTraversal(graph *Graph, traversalStrategies *TraversalStrategies, bytecode *bytecode, remote *DriverRemoteConnection) *GraphTraversal {
+func NewGraphTraversal(graph *Graph, bytecode *bytecode, remote *DriverRemoteConnection) *GraphTraversal {
 	gt := &GraphTraversal{
 		Traversal: &Traversal{
-			graph:               graph,
-			traversalStrategies: traversalStrategies,
-			bytecode:            bytecode,
-			remote:              remote,
+			graph:    graph,
+			bytecode: bytecode,
+			remote:   remote,
 		},
 	}
 	return gt
@@ -54,7 +47,7 @@ func NewGraphTraversal(graph *Graph, traversalStrategies *TraversalStrategies, b
 
 // Clone make a copy of a traversal that is reset for iteration.
 func (g *GraphTraversal) Clone() *GraphTraversal {
-	return NewGraphTraversal(g.graph, g.traversalStrategies, newBytecode(g.bytecode), g.remote)
+	return NewGraphTraversal(g.graph, newBytecode(g.bytecode), g.remote)
 }
 
 // V adds the v step to the GraphTraversal.
@@ -699,10 +692,9 @@ func (t *Transaction) Begin() (*GraphTraversalSource, error) {
 	t.isOpen = true
 
 	gts := &GraphTraversalSource{
-		graph:               t.g.graph,
-		traversalStrategies: t.g.traversalStrategies,
-		bytecode:            t.g.bytecode,
-		remoteConnection:    t.sessionBasedConnection}
+		graph:            t.g.graph,
+		bytecode:         t.g.bytecode,
+		remoteConnection: t.sessionBasedConnection}
 	return gts, nil
 }
 

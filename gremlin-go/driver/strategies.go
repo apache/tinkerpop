@@ -28,11 +28,20 @@ const (
 	computerDecorationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration."
 )
 
+type TraversalStrategy interface {
+}
+
+type traversalStrategy struct {
+	name          string
+	configuration map[string]interface{}
+	apply         func(g GraphTraversal)
+}
+
 // Decoration strategies
 
 // ConnectiveStrategy rewrites the binary conjunction form of a.And().b into a AndStep of
 // And(a,b) (likewise for OrStep).
-func ConnectiveStrategy() *traversalStrategy {
+func ConnectiveStrategy() TraversalStrategy {
 	return &traversalStrategy{name: decorationNamespace + "ConnectiveStrategy"}
 }
 
@@ -40,7 +49,7 @@ func ConnectiveStrategy() *traversalStrategy {
 // that feature. This strategy provides for identifier assignment by enabling users to utilize Vertex and Edge indices
 // under the hood, thus simulating that capability.
 // By default, when an identifier is not supplied by the user, newly generated identifiers are UUID objects.
-func ElementIdStrategy() *traversalStrategy {
+func ElementIdStrategy() TraversalStrategy {
 	return &traversalStrategy{name: decorationNamespace + "ElementIdStrategy"}
 }
 
@@ -158,15 +167,15 @@ func EdgeLabelVerificationStrategy(logWarning, throwException bool) *traversalSt
 }
 
 // LambdaRestrictionStrategy does not allow lambdas to be used in a Traversal. The contents of a lambda
-// cannot be analyzed/optimized and thus, reduces the ability of other TraversalStrategy instances to reason
+// cannot be analyzed/optimized and thus, reduces the ability of other traversalStrategy instances to reason
 // about the traversal. This strategy is not activated by default. However, graph system providers may choose
 // to make this a default strategy in order to ensure their respective strategies are better able to operate.
-func LambdaRestrictionStrategy() *traversalStrategy {
+func LambdaRestrictionStrategy() TraversalStrategy {
 	return &traversalStrategy{name: verificationNamespace + "LambdaRestrictionStrategy"}
 }
 
 // ReadOnlyStrategy detects steps marked with Mutating and returns an error if one is found.
-func ReadOnlyStrategy() *traversalStrategy {
+func ReadOnlyStrategy() TraversalStrategy {
 	return &traversalStrategy{name: verificationNamespace + "ReadOnlyStrategy"}
 }
 
@@ -192,20 +201,20 @@ func ReservedKeysVerificationStrategy(logWarning, throwException bool, keys []st
 // Performing this replacement removes situations where the more expensive trip to an adjacent Graph Element (e.g.
 // the Vertex on the other side of an Edge) can be satisfied by trips to incident Graph Elements (e.g. just the Edge
 // itself).
-func AdjacentToIncidentStrategy() *traversalStrategy {
+func AdjacentToIncidentStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "AdjacentToIncidentStrategy"}
 }
 
 // ByModulatorOptimizationStrategy looks for standard traversals in By-modulators and replaces them with more
 // optimized traversals (e.g. TokenTraversal) if possible.
-func ByModulatorOptimizationStrategy() *traversalStrategy {
+func ByModulatorOptimizationStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "ByModulatorOptimizationStrategy"}
 }
 
 // CountStrategy optimizes any occurrence of CountGlobalStep followed by an IsStep The idea is to limit
 // the number of incoming elements in a way that it's enough for the IsStep to decide whether it evaluates
 // true or false. If the traversal already contains a user supplied limit, the strategy won't modify it.
-func CountStrategy() *traversalStrategy {
+func CountStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "CountStrategy"}
 }
 
@@ -213,7 +222,7 @@ func CountStrategy() *traversalStrategy {
 // earlier. It will also try to merge multiple RangeGlobalSteps into one.
 // If the logical consequence of one or multiple RangeGlobalSteps is an empty result, the strategy will remove
 // as many steps as possible and add a NoneStep instead.
-func EarlyLimitStrategy() *traversalStrategy {
+func EarlyLimitStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "EarlyLimitStrategy"}
 }
 
@@ -221,14 +230,14 @@ func EarlyLimitStrategy() *traversalStrategy {
 // the strategy and indicate when it is reasonable for a step to move in front of another. It will also do its best to
 // push step labels as far "right" as possible in order to keep Traversers as small and bulkable as possible prior to
 // the absolute need for Path-labeling.
-func FilterRankingStrategy() *traversalStrategy {
+func FilterRankingStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "FilterRankingStrategy"}
 }
 
 // IdentityRemovalStrategy looks for IdentityStep instances and removes them.
 // If the identity step is labeled, its labels are added to the previous step.
 // If the identity step is labeled and it's the first step in the traversal, it stays.
-func IdentityRemovalStrategy() *traversalStrategy {
+func IdentityRemovalStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "IdentityRemovalStrategy"}
 }
 
@@ -238,7 +247,7 @@ func IdentityRemovalStrategy() *traversalStrategy {
 //   the Edge step is labeled
 //   the traversal contains a Path step
 //   the traversal contains a Lambda step
-func IncidentToAdjacentStrategy() *traversalStrategy {
+func IncidentToAdjacentStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "IncidentToAdjacentStrategy"}
 }
 
@@ -247,7 +256,7 @@ func IncidentToAdjacentStrategy() *traversalStrategy {
 // can be "inlined". Normalizing  pure filters with inlining reduces the number of variations of a filter that
 // a graph provider may need to reason about when writing their own strategies. As a result, this strategy helps
 // increase the likelihood that a provider's filtering optimization will succeed at re-writing the traversal.
-func InlineFilterStrategy() *traversalStrategy {
+func InlineFilterStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "InlineFilterStrategy"}
 }
 
@@ -255,21 +264,21 @@ func InlineFilterStrategy() *traversalStrategy {
 // FlatMapStep if neither Path-tracking nor partial Path-tracking is required, and the next step is not the
 // traversal's last step or a Barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
 // is meant to reduce memory requirements and improve the overall query performance.
-func LazyBarrierStrategy() *traversalStrategy {
+func LazyBarrierStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "LazyBarrierStrategy"}
 }
 
 // MatchPredicateStrategy will fold any post-Where() step that maintains a traversal constraint into
 // Match(). MatchStep is intelligent with traversal constraint applications and thus, can more
 // efficiently use the constraint of WhereTraversalStep or WherePredicateStep.
-func MatchPredicateStrategy() *traversalStrategy {
+func MatchPredicateStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "MatchPredicateStrategy"}
 }
 
 // OrderLimitStrategy is an OLAP strategy that folds a RangeGlobalStep into a preceding
 // OrderGlobalStep. This helps to eliminate traversers early in the traversal and can
 // significantly reduce the amount of memory required by the OLAP execution engine.
-func OrderLimitStrategy() *traversalStrategy {
+func OrderLimitStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "OrderLimitStrategy"}
 }
 
@@ -277,13 +286,13 @@ func OrderLimitStrategy() *traversalStrategy {
 // and Select() into local children by inlining components of the non-local child. In this way,
 // PathProcessorStrategy helps to ensure that more traversals meet the local child constraint imposed
 // on OLAP traversals.
-func PathProcessorStrategy() *traversalStrategy {
+func PathProcessorStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathProcessorStrategy"}
 }
 
 // PathRetractionStrategy will remove Paths from the Traversers and increase the likelihood of bulking
 // as Path data is not required after Select('b').
-func PathRetractionStrategy() *traversalStrategy {
+func PathRetractionStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathRetractionStrategy"}
 }
 
@@ -304,7 +313,7 @@ func ProductiveByStrategy(productiveKeys []string) *traversalStrategy {
 //   DedupGlobalStep
 //   LoopsStep
 //   LambdaHolder
-func RepeatUnrollStrategy() *traversalStrategy {
+func RepeatUnrollStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "RepeatUnrollStrategy"}
 }
 
