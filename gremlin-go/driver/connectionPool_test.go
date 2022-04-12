@@ -35,8 +35,7 @@ var logger = newLogHandler(&defaultLogger{}, Info, language.English)
 func getPoolForTesting() *loadBalancingPool {
 	return &loadBalancingPool{
 		url:                    "",
-		authInfo:               nil,
-		tlsConfig:              nil,
+		connSettings:           newDefaultConnectionSettings(),
 		logHandler:             newLogHandler(&defaultLogger{}, Info, language.English),
 		newConnectionThreshold: newConnectionThreshold,
 		connections:            nil,

@@ -65,17 +65,21 @@ func (conn *mockWebsocketConn) SetPongHandler(h func(appData string) error) {
 	conn.Called(h)
 }
 
+func getNewGorillaTransporter() (gorillaTransporter, *mockWebsocketConn) {
+	mockConn := new(mockWebsocketConn)
+	return gorillaTransporter{
+		url:          "ws://mockHost:8182/gremlin",
+		connection:   mockConn,
+		isClosed:     false,
+		connSettings: newDefaultConnectionSettings(),
+		writeChannel: make(chan []byte, 100),
+		wg:           &sync.WaitGroup{},
+	}, mockConn
+}
+
 func TestGorillaTransporter(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockConn := new(mockWebsocketConn)
-		transporter := gorillaTransporter{
-			url:          "ws://mockHost:8182/gremlin",
-			connection:   mockConn,
-			isClosed:     false,
-			writeChannel: make(chan []byte, 100),
-			wg:           &sync.WaitGroup{},
-		}
-
+		transporter, mockConn := getNewGorillaTransporter()
 		t.Run("WriteMessage", func(t *testing.T) {
 			mockConn.On("WriteMessage", 2, make([]byte, 10)).Return(nil)
 			err := transporter.Write(make([]byte, 10))
@@ -104,14 +108,7 @@ func TestGorillaTransporter(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockConn := new(mockWebsocketConn)
-		transporter := gorillaTransporter{
-			url:          "ws://mockHost:8182/gremlin",
-			connection:   mockConn,
-			isClosed:     false,
-			writeChannel: make(chan []byte, 100),
-		}
-
+		transporter, mockConn := getNewGorillaTransporter()
 		t.Run("Read", func(t *testing.T) {
 			mockConn.On("ReadMessage").Return(0, []byte{}, errors.New(mockReadErrMessage))
 			mockConn.On("SetPongHandler", mock.AnythingOfType("func(string) error")).Return(nil)

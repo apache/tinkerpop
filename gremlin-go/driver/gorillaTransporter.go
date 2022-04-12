@@ -20,7 +20,7 @@ under the License.
 package gremlingo
 
 import (
-	"crypto/tls"
+	"net/http"
 	"net/url"
 	"sync"
 	"time"
@@ -31,20 +31,18 @@ import (
 const keepAliveIntervalDefault = 5 * time.Second
 const writeDeadlineDefault = 3 * time.Second
 const writeChannelSizeDefault = 100
+const connectionTimeoutDefault = 45 * time.Second
 
 // Transport layer that uses gorilla/websocket: https://github.com/gorilla/websocket
 // Gorilla WebSocket is a widely used and stable Go implementation of the WebSocket protocol.
 type gorillaTransporter struct {
-	url               string
-	connection        websocketConn
-	isClosed          bool
-	logHandler        logHandler
-	authInfo          *AuthInfo
-	tlsConfig         *tls.Config
-	keepAliveInterval time.Duration
-	writeDeadline     time.Duration
-	writeChannel      chan []byte
-	wg                *sync.WaitGroup
+	url          string
+	connection   websocketConn
+	isClosed     bool
+	logHandler   logHandler
+	connSettings *connectionSettings
+	writeChannel chan []byte
+	wg           *sync.WaitGroup
 }
 
 // Connect used to establish a connection.
@@ -59,18 +57,21 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 		return
 	}
 
-	dialer := websocket.DefaultDialer
-	dialer.TLSClientConfig = transporter.tlsConfig
+	dialer := &websocket.Dialer{
+		Proxy:            http.ProxyFromEnvironment,
+		HandshakeTimeout: transporter.connSettings.connectionTimeout,
+	}
+	dialer.TLSClientConfig = transporter.connSettings.tlsConfig
 	// TODO: make this configurable from client; this currently does nothing since 4096 is the default
 	dialer.WriteBufferSize = 4096
 	// Nil is accepted as a valid header, so it can always be passed directly through.
-	conn, _, err := dialer.Dial(u.String(), transporter.authInfo.getHeader())
+	conn, _, err := dialer.Dial(u.String(), transporter.connSettings.authInfo.getHeader())
 	if err != nil {
 		return err
 	}
 	transporter.connection = conn
 	transporter.connection.SetPongHandler(func(string) error {
-		err := transporter.connection.SetReadDeadline(time.Now().Add(2 * transporter.keepAliveInterval))
+		err := transporter.connection.SetReadDeadline(time.Now().Add(2 * transporter.connSettings.keepAliveInterval))
 		if err != nil {
 			return err
 		}
@@ -94,7 +95,7 @@ func (transporter *gorillaTransporter) Write(data []byte) error {
 }
 
 func (transporter *gorillaTransporter) getAuthInfo() *AuthInfo {
-	return transporter.authInfo
+	return transporter.connSettings.authInfo
 }
 
 // Read used to read data from the transporter. Opens connection if closed.
@@ -106,7 +107,7 @@ func (transporter *gorillaTransporter) Read() ([]byte, error) {
 		}
 	}
 
-	err := transporter.connection.SetReadDeadline(time.Now().Add(transporter.keepAliveInterval * 2))
+	err := transporter.connection.SetReadDeadline(time.Now().Add(transporter.connSettings.keepAliveInterval * 2))
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +140,7 @@ func (transporter *gorillaTransporter) IsClosed() bool {
 }
 
 func (transporter *gorillaTransporter) writeLoop() {
-	ticker := time.NewTicker(transporter.keepAliveInterval)
+	ticker := time.NewTicker(transporter.connSettings.keepAliveInterval)
 	defer func() {
 		ticker.Stop()
 	}()
@@ -153,7 +154,7 @@ func (transporter *gorillaTransporter) writeLoop() {
 			}
 
 			// Set write deadline.
-			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.writeDeadline))
+			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.connSettings.writeDeadline))
 			if err != nil {
 				transporter.logHandler.logf(Error, failedToSetWriteDeadline, err.Error())
 				transporter.wg.Done()
@@ -169,7 +170,7 @@ func (transporter *gorillaTransporter) writeLoop() {
 			}
 		case <-ticker.C:
 			// Set write deadline.
-			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.keepAliveInterval))
+			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.connSettings.keepAliveInterval))
 			if err != nil {
 				transporter.logHandler.logf(Error, failedToSetWriteDeadline, err.Error())
 				transporter.wg.Done()

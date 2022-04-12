@@ -20,11 +20,9 @@ under the License.
 package gremlingo
 
 import (
-	"crypto/tls"
 	"encoding/base64"
 	"net/http"
 	"sync"
-	"time"
 )
 
 // protocol handles invoking serialization and deserialization, as well as handling the lifecycle of raw data passed to
@@ -177,11 +175,10 @@ func (protocol *gremlinServerWSProtocol) close() (err error) {
 	return
 }
 
-func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, authInfo *AuthInfo,
-	tlsConfig *tls.Config, keepAliveInterval time.Duration, writeDeadline time.Duration, results *synchronizedMap,
+func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, connSettings *connectionSettings, results *synchronizedMap,
 	errorCallback func()) (protocol, error) {
 	wg := &sync.WaitGroup{}
-	transport, err := getTransportLayer(transporterType, url, authInfo, tlsConfig, keepAliveInterval, writeDeadline)
+	transport, err := getTransportLayer(transporterType, url, connSettings)
 	if err != nil {
 		return nil, err
 	}
