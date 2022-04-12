@@ -100,9 +100,10 @@ TinkerPop has several release branches:
 * `3.1-dev` - 3.1.x (no longer maintained)
 * `3.2-dev` - 3.2.x (no longer maintained)
 * `3.3-dev` - 3.3.x (no longer maintained)
-* `3.4-dev` - 3.4.x (non-breaking bug fixes and enhancements)
+* `3.4-dev` - 3.4.x (no longer maintained)
 * `3.5-dev` - 3.5.x (non-breaking bug fixes and enhancements)
-* `master` - 3.6.x (current development)
+* `3.6-dev` - 3.6.x (non-breaking bug fixes and enhancements)
+* `master` - 3.7.x (current development)
 * `4.0-dev` - 4.0.x (future development)
 
 The branch description above that reads "non-breaking bug fixes and enhancements" simply means that within that release
@@ -112,7 +113,7 @@ can be assured that their upgrades will not introduce potential problems. A good
 client of one version within a release line can interact properly with a server version within that same line. If so,
 it is likely an acceptable change within that branch.
 
-Changes to earlier branches should merge forward toward `master` (e.g. `3.5-dev` should merge to `master`). Please read
+Changes to earlier branches should merge forward toward `master` (e.g. `3.6-dev` should merge to `master`). Please read
 more about this process in the <<pull-requests, Pull Requests>> section. Note that `4.0-dev` is rebased on `master`
 and currently behaves as a fresh repository as all 3.x content was removed.
 
