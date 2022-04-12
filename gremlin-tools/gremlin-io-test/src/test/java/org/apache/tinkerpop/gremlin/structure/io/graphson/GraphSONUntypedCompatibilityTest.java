@@ -132,6 +132,9 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
 
                 {GraphSONCompatibility.V1D0_3_6_0, mapperV1 },
                 {GraphSONCompatibility.V2D0_NO_TYPE_3_6_0, mapperV2 },
+                {GraphSONCompatibility.V1D0_3_6_1, mapperV1 },
+                {GraphSONCompatibility.V2D0_NO_TYPE_3_6_1, mapperV2 },
+
         });
     }
 
