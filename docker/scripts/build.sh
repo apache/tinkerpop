@@ -113,13 +113,13 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   cd target/docs/htmlsingle/
   if [ -z "${BUILD_JAVA_DOCS}" ]; then
     echo -e "\nUser Docs can be viewed under http://${IP}/\n"
-    python -m SimpleHTTPServer 80
+    python3 -m http.server 80
   else
     echo -e "\nUser Docs can be viewed under http://${IP}/"
     echo -e "Java Docs can be viewed under http://${IP}:81/\n"
-    python -m SimpleHTTPServer 80 &
+    python3 -m http.server 80 &
     cd ../../site/apidocs/full/
-    python -m SimpleHTTPServer 81
+    python3 -m http.server 81
   fi
 
 elif [ ! -z "${BUILD_JAVA_DOCS}" ]; then
@@ -127,6 +127,6 @@ elif [ ! -z "${BUILD_JAVA_DOCS}" ]; then
   IP=$(ip -4 address show | grep -Pv '\blo\b' | grep -o 'inet [0-9.]*' | cut -f2 -d ' ' | head -n1)
   echo -e "\nJava Docs can be viewed under http://${IP}/\n"
   cd target/site/apidocs/full/
-  python -m SimpleHTTPServer 80
+  python3 -m http.server 80
 
 fi
