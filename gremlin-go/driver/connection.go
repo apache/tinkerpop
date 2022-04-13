@@ -48,6 +48,8 @@ type connectionSettings struct {
 	writeDeadline     time.Duration
 	connectionTimeout time.Duration
 	enableCompression bool
+	readBufferSize    int
+	writeBufferSize   int
 }
 
 func (connection *connection) errorCallback() {
