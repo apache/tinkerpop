@@ -948,7 +948,7 @@ The `bin/gremlin-server.sh` script can be customized with environment variables 
 
 As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a
 file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, set GREMLIN_YAML in
-`bin/gemlin-server.conf` or supply the file to use to `bin/gremlin-server.sh` as in:
+`bin/gremlin-server.conf` or supply the file to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
 ----

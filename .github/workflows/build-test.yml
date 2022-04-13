@@ -203,7 +203,7 @@ jobs:
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :neo4j-gremlin -DincludeNeo4j
   go:
-    name: Go
+    name: go
     timeout-minutes: 20
     needs: smoke
     runs-on: ubuntu-latest

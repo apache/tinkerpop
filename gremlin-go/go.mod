@@ -15,8 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// If this file is changed, please also update the NOTICE file under gremlin-go.
-
 module github.com/apache/tinkerpop/gremlin-go
 
 go 1.17
