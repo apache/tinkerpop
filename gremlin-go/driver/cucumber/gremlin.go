@@ -579,6 +579,9 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
 	"g_V_hasXnullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
 		return g.V().Has(nil)
 	}},
+	"g_V_hasXnull_testnullkeyX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
+		return g.V().Has(nil, "test-null-key")
+	}},
 	"g_E_hasXnullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
 		return g.E().Has(nil)
 	}},
@@ -587,6 +590,15 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
 	}},
 	"g_V_hasXlabel_nullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
 		return g.V().Has(gremlingo.Label, nil)
+	}},
+	"g_V_hasXlabel_personX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
+		return g.V().Has(gremlingo.Label, "person")
+	}},
+	"g_V_hasXlabel_eqXpersonXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
+		return g.V().Has(gremlingo.Label, gremlingo.P.Eq("person"))
+	}},
+	"g_V_hasXlabel_isXpersonXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
+		return g.V().Has(gremlingo.Label, gremlingo.T__.Is("person"))
 	}},
 	"g_V_hasLabelXnull_nullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {
 		return g.V().HasLabel(nil, nil)

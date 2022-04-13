@@ -30,14 +30,17 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 )
 
 type tinkerPopGraph struct {
 	*CucumberWorld
+	sync.Mutex
 }
 
 var parsers map[*regexp.Regexp]func(string, string) interface{}
+var toListLock sync.Mutex
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
@@ -357,7 +360,7 @@ func (tg *tinkerPopGraph) theGraphShouldReturnForCountOf(expectedCount int, trav
 		return err
 	}
 	if len(results) != expectedCount {
-		return errors.New("graph did not return the correct count")
+		return fmt.Errorf("graph returned count of %d when %d was expected", len(results), expectedCount)
 	}
 	return nil
 }
@@ -692,6 +695,7 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 
 var tg = &tinkerPopGraph{
 	NewCucumberWorld(),
+	sync.Mutex{},
 }
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
@@ -711,6 +715,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		tg.scenario = sc
 		// Add tg.recreateAllDataGraphConnection() here and tg.closeAllDataGraphConnection() in an After scenario
 		// hook if necessary to isolate failing tests that closes the shared connection.
+		tg.Lock()
+		return ctx, nil
+	})
+
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		tg.Unlock()
 		return ctx, nil
 	})
 
@@ -749,13 +759,13 @@ func getEnvOrDefaultBool(key string, defaultValue bool) bool {
 
 func TestCucumberFeatures(t *testing.T) {
 	skipTestsIfNotEnabled(t, "cucumber godog tests",
-		getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", false))
+		getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
 	suite := godog.TestSuite{
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
 			Format:   "pretty",
-			Paths:    []string{"../../../gremlin-test/features"},
+			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/features")},
 			TestingT: t, // Testing instance that will run subtests.
 		},
 	}

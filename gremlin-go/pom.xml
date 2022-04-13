@@ -66,23 +66,6 @@ limitations under the License.
                                         <argument>up</argument>
                                         <argument>--exit-code-from</argument>
                                         <argument>gremlin-go-integration-tests</argument>
-                                        <argument>gremlin-go-integration-tests</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>Run Godog tests</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>docker-compose</executable>
-                                    <arguments>
-                                        <argument>up</argument>
-                                        <argument>--exit-code-from</argument>
-                                        <argument>gremlin-go-godog-tests</argument>
-                                        <argument>gremlin-go-godog-tests</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

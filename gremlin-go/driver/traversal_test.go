@@ -26,7 +26,7 @@ import (
 )
 
 func TestTraversal(t *testing.T) {
-	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", false)
+	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", true)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
 		g := cloneGraphTraversalSource(&Graph{}, newBytecode(nil), nil)
@@ -357,7 +357,7 @@ func TestTraversal(t *testing.T) {
 }
 
 func newConnection(t *testing.T) *DriverRemoteConnection {
-	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
+	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	testNoAuthWithAliasAuthInfo := &AuthInfo{}
 	testNoAuthWithAliasTlsConfig := &tls.Config{}
 
