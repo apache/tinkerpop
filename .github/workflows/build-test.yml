@@ -151,7 +151,7 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Set up Python 3.x
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.8'
       - name: Setup Python requirements
