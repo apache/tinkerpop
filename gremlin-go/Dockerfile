@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-ARG GREMLIN_SERVER_VERSION=${version:-3.5.3}
+ARG GREMLIN_SERVER_VERSION=${version:-3.5.4}
 FROM tinkerpop/gremlin-server:${GREMLIN_SERVER_VERSION}-SNAPSHOT
 
 USER root
