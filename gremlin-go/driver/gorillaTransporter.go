@@ -58,10 +58,11 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 	}
 
 	dialer := &websocket.Dialer{
-		Proxy:            http.ProxyFromEnvironment,
-		HandshakeTimeout: transporter.connSettings.connectionTimeout,
+		Proxy:             http.ProxyFromEnvironment,
+		HandshakeTimeout:  transporter.connSettings.connectionTimeout,
+		TLSClientConfig:   transporter.connSettings.tlsConfig,
+		EnableCompression: transporter.connSettings.enableCompression,
 	}
-	dialer.TLSClientConfig = transporter.connSettings.tlsConfig
 	// TODO: make this configurable from client; this currently does nothing since 4096 is the default
 	dialer.WriteBufferSize = 4096
 	// Nil is accepted as a valid header, so it can always be passed directly through.

@@ -47,6 +47,7 @@ type connectionSettings struct {
 	keepAliveInterval time.Duration
 	writeDeadline     time.Duration
 	connectionTimeout time.Duration
+	enableCompression bool
 }
 
 func (connection *connection) errorCallback() {

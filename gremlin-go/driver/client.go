@@ -39,6 +39,7 @@ type ClientSettings struct {
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
 	ConnectionTimeout time.Duration
+	EnableCompression bool
 	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
@@ -71,6 +72,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		KeepAliveInterval:            keepAliveIntervalDefault,
 		WriteDeadline:                writeDeadlineDefault,
 		ConnectionTimeout:            connectionTimeoutDefault,
+		EnableCompression:            false,
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
 		Session:                      "",
@@ -85,6 +87,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		keepAliveInterval: settings.KeepAliveInterval,
 		writeDeadline:     settings.WriteDeadline,
 		connectionTimeout: settings.ConnectionTimeout,
+		enableCompression: settings.EnableCompression,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)

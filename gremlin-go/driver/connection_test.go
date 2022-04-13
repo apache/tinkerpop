@@ -61,6 +61,7 @@ func newDefaultConnectionSettings() *connectionSettings {
 		keepAliveInterval: keepAliveIntervalDefault,
 		writeDeadline:     writeDeadlineDefault,
 		connectionTimeout: connectionTimeoutDefault,
+		enableCompression: false,
 	}
 }
 
@@ -343,6 +344,18 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
 			newDefaultConnectionSettings())
+		assert.Nil(t, err)
+		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
+	})
+
+	t.Run("Test createConnection with compression", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		setting := newDefaultConnectionSettings()
+		setting.enableCompression = true
+		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
+			setting)
 		assert.Nil(t, err)
 		assert.NotNil(t, connection)
 		assert.Equal(t, established, connection.state)
