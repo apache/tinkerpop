@@ -61,6 +61,9 @@ func newDefaultConnectionSettings() *connectionSettings {
 		keepAliveInterval: keepAliveIntervalDefault,
 		writeDeadline:     writeDeadlineDefault,
 		connectionTimeout: connectionTimeoutDefault,
+		enableCompression: false,
+		readBufferSize:    0,
+		writeBufferSize:   0,
 	}
 }
 
@@ -347,6 +350,39 @@ func TestConnection(t *testing.T) {
 		assert.NotNil(t, connection)
 		assert.Equal(t, established, connection.state)
 		defer deferredCleanup(t, connection)
+	})
+
+	t.Run("Test createConnection with compression", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		setting := newDefaultConnectionSettings()
+		setting.enableCompression = true
+		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
+			setting)
+		assert.Nil(t, err)
+		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
+	})
+
+	t.Run("Test connection.write() with small buffer size", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		setting := newDefaultConnectionSettings()
+		setting.readBufferSize = 100
+		setting.writeBufferSize = 150
+		setting.connectionTimeout = 1 * time.Second
+		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
+			setting)
+		assert.Nil(t, err)
+		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
+		request := makeStringRequest("g.V().count()", "g", "")
+		resultSet, err := connection.write(&request)
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, err := resultSet.one()
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
 	})
 
 	t.Run("Test connection.write()", func(t *testing.T) {

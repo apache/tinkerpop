@@ -39,6 +39,10 @@ type ClientSettings struct {
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
 	ConnectionTimeout time.Duration
+	EnableCompression bool
+	ReadBufferSize    int
+	WriteBufferSize   int
+
 	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
@@ -71,9 +75,15 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		KeepAliveInterval:            keepAliveIntervalDefault,
 		WriteDeadline:                writeDeadlineDefault,
 		ConnectionTimeout:            connectionTimeoutDefault,
+		EnableCompression:            false,
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
 		Session:                      "",
+		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
+		// size is zero, then a useful default size is used. The I/O buffer sizes
+		// do not limit the size of the messages that can be sent or received.
+		ReadBufferSize:  0,
+		WriteBufferSize: 0,
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -85,6 +95,9 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		keepAliveInterval: settings.KeepAliveInterval,
 		writeDeadline:     settings.WriteDeadline,
 		connectionTimeout: settings.ConnectionTimeout,
+		enableCompression: settings.EnableCompression,
+		readBufferSize:    settings.ReadBufferSize,
+		writeBufferSize:   settings.WriteBufferSize,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
