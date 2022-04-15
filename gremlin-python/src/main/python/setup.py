@@ -68,13 +68,11 @@ setup(
     test_suite="tests",
     data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[
-        # can't get to pytest-runner 6.0 without changing the docker image and the baseline version of python
-        # that is currently being tested - need to bump to 3.8.x perhaps
-        'pytest-runner==5.2',
+        'pytest-runner==6.0.0',
         'importlib-metadata<5.0.0'
     ],
     tests_require=[
-        'pytest>=4.6.4,<7.1.0',
+        'pytest>=4.6.4,<7.2.0',
         'mock>=3.0.5,<5.0.0',
         'radish-bdd==0.13.4',
         'PyHamcrest>=1.9.0,<3.0.0'
@@ -87,7 +85,6 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3"
     ]
 )
