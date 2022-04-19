@@ -16,8 +16,6 @@
   "FAILED_TO_CLOSE_IN_ERROR_CALLBACK": "Failed to close protocol in error callback '%s'",
   "FAILED_TO_WRITE_MESSAGE": "Failed to write message type: '%s', error: '%s'",
   "FAILED_TO_SET_WRITE_DEADLINE": "Failed to set write deadline, error: '%s'",
-  "FAILED_TO_SET_READ_DEADLINE": "Failed to set read deadline, error: '%s'",
-  "FAILED_TO_SHUTDOWN_TRANSPORTER": "Failed to shut down connection with error: '%s'",
   "LOG_ERROR_GENERIC": "Error occurred during operation %s: '%s'",
   "CREATING_SESSION_CONNECTION": "Creating Session based connection",
   "CLOSING_SPAWNED_SESSIONS": "Closing spawned sessions from DriverRemoteConnection with url '%s'",

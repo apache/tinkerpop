@@ -116,8 +116,6 @@ const (
 	failedToCloseInErrorCallback errorKey = "FAILED_TO_CLOSE_IN_ERROR_CALLBACK"
 	failedToWriteMessage         errorKey = "FAILED_TO_WRITE_MESSAGE"
 	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"
-	failedToSetReadDeadline      errorKey = "FAILED_TO_SET_READ_DEADLINE"
-	failedToShutdownTransporter  errorKey = "FAILED_TO_SHUTDOWN_TRANSPORTER"
 	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
 	creatingSessionConnection    errorKey = "CREATING_SESSION_CONNECTION"
 	closeSession                 errorKey = "CLOSE_SESSION"

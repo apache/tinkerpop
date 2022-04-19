@@ -296,7 +296,7 @@ func PathRetractionStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "PathRetractionStrategy"}
 }
 
-// ProductiveByStrategy takes an argument of by() and wraps it CoalesceStep so that the result is either
+// ProductiveByStrategy takes an argument of By() and wraps it CoalesceStep so that the result is either
 // the initial Traversal argument or null. In this way, the By() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
@@ -317,8 +317,8 @@ func RepeatUnrollStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "RepeatUnrollStrategy"}
 }
 
-//
-
+// RemoteStrategy reconstructs a Traversal by appending a RemoteStep to its end. That step will submit the Traversal to
+// a RemoteConnection instance which will typically send it to a remote server for execution and return results.
 func RemoteStrategy(connection DriverRemoteConnection) *traversalStrategy {
 	a := func(g GraphTraversal) {
 		result, err := g.getResults()

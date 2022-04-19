@@ -65,25 +65,26 @@ type Client struct {
 // Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource:              "g",
-		TransporterType:              Gorilla,
-		LogVerbosity:                 Info,
-		Logger:                       &defaultLogger{},
-		Language:                     language.English,
-		AuthInfo:                     &AuthInfo{},
-		TlsConfig:                    &tls.Config{},
-		KeepAliveInterval:            keepAliveIntervalDefault,
-		WriteDeadline:                writeDeadlineDefault,
-		ConnectionTimeout:            connectionTimeoutDefault,
-		EnableCompression:            false,
-		NewConnectionThreshold:       defaultNewConnectionThreshold,
-		MaximumConcurrentConnections: runtime.NumCPU(),
-		Session:                      "",
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
+		ConnectionTimeout: connectionTimeoutDefault,
+		EnableCompression: false,
 		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
 		// size is zero, then a useful default size is used. The I/O buffer sizes
 		// do not limit the size of the messages that can be sent or received.
 		ReadBufferSize:  0,
 		WriteBufferSize: 0,
+
+		NewConnectionThreshold:       defaultNewConnectionThreshold,
+		MaximumConcurrentConnections: runtime.NumCPU(),
+		Session:                      "",
 	}
 	for _, configuration := range configurations {
 		configuration(settings)

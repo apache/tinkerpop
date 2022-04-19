@@ -33,7 +33,7 @@ const defaultNewConnectionThreshold = 4
 // loadBalancingPool has two configurations: maximumConcurrentConnections/cap(connections) and newConnectionThreshold.
 // maximumConcurrentConnections denotes the maximum amount of active connections at any given time.
 // newConnectionThreshold specifies the minimum amount of concurrent active traversals on the least used connection
-// which will trigger creation of a new connection if maximumConcurrentConnections has not bee reached.
+// which will trigger creation of a new connection if maximumConcurrentConnections has not been reached.
 // loadBalancingPool will use the least-used connection, and as a part of the process, getLeastUsedConnection(), will
 // remove any unusable connections from the pool and ensure that the returned connection is usable. If there are
 // multiple active connections with no active traversals on them, one will be used and the others will be closed and
