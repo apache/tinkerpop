@@ -20,6 +20,7 @@ port: 45940
 evaluationTimeout: 30000
 graphs: {
   graph: conf/tinkergraph-empty.properties,
+  test: conf/tinkergraph-empty.properties,
   classic: conf/tinkergraph-empty.properties,
   modern: conf/tinkergraph-empty.properties,
   crew: conf/tinkergraph-empty.properties,

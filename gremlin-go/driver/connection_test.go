@@ -41,18 +41,16 @@ const integrationTestSuiteName = "integration"
 const basicAuthIntegrationTestSuite = "basic authentication integration"
 const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
-const validHostValidPortInvalidPath = "ws://localhost:8182/invalid"
 const testServerModernGraphAlias = "gmodern"
+const testServerGraphAlias = "gtest"
 const manualTestSuiteName = "manual"
 const nonRoutableIPForConnectionTimeout = "ws://10.255.255.1/"
 
 // transaction is enabled on the same port as no auth url
 const noAuthUrl = "ws://localhost:45940/gremlin"
-const basicAuthNoSsl = "ws://localhost:45941/gremlin"
 const basicAuthWithSsl = "wss://localhost:45941/gremlin"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
-var mu sync.Mutex
 
 func newDefaultConnectionSettings() *connectionSettings {
 	return &connectionSettings{
@@ -90,15 +88,22 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	assert.Nil(t, <-promise)
 }
 
-func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+func getTestGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = tls
 			settings.AuthInfo = auth
+			settings.TraversalSource = testServerGraphAlias
 		})
 	assert.Nil(t, err)
 	assert.NotNil(t, remote)
 	g := Traversal_().WithRemote(remote)
+
+	return g
+}
+
+func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+	g := getTestGraph(t, url, auth, tls)
 
 	// Drop the graph and check that it is empty.
 	dropGraph(t, g)
@@ -325,9 +330,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -628,9 +630,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -642,16 +641,10 @@ func TestConnection(t *testing.T) {
 		readTestDataValues(t, g)
 
 		// Drop the graph and check that it is empty.
-		dropGraph(t, g)
-		readCount(t, g, "", 0)
-		readCount(t, g, testLabel, 0)
-		readCount(t, g, personLabel, 0)
+		resetGraph(t, g)
 	})
 
 	t.Run("Test Traversal. Next and HasNext", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -663,13 +656,10 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal With Label", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		// Drop the graph.
@@ -711,9 +701,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal P", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -730,9 +717,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection Next and HasNext", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -759,9 +743,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test anonymousTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -771,10 +752,7 @@ func TestConnection(t *testing.T) {
 		readUsingAnonymousTraversal(t, g)
 
 		// Drop the graph and check that it is empty.
-		dropGraph(t, g)
-		readCount(t, g, "", 0)
-		readCount(t, g, testLabel, 0)
-		readCount(t, g, personLabel, 0)
+		resetGraph(t, g)
 	})
 
 	t.Run("Test Traversal.ToList fail", func(t *testing.T) {
@@ -820,9 +798,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal WithSack", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -997,9 +972,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection Invalid GraphTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
