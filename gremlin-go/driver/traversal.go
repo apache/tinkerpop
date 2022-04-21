@@ -60,7 +60,7 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 	return set, nil
 }
 
-// Iterate all the Traverser instances in the traversal and returns the empty traversal.
+// Iterate all the Traverser instances in the traversal.
 func (t *Traversal) Iterate() <-chan error {
 	r := make(chan error)
 

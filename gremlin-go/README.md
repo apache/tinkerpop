@@ -240,14 +240,11 @@ func main() {
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
 	// Add a vertex with properties to the graph with the terminal step Iterate()
-	_, promise, err := g.AddV("gremlin").Property("language", "go").Iterate()
-	if err != nil {
-		fmt.Println(err)
-		return 
-	}
+	promise := g.AddV("gremlin").Property("language", "go").Iterate()
 	
 	// The returned promised is a go channel to wait for all submitted steps to finish execution and return error.
-	if <-promise != nil {
+	err := <-promise
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -286,14 +283,10 @@ Gremlin variant for that language.
 ### Create Vertex
 Adding a vertex with properties.
 ```go
-_, promise, err := g.AddV("gremlin").Property("language", "go").Iterate()
-// Handle error
-if err != nil {
-    fmt.Println(err)
-    return
-}
+promise := g.AddV("gremlin").Property("language", "go").Iterate()
 // Wait for all steps to finish execution and check for error.
-if <-promise != nil {
+err := <-promise
+if err != nil {
     fmt.Println(err)
     return
 }
@@ -316,14 +309,10 @@ for _, r := range result {
 ### Update Vertex
 Updating vertex by adding another property to it. 
 ```go
-_, promise, err :=g.AddV("gremlin").Property("language", "go").Iterate()
-// Handle error
-if err != nil {
-	fmt.Println(err)
-    return
-}
+promise := g.AddV("gremlin").Property("language", "go").Iterate()
 // Wait for all steps to finish execution and check for error.
-if <-promise != nil {
+err := <-promise
+if err != nil {
     fmt.Println(err)
     return
 }
