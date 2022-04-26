@@ -401,6 +401,7 @@ limitations under the License.
                         <exclude>docs/site/home/js/**</exclude>
                         <exclude>docs/gremlint/build/**</exclude>
                         <exclude>docs/gremlint/public/CNAME</exclude>
+                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>**/*.kryo</exclude>
                         <exclude>**/*.gbin</exclude>
                         <exclude>**/*.iml</exclude>
