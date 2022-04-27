@@ -17,39 +17,34 @@
 
 version: "3.4"
 services:
-  gremlin-server:
-    container_name: gremlin-server
-    image: tinkerpop/gremlin-server:3.5
+
+  gremlin-test-server:
+    container_name: gremlin-test-server
+    image: tinkerpop:gremlin-test-server
+    build:
+      context: ../
+      dockerfile: gremlin-go/Dockerfile
     ports:
-      - "8182:8182"
+      - "45940:45940"
+      - "45941:45941"
+
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
     image: golang:1.17
     volumes:
       - .:/go_app
+      - ../gremlin-test/features:/gremlin-test
     environment:
-      - GREMLIN_SERVER_URL=ws://gremlin-server:8182/gremlin
+      - CUCUMBER_FEATURE_FOLDER=/gremlin-test
+      - GREMLIN_SERVER_URL=ws://gremlin-test-server:45940/gremlin
+      - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-test-server:45941/gremlin
       - RUN_INTEGRATION_TESTS=true
+      - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
+      - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
+      - TEST_TRANSACTIONS=true
     working_dir: /go_app
     command: >
       bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" | gotestfmt"
+      && go test -p 1 -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
     depends_on:
-      - gremlin-server
-  # TODO
-  gremlin-go-godog-tests:
-    container_name: gremlin-go-godog-tests
-    image: golang:1.17
-    volumes:
-      - .:/go_app
-      - ./../gremlin-test:/var/gremlin-test
-    environment:
-      - GREMLIN_SERVER_URL=ws://gremlin-server:8182/gremlin
-      - RUN_INTEGRATION_TESTS=true
-    working_dir: /go_app
-    command: >
-      bash -c "go get github.com/cucumber/godog/cmd/godog
-      && cd cucumber
-      && godog /var/gremlin-test/features"
-    depends_on:
-      - gremlin-server
+      - gremlin-test-server

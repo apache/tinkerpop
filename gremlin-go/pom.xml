@@ -103,37 +103,6 @@ limitations under the License.
                                         <argument>up</argument>
                                         <argument>--exit-code-from</argument>
                                         <argument>gremlin-go-integration-tests</argument>
-                                        <argument>gremlin-go-integration-tests</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>run godog tests</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <!--
-                                    TODO: Temporarily skip until some gherkin issues are sorted here for 3.6.x:
-                                    1. gherkin syntax now includes exception assertions with:
-                                       - Then the traversal will raise an error
-                                       - Then the traversal will raise an error with message <containing|starting|ending> text of "<expected-message>"
-                                    2. There is now a test that includes some unicode - "g_V_hasXname_regexXTinkerUnicodeXX" and that seems to lead to compilation failures:
-                                       gremlin-go-godog-tests          | Error: failed to compile tested package: /go_app/cucumber, reason: exit status 2, output: WORK=/tmp/go-build4146811523
-                                       gremlin-go-godog-tests          | # gremlin-godog-tests [gremlin-godog-tests.test]
-                                       gremlin-go-godog-tests          | ./gremlin.go:192: syntax error: unexpected *, expecting name or (
-                                       gremlin-go-godog-tests          | ./gremlin.go:192: invalid character U+00A9 '©' in identifier
-                                       gremlin-go-godog-tests          | ./gremlin.go:983:151: syntax error: unexpected literal 0, expecting comma or )
-                                       gremlin-go-godog-tests          | ./gremlin.go:984:160: syntax error: unexpected literal 0, expecting comma or )
-                                    -->
-                                    <skip>true</skip>
-                                    <executable>docker-compose</executable>
-                                    <arguments>
-                                        <argument>up</argument>
-                                        <argument>--exit-code-from</argument>
-                                        <argument>gremlin-go-godog-tests</argument>
-                                        <argument>gremlin-go-godog-tests</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

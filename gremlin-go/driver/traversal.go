@@ -19,10 +19,6 @@ under the License.
 
 package gremlingo
 
-import (
-	"errors"
-)
-
 // Traverser is the objects propagating through the traversal.
 type Traverser struct {
 	bulk  int64
@@ -31,18 +27,16 @@ type Traverser struct {
 
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
-	graph               *Graph
-	traversalStrategies *TraversalStrategies
-	bytecode            *bytecode
-	remote              *DriverRemoteConnection
-	results             ResultSet
+	graph    *Graph
+	bytecode *bytecode
+	remote   *DriverRemoteConnection
+	results  ResultSet
 }
 
 // ToList returns the result in a list.
 func (t *Traversal) ToList() ([]*Result, error) {
-	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
 	if t.remote == nil {
-		return nil, errors.New("cannot invoke this method from an anonymous traversal")
+		return nil, newError(err0901ToListAnonTraversalError)
 	}
 
 	results, err := t.remote.submitBytecode(t.bytecode)
@@ -67,32 +61,34 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 }
 
 // Iterate all the Traverser instances in the traversal and returns the empty traversal.
-func (t *Traversal) Iterate() (*Traversal, <-chan error, error) {
-	// TODO: This wont be needed once DriverRemoteConnection is replaced by TraversalStrategy
-	if t.remote == nil {
-		return nil, nil, errors.New("cannot invoke this method from an anonymous traversal")
-	}
-
-	err := t.bytecode.addStep("none")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	res, err := t.remote.submitBytecode(t.bytecode)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func (t *Traversal) Iterate() <-chan error {
 	r := make(chan error)
+
 	go func() {
 		defer close(r)
+
+		if t.remote == nil {
+			r <- newError(err0902IterateAnonTraversalError)
+			return
+		}
+
+		if err := t.bytecode.addStep("none"); err != nil {
+			r <- err
+			return
+		}
+
+		res, err := t.remote.submitBytecode(t.bytecode)
+		if err != nil {
+			r <- err
+			return
+		}
 
 		// Force waiting until complete.
 		_, err = res.All()
 		r <- err
 	}()
 
-	return t, r, nil
+	return r
 }
 
 // HasNext returns true if the result is not empty.
@@ -111,7 +107,7 @@ func (t *Traversal) Next() (*Result, error) {
 		return nil, err
 	}
 	if results.IsEmpty() {
-		return nil, errors.New("there are no results left")
+		return nil, newError(err0903NextNoResultsLeftError)
 	}
 	return results.one()
 }

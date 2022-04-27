@@ -216,17 +216,15 @@ jobs:
         with:
           go-version: '1.17'
 
+      - name: Generate Gremlin Server Base Image
+        working-directory: .
+        run: |
+          mvn clean install -pl :gremlin-server -DskipTests -DskipIntegrationTests=true -am && mvn install -Pdocker-images -pl :gremlin-server
+
       - name: Execute Go tests
         working-directory: ./gremlin-go
         run: |
-          docker-compose up --exit-code-from gremlin-go-integration-tests gremlin-go-integration-tests
-          docker-compose down
-
-      # Note exit code is intentionally ignored here because not all these tests pass right now.
-      - name: Execute Godog tests
-        working-directory: ./gremlin-go
-        run: |
-          docker-compose up gremlin-go-godog-tests
+          docker-compose up --exit-code-from gremlin-go-integration-tests
           docker-compose down
 
       - name: Go-Vet

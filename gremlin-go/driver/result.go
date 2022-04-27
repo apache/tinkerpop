@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -147,7 +146,7 @@ func (r *Result) IsNil() bool {
 func (r *Result) GetVertex() (*Vertex, error) {
 	res, ok := r.result.(*Vertex)
 	if !ok {
-		return nil, errors.New("result is not a Vertex")
+		return nil, newError(err0601ResultNotVertexError)
 	}
 	return res, nil
 }
@@ -156,7 +155,7 @@ func (r *Result) GetVertex() (*Vertex, error) {
 func (r *Result) GetEdge() (*Edge, error) {
 	res, ok := r.result.(*Edge)
 	if !ok {
-		return nil, errors.New("result is not an Edge")
+		return nil, newError(err0602ResultNotEdgeError)
 	}
 	return res, nil
 }
@@ -165,7 +164,7 @@ func (r *Result) GetEdge() (*Edge, error) {
 func (r *Result) GetElement() (*Element, error) {
 	res, ok := r.result.(*Element)
 	if !ok {
-		return nil, errors.New("result is not an Element")
+		return nil, newError(err0603ResultNotElementError)
 	}
 	return res, nil
 }
@@ -174,7 +173,7 @@ func (r *Result) GetElement() (*Element, error) {
 func (r *Result) GetPath() (*Path, error) {
 	res, ok := r.result.(*Path)
 	if !ok {
-		return nil, errors.New("result is not a Path")
+		return nil, newError(err0604ResultNotPathError)
 	}
 	return res, nil
 }
@@ -183,7 +182,7 @@ func (r *Result) GetPath() (*Path, error) {
 func (r *Result) GetProperty() (*Property, error) {
 	res, ok := r.result.(*Property)
 	if !ok {
-		return nil, errors.New("result is not a Property")
+		return nil, newError(err0605ResultNotPropertyError)
 	}
 	return res, nil
 }
@@ -192,7 +191,7 @@ func (r *Result) GetProperty() (*Property, error) {
 func (r *Result) GetVertexProperty() (*VertexProperty, error) {
 	res, ok := r.result.(*VertexProperty)
 	if !ok {
-		return nil, errors.New("result is not a VertexProperty")
+		return nil, newError(err0606ResultNotVertexPropertyError)
 	}
 	return res, nil
 }
@@ -201,7 +200,7 @@ func (r *Result) GetVertexProperty() (*VertexProperty, error) {
 func (r *Result) GetTraverser() (*Traverser, error) {
 	res, ok := r.result.(Traverser)
 	if !ok {
-		return nil, errors.New("result is not a Traverser")
+		return nil, newError(err0607ResultNotTraverserError)
 	}
 	return &res, nil
 }
@@ -210,7 +209,7 @@ func (r *Result) GetTraverser() (*Traverser, error) {
 func (r *Result) GetSlice() (*[]interface{}, error) {
 	res, ok := r.result.([]interface{})
 	if !ok {
-		return nil, errors.New("result is not a Slice")
+		return nil, newError(err0608ResultNotSliceError)
 	}
 	return &res, nil
 }
