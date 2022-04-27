@@ -43,7 +43,7 @@ type graphBinarySerializer struct {
 }
 
 func newGraphBinarySerializer(handler *logHandler) serializer {
-	serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, handler}
+	serializer := graphBinaryTypeSerializer{nullType, nil, nil, nil, handler}
 	return graphBinarySerializer{&serializer}
 }
 
@@ -188,11 +188,11 @@ func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interf
 	}
 	var mapData = map[string]interface{}{}
 	for i := uint32(0); i < mapSize; i++ {
-		var keyType DataType
+		var keyType dataType
 		err = binary.Read(buffer, binary.BigEndian, &keyType)
 		if err != nil {
 			return nil, err
-		} else if keyType != StringType {
+		} else if keyType != stringType {
 			return nil, newError(err0703ReadMapNonStringKeyError)
 		}
 		var nullable byte
