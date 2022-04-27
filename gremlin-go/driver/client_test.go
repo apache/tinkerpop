@@ -27,7 +27,7 @@ import (
 
 func TestClient(t *testing.T) {
 	// Integration test variables.
-	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
 	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
@@ -47,7 +47,6 @@ func TestClient(t *testing.T) {
 		result, err := resultSet.one()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
-		err = client.Close()
-		assert.Nil(t, err)
+		client.Close()
 	})
 }

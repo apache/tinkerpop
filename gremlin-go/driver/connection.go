@@ -21,7 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"errors"
+	"sync"
 	"time"
 )
 
@@ -37,8 +37,16 @@ const (
 type connection struct {
 	logHandler *logHandler
 	protocol   protocol
-	results    map[string]ResultSet
+	results    *synchronizedMap
 	state      connectionState
+}
+
+type connectionSettings struct {
+	authInfo          *AuthInfo
+	tlsConfig         *tls.Config
+	keepAliveInterval time.Duration
+	writeDeadline     time.Duration
+	connectionTimeout time.Duration
 }
 
 func (connection *connection) errorCallback() {
@@ -52,7 +60,7 @@ func (connection *connection) errorCallback() {
 
 func (connection *connection) close() error {
 	if connection.state != established {
-		return errors.New("cannot close connection that has already been closed or has not been connected")
+		return newError(err0101ConnectionCloseError)
 	}
 	connection.logHandler.log(Info, closeConnection)
 	var err error
@@ -65,13 +73,18 @@ func (connection *connection) close() error {
 
 func (connection *connection) write(request *request) (ResultSet, error) {
 	if connection.state != established {
-		return nil, errors.New("cannot write connection that has already been closed or has not been connected")
+		return nil, newError(err0102WriteConnectionClosedError)
 	}
-	connection.logHandler.log(Info, writeRequest)
+	connection.logHandler.log(Debug, writeRequest)
 	requestID := request.requestID.String()
-	connection.logHandler.logf(Info, creatingRequest, requestID)
-	connection.results[requestID] = newChannelResultSet(requestID, connection.results)
-	return connection.results[requestID], connection.protocol.write(request)
+	connection.logHandler.logf(Debug, creatingRequest, requestID)
+	resultSet := newChannelResultSet(requestID, connection.results)
+	connection.results.store(requestID, resultSet)
+	return resultSet, connection.protocol.write(request)
+}
+
+func (connection *connection) activeResults() int {
+	return connection.results.size()
 }
 
 // createConnection establishes a connection with the given parameters. A connection should always be closed to avoid
@@ -80,10 +93,15 @@ func (connection *connection) write(request *request) (ResultSet, error) {
 // 		established: connection has established communication established with the server
 // 		closed: connection was closed by the user.
 //		closedDueToError: connection was closed internally due to an error.
-func createConnection(url string, authInfo *AuthInfo, tlsConfig *tls.Config, logHandler *logHandler, keepAliveInterval time.Duration, writeDeadline time.Duration) (*connection, error) {
-	conn := &connection{logHandler, nil, map[string]ResultSet{}, initialized}
+func createConnection(url string, logHandler *logHandler, connSettings *connectionSettings) (*connection, error) {
+	conn := &connection{
+		logHandler,
+		nil,
+		&synchronizedMap{map[string]ResultSet{}, sync.Mutex{}},
+		initialized,
+	}
 	logHandler.log(Info, connectConnection)
-	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, url, authInfo, tlsConfig, conn.results, conn.errorCallback, keepAliveInterval, writeDeadline)
+	protocol, err := newGremlinServerWSProtocol(logHandler, Gorilla, url, connSettings, conn.results, conn.errorCallback)
 	if err != nil {
 		logHandler.logf(Error, failedConnection)
 		conn.state = closedDueToError
@@ -92,4 +110,41 @@ func createConnection(url string, authInfo *AuthInfo, tlsConfig *tls.Config, log
 	conn.protocol = protocol
 	conn.state = established
 	return conn, err
+}
+
+type synchronizedMap struct {
+	internalMap map[string]ResultSet
+	syncLock    sync.Mutex
+}
+
+func (s *synchronizedMap) store(key string, value ResultSet) {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	s.internalMap[key] = value
+}
+
+func (s *synchronizedMap) load(key string) ResultSet {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	return s.internalMap[key]
+}
+
+func (s *synchronizedMap) delete(key string) {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	delete(s.internalMap, key)
+}
+
+func (s *synchronizedMap) size() int {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	return len(s.internalMap)
+}
+
+func (s *synchronizedMap) synchronizedRange(f func(key string, value ResultSet)) {
+	s.syncLock.Lock()
+	defer s.syncLock.Unlock()
+	for k, v := range s.internalMap {
+		f(k, v)
+	}
 }

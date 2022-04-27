@@ -29,20 +29,32 @@ type request struct {
 	args      map[string]interface{}
 }
 
+const sessionProcessor = "session"
+
 const stringOp = "eval"
 const stringProcessor = ""
 
-func makeStringRequest(stringGremlin string, traversalSource string) (req request) {
+// Bindings should be a key-object map (different from Binding class in bytecode).
+func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, bindings ...map[string]interface{}) (req request) {
+	newProcessor := stringProcessor
+	newArgs := map[string]interface{}{
+		"gremlin": stringGremlin,
+		"aliases": map[string]interface{}{
+			"g": traversalSource,
+		},
+	}
+	if sessionId != "" {
+		newProcessor = sessionProcessor
+		newArgs["session"] = sessionId
+	}
+	if len(bindings) > 0 {
+		newArgs["bindings"] = bindings[0]
+	}
 	return request{
 		requestID: uuid.New(),
 		op:        stringOp,
-		processor: stringProcessor,
-		args: map[string]interface{}{
-			"gremlin": stringGremlin,
-			"aliases": map[string]interface{}{
-				"g": traversalSource,
-			},
-		},
+		processor: newProcessor,
+		args:      newArgs,
 	}
 }
 
@@ -51,17 +63,23 @@ const bytecodeProcessor = "traversal"
 const authOp = "authentication"
 const authProcessor = "traversal"
 
-func makeBytecodeRequest(bytecodeGremlin *bytecode, traversalSource string) (req request) {
+func makeBytecodeRequest(bytecodeGremlin *bytecode, traversalSource string, sessionId string) (req request) {
+	newProcessor := bytecodeProcessor
+	newArgs := map[string]interface{}{
+		"gremlin": *bytecodeGremlin,
+		"aliases": map[string]interface{}{
+			"g": traversalSource,
+		},
+	}
+	if sessionId != "" {
+		newProcessor = sessionProcessor
+		newArgs["session"] = sessionId
+	}
 	return request{
 		requestID: uuid.New(),
 		op:        bytecodeOp,
-		processor: bytecodeProcessor,
-		args: map[string]interface{}{
-			"gremlin": *bytecodeGremlin,
-			"aliases": map[string]interface{}{
-				"g": traversalSource,
-			},
-		},
+		processor: newProcessor,
+		args:      newArgs,
 	}
 }
 
@@ -72,6 +90,17 @@ func makeBasicAuthRequest(auth string) (req request) {
 		processor: authProcessor,
 		args: map[string]interface{}{
 			"sasl": auth,
+		},
+	}
+}
+
+func makeCloseSessionRequest(sessionId string) request {
+	return request{
+		requestID: uuid.New(),
+		op:        "close",
+		processor: "session",
+		args: map[string]interface{}{
+			"session": sessionId,
 		},
 	}
 }

@@ -55,12 +55,12 @@ type defaultLogger struct {
 }
 
 // Log writes a message to the defaultLogger.
-func (logger *defaultLogger) Log(verbosity LogVerbosity, v ...interface{}) {
+func (logger *defaultLogger) Log(_ LogVerbosity, v ...interface{}) {
 	log.Print(v...)
 }
 
 // Logf writes a formatted message to the defaultLogger.
-func (logger *defaultLogger) Logf(verbosity LogVerbosity, format string, v ...interface{}) {
+func (logger *defaultLogger) Logf(_ LogVerbosity, format string, v ...interface{}) {
 	log.Printf(format, v...)
 }
 
@@ -76,7 +76,7 @@ func newLogHandler(logger Logger, verbosity LogVerbosity, locale language.Tag) *
 
 	// Register resource package here for additional languages.
 	_, path, _, _ := runtime.Caller(0)
-	path = filepath.Join(filepath.Dir(path), "resources/en.json")
+	path = filepath.Join(filepath.Dir(path), "resources/logger-messages/en.json")
 	bundle.LoadMessageFile(path)
 	localizer := i18n.NewLocalizer(bundle, locale.String())
 	return &logHandler{logger, verbosity, localizer}
@@ -99,17 +99,10 @@ func (logHandler *logHandler) logf(verbosity LogVerbosity, errorKey errorKey, v 
 type errorKey string
 
 const (
-	readFailed                   errorKey = "READ_FAILED"
-	writeFailed                  errorKey = "WRITE_FAILED"
 	serializeDataTypeError       errorKey = "UNKNOWN_SER_DATATYPE"
 	deserializeDataTypeError     errorKey = "UNKNOWN_DESER_DATATYPE"
 	nullInput                    errorKey = "NULL_INPUT"
-	unmatchedDataType            errorKey = "UNMATCHED_DATATYPE"
 	unexpectedNull               errorKey = "UNEXPECTED_NULL_VALUE"
-	notMap                       errorKey = "NOT_MAP_TYPE"
-	malformedURL                 errorKey = "MALFORMED_URL"
-	transportCloseFailed         errorKey = "TRANSPORT_CLOSE_FAILED"
-	notSlice                     errorKey = "NOT_SLICE_TYPE"
 	closeConnection              errorKey = "CLOSING_CONNECTION"
 	connectConnection            errorKey = "OPENING_CONNECTION"
 	failedConnection             errorKey = "FAILED_CONNECTION"
@@ -126,4 +119,14 @@ const (
 	failedToSetReadDeadline      errorKey = "FAILED_TO_SET_READ_DEADLINE"
 	failedToShutdownTransporter  errorKey = "FAILED_TO_SHUTDOWN_TRANSPORTER"
 	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
+	creatingSessionConnection    errorKey = "CREATING_SESSION_CONNECTION"
+	closeSession                 errorKey = "CLOSE_SESSION"
+	closeSessionRequestError     errorKey = "CLOSE_SESSION_REQUEST_ERROR"
+	closeDriverRemoteConnection  errorKey = "CLOSE_DRIVER_REMOTE_CONNECTION"
+	closingSpawnedSessions       errorKey = "CLOSING_SPAWNED_SESSIONS"
+	closeClient                  errorKey = "CLOSE_CLIENT"
+	errorClosingConnection       errorKey = "ERROR_CLOSING_CONNECTION"
+	closeUnusedPoolConnection    errorKey = "CLOSE_UNUSED_POOL_CONNECTION"
+	purgingDeadConnection        errorKey = "PURGING_DEAD_CONNECTION"
+	sessionDetected              errorKey = "SESSION_DETECTED"
 )

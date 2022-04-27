@@ -87,7 +87,7 @@ func TestGraphStructureFunctions(t *testing.T) {
 		p := Path{keys, data}
 		val, err := p.GetPathObject("foo")
 		assert.Nil(t, val)
-		assert.NotNil(t, err)
+		assert.Equal(t, newError(err0301GetPathObjectInvalidPathUnequalLengthsError), err)
 	})
 
 	t.Run("Test Path.GetPathObject() with invalid key", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestGraphStructureFunctions(t *testing.T) {
 		p := Path{keys, data}
 		val, err := p.GetPathObject("foobar")
 		assert.Nil(t, val)
-		assert.NotNil(t, err)
+		assert.Equal(t, newError(err0303GetPathNoLabelFoundError, "foobar"), err)
 	})
 
 	t.Run("Test Path.GetPathObject() with Non-string value in labels", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestGraphStructureFunctions(t *testing.T) {
 		p := Path{keys, data}
 		val, err := p.GetPathObject("bar")
 		assert.Nil(t, val)
-		assert.NotNil(t, err)
+		assert.Equal(t, newError(err0302GetPathObjectInvalidPathNonStringLabelError), err)
 	})
 
 	t.Run("Test Path.GetPathObject() with multiple object return", func(t *testing.T) {
@@ -114,11 +114,9 @@ func TestGraphStructureFunctions(t *testing.T) {
 		p := Path{keys, data}
 		val, err := p.GetPathObject("foo")
 		assert.Nil(t, err)
-		assert.NotNil(t, val)
 		assert.Equal(t, val, []interface{}{1, 3})
 		val, err = p.GetPathObject("bar")
 		assert.Nil(t, err)
-		assert.NotNil(t, val)
 		assert.Equal(t, val, []interface{}{2, 3, 4})
 	})
 }

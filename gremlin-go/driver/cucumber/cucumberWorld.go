@@ -28,7 +28,7 @@ import (
 	"strconv"
 )
 
-type TinkerPopWorld struct {
+type CucumberWorld struct {
 	scenario     *godog.Scenario
 	g            *gremlingo.GraphTraversalSource
 	graphName    string
@@ -68,11 +68,11 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 }
 
 func scenarioUrl() string {
-	return getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
+	return getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:45940/gremlin")
 }
 
-func NewTinkerPopWorld() *TinkerPopWorld {
-	return &TinkerPopWorld{
+func NewCucumberWorld() *CucumberWorld {
+	return &CucumberWorld{
 		scenario:     nil,
 		g:            nil,
 		graphName:    "",
@@ -86,7 +86,7 @@ func NewTinkerPopWorld() *TinkerPopWorld {
 
 var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "empty"}
 
-func (t *TinkerPopWorld) getDataGraphFromMap(name string) *DataGraph {
+func (t *CucumberWorld) getDataGraphFromMap(name string) *DataGraph {
 	if val, ok := t.graphDataMap[name]; ok {
 		return val
 	} else {
@@ -94,7 +94,7 @@ func (t *TinkerPopWorld) getDataGraphFromMap(name string) *DataGraph {
 	}
 }
 
-func (t *TinkerPopWorld) loadAllDataGraph() {
+func (t *CucumberWorld) loadAllDataGraph() {
 	for _, name := range graphNames {
 		if name == "empty" {
 			t.loadEmptyDataGraph()
@@ -118,27 +118,23 @@ func (t *TinkerPopWorld) loadAllDataGraph() {
 	}
 }
 
-func (t *TinkerPopWorld) loadEmptyDataGraph() {
+func (t *CucumberWorld) loadEmptyDataGraph() {
 	connection, _ := gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {
 		settings.TraversalSource = "ggraph"
 	})
 	t.graphDataMap["empty"] = &DataGraph{connection: connection}
 }
 
-func (t *TinkerPopWorld) reloadEmptyData() {
+func (t *CucumberWorld) reloadEmptyData() {
 	graphData := t.getDataGraphFromMap("empty")
 	g := gremlingo.Traversal_().WithRemote(graphData.connection)
 	graphData.vertices = getVertices(g)
 	graphData.edges = getEdges(g)
 }
 
-func (t *TinkerPopWorld) cleanEmptyDataGraph(g *gremlingo.GraphTraversalSource) error {
-	_, future, err := g.V().Drop().Iterate()
-	if err != nil {
-		return err
-	}
-	<-future
-	return nil
+func (t *CucumberWorld) cleanEmptyDataGraph(g *gremlingo.GraphTraversalSource) error {
+	future := g.V().Drop().Iterate()
+	return <-future
 }
 
 func getVertices(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Vertex {
@@ -229,7 +225,7 @@ func getVertexProperties(g *gremlingo.GraphTraversalSource) map[string]*gremling
 // This function is used to isolate connection problems to each scenario, and used in the Before context hook to prevent
 // a failing test in one scenario closing the shared connection that leads to failing subsequent scenario tests.
 // This function can be removed once all pending tests pass.
-func (t *TinkerPopWorld) recreateAllDataGraphConnection() error {
+func (t *CucumberWorld) recreateAllDataGraphConnection() error {
 	var err error
 	for _, name := range graphNames {
 		if name == "empty" {
@@ -245,12 +241,18 @@ func (t *TinkerPopWorld) recreateAllDataGraphConnection() error {
 	return err
 }
 
-func (t *TinkerPopWorld) closeAllDataGraphConnection() error {
+func (t *CucumberWorld) closeAllDataGraphConnection() error {
 	for _, name := range graphNames {
-		err := t.getDataGraphFromMap(name).connection.Close()
-		if err != nil {
-			return err
-		}
+		t.getDataGraphFromMap(name).connection.Close()
+	}
+	return nil
+}
+
+func strategyFactory(strategyName string, params map[string]interface{}) interface{} {
+	switch strategyName {
+	case "VertexProgramStrategy":
+		graphComputer, _ := params["graphComputer"].(string)
+		return gremlingo.VertexProgramStrategy(graphComputer, "", "", 0, nil, nil, nil)
 	}
 	return nil
 }

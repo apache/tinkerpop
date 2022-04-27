@@ -23,6 +23,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"golang.org/x/text/language"
+	"runtime"
 	"time"
 )
 
@@ -37,6 +38,12 @@ type ClientSettings struct {
 	TlsConfig         *tls.Config
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
+	ConnectionTimeout time.Duration
+	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
+	NewConnectionThreshold int
+	// Maximum number of concurrent connections. Default: number of runtime processors
+	MaximumConcurrentConnections int
+	Session                      string
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -45,7 +52,8 @@ type Client struct {
 	traversalSource string
 	logHandler      *logHandler
 	transporterType TransporterType
-	connection      *connection
+	connections     connectionPool
+	session         string
 }
 
 // NewClient creates a Client and configures it with the given parameters. During creation of the Client, a connection
@@ -53,52 +61,76 @@ type Client struct {
 // Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource:   "g",
-		TransporterType:   Gorilla,
-		LogVerbosity:      Info,
-		Logger:            &defaultLogger{},
-		Language:          language.English,
-		AuthInfo:          &AuthInfo{},
-		TlsConfig:         &tls.Config{},
-		KeepAliveInterval: keepAliveIntervalDefault,
-		WriteDeadline:     writeDeadlineDefault,
+		TraversalSource:              "g",
+		TransporterType:              Gorilla,
+		LogVerbosity:                 Info,
+		Logger:                       &defaultLogger{},
+		Language:                     language.English,
+		AuthInfo:                     &AuthInfo{},
+		TlsConfig:                    &tls.Config{},
+		KeepAliveInterval:            keepAliveIntervalDefault,
+		WriteDeadline:                writeDeadlineDefault,
+		ConnectionTimeout:            connectionTimeoutDefault,
+		NewConnectionThreshold:       defaultNewConnectionThreshold,
+		MaximumConcurrentConnections: runtime.NumCPU(),
+		Session:                      "",
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
+	connSettings := &connectionSettings{
+		authInfo:          settings.AuthInfo,
+		tlsConfig:         settings.TlsConfig,
+		keepAliveInterval: settings.KeepAliveInterval,
+		writeDeadline:     settings.WriteDeadline,
+		connectionTimeout: settings.ConnectionTimeout,
+	}
+
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	conn, err := createConnection(url, settings.AuthInfo, settings.TlsConfig, logHandler, settings.KeepAliveInterval, settings.WriteDeadline)
+	if settings.Session != "" {
+		logHandler.log(Debug, sessionDetected)
+		settings.MaximumConcurrentConnections = 1
+	}
+
+	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold, settings.MaximumConcurrentConnections)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client with url '%s' and transport type '%v'. Error message: '%s'",
 			url, settings.TransporterType, err.Error())
 	}
+
 	client := &Client{
 		url:             url,
-		traversalSource: "g",
+		traversalSource: settings.TraversalSource,
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
-		connection:      conn,
+		connections:     pool,
+		session:         settings.Session,
 	}
+
 	return client, nil
 }
 
 // Close closes the client via connection.
-// The client close is idempotent because the underlying connection.close() call is.
-func (client *Client) Close() error {
-	err := client.connection.close()
-	if err != nil {
-		client.logHandler.logf(Error, logErrorGeneric, "Client.Close()", err.Error())
+// This is idempotent due to the underlying close() methods being idempotent as well.
+func (client *Client) Close() {
+	// If it is a Session, call closeSession
+	if client.session != "" {
+		err := client.closeSession()
+		if err != nil {
+			client.logHandler.logf(Warning, closeSessionRequestError, client.url, client.session, err.Error())
+		}
+		client.session = ""
 	}
-	return err
+	client.logHandler.logf(Info, closeClient, client.url)
+	client.connections.close()
 }
 
 // Submit submits a Gremlin script to the server and returns a ResultSet.
-func (client *Client) Submit(traversalString string) (ResultSet, error) {
-	// TODO: Obtain connection from pool of connections held by the client.
+func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource)
-	result, err := client.connection.write(&request)
+	request := makeStringRequest(traversalString, client.traversalSource, client.session, bindings...)
+	result, err := client.connections.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
 	}
@@ -108,6 +140,16 @@ func (client *Client) Submit(traversalString string) (ResultSet, error) {
 // submitBytecode submits bytecode to the server to execute and returns a ResultSet.
 func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode, client.traversalSource)
-	return client.connection.write(&request)
+	request := makeBytecodeRequest(bytecode, client.traversalSource, client.session)
+	return client.connections.write(&request)
+}
+
+func (client *Client) closeSession() error {
+	message := makeCloseSessionRequest(client.session)
+	result, err := client.connections.write(&message)
+	if err != nil {
+		return err
+	}
+	_, err = result.All()
+	return err
 }
