@@ -30,14 +30,17 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"testing"
 )
 
-// TODO proper error handling
 type tinkerPopGraph struct {
-	*TinkerPopWorld
+	*CucumberWorld
+	sync.Mutex
 }
 
 var parsers map[*regexp.Regexp]func(string, string) interface{}
+var toListLock sync.Mutex
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
@@ -321,12 +324,8 @@ func (tg *tinkerPopGraph) theGraphInitializerOf(arg1 *godog.DocString) error {
 	if err != nil {
 		return err
 	}
-	_, future, err := traversal.Iterate()
-	if err != nil {
-		return err
-	}
-	<-future
-	return nil
+	future := traversal.Iterate()
+	return <-future
 }
 
 func (tg *tinkerPopGraph) theResultShouldHaveACountOf(expectedCount int) error {
@@ -361,7 +360,7 @@ func (tg *tinkerPopGraph) theGraphShouldReturnForCountOf(expectedCount int, trav
 		return err
 	}
 	if len(results) != expectedCount {
-		return errors.New("graph did not return the correct count")
+		return fmt.Errorf("graph returned count of %d when %d was expected", len(results), expectedCount)
 	}
 	return nil
 }
@@ -431,10 +430,13 @@ func (tg *tinkerPopGraph) theResultShouldBe(characterizedAs string, table *godog
 						return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 					}
 				}
-			} else {
-				if fmt.Sprint(actualResult) != fmt.Sprint(expectedResult) {
+			} else if len(actualResult) == 1 && len(expectedResult) == 1 && reflect.TypeOf(actualResult[0]).Kind() == reflect.Map &&
+				reflect.TypeOf(expectedResult[0]).Kind() == reflect.Map {
+				if !compareMapEquals(actualResult[0].(map[interface{}]interface{}), expectedResult[0].(map[interface{}]interface{})) {
 					return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 				}
+			} else if fmt.Sprint(actualResult) != fmt.Sprint(expectedResult) {
+				return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 			}
 		} else {
 			if characterizedAs == "of" {
@@ -695,7 +697,8 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 }
 
 var tg = &tinkerPopGraph{
-	NewTinkerPopWorld(),
+	NewCucumberWorld(),
+	sync.Mutex{},
 }
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
@@ -715,6 +718,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		tg.scenario = sc
 		// Add tg.recreateAllDataGraphConnection() here and tg.closeAllDataGraphConnection() in an After scenario
 		// hook if necessary to isolate failing tests that closes the shared connection.
+		tg.Lock()
+		return ctx, nil
+	})
+
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		tg.Unlock()
 		return ctx, nil
 	})
 
@@ -732,4 +741,39 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
 	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)
+}
+
+func skipTestsIfNotEnabled(t *testing.T, testSuiteName string, testSuiteEnabled bool) {
+	if !testSuiteEnabled {
+		t.Skip(fmt.Sprintf("Skipping %s because %s tests are not enabled.", t.Name(), testSuiteName))
+	}
+}
+
+func getEnvOrDefaultBool(key string, defaultValue bool) bool {
+	value := getEnvOrDefaultString(key, "")
+	if len(value) != 0 {
+		boolValue, err := strconv.ParseBool(value)
+		if err == nil {
+			return boolValue
+		}
+	}
+	return defaultValue
+}
+
+func TestCucumberFeatures(t *testing.T) {
+	skipTestsIfNotEnabled(t, "cucumber godog tests",
+		getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+	suite := godog.TestSuite{
+		TestSuiteInitializer: InitializeTestSuite,
+		ScenarioInitializer:  InitializeScenario,
+		Options: &godog.Options{
+			Format:   "pretty",
+			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/features")},
+			TestingT: t, // Testing instance that will run subtests.
+		},
+	}
+
+	if suite.Run() != 0 {
+		t.Fatal("non-zero status returned, failed to run feature tests")
+	}
 }
