@@ -29,15 +29,14 @@ type connectionPool interface {
 }
 
 const defaultNewConnectionThreshold = 4
+const defaultInitialConcurrentConnections = 1
 
 // loadBalancingPool has two configurations: maximumConcurrentConnections/cap(connections) and newConnectionThreshold.
 // maximumConcurrentConnections denotes the maximum amount of active connections at any given time.
 // newConnectionThreshold specifies the minimum amount of concurrent active traversals on the least used connection
 // which will trigger creation of a new connection if maximumConcurrentConnections has not been reached.
 // loadBalancingPool will use the least-used connection, and as a part of the process, getLeastUsedConnection(), will
-// remove any unusable connections from the pool and ensure that the returned connection is usable. If there are
-// multiple active connections with no active traversals on them, one will be used and the others will be closed and
-// removed from the pool.
+// remove any errored connections from the pool and ensure that the returned connection is usable.
 type loadBalancingPool struct {
 	url          string
 	logHandler   *logHandler
@@ -46,97 +45,126 @@ type loadBalancingPool struct {
 	newConnectionThreshold int
 	connections            []*connection
 	loadBalanceLock        sync.Mutex
+	isClosed               bool
 }
 
 func (pool *loadBalancingPool) close() {
-	for _, connection := range pool.connections {
-		err := connection.close()
-		if err != nil {
-			pool.logHandler.logf(Warning, errorClosingConnection, err.Error())
+	pool.loadBalanceLock.Lock()
+	defer pool.loadBalanceLock.Unlock()
+
+	if !pool.isClosed {
+		for _, connection := range pool.connections {
+			err := connection.close()
+			if err != nil {
+				pool.logHandler.logf(Warning, errorClosingConnection, err.Error())
+			}
 		}
+		pool.isClosed = true
 	}
 }
 
 func (pool *loadBalancingPool) write(request *request) (ResultSet, error) {
-	connection, err := pool.getLeastUsedConnection()
-	if err != nil {
-		return nil, err
-	}
-	return connection.write(request)
-}
-
-func (pool *loadBalancingPool) getLeastUsedConnection() (*connection, error) {
 	pool.loadBalanceLock.Lock()
 	defer pool.loadBalanceLock.Unlock()
+
+	if pool.isClosed {
+		return nil, newError(err0103ConnectionPoolClosedError)
+	}
+
+	conn, err := pool.getLeastUsedConnection()
+	if err != nil {
+		return nil, err
+	}
+	return conn.write(request)
+}
+
+// Not thread-safe. Should only be called by write which ensures no concurrency.
+func (pool *loadBalancingPool) getLeastUsedConnection() (*connection, error) {
+	// newConnection should only be called within getLeastUsedConnection and therefore is a lambda.
+	newConnection := func() (*connection, error) {
+		connection, err := createConnection(pool.url, pool.logHandler, pool.connSettings)
+		if err != nil {
+			return nil, err
+		}
+		pool.connections = append(pool.connections, connection)
+		return connection, nil
+	}
+
+	// If our pool is empty, return a new connection.
 	if len(pool.connections) == 0 {
-		return pool.newConnection()
-	} else {
-		var leastUsed *connection = nil
-		validIndex := 0
-		for _, connection := range pool.connections {
-			// Purge dead connections from pool
-			if connection.state == established {
-				// Close and purge connections from pool if there is more than one being unused
-				if leastUsed != nil && (leastUsed.activeResults() == 0 && connection.activeResults() == 0) {
-					// Close the connection asynchronously since it is a high-latency method
-					go func() {
-						pool.logHandler.log(Debug, closeUnusedPoolConnection)
-						err := connection.close()
-						if err != nil {
-							pool.logHandler.logf(Warning, errorClosingConnection, err.Error())
-						}
-					}()
+		return newConnection()
+	}
 
-					continue
-				}
-
-				// Mark connection as valid to keep
-				pool.connections[validIndex] = connection
-				validIndex++
-
-				// Set the least used connection
-				if leastUsed == nil || connection.activeResults() < leastUsed.activeResults() {
-					leastUsed = connection
-				}
-			} else {
-				pool.logHandler.log(Debug, purgingDeadConnection)
+	// Remove connections which are dead and find least used.
+	var leastUsed *connection = nil
+	validConnections := make([]*connection, 0, cap(pool.connections))
+	for _, connection := range pool.connections {
+		if connection.state == established || connection.state == initialized {
+			validConnections = append(validConnections, connection)
+		}
+		if connection.state == established {
+			// Set the least used connection.
+			if leastUsed == nil || connection.activeResults() < leastUsed.activeResults() {
+				leastUsed = connection
 			}
 		}
+	}
+	pool.connections = validConnections
 
-		// Deallocate truncated dead connections to prevent memory leak
-		for invalidIndex := validIndex; invalidIndex < len(pool.connections); invalidIndex++ {
-			pool.connections[invalidIndex] = nil
-		}
-		pool.connections = pool.connections[:validIndex]
-
-		// Create new connection if no valid connections were found in the pool or the least used connection exceeded
-		// the concurrent usage threshold while the pool still has capacity for a new connection
-		if leastUsed == nil ||
-			(leastUsed.activeResults() >= pool.newConnectionThreshold && len(pool.connections) < cap(pool.connections)) {
-			return pool.newConnection()
+	if leastUsed == nil {
+		// If no valid connection is found.
+		if len(pool.connections) >= cap(pool.connections) {
+			// Return error if pool is full and no valid connection was found (should not ever happen).
+			return nil, newError(err0105ConnectionPoolFullButNoneValid)
 		} else {
+			// Return new connection if no valid connection was found and pool has capacity.
+			return newConnection()
+		}
+	} else if leastUsed.activeResults() >= pool.newConnectionThreshold && len(pool.connections) < cap(pool.connections) {
+		// If the number of active results in our least used connection has reached the threshold
+		// AND our pool size has not reached the capacity, attempt to return a new connection.
+		newConnection, err := newConnection()
+		if err != nil {
+			// New connection creation failed; use existing grabbed least-used connection.
+			pool.logHandler.logf(Warning, poolNewConnectionError, err.Error())
 			return leastUsed, nil
 		}
+		return newConnection, nil
+	} else {
+		// If our pool is at capacity OR our least busy connection is less than the threshold, return the least used connection.
+		return leastUsed, nil
 	}
 }
 
-func (pool *loadBalancingPool) newConnection() (*connection, error) {
-	connection, err := createConnection(pool.url, pool.logHandler, pool.connSettings)
-	if err != nil {
-		return nil, err
-	}
-	pool.connections = append(pool.connections, connection)
-	return connection, nil
-}
+func newLoadBalancingPool(url string, logHandler *logHandler, connSettings *connectionSettings,
+	newConnectionThreshold int, maximumConcurrentConnections int, initialConcurrentConnections int) (connectionPool, error) {
+	var wg sync.WaitGroup
+	wg.Add(initialConcurrentConnections)
+	var appendLock sync.Mutex
 
-func newLoadBalancingPool(url string, logHandler *logHandler, connSettings *connectionSettings, newConnectionThreshold int,
-	maximumConcurrentConnections int) (connectionPool, error) {
 	pool := make([]*connection, 0, maximumConcurrentConnections)
-	initialConnection, err := createConnection(url, logHandler, connSettings)
-	if err != nil {
-		return nil, err
+	errorList := make([]error, 0, maximumConcurrentConnections)
+	for i := 0; i < initialConcurrentConnections; i++ {
+		go func() {
+			defer wg.Done()
+			connection, err := createConnection(url, logHandler, connSettings)
+
+			appendLock.Lock()
+			defer appendLock.Unlock()
+			if err != nil {
+				logHandler.logf(Warning, createConnectionError, err.Error())
+				errorList = append(errorList, err)
+			} else {
+				pool = append(pool, connection)
+			}
+		}()
 	}
-	pool = append(pool, initialConnection)
+
+	wg.Wait()
+	if len(pool) == 0 && len(errorList) != 0 {
+		// If all instantiation fails return the first error's details.
+		return nil, newError(err0104ConnectionPoolInstantiateFail, errorList[0].Error())
+	}
 	return &loadBalancingPool{
 		url:                    url,
 		logHandler:             logHandler,

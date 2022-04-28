@@ -124,7 +124,8 @@ const (
 	closingSpawnedSessions       errorKey = "CLOSING_SPAWNED_SESSIONS"
 	closeClient                  errorKey = "CLOSE_CLIENT"
 	errorClosingConnection       errorKey = "ERROR_CLOSING_CONNECTION"
-	closeUnusedPoolConnection    errorKey = "CLOSE_UNUSED_POOL_CONNECTION"
-	purgingDeadConnection        errorKey = "PURGING_DEAD_CONNECTION"
+	createConnectionError        errorKey = "CREATE_CONNECTION_ERROR"
+	poolNewConnectionError       errorKey = "POOL_NEW_CONNECTION_ERROR"
 	sessionDetected              errorKey = "SESSION_DETECTED"
+	poolInitialExceedsMaximum    errorKey = "POOL_INITIAL_EXCEEDS_MAXIMUM"
 )

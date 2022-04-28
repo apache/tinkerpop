@@ -47,6 +47,8 @@ type DriverRemoteConnectionSettings struct {
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
 	MaximumConcurrentConnections int
+	// Initial amount of instantiated connections. Default: 1
+	InitialConcurrentConnections int
 	Session                      string
 }
 
@@ -65,25 +67,26 @@ func NewDriverRemoteConnection(
 	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
-		TraversalSource:        "g",
-		TransporterType:        Gorilla,
-		LogVerbosity:           Info,
-		Logger:                 &defaultLogger{},
-		Language:               language.English,
-		AuthInfo:               &AuthInfo{},
-		TlsConfig:              &tls.Config{},
-		KeepAliveInterval:      keepAliveIntervalDefault,
-		WriteDeadline:          writeDeadlineDefault,
-		ConnectionTimeout:      connectionTimeoutDefault,
-		NewConnectionThreshold: defaultNewConnectionThreshold,
-		EnableCompression:      false,
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
+		ConnectionTimeout: connectionTimeoutDefault,
+		EnableCompression: false,
 		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
 		// size is zero, then a useful default size is used. The I/O buffer sizes
 		// do not limit the size of the messages that can be sent or received.
 		ReadBufferSize:  0,
 		WriteBufferSize: 0,
 
+		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
+		InitialConcurrentConnections: defaultInitialConcurrentConnections,
 		Session:                      "",
 	}
 	for _, configuration := range configurations {
@@ -107,7 +110,13 @@ func NewDriverRemoteConnection(
 		settings.MaximumConcurrentConnections = 1
 	}
 
-	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold, settings.MaximumConcurrentConnections)
+	if settings.InitialConcurrentConnections > settings.MaximumConcurrentConnections {
+		logHandler.logf(Warning, poolInitialExceedsMaximum, settings.InitialConcurrentConnections,
+			settings.MaximumConcurrentConnections, settings.MaximumConcurrentConnections)
+		settings.InitialConcurrentConnections = settings.MaximumConcurrentConnections
+	}
+	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold,
+		settings.MaximumConcurrentConnections, settings.InitialConcurrentConnections)
 	if err != nil {
 		if err != nil {
 			logHandler.logf(Error, logErrorGeneric, "NewDriverRemoteConnection", err.Error())

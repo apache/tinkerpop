@@ -24,7 +24,8 @@
   "CLOSE_DRIVER_REMOTE_CONNECTION": "Closing DriverRemoteConnection with url '%s'",
   "CLOSE_CLIENT": "Closing Client with url '%s'",
   "ERROR_CLOSING_CONNECTION": "Ignoring error closing connection: %s",
-  "CLOSE_UNUSED_POOL_CONNECTION": "Closing and removing unused connection from connection pool.",
-  "PURGING_DEAD_CONNECTION": "Removing dead connection from connection pool.",
-  "SESSION_DETECTED": "Session detected. Setting connection pool size maximum to 1."
+  "CREATE_CONNECTION_ERROR": "Error creating new connection for connection pool: %s",
+  "POOL_NEW_CONNECTION_ERROR": "Falling back to least-used connection. Creating new connection due to least-used connection exceeding concurrent usage threshold failed: %s",
+  "SESSION_DETECTED": "Session detected. Setting connection pool size maximum to 1.",
+  "POOL_INITIAL_EXCEEDS_MAXIMUM": "InitialConcurrentConnections setting %d exceeded MaximumConcurrentConnections setting %d - limiting InitialConcurrentConnections to %d."
 }
