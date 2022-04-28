@@ -31,7 +31,7 @@ import (
 const keepAliveIntervalDefault = 5 * time.Second
 const writeDeadlineDefault = 3 * time.Second
 const writeChannelSizeDefault = 100
-const connectionTimeoutDefault = 45 * time.Second
+const connectionTimeoutDefault = 5 * time.Second
 
 // Transport layer that uses gorilla/websocket: https://github.com/gorilla/websocket
 // Gorilla WebSocket is a widely used and stable Go implementation of the WebSocket protocol.
