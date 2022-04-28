@@ -450,3 +450,29 @@ func (tp *textP) And(args ...interface{}) TextPredicate {
 func (tp *textP) Or(args ...interface{}) TextPredicate {
 	return newTextPWithP("or", *tp, args...)
 }
+
+type withOptions struct {
+	Tokens  string
+	None    int32
+	Ids     int32
+	Labels  int32
+	Keys    int32
+	Values  int32
+	All     int32
+	Indexer string
+	List    int32
+	Map     int32
+}
+
+var WithOptions withOptions = withOptions{
+	Tokens:  "~tinkerpop.valueMap.tokens",
+	None:    0,
+	Ids:     1,
+	Labels:  2,
+	Keys:    4,
+	Values:  8,
+	All:     1 | 2 | 4 | 8,
+	Indexer: "~tinkerpop.index.indexer",
+	List:    0,
+	Map:     1,
+}
