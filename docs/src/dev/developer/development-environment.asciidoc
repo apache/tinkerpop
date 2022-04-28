@@ -248,6 +248,23 @@ can be used to help run tests.
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
+[[go-environment]]
+=== Go Environment
+
+The build optionally requires link:https://go.dev/dl/[Go] (>=1.17) to work with the `gremlin-go` module. If Go is not installed, TinkerPop will still build with Maven, but Go projects will be skipped.
+
+`gremlin-go` can be built the command line with:
+
+[source,text]
+go build
+
+Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
+
+[source,text]
+docker-compose up --exit-code-from gremlin-go-integration-tests
+
+See the <<release-environment,Release Environment>> section for more information on release manager configurations.
+
 [[docker-environment]]
 === Docker Environment
 
