@@ -37,7 +37,7 @@ type ResultSet interface {
 	Close()
 	Channel() chan *Result
 	addResult(result *Result)
-	one() (*Result, error)
+	One() (*Result, error)
 	All() ([]*Result, error)
 	GetError() error
 	setError(error)
@@ -148,14 +148,15 @@ func (channelResultSet *channelResultSet) Channel() chan *Result {
 	return channelResultSet.channel
 }
 
-func (channelResultSet *channelResultSet) one() (*Result, error) {
+// One returns the next Result from the channelResultSet, blocking until one is available.
+func (channelResultSet *channelResultSet) One() (*Result, error) {
 	if channelResultSet.err != nil {
 		return nil, channelResultSet.err
 	}
 	return <-channelResultSet.channel, channelResultSet.err
 }
 
-// All returns all results for the channelResultSet.
+// All returns all remaining results for the channelResultSet (results grabbed through One will not be present).
 func (channelResultSet *channelResultSet) All() ([]*Result, error) {
 	var results []*Result
 	for result := range channelResultSet.channel {
