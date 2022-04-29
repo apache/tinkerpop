@@ -321,7 +321,7 @@ func RepeatUnrollStrategy() TraversalStrategy {
 // a RemoteConnection instance which will typically send it to a remote server for execution and return results.
 func RemoteStrategy(connection DriverRemoteConnection) *traversalStrategy {
 	a := func(g GraphTraversal) {
-		result, err := g.getResults()
+		result, err := g.GetResultSet()
 		if err != nil || result != nil {
 			return
 		}

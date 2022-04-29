@@ -656,6 +656,30 @@ func TestConnection(t *testing.T) {
 		resetGraph(t, g)
 	})
 
+	t.Run("Test Traversal GetResultSet", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		resultSet, err := g.V().HasLabel(personLabel).Properties(nameKey).GetResultSet()
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		allResults, err := resultSet.All()
+		assert.Nil(t, err)
+		var names []string
+		for _, res := range allResults {
+			assert.NotNil(t, res)
+			vp, err := res.GetVertexProperty()
+			assert.Nil(t, err)
+			names = append(names, vp.Value.(string))
+		}
+		assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
+
+		resetGraph(t, g)
+	})
+
 	t.Run("Test DriverRemoteConnection GraphTraversal With Label", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 

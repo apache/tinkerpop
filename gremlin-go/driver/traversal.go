@@ -93,7 +93,7 @@ func (t *Traversal) Iterate() <-chan error {
 
 // HasNext returns true if the result is not empty.
 func (t *Traversal) HasNext() (bool, error) {
-	results, err := t.getResults()
+	results, err := t.GetResultSet()
 	if err != nil {
 		return false, err
 	}
@@ -102,7 +102,7 @@ func (t *Traversal) HasNext() (bool, error) {
 
 // Next returns next result.
 func (t *Traversal) Next() (*Result, error) {
-	results, err := t.getResults()
+	results, err := t.GetResultSet()
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,8 @@ func (t *Traversal) Next() (*Result, error) {
 	return results.One()
 }
 
-func (t *Traversal) getResults() (ResultSet, error) {
+// GetResultSet submits the traversal and returns the ResultSet.
+func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
 		results, err := t.remote.submitBytecode(t.bytecode)
 		if err != nil {

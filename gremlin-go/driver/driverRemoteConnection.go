@@ -82,11 +82,11 @@ func NewDriverRemoteConnection(
 		WriteDeadline:     writeDeadlineDefault,
 		ConnectionTimeout: connectionTimeoutDefault,
 		EnableCompression: false,
-		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
-		// size is zero, then a useful default size is used. The I/O buffer sizes
-		// do not limit the size of the messages that can be sent or received.
-		ReadBufferSize:  0,
-		WriteBufferSize: 0,
+		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. The default is 1048576.
+		// If a buffer size is set zero, then the Gorilla websocket 4096 default size is used. The I/O buffer
+		// sizes do not limit the size of the messages that can be sent or received.
+		ReadBufferSize:  1048576,
+		WriteBufferSize: 1048576,
 
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
