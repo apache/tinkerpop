@@ -134,6 +134,18 @@ Note: The exact import name as well as the module prefix for `NewDriverRemoteCon
 		})
 ```
 
+## Troubleshooting
+
+### Can't establish connection and get any result
+* Verify you are using valid server protocol and path. Note that for secure connection `wss` should be used.
+* Verify firewall settings.
+
+### Local server doesn't have valid certificate
+* Set connection option &tls.Config{InsecureSkipVerify: true}
+
+### Client hangs on requests with large amount of data
+* Increase read buffer size by settings connection option `readBufferSize`.
+
 # Gremlin-Go Development
 
 ## Design Architecture
