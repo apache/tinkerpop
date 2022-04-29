@@ -48,7 +48,6 @@ type ClientSettings struct {
 	MaximumConcurrentConnections int
 	// Initial amount of instantiated connections. Default: 1
 	InitialConcurrentConnections int
-	Session                      string
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -86,7 +85,6 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
 		InitialConcurrentConnections: defaultInitialConcurrentConnections,
-		Session:                      "",
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -104,10 +102,6 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	if settings.Session != "" {
-		logHandler.log(Debug, sessionDetected)
-		settings.MaximumConcurrentConnections = 1
-	}
 
 	if settings.InitialConcurrentConnections > settings.MaximumConcurrentConnections {
 		logHandler.logf(Warning, poolInitialExceedsMaximum, settings.InitialConcurrentConnections,
@@ -129,7 +123,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
 		connections:     pool,
-		session:         settings.Session,
+		session:         "",
 	}
 
 	return client, nil
@@ -138,7 +132,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // Close closes the client via connection.
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
-	// If it is a Session, call closeSession
+	// If it is a session, call closeSession
 	if client.session != "" {
 		err := client.closeSession()
 		if err != nil {

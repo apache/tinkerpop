@@ -29,6 +29,8 @@ import (
 
 // DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
+	session string
+	
 	TraversalSource   string
 	TransporterType   TransporterType
 	LogVerbosity      LogVerbosity
@@ -49,7 +51,6 @@ type DriverRemoteConnectionSettings struct {
 	MaximumConcurrentConnections int
 	// Initial amount of instantiated connections. Default: 1
 	InitialConcurrentConnections int
-	Session                      string
 }
 
 // DriverRemoteConnection is a remote connection.
@@ -57,6 +58,7 @@ type DriverRemoteConnection struct {
 	client          *Client
 	spawnedSessions []*DriverRemoteConnection
 	isClosed        bool
+	settings        *DriverRemoteConnectionSettings
 }
 
 // NewDriverRemoteConnection creates a new DriverRemoteConnection.
@@ -67,6 +69,8 @@ func NewDriverRemoteConnection(
 	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
+		session:           "",
+		
 		TraversalSource:   "g",
 		TransporterType:   Gorilla,
 		LogVerbosity:      Info,
@@ -87,7 +91,6 @@ func NewDriverRemoteConnection(
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
 		InitialConcurrentConnections: defaultInitialConcurrentConnections,
-		Session:                      "",
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -105,7 +108,7 @@ func NewDriverRemoteConnection(
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	if settings.Session != "" {
+	if settings.session != "" {
 		logHandler.log(Debug, sessionDetected)
 		settings.MaximumConcurrentConnections = 1
 	}
@@ -130,10 +133,10 @@ func NewDriverRemoteConnection(
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
 		connections:     pool,
-		session:         settings.Session,
+		session:         settings.session,
 	}
 
-	return &DriverRemoteConnection{client: client, isClosed: false}, nil
+	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
 }
 
 // Close closes the DriverRemoteConnection.
@@ -178,7 +181,7 @@ func (driver *DriverRemoteConnection) isSession() bool {
 	return driver.client.session != ""
 }
 
-// CreateSession generates a new Session. sessionId stores the optional UUID param. It can be used to create a Session with a specific UUID.
+// CreateSession generates a new session. sessionId stores the optional UUID param. It can be used to create a session with a specific UUID.
 func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*DriverRemoteConnection, error) {
 	if len(sessionId) > 1 {
 		return nil, newError(err0201CreateSessionMultipleIdsError)
@@ -188,12 +191,27 @@ func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*Drive
 
 	driver.client.logHandler.log(Info, creatingSessionConnection)
 	drc, err := NewDriverRemoteConnection(driver.client.url, func(settings *DriverRemoteConnectionSettings) {
-		settings.TraversalSource = driver.client.traversalSource
 		if len(sessionId) == 1 {
-			settings.Session = sessionId[0]
+			settings.session = sessionId[0]
 		} else {
-			settings.Session = uuid.New().String()
+			settings.session = uuid.New().String()
 		}
+		// copy other settings from parent
+		settings.TraversalSource = driver.settings.TraversalSource
+		settings.TransporterType = driver.settings.TransporterType
+		settings.Logger = driver.settings.Logger
+		settings.LogVerbosity = driver.settings.LogVerbosity
+		settings.Language = driver.settings.Language
+		settings.AuthInfo = driver.settings.AuthInfo
+		settings.TlsConfig = driver.settings.TlsConfig
+		settings.KeepAliveInterval = driver.settings.KeepAliveInterval
+		settings.WriteDeadline = driver.settings.WriteDeadline
+		settings.ConnectionTimeout = driver.settings.ConnectionTimeout
+		settings.NewConnectionThreshold = driver.settings.NewConnectionThreshold
+		settings.EnableCompression = driver.settings.EnableCompression
+		settings.ReadBufferSize = driver.settings.ReadBufferSize
+		settings.WriteBufferSize = driver.settings.WriteBufferSize
+		settings.MaximumConcurrentConnections = driver.settings.MaximumConcurrentConnections
 	})
 	if err != nil {
 		return nil, err
