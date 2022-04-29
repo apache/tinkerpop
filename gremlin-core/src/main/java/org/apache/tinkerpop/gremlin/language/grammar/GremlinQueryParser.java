@@ -29,11 +29,11 @@ public class GremlinQueryParser {
     private static final Logger log = LoggerFactory.getLogger(GremlinQueryParser.class);
     private static final GremlinErrorListener errorListener = new GremlinErrorListener();
 
-    public static Object parse(final String query) throws Exception {
+    public static Object parse(final String query) {
         return parse(query, new GremlinAntlrToJava());
     }
 
-    public static Object parse(final String query, final GremlinVisitor<Object> visitor)  throws Exception  {
+    public static Object parse(final String query, final GremlinVisitor<Object> visitor)  {
         final CharStream in = CharStreams.fromString(query);
         final GremlinLexer lexer = new GremlinLexer(in);
         lexer.removeErrorListeners();
