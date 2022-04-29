@@ -4,7 +4,7 @@
   "NULL_INPUT": "Input cannot be null.",
   "UNEXPECTED_NULL_VALUE": "Unexpected null value to write when value is not nullable.",
   "CLOSING_CONNECTION": "Closing the connection.",
-  "FAILED_CONNECTION" : "Failed to connect, connection is closed.",
+  "FAILED_CONNECTION" : "Failed to instantiate the new connection; setting connection state to closed.",
   "OPENING_CONNECTION": "Connecting.",
   "WRITE_REQUEST": "Writing request.",
   "READ_LOOP_ERROR": "Read loop error '%s', closing read loop.",
