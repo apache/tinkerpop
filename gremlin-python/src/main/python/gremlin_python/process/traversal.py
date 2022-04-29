@@ -757,10 +757,10 @@ class Bytecode(object):
         bb.bindings = copy.deepcopy(self.bindings, memo)
         return bb
 
-    def __convertArgument(self,arg):
+    def __convertArgument(self, arg):
         if isinstance(arg, Traversal):
             if arg.graph is not None:
-                raise TypeError("The child traversal of " + arg + " was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
+                raise TypeError("The child traversal of " + str(arg) + " was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
             self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
         elif isinstance(arg, dict):
