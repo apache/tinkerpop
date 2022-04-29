@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
  */
 public class NoOpTerminalVisitor extends GremlinAntlrToJava {
 
-    public NoOpTerminalVisitor() throws Exception {
+    public NoOpTerminalVisitor() {
         super();
     }
 
