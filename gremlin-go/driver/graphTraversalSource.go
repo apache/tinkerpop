@@ -121,7 +121,7 @@ func (gts *GraphTraversalSource) WithoutStrategies(args ...TraversalStrategy) *G
 // With provides a configuration to a traversal in the form of a key value pair.
 func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *GraphTraversalSource {
 	source := gts.clone()
-	source.bytecode.addSource("withStrategies", key, value)
+	source.bytecode.addSource("with", key, value)
 	return source
 }
 

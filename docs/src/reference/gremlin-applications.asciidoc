@@ -453,7 +453,7 @@ or more `Graph` instances hosted within it.  The benefits of using Gremlin Serve
 * Allows any Gremlin Structure-enabled graph (i.e. implements the `Graph` API on the JVM) to exist as a standalone
 server, which in turn enables the ability for multiple clients to communicate with the same graph database.
 * Enables execution of ad hoc queries through remotely submitted Gremlin.
-* Provides a method for non-JVM languages which may not have a Gremlin Traversal Machine (e.g. Python, Javascript, etc.)
+* Provides a method for non-JVM languages which may not have a Gremlin Traversal Machine (e.g. Python, Javascript, Go, etc.)
 to communicate with the TinkerPop stack on the JVM.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
@@ -549,6 +549,7 @@ image:rexster-connect.png[width=180,float=right] TinkerPop offers client-side dr
 sub-protocol in a variety of languages:
 
 * <<gremlin-dotnet,C#>>
+* <<gremlin-go,Go>>
 * <<gremlin-java,Java>>
 * <<gremlin-javascript,Javascript>>
 * <<gremlin-python,Python>>
@@ -606,6 +607,18 @@ list = client.submit("g.V().has('person','name',name).out('knows')",{'name': 'ma
 # bytecode
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 list = g.V().has("person","name","marko").out("knows").toList()
+----
+[source,go]
+----
+// script
+client, err := NewClient("ws://localhost:8182/gremlin")
+resultSet, err := client.Submit("g.V().has('person','name',name).out('knows')", map[string]interface{}{"name": "marko"})
+result, err := resultSet.All()
+
+// bytecode
+remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+g := Traversal_().WithRemote(remote)
+list, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
 ----
 
 The advantage of bytecode over scripts should be apparent from the above examples. Scripts are just strings that are
@@ -1348,6 +1361,7 @@ Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
 |GSSAPI SASL (Kerberos) |3.4.7
 |Gremlin.Net |PLAIN SASL |3.2.7
 |Gremlin-Javascript |PLAIN SASL |3.3.0
+|Gremlin-go |PLAIN SASL |3.5.4
 |=========================================================
 
 By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable

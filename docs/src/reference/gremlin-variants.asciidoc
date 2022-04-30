@@ -491,7 +491,7 @@ In such events, the timeout for the request is interpreted as a sum of all timeo
 ----
 RequestOptions options = RequestOptions.build().timeout(500).create();
 List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
-                                    "g.addV().iterate();
+                                    "g.addV().iterate();" + 
                                     "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
 ----
 
@@ -1657,7 +1657,7 @@ except Exception as e:
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
 most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python, a Gremlin lambda should
 be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
-traversal. The lambda should be written as a `Gremlin-Groovy`string. When the lambda is represented in `Bytecode` its
+traversal. The lambda should be written as a `Gremlin-Groovy` string. When the lambda is represented in `Bytecode` its
 language is encoded such that the remote connection host can infer which translator and ultimate execution engine to
 use.
 
@@ -1896,4 +1896,300 @@ and is designed to work best with a running <<gremlin-server,Gremlin Server>> co
 pip install gremlinpython
 pip install aiohttp
 python example.py
+----
+
+[[gremlin-go]]
+== Gremlin-Go
+
+image:gremlin-go.png[width=130,float=right] Apache TinkerPop's Gremlin-Go implements Gremlin within the link:https://go.dev/[Go] language and can therefore be used on different operating systems. Go's syntax has the same constructs as Java including
+"dot notation" for function chaining (`a.b.c`), round bracket function arguments (`a(b,c)`), and support for global
+namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
+with Gremlin-Go. Moreover, there are a few added constructs to Gremlin-Go that make traversals a bit more
+succinct.
+
+To install the Gremlin-Go as a dependency for your project, run the following in the root directory of your project that contains your `go.mod` file:
+
+[source,bash]
+----
+go get github.com/apache/tinkerpop/gremlin-go/v3[optionally append @<version>, such as @v3.5.3 - note this requires GO111MODULE=on]
+----
+
+[[gremlin-go-connecting]]
+=== Connecting
+
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the anonymous `Traversal_()`.
+
+[source,go]
+----
+remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+g := Traversal_().WithRemote(remote)
+----
+
+If you need to additional parameters to connection setup, you can pass configuration function.
+
+[source,go]
+----
+remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+  func(settings *DriverRemoteConnectionSettings) {
+    settings.TraversalSource = "gmodern"
+  })
+----
+
+Gremlin-go supports plain text authentication, you can set it on the connection function.
+
+[source,go]
+----
+remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+  func(settings *DriverRemoteConnectionSettings) {
+    settings.TlsConfig = &tls.Config{InsecureSkipVerify: true}
+    settings.AuthInfo = BasicAuthInfo("login", "password")
+  })
+----
+
+If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or
+<<connecting-rgp,Remote Gremlin Provider>>, this server normally has SSL activated and the websockets url will start
+with 'wss://'.
+
+Some connection options can also be set on individual requests made through the using `With()` step on the
+`TraversalSource`. For instance to set request timeout to 500 milliseconds:
+
+[source,go]
+----
+results, err := g.With("evaluationTimeout", 500).V().Out("knows").ToList()
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+
+anchor:go-imports[]
+[[gremlin-go-imports]]
+=== Common Imports
+
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following import
+provide most of the typical functionality required to use Gremlin:
+
+[source,go]
+----
+import (
+	"github.com/apache/tinkerpop/gremlin-go/driver"
+)
+----
+
+These can be used analogously to how they are used in Gremlin-Java.
+
+[source,go]
+----
+results, err := g.V().HasLabel("person").Has("age", gremlingo.T__.Is(gremlingo.P.Gt(30))).Order().By("age", gremlingo.Desc).ToList()
+[v[6], v[4]]
+----
+
+anchor:go-configuration[]
+[[gremlin-go-configuration]]
+=== Configuration
+
+The following table describes the various configuration options for the Gremlin-go Driver. They
+can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as configuration function arguments:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|TraversalSource |Traversal source. |"g"
+|TransporterType |Transporter type. |Gorilla
+|LogVerbosity |Log verbosity.|info
+|Logger |Instance of logger. |defaultLogger
+|Language |Language used for logging messages. |language.English
+|AuthInfo |Authentification info, can be build with BasicAuthInfo() or HeaderAuthInfo(). |empty
+|TlsConfig |TLS configuration. |empty
+|KeepAliveInterval |Keep connection alive interval. |5 seconds
+|WriteDeadline |Write deadline. |3 seconds
+|ConnectionTimeout | Timeout for establishing connection. |45 seconds
+|NewConnectionThreshold | Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection. |4
+|MaximumConcurrentConnections | Maximum number of concurrent connections. |number of runtime processors
+|EnableCompression |Flag to enable compression. |false
+|ReadBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
+|WriteBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
+|Session |Session ID. |""
+|=========================================================
+
+[[gremlin-go-strategies]]
+=== Traversal Strategies
+
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Go has a
+`TraversalStrategy` interface along with a collection of functions that mirror the standard Gremlin-Java strategies.
+
+[source,go]
+----
+promise := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
+----
+
+NOTE: Many of the `TraversalStrategy` classes in Gremlin-Go are proxies to the respective strategy on
+Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Traversal)` method does nothing. However,
+the strategy is encoded in the Gremlin-Go bytecode and transmitted to the Gremlin traversal machine for
+re-construction machine-side.
+
+[[gremlin-go-transactions]]
+=== Transactions
+
+To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
+section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
+builds on that content by demonstrating the transactional syntax for Go.
+
+[source,go]
+----
+remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+g := Traversal_().WithRemote(remote)
+
+// Create a Transaction.
+tx := g.Tx()
+
+// Spawn a new GraphTraversalSource, binding all traversals established from it to tx.
+gtx, _ := tx.Begin()
+
+// Execute a traversal within the transaction.
+promise := g.AddV("person").Property("name", "Lyndon").Iterate()
+err := <-promise
+
+if err != nil {
+  // Rollback the transaction if an error occurs.
+  tx.rollback()
+} else {
+  // Commit the transaction. The transaction can no longer be used and cannot be re-used.
+  // A new transaction can be spawned through g.Tx().
+  tx.Commit()
+}
+----
+
+[[gremlin-go-lambda]]
+=== The Lambda Solution
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Go, a Gremlin lambda should
+be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
+traversal. The lambda should be written as a `Gremlin-Groovy` string. When the lambda is represented in `Bytecode` its
+language is encoded such that the remote connection host can infer which translator and ultimate execution engine to
+use.
+
+[source,go]
+----
+r, err := g.V().Out().Map(&gremlingo.Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()		
+----
+
+TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
+instance created, it will help to fully define the closure in the lambda expression - so rather than
+`Script: "it.get().value('name')", Language: "gremlin-groovy"`, prefer `Script: "x -> x.get().value('name')", Language: "gremlin-groovy"`.
+
+Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
+`ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow a remote
+engine to to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
+instead of translating, compiling, and then executing each submitted bytecode, it is possible to simply execute.
+
+[source,go]
+----
+r, err := g.V((&gremlingo.Bindings{}).Of("x", 1)).Out("created").Map(&gremlingo.Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
+// 3
+r, err := g.V((&gremlingo.Bindings{}).Of("x", 4)).Out("created").Map(&gremlingo.Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
+// 9
+----
+
+WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
+
+[[gremlin-go-scripts]]
+=== Submitting Scripts
+
+The `Client` class implementation/interface is based on the Java Driver, with some restrictions. Most notably,
+Gremlin-go does not yet implement the `Cluster` class. Instead, `Client` is instantiated directly.
+Usage is as follows:
+
+[source,go]
+----
+import "github.com/apache/tinkerpop/gremlin-go/v3/driver" <1>
+client, err := gremlingo.NewClient("ws://localhost:8182/gremlin") <2>
+----
+
+<1> Import the Gremlin-Go module.
+<2> Opens a reference to `localhost` - note that there are various configuration options that can be passed
+to the `Client` object upon instantiation as keyword arguments.
+
+Once a `Client` instance is ready, it is possible to issue some Gremlin:
+
+[source,go] //todo: clarify replacement one with One
+----
+resultSet, err := client.Submit("g.V().count()") <1>
+result, err := resultSet.All() <2>
+fmt.Println(result[0].GetString()) <3>
+----
+
+<1> Submit a script that simply returns a Count of vertexes.  
+<2> Get results from resultSet. Block until the the script is evaluated and results are sent back by the server.
+<3> Use the result.
+
+==== Per Request Settings
+
+The `client.Submit()` functions accept a `bindings` which expects a map. The `bindings` provide a way to include options
+that are specific to the request made with the call to `Submit()`. A good use-case for this feature is to set a per-request
+override to the `evaluationTimeout` so that it only applies to the current request.
+
+[source,go]
+----
+resultSet, err := client.Submit("g.V().repeat(both()).times(100)", map[string]interface{}{"evaluationTimeout": 5000})
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
+with bytecode may try `g.with("evaluationTimeout", 500)` within a script. Scripts with multiple traversals and multiple
+timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
+
+[source,go]
+----
+resultSet, err := client.Submit("g.with('evaluationTimeout', 500).addV().iterate();"+
+  "g.addV().iterate();"+
+  "g.with('evaluationTimeout', 500).addV();", map[string]interface{}{"evaluationTimeout": 500})
+results, err := resultSet.All()
+----
+
+In the above example, defines a timeout of 500 milliseconds, but the script has three traversals with
+two internal settings for the timeout using `with()`. The request timeout used by the server will therefore be 1000
+milliseconds (overriding the 500 which itself was an override for whatever configuration was on the server).
+
+[[gremlin-go-differences]]
+=== Differences
+
+In situations where Go reserved words and global functions overlap with standard Gremlin steps and tokens, those
+bits of conflicting Gremlin get an underscore appended as a suffix, all function names start with a capital letter 
+to be public:
+
+*Steps* - <<and-step,And()>>, <<as-step,As()>>, <<filter-step,Filter()>>, <<from-step,From()>>, <<id-step,Id()>>,
+<<is-step,Is()>>, <<in-step,In()>>, <<max-step,Max()>>, <<min-step,Min()>>, <<not-step,Not()>>, <<or-step,Or()>>,
+<<range-step,Range()>>, <<sum-step,Sum()>>, <<with-step,With()>>
+
+*Tokens* - <<a-note-on-scopes,Scope.Global>>, <<a-note-on-scopes,Scope.Local>>
+
+*Statics* - <<__, T__>> // todo: impove 
+
+[[gremlin-go-limitations]]
+=== Limitations
+
+* The set data type is currently not implemented, as `go` does not have an underlying `set` data structure. Any set type 
+code from server will be deserialized into slices with the list type implementation. Set implemented with the `go` 
+convention of using a map will be serialized as map.
+* The `path` data type serialization is currently incomplete as labels are represented as list of lists instead of list 
+of sets. Fully functional Path serialization will be implemented when set is implemented in the next milestone. Path 
+can be successfully deserialized.
+* Traversal step functions currently take `string` arguments with double quotes only. Operations using Gremlin keywords,
+such as `By(label)`, will be supported in the next milestone.
+
+[[gremlin-go-examples]]
+=== Application Examples
+
+The TinkerPop source code contains a simple Go script that shows a basic example of how gremlin-go works. It
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-go/example/example.go[here]
+and is designed to work best with a running <<gremlin-server,Gremlin Server>> configured with the default
+`conf/gremlin-server.yaml` file as included with the standard release packaging.
+
+[source,shell]
+----
+go run example.go
 ----
