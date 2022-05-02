@@ -401,7 +401,7 @@ func main() {
 	portPtr := flag.Int("port", Port, "Server port, the default is 45940.")
 	runCount := flag.Int("runCount", suiteRunCount, "The number of times to run each test, the default is 21, minimum is 2.")
 	memProfile := flag.Bool("memProfile", false, "Enables memory profiling.")
-	runLevel := flag.String("runLevel", "pooling", "The test suite to run: smoke, full, or pooling, the default is smoke")
+	runLevel := flag.String("runLevel", "smoke", "The test suite to run: smoke, full, or pooling, the default is smoke")
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), usage)
