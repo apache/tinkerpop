@@ -125,7 +125,7 @@ func main() {
 Note: The exact import name as well as the module prefix for `NewDriverRemoteConnection` may change in the future.
 
 ## Customizing connection
-`gremlingo.NewDriverRemoteConnection` accepts a config function as a parameter. (See code documentation for additional parameters and their usage) <!--TODO: when merged add link to https://github.com/lyndonbauto/tinkerpop/blob/valentyn/AN-988-reference/docs/src/reference/gremlin-variants.asciidoc#configuration-3 -->
+`gremlingo.NewDriverRemoteConnection` accepts a config function as a parameter. (See code documentation for additional parameters and their usage)
 ```go
 	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("wss://localhost:8182/gremlin",
 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
