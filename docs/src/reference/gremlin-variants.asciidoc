@@ -1901,17 +1901,17 @@ python example.py
 [[gremlin-go]]
 == Gremlin-Go
 
-image:gremlin-go.png[width=130,float=right] Apache TinkerPop's Gremlin-Go implements Gremlin within the link:https://go.dev/[Go] language and can therefore be used on different operating systems. Go's syntax has the same constructs as Java including
-"dot notation" for function chaining (`a.b.c`), round bracket function arguments (`a(b,c)`), and support for global
-namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
-with Gremlin-Go. Moreover, there are a few added constructs to Gremlin-Go that make traversals a bit more
+image:gremlin-go.png[width=130,float=right] Apache TinkerPop's Gremlin-Go implements Gremlin within the link:https://go.dev/[Go] language and can therefore be used on different operating systems. Go's syntax has the similar constructs as Java including
+"dot notation" for function chaining (`a.b.c`) and round bracket function arguments (`a(b,c)`). Something unlike Java is that Gremlin-Go requires a 
+`gremlingo` prefix when using the namespace (`a(b())` vs `gremlingo.a(gremlingo.__.b())`). Anyone familiar with Gremlin-Java will be able to work
+with Gremlin-Go with relative ease. Moreover, there are a few added constructs to Gremlin-Go that make traversals a bit more
 succinct.
 
 To install the Gremlin-Go as a dependency for your project, run the following in the root directory of your project that contains your `go.mod` file:
 
 [source,bash]
 ----
-go get github.com/apache/tinkerpop/gremlin-go/v3[optionally append @<version>, such as @v3.5.3 - note this requires GO111MODULE=on]
+go get github.com/apache/tinkerpop/gremlin-go/v3[optionally append @<version>, such as @v3.5.3]
 ----
 
 [[gremlin-go-connecting]]
@@ -1922,28 +1922,28 @@ creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the 
 
 [source,go]
 ----
-remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := Traversal_().WithRemote(remote)
+remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+g := gremlingo.Traversal_().WithRemote(remote)
 ----
 
-If you need to additional parameters to connection setup, you can pass configuration function.
+If you need to additional parameters to connection setup, you can pass in a configuration function.
 
 [source,go]
 ----
-remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
   func(settings *DriverRemoteConnectionSettings) {
     settings.TraversalSource = "gmodern"
   })
 ----
 
-Gremlin-go supports plain text authentication, you can set it on the connection function.
+Gremlin-go supports plain text authentication. It can be set in the connection function.
 
 [source,go]
 ----
-remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
   func(settings *DriverRemoteConnectionSettings) {
     settings.TlsConfig = &tls.Config{InsecureSkipVerify: true}
-    settings.AuthInfo = BasicAuthInfo("login", "password")
+    settings.AuthInfo = gremlingo.BasicAuthInfo("login", "password")
   })
 ----
 
@@ -1996,8 +1996,8 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |Key |Description |Default
 |TraversalSource |Traversal source. |"g"
 |TransporterType |Transporter type. |Gorilla
-|LogVerbosity |Log verbosity.|info
-|Logger |Instance of logger. |defaultLogger
+|LogVerbosity |Log verbosity.|gremlingo.INFO
+|Logger |Instance of logger. |log
 |Language |Language used for logging messages. |language.English
 |AuthInfo |Authentification info, can be build with BasicAuthInfo() or HeaderAuthInfo(). |empty
 |TlsConfig |TLS configuration. |empty
@@ -2020,7 +2020,7 @@ In order to add and remove <<traversalstrategy,traversal strategies>> from a tra
 
 [source,go]
 ----
-promise := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
+promise := g.WithStrategies(gremlingo.ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
 ----
 
 NOTE: Many of the `TraversalStrategy` classes in Gremlin-Go are proxies to the respective strategy on
@@ -2038,7 +2038,7 @@ builds on that content by demonstrating the transactional syntax for Go.
 [source,go]
 ----
 remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := Traversal_().WithRemote(remote)
+g := gremlingo.Traversal_().WithRemote(remote)
 
 // Create a Transaction.
 tx := g.Tx()
@@ -2158,8 +2158,8 @@ milliseconds (overriding the 500 which itself was an override for whatever confi
 === Differences
 
 In situations where Go reserved words and global functions overlap with standard Gremlin steps and tokens, those
-bits of conflicting Gremlin get an underscore appended as a suffix, all function names start with a capital letter 
-to be public:
+bits of conflicting Gremlin get an underscore appended as a suffix. In addition, all function names start with a 
+capital letter in order to be public:
 
 *Steps* - <<and-step,And()>>, <<as-step,As()>>, <<filter-step,Filter()>>, <<from-step,From()>>, <<id-step,Id()>>,
 <<is-step,Is()>>, <<in-step,In()>>, <<max-step,Max()>>, <<min-step,Min()>>, <<not-step,Not()>>, <<or-step,Or()>>,
@@ -2172,9 +2172,10 @@ to be public:
 [[gremlin-go-limitations]]
 === Limitations
 
-* The set data type is currently not implemented, as `go` does not have an underlying `set` data structure. Any set type 
-code from server will be deserialized into slices with the list type implementation. Set implemented with the `go` 
-convention of using a map will be serialized as map.
+* There is no default `set` type in Go. Any set type code from server will be deserialized into slices with the list 
+type implementation. To input a set into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface 
+will be serialized as a set. `gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go 
+that can be used to fulfill the `gremlingo.Set` interface if desired.
 * The `path` data type serialization is currently incomplete as labels are represented as list of lists instead of list 
 of sets. Fully functional Path serialization will be implemented when set is implemented in the next milestone. Path 
 can be successfully deserialized.
