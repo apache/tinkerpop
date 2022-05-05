@@ -184,7 +184,7 @@ func newGremlinServerWSProtocol(handler *logHandler, transporterType Transporter
 
 	gremlinProtocol := &gremlinServerWSProtocol{
 		protocolBase: &protocolBase{transporter: transport},
-		serializer:   newGraphBinarySerializer(handler),
+		serializer:   newGraphBinarySerializerV2(handler),
 		logHandler:   handler,
 		closed:       false,
 		mutex:        sync.Mutex{},
