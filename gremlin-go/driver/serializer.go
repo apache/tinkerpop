@@ -42,6 +42,11 @@ type graphBinarySerializer struct {
 	ser *graphBinaryTypeSerializer
 }
 
+type writer func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
+
+var deserializers map[dataType]func(data *[]byte, i *int) interface{}
+var serializers map[dataType]writer
+
 func newGraphBinarySerializer(handler *logHandler) serializer {
 	serializer := graphBinaryTypeSerializer{nullType, nil, nil, nil, handler}
 	return graphBinarySerializer{&serializer}
@@ -78,6 +83,8 @@ func convertArgs(request *request, gs graphBinarySerializer) (map[string]interfa
 
 // serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
+	initSerializers()
+
 	args, err := convertArgs(request, gs)
 	if err != nil {
 		return nil, err
@@ -165,135 +172,147 @@ func uuidToBigInt(requestID uuid.UUID) big.Int {
 	return bigInt
 }
 
-func readUUID(buffer *bytes.Buffer) (uuid.UUID, error) {
-	var nullable byte
-	err := binary.Read(buffer, binary.LittleEndian, &nullable)
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-	uuidBytes := make([]byte, 16)
-	err = binary.Read(buffer, binary.LittleEndian, uuidBytes)
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-	return uuid.FromBytes(uuidBytes)
-}
-
-func readMap(buffer *bytes.Buffer, gs *graphBinarySerializer) (map[string]interface{}, error) {
-	var mapSize uint32
-	err := binary.Read(buffer, binary.BigEndian, &mapSize)
-	if err != nil {
-		return nil, err
-	}
-	var mapData = map[string]interface{}{}
-	for i := uint32(0); i < mapSize; i++ {
-		var keyType dataType
-		err = binary.Read(buffer, binary.BigEndian, &keyType)
-		if err != nil {
-			return nil, err
-		} else if keyType != stringType {
-			return nil, newError(err0703ReadMapNonStringKeyError)
-		}
-		var nullable byte
-		err = binary.Read(buffer, binary.BigEndian, &nullable)
-		if err != nil {
-			return nil, err
-		}
-		if nullable != 0 {
-			return nil, newError(err0701ReadMapNullKeyError)
-		}
-
-		k, err := readString(buffer)
-		if err != nil {
-			return nil, err
-		}
-		mapData[k], err = gs.ser.read(buffer)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return mapData, nil
-}
-
-func readString(buffer *bytes.Buffer) (string, error) {
-	var strLength uint32
-	err := binary.Read(buffer, binary.BigEndian, &strLength)
-	if err != nil {
-		return "", err
-	}
-
-	strBytes := make([]byte, strLength)
-	err = binary.Read(buffer, binary.BigEndian, strBytes)
-	if err != nil {
-		return "", err
-	}
-	return string(strBytes[:]), nil
-}
-
 // deserializeMessage deserializes a response message.
-func (gs graphBinarySerializer) deserializeMessage(responseMessage []byte) (response, error) {
+func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, error) {
+	initDeserializers()
+
+	// Skip version and nullable byte.
+	i := 2
 	var msg response
-	buffer := bytes.Buffer{}
-	buffer.Write(responseMessage)
-
-	// Version
-	_, err := buffer.ReadByte()
-	if err != nil {
-		return msg, err
+	msg.responseID = readUuid(&message, &i).(uuid.UUID)
+	msg.responseStatus.code = uint16(readUint32(&message, &i).(uint32) & 0xFF)
+	if isMessageValid := readBoolean(&message, &i).(bool); isMessageValid {
+		msg.responseStatus.message = readString(&message, &i).(string)
 	}
+	msg.responseStatus.attributes = readMapUnqualified2(&message, &i).(map[string]interface{})
+	msg.responseResult.meta = readMapUnqualified2(&message, &i).(map[string]interface{})
+	msg.responseResult.data = readFullyQualifiedNullable(&message, &i, true)
+	return msg, nil
+}
 
-	// Response uuid
-	msgUUID, err := readUUID(&buffer)
-	if err != nil {
-		return msg, err
-	}
-
-	// Status Code
-	var statusCode uint32
-	err = binary.Read(&buffer, binary.BigEndian, &statusCode)
-	if err != nil {
-		return msg, err
-	}
-	statusCode = statusCode & 0xFF
-
-	// Nullable Status message
-	var statusMessageNull byte
-	var statusMessage string
-	err = binary.Read(&buffer, binary.LittleEndian, &statusMessageNull)
-	if err != nil {
-		return msg, err
-	}
-	if statusMessageNull == 0 {
-		statusMessage, err = readString(&buffer)
-		if err != nil {
-			return msg, err
+func initSerializers() {
+	// todo: lock or don't care?
+	// todo: lazy init or don't care?
+	if serializers == nil || len(serializers) == 0 {
+		serializers = map[dataType]writer{
+			bytecodeType: bytecodeWriter,
+			stringType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, int32(len(value.(string))))
+				if err != nil {
+					return nil, err
+				}
+				_, err = buffer.WriteString(value.(string))
+				return buffer.Bytes(), err
+			},
+			bigIntegerType: bigIntWriter,
+			longType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				switch v := value.(type) {
+				case int:
+					value = int64(v)
+				case uint32:
+					value = int64(v)
+				}
+				err := binary.Write(buffer, binary.BigEndian, value)
+				return buffer.Bytes(), err
+			},
+			intType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				switch v := value.(type) {
+				case uint16:
+					value = int32(v)
+				}
+				err := binary.Write(buffer, binary.BigEndian, value.(int32))
+				return buffer.Bytes(), err
+			},
+			shortType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value.(int16))
+				return buffer.Bytes(), err
+			},
+			byteType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value.(uint8))
+				return buffer.Bytes(), err
+			},
+			booleanType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value.(bool))
+				return buffer.Bytes(), err
+			},
+			uuidType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value)
+				return buffer.Bytes(), err
+			},
+			floatType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value)
+				return buffer.Bytes(), err
+			},
+			doubleType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value)
+				return buffer.Bytes(), err
+			},
+			vertexType:            vertexWriter,
+			edgeType:              edgeWriter,
+			propertyType:          propertyWriter,
+			vertexPropertyType:    vertexPropertyWriter,
+			lambdaType:            lambdaWriter,
+			traversalStrategyType: traversalStrategyWriter,
+			pathType:              pathWriter,
+			setType:               setWriter,
+			dateType:              timeWriter,
+			durationType:          durationWriter,
+			cardinalityType:       enumWriter,
+			columnType:            enumWriter,
+			directionType:         enumWriter,
+			operatorType:          enumWriter,
+			orderType:             enumWriter,
+			pickType:              enumWriter,
+			popType:               enumWriter,
+			tType:                 enumWriter,
+			barrierType:           enumWriter,
+			scopeType:             enumWriter,
+			pType:                 pWriter,
+			textPType:             textPWriter,
+			bindingType:           bindingWriter,
+			mapType:               mapWriter,
+			listType:              listWriter,
 		}
 	}
+}
 
-	// Status Attributes
-	statusAttributes, err := readMap(&buffer, &gs)
-	if err != nil {
-		return msg, err
+func initDeserializers() {
+	// todo: lock or don't care?
+	if deserializers == nil || len(deserializers) == 0 {
+		deserializers = map[dataType]func(data *[]byte, i *int) interface{}{
+			// Primitive
+			booleanType:    readBoolean,
+			byteType:       readByte,
+			shortType:      readShort,
+			intType:        readInt,
+			longType:       readLong,
+			bigIntegerType: readBigInt,
+			floatType:      readFloat,
+			doubleType:     readDouble,
+			stringType:     readString,
+
+			// Composite
+			listType: readList,
+			mapType:  readMap,
+			setType:  readSet,
+			uuidType: readUuid,
+
+			// Date Time
+			dateType:      timeReader,
+			timestampType: timeReader,
+			durationType:  durationReader,
+
+			// Graph
+			traverserType:      traverserReader,
+			vertexType:         vertexReader,
+			edgeType:           edgeReader,
+			propertyType:       propertyReader,
+			vertexPropertyType: vertexPropertyReader,
+			pathType:           pathReader,
+			bulkSetType:        bulkSetReader,
+			tType:              enumReader,
+			directionType:      enumReader,
+			bindingType:        bindingReader,
+		}
 	}
-
-	// Meta Attributes
-	metaAttributes, err := readMap(&buffer, &gs)
-	if err != nil {
-		return msg, err
-	}
-
-	// Result data
-	data, err := gs.ser.read(&buffer)
-	if err != nil {
-		return msg, err
-	}
-
-	msg.responseID = msgUUID
-	msg.responseStatus.code = uint16(statusCode)
-	msg.responseStatus.message = statusMessage
-	msg.responseStatus.attributes = statusAttributes
-	msg.responseResult.meta = metaAttributes
-	msg.responseResult.data = data
-
-	return msg, nil
 }
