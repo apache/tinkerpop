@@ -136,6 +136,7 @@ func listWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 }
 
 // Format: {length}{item_0}...{item_n}
+// Item format: {type_code}{type_info}{value_flag}{value}
 func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	if value == nil {
 		_, err := typeSerializer.writeValue(int32(0), buffer, false)
@@ -164,7 +165,6 @@ func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBin
 		if err != nil {
 			return nil, err
 		}
-
 	}
 	return buffer.Bytes(), nil
 }
@@ -695,11 +695,7 @@ func (serializer *graphBinaryTypeSerializer) write(valueObject interface{}, buff
 		return nil, err
 	}
 	buffer.Write(dataType.getCodeBytes())
-	message, err := writer(valueObject, buffer, serializer)
-	if err != nil {
-		return nil, err
-	}
-	return message, nil
+	return serializer.writeType(valueObject, buffer, writer)
 }
 
 // Writes a value without including type information.
