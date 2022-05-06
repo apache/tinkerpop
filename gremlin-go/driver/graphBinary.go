@@ -818,6 +818,35 @@ func readDataType(data *[]byte, i *int) dataType {
 	return dataType(readByte(data, i).(byte))
 }
 
+func getDefaultValue(dataType dataType) interface{} {
+	switch dataType {
+	case intType, bigIntegerType, longType, shortType, byteType, booleanType, floatType, doubleType:
+		return 0
+	case traverserType, stringType:
+		return ""
+	case uuidType:
+		return uuid.Nil
+	case vertexType:
+		return Vertex{}
+	case edgeType:
+		return Edge{}
+	case propertyType:
+		return Property{}
+	case vertexPropertyType:
+		return VertexProperty{}
+	case pathType:
+		return Path{}
+	case setType:
+		return SimpleSet{}
+	case dateType, timestampType:
+		return time.Time{}
+	case durationType:
+		return time.Duration(0)
+	default:
+		return nil
+	}
+}
+
 // Composite
 func readList(data *[]byte, i *int) interface{} {
 	sz := readInt(data, i).(int32)
@@ -933,7 +962,7 @@ func vertexPropertyReader(data *[]byte, i *int) interface{} {
 	vp.Id = readFullyQualifiedNullable(data, i, true)
 	vp.Label = readUnqualified(data, i, stringType, false).(string)
 	vp.Value = readFullyQualifiedNullable(data, i, true)
-	*i += 2
+	*i += 4
 	return vp
 }
 
@@ -985,8 +1014,10 @@ func bindingReader(data *[]byte, i *int) interface{} {
 }
 
 func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) interface{} {
-	if nullable && readBoolean(data, i).(bool) {
-		return nil
+	// todo
+	// if nullable && readBoolean(data, i).(bool) {
+	if nullable && readByte(data, i).(byte) == valueFlagNull {
+		return getDefaultValue(dataTyp)
 	}
 	return deserializers[dataTyp](data, i)
 }
@@ -994,14 +1025,14 @@ func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) inte
 func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) interface{} {
 	dataTyp := readDataType(data, i)
 	if dataTyp == nullType {
-		if readByte(data, i).(byte) != byte(1) {
+		if readByte(data, i).(byte) != valueFlagNull {
 			// todo: return error or skip
 			return nil
 		}
 		return nil
 	} else if nullable {
-		if readByte(data, i).(byte) != byte(0) {
-			return nil
+		if readByte(data, i).(byte) == valueFlagNull {
+			return getDefaultValue(dataTyp)
 		}
 	}
 	return deserializers[dataTyp](data, i)
