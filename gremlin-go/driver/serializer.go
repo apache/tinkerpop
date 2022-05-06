@@ -48,7 +48,7 @@ var deserializers map[dataType]func(data *[]byte, i *int) interface{}
 var serializers map[dataType]writer
 
 func newGraphBinarySerializer(handler *logHandler) serializer {
-	serializer := graphBinaryTypeSerializer{nullType, nil, nil, nil, handler}
+	serializer := graphBinaryTypeSerializer{handler}
 	return graphBinarySerializer{&serializer}
 }
 

@@ -92,11 +92,7 @@ func (dataType dataType) getCodeBytes() []byte {
 
 // graphBinaryTypeSerializer struct for the different types of serializers.
 type graphBinaryTypeSerializer struct {
-	dataType       dataType
-	writer         writer
-	reader         func(*bytes.Buffer, *graphBinaryTypeSerializer) (interface{}, error)
-	nullFlagReturn interface{}
-	logHandler     *logHandler
+	logHandler *logHandler
 }
 
 func (serializer *graphBinaryTypeSerializer) writeType(value interface{}, buffer *bytes.Buffer, writer writer) ([]byte, error) {
@@ -824,14 +820,11 @@ func readDataType(data *[]byte, i *int) dataType {
 
 // Composite
 func readList(data *[]byte, i *int) interface{} {
-	// listEnd := time.Now()
 	sz := readInt(data, i).(int32)
 	var valList []interface{}
 	for j := int32(0); j < sz; j++ {
 		valList = append(valList, readFullyQualifiedNullable(data, i, true))
 	}
-	// listEnd := time.Now()
-	// println("list: ", mapEnd.Sub(mapStart).Seconds())
 	return valList
 }
 
@@ -1001,6 +994,10 @@ func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) inte
 func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) interface{} {
 	dataTyp := readDataType(data, i)
 	if dataTyp == nullType {
+		if readByte(data, i).(byte) != byte(1) {
+			// todo: return error or skip
+			return nil
+		}
 		return nil
 	} else if nullable {
 		if readByte(data, i).(byte) != byte(0) {
