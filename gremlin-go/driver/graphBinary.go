@@ -931,7 +931,7 @@ func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) interface{} {
 	v.Id = readFullyQualifiedNullable(data, i, true)
 	v.Label = readUnqualified(data, i, stringType, false).(string)
 	if unusedByte {
-		*i++
+		*i += 2
 	}
 	return v
 }
@@ -943,7 +943,7 @@ func edgeReader(data *[]byte, i *int) interface{} {
 	e.Label = readUnqualified(data, i, stringType, false).(string)
 	e.InV = *vertexReaderNullByte(data, i, false).(*Vertex)
 	e.OutV = *vertexReaderNullByte(data, i, false).(*Vertex)
-	*i += 2
+	*i += 4
 	return e
 }
 
@@ -952,7 +952,7 @@ func propertyReader(data *[]byte, i *int) interface{} {
 	p := new(Property)
 	p.Key = readUnqualified(data, i, stringType, false).(string)
 	p.Value = readFullyQualifiedNullable(data, i, true)
-	*i++
+	*i += 2
 	return p
 }
 
