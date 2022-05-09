@@ -181,11 +181,12 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 	var msg response
 	msg.responseID = readUuid(&message, &i).(uuid.UUID)
 	msg.responseStatus.code = uint16(readUint32(&message, &i).(uint32) & 0xFF)
-	if isMessageValid := readBoolean(&message, &i).(bool); isMessageValid {
+	isMessageValid := readByte(&message, &i).(byte)
+	if isMessageValid == 0 {
 		msg.responseStatus.message = readString(&message, &i).(string)
 	}
-	msg.responseStatus.attributes = readMapUnqualified2(&message, &i).(map[string]interface{})
-	msg.responseResult.meta = readMapUnqualified2(&message, &i).(map[string]interface{})
+	msg.responseStatus.attributes = readMapUnqualified(&message, &i).(map[string]interface{})
+	msg.responseResult.meta = readMapUnqualified(&message, &i).(map[string]interface{})
 	msg.responseResult.data = readFullyQualifiedNullable(&message, &i, true)
 	return msg, nil
 }
@@ -195,15 +196,8 @@ func initSerializers() {
 	// todo: lazy init or don't care?
 	if serializers == nil || len(serializers) == 0 {
 		serializers = map[dataType]writer{
-			bytecodeType: bytecodeWriter,
-			stringType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, int32(len(value.(string))))
-				if err != nil {
-					return nil, err
-				}
-				_, err = buffer.WriteString(value.(string))
-				return buffer.Bytes(), err
-			},
+			bytecodeType:   bytecodeWriter,
+			stringType:     stringWriter,
 			bigIntegerType: bigIntWriter,
 			longType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 				switch v := value.(type) {

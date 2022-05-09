@@ -230,6 +230,15 @@ func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *gra
 	return buffer.Bytes(), nil
 }
 
+func stringWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	err := binary.Write(buffer, binary.BigEndian, int32(len(value.(string))))
+	if err != nil {
+		return nil, err
+	}
+	_, err = buffer.WriteString(value.(string))
+	return buffer.Bytes(), err
+}
+
 // Golang stores BigIntegers with big.Int types
 // it contains an unsigned representation of the number and uses a boolean to track +ve and -ve
 // getSignedBytesFromBigInt gives us the signed(two's complement) byte array that represents the unsigned byte array in
@@ -883,7 +892,7 @@ func readMap(data *[]byte, i *int) interface{} {
 	return mapData
 }
 
-func readMapUnqualified2(data *[]byte, i *int) interface{} {
+func readMapUnqualified(data *[]byte, i *int) interface{} {
 	sz := readUint32(data, i).(uint32)
 	var mapData = make(map[string]interface{})
 	for j := uint32(0); j < sz; j++ {
