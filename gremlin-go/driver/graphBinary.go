@@ -250,7 +250,7 @@ func longWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	return buffer.Bytes(), err
 }
 
-func intWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func intWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	switch v := value.(type) {
 	case uint16:
 		value = int32(v)
@@ -259,7 +259,7 @@ func intWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBin
 	return buffer.Bytes(), err
 }
 
-func shortWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func shortWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	err := binary.Write(buffer, binary.BigEndian, value.(int16))
 	return buffer.Bytes(), err
 }

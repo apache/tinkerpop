@@ -23,14 +23,57 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 	"math/big"
+	"reflect"
 	"testing"
 	"time"
 )
 
 func TestGraphBinaryV1(t *testing.T) {
+	t.Run("graphBinaryTypeSerializer tests", func(t *testing.T) {
+		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+		initSerializers()
+		initDeserializers()
 
-	t.Run("test simple types", func(t *testing.T) {
+		t.Run("getType should return correct type for simple type", func(t *testing.T) {
+			res, err := serializer.getType(int32(1))
+			assert.Nil(t, err)
+			assert.Equal(t, intType, res)
+		})
+		t.Run("getType should return correct type for complex type", func(t *testing.T) {
+			res, err := serializer.getType([]byte{1, 2, 3})
+			assert.Nil(t, err)
+			assert.Equal(t, listType, res)
+		})
+		t.Run("getType should return error for missing type", func(t *testing.T) {
+			_, err := serializer.getType(Error)
+			assert.NotNil(t, err)
+		})
+
+		t.Run("getWriter should return correct func for dataType", func(t *testing.T) {
+			writer, err := serializer.getWriter(intType)
+			assert.Nil(t, err)
+			assert.Equal(t, reflect.ValueOf(intWriter).Pointer(), reflect.ValueOf(writer).Pointer())
+		})
+		t.Run("getWriter should return error for missing dataType", func(t *testing.T) {
+			_, err := serializer.getWriter(nullType)
+			assert.NotNil(t, err)
+		})
+
+		t.Run("getSerializerToWrite should return correct func for int", func(t *testing.T) {
+			writer, dataType, err := serializer.getSerializerToWrite(int32(1))
+			assert.Nil(t, err)
+			assert.Equal(t, intType, dataType)
+			assert.Equal(t, reflect.ValueOf(intWriter).Pointer(), reflect.ValueOf(writer).Pointer())
+		})
+		t.Run("getSerializerToWrite should return error for missing dataType", func(t *testing.T) {
+			_, _, err := serializer.getSerializerToWrite(nullType)
+			assert.NotNil(t, err)
+		})
+	})
+
+	t.Run("read-write tests", func(t *testing.T) {
 		initSerializers()
 		initDeserializers()
 
