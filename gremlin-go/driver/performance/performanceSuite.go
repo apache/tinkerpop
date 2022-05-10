@@ -39,29 +39,33 @@ type DriverRemoteConnection = gremlingo.DriverRemoteConnection
 type DriverRemoteConnectionSettings = gremlingo.DriverRemoteConnectionSettings
 
 type performanceResults struct {
-	executeDuration time.Duration
-	executeAllocs   uint64
-	executeBytes    uint64
+	executeDuration   time.Duration
+	executeThroughput int
+	executeAllocs     uint64
+	executeBytes      uint64
 }
 
 type performanceStats struct {
-	executeDurationArr []float64
-	executeAllocsArr   []uint64
-	executeBytesArr    []uint64
+	executeDurationArr   []int64
+	executeThroughputArr []int
+	executeAllocsArr     []uint64
+	executeBytesArr      []uint64
 }
 
 // test suite constants
-const suiteRunCount = 21
+const suiteRunCount = 55
 
-// connection pooling test parameters
-const poolingQueryNum = 50
-
-var poolSize = []int{1, 5, 10, 15}
+var poolSize = []int{2, 4, 8}
+var poolQueryCount = []int{250}
 
 // number of projections to generate each traversal with
-const poolingTraversal = 50
+const poolingTraversal = 10
 const smokeTraversal = 10
 const fullTraversal = 500
+
+const retrieveOne = "retrieve one"
+const retrieveAll = "retrieve all"
+const connectionPooling = "connection pooling"
 
 // placeholder variable to assign result value to
 var retrievedRes interface{}
@@ -100,7 +104,7 @@ func generateProjectTraversal(g *GraphTraversalSource, repeat int) *GraphTravers
 	return traversal
 }
 
-func executeConnectionPooling(testName string, g *GraphTraversalSource) (*performanceResults, error) {
+func executeConnectionPooling(testName string, queryCount int, g *GraphTraversalSource) (*performanceResults, error) {
 	var allResultSets []*ResultSet
 	runtime.GC()
 	runtime.ReadMemStats(&memStats)
@@ -109,7 +113,7 @@ func executeConnectionPooling(testName string, g *GraphTraversalSource) (*perfor
 	// run all at the same time
 	startTime := time.Now()
 	// execute the traversal
-	for i := 0; i < poolingQueryNum; i++ {
+	for i := 0; i < queryCount; i++ {
 		results, err := getTraversal(testName, g).GetResultSet()
 		if err != nil {
 			log.Println(err)
@@ -131,9 +135,10 @@ func executeConnectionPooling(testName string, g *GraphTraversalSource) (*perfor
 	duration := time.Now().Sub(startTime)
 	runtime.ReadMemStats(&memStats)
 	return &performanceResults{
-		executeDuration: duration,
-		executeAllocs:   memStats.Mallocs - startAlloc,
-		executeBytes:    memStats.TotalAlloc - startBytes,
+		executeDuration:   duration,
+		executeThroughput: int(math.Round(float64(queryCount) / duration.Seconds())),
+		executeAllocs:     memStats.Mallocs - startAlloc,
+		executeBytes:      memStats.TotalAlloc - startBytes,
 	}, nil
 }
 
@@ -161,11 +166,6 @@ func executeAndRetrieveOne(t *GraphTraversal) (*performanceResults, error) {
 }
 
 func executeAndRetrieveAll(t *GraphTraversal) (*performanceResults, error) {
-	performResult := &performanceResults{
-		executeDuration: 0,
-		executeAllocs:   0,
-		executeBytes:    0,
-	}
 	runtime.GC()
 	runtime.ReadMemStats(&memStats)
 	execAlloc := memStats.Mallocs
@@ -182,15 +182,16 @@ func executeAndRetrieveAll(t *GraphTraversal) (*performanceResults, error) {
 	}
 	endExecution := time.Now()
 	runtime.ReadMemStats(&memStats)
-	performResult.executeDuration = endExecution.Sub(startExecution)
-	performResult.executeAllocs = memStats.Mallocs - execAlloc
-	performResult.executeBytes = memStats.TotalAlloc - execBytes
-	return performResult, nil
+	return &performanceResults{
+		executeDuration: endExecution.Sub(startExecution),
+		executeAllocs:   memStats.Mallocs - execAlloc,
+		executeBytes:    memStats.TotalAlloc - execBytes,
+	}, nil
 }
 
 func run(g *GraphTraversalSource, runs int, runLevel string, memProfile bool) {
-	if runs < 2 {
-		log.Panic("each test must be run greater than 2 times")
+	if runs < 6 {
+		log.Panic("each test must be run greater than 6 times")
 		return
 	}
 	switch runLevel {
@@ -213,7 +214,7 @@ func run(g *GraphTraversalSource, runs int, runLevel string, memProfile bool) {
 
 func runPerformance(testName string, g *GraphTraversalSource, runs int, memProf bool) {
 	performStats := &performanceStats{
-		executeDurationArr: make([]float64, runs),
+		executeDurationArr: make([]int64, runs),
 		executeAllocsArr:   make([]uint64, runs),
 		executeBytesArr:    make([]uint64, runs),
 	}
@@ -232,11 +233,11 @@ func runPerformance(testName string, g *GraphTraversalSource, runs int, memProf 
 		if err != nil {
 			return
 		}
-		performStats.executeDurationArr[i] = q.executeDuration.Seconds()
+		performStats.executeDurationArr[i] = q.executeDuration.Milliseconds()
 		performStats.executeAllocsArr[i] = q.executeAllocs
 		performStats.executeBytesArr[i] = q.executeBytes
 	}
-	handleMetrics(performStats, "retrieve one", runs, memProf)
+	handleMetrics(performStats, retrieveOne, runs, memProf)
 	for i := 0; i < runs; i++ {
 		var q *performanceResults
 		var traversal = getTraversal(testName, g)
@@ -244,18 +245,19 @@ func runPerformance(testName string, g *GraphTraversalSource, runs int, memProf 
 		if err != nil {
 			return
 		}
-		performStats.executeDurationArr[i] = q.executeDuration.Seconds()
+		performStats.executeDurationArr[i] = q.executeDuration.Milliseconds()
 		performStats.executeAllocsArr[i] = q.executeAllocs
 		performStats.executeBytesArr[i] = q.executeBytes
 	}
-	handleMetrics(performStats, "retrieve all", runs, memProf)
+	handleMetrics(performStats, retrieveAll, runs, memProf)
 }
 
-func runPerformancePooling(testName string, g *GraphTraversalSource, runs int, memProf bool) {
+func runPerformancePooling(testName string, g *GraphTraversalSource, testRun, queryRun int, memProf bool) {
 	performStats := &performanceStats{
-		executeDurationArr: make([]float64, runs),
-		executeAllocsArr:   make([]uint64, runs),
-		executeBytesArr:    make([]uint64, runs),
+		executeDurationArr:   make([]int64, testRun),
+		executeThroughputArr: make([]int, testRun),
+		executeAllocsArr:     make([]uint64, testRun),
+		executeBytesArr:      make([]uint64, testRun),
 	}
 	warmUp, err := g.V().Count().Next()
 	if err != nil {
@@ -265,53 +267,71 @@ func runPerformancePooling(testName string, g *GraphTraversalSource, runs int, m
 		count, _ := warmUp.GetInt64()
 		fmt.Printf("Warming up. Vertex count of current graph: %d \n", count)
 	}
-	for i := 0; i < runs; i++ {
+	for i := 0; i < testRun; i++ {
 		var q *performanceResults
-		q, err = executeConnectionPooling(testName, g)
+		q, err = executeConnectionPooling(testName, queryRun, g)
 		if err != nil {
 			return
 		}
-		performStats.executeDurationArr[i] = q.executeDuration.Seconds()
+		performStats.executeDurationArr[i] = q.executeDuration.Milliseconds()
+		performStats.executeThroughputArr[i] = q.executeThroughput
 		performStats.executeAllocsArr[i] = q.executeAllocs
 		performStats.executeBytesArr[i] = q.executeBytes
 	}
-	handleMetrics(performStats, "connection pooling", runs, memProf)
+	handleMetrics(performStats, connectionPooling, testRun, memProf)
 }
 
 func handleMetrics(stats *performanceStats, testType string, runs int, memProf bool) {
+	fmt.Println("================================================")
 	fmt.Println("Results for", testType)
-	sort.Float64s(stats.executeDurationArr)
-	// treat first and last stat as outliers and remove
-	executeDurationArr := stats.executeDurationArr[:runs-1]
-	var totalTime float64
+	sort.Slice(stats.executeDurationArr, func(i, j int) bool { return stats.executeDurationArr[i] < stats.executeDurationArr[j] })
+	// removing the slowest run as outlier
+	executeDurationArr := stats.executeDurationArr[:runs-5]
+	var totalTime int64
 	for i := range executeDurationArr {
 		totalTime += executeDurationArr[i]
 	}
-	printDuration(executeDurationArr, totalTime, runs-1)
+	printDuration(executeDurationArr, totalTime, runs-5)
+	if testType == connectionPooling {
+		sort.Ints(stats.executeThroughputArr)
+		// removing the lowest throughput (aka slowest) as outlier
+		executeThroughputArr := stats.executeThroughputArr[5:]
+		var totalThroughput int
+		for i := range executeThroughputArr {
+			totalThroughput += executeThroughputArr[i]
+		}
+		printThroughput(executeThroughputArr, totalThroughput, runs-5)
+	}
 
 	if memProf {
 		sort.Slice(stats.executeAllocsArr, func(i, j int) bool { return stats.executeAllocsArr[i] < stats.executeAllocsArr[j] })
-		executeAllocsArr := stats.executeAllocsArr[:runs-1]
+		executeAllocsArr := stats.executeAllocsArr[:runs-5]
 		var totalAlloc uint64
 		for i := range executeAllocsArr {
 			totalAlloc += executeAllocsArr[i]
 		}
-		printAllocs(executeAllocsArr, totalAlloc, runs-1)
+		printAllocs(executeAllocsArr, totalAlloc, runs-5)
 
 		sort.Slice(stats.executeBytesArr, func(i, j int) bool { return stats.executeBytesArr[i] < stats.executeBytesArr[j] })
-		executeBytesArr := stats.executeBytesArr[:runs-1]
+		executeBytesArr := stats.executeBytesArr[:runs-5]
 		var totalBytes uint64
 		for i := range executeBytesArr {
 			totalBytes += executeBytesArr[i]
 		}
-		printBytes(executeBytesArr, totalBytes, runs-1)
+		printBytes(executeBytesArr, totalBytes, runs-5)
 	}
 }
 
-func printDuration(stats []float64, total float64, runs int) {
-	fmt.Printf("\tEXECUTION STATS:\taverage %fs\tmedian %fs\tp90 %fs \tp95 %fs\tmax %fs\tmin %fs\n",
-		total/float64(runs), stats[int(math.Ceil(float64(runs/2)))],
+func printDuration(stats []int64, total int64, runs int) {
+	fmt.Printf("\tEXECUTION STATS:\taverage %dms \tmedian %dms \tp90 %dms \tp95 %dms \tmax %dms \tmin %dms\n",
+		int64(math.Round(float64(total)/float64(runs))), stats[int(math.Ceil(float64(runs/2)))],
 		stats[int(math.Ceil(float64(runs*90/100)))-1], stats[int(math.Ceil(float64(runs*95/100)))-1], stats[runs-1], stats[0])
+}
+
+func printThroughput(stats []int, total int, runs int) {
+	fmt.Printf("\tTHROUGHPUT STATS:\taverage %d query/s\tmedian %d query/s\tp10 %d query/s\tp5 %d query/s\tmax %d query/s\tmin %d query/s\n",
+		int(math.Round(float64(total)/float64(runs))), stats[int(math.Ceil(float64(runs/2)))],
+		stats[int(math.Ceil(float64(runs*10/100)))-1], stats[int(math.Ceil(float64(runs*5/100)))-1], stats[runs-1], stats[0])
 }
 
 func printAllocs(stats []uint64, total uint64, runs int) {
@@ -341,14 +361,14 @@ const Port = 45940
 const GremlinWarning = gremlingo.Warning
 const gratefulGraphAlias = "ggrateful"
 const threshold = 4 // same as default
-const writeBufferSize = 314572800
-const readBufferSize = 314572800
+const bufferSize = 314572800
+const poolingBufferSize = 26214400
 
 //
 // createConnection: Creates a connection to a remote endpoint and returns a
 // GraphTraversalSource that can be used to submit Gremlin queries.
 //
-func createConnection(host string, port, poolSize int) (*GraphTraversalSource, *DriverRemoteConnection, error) {
+func createConnection(host string, port, poolSize, buffersSize int) (*GraphTraversalSource, *DriverRemoteConnection, error) {
 	var g *GraphTraversalSource
 	var drc *DriverRemoteConnection
 	var err error
@@ -360,10 +380,10 @@ func createConnection(host string, port, poolSize int) (*GraphTraversalSource, *
 	drc, err = gremlingo.NewDriverRemoteConnection(endpoint, func(settings *DriverRemoteConnectionSettings) {
 		settings.LogVerbosity = GremlinWarning
 		settings.TraversalSource = gratefulGraphAlias
-		settings.MaximumConcurrentConnections = poolSize
 		settings.NewConnectionThreshold = threshold
-		settings.WriteBufferSize = writeBufferSize
-		settings.ReadBufferSize = readBufferSize
+		settings.MaximumConcurrentConnections = poolSize
+		settings.WriteBufferSize = buffersSize
+		settings.ReadBufferSize = buffersSize
 	})
 
 	if err != nil {
@@ -381,13 +401,16 @@ Run Gremlin-Go Performance Tests.
 The performance test is expected to run on a Gremlin Server loaded with the grateful graph. 
 
 A projection query using ValueMap is executed for each test, g.V().Project(1).By(gremlingo.T__.ValueMap(true)), with 
-the number of projection scaled up depending on test suite. Smoke tests runs the projection query with 10 projections, 
-and full test runs the smoke test plus the query with 500 projections. Connection pooling test runs the query with 50 
-projections, executed 50 times per run with a default set of connection pool sizes (1, 5, 10, 15). 
+the number of projection scaled up depending on test suite run level. Smoke tests runs the projection query with 10 
+projections, and full test runs the smoke test plus the query with 500 projections. Connection pooling test runs the 
+query with 10 projections, executed 250 times per run with a default set of connection pool sizes (2, 4, 8). 
 
-Each test is run 21 times by default, with the slowest run removed, and execution time is taken for retrieving a single 
-result with Next(), and retrieving all results with ToList(). Metrics include average, median, P90, P50, min, and max. 
-One can optionally enable memory profile metrics, which outputs the allocation and byte usage data. 
+Each test is run 55 times by default, with the slowest 5 runs removed, and execution time is taken for retrieving a 
+single result with Next(), and retrieving all results with ToList(). 
+
+Metrics for single query execution include average, median, P90, P50, max, and min. One can optionally enable memory 
+profile metrics, which outputs the allocation and byte usage data. Connection pooling test includes throughput metrics, 
+which are average, median, P10, P5, max, and min query/s.
 
 Options:
 `
@@ -397,9 +420,9 @@ Options:
 // main: Program entry point. Create the connection, run performance tests, shutdown.
 //
 func main() {
-	hostPtr := flag.String("host", Host, "Server host, the default is locolhost.")
+	hostPtr := flag.String("host", Host, "Server host, the default is localhost.")
 	portPtr := flag.Int("port", Port, "Server port, the default is 45940.")
-	runCount := flag.Int("runCount", suiteRunCount, "The number of times to run each test, the default is 21, minimum is 2.")
+	runCount := flag.Int("runCount", suiteRunCount, "The number of times to run each test, the default is 55, minimum is 6.")
 	memProfile := flag.Bool("memProfile", false, "Enables memory profiling.")
 	runLevel := flag.String("runLevel", "smoke", "The test suite to run: smoke, full, or pooling, the default is smoke")
 
@@ -409,26 +432,30 @@ func main() {
 	}
 
 	flag.Parse()
-	fmt.Println("===RUNNING PERFORMANCE TEST SUITE ON THE GRATEFUL GRAPH===")
+	fmt.Println("===== RUNNING PERFORMANCE TEST SUITE ON THE GRATEFUL GRAPH =====")
 	if *runLevel == "pooling" {
 		for _, size := range poolSize {
+
 			// Create a graph traversal source object, after which we are ready to submit queries.
-			g, drc, err := createConnection(*hostPtr, *portPtr, size)
+			g, drc, err := createConnection(*hostPtr, *portPtr, size, poolingBufferSize)
 
 			if err != nil {
 				log.Println("Error creating the connection - program terminating", err)
 				return
 			}
 
-			fmt.Printf("Running connection pooling test with %d pools\n", size)
-			runPerformancePooling("poolingTraversal", g, *runCount, *memProfile)
-			fmt.Printf("Connection pooling test completed with %d queries in %d pools with %d run.\n",
-				poolingQueryNum, size, *runCount)
+			fmt.Printf("===== Running connection pooling test with %d pools =====\n", size)
+			for _, queryCount := range poolQueryCount {
+				runPerformancePooling("poolingTraversal", g, *runCount, queryCount, *memProfile)
+				fmt.Printf("Connection pooling test completed running %d queries in %d pools with %d run.\n",
+					queryCount, size, *runCount)
+				fmt.Println("================================================")
+			}
 			drc.Close()
 		}
 	} else {
 		// Create a graph traversal source object, after which we are ready to submit queries.
-		g, drc, err := createConnection(*hostPtr, *portPtr, 2)
+		g, drc, err := createConnection(*hostPtr, *portPtr, 2, bufferSize)
 
 		if err != nil {
 			log.Println("Error creating the connection - program terminating", err)
@@ -436,6 +463,7 @@ func main() {
 		}
 
 		run(g, *runCount, *runLevel, *memProfile)
+		fmt.Println("================================================")
 
 		drc.Close()
 	}
