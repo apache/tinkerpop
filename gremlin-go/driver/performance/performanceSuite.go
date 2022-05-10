@@ -337,7 +337,7 @@ func getTraversal(testName string, g *GraphTraversalSource) *GraphTraversal {
 // connection setting constants
 
 const Host = "localhost"
-const Port = 8182
+const Port = 45940
 const GremlinWarning = gremlingo.Warning
 const gratefulGraphAlias = "ggrateful"
 const threshold = 4 // same as default
