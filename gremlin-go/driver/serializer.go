@@ -199,28 +199,9 @@ func initSerializers() {
 			bytecodeType:   bytecodeWriter,
 			stringType:     stringWriter,
 			bigIntegerType: bigIntWriter,
-			longType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				switch v := value.(type) {
-				case int:
-					value = int64(v)
-				case uint32:
-					value = int64(v)
-				}
-				err := binary.Write(buffer, binary.BigEndian, value)
-				return buffer.Bytes(), err
-			},
-			intType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				switch v := value.(type) {
-				case uint16:
-					value = int32(v)
-				}
-				err := binary.Write(buffer, binary.BigEndian, value.(int32))
-				return buffer.Bytes(), err
-			},
-			shortType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, value.(int16))
-				return buffer.Bytes(), err
-			},
+			longType:       longWriter,
+			intType:        intWriter,
+			shortType:      shortWriter,
 			byteType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 				err := binary.Write(buffer, binary.BigEndian, value.(uint8))
 				return buffer.Bytes(), err

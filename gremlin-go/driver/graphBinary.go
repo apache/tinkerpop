@@ -239,6 +239,31 @@ func stringWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graph
 	return buffer.Bytes(), err
 }
 
+func longWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	switch v := value.(type) {
+	case int:
+		value = int64(v)
+	case uint32:
+		value = int64(v)
+	}
+	err := binary.Write(buffer, binary.BigEndian, value)
+	return buffer.Bytes(), err
+}
+
+func intWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	switch v := value.(type) {
+	case uint16:
+		value = int32(v)
+	}
+	err := binary.Write(buffer, binary.BigEndian, value.(int32))
+	return buffer.Bytes(), err
+}
+
+func shortWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	err := binary.Write(buffer, binary.BigEndian, value.(int16))
+	return buffer.Bytes(), err
+}
+
 // Golang stores BigIntegers with big.Int types
 // it contains an unsigned representation of the number and uses a boolean to track +ve and -ve
 // getSignedBytesFromBigInt gives us the signed(two's complement) byte array that represents the unsigned byte array in
@@ -814,13 +839,8 @@ func readString(data *[]byte, i *int) interface{} {
 	if sz == 0 {
 		return ""
 	}
-
-	tmp := make([]byte, sz)
-	for j := 0; j < sz; j++ {
-		tmp[j] = (*data)[j+*i]
-	}
 	*i += sz
-	return string(tmp)
+	return string((*data)[*i-sz : *i])
 }
 
 func readDataType(data *[]byte, i *int) dataType {
@@ -1023,8 +1043,6 @@ func bindingReader(data *[]byte, i *int) interface{} {
 }
 
 func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) interface{} {
-	// todo
-	// if nullable && readBoolean(data, i).(bool) {
 	if nullable && readByte(data, i).(byte) == valueFlagNull {
 		return getDefaultValue(dataTyp)
 	}
