@@ -21,14 +21,18 @@ package gremlingo
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
+	"time"
 )
 
 func TestGraphBinaryV1(t *testing.T) {
 
 	t.Run("test simple types", func(t *testing.T) {
+		initSerializers()
+		initDeserializers()
 
 		t.Run("read-write string", func(t *testing.T) {
 			pos := 0
@@ -73,6 +77,42 @@ func TestGraphBinaryV1(t *testing.T) {
 			buf, err := bigIntWriter(source, &buffer, nil)
 			assert.Nil(t, err)
 			res := readBigInt(&buf, &pos)
+			assert.Equal(t, source, res)
+		})
+		t.Run("read-write list", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := []interface{}{int32(111), "str"}
+			buf, err := listWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res := readList(&buf, &pos)
+			assert.Equal(t, source, res)
+		})
+		t.Run("read-write set", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := NewSimpleSet(int32(111), "str")
+			buf, err := setWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res := readSet(&buf, &pos)
+			assert.Equal(t, source, res)
+		})
+		t.Run("read-write map", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := map[interface{}]interface{}{1: "s1", "s2": 2, nil: nil}
+			buf, err := mapWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res := readMap(&buf, &pos)
+			assert.Equal(t, fmt.Sprintf("%v", source), fmt.Sprintf("%v", res))
+		})
+		t.Run("read-write time", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
+			buf, err := timeWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res := timeReader(&buf, &pos)
 			assert.Equal(t, source, res)
 		})
 	})
