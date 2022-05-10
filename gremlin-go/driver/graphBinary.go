@@ -606,7 +606,6 @@ func bindingWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *grap
 }
 
 func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType, error) {
-	// todo: consider to use map
 	switch val.(type) {
 	case *bytecode, bytecode, *GraphTraversal:
 		return bytecodeType, nil
@@ -685,7 +684,6 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 			return listType, nil
 		default:
 			serializer.logHandler.logf(Error, serializeDataTypeError, reflect.TypeOf(val).Name())
-			// todo: fix type
 			return intType, newError(err0407GetSerializerToWriteUnknownTypeError, reflect.TypeOf(val).Name())
 		}
 	}
@@ -695,6 +693,7 @@ func (serializer *graphBinaryTypeSerializer) getWriter(dataType dataType) (write
 	if writer, ok := serializers[dataType]; ok {
 		return writer, nil
 	}
+	serializer.logHandler.logf(Error, deserializeDataTypeError, int32(dataType))
 	return nil, newError(err0407GetSerializerToWriteUnknownTypeError, dataType)
 }
 
@@ -702,11 +701,11 @@ func (serializer *graphBinaryTypeSerializer) getWriter(dataType dataType) (write
 func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{}) (writer, dataType, error) {
 	dataType, err := serializer.getType(val)
 	if err != nil {
-		return nil, intType, err // todo: fake dataType
+		return nil, intType, err
 	}
 	writer, err := serializer.getWriter(dataType)
 	if err != nil {
-		return nil, intType, err // todo: fake dataType
+		return nil, intType, err
 	}
 
 	return writer, dataType, nil
@@ -770,40 +769,50 @@ func readTemp(data *[]byte, i *int, len int) *[]byte {
 }
 
 // Primitive
-func readBoolean(data *[]byte, i *int) interface{} {
-	return readByte(data, i) != 0
+func readBoolean(data *[]byte, i *int) (interface{}, error) {
+	b, _ := readByte(data, i)
+	return b != 0, nil
 }
 
-func readByte(data *[]byte, i *int) interface{} {
+func readByteSafe(data *[]byte, i *int) byte {
 	*i++
 	return (*data)[*i-1]
 }
-
-func readShort(data *[]byte, i *int) interface{} {
-	return int16(binary.BigEndian.Uint16(*readTemp(data, i, 2)))
+func readByte(data *[]byte, i *int) (interface{}, error) {
+	return readByteSafe(data, i), nil
 }
 
-func readInt(data *[]byte, i *int) interface{} {
+func readShort(data *[]byte, i *int) (interface{}, error) {
+	return int16(binary.BigEndian.Uint16(*readTemp(data, i, 2))), nil
+}
+
+func readIntSafe(data *[]byte, i *int) int32 {
 	return int32(binary.BigEndian.Uint32(*readTemp(data, i, 4)))
 }
-
-func readLong(data *[]byte, i *int) interface{} {
-	return int64(binary.BigEndian.Uint64(*readTemp(data, i, 8)))
+func readInt(data *[]byte, i *int) (interface{}, error) {
+	return readIntSafe(data, i), nil
 }
 
-func readBigInt(data *[]byte, i *int) interface{} {
-	sz := readInt(data, i).(int32)
+func readLongSafe(data *[]byte, i *int) int64 {
+	return int64(binary.BigEndian.Uint64(*readTemp(data, i, 8)))
+}
+func readLong(data *[]byte, i *int) (interface{}, error) {
+	return readLongSafe(data, i), nil
+}
+
+func readBigInt(data *[]byte, i *int) (interface{}, error) {
+	sz := readIntSafe(data, i)
 	b := readTemp(data, i, int(sz))
 
 	var newBigInt = big.NewInt(0).SetBytes(*b)
 	var one = big.NewInt(1)
 	if len(*b) == 0 {
-		return newBigInt
+		return newBigInt, nil
 	}
 	// If the first bit in the first element of the byte array is a 1, we need to interpret the byte array as a two's complement representation
 	if (*b)[0]&0x80 == 0x00 {
 		newBigInt.SetBytes(*b)
-		return newBigInt
+		return newBigInt, nil
 	}
 	// Undo two's complement to byte array and set negative boolean to true
 	length := uint((len(*b)*8)/8+1) * 8
@@ -819,32 +828,35 @@ func readBigInt(data *[]byte, i *int) interface{} {
 	newBigInt = big.NewInt(0)
 	newBigInt.SetBytes(b2)
 	newBigInt.Neg(newBigInt)
-	return newBigInt
+	return newBigInt, nil
 }
 
-func readUint32(data *[]byte, i *int) interface{} {
+func readUint32Safe(data *[]byte, i *int) uint32 {
 	return binary.BigEndian.Uint32(*readTemp(data, i, 4))
 }
-
-func readFloat(data *[]byte, i *int) interface{} {
-	return math.Float32frombits(binary.BigEndian.Uint32(*readTemp(data, i, 4)))
+func readUint32(data *[]byte, i *int) (interface{}, error) {
+	return readUint32Safe(data, i), nil
 }
 
-func readDouble(data *[]byte, i *int) interface{} {
-	return math.Float64frombits(binary.BigEndian.Uint64(*readTemp(data, i, 8)))
+func readFloat(data *[]byte, i *int) (interface{}, error) {
+	return math.Float32frombits(binary.BigEndian.Uint32(*readTemp(data, i, 4))), nil
 }
 
-func readString(data *[]byte, i *int) interface{} {
-	sz := int(readUint32(data, i).(uint32))
+func readDouble(data *[]byte, i *int) (interface{}, error) {
+	return math.Float64frombits(binary.BigEndian.Uint64(*readTemp(data, i, 8))), nil
+}
+
+func readString(data *[]byte, i *int) (interface{}, error) {
+	sz := int(readUint32Safe(data, i))
 	if sz == 0 {
-		return ""
+		return "", nil
 	}
 	*i += sz
-	return string((*data)[*i-sz : *i])
+	return string((*data)[*i-sz : *i]), nil
 }
 
 func readDataType(data *[]byte, i *int) dataType {
-	return dataType(readByte(data, i).(byte))
+	return dataType(readByteSafe(data, i))
 }
 
 func getDefaultValue(dataType dataType) interface{} {
@@ -877,22 +889,31 @@ func getDefaultValue(dataType dataType) interface{} {
 }
 
 // Composite
-func readList(data *[]byte, i *int) interface{} {
-	sz := readInt(data, i).(int32)
+func readList(data *[]byte, i *int) (interface{}, error) {
+	sz := readIntSafe(data, i)
 	var valList []interface{}
 	for j := int32(0); j < sz; j++ {
-		valList = append(valList, readFullyQualifiedNullable(data, i, true))
+		val, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
+		valList = append(valList, val)
 	}
-	return valList
+	return valList, nil
 }
 
-func readMap(data *[]byte, i *int) interface{} {
-	// mapStart := time.Now()
-	sz := readUint32(data, i).(uint32)
+func readMap(data *[]byte, i *int) (interface{}, error) {
+	sz := readUint32Safe(data, i)
 	var mapData = make(map[interface{}]interface{})
 	for j := uint32(0); j < sz; j++ {
-		k := readFullyQualifiedNullable(data, i, true)
-		v := readFullyQualifiedNullable(data, i, true)
+		k, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
+		v, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
 		if k == nil {
 			mapData[nil] = v
 		} else {
@@ -909,158 +930,241 @@ func readMap(data *[]byte, i *int) interface{} {
 			}
 		}
 	}
-	return mapData
+	return mapData, nil
 }
 
-func readMapUnqualified(data *[]byte, i *int) interface{} {
-	sz := readUint32(data, i).(uint32)
+func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
+	sz := readUint32Safe(data, i)
 	var mapData = make(map[string]interface{})
 	for j := uint32(0); j < sz; j++ {
 		keyDataType := readDataType(data, i)
 		if keyDataType != stringType {
-			return nil // , newError(err0703ReadMapNonStringKeyError)
+			return nil, newError(err0703ReadMapNonStringKeyError)
 		}
 
 		// Skip nullable, key must be present
 		*i++
 
-		k := readString(data, i).(string)
-		mapData[k] = readFullyQualifiedNullable(data, i, true)
+		k, err := readString(data, i)
+		if err != nil {
+			return nil, err
+		}
+		mapData[k.(string)], err = readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return mapData //, nil
+	return mapData, nil
 }
 
-func readSet(data *[]byte, i *int) interface{} {
-	return NewSimpleSet(readList(data, i).([]interface{})...)
+func readSet(data *[]byte, i *int) (interface{}, error) {
+	list, err := readList(data, i)
+	if err != nil {
+		return nil, err
+	}
+	return NewSimpleSet(list.([]interface{})...), nil
 }
 
-func readUuid(data *[]byte, i *int) interface{} {
+func readUuid(data *[]byte, i *int) (interface{}, error) {
 	id, _ := uuid.FromBytes(*readTemp(data, i, 16))
-	return id
+	return id, nil
 }
 
-func timeReader(data *[]byte, i *int) interface{} {
-	return time.UnixMilli(readLong(data, i).(int64))
+func timeReader(data *[]byte, i *int) (interface{}, error) {
+	return time.UnixMilli(readLongSafe(data, i)), nil
 }
 
-func durationReader(data *[]byte, i *int) interface{} {
-	return time.Duration(readLong(data, i).(int64)*int64(time.Second) + int64(readInt(data, i).(int32)))
+func durationReader(data *[]byte, i *int) (interface{}, error) {
+	return time.Duration(readLongSafe(data, i)*int64(time.Second) + int64(readIntSafe(data, i))), nil
 }
 
 // Graph
 
 // {fully qualified id}{unqualified label}
-func vertexReader(data *[]byte, i *int) interface{} {
+func vertexReader(data *[]byte, i *int) (interface{}, error) {
 	return vertexReaderNullByte(data, i, true)
 }
 
 // {fully qualified id}{unqualified label}{[unused null byte]}
-func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) interface{} {
+func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, error) {
+	var err error
 	v := new(Vertex)
-	v.Id = readFullyQualifiedNullable(data, i, true)
-	v.Label = readUnqualified(data, i, stringType, false).(string)
+	v.Id, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+	label, err := readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
+	}
+	v.Label = label.(string)
 	if unusedByte {
 		*i += 2
 	}
-	return v
+	return v, nil
 }
 
 // {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{unused null byte}
-func edgeReader(data *[]byte, i *int) interface{} {
+func edgeReader(data *[]byte, i *int) (interface{}, error) {
+	var err error
 	e := new(Edge)
-	e.Id = readFullyQualifiedNullable(data, i, true)
-	e.Label = readUnqualified(data, i, stringType, false).(string)
-	e.InV = *vertexReaderNullByte(data, i, false).(*Vertex)
-	e.OutV = *vertexReaderNullByte(data, i, false).(*Vertex)
+	e.Id, err = readFullyQualifiedNullable(data, i, true)
+	label, err := readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
+	}
+	e.Label = label.(string)
+	v, err := vertexReaderNullByte(data, i, false)
+	if err != nil {
+		return nil, err
+	}
+	e.InV = *v.(*Vertex)
+	v, err = vertexReaderNullByte(data, i, false)
+	if err != nil {
+		return nil, err
+	}
+	e.OutV = *v.(*Vertex)
 	*i += 4
-	return e
+	return e, nil
 }
 
 // {unqualified key}{fully qualified value}{null byte}
-func propertyReader(data *[]byte, i *int) interface{} {
+func propertyReader(data *[]byte, i *int) (interface{}, error) {
 	p := new(Property)
-	p.Key = readUnqualified(data, i, stringType, false).(string)
-	p.Value = readFullyQualifiedNullable(data, i, true)
+	key, err := readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
+	}
+	p.Key = key.(string)
+	p.Value, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	*i += 2
-	return p
+	return p, nil
 }
 
 // {fully qualified id}{unqualified label}{fully qualified value}{null byte}{null byte}
-func vertexPropertyReader(data *[]byte, i *int) interface{} {
+func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
+	var err error
 	vp := new(VertexProperty)
-	vp.Id = readFullyQualifiedNullable(data, i, true)
-	vp.Label = readUnqualified(data, i, stringType, false).(string)
-	vp.Value = readFullyQualifiedNullable(data, i, true)
+	vp.Id, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+	label, err := readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
+	}
+	vp.Label = label.(string)
+	vp.Value, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+
 	*i += 4
-	return vp
+	return vp, nil
 }
 
 // {list of set of strings}{list of fully qualified objects}
-func pathReader(data *[]byte, i *int) interface{} {
+func pathReader(data *[]byte, i *int) (interface{}, error) {
 	path := new(Path)
-	newLabels := readFullyQualifiedNullable(data, i, true)
+	newLabels, err := readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	for _, param := range newLabels.([]interface{}) {
 		path.Labels = append(path.Labels, param.(*SimpleSet))
 	}
-	path.Objects = readFullyQualifiedNullable(data, i, true).([]interface{})
-	return path
+	objects, err := readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+	path.Objects = objects.([]interface{})
+	return path, err
 }
 
 // {bulk int}{fully qualified value}
-func traverserReader(data *[]byte, i *int) interface{} {
+func traverserReader(data *[]byte, i *int) (interface{}, error) {
+	var err error
 	traverser := new(Traverser)
-	traverser.bulk = readLong(data, i).(int64)
-	traverser.value = readFullyQualifiedNullable(data, i, true)
-	return traverser
+	traverser.bulk = readLongSafe(data, i)
+	traverser.value, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+	return traverser, nil
 }
 
 // {int32 length}{fully qualified item_0}{int64 repetition_0}...{fully qualified item_n}{int64 repetition_n}
-func bulkSetReader(data *[]byte, i *int) interface{} {
-	sz := int(readInt(data, i).(int32))
+func bulkSetReader(data *[]byte, i *int) (interface{}, error) {
+	sz := int(readIntSafe(data, i))
 	var valList []interface{}
 	for j := 0; j < sz; j++ {
-		val := readFullyQualifiedNullable(data, i, true)
-		rep := readLong(data, i).(int64)
+		val, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
+		rep := readLongSafe(data, i)
 		for k := 0; k < int(rep); k++ {
 			valList = append(valList, val)
 		}
 	}
-	return valList
+	return valList, nil
 }
 
 // {type code (always string so ignore)}{nil code (always false so ignore)}{int32 size}{string enum}
-func enumReader(data *[]byte, i *int) interface{} {
-	*i += 2
+func enumReader(data *[]byte, i *int) (interface{}, error) {
+	typeCode := readDataType(data, i)
+	if typeCode != stringType {
+		return nil, newError(err0406EnumReaderInvalidTypeError)
+	}
+	*i++
 	return readString(data, i)
 }
 
 // {unqualified key}{fully qualified value}
-func bindingReader(data *[]byte, i *int) interface{} {
+func bindingReader(data *[]byte, i *int) (interface{}, error) {
 	b := new(Binding)
-	b.Key = readUnqualified(data, i, stringType, false).(string)
-	b.Value = readFullyQualifiedNullable(data, i, true)
-	return b
-}
-
-func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) interface{} {
-	if nullable && readByte(data, i).(byte) == valueFlagNull {
-		return getDefaultValue(dataTyp)
+	val, err := readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
 	}
-	return deserializers[dataTyp](data, i)
+	b.Key = val.(string)
+
+	b.Value, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
-func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) interface{} {
+func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) (interface{}, error) {
+	if nullable && readByteSafe(data, i) == valueFlagNull {
+		return getDefaultValue(dataTyp), nil
+	}
+	deserializer, ok := deserializers[dataTyp]
+	if !ok {
+		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dataTyp)
+	}
+	return deserializer(data, i)
+}
+
+func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{}, error) {
 	dataTyp := readDataType(data, i)
 	if dataTyp == nullType {
-		if readByte(data, i).(byte) != valueFlagNull {
-			// todo: return error or skip
-			return nil
+		if readByteSafe(data, i) != valueFlagNull {
+			return nil, newError(err0404ReadNullTypeError)
 		}
-		return nil
+		return nil, nil
 	} else if nullable {
-		if readByte(data, i).(byte) == valueFlagNull {
-			return getDefaultValue(dataTyp)
+		if readByteSafe(data, i) == valueFlagNull {
+			return getDefaultValue(dataTyp), nil
 		}
 	}
-	return deserializers[dataTyp](data, i)
+	deserializer, ok := deserializers[dataTyp]
+	if !ok {
+		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dataTyp)
+	}
+	return deserializer(data, i)
 }

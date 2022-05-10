@@ -83,7 +83,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			str := "test string"
 			buf, err := stringWriter(str, &buffer, nil)
 			assert.Nil(t, err)
-			res := readString(&buf, &pos)
+			res, err := readString(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, str, res)
 		})
 		t.Run("read-write int", func(t *testing.T) {
@@ -92,7 +93,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := int32(123)
 			buf, err := intWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readInt(&buf, &pos)
+			res, err := readInt(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write short", func(t *testing.T) {
@@ -101,7 +103,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := int16(123)
 			buf, err := shortWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readShort(&buf, &pos)
+			res, err := readShort(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write long", func(t *testing.T) {
@@ -110,7 +113,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := 123
 			buf, err := longWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readLong(&buf, &pos)
+			res, err := readLong(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, int64(source), res)
 		})
 		t.Run("read-write bigInt", func(t *testing.T) {
@@ -119,7 +123,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := big.NewInt(123)
 			buf, err := bigIntWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readBigInt(&buf, &pos)
+			res, err := readBigInt(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write list", func(t *testing.T) {
@@ -128,7 +133,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := []interface{}{int32(111), "str"}
 			buf, err := listWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readList(&buf, &pos)
+			res, err := readList(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write set", func(t *testing.T) {
@@ -137,7 +143,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := NewSimpleSet(int32(111), "str")
 			buf, err := setWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readSet(&buf, &pos)
+			res, err := readSet(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write map", func(t *testing.T) {
@@ -146,7 +153,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := map[interface{}]interface{}{1: "s1", "s2": 2, nil: nil}
 			buf, err := mapWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := readMap(&buf, &pos)
+			res, err := readMap(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, fmt.Sprintf("%v", source), fmt.Sprintf("%v", res))
 		})
 		t.Run("read-write time", func(t *testing.T) {
@@ -155,8 +163,19 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
 			buf, err := timeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res := timeReader(&buf, &pos)
+			res, err := timeReader(&buf, &pos)
+			assert.Nil(t, err)
 			assert.Equal(t, source, res)
+		})
+	})
+
+	t.Run("error handle tests", func(t *testing.T) {
+		t.Run("test map key not string failure", func(t *testing.T) {
+			i := 0
+			buff := []byte{0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01}
+			m, err := readMapUnqualified(&buff, &i)
+			assert.Nil(t, m)
+			assert.Equal(t, newError(err0703ReadMapNonStringKeyError), err)
 		})
 	})
 }

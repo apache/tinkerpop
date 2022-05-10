@@ -43,8 +43,9 @@ type graphBinarySerializer struct {
 }
 
 type writer func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
+type reader func(data *[]byte, i *int) (interface{}, error)
 
-var deserializers map[dataType]func(data *[]byte, i *int) interface{}
+var deserializers map[dataType]reader
 var serializers map[dataType]writer
 
 func newGraphBinarySerializer(handler *logHandler) serializer {
@@ -174,20 +175,45 @@ func uuidToBigInt(requestID uuid.UUID) big.Int {
 
 // deserializeMessage deserializes a response message.
 func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, error) {
+	var msg response
+
+	if message == nil || len(message) == 0 {
+		gs.ser.logHandler.log(Error, nullInput)
+		return msg, newError(err0405ReadValueInvalidNullInputError)
+	}
+
 	initDeserializers()
 
 	// Skip version and nullable byte.
 	i := 2
-	var msg response
-	msg.responseID = readUuid(&message, &i).(uuid.UUID)
-	msg.responseStatus.code = uint16(readUint32(&message, &i).(uint32) & 0xFF)
-	isMessageValid := readByte(&message, &i).(byte)
-	if isMessageValid == 0 {
-		msg.responseStatus.message = readString(&message, &i).(string)
+	id, err := readUuid(&message, &i)
+	if err != nil {
+		return msg, err
 	}
-	msg.responseStatus.attributes = readMapUnqualified(&message, &i).(map[string]interface{})
-	msg.responseResult.meta = readMapUnqualified(&message, &i).(map[string]interface{})
-	msg.responseResult.data = readFullyQualifiedNullable(&message, &i, true)
+	msg.responseID = id.(uuid.UUID)
+	msg.responseStatus.code = uint16(readUint32Safe(&message, &i) & 0xFF)
+	isMessageValid := readByteSafe(&message, &i)
+	if isMessageValid == 0 {
+		message, err := readString(&message, &i)
+		if err != nil {
+			return msg, err
+		}
+		msg.responseStatus.message = message.(string)
+	}
+	attr, err := readMapUnqualified(&message, &i)
+	if err != nil {
+		return msg, err
+	}
+	msg.responseStatus.attributes = attr.(map[string]interface{})
+	meta, err := readMapUnqualified(&message, &i)
+	if err != nil {
+		return msg, err
+	}
+	msg.responseResult.meta = meta.(map[string]interface{})
+	msg.responseResult.data, err = readFullyQualifiedNullable(&message, &i, true)
+	if err != nil {
+		return msg, err
+	}
 	return msg, nil
 }
 
@@ -254,7 +280,7 @@ func initSerializers() {
 func initDeserializers() {
 	// todo: lock or don't care?
 	if deserializers == nil || len(deserializers) == 0 {
-		deserializers = map[dataType]func(data *[]byte, i *int) interface{}{
+		deserializers = map[dataType]reader{
 			// Primitive
 			booleanType:    readBoolean,
 			byteType:       readByte,
