@@ -139,8 +139,8 @@ Note: The exact import name as well as the module prefix for `NewDriverRemoteCon
 ## Aliases
 To make the code more readable and close to the Gremlin query language), you can use aliases
 ```go
-    var __ = gremlingo.T__
-    var gt = gremlingo.P.Gt
+	var __ = gremlingo.T__
+	var gt = gremlingo.P.Gt
 	var desc = gremlingo.Desc
 
 	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
