@@ -146,7 +146,7 @@ To make the code more readable and close to the Gremlin query language), you can
 	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
 ```
 
-### List of useful aliales
+### List of useful aliases
 ```go
 	// common
 	var __ = gremlingo.T__
