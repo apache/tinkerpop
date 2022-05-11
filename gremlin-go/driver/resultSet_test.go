@@ -61,13 +61,13 @@ func TestChannelResultSet(t *testing.T) {
 		AddResults(channelResultSet, 10)
 		idx := 0
 		for i := 0; i < 10; i++ {
-			result, err := channelResultSet.one()
+			result, err := channelResultSet.One()
 			assert.Nil(t, err)
 			assert.Equal(t, result.GetString(), fmt.Sprintf("%v", idx))
 			idx++
 		}
 		go closeAfterTime(500, channelResultSet)
-		res, err := channelResultSet.one()
+		res, err := channelResultSet.One()
 		assert.Nil(t, err)
 		assert.Nil(t, res)
 	})
@@ -77,13 +77,13 @@ func TestChannelResultSet(t *testing.T) {
 		go AddResultsPause(channelResultSet, 10, 500)
 		idx := 0
 		for i := 0; i < 10; i++ {
-			result, err := channelResultSet.one()
+			result, err := channelResultSet.One()
 			assert.Nil(t, err)
 			assert.Equal(t, result.GetString(), fmt.Sprintf("%v", idx))
 			idx++
 		}
 		go closeAfterTime(500, channelResultSet)
-		result, err := channelResultSet.one()
+		result, err := channelResultSet.One()
 		assert.Nil(t, err)
 		assert.Nil(t, result)
 	})
@@ -135,7 +135,7 @@ func TestChannelResultSet(t *testing.T) {
 		go addAfterTime(500, channelResultSet)
 		empty := channelResultSet.IsEmpty()
 		assert.False(t, empty)
-		channelResultSet.one()
+		channelResultSet.One()
 		go closeAfterTime(500, channelResultSet)
 		empty = channelResultSet.IsEmpty()
 		assert.True(t, empty)

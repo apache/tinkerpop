@@ -31,7 +31,7 @@ import (
 const keepAliveIntervalDefault = 5 * time.Second
 const writeDeadlineDefault = 3 * time.Second
 const writeChannelSizeDefault = 100
-const connectionTimeoutDefault = 45 * time.Second
+const connectionTimeoutDefault = 5 * time.Second
 
 // Transport layer that uses gorilla/websocket: https://github.com/gorilla/websocket
 // Gorilla WebSocket is a widely used and stable Go implementation of the WebSocket protocol.
@@ -58,12 +58,14 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 	}
 
 	dialer := &websocket.Dialer{
-		Proxy:            http.ProxyFromEnvironment,
-		HandshakeTimeout: transporter.connSettings.connectionTimeout,
+		Proxy:             http.ProxyFromEnvironment,
+		HandshakeTimeout:  transporter.connSettings.connectionTimeout,
+		TLSClientConfig:   transporter.connSettings.tlsConfig,
+		EnableCompression: transporter.connSettings.enableCompression,
+		ReadBufferSize:    transporter.connSettings.readBufferSize,
+		WriteBufferSize:   transporter.connSettings.writeBufferSize,
 	}
-	dialer.TLSClientConfig = transporter.connSettings.tlsConfig
-	// TODO: make this configurable from client; this currently does nothing since 4096 is the default
-	dialer.WriteBufferSize = 4096
+
 	// Nil is accepted as a valid header, so it can always be passed directly through.
 	conn, _, err := dialer.Dial(u.String(), transporter.connSettings.authInfo.getHeader())
 	if err != nil {

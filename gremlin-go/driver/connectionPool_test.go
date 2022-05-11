@@ -103,34 +103,6 @@ func TestConnectionPool(t *testing.T) {
 				assert.Equal(t, mockConnection, connection)
 				assert.Len(t, pool.connections, 1)
 			})
-
-			t.Run("purge non-used connections", func(t *testing.T) {
-				pool := getPoolForTesting()
-				defer pool.close()
-				empty := &synchronizedMap{
-					internalMap: make(map[string]ResultSet),
-					syncLock:    sync.Mutex{},
-				}
-				emptyConn1 := &connection{
-					logHandler: logger,
-					protocol:   nil,
-					results:    empty,
-					state:      established,
-				}
-				emptyConn2 := &connection{
-					logHandler: logger,
-					protocol:   nil,
-					results:    empty,
-					state:      established,
-				}
-				connections := []*connection{emptyConn1, emptyConn2}
-				pool.connections = connections
-
-				connection, err := pool.getLeastUsedConnection()
-				assert.Nil(t, err)
-				assert.NotNil(t, connection)
-				assert.Len(t, pool.connections, 1)
-			})
 		})
 
 		t.Run("close", func(t *testing.T) {

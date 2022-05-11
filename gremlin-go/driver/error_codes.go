@@ -36,6 +36,11 @@ const (
 	err0101ConnectionCloseError       errorCode = "E0101_CONNECTION_CLOSE_ERROR"
 	err0102WriteConnectionClosedError errorCode = "E0102_CONNECTION_WRITE_CLOSED_ERROR"
 
+	// connectionPool.go errors
+	err0103ConnectionPoolClosedError      errorCode = "E0103_CONNECTIONPOOL_CLOSED_ERROR"
+	err0104ConnectionPoolInstantiateFail  errorCode = "E0104_CONNECTIONPOOL_INSTANTIATE_FAIL"
+	err0105ConnectionPoolFullButNoneValid errorCode = "E0105_CONNECTIONPOOL_FULL_NONE_VALID"
+
 	// driverRemoteConnection.go errors
 	err0201CreateSessionMultipleIdsError         errorCode = "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR"
 	err0202CreateSessionFromSessionError         errorCode = "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR"

@@ -44,12 +44,11 @@ type protocolBase struct {
 type gremlinServerWSProtocol struct {
 	*protocolBase
 
-	serializer       serializer
-	logHandler       *logHandler
-	maxContentLength int
-	closed           bool
-	mutex            sync.Mutex
-	wg               *sync.WaitGroup
+	serializer serializer
+	logHandler *logHandler
+	closed     bool
+	mutex      sync.Mutex
+	wg         *sync.WaitGroup
 }
 
 func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, errorCallback func()) {
@@ -184,13 +183,12 @@ func newGremlinServerWSProtocol(handler *logHandler, transporterType Transporter
 	}
 
 	gremlinProtocol := &gremlinServerWSProtocol{
-		protocolBase:     &protocolBase{transporter: transport},
-		serializer:       newGraphBinarySerializer(handler),
-		logHandler:       handler,
-		maxContentLength: 1,
-		closed:           false,
-		mutex:            sync.Mutex{},
-		wg:               wg,
+		protocolBase: &protocolBase{transporter: transport},
+		serializer:   newGraphBinarySerializer(handler),
+		logHandler:   handler,
+		closed:       false,
+		mutex:        sync.Mutex{},
+		wg:           wg,
 	}
 	err = gremlinProtocol.transporter.Connect()
 	if err != nil {

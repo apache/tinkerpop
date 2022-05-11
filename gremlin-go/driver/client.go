@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"fmt"
 	"golang.org/x/text/language"
 	"runtime"
 	"time"
@@ -39,11 +38,16 @@ type ClientSettings struct {
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
 	ConnectionTimeout time.Duration
+	EnableCompression bool
+	ReadBufferSize    int
+	WriteBufferSize   int
+
 	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
 	MaximumConcurrentConnections int
-	Session                      string
+	// Initial amount of instantiated connections. Default: 1
+	InitialConcurrentConnections int
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -61,19 +65,26 @@ type Client struct {
 // Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource:              "g",
-		TransporterType:              Gorilla,
-		LogVerbosity:                 Info,
-		Logger:                       &defaultLogger{},
-		Language:                     language.English,
-		AuthInfo:                     &AuthInfo{},
-		TlsConfig:                    &tls.Config{},
-		KeepAliveInterval:            keepAliveIntervalDefault,
-		WriteDeadline:                writeDeadlineDefault,
-		ConnectionTimeout:            connectionTimeoutDefault,
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
+		ConnectionTimeout: connectionTimeoutDefault,
+		EnableCompression: false,
+		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
+		// size is zero, then a useful default size is used. The I/O buffer sizes
+		// do not limit the size of the messages that can be sent or received.
+		ReadBufferSize:  0,
+		WriteBufferSize: 0,
+
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
-		Session:                      "",
+		InitialConcurrentConnections: defaultInitialConcurrentConnections,
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -85,18 +96,25 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		keepAliveInterval: settings.KeepAliveInterval,
 		writeDeadline:     settings.WriteDeadline,
 		connectionTimeout: settings.ConnectionTimeout,
+		enableCompression: settings.EnableCompression,
+		readBufferSize:    settings.ReadBufferSize,
+		writeBufferSize:   settings.WriteBufferSize,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	if settings.Session != "" {
-		logHandler.log(Debug, sessionDetected)
-		settings.MaximumConcurrentConnections = 1
-	}
 
-	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold, settings.MaximumConcurrentConnections)
+	if settings.InitialConcurrentConnections > settings.MaximumConcurrentConnections {
+		logHandler.logf(Warning, poolInitialExceedsMaximum, settings.InitialConcurrentConnections,
+			settings.MaximumConcurrentConnections, settings.MaximumConcurrentConnections)
+		settings.InitialConcurrentConnections = settings.MaximumConcurrentConnections
+	}
+	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold,
+		settings.MaximumConcurrentConnections, settings.InitialConcurrentConnections)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client with url '%s' and transport type '%v'. Error message: '%s'",
-			url, settings.TransporterType, err.Error())
+		if err != nil {
+			logHandler.logf(Error, logErrorGeneric, "NewClient", err.Error())
+		}
+		return nil, err
 	}
 
 	client := &Client{
@@ -105,7 +123,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
 		connections:     pool,
-		session:         settings.Session,
+		session:         "",
 	}
 
 	return client, nil
@@ -114,7 +132,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // Close closes the client via connection.
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
-	// If it is a Session, call closeSession
+	// If it is a session, call closeSession
 	if client.session != "" {
 		err := client.closeSession()
 		if err != nil {

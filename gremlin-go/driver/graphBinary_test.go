@@ -32,7 +32,7 @@ import (
 
 func writeToBuffer(value interface{}, buffer *bytes.Buffer) []byte {
 	logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
-	serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, logHandler}
+	serializer := graphBinaryTypeSerializer{nullType, nil, nil, nil, logHandler}
 	val, err := serializer.write(value, buffer)
 	if err != nil {
 		panic(err)
@@ -42,7 +42,7 @@ func writeToBuffer(value interface{}, buffer *bytes.Buffer) []byte {
 
 func readToValue(buff *bytes.Buffer) interface{} {
 	logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
-	serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, logHandler}
+	serializer := graphBinaryTypeSerializer{nullType, nil, nil, nil, logHandler}
 	val, err := serializer.read(buff)
 	if err != nil {
 		panic(err)
@@ -273,7 +273,7 @@ func TestGraphBinaryV1(t *testing.T) {
 	t.Run("test misc cases", func(t *testing.T) {
 		buff := bytes.Buffer{}
 		logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
-		serializer := graphBinaryTypeSerializer{NullType, nil, nil, nil, logHandler}
+		serializer := graphBinaryTypeSerializer{nullType, nil, nil, nil, logHandler}
 
 		t.Run("test bytecode writer failure", func(t *testing.T) {
 			x, err := bytecodeWriter(int64(0), &buff, &serializer)
@@ -336,7 +336,7 @@ func TestGraphBinaryV1(t *testing.T) {
 
 		t.Run("test null buffer failure", func(t *testing.T) {
 			var nullBuff *bytes.Buffer = nil
-			x, err := serializer.readValue(nullBuff, byte(NullType), true)
+			x, err := serializer.readValue(nullBuff, byte(nullType), true)
 			assert.Nil(t, x)
 			assert.Equal(t, newError(err0405ReadValueInvalidNullInputError), err)
 		})
