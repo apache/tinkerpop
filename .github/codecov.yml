@@ -26,4 +26,4 @@ coverage:
     patch:
       default:
         target: 0%
-        
+
