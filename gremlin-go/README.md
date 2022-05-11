@@ -137,13 +137,42 @@ Note: The exact import name as well as the module prefix for `NewDriverRemoteCon
 ```
 
 ## Aliases
-To make the code more readable and close to the Gremlin query language), you can use aliases
+To make the code more readable and close to the Gremlin query language), you can use aliases. These aliases can be named with capital letters to be consistent with non-aliased steps but will result in exported variables which could be problematic if not being used in a top-level program (i.e. not a redistributable package).
 ```go
 	var __ = gremlingo.T__
 	var gt = gremlingo.P.Gt
 	var desc = gremlingo.Desc
 
 	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
+```
+
+### List of useful aliales
+```go
+	// common
+	var __ = gremlingo.T__
+	var TextP = gremlingo.TextP
+
+	// predicates
+	var between = gremlingo.P.Between
+	var eq = gremlingo.P.Eq
+	var gt = gremlingo.P.Gt
+	var gte = gremlingo.P.Gte
+	var inside = gremlingo.P.Inside
+	var lt = gremlingo.P.Lt
+	var lte = gremlingo.P.Lte
+	var neq = gremlingo.P.Neq
+	var not = gremlingo.P.Not
+	var outside = gremlingo.P.Outside
+	var test = gremlingo.P.Test
+	var within = gremlingo.P.Within
+	var without = gremlingo.P.Without
+	var and = gremlingo.P.And
+	var or = gremlingo.P.Or
+
+	// sorting
+	var shuffle = gremlingo.Shuffle
+	var asc = gremlingo.Asc
+	var desc = gremlingo.Desc
 ```
 
 ## Troubleshooting
