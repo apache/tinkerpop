@@ -315,36 +315,8 @@ if err != nil {
 
 *List of all exports can be found at [pkg.go.dev](https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3/driver)*
 
-# Specifications
 ### Supported Data Types
-The current `go` driver supports the following GraphBinary serialization types. 
-```
-NullType            DataType = 0xFE
-IntType             DataType = 0x01
-LongType            DataType = 0x02
-StringType          DataType = 0x03
-DoubleType          DataType = 0x07
-FloatType           DataType = 0x08
-ListType            DataType = 0x09
-MapType             DataType = 0x0a
-UUIDType            DataType = 0x0c
-BytecodeType        DataType = 0x15
-TraverserType       DataType = 0x21
-ByteType            DataType = 0x24
-ShortType           DataType = 0x26
-BooleanType         DataType = 0x27
-BigIntegerType      DataType = 0x23
-VertexType          DataType = 0x11
-EdgeType            DataType = 0x0d
-PropertyType        DataType = 0x0f
-VertexPropertyType  DataType = 0x12
-PathType            DataType = 0x0e     // see limitations
-SetType             DataType = 0x0b     // see limitations
-```
-### Current Limitations
-- The `set` data type is currently not implemented, as `go` does not have an underlying `set` data structure. Any `set` type code from server will be deserialized into `slices` with the `list` type implementation. Set implemented with the `go` convention of using a `map` will be serialized as `map`.
-- The `path` data type serialization is currently incomplete as labels are represented as list of lists instead of list of sets. Fully functional Path serialization will be implemented when `set` is implemented in the next milestone. `Path` can be successfully deserialized. 
-- Traversal step functions currently take `string` arguments with double quotes only. Operations using Gremlin keywords, such as `By(label)`, will be supported in the next milestone. 
+The `Go` driver supports all of the core GraphBinary data types.
 
 [tk]: https://tinkerpop.apache.org
 [gremlin]: https://tinkerpop.apache.org/gremlin.html
