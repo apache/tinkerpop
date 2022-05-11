@@ -32,66 +32,66 @@ import (
 
 // Version 1.0
 
-// DataType graphBinary types.
-type DataType uint8
+// dataType graphBinary types.
+type dataType uint8
 
-// DataType defined as constants.
+// dataType defined as constants.
 const (
-	IntType               DataType = 0x01
-	LongType              DataType = 0x02
-	StringType            DataType = 0x03
-	DateType              DataType = 0x04
-	TimestampType         DataType = 0x05
-	DoubleType            DataType = 0x07
-	FloatType             DataType = 0x08
-	ListType              DataType = 0x09
-	MapType               DataType = 0x0a
-	SetType               DataType = 0x0b
-	UUIDType              DataType = 0x0c
-	EdgeType              DataType = 0x0d
-	PathType              DataType = 0x0e
-	PropertyType          DataType = 0x0f
-	VertexType            DataType = 0x11
-	VertexPropertyType    DataType = 0x12
-	BarrierType           DataType = 0x13
-	BindingType           DataType = 0x14
-	CardinalityType       DataType = 0x16
-	BytecodeType          DataType = 0x15
-	ColumnType            DataType = 0x17
-	DirectionType         DataType = 0x18
-	OperatorType          DataType = 0x19
-	OrderType             DataType = 0x1a
-	PickType              DataType = 0x1b
-	PopType               DataType = 0x1c
-	LambdaType            DataType = 0x1d
-	PType                 DataType = 0x1e
-	ScopeType             DataType = 0x1f
-	TType                 DataType = 0x20
-	TraverserType         DataType = 0x21
-	BigIntegerType        DataType = 0x23
-	ByteType              DataType = 0x24
-	ShortType             DataType = 0x26
-	BooleanType           DataType = 0x27
-	TextPType             DataType = 0x28
-	TraversalStrategyType DataType = 0x29
-	BulkSetType           DataType = 0x2a
-	DurationType          DataType = 0x81
-	NullType              DataType = 0xFE
+	intType               dataType = 0x01
+	longType              dataType = 0x02
+	stringType            dataType = 0x03
+	dateType              dataType = 0x04
+	timestampType         dataType = 0x05
+	doubleType            dataType = 0x07
+	floatType             dataType = 0x08
+	listType              dataType = 0x09
+	mapType               dataType = 0x0a
+	setType               dataType = 0x0b
+	uuidType              dataType = 0x0c
+	edgeType              dataType = 0x0d
+	pathType              dataType = 0x0e
+	propertyType          dataType = 0x0f
+	vertexType            dataType = 0x11
+	vertexPropertyType    dataType = 0x12
+	barrierType           dataType = 0x13
+	bindingType           dataType = 0x14
+	cardinalityType       dataType = 0x16
+	bytecodeType          dataType = 0x15
+	columnType            dataType = 0x17
+	directionType         dataType = 0x18
+	operatorType          dataType = 0x19
+	orderType             dataType = 0x1a
+	pickType              dataType = 0x1b
+	popType               dataType = 0x1c
+	lambdaType            dataType = 0x1d
+	pType                 dataType = 0x1e
+	scopeType             dataType = 0x1f
+	tType                 dataType = 0x20
+	traverserType         dataType = 0x21
+	bigIntegerType        dataType = 0x23
+	byteType              dataType = 0x24
+	shortType             dataType = 0x26
+	booleanType           dataType = 0x27
+	textPType             dataType = 0x28
+	traversalStrategyType dataType = 0x29
+	bulkSetType           dataType = 0x2a
+	durationType          dataType = 0x81
+	nullType              dataType = 0xFE
 )
 
-var nullBytes = []byte{NullType.getCodeByte(), 0x01}
+var nullBytes = []byte{nullType.getCodeByte(), 0x01}
 
-func (dataType DataType) getCodeByte() byte {
+func (dataType dataType) getCodeByte() byte {
 	return byte(dataType)
 }
 
-func (dataType DataType) getCodeBytes() []byte {
+func (dataType dataType) getCodeBytes() []byte {
 	return []byte{dataType.getCodeByte()}
 }
 
 // graphBinaryTypeSerializer struct for the different types of serializers.
 type graphBinaryTypeSerializer struct {
-	dataType       DataType
+	dataType       dataType
 	writer         func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
 	reader         func(*bytes.Buffer, *graphBinaryTypeSerializer) (interface{}, error)
 	nullFlagReturn interface{}
@@ -418,7 +418,7 @@ func vertexReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerialize
 	}
 
 	// Not fully qualified.
-	newLabel, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	newLabel, err := typeSerializer.readValue(buffer, byte(stringType), false)
 	if err != nil {
 		return nil, err
 	}
@@ -483,7 +483,7 @@ func edgeReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer)
 	}
 
 	// Edge label - not fully qualified.
-	newLabel, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	newLabel, err := typeSerializer.readValue(buffer, byte(stringType), false)
 	if err != nil {
 		return nil, err
 	}
@@ -499,7 +499,7 @@ func edgeReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer)
 	}
 
 	// In-vertex label -nNot fully qualified.
-	inVLabel, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	inVLabel, err := typeSerializer.readValue(buffer, byte(stringType), false)
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +517,7 @@ func edgeReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer)
 	}
 
 	// In-vertex label - not fully qualified.
-	outVLabel, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	outVLabel, err := typeSerializer.readValue(buffer, byte(stringType), false)
 	if err != nil {
 		return nil, err
 	}
@@ -554,7 +554,7 @@ func propertyReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSeriali
 	p := new(Property)
 
 	// Not fully qualified.
-	newKey, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	newKey, err := typeSerializer.readValue(buffer, byte(stringType), false)
 	if err != nil {
 		return nil, err
 	}
@@ -852,7 +852,7 @@ func enumReader(buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) (interface{}
 	err := binary.Read(buffer, binary.BigEndian, &typeCode)
 	if err != nil {
 		return nil, err
-	} else if typeCode != StringType.getCodeByte() {
+	} else if typeCode != stringType.getCodeByte() {
 		return nil, newError(err0406EnumReaderInvalidTypeError)
 	}
 
@@ -901,7 +901,7 @@ func bindingReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializ
 	b := new(Binding)
 
 	// Not fully qualified.
-	newKey, err := typeSerializer.readValue(buffer, byte(StringType), false)
+	newKey, err := typeSerializer.readValue(buffer, byte(stringType), false)
 	if err != nil {
 		return nil, err
 	}
@@ -920,9 +920,9 @@ func bindingReader(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializ
 func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{}) (*graphBinaryTypeSerializer, error) {
 	switch val.(type) {
 	case *bytecode, bytecode, *GraphTraversal:
-		return &graphBinaryTypeSerializer{dataType: BytecodeType, writer: bytecodeWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: bytecodeType, writer: bytecodeWriter, logHandler: serializer.logHandler}, nil
 	case string:
-		return &graphBinaryTypeSerializer{dataType: StringType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: stringType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, int32(len(value.(string))))
 			if err != nil {
 				return nil, err
@@ -931,9 +931,9 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case *big.Int:
-		return &graphBinaryTypeSerializer{dataType: BigIntegerType, writer: bigIntWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: bigIntegerType, writer: bigIntWriter, logHandler: serializer.logHandler}, nil
 	case int64, int, uint32:
-		return &graphBinaryTypeSerializer{dataType: LongType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: longType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			switch v := value.(type) {
 			case int:
 				value = int64(v)
@@ -944,7 +944,7 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case int32, uint16:
-		return &graphBinaryTypeSerializer{dataType: IntType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: intType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			switch v := value.(type) {
 			case uint16:
 				value = int32(v)
@@ -953,88 +953,88 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case int16:
-		return &graphBinaryTypeSerializer{dataType: ShortType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: shortType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value.(int16))
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case uint8:
-		return &graphBinaryTypeSerializer{dataType: ByteType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: byteType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value.(uint8))
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case bool:
-		return &graphBinaryTypeSerializer{dataType: BooleanType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: booleanType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value.(bool))
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case uuid.UUID:
-		return &graphBinaryTypeSerializer{dataType: UUIDType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: uuidType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value)
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case float32:
-		return &graphBinaryTypeSerializer{dataType: FloatType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: floatType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value)
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case float64:
-		return &graphBinaryTypeSerializer{dataType: DoubleType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+		return &graphBinaryTypeSerializer{dataType: doubleType, writer: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 			err := binary.Write(buffer, binary.BigEndian, value)
 			return buffer.Bytes(), err
 		}, logHandler: serializer.logHandler}, nil
 	case *Vertex:
-		return &graphBinaryTypeSerializer{dataType: VertexType, writer: vertexWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: vertexType, writer: vertexWriter, logHandler: serializer.logHandler}, nil
 	case *Edge:
-		return &graphBinaryTypeSerializer{dataType: EdgeType, writer: edgeWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: edgeType, writer: edgeWriter, logHandler: serializer.logHandler}, nil
 	case *Property:
-		return &graphBinaryTypeSerializer{dataType: PropertyType, writer: propertyWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: propertyType, writer: propertyWriter, logHandler: serializer.logHandler}, nil
 	case *VertexProperty:
-		return &graphBinaryTypeSerializer{dataType: VertexPropertyType, writer: vertexPropertyWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: vertexPropertyType, writer: vertexPropertyWriter, logHandler: serializer.logHandler}, nil
 	case *Lambda:
-		return &graphBinaryTypeSerializer{dataType: LambdaType, writer: lambdaWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: lambdaType, writer: lambdaWriter, logHandler: serializer.logHandler}, nil
 	case *traversalStrategy:
-		return &graphBinaryTypeSerializer{dataType: TraversalStrategyType, writer: traversalStrategyWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: traversalStrategyType, writer: traversalStrategyWriter, logHandler: serializer.logHandler}, nil
 	case *Path:
-		return &graphBinaryTypeSerializer{dataType: PathType, writer: pathWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: pathType, writer: pathWriter, logHandler: serializer.logHandler}, nil
 	case Set:
-		return &graphBinaryTypeSerializer{dataType: SetType, writer: setWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: setType, writer: setWriter, logHandler: serializer.logHandler}, nil
 	case time.Time:
-		return &graphBinaryTypeSerializer{dataType: DateType, writer: timeWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: dateType, writer: timeWriter, logHandler: serializer.logHandler}, nil
 	case time.Duration:
-		return &graphBinaryTypeSerializer{dataType: DurationType, writer: durationWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: durationType, writer: durationWriter, logHandler: serializer.logHandler}, nil
 	case Cardinality:
-		return &graphBinaryTypeSerializer{dataType: CardinalityType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: cardinalityType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Column:
-		return &graphBinaryTypeSerializer{dataType: ColumnType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: columnType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Direction:
-		return &graphBinaryTypeSerializer{dataType: DirectionType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: directionType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Operator:
-		return &graphBinaryTypeSerializer{dataType: OperatorType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: operatorType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Order:
-		return &graphBinaryTypeSerializer{dataType: OrderType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: orderType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Pick:
-		return &graphBinaryTypeSerializer{dataType: PickType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: pickType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Pop:
-		return &graphBinaryTypeSerializer{dataType: PopType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: popType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case T:
-		return &graphBinaryTypeSerializer{dataType: TType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: tType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Barrier:
-		return &graphBinaryTypeSerializer{dataType: BarrierType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: barrierType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case Scope:
-		return &graphBinaryTypeSerializer{dataType: ScopeType, writer: enumWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: scopeType, writer: enumWriter, logHandler: serializer.logHandler}, nil
 	case p, Predicate:
-		return &graphBinaryTypeSerializer{dataType: PType, writer: pWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: pType, writer: pWriter, logHandler: serializer.logHandler}, nil
 	case textP, TextPredicate:
-		return &graphBinaryTypeSerializer{dataType: TextPType, writer: textPWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: textPType, writer: textPWriter, logHandler: serializer.logHandler}, nil
 	case *Binding, Binding:
-		return &graphBinaryTypeSerializer{dataType: BindingType, writer: bindingWriter, logHandler: serializer.logHandler}, nil
+		return &graphBinaryTypeSerializer{dataType: bindingType, writer: bindingWriter, logHandler: serializer.logHandler}, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:
-			return &graphBinaryTypeSerializer{dataType: MapType, writer: mapWriter, reader: mapReader, logHandler: serializer.logHandler}, nil
+			return &graphBinaryTypeSerializer{dataType: mapType, writer: mapWriter, reader: mapReader, logHandler: serializer.logHandler}, nil
 		case reflect.Array, reflect.Slice:
-			// We can write an array or slice into the list datatype.
-			return &graphBinaryTypeSerializer{dataType: ListType, writer: listWriter, reader: listReader, logHandler: serializer.logHandler}, nil
+			// We can write an array or slice into the list dataType.
+			return &graphBinaryTypeSerializer{dataType: listType, writer: listWriter, reader: listReader, logHandler: serializer.logHandler}, nil
 		default:
 			serializer.logHandler.logf(Error, serializeDataTypeError, reflect.TypeOf(val).Name())
 			return nil, newError(err0407GetSerializerToWriteUnknownTypeError, reflect.TypeOf(val).Name())
@@ -1042,11 +1042,11 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 	}
 }
 
-// gets the type of the serializer based on the DataType byte value.
+// gets the type of the serializer based on the dataType byte value.
 func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*graphBinaryTypeSerializer, error) {
 	switch typ {
-	case TraverserType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: TraverserType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case traverserType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: traverserType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			traverser := new(Traverser)
 			err := binary.Read(buffer, binary.BigEndian, &traverser.bulk)
 			if err != nil {
@@ -1058,8 +1058,8 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*gra
 			}
 			return traverser, nil
 		}, nullFlagReturn: "", logHandler: serializer.logHandler}, nil
-	case StringType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: StringType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case stringType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: stringType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var size int32
 			err := binary.Read(buffer, binary.BigEndian, &size)
 			if err != nil {
@@ -1069,37 +1069,37 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*gra
 			_, err = buffer.Read(valBytes)
 			return string(valBytes), err
 		}, nullFlagReturn: "", logHandler: serializer.logHandler}, nil
-	case BigIntegerType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: BigIntegerType, reader: bigIntReader, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case LongType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: LongType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case bigIntegerType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: bigIntegerType, reader: bigIntReader, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
+	case longType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: longType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val int64
 			return val, binary.Read(buffer, binary.BigEndian, &val)
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case IntType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: IntType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case intType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: intType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val int32
 			return val, binary.Read(buffer, binary.BigEndian, &val)
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case ShortType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: ShortType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case shortType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: shortType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val int16
 			return val, binary.Read(buffer, binary.BigEndian, &val)
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case ByteType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: ByteType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case byteType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: byteType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val uint8
 			err := binary.Read(buffer, binary.BigEndian, &val)
 			return val, err
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case BooleanType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: BooleanType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case booleanType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: booleanType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val bool
 			err := binary.Read(buffer, binary.BigEndian, &val)
 			return val, err
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case UUIDType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: UUIDType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case uuidType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: uuidType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			valBytes := make([]byte, 16)
 			_, err := buffer.Read(valBytes)
 			if err != nil {
@@ -1108,46 +1108,46 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToRead(typ byte) (*gra
 			val, _ := uuid.FromBytes(valBytes)
 			return val, nil
 		}, nullFlagReturn: uuid.Nil, logHandler: serializer.logHandler}, nil
-	case FloatType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: FloatType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case floatType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: floatType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val float32
 			err := binary.Read(buffer, binary.BigEndian, &val)
 			return val, err
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case DoubleType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: DoubleType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
+	case doubleType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: doubleType, reader: func(buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) (interface{}, error) {
 			var val float64
 			err := binary.Read(buffer, binary.BigEndian, &val)
 			return val, err
 		}, nullFlagReturn: 0, logHandler: serializer.logHandler}, nil
-	case VertexType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: VertexType, reader: vertexReader, nullFlagReturn: Vertex{}, logHandler: serializer.logHandler}, nil
-	case EdgeType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: EdgeType, reader: edgeReader, nullFlagReturn: Edge{}, logHandler: serializer.logHandler}, nil
-	case PropertyType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: PropertyType, reader: propertyReader, nullFlagReturn: Property{}, logHandler: serializer.logHandler}, nil
-	case VertexPropertyType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: VertexPropertyType, reader: vertexPropertyReader, nullFlagReturn: VertexProperty{}, logHandler: serializer.logHandler}, nil
-	case PathType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: PathType, reader: pathReader, nullFlagReturn: Path{}, logHandler: serializer.logHandler}, nil
-	case SetType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: SetType, reader: setReader, nullFlagReturn: SimpleSet{}, logHandler: serializer.logHandler}, nil
-	case ListType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: ListType, reader: listReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
-	case DateType.getCodeByte(), TimestampType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: DateType, reader: timeReader, nullFlagReturn: time.Time{}, logHandler: serializer.logHandler}, nil
-	case DurationType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: DurationType, reader: durationReader, nullFlagReturn: time.Duration(0), logHandler: serializer.logHandler}, nil
-	case MapType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: MapType, reader: mapReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
-	case BulkSetType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: BulkSetType, reader: bulkSetReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
-	case DirectionType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: DirectionType, reader: enumReader, logHandler: serializer.logHandler}, nil
-	case TType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: BulkSetType, reader: enumReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
-	case BindingType.getCodeByte():
-		return &graphBinaryTypeSerializer{dataType: BulkSetType, reader: bindingReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+	case vertexType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: vertexType, reader: vertexReader, nullFlagReturn: Vertex{}, logHandler: serializer.logHandler}, nil
+	case edgeType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: edgeType, reader: edgeReader, nullFlagReturn: Edge{}, logHandler: serializer.logHandler}, nil
+	case propertyType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: propertyType, reader: propertyReader, nullFlagReturn: Property{}, logHandler: serializer.logHandler}, nil
+	case vertexPropertyType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: vertexPropertyType, reader: vertexPropertyReader, nullFlagReturn: VertexProperty{}, logHandler: serializer.logHandler}, nil
+	case pathType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: pathType, reader: pathReader, nullFlagReturn: Path{}, logHandler: serializer.logHandler}, nil
+	case setType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: setType, reader: setReader, nullFlagReturn: SimpleSet{}, logHandler: serializer.logHandler}, nil
+	case listType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: listType, reader: listReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+	case dateType.getCodeByte(), timestampType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: dateType, reader: timeReader, nullFlagReturn: time.Time{}, logHandler: serializer.logHandler}, nil
+	case durationType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: durationType, reader: durationReader, nullFlagReturn: time.Duration(0), logHandler: serializer.logHandler}, nil
+	case mapType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: mapType, reader: mapReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+	case bulkSetType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: bulkSetType, reader: bulkSetReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+	case directionType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: directionType, reader: enumReader, logHandler: serializer.logHandler}, nil
+	case tType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: bulkSetType, reader: enumReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
+	case bindingType.getCodeByte():
+		return &graphBinaryTypeSerializer{dataType: bulkSetType, reader: bindingReader, nullFlagReturn: nil, logHandler: serializer.logHandler}, nil
 	default:
 		serializer.logHandler.logf(Error, deserializeDataTypeError, int32(typ))
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, typ)
@@ -1206,12 +1206,12 @@ func (serializer *graphBinaryTypeSerializer) writeValueFlagNone(buffer *bytes.Bu
 
 // Reads the type code, information and value of a given buffer with fully-qualified format.
 func (serializer *graphBinaryTypeSerializer) read(buffer *bytes.Buffer) (interface{}, error) {
-	var typeCode DataType
+	var typeCode dataType
 	err := binary.Read(buffer, binary.BigEndian, &typeCode)
 	if err != nil {
 		return nil, err
 	}
-	if typeCode == NullType {
+	if typeCode == nullType {
 		var isNull byte
 		_ = binary.Read(buffer, binary.BigEndian, &isNull)
 		if isNull != 1 {

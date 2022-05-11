@@ -24,6 +24,8 @@ services:
     build:
       context: ../
       dockerfile: gremlin-go/Dockerfile
+      args:
+        NEO4J_VERSION: 3.5.3
     ports:
       - "45940:45940"
       - "45941:45941"
@@ -45,6 +47,6 @@ services:
     working_dir: /go_app
     command: >
       bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -p 1 -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
     depends_on:
       - gremlin-test-server

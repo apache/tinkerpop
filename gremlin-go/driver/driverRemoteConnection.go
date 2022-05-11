@@ -29,6 +29,8 @@ import (
 
 // DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
+	session string
+	
 	TraversalSource   string
 	TransporterType   TransporterType
 	LogVerbosity      LogVerbosity
@@ -39,15 +41,16 @@ type DriverRemoteConnectionSettings struct {
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
 	ConnectionTimeout time.Duration
+	EnableCompression bool
+	ReadBufferSize    int
+	WriteBufferSize   int
+
 	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
 	NewConnectionThreshold int
 	// Maximum number of concurrent connections. Default: number of runtime processors
 	MaximumConcurrentConnections int
-	Session                      string
-
-	// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
-	Protocol   protocol
-	Serializer serializer
+	// Initial amount of instantiated connections. Default: 1
+	InitialConcurrentConnections int
 }
 
 // DriverRemoteConnection is a remote connection.
@@ -55,33 +58,39 @@ type DriverRemoteConnection struct {
 	client          *Client
 	spawnedSessions []*DriverRemoteConnection
 	isClosed        bool
+	settings        *DriverRemoteConnectionSettings
 }
 
 // NewDriverRemoteConnection creates a new DriverRemoteConnection.
 // If no custom connection settings are passed in, a connection will be created with "g" as the default TraversalSource,
-// Gorilla as the default Transporter, Info as the default LogVerbosity, a default logger stuct, and English and as the
+// Gorilla as the default Transporter, Info as the default LogVerbosity, a default logger struct, and English and as the
 // default language
 func NewDriverRemoteConnection(
 	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
-		TraversalSource:              "g",
-		TransporterType:              Gorilla,
-		LogVerbosity:                 Info,
-		Logger:                       &defaultLogger{},
-		Language:                     language.English,
-		AuthInfo:                     &AuthInfo{},
-		TlsConfig:                    &tls.Config{},
-		KeepAliveInterval:            keepAliveIntervalDefault,
-		WriteDeadline:                writeDeadlineDefault,
-		ConnectionTimeout:            connectionTimeoutDefault,
+		session:           "",
+		
+		TraversalSource:   "g",
+		TransporterType:   Gorilla,
+		LogVerbosity:      Info,
+		Logger:            &defaultLogger{},
+		Language:          language.English,
+		AuthInfo:          &AuthInfo{},
+		TlsConfig:         &tls.Config{},
+		KeepAliveInterval: keepAliveIntervalDefault,
+		WriteDeadline:     writeDeadlineDefault,
+		ConnectionTimeout: connectionTimeoutDefault,
+		EnableCompression: false,
+		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. The default is 1048576.
+		// If a buffer size is set zero, then the Gorilla websocket 4096 default size is used. The I/O buffer
+		// sizes do not limit the size of the messages that can be sent or received.
+		ReadBufferSize:  1048576,
+		WriteBufferSize: 1048576,
+
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
-		Session:                      "",
-
-		// TODO: Figure out exact extent of configurability for these and expose appropriate types/helpers
-		Protocol:   nil,
-		Serializer: nil,
+		InitialConcurrentConnections: defaultInitialConcurrentConnections,
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -93,15 +102,24 @@ func NewDriverRemoteConnection(
 		keepAliveInterval: settings.KeepAliveInterval,
 		writeDeadline:     settings.WriteDeadline,
 		connectionTimeout: settings.ConnectionTimeout,
+		enableCompression: settings.EnableCompression,
+		readBufferSize:    settings.ReadBufferSize,
+		writeBufferSize:   settings.WriteBufferSize,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	if settings.Session != "" {
+	if settings.session != "" {
 		logHandler.log(Debug, sessionDetected)
 		settings.MaximumConcurrentConnections = 1
 	}
 
-	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold, settings.MaximumConcurrentConnections)
+	if settings.InitialConcurrentConnections > settings.MaximumConcurrentConnections {
+		logHandler.logf(Warning, poolInitialExceedsMaximum, settings.InitialConcurrentConnections,
+			settings.MaximumConcurrentConnections, settings.MaximumConcurrentConnections)
+		settings.InitialConcurrentConnections = settings.MaximumConcurrentConnections
+	}
+	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold,
+		settings.MaximumConcurrentConnections, settings.InitialConcurrentConnections)
 	if err != nil {
 		if err != nil {
 			logHandler.logf(Error, logErrorGeneric, "NewDriverRemoteConnection", err.Error())
@@ -112,13 +130,13 @@ func NewDriverRemoteConnection(
 	client := &Client{
 		url:             url,
 		traversalSource: settings.TraversalSource,
-		transporterType: settings.TransporterType,
 		logHandler:      logHandler,
+		transporterType: settings.TransporterType,
 		connections:     pool,
-		session:         settings.Session,
+		session:         settings.session,
 	}
 
-	return &DriverRemoteConnection{client: client, isClosed: false}, nil
+	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
 }
 
 // Close closes the DriverRemoteConnection.
@@ -163,7 +181,7 @@ func (driver *DriverRemoteConnection) isSession() bool {
 	return driver.client.session != ""
 }
 
-// CreateSession generates a new Session. sessionId stores the optional UUID param. It can be used to create a Session with a specific UUID.
+// CreateSession generates a new session. sessionId stores the optional UUID param. It can be used to create a session with a specific UUID.
 func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*DriverRemoteConnection, error) {
 	if len(sessionId) > 1 {
 		return nil, newError(err0201CreateSessionMultipleIdsError)
@@ -173,12 +191,27 @@ func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*Drive
 
 	driver.client.logHandler.log(Info, creatingSessionConnection)
 	drc, err := NewDriverRemoteConnection(driver.client.url, func(settings *DriverRemoteConnectionSettings) {
-		settings.TraversalSource = driver.client.traversalSource
 		if len(sessionId) == 1 {
-			settings.Session = sessionId[0]
+			settings.session = sessionId[0]
 		} else {
-			settings.Session = uuid.New().String()
+			settings.session = uuid.New().String()
 		}
+		// copy other settings from parent
+		settings.TraversalSource = driver.settings.TraversalSource
+		settings.TransporterType = driver.settings.TransporterType
+		settings.Logger = driver.settings.Logger
+		settings.LogVerbosity = driver.settings.LogVerbosity
+		settings.Language = driver.settings.Language
+		settings.AuthInfo = driver.settings.AuthInfo
+		settings.TlsConfig = driver.settings.TlsConfig
+		settings.KeepAliveInterval = driver.settings.KeepAliveInterval
+		settings.WriteDeadline = driver.settings.WriteDeadline
+		settings.ConnectionTimeout = driver.settings.ConnectionTimeout
+		settings.NewConnectionThreshold = driver.settings.NewConnectionThreshold
+		settings.EnableCompression = driver.settings.EnableCompression
+		settings.ReadBufferSize = driver.settings.ReadBufferSize
+		settings.WriteBufferSize = driver.settings.WriteBufferSize
+		settings.MaximumConcurrentConnections = driver.settings.MaximumConcurrentConnections
 	})
 	if err != nil {
 		return nil, err
@@ -202,38 +235,3 @@ func (driver *DriverRemoteConnection) rollback() (ResultSet, error) {
 	bc.addSource("tx", "rollback")
 	return driver.submitBytecode(bc)
 }
-
-// TODO: Bytecode, OptionsStrategy, RequestOptions
-//func extractRequestOptions(bytecode Bytecode) RequestOptions {
-//	var optionsStrategy OptionsStrategy = nil
-//	for _, instruction := range bytecode.sourceInstructions {
-//		if instruction[0] == "withStrategies" {
-//			_, isOptionsStrategy := instruction[1].(OptionsStrategy)
-//			if isOptionsStrategy {
-//				optionsStrategy = instruction
-//				break
-//			}
-//		}
-//	}
-//
-//	var requestOptions RequestOptions = nil
-//	if optionsStrategy != nil {
-//		allowedKeys := []string{'evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent'}
-//		requestOptions := make(map[string]string)
-//		for _, allowedKey := range allowedKeys {
-//			if isAllowedKeyInConfigs(allowedKey, optionsStrategy[1].configuration) {
-//				requestOptions[allowedKey] = optionsStrategy[1].configuration[allowedKey]
-//			}
-//		}
-//	}
-//	return requestOptions
-//}
-
-//func isAllowedKeyInConfigs(allowedKey string, configs []string) bool {
-//	for _, config := range configs {
-//		if allowedKey == config {
-//			return true
-//		}
-//	}
-//	return false
-//}

@@ -32,7 +32,7 @@ what is written elsewhere.
 It is fairly certain that readers of the Reference Documentation are coming from the most diverse software development
 backgrounds that TinkerPop has ever engaged in over the decade or so of its existence. While TinkerPop holds some roots
 in Java, and thus, languages bound to the Java Virtual Machine (JVM), it long ago branched out into other languages
-such as Python, Javascript, .NET, and others. To compound upon that diversity, it is also seeing extensive support
+such as Python, Javascript, .NET, GO, and others. To compound upon that diversity, it is also seeing extensive support
 from different graph systems which have chosen TinkerPop as their standard method for allowing users to interface
 with their graph. Moreover, the graph systems themselves are not only separated by OLTP and OLAP style workloads, but
 also by their implementation patterns, which range everywhere from being an embedded graph system to a cloud-only
@@ -419,6 +419,15 @@ from gremlin_python.process.anonymous_traversal_source import traversal
 g = traversal().withRemote(
           DriverRemoteConnection('ws://localhost:8182/gremlin'))
 ----
+[source,go]
+----
+import (
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+)
+
+remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+g := gremlingo.Traversal_().WithRemote(remote)
+----
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
 conceptually the same irrespective of programming language.
@@ -513,6 +522,12 @@ v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
+[source,go]
+----
+v1, err := g.AddV("person").Property("name", "marko").Next()
+v2, err := g.AddV("person").Property("name", "stephen").Next()
+g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
+----
 
 The first two lines add a vertex each with the vertex label of "person" and the associated "name" property. The third
 line adds an edge with the "knows" label between them and an associated "weight" property. Note the use of `next()`
@@ -548,6 +563,11 @@ const peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList(
 ----
 marko = g.V().has('person','name','marko').next()
 peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
+----
+[source,go]
+----
+marko, err := g.V().Has("person", "name", "marko").Next()
+peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
 ----
 
 In all these examples presented so far there really isn't a lot of difference in how the Gremlin itself looks. There

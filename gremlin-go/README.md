@@ -22,57 +22,23 @@ for early testing purposes only.
 
 -->
 
+[![codecov](https://codecov.io/gh/apache/tinkerpop/branch/master/graph/badge.svg?token=TojD2nR5Qd)](https://codecov.io/gh/apache/tinkerpop)
+
 # Getting Started
 
-## Building the Source Code
-
-If you would like to build and/or test the source code, you can do so with docker or directly with the go compiler, the instructions for both are listed below.
-
-### Testing with Docker
-
-Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
-
-`docker-compose up --exit-code-from integration-tests`
-
-### Building Directly
-
-To build the driver you must install `go`. The following command can be used to build the driver:
-`go build <path to source code>`
-
-### Code Styling and Linting
-Before generating a pull request, you should manually run the following to ensure correct code styling and fix any issues indicated by the linters.
-
-### Formatting files with Gofmt
-To ensure clean and readable code [Gofmt][gofmt] is used. 
-
-Navigate to file path in a terminal window and run:
-
-`gofmt -s -w` 
-
-Gofmt will recursively check for and format `.go` files.
-
-Note: If your IDE of choice is [GoLand][goland], code can be automatically formatted with Gofmt on file save. Instructions on how to enable this feature can be found [here][fmtsave].
-
-### Using the Linter and staticcheck
-Run [go vet][gvet] and [staticcheck][scheck] and correct any errors.
-
-[go vet][gvet] is installed when you install go, and can be run with:
-
- `go vet <path to source code>`
-
-Please review the [staticcheck documentation][scheck docs] for more details on installing [staticcheck][scheck]. It can be run with:
-
-`staticcheck <path to source code>`
-
-### Prerequisites
+## Prerequisites
 
 * `gremlin-go` requires Golang 1.17 or later, please see [Go Download][go] for more details on installing Golang.
 * A basic understanding of [Go Modules][gomods]
 * A project set up which uses Go Modules
 
+## Installing the Gremlin-Go as a dependency
+
 To install the Gremlin-Go as a dependency for your project, run the following in the root directory of your project that contains your `go.mod` file:
 
 `go get github.com/apache/tinkerpop/gremlin-go/v3[optionally append @<version>, such as @v3.5.3 - note this requires GO111MODULE=on]`
+
+Available versions can be found at [pkg.go.dev](https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3/driver?tab=versions).
 
 After running the `go get` command, your `go.mod` file should contain something similar to the following:
 
@@ -86,19 +52,6 @@ require github.com/apache/tinkerpop/gremlin-go/v3 v<version>
 
 If it does, then this means Gremlin-Go was successfully installed as a dependency of your project.
 
-Here is a simple example of using Gremlin-Go as an import in a sample project's `main.go` file. 
-```go
-package main
-
-import (
-	"github.com/apache/tinkerpop/gremlin-go/driver"
-)
-
-func main() {
-	// Simple stub to use the import. See subsequent section for actual usage. 
-	_, _ = gremlingo.NewDriverRemoteConnection(fmt.Sprintf("ws://%s:%d", fmt.Sprintf("ws://%s:%d", "localhost", 8182)))
-}
-```
 You will need to run `go mod tidy` to import the remaining dependencies of the `gremlin-go` driver (if your IDE does not do so automatically), after which you should see an updated `go.mod` file:
 
 ```
@@ -117,46 +70,125 @@ require (
 ```
 As well as a populated `go.sum` file.
 
-This following example should run, provided that it is configured to point to a compatible `gremlin-server`. In this example, a simple local server is running on port 8182, and this will print`[2]` as an output. If no server is available, this code can still be executed to print an error as output.
+*if there are no usages for gremlingo found, it will remove the require from go.mod and not import dependencies.*
+
+## Simple usage
+
+Here is a simple example of using Gremlin-Go as an import in a sample project's `main.go` file. 
+```go
+package main
+
+import (
+	"github.com/apache/tinkerpop/gremlin-go/driver"
+)
+
+func main() {
+	// Simple stub to use the import. See subsequent section for actual usage. 
+	_, _ = gremlingo.NewDriverRemoteConnection(fmt.Sprintf("ws://%s:%d/gremlin", "localhost", 8182))
+}
+```
+
+*Pay attention to the suffix `/gremlin` in connection string*
+
+This following example should run, provided that it is configured to point to a compatible `gremlin-server`. In this example, a simple local server is running on port 8182, and this will print `[0]` as an output. If no server is available, this code can still be executed to print an error as output.
 
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 
 func main() {
 	// Creating the connection to the server.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(fmt.Sprintf("ws://%s:%d", "localhost", 8182))
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	// Handle error
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	// Cleanup
 	defer driverRemoteConnection.Close()
-	
-	// Submit a simple string traversal
-	resultSet, err := driverRemoteConnection.Submit("1 + 1")
+
+	// Creating graph traversal
+	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+
+	// Perform traversal
+	result, err := g.V().Count().ToList()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	
-	// Grab the first result from all the results in the ResultSet.
-	result := resultSet.All()[0]
-	
-	// Print the first result.
-	fmt.Println(result.GetString())
+	fmt.Println(result[0].GetString())
 }
 ```
 
 Note: The exact import name as well as the module prefix for `NewDriverRemoteConnection` may change in the future.
 
-### Design Architecture
+## Customizing connection
+`gremlingo.NewDriverRemoteConnection` accepts a config function as a parameter. (See code documentation for additional parameters and their usage)
+```go
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("wss://localhost:8182/gremlin",
+		func(settings *gremlingo.DriverRemoteConnectionSettings) {
+			settings.TlsConfig = &tls.Config{InsecureSkipVerify: true}         // skip certificate validation, only for development
+			settings.AuthInfo = gremlingo.BasicAuthInfo("stephen", "password") // use auth
+		})
+```
+
+## Troubleshooting
+
+### Can't establish connection and get any result
+* Verify you are using valid server protocol and path. Note that for secure connection `wss` should be used.
+* Verify firewall settings.
+
+### Local server doesn't have valid certificate
+* Set connection option &tls.Config{InsecureSkipVerify: true}
+
+### Client hangs on requests with large amount of data
+* Increase read buffer size by settings connection option `readBufferSize`.
+
+# Gremlin-Go Development
+
+## Design Architecture
 
 See [Gremlin-Go Design Overview](design.MD)
+
+## Building Directly
+
+To build the driver you must install `go`. The following command can be used to build the driver:
+`go build <path to source code>`
+
+## Code Styling and Linting
+Before generating a pull request, you should manually run the following to ensure correct code styling and fix any issues indicated by the linters.
+
+## Formatting files with Gofmt
+To ensure clean and readable code [Gofmt][gofmt] is used. 
+
+Navigate to file path in a terminal window and run:
+
+`go fmt` 
+
+Gofmt will recursively check for and format `.go` files.
+
+Note: If your IDE of choice is [GoLand][goland], code can be automatically formatted with Gofmt on file save. Instructions on how to enable this feature can be found [here][fmtsave].
+
+## Using the Linter and staticcheck
+Run [go vet][gvet] and [staticcheck][scheck] and correct any errors.
+
+[go vet][gvet] is installed when you install go, and can be run with:
+
+ `go vet <path to source code>`
+
+Please review the [staticcheck documentation][scheck docs] for more details on installing [staticcheck][scheck]. It can be run with:
+
+`staticcheck <path to source code>`
+
+## Testing with Docker
+
+Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
+
+`docker-compose up --exit-code-from integration-tests`
 
 # Go Gremlin Language Variant
 
@@ -172,52 +204,6 @@ Gremlin-Go is designed to connect to a "server" that is hosting a TinkerPop-enab
 could be [Gremlin Server][gs] or a [remote Gremlin provider][rgp] that exposes protocols by which Gremlin-Go
 can connect.
 
-A typical connection to a server running on "localhost" that supports the Gremlin Server protocol using websockets
-looks like this:
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/driver"
-)
-
-func main() {
-	// Creating the connection to the server with default settings.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(fmt.Sprintf("ws://%s:%d", "localhost", 8182))
-	// Handle error
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	// Create an anonymous traversal source with remote
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
-}
-```
-We can also customize the remote connection settings. (See code documentation for additional parameters and their usage).
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/driver"
-)
-
-func main() {
-	// Creating the connection to the server, changing the log verbosity to Debug.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(fmt.Sprintf("ws://%s:%d", "localhost", 8182), func(settings *gremlingo.DriverRemoteConnectionSettings) {
-		settings.LogVerbosity = gremlingo.Debug
-	})
-	// Handle error
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	// Create an anonymous traversal source with remote
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
-	// Use g with traversal as detailed in the next section.
-}
-```
 Once "g" has been created using a connection, it is then possible to start writing Gremlin traversals to query the
 remote graph:
 ```go
@@ -225,38 +211,38 @@ package main
 
 import (
 	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 
 func main() {
-	// Creating the connection to the server.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(fmt.Sprintf("ws://%s:%d", "localhost", 8182))
+	// Creating the connection to the server with default settings.
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
 	// Handle error
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	// Cleanup
+	defer driverRemoteConnection.Close()
+
 	// Create an anonymous traversal source with remote
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
 	// Add a vertex with properties to the graph with the terminal step Iterate()
-	_, promise, err := g.AddV("gremlin").Property("language", "go").Iterate()
-	if err != nil {
-		fmt.Println(err)
-		return 
-	}
-	
+	promise := g.AddV("gremlin").Property("language", "go").Iterate()
+
 	// The returned promised is a go channel to wait for all submitted steps to finish execution and return error.
-	if <-promise != nil {
+	err = <-promise
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	
+
 	// Get the value of the property
 	result, err := g.V().HasLabel("gremlin").Values("language").ToList()
 	if err != nil {
 		fmt.Println(err)
-		return 
+		return
 	}
 	// Print the result
 	for _, r := range result {
@@ -266,11 +252,12 @@ func main() {
 ```
 
 ## Sample Traversals
-<!--
-TODO: Add Go specific changes to following paragraph:
--->
 The Gremlin language allows users to write highly expressive graph traversals and has a broad list of functions that
 cover a wide body of features. Traversal in `Go` is very similar to other GLV, with the exception that all step functions are capitalized.
+
+Anonymous traversal `__` replaced with `T__` due to `Go` limitations.
+
+Anything in the package when referenced needs the prefix `gremlingo` like `gremlingo.Desc`.
 
 <!--
 The [Reference Documentation][steps] describes these functions and other aspects of the
@@ -286,14 +273,10 @@ Gremlin variant for that language.
 ### Create Vertex
 Adding a vertex with properties.
 ```go
-_, promise, err := g.AddV("gremlin").Property("language", "go").Iterate()
-// Handle error
-if err != nil {
-    fmt.Println(err)
-    return
-}
+promise := g.AddV("gremlin").Property("language", "go").Iterate()
 // Wait for all steps to finish execution and check for error.
-if <-promise != nil {
+err := <-promise
+if err != nil {
     fmt.Println(err)
     return
 }
@@ -316,50 +299,24 @@ for _, r := range result {
 ### Update Vertex
 Updating vertex by adding another property to it. 
 ```go
-_, promise, err :=g.AddV("gremlin").Property("language", "go").Iterate()
-// Handle error
-if err != nil {
-	fmt.Println(err)
-    return
-}
+promise := g.AddV("gremlin").Property("language", "go").Iterate()
 // Wait for all steps to finish execution and check for error.
-if <-promise != nil {
+err := <-promise
+if err != nil {
     fmt.Println(err)
     return
 }
 ```
 
-# Specifications
+### Filtering and sorting
+```go
+	results, err := g.V().HasLabel("person").Has("age", gremlingo.T__.Is(gremlingo.P.Gt(30))).Order().By("age", gremlingo.Desc).ToList()
+```
+
+*List of all exports can be found at [pkg.go.dev](https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3/driver)*
+
 ### Supported Data Types
-The current `go` driver supports the following GraphBinary serialization types. 
-```
-NullType            DataType = 0xFE
-IntType             DataType = 0x01
-LongType            DataType = 0x02
-StringType          DataType = 0x03
-DoubleType          DataType = 0x07
-FloatType           DataType = 0x08
-ListType            DataType = 0x09
-MapType             DataType = 0x0a
-UUIDType            DataType = 0x0c
-BytecodeType        DataType = 0x15
-TraverserType       DataType = 0x21
-ByteType            DataType = 0x24
-ShortType           DataType = 0x26
-BooleanType         DataType = 0x27
-BigIntegerType      DataType = 0x23
-VertexType          DataType = 0x11
-EdgeType            DataType = 0x0d
-PropertyType        DataType = 0x0f
-VertexPropertyType  DataType = 0x12
-PathType            DataType = 0x0e     // see limitations
-SetType             DataType = 0x0b     // see limitations
-```
-### Current Limitations
-- The `set` data type is currently not implemented, as `go` does not have an underlying `set` data structure. Any `set` type code from server will be deserialized into `slices` with the `list` type implementation. Set implemented with the `go` convention of using a `map` will be serialized as `map`.
-- The `path` data type serialization is currently incomplete as labels are represented as list of lists instead of list of sets. Fully functional Path serialization will be implemented when `set` is implemented in the next milestone. `Path` can be successfully deserialized. 
-- Traversal step functions currently take `string` arguments with double quotes only. Operations using Gremlin keywords, such as `By(label)`, will be supported in the next milestone. 
-## Test Coverage
+The `Go` driver supports all of the core GraphBinary data types.
 
 [tk]: https://tinkerpop.apache.org
 [gremlin]: https://tinkerpop.apache.org/gremlin.html

@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -354,6 +355,157 @@ func TestTraversal(t *testing.T) {
 		g = Traversal_().WithRemote(remote)
 		assert.Equal(t, int32(0), getCount(t, g))
 	})
+
+	t.Run("Test WithOptions.Tokens WithOptions.None", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		results, err := g.V().HasLabel("person").Has("name", "marko").ValueMap("name").With(WithOptions.Tokens, WithOptions.None).ToList()
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(results))
+		name, ok := results[0].GetInterface().(map[interface{}]interface{})["name"]
+		assert.True(t, ok)
+		assert.NotNil(t, name)
+		assert.Equal(t, 1, len(results[0].GetInterface().(map[interface{}]interface{})))
+	})
+
+	t.Run("Test WithOptions.Tokens WithOptions.Ids", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		results, err := g.V().HasLabel("person").Has("name", "marko").Properties().ValueMap().With(WithOptions.Tokens, WithOptions.Ids).ToList()
+		assert.Nil(t, err)
+		assert.True(t, len(results) > 0)
+
+		// Expect each result to contain a id. No additional items.
+		for _, result := range results {
+			key, ok := result.GetInterface().(map[interface{}]interface{})["id"]
+			assert.True(t, ok)
+			assert.NotNil(t, key)
+
+			// Size should be 1.
+			assert.Equal(t, 1, len(result.GetInterface().(map[interface{}]interface{})))
+		}
+	})
+
+	t.Run("Test WithOptions.Tokens WithOptions.Keys", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		results, err := g.V().HasLabel("person").Has("name", "marko").Properties().ValueMap().With(WithOptions.Tokens, WithOptions.Keys).ToList()
+		assert.Nil(t, err)
+		assert.True(t, len(results) > 0)
+
+		// Expect each result to contain a key. No additional items.
+		for _, result := range results {
+			key, ok := result.GetInterface().(map[interface{}]interface{})["key"]
+			assert.True(t, ok)
+			assert.NotNil(t, key)
+
+			// Size should be 1.
+			assert.Equal(t, 1, len(result.GetInterface().(map[interface{}]interface{})))
+		}
+	})
+
+	t.Run("Test WithOptions.Tokens WithOptions.Values", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		results, err := g.V().HasLabel("person").Has("name", "marko").Properties().ValueMap().With(WithOptions.Tokens, WithOptions.Values).ToList()
+		assert.Nil(t, err)
+		assert.True(t, len(results) > 0)
+
+		// Expect each result to contain a value. No additional items.
+		for _, result := range results {
+			key, ok := result.GetInterface().(map[interface{}]interface{})["value"]
+			assert.True(t, ok)
+			assert.NotNil(t, key)
+
+			// Size should be 1.
+			assert.Equal(t, 1, len(result.GetInterface().(map[interface{}]interface{})))
+		}
+	})
+
+	t.Run("Test WithOptions.Tokens WithOptions.All", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		results, err := g.V().HasLabel("person").Has("name", "marko").Properties().ValueMap().With(WithOptions.Tokens, WithOptions.All).ToList()
+		assert.Nil(t, err)
+		assert.True(t, len(results) > 0)
+
+		// Expect each result to contain an id, key, and value. No additional items.
+		for _, result := range results {
+			id, ok := result.GetInterface().(map[interface{}]interface{})["id"]
+			assert.True(t, ok)
+			assert.NotNil(t, id)
+
+			key, ok := result.GetInterface().(map[interface{}]interface{})["key"]
+			assert.True(t, ok)
+			assert.NotNil(t, key)
+
+			value, ok := result.GetInterface().(map[interface{}]interface{})["value"]
+			assert.True(t, ok)
+			assert.NotNil(t, value)
+
+			// Size should be 3.
+			assert.Equal(t, 3, len(result.GetInterface().(map[interface{}]interface{})))
+		}
+	})
+
+	t.Run("Test WithOptions.Indexer WithOptions.List", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		// We expect our ResultSet to be a single Result that contains a list (array or slice).
+		results, err := g.V().HasLabel("person").Values("name").Fold().Index().With(WithOptions.Indexer, WithOptions.List).ToList()
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(results))
+		assert.True(t, results[0].GetType().Kind() == reflect.Array || results[0].GetType().Kind() == reflect.Slice)
+	})
+
+	t.Run("Test WithOptions.Indexer WithOptions.Map", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
+
+		// Get GraphTraversalSource for WithOptions.
+		g := newWithOptionsConnection(t)
+
+		// We expect our ResultSet to be a single Result that contains a map.
+		results, err := g.V().HasLabel("person").Values("name").Fold().Index().With(WithOptions.Indexer, WithOptions.Map).ToList()
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(results))
+		assert.True(t, results[0].GetType().Kind() == reflect.Map)
+
+	})
+}
+
+func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
+	// No authentication integration test with graphs loaded and alias configured server
+	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthWithAliasAuthInfo := &AuthInfo{}
+	testNoAuthWithAliasTlsConfig := &tls.Config{}
+
+	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
+		func(settings *DriverRemoteConnectionSettings) {
+			settings.TlsConfig = testNoAuthWithAliasTlsConfig
+			settings.AuthInfo = testNoAuthWithAliasAuthInfo
+			settings.TraversalSource = "gmodern"
+		})
+	assert.Nil(t, err)
+	assert.NotNil(t, remote)
+	return Traversal_().WithRemote(remote)
 }
 
 func newConnection(t *testing.T) *DriverRemoteConnection {
