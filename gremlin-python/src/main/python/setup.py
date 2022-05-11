@@ -69,11 +69,11 @@ setup(
     test_suite="tests",
     data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[
-        'pytest-runner==5.2',
+        'pytest-runner==6.0.0',
         'importlib-metadata<3.0.0'
     ],
     tests_require=[
-        'pytest>=4.6.4,<7.1.0',
+        'pytest>=4.6.4,<7.2.0',
         'mock>=3.0.5,<4.0.0',
         'radish-bdd==0.8.6',
         'PyHamcrest>=1.9.0,<2.0.0'
@@ -86,7 +86,6 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3"
     ]
 )

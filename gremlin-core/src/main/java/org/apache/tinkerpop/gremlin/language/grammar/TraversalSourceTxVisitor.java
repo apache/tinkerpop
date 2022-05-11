@@ -36,6 +36,7 @@ public class TraversalSourceTxVisitor extends DefaultGremlinBaseVisitor<Void> {
     public Void visitTransactionPart(final GremlinParser.TransactionPartContext ctx) {
         // position 4 holds the tx command
         final String cmd = ctx.getChild(4).getText();
+        final GraphTraversalSource g = null == source ? antlr.graph.traversal() : source;
         switch (cmd) {
             case "begin":
                 // script based transactions are automatic, meaning commit()/rollback() should keep g in a state
@@ -43,13 +44,13 @@ public class TraversalSourceTxVisitor extends DefaultGremlinBaseVisitor<Void> {
                 // remote client-side Gremlin where you need to construct a boundary for the session which hosts the
                 // transaction. we support begin() here to at least allow the function to be called without error so
                 // as to hold syntax consistency, but it is effectively a no-op.
-                // this.source.tx().begin();
+                // g.tx().begin();
                 break;
             case "commit":
-                this.source.tx().commit();
+                g.tx().commit();
                 break;
             case "rollback":
-                this.source.tx().rollback();
+                g.tx().rollback();
                 break;
             default:
                 notImplemented(ctx);

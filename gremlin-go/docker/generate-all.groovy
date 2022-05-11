@@ -45,7 +45,7 @@ globals << [hook : [
         idManagerField.set(graph, TinkerGraph.DefaultIdManager.INTEGER)
     }
 
-    [classic, modern, crew, sink, grateful, test].each{
+    [classic, modern, crew, sink, grateful, immutable].each{
       allowSetOfIdManager(it, "vertexIdManager")
       allowSetOfIdManager(it, "edgeIdManager")
       allowSetOfIdManager(it, "vertexPropertyIdManager")
@@ -55,14 +55,14 @@ globals << [hook : [
     TinkerFactory.generateTheCrew(crew)
     TinkerFactory.generateGratefulDead(grateful)
     TinkerFactory.generateKitchenSink(sink)
-    TinkerFactory.generateModern(test)
+    TinkerFactory.generateModern(immutable)
   }
 ] as LifeCycleHook]
 
 // add default TraversalSource instances for each graph instance
 globals << [gclassic : traversal().withEmbedded(classic).withStrategies(ReferenceElementStrategy)]
 globals << [gmodern : traversal().withEmbedded(modern).withStrategies(ReferenceElementStrategy)]
-globals << [gtest : traversal().withEmbedded(test).withStrategies(ReferenceElementStrategy)]
+globals << [gimmutable : traversal().withEmbedded(immutable).withStrategies(ReferenceElementStrategy)]
 globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
 globals << [gcrew : traversal().withEmbedded(crew).withStrategies(ReferenceElementStrategy)]
 globals << [ggraph : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]

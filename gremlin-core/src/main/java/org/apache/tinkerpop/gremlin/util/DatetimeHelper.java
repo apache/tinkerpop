@@ -36,13 +36,25 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static java.time.format.DateTimeFormatter.ISO_TIME;
 
+/**
+ * Utility class for parsing and formatting dates/times.
+ */
 public final class DatetimeHelper {
 
+    /**
+     * Seems like the "noOffsetText" needs to only be set to "Z" once - doing it twice duplicates the "Z" on
+     * {@code format()} calls.
+     */
     private static final DateTimeFormatter datetimeFormatter = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .append(ISO_LOCAL_DATE_TIME)
             .optionalStart()
-            .appendOffset("+HHMMss", "Z").toFormatter();
+                .appendOffset("+HHMMss", "Z")
+            .optionalEnd()
+            .optionalStart()
+                .appendOffset("+HH:MM:ss", "")
+            .optionalEnd()
+            .toFormatter();
 
     private static final DateTimeFormatter yearMonthFormatter = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
@@ -76,6 +88,9 @@ public final class DatetimeHelper {
      *     <li>2018-03-22T00:35:44.741</li>
      *     <li>2018-03-22T00:35:44.741Z</li>
      *     <li>2018-03-22T00:35:44.741+1600</li>
+     *     <li>2018-03-22T00:35:44.741+16:00</li>
+     *     <li>2018-03-22T00:35:44.741+160000</li>
+     *     <li>2018-03-22T00:35:44.741+16:00:00</li>
      * </ul>>
      *
      */
