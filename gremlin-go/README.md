@@ -136,6 +136,16 @@ Note: The exact import name as well as the module prefix for `NewDriverRemoteCon
 		})
 ```
 
+## Aliases
+To make the code more readable and close to the Gremlin query language), you can use aliases
+```go
+    var __ = gremlingo.T__
+    var gt = gremlingo.P.Gt
+	var desc = gremlingo.Desc
+
+	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
+```
+
 ## Troubleshooting
 
 ### Can't establish connection and get any result
@@ -311,6 +321,11 @@ if err != nil {
 ### Filtering and sorting
 ```go
 	results, err := g.V().HasLabel("person").Has("age", gremlingo.T__.Is(gremlingo.P.Gt(30))).Order().By("age", gremlingo.Desc).ToList()
+```
+
+Or with aliases
+```go
+	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
 ```
 
 *List of all exports can be found at [pkg.go.dev](https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3/driver)*
