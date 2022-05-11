@@ -22,8 +22,8 @@ go 1.17
 require (
 	github.com/cucumber/godog v0.12.5
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/websocket v1.4.2
-	github.com/nicksnyder/go-i18n/v2 v2.1.2
+	github.com/gorilla/websocket v1.5.0
+	github.com/nicksnyder/go-i18n/v2 v2.2.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/text v0.3.7
 )

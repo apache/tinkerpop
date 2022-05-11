@@ -41,18 +41,16 @@ const integrationTestSuiteName = "integration"
 const basicAuthIntegrationTestSuite = "basic authentication integration"
 const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
-const validHostValidPortInvalidPath = "ws://localhost:8182/invalid"
 const testServerModernGraphAlias = "gmodern"
+const testServerGraphAlias = "gimmutable"
 const manualTestSuiteName = "manual"
 const nonRoutableIPForConnectionTimeout = "ws://10.255.255.1/"
 
 // transaction is enabled on the same port as no auth url
 const noAuthUrl = "ws://localhost:45940/gremlin"
-const basicAuthNoSsl = "ws://localhost:45941/gremlin"
 const basicAuthWithSsl = "wss://localhost:45941/gremlin"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
-var mu sync.Mutex
 
 func newDefaultConnectionSettings() *connectionSettings {
 	return &connectionSettings{
@@ -61,6 +59,9 @@ func newDefaultConnectionSettings() *connectionSettings {
 		keepAliveInterval: keepAliveIntervalDefault,
 		writeDeadline:     writeDeadlineDefault,
 		connectionTimeout: connectionTimeoutDefault,
+		enableCompression: false,
+		readBufferSize:    0,
+		writeBufferSize:   0,
 	}
 }
 
@@ -87,15 +88,22 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	assert.Nil(t, <-promise)
 }
 
-func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+func getTestGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = tls
 			settings.AuthInfo = auth
+			settings.TraversalSource = testServerGraphAlias
 		})
 	assert.Nil(t, err)
 	assert.NotNil(t, remote)
 	g := Traversal_().WithRemote(remote)
+
+	return g
+}
+
+func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+	g := getTestGraph(t, url, auth, tls)
 
 	// Drop the graph and check that it is empty.
 	dropGraph(t, g)
@@ -322,9 +330,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -349,6 +354,39 @@ func TestConnection(t *testing.T) {
 		defer deferredCleanup(t, connection)
 	})
 
+	t.Run("Test createConnection with compression", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		setting := newDefaultConnectionSettings()
+		setting.enableCompression = true
+		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
+			setting)
+		assert.Nil(t, err)
+		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
+	})
+
+	t.Run("Test connection.write() with small buffer size", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		setting := newDefaultConnectionSettings()
+		setting.readBufferSize = 100
+		setting.writeBufferSize = 150
+		setting.connectionTimeout = 1 * time.Second
+		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
+			setting)
+		assert.Nil(t, err)
+		assert.NotNil(t, connection)
+		assert.Equal(t, established, connection.state)
+		defer deferredCleanup(t, connection)
+		request := makeStringRequest("g.V().count()", "g", "")
+		resultSet, err := connection.write(&request)
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+	})
+
 	t.Run("Test connection.write()", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
@@ -361,7 +399,7 @@ func TestConnection(t *testing.T) {
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
-		result, err := resultSet.one()
+		result, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 	})
@@ -416,23 +454,26 @@ func TestConnection(t *testing.T) {
 
 	t.Run("Test newLoadBalancingPool", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		newPoolSize := 2
 		pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings(), 4, 4)
+			newDefaultConnectionSettings(), 4, 4, newPoolSize)
 		assert.Nil(t, err)
 		defer pool.close()
-		assert.Len(t, pool.(*loadBalancingPool).connections, 1)
+		assert.Len(t, pool.(*loadBalancingPool).connections, newPoolSize)
 	})
 
 	t.Run("Test loadBalancingPool.newConnection", func(t *testing.T) {
+		newPoolSize := 0
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings(), 4, 4)
+			newDefaultConnectionSettings(), 4, 4, newPoolSize)
 		assert.Nil(t, err)
 		defer pool.close()
 		lhp := pool.(*loadBalancingPool)
-		newConn, err := lhp.newConnection()
+		// Pool instantiated with no connections so this will invoke newConnection
+		newConn, err := lhp.getLeastUsedConnection()
 		assert.Nil(t, err)
-		assert.Len(t, lhp.connections, 2)
+		assert.Len(t, lhp.connections, newPoolSize+1)
 		// Workaround for false positive in race condition check
 		found := false
 		for _, conn := range lhp.connections {
@@ -452,12 +493,10 @@ func TestConnection(t *testing.T) {
 		t.Run("pool is empty", func(t *testing.T) {
 			pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
 				newDefaultConnectionSettings(),
-				newConnectionThreshold, maximumConcurrentConnections)
+				newConnectionThreshold, maximumConcurrentConnections, 0)
 			assert.Nil(t, err)
 			lbp := pool.(*loadBalancingPool)
 			defer lbp.close()
-			emptyPool := make([]*connection, 0, maximumConcurrentConnections)
-			lbp.connections = emptyPool
 			conn, err := lbp.getLeastUsedConnection()
 			assert.Nil(t, err)
 			assert.NotNil(t, conn)
@@ -467,7 +506,7 @@ func TestConnection(t *testing.T) {
 		t.Run("newConcurrentThreshold reached with capacity remaining", func(t *testing.T) {
 			pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
 				newDefaultConnectionSettings(),
-				newConnectionThreshold, maximumConcurrentConnections)
+				newConnectionThreshold, maximumConcurrentConnections, 0)
 			assert.Nil(t, err)
 			lbp := pool.(*loadBalancingPool)
 			defer lbp.close()
@@ -496,7 +535,7 @@ func TestConnection(t *testing.T) {
 		t.Run("newConcurrentThreshold reached with no capacity remaining", func(t *testing.T) {
 			capacityFullConnectionPool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info,
 				language.English), newDefaultConnectionSettings(),
-				1, 1)
+				1, 1, 1)
 			assert.Nil(t, err)
 			assert.NotNil(t, capacityFullConnectionPool)
 			capacityFullLbp := capacityFullConnectionPool.(*loadBalancingPool)
@@ -512,7 +551,7 @@ func TestConnection(t *testing.T) {
 		t.Run("all connections in pool invalid", func(t *testing.T) {
 			pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
 				newDefaultConnectionSettings(),
-				newConnectionThreshold, maximumConcurrentConnections)
+				newConnectionThreshold, maximumConcurrentConnections, 0)
 			assert.Nil(t, err)
 			lbp := pool.(*loadBalancingPool)
 			defer lbp.close()
@@ -556,7 +595,7 @@ func TestConnection(t *testing.T) {
 		resultSet, err := client.Submit("g.V().count()")
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
-		result, err := resultSet.one()
+		result, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 
@@ -565,20 +604,20 @@ func TestConnection(t *testing.T) {
 		resultSet, err = client.submitBytecode(b)
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
-		result, err = resultSet.one()
+		result, err = resultSet.One()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 	})
 
-	t.Run("Test client.submit() on Session", func(t *testing.T) {
+	t.Run("Test client.submit() on session", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
 				settings.AuthInfo = testNoAuthAuthInfo
-				settings.Session = "abc123"
 			})
+		client.session = "abc123"
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
@@ -586,15 +625,12 @@ func TestConnection(t *testing.T) {
 		resultSet, err := client.Submit("g.V().count()")
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
-		result, err := resultSet.one()
+		result, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -606,16 +642,10 @@ func TestConnection(t *testing.T) {
 		readTestDataValues(t, g)
 
 		// Drop the graph and check that it is empty.
-		dropGraph(t, g)
-		readCount(t, g, "", 0)
-		readCount(t, g, testLabel, 0)
-		readCount(t, g, personLabel, 0)
+		resetGraph(t, g)
 	})
 
 	t.Run("Test Traversal. Next and HasNext", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -626,14 +656,35 @@ func TestConnection(t *testing.T) {
 		resetGraph(t, g)
 	})
 
-	t.Run("Test DriverRemoteConnection GraphTraversal With Label", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
+	t.Run("Test Traversal GetResultSet", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
 		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		resultSet, err := g.V().HasLabel(personLabel).Properties(nameKey).GetResultSet()
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		allResults, err := resultSet.All()
+		assert.Nil(t, err)
+		var names []string
+		for _, res := range allResults {
+			assert.NotNil(t, res)
+			vp, err := res.GetVertexProperty()
+			assert.Nil(t, err)
+			names = append(names, vp.Value.(string))
+		}
+		assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
+
+		resetGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal With Label", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		// Drop the graph.
@@ -675,9 +726,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal P", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -694,9 +742,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection Next and HasNext", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -723,9 +768,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test anonymousTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -735,10 +777,7 @@ func TestConnection(t *testing.T) {
 		readUsingAnonymousTraversal(t, g)
 
 		// Drop the graph and check that it is empty.
-		dropGraph(t, g)
-		readCount(t, g, "", 0)
-		readCount(t, g, testLabel, 0)
-		readCount(t, g, personLabel, 0)
+		resetGraph(t, g)
 	})
 
 	t.Run("Test Traversal.ToList fail", func(t *testing.T) {
@@ -784,9 +823,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection GraphTraversal WithSack", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
@@ -854,7 +890,7 @@ func TestConnection(t *testing.T) {
 			assert.Equal(t, 2, len(remote.spawnedSessions))
 		})
 
-		t.Run("Test Session close", func(t *testing.T) {
+		t.Run("Test session close", func(t *testing.T) {
 			skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 			remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 				func(settings *DriverRemoteConnectionSettings) {
@@ -877,7 +913,7 @@ func TestConnection(t *testing.T) {
 			assert.Equal(t, 3, len(remote.spawnedSessions))
 		})
 
-		t.Run("Test Session failures", func(t *testing.T) {
+		t.Run("Test session failures", func(t *testing.T) {
 			skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 			remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 				func(settings *DriverRemoteConnectionSettings) {
@@ -927,7 +963,7 @@ func TestConnection(t *testing.T) {
 		resultSet, err := client.Submit("x + x", map[string]interface{}{"x": 2})
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
-		result, err := resultSet.one()
+		result, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		res, err := result.GetInt()
@@ -961,9 +997,6 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("Test DriverRemoteConnection Invalid GraphTraversal", func(t *testing.T) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph

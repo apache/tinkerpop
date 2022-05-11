@@ -227,6 +227,11 @@ jobs:
   #        docker-compose up --exit-code-from gremlin-go-integration-tests
   #        docker-compose down
   #
+  #    - name: Upload to Codecov
+  #      uses: codecov/codecov-action@v2
+  #      with:
+  #        working-directory: ./gremlin-go
+  #
   #    - name: Go-Vet
   #      working-directory: ./gremlin-go
   #      run: go vet ./...

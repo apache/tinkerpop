@@ -44,7 +44,7 @@ func TestClient(t *testing.T) {
 		resultSet, err := client.Submit("g.V().count()")
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
-		result, err := resultSet.one()
+		result, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		client.Close()

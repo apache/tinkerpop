@@ -60,7 +60,7 @@ func (t *Traversal) ToSet() (map[*Result]bool, error) {
 	return set, nil
 }
 
-// Iterate all the Traverser instances in the traversal and returns the empty traversal.
+// Iterate all the Traverser instances in the traversal.
 func (t *Traversal) Iterate() <-chan error {
 	r := make(chan error)
 
@@ -93,7 +93,7 @@ func (t *Traversal) Iterate() <-chan error {
 
 // HasNext returns true if the result is not empty.
 func (t *Traversal) HasNext() (bool, error) {
-	results, err := t.getResults()
+	results, err := t.GetResultSet()
 	if err != nil {
 		return false, err
 	}
@@ -102,17 +102,18 @@ func (t *Traversal) HasNext() (bool, error) {
 
 // Next returns next result.
 func (t *Traversal) Next() (*Result, error) {
-	results, err := t.getResults()
+	results, err := t.GetResultSet()
 	if err != nil {
 		return nil, err
 	}
 	if results.IsEmpty() {
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
-	return results.one()
+	return results.One()
 }
 
-func (t *Traversal) getResults() (ResultSet, error) {
+// GetResultSet submits the traversal and returns the ResultSet.
+func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
 		results, err := t.remote.submitBytecode(t.bytecode)
 		if err != nil {
@@ -477,4 +478,30 @@ func (tp *textP) And(args ...interface{}) TextPredicate {
 // Or TextPredicate returns a TextPredicate composed of two predicates (logical OR of them).
 func (tp *textP) Or(args ...interface{}) TextPredicate {
 	return newTextPWithP("or", *tp, args...)
+}
+
+type withOptions struct {
+	Tokens  string
+	None    int32
+	Ids     int32
+	Labels  int32
+	Keys    int32
+	Values  int32
+	All     int32
+	Indexer string
+	List    int32
+	Map     int32
+}
+
+var WithOptions withOptions = withOptions{
+	Tokens:  "~tinkerpop.valueMap.tokens",
+	None:    0,
+	Ids:     1,
+	Labels:  2,
+	Keys:    4,
+	Values:  8,
+	All:     1 | 2 | 4 | 8,
+	Indexer: "~tinkerpop.index.indexer",
+	List:    0,
+	Map:     1,
 }
