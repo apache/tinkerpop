@@ -15,18 +15,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
 RUN apt-get update
-RUN apt-get -y install software-properties-common python-software-properties apt-transport-https curl dpkg netcat net-tools
+RUN apt-get -y install software-properties-common python3-software-properties apt-transport-https curl dpkg netcat net-tools iproute2
 RUN add-apt-repository ppa:openjdk-r/ppa
-RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
+RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
 RUN sh -c 'dpkg -i packages-microsoft-prod.deb'
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 RUN apt-get install apt-transport-https gnupg ca-certificates
-RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
+RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
 
 # include both java 8/11 so that we can use the same docker image for future builds on that version of the jdk as we do
@@ -34,21 +34,15 @@ RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
 RUN apt-get install -y --force-yes dotnet-sdk-6.0 mono-devel
 
-# python3 on xenial install 3.5.2 which is insufficient for newer versions of python/typing#259 so
-# custom build and install 3.6.9 and upgrade pip along the way. this could be resolved by using bionic
-# but trying to keep all of our release branches on the same docker image and the older versions suit 3.4.x+
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get install -y python python-dev python-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev \
+RUN apt-get install -y python3 python3.8 python3-dev python3.8-dev python3-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev \
     libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libkrb5-dev krb5-user
-RUN cd /opt && wget https://www.python.org/ftp/python/3.6.9/Python-3.6.9.tgz && tar -xvf Python-3.6.9.tgz
-RUN cd /opt/Python-3.6.9 && ./configure && make && make install
-RUN ln -sf /usr/bin/python3.6.9 /usr/bin/python3
-# pip drops support of Python 2 starting from version 21.0
-RUN pip install --upgrade "pip<21.0"
+
+# make python3 be python 3.8
+RUN rm /usr/bin/python3
+RUN ln -s python3.8 /usr/bin/python3
+RUN python3 -m pip install --upgrade pip
 RUN pip install virtualenv
-# pin bpr to 5.5.1 since 5.6.0 hassles virtualenvwrapper - maybe can remove after full drop of 3.4.x support with
-# no further need for python 2 at all
-RUN pip install pbr==5.5.1
 RUN pip install virtualenvwrapper --no-deps
 
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk

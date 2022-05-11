@@ -42,7 +42,7 @@ const basicAuthIntegrationTestSuite = "basic authentication integration"
 const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
 const testServerModernGraphAlias = "gmodern"
-const testServerGraphAlias = "gtest"
+const testServerGraphAlias = "gimmutable"
 const manualTestSuiteName = "manual"
 const nonRoutableIPForConnectionTimeout = "ws://10.255.255.1/"
 

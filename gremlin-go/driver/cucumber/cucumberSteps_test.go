@@ -430,10 +430,13 @@ func (tg *tinkerPopGraph) theResultShouldBe(characterizedAs string, table *godog
 						return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 					}
 				}
-			} else {
-				if fmt.Sprint(actualResult) != fmt.Sprint(expectedResult) {
+			} else if len(actualResult) == 1 && len(expectedResult) == 1 && reflect.TypeOf(actualResult[0]).Kind() == reflect.Map &&
+				reflect.TypeOf(expectedResult[0]).Kind() == reflect.Map {
+				if !compareMapEquals(actualResult[0].(map[interface{}]interface{}), expectedResult[0].(map[interface{}]interface{})) {
 					return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 				}
+			} else if fmt.Sprint(actualResult) != fmt.Sprint(expectedResult) {
+				return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 			}
 		} else {
 			if characterizedAs == "of" {

@@ -17,6 +17,8 @@
  * under the License.
  */
 
+package org.apache.tinkerpop.gremlin.util;
+
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
@@ -44,7 +46,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 class PerformanceTest {
     private static final int SAMPLE_SIZE = 55;
     private static final int VALUE_MAP_REPEATS = 500;
-    private static final String HOST = "172.31.24.17";
+    private static final String HOST = "localhost";
     private static final int PORT = 45940;
     private static final int POOLING_CONTENT_LENGTH = 25 * 1024 * 1024;
     private static final int MAX_CONTENT_LENGTH = 300 * 1024 * 1024;
@@ -53,18 +55,18 @@ class PerformanceTest {
     private static final List<Integer> POOL_SIZE = new ArrayList<>();
     private static final List<Integer> POOL_QUERY_COUNT = new ArrayList<>();
     static {
-        // POOL_SIZE.add(1);
+        POOL_SIZE.add(1);
         POOL_SIZE.add(2);
         POOL_SIZE.add(4);
         POOL_SIZE.add(8);
-        // POOL_QUERY_COUNT.add(50);
-        // POOL_QUERY_COUNT.add(100);
+        POOL_QUERY_COUNT.add(50);
+        POOL_QUERY_COUNT.add(100);
         POOL_QUERY_COUNT.add(250);
-        // POOL_QUERY_COUNT.add(500);
+        POOL_QUERY_COUNT.add(500);
     }
 
-    public static void main(String[] args) {
-        executePerformanceTests();
+    private static void main(String[] args) {
+        // executePerformanceTests();
         System.exit(0);
     }
 
