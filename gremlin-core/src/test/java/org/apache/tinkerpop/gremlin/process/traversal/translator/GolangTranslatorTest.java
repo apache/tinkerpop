@@ -60,7 +60,7 @@ public class GolangTranslatorTest {
     public void shouldTranslateCardinality() {
         final String gremlinAsGo = translator.translate(
                 g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
-        assertEquals("g.AddV(\"person\").Property(gremlingo.List, \"name\", \"marko\")", gremlinAsGo);
+        assertEquals("g.AddV(\"person\").Property(gremlingo.Cardinality.List, \"name\", \"marko\")", gremlinAsGo);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class GolangTranslatorTest {
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE().Count().Is(2).And(gremlingo.T__.Not(gremlingo.T__.InE().Count().Is(3))))", gremlinAsGo);
     }
 
-    // TODO: TraversalStrategy implementation in Gremlin-go
+    // TODO: Implement Gremlin-Go Strategies translation
     @Ignore
     @Test
     public void shouldTranslateStrategies() {
