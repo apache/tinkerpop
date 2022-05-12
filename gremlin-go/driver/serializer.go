@@ -218,8 +218,6 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 }
 
 func initSerializers() {
-	// todo: lock or don't care?
-	// todo: lazy init or don't care?
 	if serializers == nil || len(serializers) == 0 {
 		serializers = map[dataType]writer{
 			bytecodeType:   bytecodeWriter,
@@ -278,7 +276,6 @@ func initSerializers() {
 }
 
 func initDeserializers() {
-	// todo: lock or don't care?
 	if deserializers == nil || len(deserializers) == 0 {
 		deserializers = map[dataType]reader{
 			// Primitive
