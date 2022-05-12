@@ -37,7 +37,7 @@ type ResultSet interface {
 	Close()
 	Channel() chan *Result
 	addResult(result *Result)
-	One() (*Result, error)
+	One() (*Result, bool, error)
 	All() ([]*Result, error)
 	GetError() error
 	setError(error)
@@ -149,11 +149,15 @@ func (channelResultSet *channelResultSet) Channel() chan *Result {
 }
 
 // One returns the next Result from the channelResultSet, blocking until one is available.
-func (channelResultSet *channelResultSet) One() (*Result, error) {
+func (channelResultSet *channelResultSet) One() (*Result, bool, error) {
 	if channelResultSet.err != nil {
-		return nil, channelResultSet.err
+		return nil, false, channelResultSet.err
 	}
-	return <-channelResultSet.channel, channelResultSet.err
+	result, ok := <-channelResultSet.channel
+	if channelResultSet.err != nil {
+		return nil, false, channelResultSet.err
+	}
+	return result, ok, nil
 }
 
 // All returns all remaining results for the channelResultSet (results grabbed through One will not be present).
