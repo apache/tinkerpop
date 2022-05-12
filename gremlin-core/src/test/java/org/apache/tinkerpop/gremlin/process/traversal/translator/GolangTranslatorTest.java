@@ -88,7 +88,7 @@ public class GolangTranslatorTest {
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE().Count().Is(2).And(gremlingo.T__.Not(gremlingo.T__.InE().Count().Is(3))))", gremlinAsGo);
     }
 
-    // TODO AN-987: TraversalStrategy implementation in Gremlin-go
+    // TODO: TraversalStrategy implementation in Gremlin-go
     @Ignore
     @Test
     public void shouldTranslateStrategies() {
