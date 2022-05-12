@@ -149,6 +149,8 @@ func (channelResultSet *channelResultSet) Channel() chan *Result {
 }
 
 // One returns the next Result from the channelResultSet, blocking until one is available.
+// The value of ok is true if the value received was delivered by a successful send operation to the channel,
+// or false if it is a zero value generated because the channel is closed and empty.
 func (channelResultSet *channelResultSet) One() (*Result, bool, error) {
 	if channelResultSet.err != nil {
 		return nil, false, channelResultSet.err
