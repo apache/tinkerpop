@@ -336,17 +336,17 @@ g.V().has("name","gremlin").as("a").
                                                     </code>
                                                 </div>
                     </div>
-                     <div class="col-md-12 col-lg-6">
+                    <div class="col-md-12 col-lg-6">
                         <h2 class="ft-30 bold black mb-3 md-md-5">Imperative & Declarative Traversals</h2>
-                        <p>A Gremlin traversal can be written in either an imperative (procedural) manner, a declarative (descriptive) manner, or in a hybrid manner containing both imperative and declarative aspects. An imperative Gremlin traversal tells the traversers how to proceed at each step in the traversal. For instance, the imperative traversal on the right first places a traverser at the vertex denoting Gremlin. That traverser then splits itself across all of Gremlin's collaborators that are not Gremlin himself. Next, the traversers walk to the managers of those collaborators to ultimately be grouped into a manager name count distribution. This traversal is imperative in that it tells the traversers to "go here and then go there" in an explicit, procedural manner.</p>
+                        <p>A Gremlin traversal can be written in either an imperative (procedural) manner, a declarative (descriptive) manner, or in a hybrid manner containing both imperative and declarative aspects. An imperative Gremlin traversal tells the traversers how to proceed at each step in the traversal. For instance, the imperative traversal in the first box first places a traverser at the vertex denoting Gremlin. That traverser then splits itself across all of Gremlin's collaborators that are not Gremlin himself. Next, the traversers walk to the managers of those collaborators to ultimately be grouped into a manager name count distribution. This traversal is imperative in that it tells the traversers to "go here and then go there" in an explicit, procedural manner.</p>
                     </div>
                     
                 </div>
 
                 <div class="row mb-3 mb-md-5">
                     
-                     <div class="col-md-12 col-lg-6 order-2 order-md-1">
-                        <p class="text-lg-end text-start">A declarative Gremlin traversal does not tell the traversers the order in which to execute their walk, but instead, allows each traverser to select a pattern to execute from a collection of (potentially nested) patterns. The declarative traversal on the left yields the same result as the imperative traversal above. However, the declarative traversal has the added benefit that it leverages not only a compile-time query planner (like imperative traversals), but also a runtime query planner that chooses which traversal pattern to execute next based on the historic statistics of each pattern -- favoring those patterns which tend to reduce/filter the most data.</p>
+                    <div class="col-md-12 col-lg-6 order-2 order-md-1">
+                        <p class="text-lg-end text-start">A declarative Gremlin traversal does not tell the traversers the order in which to execute their walk, but instead, allows each traverser to select a pattern to execute from a collection of (potentially nested) patterns. The declarative traversal in the second box yields the same result as the imperative traversal above. However, the declarative traversal has the added benefit that it leverages not only a compile-time query planner (like imperative traversals), but also a runtime query planner that chooses which traversal pattern to execute next based on the historic statistics of each pattern -- favoring those patterns which tend to reduce/filter the most data.</p>
                     </div>
                     <div class="col-md-12 col-lg-6 mb-4 mb-lg-0 order-1 order-md-2">
                         <div class="code-box h-100">
@@ -420,9 +420,9 @@ g.V().has("name","gremlin").as("a").
                                                             <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">System.out.printIn</span><span class="text-success">("Average rating :" +</span><span class="text-blue">avg</span><span class="text-success">);</span>
 
 
-                                                              <br>&nbsp;&nbsp;<span class="text-success">}</span>
+                                                              <br>&nbsp;&nbsp;<span class="text-blue">}</span>
 
-                                                                <br>&nbsp;<span class="text-success">}</span>
+                                                                <br>&nbsp;<span class="text-blue">}</span>
                                                              
                                                     </code>
                                                 </div>
@@ -450,7 +450,7 @@ g.V().has("name","gremlin").as("a").
 
                                                             
 
-                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">System.out.println(</span><span class="text-success">"Average rating"</span><span class="text-purpal">+</span><span class="text-blue">result.next().getDouble(</span><span class="text-success">"AVERAGE"</span><span class="text-blue">)</span>
+                                                            <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">System.out.println(</span><span class="text-success">"Average rating"</span><span class="text-purpal">+</span><span class="text-blue">result.next().getDouble(</span><span class="text-success">"AVERAGE"</span><span class="text-blue">));</span>
 
 
                                                               <br>&nbsp;&nbsp;<span class="text-blue">}</span>
@@ -479,7 +479,7 @@ g.V().has("name","gremlin").as("a").
 
                                                             <br><span class="text-purpal">g</span><span class="text-blue"> =  traversal().withRemote(DriverRemoteConnection.using("<span class="text-success">Localhost</span><span class="text-blue">",</span><span class="text-purpal">8182</span><span class="text-blue">));</span> &nbsp;&nbsp;&nbsp;&nbsp; <span class="comment-text">//remote</span></span>
 
-                                                            <br><span class="text-purpal">g</span><span class="text-blue"> =  traversal().withEmbedded((graph).withComputer(SparkGraphComputer.<span class="text-purpal">class</span><span class="text-blue">);</span> &nbsp;&nbsp;&nbsp; <span class="comment-text">//distributed OLAP</span></span>
+                                                            <br><span class="text-purpal">g</span><span class="text-blue"> =  traversal().withEmbedded(graph).withComputer(SparkGraphComputer.<span class="text-purpal">class</span><span class="text-blue">);</span> &nbsp;&nbsp;&nbsp; <span class="comment-text">//distributed OLAP</span></span>
                                                             
                                                              
                                                     </code>
