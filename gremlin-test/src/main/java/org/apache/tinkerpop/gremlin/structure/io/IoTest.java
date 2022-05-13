@@ -368,7 +368,7 @@ public class IoTest {
                 w.writeGraph(bos, graph);
                 fail("Should not be able to write multi-properties to GraphML");
             } catch (IllegalStateException iae) {
-                assertThat(iae.getMessage(), containsString("multi-properties are not directly supported by GraphML format"));
+                assertEquals(iae.getMessage(), "Multiple properties exist for the provided key: [location]. Multi-properties are not directly supported by GraphML format");
             }
         }
 
