@@ -553,7 +553,7 @@ public interface Graph extends AutoCloseable, Host {
             /**
              * Gets the {@link VertexProperty.Cardinality} for a key.  By default, this method will return
              * {@link VertexProperty.Cardinality#list}.  Implementations that employ a schema can consult it to
-             * determine the {@link VertexProperty.Cardinality}.  Those that do no have a schema can return their
+             * determine the {@link VertexProperty.Cardinality}.  Those that do not have a schema can return their
              * default {@link VertexProperty.Cardinality} for every key.
              * <p/>
              * Note that this method is primarily used by TinkerPop for internal usage and may not be suitable to
@@ -563,6 +563,16 @@ public interface Graph extends AutoCloseable, Host {
              */
             public default VertexProperty.Cardinality getCardinality(final String key) {
                 return VertexProperty.Cardinality.list;
+            }
+
+            /**
+             * Given a property name and one or more associated values, get the {@link VertexProperty.Cardinality} for a key.
+             * @param key name of property
+             * @param values value(s) associated with this property
+             * @return Cardinality that is most suitable for this key
+             */
+            public default VertexProperty.Cardinality getCardinality(final String key, final Object... values) {
+                return getCardinality(key);
             }
 
             /**

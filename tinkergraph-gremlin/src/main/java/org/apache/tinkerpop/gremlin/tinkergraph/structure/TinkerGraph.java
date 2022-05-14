@@ -42,14 +42,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optim
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -410,6 +403,15 @@ public final class TinkerGraph implements Graph {
         @Override
         public VertexProperty.Cardinality getCardinality(final String key) {
             return defaultVertexPropertyCardinality;
+        }
+
+        @Override
+        public VertexProperty.Cardinality getCardinality(final String key, final Object... values) {
+            VertexProperty.Cardinality cardinality = defaultVertexPropertyCardinality;
+            if (values.length > 1 && cardinality == VertexProperty.Cardinality.single) {
+                cardinality = VertexProperty.Cardinality.list;
+            }
+            return cardinality;
         }
     }
 

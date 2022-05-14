@@ -107,7 +107,7 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
      */
     protected static boolean requiresListCardinalityAsDefault(final LoadGraphWith.GraphData loadGraphWith,
                                                             final Class<?> test, final String testMethodName) {
-        return loadGraphWith == LoadGraphWith.GraphData.CREW
+        return loadGraphWith == LoadGraphWith.GraphData.CREW && !testMethodName.startsWith("shouldReadWriteCrew")
                 || (test == StarGraphTest.class && testMethodName.equals("shouldAttachWithCreateMethod"))
                 || (test == DetachedGraphTest.class && testMethodName.equals("testAttachableCreateMethod"));
     }
