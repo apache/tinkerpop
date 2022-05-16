@@ -98,7 +98,7 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		count, err := g.WithStrategies(SubgraphStrategy(T__.HasLabel(testLabel), nil, nil)).V().Count().ToList()
+		count, err := g.WithStrategies(SubgraphStrategy(T__.HasLabel(testLabel), nil, nil, nil)).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))

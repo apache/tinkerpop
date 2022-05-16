@@ -876,13 +876,13 @@ func getEnvOrDefaultBool(key string, defaultValue bool) bool {
 }
 
 func TestCucumberFeatures(t *testing.T) {
-	t.Skip("NOTICE: Skipping Godog tests on 3.6-dev and master until support for new tests is added.")
 	skipTestsIfNotEnabled(t, "cucumber godog tests",
 		getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
 	suite := godog.TestSuite{
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/features")},
 			TestingT: t, // Testing instance that will run subtests.

@@ -253,6 +253,26 @@ func strategyFactory(strategyName string, params map[string]interface{}) interfa
 	case "VertexProgramStrategy":
 		graphComputer, _ := params["graphComputer"].(string)
 		return gremlingo.VertexProgramStrategy(graphComputer, "", "", 0, nil, nil, nil)
+	case "ProductiveByStrategy":
+		productiveKeys, _ := params["productiveKeys"]
+		productiveKeysInterface := productiveKeys.([]interface{})
+		var productiveKeysStrings = make([]string, len(productiveKeysInterface))
+		for i := range productiveKeysInterface {
+			productiveKeysStrings[i] = productiveKeysInterface[i].(string)
+		}
+		return gremlingo.ProductiveByStrategy(productiveKeysStrings)
+	case "ReadOnlyStrategy":
+		return gremlingo.ReadOnlyStrategy()
+	case "SubgraphStrategy":
+		checkAdjacentVertices, _ := params["checkAdjacentVertices"]
+		edges, _ := params["edges"]
+		vertices, _ := params["vertices"]
+		vertexProperties, _ := params["vertexProperties"]
+		return gremlingo.SubgraphStrategy(vertices, edges, vertexProperties, checkAdjacentVertices)
+	case "SeedStrategy":
+		seed, _ := params["seed"]
+		return gremlingo.SeedStrategy(int64(seed.(int)))
 	}
 	return nil
+
 }
