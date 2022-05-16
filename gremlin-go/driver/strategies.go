@@ -101,7 +101,7 @@ func SeedStrategy(seed int64) *traversalStrategy {
 // SubgraphStrategy provides a way to limit the view of a Traversal. By providing Traversal representations that
 // represent a form of filtering criterion for Vertices and/or Edges, this strategy will inject that criterion into
 // the appropriate places of a Traversal thus restricting what it Traverses and returns.
-func SubgraphStrategy(vertices, edges, vertexProperties interface{}) *traversalStrategy { // all vars can be Traversal or null
+func SubgraphStrategy(vertices, edges, vertexProperties interface{}, checkAdjacentVertices interface{}) *traversalStrategy { // all vars can be Traversal or null
 	config := make(map[string]interface{})
 	if vertices != nil {
 		config["vertices"] = vertices
@@ -111,6 +111,9 @@ func SubgraphStrategy(vertices, edges, vertexProperties interface{}) *traversalS
 	}
 	if vertexProperties != nil {
 		config["vertexProperties"] = vertexProperties
+	}
+	if checkAdjacentVertices != nil {
+		config["checkAdjacentVertices"] = checkAdjacentVertices.(bool)
 	}
 	return &traversalStrategy{name: decorationNamespace + "SubgraphStrategy", configuration: config}
 }

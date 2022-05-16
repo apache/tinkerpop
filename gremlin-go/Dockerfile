@@ -16,7 +16,7 @@
 # under the License.
 
 ARG GREMLIN_SERVER_VERSION
-FROM tinkerpop/gremlin-server:${GREMLIN_SERVER_VERSION:-3.5.4-SNAPSHOT}
+FROM tinkerpop/gremlin-server:${GREMLIN_SERVER_VERSION:-3.6.1-SNAPSHOT}
 
 USER root
 RUN mkdir -p /opt
@@ -36,9 +36,9 @@ ARG NEO4J_VERSION
 # but only only port 45940 is configured with the neo4j graph as the neo4j-empty.properties
 # is statically pointing at a temp directory and that space can only be accessed by one
 # graph at a time.
-RUN /opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin ${NEO4J_VERSION:-3.5.4}
+RUN /opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin ${NEO4J_VERSION:-3.6.1}
 
-# Gremlin server and neo4j versions are set to 3.5.4 by default, to change their versions, add args under the
+# Gremlin server and neo4j versions are set to 3.6.1 by default, to change their versions, add args under the
 # docker-compose build step, e.g.:
 #      args:
 #        GREMLIN_SERVER_VERSION: 3.5.x-SNAPSHOT
