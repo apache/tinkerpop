@@ -205,6 +205,7 @@ jobs:
   go:
     name: go
     timeout-minutes: 20
+    needs: smoke
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
