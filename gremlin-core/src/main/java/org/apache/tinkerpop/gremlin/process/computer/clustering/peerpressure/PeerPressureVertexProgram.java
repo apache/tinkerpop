@@ -44,12 +44,10 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.ACTIVE_TRAVERSERS;
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.HALTED_TRAVERSERS;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -79,6 +77,16 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     private PeerPressureVertexProgram() {
 
     }
+
+    @Override
+    public List<org.apache.commons.lang3.tuple.Pair<String, Class>> getVertexPropertyKeys() {
+        return Arrays.asList(
+            org.apache.commons.lang3.tuple.Pair.of(HALTED_TRAVERSERS, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(ACTIVE_TRAVERSERS, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(CLUSTER, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(VOTE_STRENGTH, Double.class));
+    }
+
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {

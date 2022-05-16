@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
@@ -42,10 +43,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.ACTIVE_TRAVERSERS;
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.HALTED_TRAVERSERS;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -79,6 +80,16 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private PageRankVertexProgram() {
 
     }
+
+    @Override
+    public List<Pair<String, Class>> getVertexPropertyKeys() {
+        return Arrays.asList(
+            Pair.of(EDGE_COUNT, Double.class),
+            Pair.of(PAGE_RANK, Double.class),
+            Pair.of(HALTED_TRAVERSERS, Object.class),
+            Pair.of(ACTIVE_TRAVERSERS, Object.class));
+    }
+
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {

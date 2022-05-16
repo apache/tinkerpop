@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
@@ -131,6 +132,13 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      */
     public PureTraversal<?, ?> getTraversal() {
         return this.traversal;
+    }
+
+    @Override
+    public List<Pair<String, Class>> getVertexPropertyKeys() {
+        return Arrays.asList(
+            Pair.of(HALTED_TRAVERSERS, Object.class),
+            Pair.of(ACTIVE_TRAVERSERS, Object.class));
     }
 
     public static <R> TraverserSet<R> loadHaltedTraversers(final Configuration configuration) {

@@ -64,6 +64,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.ACTIVE_TRAVERSERS;
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.HALTED_TRAVERSERS;
+
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
@@ -108,7 +111,7 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
 
     private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
             VertexComputeKey.of(PATHS, true),
-            VertexComputeKey.of(TraversalVertexProgram.HALTED_TRAVERSERS, false)));
+            VertexComputeKey.of(HALTED_TRAVERSERS, false)));
 
     private final Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>(Arrays.asList(
             MemoryComputeKey.of(VOTE_TO_HALT, Operator.and, false, true),
@@ -116,6 +119,14 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
 
     private ShortestPathVertexProgram() {
 
+    }
+
+    @Override
+    public List<org.apache.commons.lang3.tuple.Pair<String, Class>> getVertexPropertyKeys() {
+        return Arrays.asList(
+            org.apache.commons.lang3.tuple.Pair.of(HALTED_TRAVERSERS, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(ACTIVE_TRAVERSERS, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(PATHS, Object.class));
     }
 
     @Override
@@ -394,7 +405,7 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
         if (traversers != null) {
             final TraverserSet<Vertex> newHaltedTraversers = new TraverserSet<>();
             newHaltedTraversers.addAll(traversers);
-            vertex.property(VertexProperty.Cardinality.single, TraversalVertexProgram.HALTED_TRAVERSERS, newHaltedTraversers);
+            vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, newHaltedTraversers);
         }
     }
 
@@ -426,7 +437,7 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
             return filterTraversal.hasNext();
         }
         // ...otherwise use halted traversers to determine whether this is a start vertex
-        return vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).isPresent();
+        return vertex.property(HALTED_TRAVERSERS).isPresent();
     }
 
     private boolean isEndVertex(final Vertex vertex) {
@@ -463,10 +474,10 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
     private void updateHaltedTraversers(final Vertex vertex, final Memory memory) {
         if (isStartVertex(vertex)) {
             final List<Path> paths = memory.get(SHORTEST_PATHS);
-            if (vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).isPresent()) {
+            if (vertex.property(HALTED_TRAVERSERS).isPresent()) {
                 // replace the current set of halted traversers with new new traversers that hold the shortest paths
                 // found for this vertex
-                final TraverserSet<Vertex> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
+                final TraverserSet<Vertex> haltedTraversers = vertex.value(HALTED_TRAVERSERS);
                 final TraverserSet<Path> newHaltedTraversers = new TraverserSet<>();
                 for (final Traverser.Admin<Vertex> traverser : haltedTraversers) {
                     final Vertex v = traverser.get();
@@ -476,7 +487,7 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
                         }
                     }
                 }
-                vertex.property(VertexProperty.Cardinality.single, TraversalVertexProgram.HALTED_TRAVERSERS, newHaltedTraversers);
+                vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, newHaltedTraversers);
             }
         }
     }

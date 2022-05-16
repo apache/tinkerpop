@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.lang.reflect.Constructor;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,6 +49,10 @@ import java.util.Set;
 public interface VertexProgram<M> extends Cloneable {
 
     public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
+
+    default List<Pair<String, Class>> getVertexPropertyKeys() {
+        return Collections.emptyList();
+    }
 
     /**
      * When it is necessary to store the state of the VertexProgram, this method is called.

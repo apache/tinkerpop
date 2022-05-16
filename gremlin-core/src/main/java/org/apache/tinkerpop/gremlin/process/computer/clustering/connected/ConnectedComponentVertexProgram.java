@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.clustering.connected;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
@@ -43,12 +44,10 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.ACTIVE_TRAVERSERS;
+import static org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram.HALTED_TRAVERSERS;
 
 /**
  * Identifies "Connected Component" instances in a graph by assigning a component identifier (the lexicographically
@@ -75,6 +74,14 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
     private IndexedTraverserSet<Vertex, Vertex> haltedTraversersIndex;
 
     private ConnectedComponentVertexProgram() {}
+
+    @Override
+    public List<Pair<String, Class>> getVertexPropertyKeys() {
+        return Arrays.asList(
+            org.apache.commons.lang3.tuple.Pair.of(HALTED_TRAVERSERS, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(ACTIVE_TRAVERSERS, Object.class),
+            org.apache.commons.lang3.tuple.Pair.of(COMPONENT, Object.class));
+    }
 
     @Override
     public void loadState(final Graph graph, final Configuration config) {
