@@ -26,7 +26,7 @@ services:
       dockerfile: gremlin-go/Dockerfile
       args:
         NEO4J_VERSION: 3.5.3
-        GREMLIN_SERVER_VERSION: 3.6.1-SNAPSHOT
+        GREMLIN_SERVER_VERSION: 3.7.0-SNAPSHOT
     ports:
       - "45940:45940"
       - "45941:45941"
