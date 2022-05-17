@@ -213,7 +213,16 @@ func strategyFactory(strategyName string, params map[string]interface{}) interfa
 	switch strategyName {
 	case "VertexProgramStrategy":
 		graphComputer, _ := params["graphComputer"].(string)
-		return gremlingo.VertexProgramStrategy(graphComputer, "", "", 0, nil, nil, nil)
+		config := gremlingo.VertexProgramStrategyConfig{
+			GraphComputer: graphComputer,
+			Workers:       0,
+			Persist:       "",
+			Result:        "",
+			Vertices:      nil,
+			Edges:         nil,
+			Configuration: nil,
+		}
+		return gremlingo.VertexProgramStrategy(config)
 	}
 	return nil
 }
