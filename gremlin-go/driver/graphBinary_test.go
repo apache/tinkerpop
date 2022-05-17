@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/language"
@@ -86,6 +87,25 @@ func TestGraphBinaryV1(t *testing.T) {
 			res, err := readString(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, str, res)
+		})
+		t.Run("read-write bool", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			f := func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+				err := binary.Write(buffer, binary.BigEndian, value.(bool))
+				return buffer.Bytes(), err
+			}
+			data, err := f(false, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBoolean(&data, &pos)
+			assert.Nil(t, err)
+			assert.False(t, res.(bool))
+
+			data, err = f(true, &buffer, nil)
+			assert.Nil(t, err)
+			res, err = readBoolean(&data, &pos)
+			assert.Nil(t, err)
+			assert.True(t, res.(bool))
 		})
 		t.Run("read-write int", func(t *testing.T) {
 			pos := 0
