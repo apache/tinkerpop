@@ -137,7 +137,13 @@ func listWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 
 // Format: {length}{value}
 func byteBufferWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	v := value.(*ByteBuffer)
+	var v ByteBuffer
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*ByteBuffer))
+	} else {
+		v = value.(ByteBuffer)
+	}
+
 	err := binary.Write(buffer, binary.BigEndian, int32(len(v.Data)))
 	if err != nil {
 		return nil, err
@@ -145,8 +151,6 @@ func byteBufferWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *g
 	buffer.Write(v.Data)
 
 	return buffer.Bytes(), nil
-
-	return listWriter(v, buffer, typeSerializer)
 }
 
 // Format: {length}{item_0}...{item_n}
@@ -310,7 +314,12 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 
 // Format: {length}{value_0}...{value_n}
 func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
-	v := value.(big.Int)
+	var v big.Int
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*big.Int))
+	} else {
+		v = value.(big.Int)
+	}
 	signedBytes := getSignedBytesFromBigInt(&v)
 	err := binary.Write(buffer, binary.BigEndian, int32(len(signedBytes)))
 	if err != nil {
@@ -327,7 +336,12 @@ func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSer
 
 // Format: {scale}{unscaled_value}
 func bigDecimalWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	v := value.(*BigDecimal)
+	var v BigDecimal
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*BigDecimal))
+	} else {
+		v = value.(BigDecimal)
+	}
 	err := binary.Write(buffer, binary.BigEndian, v.Scale)
 	if err != nil {
 		return nil, err
@@ -337,7 +351,12 @@ func bigDecimalWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *g
 }
 
 func classWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	v := value.(*GremlinType)
+	var v GremlinType
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*GremlinType))
+	} else {
+		v = value.(GremlinType)
+	}
 	return stringWriter(v.Fqcn, buffer, typeSerializer)
 }
 
@@ -681,15 +700,15 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return textPType, nil
 	case *Binding, Binding:
 		return bindingType, nil
-	case *BigDecimal:
+	case *BigDecimal, BigDecimal:
 		return bigDecimalType, nil
-	case *GremlinType:
+	case *GremlinType, GremlinType:
 		return classType, nil
-	case Metrics:
+	case *Metrics, Metrics:
 		return metricsType, nil
-	case TraversalMetrics:
+	case *TraversalMetrics, TraversalMetrics:
 		return traversalMetricsType, nil
-	case *ByteBuffer:
+	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
