@@ -64,7 +64,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -454,35 +456,26 @@ public class GraphSONMessageSerializerV2d0Test {
                 .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
 
         //check the leafs
-        assertEquals("vadas", converted.get(GraphSONTokens.VALUEPROP)
+        Set expectedValues = new HashSet<String>() {{
+            add("vadas");
+            add("lop");
+            add("josh");
+        }};
+        
+        Set actualValues = new HashSet<String>();
+        for (int i = 0; i < 3; i++) {
+            actualValues.add(converted.get(GraphSONTokens.VALUEPROP)
                 .get(0)
                 .get(GraphSONTokens.VALUE).get(GraphSONTokens.VALUEPROP)
-                .get(0)
+                .get(i)
                 .get(GraphSONTokens.KEY).get(GraphSONTokens.VALUEPROP)
                 .get(GraphSONTokens.PROPERTIES)
                 .get("name")
                 .get(0)
                 .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
+        }
 
-        assertEquals("lop", converted.get(GraphSONTokens.VALUEPROP)
-                .get(0)
-                .get(GraphSONTokens.VALUE).get(GraphSONTokens.VALUEPROP)
-                .get(1)
-                .get(GraphSONTokens.KEY).get(GraphSONTokens.VALUEPROP)
-                .get(GraphSONTokens.PROPERTIES)
-                .get("name")
-                .get(0)
-                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
-
-        assertEquals("josh", converted.get(GraphSONTokens.VALUEPROP)
-                .get(0)
-                .get(GraphSONTokens.VALUE).get(GraphSONTokens.VALUEPROP)
-                .get(2)
-                .get(GraphSONTokens.KEY).get(GraphSONTokens.VALUEPROP)
-                .get(GraphSONTokens.PROPERTIES)
-                .get("name")
-                .get(0)
-                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
+        assertEquals(expectedValues, actualValues);
     }
 
     @Test
