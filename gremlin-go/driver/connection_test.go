@@ -866,7 +866,6 @@ func TestConnection(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
-		// prop := &BigDecimal{11, *big.NewInt(int64(22))}
 		prop := &GremlinType{"java.lang.Object"}
 		i := g.AddV("type_test").Property("data", prop).Iterate()
 		err := <-i
