@@ -287,20 +287,20 @@ public class GraphSONMessageSerializerV3d0Test {
         assertEquals(3, firstTree.size());
         Iterator<Vertex> vertexKeys = firstTree.keySet().iterator();
 
-        Tree t2 = (Tree)firstTree.get(vertexKeys.next());
-        VertexProperty vp = (VertexProperty)t2.keySet().iterator().next();
-        assertEquals(3, vp.id());
-        assertEquals("vadas", vp.value());
+        Map expectedValues = new HashMap<Integer, String>() {{
+            put(3, "vadas");
+            put(5, "lop");
+            put(7, "josh");
+        }};
+        
+        Map actualValues = new HashMap<Integer, String>();
+        for (int i = 0; i < 3; i++) {
+            Tree t2 = (Tree)firstTree.get(vertexKeys.next());
+            VertexProperty vp = (VertexProperty)t2.keySet().iterator().next();
+            actualValues.put(vp.id(), vp.value());
+        }
 
-        t2 = (Tree) firstTree.get(vertexKeys.next());
-        vp = (VertexProperty) t2.keySet().iterator().next();
-        assertEquals(5, vp.id());
-        assertEquals("lop", vp.value());
-
-        t2 = (Tree) firstTree.get(vertexKeys.next());
-        vp = (VertexProperty) t2.keySet().iterator().next();
-        assertEquals(7, vp.id());
-        assertEquals("josh", vp.value());
+        assertEquals(expectedValues, actualValues);
     }
 
     @Test
