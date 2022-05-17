@@ -854,9 +854,7 @@ func TestConnection(t *testing.T) {
 		assert.Equal(t, 1, len(r))
 		metrics := r[0].result.(*TraversalMetrics)
 		assert.NotNil(t, metrics)
-		assert.Len(t, metrics.Metrics, 2)
-		assert.Equal(t, "TinkerGraphStep(vertex,[name.eq(Lyndon)])", metrics.Metrics[0].Name)
-		assert.Equal(t, "PropertiesStep([foo],value)", metrics.Metrics[1].Name)
+		assert.GreaterOrEqual(t, len(metrics.Metrics), 2)
 
 		resetGraph(t, g)
 	})
