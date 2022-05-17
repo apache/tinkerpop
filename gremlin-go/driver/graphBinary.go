@@ -774,7 +774,7 @@ func readTemp(data *[]byte, i *int, len int) *[]byte {
 // Primitive
 func readBoolean(data *[]byte, i *int) (interface{}, error) {
 	b, _ := readByte(data, i)
-	return b != 0, nil
+	return b != uint8(0), nil
 }
 
 func readByteSafe(data *[]byte, i *int) byte {
