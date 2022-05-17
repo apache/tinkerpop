@@ -19,6 +19,8 @@ under the License.
 
 package gremlingo
 
+import "math/big"
+
 // Traverser is the objects propagating through the traversal.
 type Traverser struct {
 	bulk  int64
@@ -476,4 +478,33 @@ var WithOptions withOptions = withOptions{
 	Indexer: "~tinkerpop.index.indexer",
 	List:    0,
 	Map:     1,
+}
+
+type Metrics struct {
+	Id   string
+	Name string
+	// the duration in nanoseconds.
+	Duration      int64
+	Counts        map[string]int64
+	Annotations   map[string]interface{}
+	NestedMetrics []Metrics
+}
+
+type TraversalMetrics struct {
+	// the duration in nanoseconds.
+	Duration int64
+	Metrics  []Metrics
+}
+
+type GremlinType struct {
+	Fqcn string
+}
+
+type BigDecimal struct {
+	Scale         int32
+	UnscaledValue big.Int
+}
+
+type ByteBuffer struct {
+	Data []byte
 }

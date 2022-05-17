@@ -222,6 +222,7 @@ func initSerializers() {
 		serializers = map[dataType]writer{
 			bytecodeType:   bytecodeWriter,
 			stringType:     stringWriter,
+			bigDecimalType: bigDecimalWriter,
 			bigIntegerType: bigIntWriter,
 			longType:       longWriter,
 			intType:        intWriter,
@@ -271,6 +272,8 @@ func initSerializers() {
 			bindingType:           bindingWriter,
 			mapType:               mapWriter,
 			listType:              listWriter,
+			byteBuffer:            byteBufferWriter,
+			classType:             classWriter,
 		}
 	}
 }
@@ -284,16 +287,19 @@ func initDeserializers() {
 			shortType:      readShort,
 			intType:        readInt,
 			longType:       readLong,
+			bigDecimalType: readBigDecimal,
 			bigIntegerType: readBigInt,
 			floatType:      readFloat,
 			doubleType:     readDouble,
 			stringType:     readString,
 
 			// Composite
-			listType: readList,
-			mapType:  readMap,
-			setType:  readSet,
-			uuidType: readUuid,
+			listType:   readList,
+			mapType:    readMap,
+			setType:    readSet,
+			uuidType:   readUuid,
+			byteBuffer: readByteBuffer,
+			classType:  readClass,
 
 			// Date Time
 			dateType:      timeReader,
@@ -311,6 +317,10 @@ func initDeserializers() {
 			tType:              enumReader,
 			directionType:      enumReader,
 			bindingType:        bindingReader,
+
+			// Metrics
+			metricsType:          metricsReader,
+			traversalMetricsType: traversalMetricsReader,
 		}
 	}
 }
