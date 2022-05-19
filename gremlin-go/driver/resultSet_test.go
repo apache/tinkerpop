@@ -61,14 +61,16 @@ func TestChannelResultSet(t *testing.T) {
 		AddResults(channelResultSet, 10)
 		idx := 0
 		for i := 0; i < 10; i++ {
-			result, err := channelResultSet.One()
+			result, ok, err := channelResultSet.One()
 			assert.Nil(t, err)
+			assert.True(t, ok)
 			assert.Equal(t, result.GetString(), fmt.Sprintf("%v", idx))
 			idx++
 		}
 		go closeAfterTime(500, channelResultSet)
-		res, err := channelResultSet.One()
+		res, ok, err := channelResultSet.One()
 		assert.Nil(t, err)
+		assert.False(t, ok)
 		assert.Nil(t, res)
 	})
 
@@ -77,14 +79,16 @@ func TestChannelResultSet(t *testing.T) {
 		go AddResultsPause(channelResultSet, 10, 500)
 		idx := 0
 		for i := 0; i < 10; i++ {
-			result, err := channelResultSet.One()
+			result, ok, err := channelResultSet.One()
 			assert.Nil(t, err)
+			assert.True(t, ok)
 			assert.Equal(t, result.GetString(), fmt.Sprintf("%v", idx))
 			idx++
 		}
 		go closeAfterTime(500, channelResultSet)
-		result, err := channelResultSet.One()
+		result, ok, err := channelResultSet.One()
 		assert.Nil(t, err)
+		assert.False(t, ok)
 		assert.Nil(t, result)
 	})
 

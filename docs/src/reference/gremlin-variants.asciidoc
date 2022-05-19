@@ -1677,9 +1677,9 @@ To make the code more readable and close to the Gremlin query language), you can
 ----
 	var __ = gremlingo.T__
 	var gt = gremlingo.P.Gt
-	var desc = gremlingo.Desc
+	var order = gremlingo.Order
 
-	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
+	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", order.Desc).ToList()
 ----
 
 ==== List of useful aliases
@@ -1707,9 +1707,7 @@ To make the code more readable and close to the Gremlin query language), you can
 	var or = gremlingo.P.Or
 
 	// sorting
-	var shuffle = gremlingo.Shuffle
-	var asc = gremlingo.Asc
-	var desc = gremlingo.Desc
+	var order = gremlingo.Order
 ----
 
 [[gremlin-go-limitations]]
