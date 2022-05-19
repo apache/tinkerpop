@@ -170,6 +170,8 @@ type directions struct {
 	In   direction
 	Out  direction
 	Both direction
+	From direction
+	To   direction
 }
 
 // Direction is used to denote the direction of an Edge or location of a Vertex on an Edge.
@@ -177,6 +179,8 @@ var Direction = directions{
 	In:   "IN",
 	Out:  "OUT",
 	Both: "BOTH",
+	From: "OUT",
+	To:   "IN",
 }
 
 type order string
