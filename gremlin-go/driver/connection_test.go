@@ -702,7 +702,7 @@ func TestConnection(t *testing.T) {
 			AddE("LIKES").From("bq").To("tp").Iterate()
 		assert.Nil(t, <-i)
 
-		results, errs := g.V().OutE().InV().Path().By("name").By(Label).ToList()
+		results, errs := g.V().OutE().InV().Path().By("name").By(T.Label).ToList()
 		assert.Nil(t, errs)
 		assert.NotNil(t, results)
 		assert.Equal(t, 3, len(results))
@@ -829,7 +829,7 @@ func TestConnection(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
-		r, err := g.WithSack(1).V().Has("name", "Lyndon").Values("foo").Sack(Sum).Sack().ToList()
+		r, err := g.WithSack(1).V().Has("name", "Lyndon").Values("foo").Sack(Operator.Sum).Sack().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
 		assert.Equal(t, 1, len(r))

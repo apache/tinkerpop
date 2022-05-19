@@ -242,12 +242,12 @@ func toLambda(name, graphName string) interface{} {
 }
 
 func toT(name, graphName string) interface{} {
-	// Return as is, since T values are just strings.
+	// Return as is, since t values are just strings.
 	return name
 }
 
 func toDirection(name, graphName string) interface{} {
-	// Return as is, since Direction values are just strings.
+	// Return as is, since direction values are just strings.
 	return name
 }
 
