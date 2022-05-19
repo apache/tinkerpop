@@ -265,7 +265,7 @@ func InlineFilterStrategy() TraversalStrategy {
 
 // LazyBarrierStrategy is an OLTP-only strategy that automatically inserts a NoOpBarrierStep after every
 // FlatMapStep if neither Path-tracking nor partial Path-tracking is required, and the next step is not the
-// traversal's last step or a Barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
+// traversal's last step or a barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
 // is meant to reduce memory requirements and improve the overall query performance.
 func LazyBarrierStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "LazyBarrierStrategy"}

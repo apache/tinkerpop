@@ -280,34 +280,12 @@ func toLambda(name, graphName string) interface{} {
 
 func toT(name, graphName string) interface{} {
 	// Return as is, since T values are just strings.
-	if name == "label" {
-		return gremlingo.Label
-	} else if name == "id" {
-		return gremlingo.Id
-	} else if name == "key" {
-		return gremlingo.Key
-	} else if name == "value" {
-		return gremlingo.Value
-	} else {
-		return name
-	}
+	return name
 }
 
 func toDirection(name, graphName string) interface{} {
-	// Return as is, since Direction values are just strings.
-	if name == "IN" {
-		return gremlingo.In
-	} else if name == "OUT" {
-		return gremlingo.Out
-	} else if name == "BOTH" {
-		return gremlingo.Both
-	} else if name == "from" {
-		return gremlingo.From
-	} else if name == "to" {
-		return gremlingo.To
-	} else {
-		return name
-	}
+	// Return as is, since direction values are just strings.
+	return name
 }
 
 func (tg *tinkerPopGraph) anUnsupportedTest() error {

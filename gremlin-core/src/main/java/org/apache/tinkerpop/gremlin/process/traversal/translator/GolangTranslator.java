@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.*;
@@ -169,17 +168,17 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final SackFunctions.Barrier o) {
-            return GO_PACKAGE_NAME + resolveSymbol(o.toString());
+            return GO_PACKAGE_NAME + "Barrier." + resolveSymbol(o.toString());
         }
 
         @Override
         protected String getSyntax(final VertexProperty.Cardinality o) {
-            return GO_PACKAGE_NAME + resolveSymbol(o.toString());
+            return GO_PACKAGE_NAME + "Cardinality." + resolveSymbol(o.toString());
         }
 
         @Override
         protected String getSyntax(final Pick o) {
-            return GO_PACKAGE_NAME + resolveSymbol(o.toString());
+            return GO_PACKAGE_NAME + "Pick." + resolveSymbol(o.toString());
         }
 
         @Override
@@ -227,7 +226,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Enum<?> o) {
-            return script.append(GO_PACKAGE_NAME + resolveSymbol(o.toString()));
+            return script.append(GO_PACKAGE_NAME + o.getDeclaringClass().getSimpleName() + "." + resolveSymbol(o.toString()));
         }
 
         @Override
@@ -381,7 +380,6 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
             TO_GO_MAP.put("OUT", "Out");
             TO_GO_MAP.put("IN", "In");
             TO_GO_MAP.put("BOTH", "Both");
-            TO_GO_MAP.put("set", "Set_");
             TO_GO_MAP.forEach((k, v) -> FROM_GO_MAP.put(v, k));
         }
 
