@@ -15,20 +15,22 @@
 #    specific language governing permissions and limitations
 #    under the License.
 
-version: "3.4"
 services:
 
   gremlin-test-server:
     container_name: gremlin-test-server
-    image: tinkerpop:gremlin-test-server
+    image: tinkerpop:gremlin-test-server-${GREMLIN_SERVER}
     build:
       context: ../
       dockerfile: gremlin-go/Dockerfile
       args:
-        NEO4J_VERSION: 3.5.3
+        - GREMLIN_SERVER=${GREMLIN_SERVER}
     ports:
       - "45940:45940"
       - "45941:45941"
+    volumes:
+      - ${HOME}/.groovy:/root/.groovy
+      - ${HOME}/.m2:/root/.m2
 
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
@@ -37,6 +39,7 @@ services:
       - .:/go_app
       - ../gremlin-test/features:/gremlin-test
     environment:
+      - HOST_SERVER=gremlin-test-server
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test
       - GREMLIN_SERVER_URL=ws://gremlin-test-server:45940/gremlin
       - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-test-server:45941/gremlin
@@ -45,8 +48,8 @@ services:
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
       - TEST_TRANSACTIONS=true
     working_dir: /go_app
-    command: >
-      bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
+    command: ["./wait-for-server.sh", gremlin-test-server, "45940", "bash", "-c",
+      "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"]
     depends_on:
       - gremlin-test-server

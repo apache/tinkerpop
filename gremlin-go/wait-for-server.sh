@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,27 +16,17 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-ARG GREMLIN_SERVER
-FROM tinkerpop/gremlin-server:$GREMLIN_SERVER
+set -e
 
-USER root
-RUN mkdir -p /opt
-WORKDIR /opt
-COPY gremlin-server/src/test /opt/test/
-COPY gremlin-go/docker/generate-all.groovy /opt/test/scripts/
-COPY gremlin-go/docker/docker-entrypoint.sh gremlin-go/docker/*.yaml /opt/
-RUN chmod 755 /opt/docker-entrypoint.sh
+host="$1"; shift
+port="$1"; shift
 
-# Installing dos2unix to avoid errors in running the entrypoint script on Windows machines where their
-# carriage return is \r\n instead of the \n needed for linux/unix containers
-RUN apk update && apk add dos2unix
-RUN dos2unix /opt/docker-entrypoint.sh && apk del dos2unix
+until curl "$host:$port?gremlin=100-1"; do
+  >&2 echo "Gremlin server is unavailable - sleeping"
+  sleep 1
+done
 
-ARG GREMLIN_SERVER
-ENV GREMLIN_SERVER_VER=$GREMLIN_SERVER
-
-EXPOSE 45940 45941
-
-ENTRYPOINT ["bash", "/opt/docker-entrypoint.sh"]
-CMD []
+>&2 echo "Gremlin Server is up - executing command"
+exec "$@"
