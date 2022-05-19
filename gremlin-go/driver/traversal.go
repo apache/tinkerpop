@@ -109,7 +109,8 @@ func (t *Traversal) Next() (*Result, error) {
 	if results.IsEmpty() {
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
-	return results.One()
+	result, _, err := results.One()
+	return result, err
 }
 
 // GetResultSet submits the traversal and returns the ResultSet.
