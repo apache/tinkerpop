@@ -141,9 +141,9 @@ To make the code more readable and close to the Gremlin query language), you can
 ```go
 	var __ = gremlingo.T__
 	var gt = gremlingo.P.Gt
-	var desc = gremlingo.Desc
+	var order = gremlingo.Order
 
-	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
+	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", order.Desc).ToList()
 ```
 
 ### List of useful aliases
@@ -170,9 +170,7 @@ To make the code more readable and close to the Gremlin query language), you can
 	var or = gremlingo.P.Or
 
 	// sorting
-	var shuffle = gremlingo.Shuffle
-	var asc = gremlingo.Asc
-	var desc = gremlingo.Desc
+	var order = gremlingo.Order
 ```
 
 ## Troubleshooting
@@ -349,12 +347,12 @@ if err != nil {
 
 ### Filtering and sorting
 ```go
-	results, err := g.V().HasLabel("person").Has("age", gremlingo.T__.Is(gremlingo.P.Gt(30))).Order().By("age", gremlingo.Desc).ToList()
+	results, err := g.V().HasLabel("person").Has("age", gremlingo.T__.Is(gremlingo.P.Gt(30))).Order().By("age", gremlingo.Order.Desc).ToList()
 ```
 
 Or with aliases
 ```go
-	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", desc).ToList()
+	results, err := g.V().HasLabel("person").Has("age", __.Is(gt(30))).Order().By("age", order.Desc).ToList()
 ```
 
 *List of all exports can be found at [pkg.go.dev](https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3/driver)*
