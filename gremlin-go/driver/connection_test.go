@@ -24,6 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/language"
+	"math/big"
 	"os"
 	"reflect"
 	"runtime"
@@ -841,6 +842,81 @@ func TestConnection(t *testing.T) {
 		val, err := r[0].GetInt32()
 		assert.Nil(t, err)
 		assert.Equal(t, int32(2), val)
+
+		resetGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal with Profile()", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		r, err := g.V().Has("name", "Lyndon").Values("foo").Profile().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, r)
+		assert.Equal(t, 1, len(r))
+		metrics := r[0].result.(*TraversalMetrics)
+		assert.NotNil(t, metrics)
+		assert.GreaterOrEqual(t, len(metrics.Metrics), 2)
+
+		resetGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal with GremlinType", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		prop := &GremlinType{"java.lang.Object"}
+		i := g.AddV("type_test").Property("data", prop).Iterate()
+		err := <-i
+		assert.Nil(t, err)
+
+		r, err := g.V().HasLabel("type_test").Values("data").Next()
+		assert.Nil(t, err)
+		assert.Equal(t, prop, r.result.(*GremlinType))
+
+		resetGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal with BigDecimal", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		prop := &BigDecimal{11, *big.NewInt(int64(22))}
+		i := g.AddV("type_test").Property("data", prop).Iterate()
+		err := <-i
+		assert.Nil(t, err)
+
+		r, err := g.V().HasLabel("type_test").Values("data").Next()
+		assert.Nil(t, err)
+		assert.Equal(t, prop, r.result.(*BigDecimal))
+
+		resetGraph(t, g)
+	})
+
+	t.Run("Test DriverRemoteConnection GraphTraversal with byteBuffer", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		prop := &ByteBuffer{[]byte{byte(127), byte(255)}}
+		i := g.AddV("type_test").Property("data", prop).Iterate()
+		err := <-i
+		assert.Nil(t, err)
+
+		r, err := g.V().HasLabel("type_test").Values("data").Next()
+		assert.Nil(t, err)
+		assert.Equal(t, prop, r.result)
 
 		resetGraph(t, g)
 	})
