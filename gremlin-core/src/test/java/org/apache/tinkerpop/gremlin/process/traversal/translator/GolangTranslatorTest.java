@@ -90,7 +90,7 @@ public class GolangTranslatorTest {
 
     @Test
     public void shouldTranslateStrategies() {
-        assertEquals("g.WithStrategies(gremlingo.ReadOnlyStrategy(), gremlingo.SubgraphStrategy(gremlingo.SubgraphStrategyConfig{CheckAdjacentVertices: false, Vertices: gremlingo.T__.HasLabel(\"person\"), }), gremlingo.SeedStrategy(gremlingo.SeedStrategyConfig{Seed: 999999, })).V().Has(\"name\")",
+        assertEquals("g.WithStrategies(gremlingo.ReadOnlyStrategy(), gremlingo.SubgraphStrategy(gremlingo.SubgraphStrategyConfig{CheckAdjacentVertices: false, Vertices: gremlingo.T__.HasLabel(\"person\"), }), gremlingo.SeedStrategy(gremlingo.SeedStrategyConfig{Seed: 999999})).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                                 new SeedStrategy(999999)).
