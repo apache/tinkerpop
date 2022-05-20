@@ -39,7 +39,6 @@ services:
       - .:/go_app
       - ../gremlin-test/features:/gremlin-test
     environment:
-      - HOST_SERVER=gremlin-test-server
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test
       - GREMLIN_SERVER_URL=ws://gremlin-test-server:45940/gremlin
       - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-test-server:45941/gremlin
@@ -48,7 +47,7 @@ services:
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
       - TEST_TRANSACTIONS=true
     working_dir: /go_app
-    command: ["./wait-for-server.sh", gremlin-test-server, "45940", "bash", "-c",
+    command: ["./wait-for-server.sh", gremlin-test-server, "45940", "90", "bash", "-c",
       "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
       && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"]
     depends_on:
