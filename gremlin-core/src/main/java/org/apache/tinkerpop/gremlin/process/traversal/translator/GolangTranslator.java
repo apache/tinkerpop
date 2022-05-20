@@ -263,31 +263,26 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                     filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
                 while (keys.hasNext()) {
                     final String k = keys.next();
-<<<<<<< HEAD
-                    script.append("\"");
-                    script.append(k);
-                    script.append("\": ");
+                    script.append(SymbolHelper.toGolang(k));
+                    script.append(": ");
+
                     if (o.getConfiguration().getProperty(k) instanceof List) {
                         List<Object> list =(List<Object>) o.getConfiguration().getProperty(k);
                         Iterator iterator = list.iterator();
-                        script.append("[]interface{}{");
+                        script.append("[]string{");
                         while(iterator.hasNext()) {
                             convertToScript(iterator.next());
                             if (iterator.hasNext())
                                 script.append(", ");
                         }
                         script.append("}");
+                    } else if (o.getConfiguration().getProperty(k) == null) {
+                        script.append("nil");
                     } else {
                         convertToScript(o.getConfiguration().getProperty(k));
                     }
                     if (keys.hasNext())
                         script.append(", ");
-=======
-                    script.append(SymbolHelper.toGolang(k));
-                    script.append(": ");
-                    convertToScript(o.getConfiguration().getProperty(k));
-                    script.append(", ");
->>>>>>> 3.5-dev
                 }
                 return script.append("})");
             }
