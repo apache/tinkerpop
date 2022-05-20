@@ -88,6 +88,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, str, res)
 		})
+		t.Run("read-write GremlinType", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := &GremlinType{"test fqcn"}
+			buf, err := classWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readClass(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, source, res)
+		})
 		t.Run("read-write bool", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
@@ -106,6 +116,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			res, err = readBoolean(&data, &pos)
 			assert.Nil(t, err)
 			assert.True(t, res.(bool))
+		})
+		t.Run("read-write BigDecimal", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := &BigDecimal{11, *big.NewInt(int64(22))}
+			buf, err := bigDecimalWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigDecimal(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, source, res)
 		})
 		t.Run("read-write int", func(t *testing.T) {
 			pos := 0
@@ -141,7 +161,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := big.NewInt(123)
-			buf, err := bigIntWriter(source, &buffer, nil)
+			buf, err := bigIntWriter(*source, &buffer, nil)
 			assert.Nil(t, err)
 			res, err := readBigInt(&buf, &pos)
 			assert.Nil(t, err)
@@ -154,6 +174,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			buf, err := listWriter(source, &buffer, nil)
 			assert.Nil(t, err)
 			res, err := readList(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, source, res)
+		})
+		t.Run("read-write byteBuffer", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := &ByteBuffer{[]byte{byte(127), byte(255)}}
+			buf, err := byteBufferWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readByteBuffer(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})

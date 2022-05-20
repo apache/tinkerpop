@@ -19,6 +19,8 @@ under the License.
 
 package gremlingo
 
+import "math/big"
+
 // Traverser is the objects propagating through the traversal.
 type Traverser struct {
 	bulk  int64
@@ -558,6 +560,7 @@ type withOptions struct {
 	Map     int32
 }
 
+// WithOptions holds configuration options to be passed to the GraphTraversal.
 var WithOptions = withOptions{
 	Tokens:  "~tinkerpop.valueMap.tokens",
 	None:    0,
@@ -569,4 +572,42 @@ var WithOptions = withOptions{
 	Indexer: "~tinkerpop.index.indexer",
 	List:    0,
 	Map:     1,
+}
+
+// Metrics holds metrics data; typically for .profile()-step analysis. Metrics may be nested. Nesting enables
+// the ability to capture explicit metrics for multiple distinct operations. Annotations are used to store
+// miscellaneous notes that might be useful to a developer when examining results, such as index coverage
+// for Steps in a Traversal.
+type Metrics struct {
+	Id   string
+	Name string
+	// the duration in nanoseconds.
+	Duration      int64
+	Counts        map[string]int64
+	Annotations   map[string]interface{}
+	NestedMetrics []Metrics
+}
+
+// TraversalMetrics contains the Metrics gathered for a Traversal as the result of the .profile()-step.
+type TraversalMetrics struct {
+	// the duration in nanoseconds.
+	Duration int64
+	Metrics  []Metrics
+}
+
+// GremlinType represents the GraphBinary type Class which can be used to serialize a class.
+type GremlinType struct {
+	Fqcn string
+}
+
+// BigDecimal represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer
+// unscaled value and a 32-bit integer scale.
+type BigDecimal struct {
+	Scale         int32
+	UnscaledValue big.Int
+}
+
+// ByteBuffer represents the GraphBinary type ByteBuffer which can be used to serialize a binary data.
+type ByteBuffer struct {
+	Data []byte
 }

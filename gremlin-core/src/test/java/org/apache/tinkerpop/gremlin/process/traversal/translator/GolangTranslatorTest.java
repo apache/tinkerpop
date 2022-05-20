@@ -88,11 +88,9 @@ public class GolangTranslatorTest {
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE().Count().Is(2).And(gremlingo.T__.Not(gremlingo.T__.InE().Count().Is(3))))", gremlinAsGo);
     }
 
-    // TODO: Implement Gremlin-Go Strategies translation
-    @Ignore
     @Test
     public void shouldTranslateStrategies() {
-        assertEquals("g.withStrategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.hasLabel('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
+        assertEquals("g.WithStrategies(gremlingo.ReadOnlyStrategy(), gremlingo.SubgraphStrategy(gremlingo.SubgraphStrategyConfig{CheckAdjacentVertices: false, Vertices: gremlingo.T__.HasLabel(\"person\"), }), gremlingo.SeedStrategy(gremlingo.SeedStrategyConfig{Seed: 999999, })).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                                 new SeedStrategy(999999)).

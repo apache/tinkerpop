@@ -23,12 +23,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/google/uuid"
 	"math"
 	"math/big"
 	"reflect"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // Version 1.0
@@ -43,6 +42,7 @@ const (
 	stringType            dataType = 0x03
 	dateType              dataType = 0x04
 	timestampType         dataType = 0x05
+	classType             dataType = 0x06
 	doubleType            dataType = 0x07
 	floatType             dataType = 0x08
 	listType              dataType = 0x09
@@ -69,14 +69,18 @@ const (
 	scopeType             dataType = 0x1f
 	tType                 dataType = 0x20
 	traverserType         dataType = 0x21
+	bigDecimalType        dataType = 0x22
 	bigIntegerType        dataType = 0x23
 	byteType              dataType = 0x24
+	byteBuffer            dataType = 0x25
 	shortType             dataType = 0x26
 	booleanType           dataType = 0x27
 	textPType             dataType = 0x28
 	traversalStrategyType dataType = 0x29
 	bulkSetType           dataType = 0x2a
 	mergeType             dataType = 0x2e
+	metricsType           dataType = 0x2c
+	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
 	nullType              dataType = 0xFE
 )
@@ -129,6 +133,24 @@ func listWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 			return nil, err
 		}
 	}
+	return buffer.Bytes(), nil
+}
+
+// Format: {length}{value}
+func byteBufferWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	var v ByteBuffer
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*ByteBuffer))
+	} else {
+		v = value.(ByteBuffer)
+	}
+
+	err := binary.Write(buffer, binary.BigEndian, int32(len(v.Data)))
+	if err != nil {
+		return nil, err
+	}
+	buffer.Write(v.Data)
+
 	return buffer.Bytes(), nil
 }
 
@@ -231,7 +253,7 @@ func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *gra
 	return buffer.Bytes(), nil
 }
 
-func stringWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func stringWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	err := binary.Write(buffer, binary.BigEndian, int32(len(value.(string))))
 	if err != nil {
 		return nil, err
@@ -240,7 +262,7 @@ func stringWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graph
 	return buffer.Bytes(), err
 }
 
-func longWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func longWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	switch v := value.(type) {
 	case int:
 		value = int64(v)
@@ -291,38 +313,15 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 	return []byte{}
 }
 
-func getBigIntFromSignedBytes(b []byte) *big.Int {
-	var newBigInt = big.NewInt(0).SetBytes(b)
-	var one = big.NewInt(1)
-	if len(b) == 0 {
-		return newBigInt
-	}
-	// If the first bit in the first element of the byte array is a 1, we need to interpret the byte array as a two's complement representation
-	if b[0]&0x80 == 0x00 {
-		newBigInt.SetBytes(b)
-		return newBigInt
-	}
-	// Undo two's complement to byte array and set negative boolean to true
-	length := uint((len(b)*8)/8+1) * 8
-	b2 := new(big.Int).Sub(newBigInt, new(big.Int).Lsh(one, length)).Bytes()
-
-	// Strip the resulting 0xff byte at the start of array
-	b2 = b2[1:]
-
-	// Strip any redundant 0x00 byte at the start of array
-	if b2[0] == 0x00 {
-		b2 = b2[1:]
-	}
-	newBigInt = big.NewInt(0)
-	newBigInt.SetBytes(b2)
-	newBigInt.Neg(newBigInt)
-	return newBigInt
-}
-
 // Format: {length}{value_0}...{value_n}
 func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
-	v := value.(*big.Int)
-	signedBytes := getSignedBytesFromBigInt(v)
+	var v big.Int
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*big.Int))
+	} else {
+		v = value.(big.Int)
+	}
+	signedBytes := getSignedBytesFromBigInt(&v)
 	err := binary.Write(buffer, binary.BigEndian, int32(len(signedBytes)))
 	if err != nil {
 		return nil, err
@@ -334,6 +333,32 @@ func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSer
 		}
 	}
 	return buffer.Bytes(), nil
+}
+
+// Format: {scale}{unscaled_value}
+func bigDecimalWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	var v BigDecimal
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*BigDecimal))
+	} else {
+		v = value.(BigDecimal)
+	}
+	err := binary.Write(buffer, binary.BigEndian, v.Scale)
+	if err != nil {
+		return nil, err
+	}
+
+	return bigIntWriter(v.UnscaledValue, buffer, typeSerializer)
+}
+
+func classWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+	var v GremlinType
+	if reflect.TypeOf(value).Kind() == reflect.Ptr {
+		v = *(value.(*GremlinType))
+	} else {
+		v = value.(GremlinType)
+	}
+	return stringWriter(v.Fqcn, buffer, typeSerializer)
 }
 
 // Format: {Id}{Label}{properties}
@@ -678,6 +703,16 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return textPType, nil
 	case *Binding, Binding:
 		return bindingType, nil
+	case *BigDecimal, BigDecimal:
+		return bigDecimalType, nil
+	case *GremlinType, GremlinType:
+		return classType, nil
+	case *Metrics, Metrics:
+		return metricsType, nil
+	case *TraversalMetrics, TraversalMetrics:
+		return traversalMetricsType, nil
+	case *ByteBuffer, ByteBuffer:
+		return byteBuffer, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:
@@ -834,11 +869,19 @@ func readBigInt(data *[]byte, i *int) (interface{}, error) {
 	return newBigInt, nil
 }
 
+func readBigDecimal(data *[]byte, i *int) (interface{}, error) {
+	bigDecimal := &BigDecimal{}
+	bigDecimal.Scale = readIntSafe(data, i)
+	unscaled, err := readBigInt(data, i)
+	if err != nil {
+		return nil, err
+	}
+	bigDecimal.UnscaledValue = *unscaled.(*big.Int)
+	return bigDecimal, nil
+}
+
 func readUint32Safe(data *[]byte, i *int) uint32 {
 	return binary.BigEndian.Uint32(*readTemp(data, i, 4))
-}
-func readUint32(data *[]byte, i *int) (interface{}, error) {
-	return readUint32Safe(data, i), nil
 }
 
 func readFloat(data *[]byte, i *int) (interface{}, error) {
@@ -903,6 +946,16 @@ func readList(data *[]byte, i *int) (interface{}, error) {
 		valList = append(valList, val)
 	}
 	return valList, nil
+}
+
+func readByteBuffer(data *[]byte, i *int) (interface{}, error) {
+	r := &ByteBuffer{}
+	sz := readIntSafe(data, i)
+	r.Data = make([]byte, sz)
+	for j := int32(0); j < sz; j++ {
+		r.Data[j] = readByteSafe(data, i)
+	}
+	return r, nil
 }
 
 func readMap(data *[]byte, i *int) (interface{}, error) {
@@ -1140,6 +1193,97 @@ func bindingReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 	return b, nil
+}
+
+// {id}{name}{duration}{counts}{annotations}{nested_metrics}
+func metricsReader(data *[]byte, i *int) (interface{}, error) {
+	metrics := new(Metrics)
+	val, err := readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
+	}
+	metrics.Id = val.(string)
+
+	val, err = readUnqualified(data, i, stringType, false)
+	if err != nil {
+		return nil, err
+	}
+	metrics.Name = val.(string)
+
+	dur, err := readLong(data, i)
+	if err != nil {
+		return nil, err
+	}
+	metrics.Duration = dur.(int64)
+
+	counts, err := readMap(data, i)
+	cmap := counts.(map[interface{}]interface{})
+	if err != nil {
+		return nil, err
+	}
+	metrics.Counts = make(map[string]int64, len(cmap))
+	for k := range cmap {
+		metrics.Counts[k.(string)] = cmap[k].(int64)
+	}
+
+	annotations, err := readMap(data, i)
+	if err != nil {
+		return nil, err
+	}
+	amap := annotations.(map[interface{}]interface{})
+	if err != nil {
+		return nil, err
+	}
+	metrics.Annotations = make(map[string]interface{}, len(amap))
+	for k := range amap {
+		metrics.Annotations[k.(string)] = amap[k]
+	}
+
+	nested, err := readList(data, i)
+	if err != nil {
+		return nil, err
+	}
+	list := nested.([]interface{})
+	metrics.NestedMetrics = make([]Metrics, len(list))
+	for i, metric := range list {
+		metrics.NestedMetrics[i] = metric.(Metrics)
+	}
+
+	return metrics, nil
+}
+
+// {id}{name}{duration}{counts}{annotations}{nested_metrics}
+func traversalMetricsReader(data *[]byte, i *int) (interface{}, error) {
+	m := new(TraversalMetrics)
+	dur, err := readLong(data, i)
+	if err != nil {
+		return nil, err
+	}
+	m.Duration = dur.(int64)
+
+	nested, err := readList(data, i)
+	if err != nil {
+		return nil, err
+	}
+	list := nested.([]interface{})
+	m.Metrics = make([]Metrics, len(list))
+	for i, metric := range list {
+		m.Metrics[i] = *metric.(*Metrics)
+	}
+
+	return m, nil
+}
+
+// Format: A String containing the fqcn.
+func readClass(data *[]byte, i *int) (interface{}, error) {
+	gremlinType := new(GremlinType)
+	str, err := readString(data, i)
+	if err != nil {
+		return nil, err
+	}
+	gremlinType.Fqcn = str.(string)
+
+	return gremlinType, nil
 }
 
 func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) (interface{}, error) {

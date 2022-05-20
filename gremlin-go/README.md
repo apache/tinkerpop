@@ -225,7 +225,7 @@ Please review the [staticcheck documentation][scheck docs] for more details on i
 
 Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
 
-`docker-compose up --exit-code-from integration-tests`
+`docker-compose up --exit-code-from gremlin-go-integration-tests`
 
 # Go Gremlin Language Variant
 
