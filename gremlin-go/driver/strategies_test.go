@@ -72,7 +72,13 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		count, err := g.WithStrategies(PartitionStrategy("partition", "write", []string{"read"}, true)).V().Count().ToList()
+		config := PartitionStrategyConfig{
+			PartitionKey:          "partition",
+			WritePartition:        "write",
+			ReadPartitions:        []string{"read"},
+			IncludeMetaProperties: true,
+		}
+		count, err := g.WithStrategies(PartitionStrategy(config)).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
@@ -85,7 +91,8 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		count, err := g.WithStrategies(SeedStrategy(1)).V().Count().ToList()
+		config := SeedStrategyConfig{Seed: 1}
+		count, err := g.WithStrategies(SeedStrategy(config)).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
@@ -97,8 +104,13 @@ func TestStrategy(t *testing.T) {
 	t.Run("Test read with SubgraphStrategy", func(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
-
-		count, err := g.WithStrategies(SubgraphStrategy(T__.HasLabel(testLabel), nil, nil, nil)).V().Count().ToList()
+		config := SubgraphStrategyConfig{
+			Vertices:              T__.HasLabel(testLabel),
+			Edges:                 nil,
+			VertexProperties:      nil,
+			CheckAdjacentVertices: nil,
+		}
+		count, err := g.WithStrategies(SubgraphStrategy(config)).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
@@ -111,7 +123,8 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		bytecode := g.WithStrategies(MatchAlgorithmStrategy("greedy")).bytecode
+		config := MatchAlgorithmStrategyConfig{MatchAlgorithm: "greedy"}
+		bytecode := g.WithStrategies(MatchAlgorithmStrategy(config)).bytecode
 		assert.Equal(t, 1, len(bytecode.sourceInstructions))
 		assert.Equal(t, 1, len(bytecode.sourceInstructions[0].arguments))
 		assert.Equal(t, "withStrategies", bytecode.sourceInstructions[0].operator)
@@ -294,7 +307,8 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		count, err := g.WithStrategies(ProductiveByStrategy([]string{"a", "b"})).V().Count().ToList()
+		config := ProductiveByStrategyConfig{ProductiveKeys: []string{"a", "b"}}
+		count, err := g.WithStrategies(ProductiveByStrategy(config)).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
@@ -320,7 +334,11 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		count, err := g.WithStrategies(EdgeLabelVerificationStrategy(true, true)).V().Count().ToList()
+		config := EdgeLabelVerificationStrategyConfig{
+			LogWarning:      true,
+			ThrowExcecption: true,
+		}
+		count, err := g.WithStrategies(EdgeLabelVerificationStrategy(config)).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
 		assert.Equal(t, 1, len(count))
@@ -367,7 +385,12 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		strategy := ReservedKeysVerificationStrategy(true, true, []string{"xyz"})
+		config := ReservedKeysVerificationStrategyConfig{
+			LogWarning:     true,
+			ThrowException: true,
+			Keys:           []string{"xyz"},
+		}
+		strategy := ReservedKeysVerificationStrategy(config)
 		count, err := g.WithStrategies(strategy).V().Count().ToList()
 		assert.Nil(t, err)
 		assert.NotNil(t, count)
