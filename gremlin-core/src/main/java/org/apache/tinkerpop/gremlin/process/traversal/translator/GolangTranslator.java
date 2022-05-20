@@ -173,15 +173,14 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Set<?> o) {
-            // TODO: AN-1044 Change this when Set type is added in Gremlin-Go
             final Iterator<?> iterator = o.iterator();
-            script.append("[]interface{}{");
+            script.append(GO_PACKAGE_NAME + "NewSimpleSet(");
             while(iterator.hasNext()) {
                 convertToScript(iterator.next());
                 if (iterator.hasNext())
                     script.append(", ");
             }
-            return script.append("}");
+            return script.append(")");
         }
 
         @Override
@@ -246,28 +245,25 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final TraversalStrategyProxy<?> o) {
             if (o.getConfiguration().isEmpty()) {
-                return script.append("strategyFactory(\"" + o.getStrategyClass().getSimpleName() + "\", map[string]interface{}{})");
+                return script.append(GO_PACKAGE_NAME + o.getStrategyClass().getSimpleName() + "()");
             } else {
-                script.append("strategyFactory(\"" + o.getStrategyClass().getSimpleName() + "\", map[string]interface{}{");
+                script.append(GO_PACKAGE_NAME + o.getStrategyClass().getSimpleName() + "(");
+                script.append(GO_PACKAGE_NAME + o.getStrategyClass().getSimpleName() + "Config{");
                 final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).
-                        filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
+                    filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
                 while (keys.hasNext()) {
                     final String k = keys.next();
-                    script.append("\"");
-                    script.append(k);
-                    script.append("\": ");
+                    script.append(SymbolHelper.toGolang(k));
+                    script.append(": ");
                     convertToScript(o.getConfiguration().getProperty(k));
-                    if (keys.hasNext())
-                        script.append(", ");
+                    script.append(", ");
                 }
-
                 return script.append("})");
             }
         }
 
         @Override
         protected Script produceScript(final String traversalSource, final Bytecode o) {
-            // TODO: AN-1042 Ensure translation matches Gremlin-Go implementation when done
             final String source = traversalSource.equals("__") ? GO_PACKAGE_NAME + "T__" : traversalSource;
             script.append(source);
             for (final Bytecode.Instruction instruction : o.getInstructions()) {
