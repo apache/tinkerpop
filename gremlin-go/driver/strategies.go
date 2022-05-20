@@ -67,7 +67,6 @@ type HaltedTraverserStrategyConfig struct {
 	HaltedTraverserFactoryName string
 }
 
-
 // OptionsStrategy will not alter the Traversal. It is only a holder for configuration options associated with the
 // Traversal meant to be accessed by steps or other classes that might have some interaction with it. It is
 // essentially a way for users to provide Traversal level configuration options that can be used in various ways
@@ -96,9 +95,9 @@ func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
 // PartitionStrategyConfig provides configuration options for PartitionStrategy.
 // Zeroed (unset) values are ignored except IncludeMetaProperties.
 type PartitionStrategyConfig struct {
-	PartitionKey string
-	WritePartition string
-	ReadPartitions []string
+	PartitionKey          string
+	WritePartition        string
+	ReadPartitions        []string
 	IncludeMetaProperties bool
 }
 
@@ -133,14 +132,18 @@ func SubgraphStrategy(config SubgraphStrategyConfig) TraversalStrategy {
 	if config.VertexProperties != nil {
 		configMap["vertexProperties"] = config.VertexProperties
 	}
+	if config.CheckAdjacentVertices != nil {
+		configMap["checkAdjacentVertices"] = config.CheckAdjacentVertices.(bool)
+	}
 	return &traversalStrategy{name: decorationNamespace + "SubgraphStrategy", configuration: configMap}
 }
 
 // SubgraphStrategyConfig provides configuration options for SubgraphStrategy. Zeroed (unset) values are ignored.
 type SubgraphStrategyConfig struct {
-	Vertices *GraphTraversal
-	Edges *GraphTraversal
-	VertexProperties *GraphTraversal
+	Vertices              *GraphTraversal
+	Edges                 *GraphTraversal
+	VertexProperties      *GraphTraversal
+	CheckAdjacentVertices interface{}
 }
 
 func VertexProgramStrategy(config VertexProgramStrategyConfig) TraversalStrategy {
@@ -173,11 +176,11 @@ func VertexProgramStrategy(config VertexProgramStrategyConfig) TraversalStrategy
 // Zeroed (unset) values are ignored.
 type VertexProgramStrategyConfig struct {
 	GraphComputer string
-	Workers int
-	Persist string
-	Result string
-	Vertices *GraphTraversal
-	Edges *GraphTraversal
+	Workers       int
+	Persist       string
+	Result        string
+	Vertices      *GraphTraversal
+	Edges         *GraphTraversal
 	Configuration map[string]interface{}
 }
 
@@ -214,7 +217,7 @@ func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) T
 // EdgeLabelVerificationStrategyConfig provides configuration options for EdgeLabelVerificationStrategy.
 // Zeroed (unset) values are used.
 type EdgeLabelVerificationStrategyConfig struct {
-	LogWarning bool
+	LogWarning      bool
 	ThrowExcecption bool
 }
 
@@ -247,9 +250,9 @@ func ReservedKeysVerificationStrategy(config ReservedKeysVerificationStrategyCon
 // ReservedKeysVerificationStrategyConfig provides configuration options for ReservedKeysVerificationStrategy.
 // Zeroed (unset) values are used except Keys.
 type ReservedKeysVerificationStrategyConfig struct {
-	LogWarning bool
+	LogWarning     bool
 	ThrowException bool
-	Keys []string
+	Keys           []string
 }
 
 // Optimization strategies
