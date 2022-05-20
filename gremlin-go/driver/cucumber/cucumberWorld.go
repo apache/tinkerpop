@@ -213,7 +213,47 @@ func strategyFactory(strategyName string, params map[string]interface{}) interfa
 	switch strategyName {
 	case "VertexProgramStrategy":
 		graphComputer, _ := params["graphComputer"].(string)
-		return gremlingo.VertexProgramStrategy(graphComputer, "", "", 0, nil, nil, nil)
+		config := gremlingo.VertexProgramStrategyConfig{
+			GraphComputer: graphComputer,
+			Workers:       0,
+			Persist:       "",
+			Result:        "",
+			Vertices:      nil,
+			Edges:         nil,
+			Configuration: nil,
+		}
+		return gremlingo.VertexProgramStrategy(config)
+	case "ProductiveByStrategy":
+		productiveKeys, _ := params["productiveKeys"]
+		productiveKeysInterface := productiveKeys.([]interface{})
+		var productiveKeysStrings = make([]string, len(productiveKeysInterface))
+		for i := range productiveKeysInterface {
+			productiveKeysStrings[i] = productiveKeysInterface[i].(string)
+		}
+		config := gremlingo.ProductiveByStrategyConfig{
+			ProductiveKeys: productiveKeysStrings,
+		}
+		return gremlingo.ProductiveByStrategy(config)
+	case "ReadOnlyStrategy":
+		return gremlingo.ReadOnlyStrategy()
+	case "SubgraphStrategy":
+		edges, _ := params["edges"].(*gremlingo.GraphTraversal)
+		vertices, _ := params["vertices"].(*gremlingo.GraphTraversal)
+		vertexProperties, _ := params["vertexProperties"].(*gremlingo.GraphTraversal)
+		checkAdjacentVertices, _ := params["checkAdjacentVertices"]
+		config := gremlingo.SubgraphStrategyConfig{
+			Edges:                 edges,
+			Vertices:              vertices,
+			VertexProperties:      vertexProperties,
+			CheckAdjacentVertices: checkAdjacentVertices,
+		}
+		return gremlingo.SubgraphStrategy(config)
+	case "SeedStrategy":
+		seed, _ := params["seed"]
+		config := gremlingo.SeedStrategyConfig{
+			Seed: int64(seed.(int)),
+		}
+		return gremlingo.SeedStrategy(config)
 	}
 	return nil
 }

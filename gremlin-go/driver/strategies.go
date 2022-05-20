@@ -53,37 +53,52 @@ func ElementIdStrategy() TraversalStrategy {
 	return &traversalStrategy{name: decorationNamespace + "ElementIdStrategy"}
 }
 
-func HaltedTraverserStrategy(haltedTraverserFactoryName string) *traversalStrategy {
-	config := make(map[string]interface{})
-	if haltedTraverserFactoryName != "" {
-		config["haltedTraverserFactory"] = haltedTraverserFactoryName
+func HaltedTraverserStrategy(config HaltedTraverserStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if config.HaltedTraverserFactoryName != "" {
+		configMap["haltedTraverserFactory"] = config.HaltedTraverserFactoryName
 	}
-	return &traversalStrategy{name: decorationNamespace + "HaltedTraverserStrategy", configuration: config}
+	return &traversalStrategy{name: decorationNamespace + "HaltedTraverserStrategy", configuration: configMap}
+}
+
+// HaltedTraverserStrategyConfig provides configuration options for HaltedTraverserStrategy.
+// Zeroed (unset) values are ignored.
+type HaltedTraverserStrategyConfig struct {
+	HaltedTraverserFactoryName string
 }
 
 // OptionsStrategy will not alter the Traversal. It is only a holder for configuration options associated with the
 // Traversal meant to be accessed by steps or other classes that might have some interaction with it. It is
 // essentially a way for users to provide Traversal level configuration options that can be used in various ways
 // by different Graph providers.
-func OptionsStrategy(options map[string]interface{}) *traversalStrategy {
+func OptionsStrategy(options map[string]interface{}) TraversalStrategy {
 	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: options}
 }
 
 // PartitionStrategy partitions the Vertices, Edges and Vertex properties of a Graph into String named
-// partitions (i.e. buckets, subgraphs, etc.).  It blinds a Traversal from "seeing" specified areas of
+// partitions (i.e. buckets, subgraphs, etc.). It blinds a Traversal from "seeing" specified areas of
 // the graph. The Traversal will ignore all Graph elements not in those "read" partitions.
-func PartitionStrategy(partitionKey, writePartition string, readPartitions []string, includeMetaProperties bool) *traversalStrategy {
-	config := map[string]interface{}{"includeMetaProperties": includeMetaProperties}
-	if partitionKey != "" {
-		config["partitionKey"] = partitionKey
+func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
+	configMap := map[string]interface{}{"includeMetaProperties": config.IncludeMetaProperties}
+	if config.PartitionKey != "" {
+		configMap["partitionKey"] = config.PartitionKey
 	}
-	if writePartition != "" {
-		config["writePartition"] = writePartition
+	if config.WritePartition != "" {
+		configMap["writePartition"] = config.WritePartition
 	}
-	if len(readPartitions) != 0 {
-		config["readPartitions"] = readPartitions
+	if len(config.ReadPartitions) != 0 {
+		configMap["readPartitions"] = config.ReadPartitions
 	}
-	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: config}
+	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: configMap}
+}
+
+// PartitionStrategyConfig provides configuration options for PartitionStrategy.
+// Zeroed (unset) values are ignored except IncludeMetaProperties.
+type PartitionStrategyConfig struct {
+	PartitionKey          string
+	WritePartition        string
+	ReadPartitions        []string
+	IncludeMetaProperties bool
 }
 
 // SeedStrategy resets the specified Seed value for Seedable steps, which in turn will produce deterministic
@@ -93,63 +108,96 @@ func PartitionStrategy(partitionKey, writePartition string, readPartitions []str
 // of results but not necessarily the same ones. The same problem can occur in OLAP-based Taversals where
 // iteration order is not explicitly guaranteed. The only way to ensure completely deterministic results in that
 // sense is to apply some form of order() in these cases.
-func SeedStrategy(seed int64) *traversalStrategy {
-	config := map[string]interface{}{"seed": seed}
-	return &traversalStrategy{name: decorationNamespace + "SeedStrategy", configuration: config}
+func SeedStrategy(config SeedStrategyConfig) TraversalStrategy {
+	configMap := map[string]interface{}{"seed": config.Seed}
+	return &traversalStrategy{name: decorationNamespace + "SeedStrategy", configuration: configMap}
+}
+
+// SeedStrategyConfig provides configuration options for SeedStrategy. Zeroed (unset) values are used.
+type SeedStrategyConfig struct {
+	Seed int64
 }
 
 // SubgraphStrategy provides a way to limit the view of a Traversal. By providing Traversal representations that
 // represent a form of filtering criterion for Vertices and/or Edges, this strategy will inject that criterion into
 // the appropriate places of a Traversal thus restricting what it Traverses and returns.
-func SubgraphStrategy(vertices, edges, vertexProperties interface{}) *traversalStrategy { // all vars can be Traversal or null
-	config := make(map[string]interface{})
-	if vertices != nil {
-		config["vertices"] = vertices
+func SubgraphStrategy(config SubgraphStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if config.Vertices != nil {
+		configMap["vertices"] = config.Vertices
 	}
-	if edges != nil {
-		config["edges"] = edges
+	if config.Edges != nil {
+		configMap["edges"] = config.Edges
 	}
-	if vertexProperties != nil {
-		config["vertexProperties"] = vertexProperties
+	if config.VertexProperties != nil {
+		configMap["vertexProperties"] = config.VertexProperties
 	}
-	return &traversalStrategy{name: decorationNamespace + "SubgraphStrategy", configuration: config}
+	if config.CheckAdjacentVertices != nil {
+		configMap["checkAdjacentVertices"] = config.CheckAdjacentVertices.(bool)
+	}
+	return &traversalStrategy{name: decorationNamespace + "SubgraphStrategy", configuration: configMap}
 }
 
-func VertexProgramStrategy(graphComputer, persist, result string, workers int,
-	vertices, edges interface{}, configuration map[string]interface{}) *traversalStrategy {
-	config := make(map[string]interface{})
-	if graphComputer != "" {
-		config["graphComputer"] = graphComputer
+// SubgraphStrategyConfig provides configuration options for SubgraphStrategy. Zeroed (unset) values are ignored.
+type SubgraphStrategyConfig struct {
+	Vertices              *GraphTraversal
+	Edges                 *GraphTraversal
+	VertexProperties      *GraphTraversal
+	CheckAdjacentVertices interface{}
+}
+
+func VertexProgramStrategy(config VertexProgramStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if config.GraphComputer != "" {
+		configMap["graphComputer"] = config.GraphComputer
 	}
-	if persist != "" {
-		config["persist"] = persist
+	if config.Workers != 0 {
+		configMap["workers"] = config.Workers
 	}
-	if result != "" {
-		config["result"] = result
+	if config.Persist != "" {
+		configMap["persist"] = config.Persist
 	}
-	if workers != 0 {
-		config["workers"] = workers
+	if config.Result != "" {
+		configMap["result"] = config.Result
 	}
-	if vertices != nil {
-		config["vertices"] = vertices
+	if config.Vertices != nil {
+		configMap["vertices"] = config.Vertices
 	}
-	if edges != nil {
-		config["edges"] = edges
+	if config.Edges != nil {
+		configMap["edges"] = config.Edges
 	}
-	for k, v := range configuration {
-		config[k] = v
+	for k, v := range config.Configuration {
+		configMap[k] = v
 	}
-	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: config}
+	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: configMap}
+}
+
+// VertexProgramStrategyConfig provides configuration options for VertexProgramStrategy.
+// Zeroed (unset) values are ignored.
+type VertexProgramStrategyConfig struct {
+	GraphComputer string
+	Workers       int
+	Persist       string
+	Result        string
+	Vertices      *GraphTraversal
+	Edges         *GraphTraversal
+	Configuration map[string]interface{}
 }
 
 // Finalization strategies
 
-func MatchAlgorithmStrategy(matchAlgorithm string) *traversalStrategy {
-	config := make(map[string]interface{})
-	if matchAlgorithm != "" {
-		config["matchAlgorithm"] = matchAlgorithm
+func MatchAlgorithmStrategy(config MatchAlgorithmStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if config.MatchAlgorithm != "" {
+		configMap["matchAlgorithm"] = config.MatchAlgorithm
 	}
-	return &traversalStrategy{name: finalizationNamespace + "MatchAlgorithmStrategy", configuration: config}
+	return &traversalStrategy{name: finalizationNamespace + "MatchAlgorithmStrategy", configuration: configMap}
+}
+
+// MatchAlgorithmStrategyConfig provides configuration options for MatchAlgorithmStrategy.
+// Zeroed (unset) values are ignored.
+type MatchAlgorithmStrategyConfig struct {
+	MatchAlgorithm string
 }
 
 // Verification strategies
@@ -157,13 +205,20 @@ func MatchAlgorithmStrategy(matchAlgorithm string) *traversalStrategy {
 // EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.
 // Providing one or more labels is considered to be a best practice, however, TinkerPop will not force
 // the specification of Edge labels; instead, providers or users will have to enable this strategy explicitly.
-func EdgeLabelVerificationStrategy(logWarning, throwException bool) *traversalStrategy {
-	config := map[string]interface{}{
-		"logWarning":     logWarning,
-		"throwException": throwException,
+func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) TraversalStrategy {
+	configMap := map[string]interface{}{
+		"logWarning":     config.LogWarning,
+		"throwException": config.ThrowExcecption,
 	}
 
-	return &traversalStrategy{name: verificationNamespace + "EdgeLabelVerificationStrategy", configuration: config}
+	return &traversalStrategy{name: verificationNamespace + "EdgeLabelVerificationStrategy", configuration: configMap}
+}
+
+// EdgeLabelVerificationStrategyConfig provides configuration options for EdgeLabelVerificationStrategy.
+// Zeroed (unset) values are used.
+type EdgeLabelVerificationStrategyConfig struct {
+	LogWarning      bool
+	ThrowExcecption bool
 }
 
 // LambdaRestrictionStrategy does not allow lambdas to be used in a Traversal. The contents of a lambda
@@ -181,15 +236,23 @@ func ReadOnlyStrategy() TraversalStrategy {
 
 // ReservedKeysVerificationStrategy detects property keys that should not be used by the traversal.
 // A term may be reserved by a particular graph implementation or as a convention given best practices.
-func ReservedKeysVerificationStrategy(logWarning, throwException bool, keys []string) *traversalStrategy {
-	config := map[string]interface{}{
-		"logWarning":     logWarning,
-		"throwException": throwException,
+func ReservedKeysVerificationStrategy(config ReservedKeysVerificationStrategyConfig) TraversalStrategy {
+	configMap := map[string]interface{}{
+		"logWarning":     config.LogWarning,
+		"throwException": config.ThrowException,
 	}
-	if keys != nil {
-		config["keys"] = keys
+	if len(config.Keys) != 0 {
+		configMap["keys"] = config.Keys
 	}
-	return &traversalStrategy{name: verificationNamespace + "ReservedKeysVerificationStrategy", configuration: config}
+	return &traversalStrategy{name: verificationNamespace + "ReservedKeysVerificationStrategy", configuration: configMap}
+}
+
+// ReservedKeysVerificationStrategyConfig provides configuration options for ReservedKeysVerificationStrategy.
+// Zeroed (unset) values are used except Keys.
+type ReservedKeysVerificationStrategyConfig struct {
+	LogWarning     bool
+	ThrowException bool
+	Keys           []string
 }
 
 // Optimization strategies
@@ -262,7 +325,7 @@ func InlineFilterStrategy() TraversalStrategy {
 
 // LazyBarrierStrategy is an OLTP-only strategy that automatically inserts a NoOpBarrierStep after every
 // FlatMapStep if neither Path-tracking nor partial Path-tracking is required, and the next step is not the
-// traversal's last step or a Barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
+// traversal's last step or a barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
 // is meant to reduce memory requirements and improve the overall query performance.
 func LazyBarrierStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "LazyBarrierStrategy"}
@@ -300,11 +363,17 @@ func PathRetractionStrategy() TraversalStrategy {
 // the initial Traversal argument or null. In this way, the By() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
-func ProductiveByStrategy(productiveKeys []string) *traversalStrategy {
-	config := make(map[string]interface{})
-	config["productiveKeys"] = productiveKeys
+func ProductiveByStrategy(config ProductiveByStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	configMap["productiveKeys"] = config.ProductiveKeys
 
-	return &traversalStrategy{name: optimizationNamespace + "ProductiveByStrategy", configuration: config}
+	return &traversalStrategy{name: optimizationNamespace + "ProductiveByStrategy", configuration: configMap}
+}
+
+// ProductiveByStrategyConfig provides configuration options for ProductiveByStrategy.
+// Zeroed (unset) values are used.
+type ProductiveByStrategyConfig struct {
+	ProductiveKeys []string
 }
 
 // RepeatUnrollStrategy is an OLTP-only strategy that unrolls any RepeatStep if it uses a constant
@@ -319,7 +388,7 @@ func RepeatUnrollStrategy() TraversalStrategy {
 
 // RemoteStrategy reconstructs a Traversal by appending a RemoteStep to its end. That step will submit the Traversal to
 // a RemoteConnection instance which will typically send it to a remote server for execution and return results.
-func RemoteStrategy(connection DriverRemoteConnection) *traversalStrategy {
+func RemoteStrategy(connection DriverRemoteConnection) TraversalStrategy {
 	a := func(g GraphTraversal) {
 		result, err := g.GetResultSet()
 		if err != nil || result != nil {

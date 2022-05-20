@@ -21,13 +21,14 @@ package main
 
 import (
 	"fmt"
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/driver"
 	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 
 // syntactic sugar
 var __ = gremlingo.T__
 var gt = gremlingo.P.Gt
-var desc = gremlingo.Desc
+var order = gremlingo.Order
 
 func main() {
 	// Creating the connection to the server.
@@ -46,7 +47,7 @@ func main() {
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
 	// Perform traversal
-	result, err := g.V().HasLabel("person").Has("age", __.Is(gt(28))).Order().By("age", desc).Values("name").ToList()
+	result, err := g.V().HasLabel("person").Has("age", __.Is(gt(28))).Order().By("age", order.Desc).Values("name").ToList()
 	if err != nil {
 		fmt.Println(err)
 		return

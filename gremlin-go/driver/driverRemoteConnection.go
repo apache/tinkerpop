@@ -30,7 +30,7 @@ import (
 // DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
 	session string
-	
+
 	TraversalSource   string
 	TransporterType   TransporterType
 	LogVerbosity      LogVerbosity
@@ -69,8 +69,8 @@ func NewDriverRemoteConnection(
 	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
-		session:           "",
-		
+		session: "",
+
 		TraversalSource:   "g",
 		TransporterType:   Gorilla,
 		LogVerbosity:      Info,

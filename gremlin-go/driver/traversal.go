@@ -19,6 +19,8 @@ under the License.
 
 package gremlingo
 
+import "math/big"
+
 // Traverser is the objects propagating through the traversal.
 type Traverser struct {
 	bulk  int64
@@ -109,7 +111,8 @@ func (t *Traversal) Next() (*Result, error) {
 	if results.IsEmpty() {
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
-	return results.One()
+	result, _, err := results.One()
+	return result, err
 }
 
 // GetResultSet submits the traversal and returns the ResultSet.
@@ -124,128 +127,187 @@ func (t *Traversal) GetResultSet() (ResultSet, error) {
 	return t.results, nil
 }
 
-// Barrier is any step that requires all left traversers to be processed prior to emitting result traversers to the right.
-type Barrier string
+type barrier string
 
-const (
-	NormSack Barrier = "normSack"
-)
+type barriers struct {
+	NormSack barrier
+}
+
+// Barrier is any step that requires all left traversers to be processed prior to emitting result traversers to the right.
+var Barrier = barriers{
+	NormSack: "normSack",
+}
+
+type cardinality string
+
+type cardinalities struct {
+	Single cardinality
+	List   cardinality
+	Set    cardinality
+}
 
 // Cardinality of Vertex Properties.
-type Cardinality string
+var Cardinality = cardinalities{
+	Single: "single",
+	List:   "list",
+	Set:    "set",
+}
 
-const (
-	Single Cardinality = "single"
-	List   Cardinality = "list"
-	Set_   Cardinality = "set"
-)
+type column string
+
+type columns struct {
+	Keys   column
+	Values column
+}
 
 // Column references a particular type of column in a complex data structure.
-type Column string
+var Column = columns{
+	Keys:   "keys",
+	Values: "values",
+}
 
-const (
-	// Keys associated with the data structure.
-	Keys Column = "keys"
-	// Values associated with the data structure.
-	Values Column = "values"
-)
+type direction string
+
+type directions struct {
+	In   direction
+	Out  direction
+	Both direction
+}
 
 // Direction is used to denote the direction of an Edge or location of a Vertex on an Edge.
-type Direction string
+var Direction = directions{
+	In:   "IN",
+	Out:  "OUT",
+	Both: "BOTH",
+}
 
-const (
-	// In refers to an incoming direction.
-	In Direction = "IN"
-	// Out refers to an outgoing direction.
-	Out Direction = "OUT"
-	// Both refers to either direction In or Out.
-	Both Direction = "BOTH"
-)
+type order string
+
+type orders struct {
+	// Shuffle is order in a random fashion.
+	Shuffle order
+	// Asc is order in ascending fashion.
+	Asc order
+	// Desc is order in descending fashion.
+	Desc order
+}
 
 // Order provides comparator instances for ordering traversers.
-type Order string
+var Order = orders{
+	Shuffle: "shuffle",
+	Asc:     "asc",
+	Desc:    "desc",
+}
 
-const (
-	// Shuffle is Order in a random fashion.
-	Shuffle Order = "shuffle"
-	// Asc is Order in ascending fashion.
-	Asc Order = "asc"
-	// Desc is Order in descending fashion.
-	Desc Order = "desc"
-)
+type pick string
 
-type Pick string
+type picks struct {
+	Any  pick
+	None pick
+}
 
-const (
-	Any  Pick = "any"
-	None Pick = "none"
-)
+var Pick = picks{
+	Any:  "any",
+	None: "none",
+}
+
+type pop string
+
+type pops struct {
+	// First is the first item in an ordered collection.
+	First pop
+	// Last is the last item in an ordered collection.
+	Last pop
+	// All the items in an ordered collection.
+	All pop
+	// Mixed is either a list (for multiple) or an object (for singles).
+	Mixed pop
+}
 
 // Pop is used to determine whether the first value, last value, or all values are gathered.
-type Pop string
+var Pop = pops{
+	First: "first",
+	Last:  "last",
+	All:   "all",
+	Mixed: "mixed",
+}
 
-const (
-	// First is the first item in an ordered collection.
-	First Pop = "first"
-	// Last is the last item in an ordered collection.
-	Last Pop = "last"
-	// All the items in an ordered collection.
-	All Pop = "all"
-	// Mixed is either a list (for multiple) or an object (for singles).
-	Mixed Pop = "mixed"
-)
+type scope string
+
+type scopes struct {
+	Global scope
+	Local  scope
+}
 
 // Scope is used in many Step instance can have a variable scope which alter the manner
 // in which the step will behave in relation to how the traversers are processed.
-type Scope string
+var Scope = scopes{
+	Global: "global",
+	Local:  "local",
+}
 
-const (
-	// Global informs the step to operate on the entire traversal.
-	Global Scope = "global"
-	// Local informs the step to operate on the current object in the step.
-	Local Scope = "local"
-)
+type t string
+
+type ts struct {
+	Id    t
+	Label t
+	Id_   t
+	Key   t
+	Value t
+}
 
 // T is string symbols.
-type T string
+var T = ts{
+	Id:    "id",
+	Label: "label",
+	Id_:   "id_",
+	Key:   "key",
+	Value: "value",
+}
 
-const (
-	Id    T = "id"
-	Label T = "label"
-	Id_   T = "id_"
-	Key   T = "key"
-	Value T = "value"
-)
+type operator string
 
-// Operator is a set of operations for traversal steps.
-type Operator string
-
-const (
+type operators struct {
 	// Sum is an addition.
-	Sum Operator = "sum"
+	Sum operator
 	// Minus is a subtraction.
-	Minus Operator = "minus"
+	Minus operator
 	// Mult is a multiplication.
-	Mult Operator = "mult"
+	Mult operator
 	// Div is a division.
-	Div Operator = "div"
+	Div operator
 	// Min selects the smaller of the values.
-	Min Operator = "min"
+	Min operator
 	// Max selects the larger of the values.
-	Max Operator = "max"
+	Max operator
 	// Assign returns the second value to the function.
-	Assign Operator = "assign"
+	Assign operator
 	// And applies "and" to boolean values.
-	And Operator = "and"
+	And operator
 	// Or applies "or" to boolean values.
-	Or Operator = "or"
+	Or operator
 	// AddAll Takes all objects in the second Slice and adds them to the first. If the first is null,
 	// then the second Slice is returned and if the second is null then the first is returned.
 	// If both are null then null is returned. Arguments must be of type Map or Slice.
-	AddAll Operator = "addAll"
+	AddAll operator
 	// SumLong sums and adds long values.
-	SumLong Operator = "sumLong"
-)
+	SumLong operator
+}
+
+// Operator is a set of operations for traversal steps.
+var Operator = operators{
+	Sum:     "sum",
+	Minus:   "minus",
+	Mult:    "mult",
+	Div:     "div",
+	Min:     "min",
+	Max:     "max",
+	Assign:  "assign",
+	And:     "and",
+	Or:      "or",
+	AddAll:  "addAll",
+	SumLong: "sumLong",
+}
 
 type p struct {
 	operator string
@@ -465,7 +527,8 @@ type withOptions struct {
 	Map     int32
 }
 
-var WithOptions withOptions = withOptions{
+// WithOptions holds configuration options to be passed to the GraphTraversal.
+var WithOptions = withOptions{
 	Tokens:  "~tinkerpop.valueMap.tokens",
 	None:    0,
 	Ids:     1,
@@ -476,4 +539,42 @@ var WithOptions withOptions = withOptions{
 	Indexer: "~tinkerpop.index.indexer",
 	List:    0,
 	Map:     1,
+}
+
+// Metrics holds metrics data; typically for .profile()-step analysis. Metrics may be nested. Nesting enables
+// the ability to capture explicit metrics for multiple distinct operations. Annotations are used to store
+// miscellaneous notes that might be useful to a developer when examining results, such as index coverage
+// for Steps in a Traversal.
+type Metrics struct {
+	Id   string
+	Name string
+	// the duration in nanoseconds.
+	Duration      int64
+	Counts        map[string]int64
+	Annotations   map[string]interface{}
+	NestedMetrics []Metrics
+}
+
+// TraversalMetrics contains the Metrics gathered for a Traversal as the result of the .profile()-step.
+type TraversalMetrics struct {
+	// the duration in nanoseconds.
+	Duration int64
+	Metrics  []Metrics
+}
+
+// GremlinType represents the GraphBinary type Class which can be used to serialize a class.
+type GremlinType struct {
+	Fqcn string
+}
+
+// BigDecimal represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer
+// unscaled value and a 32-bit integer scale.
+type BigDecimal struct {
+	Scale         int32
+	UnscaledValue big.Int
+}
+
+// ByteBuffer represents the GraphBinary type ByteBuffer which can be used to serialize a binary data.
+type ByteBuffer struct {
+	Data []byte
 }
