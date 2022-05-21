@@ -24,11 +24,11 @@
 
 const utils = require('./utils');
 const assert = require('assert');
-const { longSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+const { longSerializerNg: longSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
 
 const { from, concat } = Buffer;
 
-describe('GraphBinary.LongSerializer', () => {
+describe('GraphBinary.LongSerializerNg', () => {
 
   const type_code =  from([0x02]);
   const value_flag = from([0x00]);

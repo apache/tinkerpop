@@ -31,6 +31,7 @@ ioc.serializers = {};
 
 ioc.intSerializer = new (require('./internals/IntSerializer'))(ioc);
 ioc.longSerializer = new (require('./internals/LongSerializer'))(ioc);
+ioc.longSerializerNg = new (require('./internals/LongSerializerNg'))(ioc);
 ioc.stringSerializer = new (require('./internals/StringSerializer'))(ioc, ioc.DataType.STRING);
 ioc.dateSerializer = new (require('./internals/DateSerializer'))(ioc, ioc.DataType.DATE);
 ioc.timestampSerializer = new (require('./internals/DateSerializer'))(ioc, ioc.DataType.TIMESTAMP);

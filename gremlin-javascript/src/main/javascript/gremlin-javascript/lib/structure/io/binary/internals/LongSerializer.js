@@ -32,6 +32,7 @@ module.exports = class LongSerializer {
   canBeUsedFor() {
     // TODO
     // TODO: what if item is not within int64 limits
+    // TODO: GraphSON LongSerializer.canBeUsedFor() ?
   }
 
   serialize(item, fullyQualifiedFormat=true) {
@@ -79,7 +80,16 @@ module.exports = class LongSerializer {
         throw new Error('unexpected {value} length');
       len += 8;
 
-      const v = cursor.readBigInt64BE();
+      let v = cursor.readBigInt64BE();
+      if (v < Number.MIN_SAFE_INTEGER || v > Number.MAX_SAFE_INTEGER) {
+        // TODO: It tries to keep the same contract as GraphSON LongSerializer provides.
+        // Is it still appropriate to do so? Should we consider LongSerializerNg?
+        v = parseFloat(v.toString());
+      }
+      else {
+        v = Number(v);
+      }
+
       return { v, len };
     }
     catch (e) {
