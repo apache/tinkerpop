@@ -60,6 +60,7 @@ ioc.traversalStrategySerializer = new (require('./internals/TraversalStrategySer
 ioc.bulkSetSerializer = new (require('./internals/BulkSetSerializer'))(ioc);
 ioc.unspecifiedNullSerializer = new (require('./internals/UnspecifiedNullSerializer'))(ioc);
 
+ioc.numberSerializationStrategy = new (require('./internals/NumberSerializationStrategy'))(ioc);
 ioc.anySerializer = new (require('./internals/AnySerializer'))(ioc);
 
 ioc.graphBinaryReader = new (require('./internals/GraphBinaryReader.js'))(ioc);

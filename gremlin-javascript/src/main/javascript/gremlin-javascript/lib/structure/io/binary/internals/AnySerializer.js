@@ -30,9 +30,9 @@ module.exports = class AnySerializer {
     this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
       ioc.unspecifiedNullSerializer,
 
+      ioc.numberSerializationStrategy,
+
       ioc.booleanSerializer,
-      ioc.doubleSerializer,
-      ioc.intSerializer,
       ioc.dateSerializer,
       ioc.bytecodeSerializer,
       ioc.pSerializer,
