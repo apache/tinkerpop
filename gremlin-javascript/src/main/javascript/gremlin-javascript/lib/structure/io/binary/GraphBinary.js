@@ -55,6 +55,7 @@ ioc.byteSerializer = new (require('./internals/ByteSerializer'))(ioc);
 ioc.byteBufferSerializer = new (require('./internals/ByteBufferSerializer'))(ioc);
 ioc.booleanSerializer = new (require('./internals/BooleanSerializer'))(ioc);
 ioc.textPSerializer = new (require('./internals/TextPSerializer'))(ioc);
+ioc.traversalStrategySerializer = new (require('./internals/TraversalStrategySerializer'))(ioc);
 ioc.unspecifiedNullSerializer = new (require('./internals/UnspecifiedNullSerializer'))(ioc);
 
 ioc.anySerializer = new (require('./internals/AnySerializer'))(ioc);

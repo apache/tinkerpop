@@ -28,6 +28,7 @@ const { DataType, anySerializer } = require('../../../lib/structure/io/binary/Gr
 
 const { Vertex, VertexProperty, Edge, Path, Property } = require('../../../lib/structure/graph');
 const t = require('../../../lib/process/traversal');
+const ts = require('../../../lib/process/traversal-strategy');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
 const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
@@ -99,7 +100,19 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TraversalStrategySerializer
-      // TODO
+      { v: new ts.OptionsStrategy({ 'B': 1, 'A': 2 }),
+        b: [
+          DataType.TRAVERSALSTRATEGY,0x00,
+          0x00,0x00,0x00,0x0F, ...from('OptionsStrategy'),
+          0x00,0x00,0x00,0x02,
+          // 'B':1
+          0x03,0x00, 0x00,0x00,0x00,0x01, 0x42,
+          0x01,0x00, 0x00,0x00,0x00,0x01,
+          // 'A':2
+          0x03,0x00, 0x00,0x00,0x00,0x01, 0x41,
+          0x01,0x00, 0x00,0x00,0x00,0x02,
+        ]
+      },
 
       // PSerializer
       { v: t.P.eq('marko'),
@@ -519,6 +532,9 @@ describe('GraphBinary.AnySerializer', () => {
           0x03,0x00, 0x00,0x00,0x00,0x05, ...from('ValuE'),
         ]
       },
+
+      // TRAVERSALSTRATEGY
+      // TODO: it's not expected to be deserialized, is it correct assumption?
 
       // UNSPECIFIED_NULL
       { v:null,                                   b:[0xFE,0x01] },
