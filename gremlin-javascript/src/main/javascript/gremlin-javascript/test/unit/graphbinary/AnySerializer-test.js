@@ -264,12 +264,12 @@ describe('GraphBinary.AnySerializer', () => {
       // LongSerializer
       // TODO +
 
-      // ListSerializer (Set is never used during serialization)
+      // ListSerializer
       { v:[],  b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x00] },
       { v:[1], b:[DataType.LIST,0x00, 0x00,0x00,0x00,0x01, 0x01,0x00, 0x00,0x00,0x00,0x01] },
 
       // SetSerializer
-      // TODO
+      // TODO: It's not expected to be serialized as GraphSON does. Is it still okay?
 
       // MapSerializer
       { v: new Map([ ['A',3] ]),
@@ -387,6 +387,11 @@ describe('GraphBinary.AnySerializer', () => {
       // MAP
       { v:null,                                   b:[0x0A,0x01] },
       { v:new Map(),                              b:[0x0A,0x00, 0x00,0x00,0x00,0x00] },
+
+      // SET
+      // TODO: Is it still okay to follow GraphSON where Set and List are usual JS ArrayS?
+      { v:null,                                   b:[0x0B,0x01] },
+      { v:[],                                     b:[0x0B,0x00, 0x00,0x00,0x00,0x00] },
 
       // UUID
       { v:null,                                   b:[0x0C,0x01] },
