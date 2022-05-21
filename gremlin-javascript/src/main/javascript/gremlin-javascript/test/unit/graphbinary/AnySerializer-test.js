@@ -272,10 +272,11 @@ describe('GraphBinary.AnySerializer', () => {
         ]
       },
 
+      // BulkSetSerializer
+      // TODO: it's ignored and not expected to be used from serialization point of view
+
       // Default (strings / objects / ...)
       // TODO: align with Java.parse(GraphSON) logic
-      // TODO: uuid
-      // TODO: leftovers
 
       // ByteSerializer
       // TODO: it's ignored and not expected to be used from serialization point of view
@@ -524,8 +525,8 @@ describe('GraphBinary.AnySerializer', () => {
 
       // TEXTP
       { v:null,                                   b:[0x28,0x01] },
-      { v: t.TextP.containing('ValuE'),
-        b: [
+      { v:t.TextP.containing('ValuE'),
+        b:[
           0x28,0x00,
           0x00,0x00,0x00,0x0A, ...from('containing'),
           0x00,0x00,0x00,0x01,
@@ -535,6 +536,17 @@ describe('GraphBinary.AnySerializer', () => {
 
       // TRAVERSALSTRATEGY
       // TODO: it's not expected to be deserialized, is it correct assumption?
+
+      // BULKSET
+      { v:null,                                   b:[0x2A,0x01] },
+      { v:[ 'C', 'C', 'C' ],
+        b:[
+          0x2A,0x00,
+          0x00,0x00,0x00,0x01, // {length}
+          0x03,0x00, 0x00,0x00,0x00,0x01, 0x43, // 'C'
+          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x03, // bulk
+        ]
+      },
 
       // UNSPECIFIED_NULL
       { v:null,                                   b:[0xFE,0x01] },
