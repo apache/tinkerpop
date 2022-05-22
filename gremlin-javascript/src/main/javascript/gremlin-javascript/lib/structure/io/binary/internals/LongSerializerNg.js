@@ -29,7 +29,7 @@ module.exports = class LongSerializerNg {
 
   constructor(ioc) {
     this.ioc = ioc;
-    this.ioc.serializers[ioc.DataType.LONG] = this;
+    // this.ioc.serializers[ioc.DataType.LONG] = this; // disabled, see AnySerializer.deserialize()
   }
 
   canBeUsedFor() {
