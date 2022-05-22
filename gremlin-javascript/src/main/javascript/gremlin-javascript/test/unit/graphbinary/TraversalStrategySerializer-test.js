@@ -43,14 +43,14 @@ describe('GraphBinary.TraversalStrategySerializer', () => {
 
     { v:new ts.ElementIdStrategy(),
       b:[
-        0x00,0x00,0x00,0x11, ...from('ElementIdStrategy'),
+        0x00,0x00,0x00,0x54, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy'),
         0x00,0x00,0x00,0x00,
       ]
     },
 
     { v:new ts.OptionsStrategy({ 'A': 1, 'B': 2 }),
       b:[
-        0x00,0x00,0x00,0x0F, ...from('OptionsStrategy'),
+        0x00,0x00,0x00,0x52, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy'),
         0x00,0x00,0x00,0x02,
         // 'A':1
         0x03,0x00, 0x00,0x00,0x00,0x01, 0x41,

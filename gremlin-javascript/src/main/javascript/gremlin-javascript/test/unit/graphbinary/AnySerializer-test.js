@@ -112,7 +112,7 @@ describe('GraphBinary.AnySerializer', () => {
       { v: new ts.OptionsStrategy({ 'B': 1, 'A': 2 }),
         b: [
           DataType.TRAVERSALSTRATEGY,0x00,
-          0x00,0x00,0x00,0x0F, ...from('OptionsStrategy'),
+          0x00,0x00,0x00,0x52, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy'),
           0x00,0x00,0x00,0x02,
           // 'B':1
           0x03,0x00, 0x00,0x00,0x00,0x01, 0x42,

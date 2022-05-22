@@ -50,7 +50,7 @@ module.exports = class TraversalStrategySerializer {
       bufs.push( Buffer.from([this.ioc.DataType.TRAVERSALSTRATEGY, 0x00]) );
 
     // let's repeat the logic of Graphson's TraversalStrategySerializer:
-    const strategy_class = item.constructor.name;
+    const strategy_class = item.fqcn;
     const conf = {};
     for (let k in item.configuration)
       if (item.configuration.hasOwnProperty(k))
