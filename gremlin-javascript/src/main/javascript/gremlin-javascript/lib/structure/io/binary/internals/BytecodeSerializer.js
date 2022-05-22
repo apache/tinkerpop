@@ -73,7 +73,7 @@ module.exports = class BytecodeSerializer {
       bufs.push( this.ioc.stringSerializer.serialize(name, false) );
       bufs.push( this.ioc.intSerializer.serialize(values_length, false) );
       for (let j = 0; j < values_length; j++)
-        bufs.push( this.ioc.anySerializer(source[1 + j], true) );
+        bufs.push( this.ioc.anySerializer.serialize(source[1 + j], true) );
     }
 
     return Buffer.concat(bufs);

@@ -29,7 +29,14 @@ const { bytecodeSerializer } = require('../../../lib/structure/io/binary/GraphBi
 const t = require('../../../lib/process/traversal');
 const Bytecode = require('../../../lib/process/bytecode');
 const { GraphTraversal } = require('../../../lib/process/graph-traversal');
-const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
+const { ReservedKeysVerificationStrategy } = require('../../../lib/process/traversal-strategy');
+
+const g = (strategy) => {
+  const bc = new Bytecode();
+  if (strategy)
+    bc.addSource('withStrategies', [ strategy ]);
+  return new GraphTraversal(undefined, undefined, bc);
+}
 
 const { from, concat } = Buffer;
 
@@ -73,7 +80,32 @@ describe('GraphBinary.BytecodeSerializer', () => {
         0x00,0x00,0x00,0x00, // {sources_length}
     ]},
 
-    // TODO: add sources related tests
+    { ser:1, v: g(new ReservedKeysVerificationStrategy(false, true)).V().hasLabel('Person').has('age', 42),
+      b: [
+        0x00,0x00,0x00,0x03, // {steps_length}
+          0x00,0x00,0x00,0x01, 0x56, // V
+            0x00,0x00,0x00,0x00, // ([0])
+          0x00,0x00,0x00,0x08, 0x68,0x61,0x73,0x4C,0x61,0x62,0x65,0x6C, // hasLabel
+            0x00,0x00,0x00,0x01, // ([1])
+            0x03,0x00, 0x00,0x00,0x00,0x06, 0x50,0x65,0x72,0x73,0x6F,0x6E, // 'Person'
+          0x00,0x00,0x00,0x03, 0x68,0x61,0x73, // has
+            0x00,0x00,0x00,0x02, // ([2])
+            0x03,0x00, 0x00,0x00,0x00,0x03, 0x61,0x67,0x65, // 'age'
+            0x01,0x00, 0x00,0x00,0x00,0x2A, // 42
+        0x00,0x00,0x00,0x01, // {sources_length}
+          0x00,0x00,0x00,0x0E, ...from('withStrategies'),
+          0x00,0x00,0x00,0x01,
+            0x29,0x00, 0x00,0x00,0x00,0x65, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy'),
+            0x00,0x00,0x00,0x03, // configuration map size
+              0x03,0x00, 0x00,0x00,0x00,0x0B, ...from('logWarnings'),
+              0x27,0x00, 0x00, // false
+              0x03,0x00, 0x00,0x00,0x00,0x0E, ...from('throwException'),
+              0x27,0x00, 0x01, // true
+              0x03,0x00, 0x00,0x00,0x00,0x04, ...from('keys'),
+              0x09,0x00, 0x00,0x00,0x00,0x02,
+                0x03,0x00, 0x00,0x00,0x00,0x02, ...from('id'),
+                0x03,0x00, 0x00,0x00,0x00,0x05, ...from('label'),
+    ]},
 
     { des:1, err:/buffer is missing/,                  fq:1, b:undefined },
     { des:1, err:/buffer is missing/,                  fq:0, b:undefined },
@@ -123,7 +155,9 @@ describe('GraphBinary.BytecodeSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases
+    .filter(({ser}) => !ser)
+    .forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
