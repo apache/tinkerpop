@@ -80,7 +80,7 @@ class Connection extends EventEmitter {
      * Gets the MIME type.
      * @type {String}
      */
-    this.mimeType = options.mimeType || defaultMimeType;
+    this.mimeType = options.mimeType || process.env.APACHE_TINKERPOP_GREMLIN_JAVASCRIPT_TEST_CLIENT_MIMETYPE || defaultMimeType;
 
     // A map containing the request id and the handler
     this._responseHandlers = {};
