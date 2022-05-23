@@ -549,7 +549,7 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TRAVERSALSTRATEGY
-      // TODO: it's not expected to be deserialized, is it correct assumption?
+      // It's not expected to be deserialized
 
       // BULKSET
       { v:null,                                   b:[0x2A,0x01] },
