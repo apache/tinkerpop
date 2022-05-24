@@ -54,6 +54,7 @@ ioc.enumSerializer = new (require('./internals/EnumSerializer'))(ioc);
 ioc.lambdaSerializer = new (require('./internals/LambdaSerializer'))(ioc);
 ioc.byteSerializer = new (require('./internals/ByteSerializer'))(ioc);
 ioc.byteBufferSerializer = new (require('./internals/ByteBufferSerializer'))(ioc);
+ioc.shortSerializer = new (require('./internals/ShortSerializer'))(ioc);
 ioc.booleanSerializer = new (require('./internals/BooleanSerializer'))(ioc);
 ioc.textPSerializer = new (require('./internals/TextPSerializer'))(ioc);
 ioc.traversalStrategySerializer = new (require('./internals/TraversalStrategySerializer'))(ioc);

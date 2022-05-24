@@ -51,7 +51,6 @@ describe('GraphBinary.AnySerializer', () => {
 
       // NumberSerializationStrategy
       // Double
-      // TODO: Float is never used during serialization, still okay here?
       { v:0.1,               b:[DataType.DOUBLE,0x00, 0x3F,0xB9,0x99,0x99,0x99,0x99,0x99,0x9A] },
       { v:0.375,             b:[DataType.DOUBLE,0x00, 0x3F,0xD8,0x00,0x00,0x00,0x00,0x00,0x00] },
       { v:0.00390625,        b:[DataType.DOUBLE,0x00, 0x3F,0x70,0x00,0x00,0x00,0x00,0x00,0x00] },
@@ -73,6 +72,7 @@ describe('GraphBinary.AnySerializer', () => {
       // TODO: bigint -> DataType.BIGINTEGER
       // BigDecimal
       // TODO
+      // Yes, Float and Short are not used
 
       // DateSerializer
       { v:new Date(1651436603000), b:[DataType.DATE,0x00, 0x00,0x00,0x01,0x80,0x81,0x4A,0xC6,0x78] },
@@ -532,6 +532,10 @@ describe('GraphBinary.AnySerializer', () => {
       // BYTEBUFFER
       { v:null,                                   b:[0x25,0x01] },
       { v:from([0xFF,0x00,0x01]),                 b:[0x25,0x00, 0x00,0x00,0x00,0x03, 0xFF,0x00,0x01] },
+
+      // SHORT
+      { v:null,                                   b:[0x26,0x01] },
+      { v:32767,                                  b:[0x26,0x00, 0x7F,0xFF] },
 
       // BOOLEAN
       { v:null,                                   b:[0x27,0x01] },
