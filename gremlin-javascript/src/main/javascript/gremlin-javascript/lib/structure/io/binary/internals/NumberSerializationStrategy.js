@@ -57,9 +57,8 @@ module.exports = class NumberSerializationStrategy {
         return this.ioc.longSerializer.serialize(item, fullyQualifiedFormat);
     }
 
-    if (typeof(item) === 'bigint') {
-      // TODO: 
-    }
+    if (typeof(item) === 'bigint')
+      return this.ioc.bigIntegerSerializer.serialize(item, fullyQualifiedFormat);
   }
 
 };
