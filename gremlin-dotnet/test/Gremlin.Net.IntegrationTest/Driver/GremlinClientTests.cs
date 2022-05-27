@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -178,9 +177,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
 
             Assert.NotNull(resultSet.StatusAttributes);
-
-            var values = (JsonElement) resultSet.StatusAttributes["@value"];
-            Assert.True(values[0].ToString().Equals("host"));
+            Assert.True(resultSet.StatusAttributes.ContainsKey("host"));
         }
 
         [Fact]
