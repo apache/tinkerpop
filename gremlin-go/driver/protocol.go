@@ -92,9 +92,7 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 // If there is an error, we need to close the ResultSets and then pass the error back.
 func readErrorHandler(resultSets *synchronizedMap, errorCallback func(), err error, log *logHandler) {
 	log.logf(Error, readLoopError, err.Error())
-	resultSets.synchronizedRange(func(_ string, resultSet ResultSet) {
-		resultSet.Close()
-	})
+	resultSets.closeAll(err)
 	errorCallback()
 }
 
