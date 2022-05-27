@@ -27,7 +27,7 @@ import (
 
 func TestBytecode(t *testing.T) {
 	t.Run("Constructor", func(t *testing.T) {
-		bc1 := newBytecode(nil)
+		bc1 := NewBytecode(nil)
 		assert.NotNil(t, bc1.bindings)
 		assert.NotNil(t, bc1.sourceInstructions)
 		assert.NotNil(t, bc1.stepInstructions)
@@ -49,7 +49,7 @@ func TestBytecode(t *testing.T) {
 		bc1.stepInstructions = stepInstructions
 		bc1.bindings = bindingMap
 
-		bc2 := newBytecode(bc1)
+		bc2 := NewBytecode(bc1)
 		assert.NotNil(t, bc2.bindings)
 		assert.NotNil(t, bc2.sourceInstructions)
 		assert.NotNil(t, bc2.stepInstructions)
@@ -58,13 +58,13 @@ func TestBytecode(t *testing.T) {
 		assert.Equal(t, stepInstructions, bc2.stepInstructions)
 	})
 
-	t.Run("addSource", func(t *testing.T) {
+	t.Run("AddSource", func(t *testing.T) {
 		expectedSourceInstructions := []instruction{{
 			operator:  "mockSource",
 			arguments: []interface{}{123},
 		}}
-		bc := newBytecode(nil)
-		err := bc.addSource("mockSource", 123)
+		bc := NewBytecode(nil)
+		err := bc.AddSource("mockSource", 123)
 		assert.Nil(t, err)
 		assert.Equal(t, expectedSourceInstructions, bc.sourceInstructions)
 	})
@@ -74,14 +74,14 @@ func TestBytecode(t *testing.T) {
 			operator:  "mockStep",
 			arguments: []interface{}{123},
 		}}
-		bc := newBytecode(nil)
-		err := bc.addStep("mockStep", 123)
+		bc := NewBytecode(nil)
+		err := bc.AddStep("mockStep", 123)
 		assert.Nil(t, err)
 		assert.Equal(t, expectedStepInstructions, bc.stepInstructions)
 	})
 
 	t.Run("convertArgument", func(t *testing.T) {
-		bc := newBytecode(nil)
+		bc := NewBytecode(nil)
 
 		t.Run("map", func(t *testing.T) {
 			testMap := make(map[string]int)
@@ -119,41 +119,41 @@ func TestBytecode(t *testing.T) {
 		})
 	})
 
-	t.Run("Test bytecode traversal argument conversion without Graph", func(t *testing.T) {
-		bc := bytecode{}
+	t.Run("Test Bytecode traversal argument conversion without Graph", func(t *testing.T) {
+		bc := Bytecode{}
 		traversal := &GraphTraversal{
 			&Traversal{},
 		}
 		traversal.graph = nil
-		traversal.bytecode = &bytecode{}
+		traversal.Bytecode = &Bytecode{}
 		traversalBytecode, err := bc.convertArgument(traversal)
 		assert.Nil(t, err)
-		assert.Equal(t, traversal.bytecode, traversalBytecode)
+		assert.Equal(t, traversal.Bytecode, traversalBytecode)
 	})
 
-	t.Run("Test bytecode traversal argument conversion with Graph", func(t *testing.T) {
+	t.Run("Test Bytecode traversal argument conversion with Graph", func(t *testing.T) {
 		// This should fail.
-		bc := bytecode{}
+		bc := Bytecode{}
 		traversal := &GraphTraversal{
 			&Traversal{},
 		}
 		traversal.graph = &Graph{}
-		traversal.bytecode = &bytecode{}
+		traversal.Bytecode = &Bytecode{}
 		traversalBytecode, err := bc.convertArgument(traversal)
 		assert.Equal(t, newError(err1001ConvertArgumentChildTraversalNotFromAnonError), err)
 		assert.Nil(t, traversalBytecode)
 	})
 
-	t.Run("Test bytecode traversal argument multiple bindings", func(t *testing.T) {
-		bc := bytecode{}
+	t.Run("Test Bytecode traversal argument multiple bindings", func(t *testing.T) {
+		bc := Bytecode{}
 		bc.bindings = map[string]interface{}{}
 		testTraversal := &GraphTraversal{
 			&Traversal{},
 		}
-		testTraversal.bytecode = &bytecode{}
-		testTraversal.bytecode.bindings = map[string]interface{}{"mock": "123"}
+		testTraversal.Bytecode = &Bytecode{}
+		testTraversal.Bytecode.bindings = map[string]interface{}{"mock": "123"}
 		traversalBytecode, err := bc.convertArgument(testTraversal)
 		assert.Nil(t, err)
-		assert.Equal(t, testTraversal.bytecode, traversalBytecode)
+		assert.Equal(t, testTraversal.Bytecode, traversalBytecode)
 	})
 }
