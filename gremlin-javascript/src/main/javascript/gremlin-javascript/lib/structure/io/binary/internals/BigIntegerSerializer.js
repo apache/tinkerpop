@@ -46,7 +46,7 @@ module.exports = class BigIntegerSerializer {
     if (fullyQualifiedFormat)
       bufs.push( Buffer.from([this.ioc.DataType.BIGINTEGER, 0x00]) );
 
-    let v, length;
+    let v;
 
     // positive number
     if (item >= 0) {
@@ -56,7 +56,6 @@ module.exports = class BigIntegerSerializer {
       if (Number.parseInt(hex_str[0], 16) > 7)
         hex_str = '00' + hex_str; // to keep sign bit unset for positive number
       v = Buffer.from(hex_str, 'hex');
-      length = v.length;
     }
 
     // negative number
@@ -69,16 +68,15 @@ module.exports = class BigIntegerSerializer {
       if (item < INTN_MIN)
         N += 8n; // to provide room for smaller negative number
 
-      const twos_complement = (2n ** N + item);
+      const twos_complement = 2n ** N + item;
       hex_str = twos_complement.toString(16);
       if (hex_str.length % 2 !== 0)
         hex_str = '0' + hex_str; // Buffer.from() expects exactly two hex digits per byte
 
       v = Buffer.from(hex_str, 'hex');
-      length = v.length;
     }
 
-    bufs.push( this.ioc.intSerializer.serialize(length, false) );
+    bufs.push( this.ioc.intSerializer.serialize(v.length, false) );
     bufs.push(v);
 
     return Buffer.concat(bufs);
