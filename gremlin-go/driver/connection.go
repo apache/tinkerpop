@@ -144,10 +144,11 @@ func (s *synchronizedMap) size() int {
 	return len(s.internalMap)
 }
 
-func (s *synchronizedMap) synchronizedRange(f func(key string, value ResultSet)) {
+func (s *synchronizedMap) closeAll(err error) {
 	s.syncLock.Lock()
 	defer s.syncLock.Unlock()
-	for k, v := range s.internalMap {
-		f(k, v)
+	for _, resultSet := range s.internalMap {
+		resultSet.setError(err)
+		resultSet.unlockedClose()
 	}
 }
