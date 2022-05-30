@@ -30,36 +30,36 @@ func TestTraversal(t *testing.T) {
 	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", true)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, newBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
 		original := g.V().Out("created")
 		clone := original.Clone().Out("knows")
 		cloneClone := clone.Clone().Out("created")
 
-		assert.Equal(t, 2, len(original.bytecode.stepInstructions))
-		assert.Equal(t, 3, len(clone.bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.bytecode.stepInstructions))
+		assert.Equal(t, 2, len(original.Bytecode.stepInstructions))
+		assert.Equal(t, 3, len(clone.Bytecode.stepInstructions))
+		assert.Equal(t, 4, len(cloneClone.Bytecode.stepInstructions))
 
 		original.Has("person", "name", "marko")
 		clone.V().Out()
 
-		assert.Equal(t, 3, len(original.bytecode.stepInstructions))
-		assert.Equal(t, 5, len(clone.bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.bytecode.stepInstructions))
+		assert.Equal(t, 3, len(original.Bytecode.stepInstructions))
+		assert.Equal(t, 5, len(clone.Bytecode.stepInstructions))
+		assert.Equal(t, 4, len(cloneClone.Bytecode.stepInstructions))
 	})
 
 	t.Run("Test Iterate with empty removeConnection", func(t *testing.T) {
-		g := NewGraphTraversalSource(&Graph{}, nil, newBytecode(nil))
+		g := NewGraphTraversalSource(&Graph{}, nil, NewBytecode(nil))
 
 		promise := g.V().Count().Iterate()
 		assert.NotNil(t, <-promise)
 	})
 
 	t.Run("Test traversal with bindings", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, newBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
 		bytecode := g.V((&Bindings{}).Of("a", []int32{1, 2, 3})).
 			Out((&Bindings{}).Of("b", "created")).
 			Where(T__.In((&Bindings{}).Of("c", "created"), (&Bindings{}).Of("d", "knows")).
-				Count().Is((&Bindings{}).Of("e", P.Gt(2)))).bytecode
+				Count().Is((&Bindings{}).Of("e", P.Gt(2)))).Bytecode
 		assert.Equal(t, 5, len(bytecode.bindings))
 		assert.Equal(t, []int32{1, 2, 3}, bytecode.bindings["a"])
 		assert.Equal(t, "created", bytecode.bindings["b"])
