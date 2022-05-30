@@ -89,7 +89,7 @@ const (
 	err0902IterateAnonTraversalError errorCode = "E0902_TRAVERSAL_ITERATE_ANON_TRAVERSAL_ERROR"
 	err0903NextNoResultsLeftError    errorCode = "E0903_TRAVERSAL_NEXT_NO_RESULTS_LEFT_ERROR"
 
-	// bytecode.go errors
+	// Bytecode.go errors
 	err1001ConvertArgumentChildTraversalNotFromAnonError errorCode = "E1001_BYTECODE_CHILD_T_NOT_ANON_ERROR"
 
 	// graphTraversal.go errors

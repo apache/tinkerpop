@@ -30,7 +30,7 @@ type Traverser struct {
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
 	graph    *Graph
-	bytecode *bytecode
+	Bytecode *Bytecode
 	remote   *DriverRemoteConnection
 	results  ResultSet
 }
@@ -41,7 +41,7 @@ func (t *Traversal) ToList() ([]*Result, error) {
 		return nil, newError(err0901ToListAnonTraversalError)
 	}
 
-	results, err := t.remote.submitBytecode(t.bytecode)
+	results, err := t.remote.submitBytecode(t.Bytecode)
 	if err != nil {
 		return nil, err
 	}
@@ -74,12 +74,12 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		if err := t.bytecode.addStep("none"); err != nil {
+		if err := t.Bytecode.AddStep("none"); err != nil {
 			r <- err
 			return
 		}
 
-		res, err := t.remote.submitBytecode(t.bytecode)
+		res, err := t.remote.submitBytecode(t.Bytecode)
 		if err != nil {
 			r <- err
 			return
@@ -118,7 +118,7 @@ func (t *Traversal) Next() (*Result, error) {
 // GetResultSet submits the traversal and returns the ResultSet.
 func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
-		results, err := t.remote.submitBytecode(t.bytecode)
+		results, err := t.remote.submitBytecode(t.Bytecode)
 		if err != nil {
 			return nil, err
 		}
