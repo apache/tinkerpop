@@ -222,21 +222,19 @@ class Connection extends EventEmitter {
   }
 
   _getDefaultReader(mimeType) {
-    if (mimeType === graphBinaryMimeType)
+    if (mimeType === graphBinaryMimeType) {
       return graphBinaryReader;
+    }
 
-    return mimeType === graphSON2MimeType
-      ? new serializer.GraphSON2Reader()
-      : new serializer.GraphSONReader();
+    return mimeType === graphSON2MimeType ? new serializer.GraphSON2Reader() : new serializer.GraphSONReader();
   }
 
   _getDefaultWriter(mimeType) {
-    if (mimeType === graphBinaryMimeType)
+    if (mimeType === graphBinaryMimeType) {
       return graphBinaryWriter;
+    }
 
-    return mimeType === graphSON2MimeType
-      ? new serializer.GraphSON2Writer()
-      : new serializer.GraphSONWriter();
+    return mimeType === graphSON2MimeType ? new serializer.GraphSON2Writer() : new serializer.GraphSONWriter();
   }
 
   _pingHeartbeat() {
