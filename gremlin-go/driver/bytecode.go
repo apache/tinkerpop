@@ -24,13 +24,15 @@ import (
 	"reflect"
 )
 
-type bytecode struct {
+// Bytecode a list of ordered instructions for traversal that can be serialized between environments and machines.
+type Bytecode struct {
 	sourceInstructions []instruction
 	stepInstructions   []instruction
 	bindings           map[string]interface{}
 }
 
-func newBytecode(bc *bytecode) *bytecode {
+// NewBytecode creates a new Bytecode to be used in traversals.
+func NewBytecode(bc *Bytecode) *Bytecode {
 	sourceInstructions := make([]instruction, 0)
 	stepInstructions := make([]instruction, 0)
 	bindingMap := make(map[string]interface{})
@@ -39,14 +41,14 @@ func newBytecode(bc *bytecode) *bytecode {
 		stepInstructions = append(stepInstructions, bc.stepInstructions...)
 	}
 
-	return &bytecode{
+	return &Bytecode{
 		sourceInstructions: sourceInstructions,
 		stepInstructions:   stepInstructions,
 		bindings:           bindingMap,
 	}
 }
 
-func (bytecode *bytecode) createInstruction(operator string, args ...interface{}) (*instruction, error) {
+func (bytecode *Bytecode) createInstruction(operator string, args ...interface{}) (*instruction, error) {
 	instruction := &instruction{
 		operator:  operator,
 		arguments: make([]interface{}, 0),
@@ -63,7 +65,8 @@ func (bytecode *bytecode) createInstruction(operator string, args ...interface{}
 	return instruction, nil
 }
 
-func (bytecode *bytecode) addSource(sourceName string, args ...interface{}) error {
+// AddSource add a traversal source instruction to the bytecode.
+func (bytecode *Bytecode) AddSource(sourceName string, args ...interface{}) error {
 	instruction, err := bytecode.createInstruction(sourceName, args...)
 	if err != nil {
 		return err
@@ -73,7 +76,8 @@ func (bytecode *bytecode) addSource(sourceName string, args ...interface{}) erro
 	return err
 }
 
-func (bytecode *bytecode) addStep(stepName string, args ...interface{}) error {
+// AddStep adds a traversal instruction to the bytecode
+func (bytecode *Bytecode) AddStep(stepName string, args ...interface{}) error {
 	instruction, err := bytecode.createInstruction(stepName, args...)
 	if err != nil {
 		return err
@@ -83,7 +87,7 @@ func (bytecode *bytecode) addStep(stepName string, args ...interface{}) error {
 	return err
 }
 
-func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) {
+func (bytecode *Bytecode) convertArgument(arg interface{}) (interface{}, error) {
 	if arg == nil {
 		return nil, nil
 	}
@@ -136,10 +140,10 @@ func (bytecode *bytecode) convertArgument(arg interface{}) (interface{}, error) 
 			if v.graph != nil {
 				return nil, newError(err1001ConvertArgumentChildTraversalNotFromAnonError)
 			}
-			for k, val := range v.bytecode.bindings {
+			for k, val := range v.Bytecode.bindings {
 				bytecode.bindings[k] = val
 			}
-			return v.bytecode, nil
+			return v.Bytecode, nil
 		default:
 			return arg, nil
 		}

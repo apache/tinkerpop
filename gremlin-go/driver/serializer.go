@@ -64,7 +64,7 @@ func convertArgs(request *request, gs graphBinarySerializer) (map[string]interfa
 	// args["gremlin"]: <serialized args["gremlin"]>
 	gremlin := request.args["gremlin"]
 	switch gremlin.(type) {
-	case bytecode:
+	case Bytecode:
 		buffer := bytes.Buffer{}
 		gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
 		if err != nil {
