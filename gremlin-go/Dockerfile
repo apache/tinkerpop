@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-ARG GREMLIN_SERVER_VERSION
-FROM tinkerpop/gremlin-server:${GREMLIN_SERVER_VERSION:-3.5.4-SNAPSHOT}
+ARG GREMLIN_SERVER
+FROM tinkerpop/gremlin-server:$GREMLIN_SERVER
 
 USER root
 RUN mkdir -p /opt
@@ -31,18 +31,8 @@ RUN chmod 755 /opt/docker-entrypoint.sh
 RUN apk update && apk add dos2unix
 RUN dos2unix /opt/docker-entrypoint.sh && apk del dos2unix
 
-ARG NEO4J_VERSION
-# Installs Neo4j libraries to this image so that we can test variants with transactions,
-# but only only port 45940 is configured with the neo4j graph as the neo4j-empty.properties
-# is statically pointing at a temp directory and that space can only be accessed by one
-# graph at a time.
-RUN /opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin ${NEO4J_VERSION:-3.5.4}
-
-# Gremlin server and neo4j versions are set to 3.5.4 by default, to change their versions, add args under the
-# docker-compose build step, e.g.:
-#      args:
-#        GREMLIN_SERVER_VERSION: 3.5.x-SNAPSHOT
-#        NEO4J_VERSION: 3.5.x
+ARG GREMLIN_SERVER
+ENV GREMLIN_SERVER_VER=$GREMLIN_SERVER
 
 EXPOSE 45940 45941
 
