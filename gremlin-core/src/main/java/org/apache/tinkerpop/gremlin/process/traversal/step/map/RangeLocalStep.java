@@ -50,6 +50,15 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
         this.high = high;
     }
 
+    public long getLowRange() {
+        return this.low;
+    }
+ 
+    public long getHighRange() {
+        return this.high;
+    } 
+ 
+
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();

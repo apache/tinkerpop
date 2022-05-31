@@ -42,3 +42,4 @@ BenchmarkDotNet.Artifacts/
 docs/gremlint/
 gremlint/
 coverage.out
+.env
