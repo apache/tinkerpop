@@ -23,26 +23,27 @@
 'use strict';
 
 module.exports = class DoubleSerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.DOUBLE] = this;
   }
 
   canBeUsedFor(value) {
-    return (typeof value === 'number') && ! Number.isInteger(value);
+    return typeof value === 'number' && !Number.isInteger(value);
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    if (item === undefined || item === null)
-      if (fullyQualifiedFormat)
+  serialize(item, fullyQualifiedFormat = true) {
+    if (item === undefined || item === null) {
+      if (fullyQualifiedFormat) {
         return Buffer.from([this.ioc.DataType.DOUBLE, 0x01]);
-      else
-        return Buffer.from([0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]);
+      }
+      return Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+    }
 
     const bufs = [];
-    if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.DOUBLE, 0x00]) );
+    if (fullyQualifiedFormat) {
+      bufs.push(Buffer.from([this.ioc.DataType.DOUBLE, 0x00]));
+    }
     const v = Buffer.alloc(8);
     v.writeDoubleBE(item);
     bufs.push(v);
@@ -50,40 +51,49 @@ module.exports = class DoubleSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat=true) {
+  deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
 
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
-
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.DOUBLE)
-          throw new Error('unexpected {type_code}');
-
-        if (cursor.length < 1)
-          throw new Error('{value_flag} is missing');
-        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (value_flag === 1)
-          return { v: null, len };
-        if (value_flag !== 0)
-          throw new Error('unexpected {value_flag}');
       }
 
-      if (cursor.length < 8)
+      if (fullyQualifiedFormat) {
+        const type_code = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (type_code !== this.ioc.DataType.DOUBLE) {
+          throw new Error('unexpected {type_code}');
+        }
+
+        if (cursor.length < 1) {
+          throw new Error('{value_flag} is missing');
+        }
+        const value_flag = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (value_flag === 1) {
+          return { v: null, len };
+        }
+        if (value_flag !== 0) {
+          throw new Error('unexpected {value_flag}');
+        }
+      }
+
+      if (cursor.length < 8) {
         throw new Error('unexpected {value} length');
+      }
       len += 8;
 
       const v = cursor.readDoubleBE();
       return { v, len };
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }
-
 };

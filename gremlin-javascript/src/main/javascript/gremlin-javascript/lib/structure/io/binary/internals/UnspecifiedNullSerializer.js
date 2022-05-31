@@ -23,43 +23,52 @@
 'use strict';
 
 module.exports = class UnspecifiedNullSerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.UNSPECIFIED_NULL] = this;
   }
 
   canBeUsedFor(value) {
-    return (value === null || value === undefined);
+    return value === null || value === undefined;
   }
 
-  serialize(item) { // fullyQualifiedFormat always is true
+  serialize(item) {
+    // fullyQualifiedFormat always is true
     return Buffer.from([this.ioc.DataType.UNSPECIFIED_NULL, 0x01]);
   }
 
-  deserialize(buffer) { // fullyQualifiedFormat always is true
+  deserialize(buffer) {
+    // fullyQualifiedFormat always is true
     let len = 0;
     let cursor = buffer;
 
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
+      }
 
-      const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-      if (type_code !== this.ioc.DataType.UNSPECIFIED_NULL)
+      const type_code = cursor.readUInt8();
+      len++;
+      cursor = cursor.slice(1);
+      if (type_code !== this.ioc.DataType.UNSPECIFIED_NULL) {
         throw new Error('unexpected {type_code}');
+      }
 
-      if (cursor.length < 1)
+      if (cursor.length < 1) {
         throw new Error('{value_flag} is missing');
-      const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-      if (value_flag !== 1)
+      }
+      const value_flag = cursor.readUInt8();
+      len++;
+      cursor = cursor.slice(1);
+      if (value_flag !== 1) {
         throw new Error('unexpected {value_flag}');
+      }
 
       return { v: null, len };
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }

@@ -23,96 +23,109 @@
 'use strict';
 
 module.exports = class MapSerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.MAP] = this;
   }
 
   canBeUsedFor(value) {
-    if (value === null || value === undefined)
+    if (value === null || value === undefined) {
       return false;
-
-    if (value instanceof Map)
+    }
+    if (value instanceof Map) {
       return true;
-
-    if (Array.isArray(value))
+    }
+    if (Array.isArray(value)) {
       return false;
+    }
 
-    return (typeof value === 'object');
+    return typeof value === 'object';
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    if (item === undefined || item === null)
-      if (fullyQualifiedFormat)
+  serialize(item, fullyQualifiedFormat = true) {
+    if (item === undefined || item === null) {
+      if (fullyQualifiedFormat) {
         return Buffer.from([this.ioc.DataType.MAP, 0x01]);
-      else
-        return this.ioc.intSerializer.serialize(0, false);
+      }
+      return this.ioc.intSerializer.serialize(0, false);
+    }
 
-    const isMap = (item instanceof Map);
+    const isMap = item instanceof Map;
 
     const keys = isMap ? Array.from(item.keys()) : Object.keys(item);
     let map_length = keys.length;
-    if (map_length < 0)
+    if (map_length < 0) {
       map_length = 0;
-    else if (map_length > this.ioc.intSerializer.INT32_MAX)
+    } else if (map_length > this.ioc.intSerializer.INT32_MAX) {
       map_length = this.ioc.intSerializer.INT32_MAX; // TODO: is it expected to be silenced?
+    }
 
     const bufs = [];
-    if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.MAP, 0x00]) );
-    bufs.push( this.ioc.intSerializer.serialize(map_length, false) );
+    if (fullyQualifiedFormat) {
+      bufs.push(Buffer.from([this.ioc.DataType.MAP, 0x00]));
+    }
+    bufs.push(this.ioc.intSerializer.serialize(map_length, false));
     for (let i = 0; i < map_length; i++) {
       const key = keys[i];
       const value = isMap ? item.get(key) : item[key];
-      bufs.push(
-        this.ioc.anySerializer.serialize(key),
-        this.ioc.anySerializer.serialize(value),
-      );
+      bufs.push(this.ioc.anySerializer.serialize(key), this.ioc.anySerializer.serialize(value));
     }
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat=true) {
+  deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
 
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
+      }
 
       if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.MAP)
+        const type_code = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (type_code !== this.ioc.DataType.MAP) {
           throw new Error('unexpected {type_code}');
+        }
 
-        if (cursor.length < 1)
+        if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
-        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (value_flag === 1)
+        }
+        const value_flag = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (value_flag === 1) {
           return { v: null, len };
-        if (value_flag !== 0)
+        }
+        if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
+        }
       }
 
       let length, length_len;
       try {
-        ({ v: length, len: length_len} = this.ioc.intSerializer.deserialize(cursor, false));
-        len += length_len; cursor = cursor.slice(length_len);
+        ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
+        len += length_len;
+        cursor = cursor.slice(length_len);
       } catch (e) {
         throw new Error(`{length}: ${e.message}`);
       }
-      if (length < 0)
+      if (length < 0) {
         throw new Error('{length} is less than zero');
+      }
 
       const v = new Map();
       for (let i = 0; i < length; i++) {
         let key, key_len;
         try {
           ({ v: key, len: key_len } = this.ioc.anySerializer.deserialize(cursor));
-          len += key_len; cursor = cursor.slice(key_len);
+          len += key_len;
+          cursor = cursor.slice(key_len);
         } catch (e) {
           throw new Error(`{item_${i}} key: ${e.message}`);
         }
@@ -120,7 +133,8 @@ module.exports = class MapSerializer {
         let value, value_len;
         try {
           ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-          len += value_len; cursor = cursor.slice(value_len);
+          len += value_len;
+          cursor = cursor.slice(value_len);
         } catch (e) {
           throw new Error(`{item_${i}} value: ${e.message}`);
         }
@@ -129,10 +143,8 @@ module.exports = class MapSerializer {
       }
 
       return { v, len };
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }
-
-}
+};

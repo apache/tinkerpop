@@ -25,40 +25,44 @@
 // Based on GraphSON NumberSerializer.serialize().
 // It's tested by AnySerializer.serialize() tests.
 module.exports = class NumberSerializationStrategy {
-
   constructor(ioc) {
     this.ioc = ioc;
   }
 
   canBeUsedFor(value) {
-    if (Number.isNaN(value) || value === Number.POSITIVE_INFINITY || value === Number.NEGATIVE_INFINITY)
+    if (Number.isNaN(value) || value === Number.POSITIVE_INFINITY || value === Number.NEGATIVE_INFINITY) {
       return true;
-    if (typeof(value) === 'number')
+    }
+    if (typeof value === 'number') {
       return true;
-    if (typeof(value) === 'bigint')
+    }
+    if (typeof value === 'bigint') {
       return true;
+    }
 
     return false;
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    if (typeof(item) === 'number') {
+  serialize(item, fullyQualifiedFormat = true) {
+    if (typeof item === 'number') {
       if (
-           Number.isNaN(item)
-        || item === Number.POSITIVE_INFINITY
-        || item === Number.NEGATIVE_INFINITY
-        || ! Number.isInteger(item)
-      )
+        Number.isNaN(item) ||
+        item === Number.POSITIVE_INFINITY ||
+        item === Number.NEGATIVE_INFINITY ||
+        !Number.isInteger(item)
+      ) {
         return this.ioc.doubleSerializer.serialize(item, fullyQualifiedFormat);
+      }
 
-      if (-2147483648 <= item && item <= 2147483647) // INT32_MIN/MAX
+      if (item >= -2147483648 && item <= 2147483647) {
+        // INT32_MIN/MAX
         return this.ioc.intSerializer.serialize(item, fullyQualifiedFormat);
-      else
-        return this.ioc.longSerializer.serialize(item, fullyQualifiedFormat);
+      }
+      return this.ioc.longSerializer.serialize(item, fullyQualifiedFormat);
     }
 
-    if (typeof(item) === 'bigint')
+    if (typeof item === 'bigint') {
       return this.ioc.bigIntegerSerializer.serialize(item, fullyQualifiedFormat);
+    }
   }
-
 };

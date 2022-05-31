@@ -25,73 +25,85 @@
 const g = require('../../../graph');
 
 module.exports = class PropertySerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.PROPERTY] = this;
   }
 
   canBeUsedFor(value) {
-    return (value instanceof g.Property);
+    return value instanceof g.Property;
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    if (item === undefined || item === null)
-      if (fullyQualifiedFormat)
+  serialize(item, fullyQualifiedFormat = true) {
+    if (item === undefined || item === null) {
+      if (fullyQualifiedFormat) {
         return Buffer.from([this.ioc.DataType.PROPERTY, 0x01]);
-      else
-        return Buffer.concat([
-          this.ioc.stringSerializer.serialize('', false),     // {key}=''
-          this.ioc.unspecifiedNullSerializer.serialize(null), // {value}=null
-          this.ioc.unspecifiedNullSerializer.serialize(null), // {parent}=null
-        ]);
+      }
+      return Buffer.concat([
+        this.ioc.stringSerializer.serialize('', false), // {key}=''
+        this.ioc.unspecifiedNullSerializer.serialize(null), // {value}=null
+        this.ioc.unspecifiedNullSerializer.serialize(null), // {parent}=null
+      ]);
+    }
 
     const bufs = [];
-    if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.PROPERTY, 0x00]) );
+    if (fullyQualifiedFormat) {
+      bufs.push(Buffer.from([this.ioc.DataType.PROPERTY, 0x00]));
+    }
 
     // {key}
-    bufs.push( this.ioc.stringSerializer.serialize(item.key, false) );
+    bufs.push(this.ioc.stringSerializer.serialize(item.key, false));
 
     // {value}
-    bufs.push( this.ioc.anySerializer.serialize(item.value) );
+    bufs.push(this.ioc.anySerializer.serialize(item.value));
 
     // {parent}
-    bufs.push( this.ioc.unspecifiedNullSerializer.serialize(null) );
+    bufs.push(this.ioc.unspecifiedNullSerializer.serialize(null));
 
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat=true) {
+  deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
 
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
+      }
 
       if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.PROPERTY)
+        const type_code = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (type_code !== this.ioc.DataType.PROPERTY) {
           throw new Error('unexpected {type_code}');
+        }
 
-        if (cursor.length < 1)
+        if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
-        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (value_flag === 1)
+        }
+        const value_flag = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (value_flag === 1) {
           return { v: null, len };
-        if (value_flag !== 0)
+        }
+        if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
+        }
       }
 
       // {key} is a String value
       let key, key_len;
       try {
         ({ v: key, len: key_len } = this.ioc.stringSerializer.deserialize(cursor, false));
-        len += key_len; cursor = cursor.slice(key_len);
-      } catch(e) {
+        len += key_len;
+        cursor = cursor.slice(key_len);
+      } catch (e) {
         throw new Error(`{key}: ${e.message}`);
       }
 
@@ -99,27 +111,27 @@ module.exports = class PropertySerializer {
       let value, value_len;
       try {
         ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += value_len; cursor = cursor.slice(value_len);
-      } catch(e) {
+        len += value_len;
+        cursor = cursor.slice(value_len);
+      } catch (e) {
         throw new Error(`{value}: ${e.message}`);
       }
 
       // {parent} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which is either an Edge or VertexProperty. Note that as TinkerPop currently sends "references" only this value will always be null.
-      let parent, parent_len;
+      let parent_len;
       try {
-        ({ v: parent, len: parent_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
-        len += parent_len; cursor = cursor.slice(parent_len);
-      } catch(e) {
+        ({ len: parent_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
+        len += parent_len;
+        cursor = cursor.slice(parent_len);
+      } catch (e) {
         throw new Error(`{parent}: ${e.message}`);
       }
       // TODO: should we verify that parent is null?
 
       const v = new g.Property(key, value);
       return { v, len };
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }
-
 };

@@ -26,18 +26,20 @@
  * GraphBinary reader.
  */
 module.exports = class GraphBinaryReader {
-
   constructor(ioc) {
     this.ioc = ioc;
   }
 
   readResponse(buffer) {
-    if (buffer === undefined || buffer === null)
+    if (buffer === undefined || buffer === null) {
       throw new Error('Buffer is missing.');
-    if (! (buffer instanceof Buffer))
+    }
+    if (!(buffer instanceof Buffer)) {
       throw new Error('Not an instance of Buffer.');
-    if (buffer.length < 1)
+    }
+    if (buffer.length < 1) {
       throw new Error('Buffer is empty.');
+    }
 
     const response = { status: {}, result: {} };
     let cursor = buffer;
@@ -45,8 +47,9 @@ module.exports = class GraphBinaryReader {
 
     // {version} is a Byte representing the protocol version
     const version = cursor[0];
-    if (version !== 0x81)
+    if (version !== 0x81) {
       throw new Error(`Unsupported version '${version}'.`);
+    }
     cursor = cursor.slice(1); // skip version
 
     // {request_id} is a nullable UUID
@@ -74,5 +77,4 @@ module.exports = class GraphBinaryReader {
 
     return response;
   }
-
-}
+};

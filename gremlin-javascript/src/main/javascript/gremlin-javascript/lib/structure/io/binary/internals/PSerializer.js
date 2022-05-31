@@ -25,29 +25,32 @@
 const t = require('../../../../process/traversal');
 
 module.exports = class PSerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.P] = this;
   }
 
   canBeUsedFor(value) {
-    return (value instanceof t.P);
+    return value instanceof t.P;
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    if (item === undefined || item === null)
-      if (fullyQualifiedFormat)
+  serialize(item, fullyQualifiedFormat = true) {
+    if (item === undefined || item === null) {
+      if (fullyQualifiedFormat) {
         return Buffer.from([this.ioc.DataType.P, 0x01]);
-      else
-        return Buffer.from([0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00]); // {name}='', {values_length}=0
+      }
+      const name = [0x00, 0x00, 0x00, 0x00]; // ''
+      const values_length = [0x00, 0x00, 0x00, 0x00]; // 0
+      return Buffer.from([...name, ...values_length]);
+    }
 
     const bufs = [];
-    if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.P, 0x00]) );
+    if (fullyQualifiedFormat) {
+      bufs.push(Buffer.from([this.ioc.DataType.P, 0x00]));
+    }
 
     // {name}
-    bufs.push( this.ioc.stringSerializer.serialize(item.operator, false) );
+    bufs.push(this.ioc.stringSerializer.serialize(item.operator, false));
 
     // {values_length}{value_0}...{value_n}
     //
@@ -61,47 +64,58 @@ module.exports = class PSerializer {
     // GraphSON.PSerializer.serialize() does.
     let list;
     if (item.other === undefined || item.other === null) {
-      if (Array.isArray(item.value))
+      if (Array.isArray(item.value)) {
         list = item.value;
-      else
-        list = [ item.value ];
+      } else {
+        list = [item.value];
+      }
+    } else {
+      list = [item.value, item.other];
     }
-    else {
-      list = [ item.value, item.other ];
-    }
-    bufs.push( this.ioc.listSerializer.serialize(list, false) );
+    bufs.push(this.ioc.listSerializer.serialize(list, false));
 
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat=true) {
+  deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
 
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
+      }
 
       if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.P)
+        const type_code = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (type_code !== this.ioc.DataType.P) {
           throw new Error('unexpected {type_code}');
+        }
 
-        if (cursor.length < 1)
+        if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
-        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (value_flag === 1)
+        }
+        const value_flag = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (value_flag === 1) {
           return { v: null, len };
-        if (value_flag !== 0)
+        }
+        if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
+        }
       }
 
       let name, name_len;
       try {
         ({ v: name, len: name_len } = this.ioc.stringSerializer.deserialize(cursor, false));
-        len += name_len; cursor = cursor.slice(name_len);
+        len += name_len;
+        cursor = cursor.slice(name_len);
       } catch (e) {
         throw new Error(`{name}: ${e.message}`);
       }
@@ -109,26 +123,27 @@ module.exports = class PSerializer {
       let values, values_len;
       try {
         ({ v: values, len: values_len } = this.ioc.listSerializer.deserialize(cursor, false));
-        len += values_len; cursor = cursor.slice(values_len);
-      } catch(e) {
+        len += values_len;
+        cursor = cursor.slice(values_len);
+      } catch (e) {
         throw new Error(`{values}: ${e.message}`);
       }
 
-      if (values.length < 1)
+      if (values.length < 1) {
         return { v: new t.P(''), len };
+      }
 
       let v;
       const P_static = t.P[name];
-      if (typeof P_static === 'function')
+      if (typeof P_static === 'function') {
         v = P_static(...values); // it's better to follow existing logic which may depend on an operator name
-      else
+      } else {
         v = new t.P(name, ...values);
+      }
 
       return { v, len };
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }
-
 };

@@ -23,7 +23,6 @@
 'use strict';
 
 module.exports = class BooleanSerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.BOOLEAN] = this;
@@ -33,58 +32,71 @@ module.exports = class BooleanSerializer {
     return typeof value === 'boolean';
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    if (item === undefined || item === null)
-      if (fullyQualifiedFormat)
+  serialize(item, fullyQualifiedFormat = true) {
+    if (item === undefined || item === null) {
+      if (fullyQualifiedFormat) {
         return Buffer.from([this.ioc.DataType.BOOLEAN, 0x01]);
-      else
-        return Buffer.from([0x00]);
+      }
+      return Buffer.from([0x00]);
+    }
 
     const bufs = [];
-    if (fullyQualifiedFormat)
-      bufs.push( Buffer.from([this.ioc.DataType.BOOLEAN, 0x00]) );
+    if (fullyQualifiedFormat) {
+      bufs.push(Buffer.from([this.ioc.DataType.BOOLEAN, 0x00]));
+    }
 
-    bufs.push( Buffer.from([item ? 0x01 : 0x00]) );
+    bufs.push(Buffer.from([item ? 0x01 : 0x00]));
 
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat=true) {
+  deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
 
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
-
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (type_code !== this.ioc.DataType.BOOLEAN)
-          throw new Error('unexpected {type_code}');
-
-        if (cursor.length < 1)
-          throw new Error('{value_flag} is missing');
-        const value_flag = cursor.readUInt8(); len++; cursor = cursor.slice(1);
-        if (value_flag === 1)
-          return { v: null, len };
-        if (value_flag !== 0)
-          throw new Error('unexpected {value_flag}');
       }
 
-      if (cursor.length < 1)
+      if (fullyQualifiedFormat) {
+        const type_code = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (type_code !== this.ioc.DataType.BOOLEAN) {
+          throw new Error('unexpected {type_code}');
+        }
+
+        if (cursor.length < 1) {
+          throw new Error('{value_flag} is missing');
+        }
+        const value_flag = cursor.readUInt8();
+        len++;
+        cursor = cursor.slice(1);
+        if (value_flag === 1) {
+          return { v: null, len };
+        }
+        if (value_flag !== 0) {
+          throw new Error('unexpected {value_flag}');
+        }
+      }
+
+      if (cursor.length < 1) {
         throw new Error('unexpected {value} length');
+      }
       len += 1;
 
       let v = cursor.readUInt8();
-      if (v !== 0x00 && v !== 0x01)
+      if (v !== 0x00 && v !== 0x01) {
         throw new Error(`unexpected boolean byte=${v}`);
-      v = (v === 0x01);
+      }
+      v = v === 0x01;
 
       return { v, len };
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
     }
   }

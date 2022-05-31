@@ -26,12 +26,14 @@
  * Deserialization error general constructor.
  */
 const des_error = ({ serializer, args, cursor, msg }) => {
-  if (cursor === undefined)
+  if (cursor === undefined) {
     cursor = args[0]; // buffer
+  }
   let cursor_tail = '';
   if (cursor instanceof Buffer) {
-    if (cursor.length > 32)
+    if (cursor.length > 32) {
       cursor_tail = '...';
+    }
     cursor = cursor.slice(0, 32).toString('hex');
   }
 
@@ -39,10 +41,12 @@ const des_error = ({ serializer, args, cursor, msg }) => {
   const nullable = args[2];
 
   let m = `${serializer.constructor.name}.deserialize(cursor=${cursor}${cursor_tail}`;
-  if (fullyQualifiedFormat !== undefined)
+  if (fullyQualifiedFormat !== undefined) {
     m += `, fullyQualifiedFormat=${fullyQualifiedFormat}`;
-  if (nullable !== undefined)
+  }
+  if (nullable !== undefined) {
     m += `, nullable=${nullable}`;
+  }
   m += `): ${msg.replace(/\.$/, '')}.`;
 
   return new Error(m);

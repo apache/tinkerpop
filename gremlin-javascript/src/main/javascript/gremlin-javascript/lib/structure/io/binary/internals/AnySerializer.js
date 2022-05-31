@@ -23,11 +23,11 @@
 'use strict';
 
 module.exports = class AnySerializer {
-
   constructor(ioc) {
     this.ioc = ioc;
 
-    this.serializers = [ // specifically ordered, the first canBeUsedFor=true wins
+    // specifically ordered, the first canBeUsedFor=true wins
+    this.serializers = [
       ioc.unspecifiedNullSerializer,
 
       ioc.numberSerializationStrategy,
@@ -56,36 +56,40 @@ module.exports = class AnySerializer {
   }
 
   getSerializerCanBeUsedFor(item) {
-    for (let i = 0; i < this.serializers.length; i++)
-      if (this.serializers[i].canBeUsedFor(item))
+    for (let i = 0; i < this.serializers.length; i++) {
+      if (this.serializers[i].canBeUsedFor(item)) {
         return this.serializers[i];
+      }
+    }
 
-    throw new Error(`No serializer found to support item where typeof(item)='${typeof(item)}' and String(item)='${String(item)}'.`);
+    throw new Error(
+      `No serializer found to support item where typeof(item)='${typeof item}' and String(item)='${String(item)}'.`,
+    );
   }
 
-  serialize(item, fullyQualifiedFormat=true) {
-    return this
-      .getSerializerCanBeUsedFor(item)
-      .serialize(item, fullyQualifiedFormat);
+  serialize(item, fullyQualifiedFormat = true) {
+    return this.getSerializerCanBeUsedFor(item).serialize(item, fullyQualifiedFormat);
   }
 
-  deserialize(buffer) { // obviously, fullyQualifiedFormat always is true
+  deserialize(buffer) {
+    // obviously, fullyQualifiedFormat always is true
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer))
+      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
-      if (buffer.length < 1)
+      }
+      if (buffer.length < 1) {
         throw new Error('buffer is empty');
+      }
 
       const type_code = buffer.readUInt8();
       const serializer = this.ioc.serializers[type_code];
-      if (! serializer)
+      if (!serializer) {
         throw new Error('unknown {type_code}');
+      }
 
       return serializer.deserialize(buffer);
-    }
-    catch (e) {
+    } catch (e) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, msg: e.message });
     }
   }
-
-}
+};

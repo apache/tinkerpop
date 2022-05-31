@@ -32,6 +32,7 @@
  *
  * @author Igor Ostapenko
  */
+/*eslint-disable*/
 'use strict';
 
 const ioc = {};
