@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Allowed `datetime()` syntax to accept zone offset with colon separators and seconds.
 * Fixed a minor problem in the Gremlin parser where a `GraphTraversalSource` may not have been initialized.
+* Added getters to high and low properties in RangeLocalStep.
 
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: April 4, 2022)
