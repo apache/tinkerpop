@@ -30,6 +30,31 @@
  * Consider AnySerializer.serialize()/deserialize() unit tests to see what is not implemented,
  * what is ignored, what is not expected to be (de)serialized, etc.
  *
+ * TODO: it has the following open topics:
+ * - [] Should we do anything for application/vnd.graphbinary-v1.0-stringd mime type support?
+ * Core Data Types support:
+ * - [] 0x22: BigDecimal
+ * - [] 0x2b: Tree
+ * - [] 0x2c: Metrics
+ * - [] 0x2d: TraversalMetrics
+ * - [] 0x00: Custom
+ * Extended Types support:
+ * - [] 0x80: Char
+ * - [] 0x81: Duration
+ * - [] 0x82: InetAddress
+ * - [] 0x83: Instant
+ * - [] 0x84: LocalDate
+ * - [] 0x85: LocalDateTime
+ * - [] 0x86: LocalTime
+ * - [] 0x87: MonthDay
+ * - [] 0x88: OffsetDateTime
+ * - [] 0x89: OffsetTime
+ * - [] 0x8a: Period
+ * - [] 0x8b: Year
+ * - [] 0x8c: YearMonth
+ * - [] 0x8d: ZonedDateTime
+ * - [] 0x8e: ZoneOffset
+ *
  * @author Igor Ostapenko
  */
 /*eslint-disable*/
