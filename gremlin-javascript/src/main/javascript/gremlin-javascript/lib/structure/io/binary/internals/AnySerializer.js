@@ -88,8 +88,8 @@ module.exports = class AnySerializer {
       }
 
       return serializer.deserialize(buffer);
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, err });
     }
   }
 };

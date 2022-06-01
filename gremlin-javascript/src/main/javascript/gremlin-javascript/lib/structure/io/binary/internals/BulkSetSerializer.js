@@ -43,23 +43,23 @@ module.exports = class BulkSetSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.BULKSET) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       // {length}
@@ -67,13 +67,14 @@ module.exports = class BulkSetSerializer {
       try {
         ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
         len += length_len;
-        cursor = cursor.slice(length_len);
-      } catch (e) {
-        throw new Error(`{length}: ${e.message}`);
+      } catch (err) {
+        err.message = '{length}: ' + err.message;
+        throw err;
       }
       if (length < 0) {
         throw new Error('{length} is less than zero');
       }
+      cursor = cursor.slice(length_len);
 
       // Official GraphBinary 1.0 spec:
       // If the implementing language does not have a BulkSet object to deserialize into,
@@ -87,18 +88,19 @@ module.exports = class BulkSetSerializer {
         try {
           ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
           len += value_len;
-          cursor = cursor.slice(value_len);
-        } catch (e) {
-          throw new Error(`{item_${i}} value: ${e.message}`);
+        } catch (err) {
+          err.message = `{item_${i}} value: ` + err.message;
+          throw err;
         }
+        cursor = cursor.slice(value_len);
 
         let bulk, bulk_len;
         try {
           ({ v: bulk, len: bulk_len } = this.ioc.longSerializer.deserialize(cursor, false));
           len += bulk_len;
-          cursor = cursor.slice(bulk_len);
-        } catch (e) {
-          throw new Error(`{item_${i}} bulk: ${e.message}`);
+        } catch (err) {
+          err.message = `{item_${i}} bulk: ` + err.message;
+          throw err;
         }
         if (bulk < 0) {
           throw new Error(`{item_${i}}: bulk is less than zero`);
@@ -107,6 +109,7 @@ module.exports = class BulkSetSerializer {
           // arrayLength of Array() constructor is expected to be an integer between 0 and 2^32 - 1
           throw new Error(`{item_${i}}: bulk is greater than 2^32-1`);
         }
+        cursor = cursor.slice(bulk_len);
 
         bulk = Number(bulk); // coersion to Number is required for BigInt if LongSerializerNg is used
         const item = new Array(bulk).fill(value);
@@ -114,8 +117,8 @@ module.exports = class BulkSetSerializer {
       }
 
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

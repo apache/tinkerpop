@@ -100,23 +100,23 @@ module.exports = class BytecodeSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.BYTECODE) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       const v = new Bytecode();
@@ -127,13 +127,14 @@ module.exports = class BytecodeSerializer {
       try {
         ({ v: steps_length, len: steps_length_len } = this.ioc.intSerializer.deserialize(cursor, false));
         len += steps_length_len;
-        cursor = cursor.slice(steps_length_len);
-      } catch (e) {
-        throw new Error(`{steps_length}: ${e.message}`);
+      } catch (err) {
+        err.message = '{steps_length}: ' + err.message;
+        throw err;
       }
       if (steps_length < 0) {
         throw new Error('{steps_length} is less than zero');
       }
+      cursor = cursor.slice(steps_length_len);
 
       // {step_i} is composed of {name}{values_length}{value_0}...{value_n}
       for (let i = 0; i < steps_length; i++) {
@@ -142,22 +143,26 @@ module.exports = class BytecodeSerializer {
         try {
           ({ v: name, len: name_len } = this.ioc.stringSerializer.deserialize(cursor, false));
           len += name_len;
-          cursor = cursor.slice(name_len);
-        } catch (e) {
-          throw new Error(`{step_${i}} {name}: ${e.message}`);
+        } catch (err) {
+          err.message = `{step_${i}} {name}: ` + err.message;
+          throw err;
         }
+        cursor = cursor.slice(name_len);
+
         // {values_length} is an Int describing the amount values
         let values_length, values_length_len;
         try {
           ({ v: values_length, len: values_length_len } = this.ioc.intSerializer.deserialize(cursor, false));
           len += values_length_len;
-          cursor = cursor.slice(values_length_len);
-        } catch (e) {
-          throw new Error(`{step_${i}} {values_length}: ${e.message}`);
+        } catch (err) {
+          err.message = `{step_${i}} {values_length}: ` + err.message;
+          throw err;
         }
         if (values_length < 0) {
           throw new Error(`{step_${i}} {values_length} is less than zero`);
         }
+        cursor = cursor.slice(values_length_len);
+
         // {value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument
         const values = [];
         let value, value_len;
@@ -165,12 +170,14 @@ module.exports = class BytecodeSerializer {
           try {
             ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
             len += value_len;
-            cursor = cursor.slice(value_len);
             values.push(value);
-          } catch (e) {
-            throw new Error(`{step_${i}} {value_${j}}: ${e.message}`);
+          } catch (err) {
+            err.message = `{step_${i}} {value_${j}}: ` + err.message;
+            throw err;
           }
+          cursor = cursor.slice(value_len);
         }
+
         v.addStep(name, values);
       }
 
@@ -180,13 +187,14 @@ module.exports = class BytecodeSerializer {
       try {
         ({ v: sources_length, len: sources_length_len } = this.ioc.intSerializer.deserialize(cursor, false));
         len += sources_length_len;
-        cursor = cursor.slice(sources_length_len);
-      } catch (e) {
-        throw new Error(`{sources_length}: ${e.message}`);
+      } catch (err) {
+        err.message = '{sources_length}: ' + err.message;
+        throw err;
       }
       if (sources_length < 0) {
         throw new Error('{sources_length} is less than zero');
       }
+      cursor = cursor.slice(sources_length_len);
 
       // {source_i} is composed of {name}{values_length}{value_0}...{value_n}
       for (let i = 0; i < sources_length; i++) {
@@ -195,22 +203,26 @@ module.exports = class BytecodeSerializer {
         try {
           ({ v: name, len: name_len } = this.ioc.stringSerializer.deserialize(cursor, false));
           len += name_len;
-          cursor = cursor.slice(name_len);
-        } catch (e) {
-          throw new Error(`{source_${i}} {name}: ${e.message}`);
+        } catch (err) {
+          err.message = `{source_${i}} {name}: ` + err.message;
+          throw err;
         }
+        cursor = cursor.slice(name_len);
+
         // {values_length} is an Int describing the amount values
         let values_length, values_length_len;
         try {
           ({ v: values_length, len: values_length_len } = this.ioc.intSerializer.deserialize(cursor, false));
           len += values_length_len;
-          cursor = cursor.slice(values_length_len);
-        } catch (e) {
-          throw new Error(`{source_${i}} {values_length}: ${e.message}`);
+        } catch (err) {
+          err.message = `{source_${i}} {values_length}: ` + err.message;
+          throw err;
         }
         if (values_length < 0) {
           throw new Error(`{source_${i}} {values_length} is less than zero`);
         }
+        cursor = cursor.slice(values_length_len);
+
         // {value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
         const values = [];
         let value, value_len;
@@ -218,18 +230,20 @@ module.exports = class BytecodeSerializer {
           try {
             ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
             len += value_len;
-            cursor = cursor.slice(value_len);
             values.push(value);
-          } catch (e) {
-            throw new Error(`{source_${i}} {value_${j}}: ${e.message}`);
+          } catch (err) {
+            err.message = `{source_${i}} {value_${j}}: ` + err.message;
+            throw err;
           }
+          cursor = cursor.slice(value_len);
         }
+
         v.addSource(name, values);
       }
 
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

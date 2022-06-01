@@ -86,42 +86,44 @@ module.exports = class TextPSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.TEXTP) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       let name, name_len;
       try {
         ({ v: name, len: name_len } = this.ioc.stringSerializer.deserialize(cursor, false));
         len += name_len;
-        cursor = cursor.slice(name_len);
-      } catch (e) {
-        throw new Error(`{name}: ${e.message}`);
+      } catch (err) {
+        err.message = '{name}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(name_len);
 
       let values, values_len;
       try {
         ({ v: values, len: values_len } = this.ioc.listSerializer.deserialize(cursor, false));
         len += values_len;
-        cursor = cursor.slice(values_len);
-      } catch (e) {
-        throw new Error(`{values}: ${e.message}`);
+      } catch (err) {
+        err.message = '{values}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(values_len);
 
       if (values.length < 1) {
         return { v: new t.TextP(''), len };
@@ -136,8 +138,8 @@ module.exports = class TextPSerializer {
       }
 
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

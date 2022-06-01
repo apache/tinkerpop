@@ -101,98 +101,105 @@ module.exports = class EdgeSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.EDGE) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       let id, id_len;
       try {
         ({ v: id, len: id_len } = this.ioc.anySerializer.deserialize(cursor));
         len += id_len;
-        cursor = cursor.slice(id_len);
-      } catch (e) {
-        throw new Error(`{id}: ${e.message}`);
+      } catch (err) {
+        err.message = '{id}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(id_len);
 
       let label, label_len;
       try {
         ({ v: label, len: label_len } = this.ioc.stringSerializer.deserialize(cursor, false));
         len += label_len;
-        cursor = cursor.slice(label_len);
-      } catch (e) {
-        throw new Error(`{label}: ${e.message}`);
+      } catch (err) {
+        err.message = '{label}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(label_len);
 
       let inVId, inVId_len;
       try {
         ({ v: inVId, len: inVId_len } = this.ioc.anySerializer.deserialize(cursor));
         len += inVId_len;
-        cursor = cursor.slice(inVId_len);
-      } catch (e) {
-        throw new Error(`{inVId}: ${e.message}`);
+      } catch (err) {
+        err.message = '{inVId}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(inVId_len);
 
       let inVLabel, inVLabel_len;
       try {
         ({ v: inVLabel, len: inVLabel_len } = this.ioc.stringSerializer.deserialize(cursor, false));
         len += inVLabel_len;
-        cursor = cursor.slice(inVLabel_len);
-      } catch (e) {
-        throw new Error(`{inVLabel}: ${e.message}`);
+      } catch (err) {
+        err.message = '{inVLabel}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(inVLabel_len);
 
       let outVId, outVId_len;
       try {
         ({ v: outVId, len: outVId_len } = this.ioc.anySerializer.deserialize(cursor));
         len += outVId_len;
-        cursor = cursor.slice(outVId_len);
-      } catch (e) {
-        throw new Error(`{outVId}: ${e.message}`);
+      } catch (err) {
+        err.message = '{outVId}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(outVId_len);
 
       let outVLabel, outVLabel_len;
       try {
         ({ v: outVLabel, len: outVLabel_len } = this.ioc.stringSerializer.deserialize(cursor, false));
         len += outVLabel_len;
-        cursor = cursor.slice(outVLabel_len);
-      } catch (e) {
-        throw new Error(`{outVLabel}: ${e.message}`);
+      } catch (err) {
+        err.message = '{outVLabel}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(outVLabel_len);
 
       let parent_len;
       try {
         ({ len: parent_len } = this.ioc.anySerializer.deserialize(cursor));
         len += parent_len;
-        cursor = cursor.slice(parent_len);
-      } catch (e) {
-        throw new Error(`{parent}: ${e.message}`);
+      } catch (err) {
+        err.message = '{parent}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(parent_len);
 
       let properties, properties_len;
       try {
         ({ v: properties, len: properties_len } = this.ioc.anySerializer.deserialize(cursor));
         len += properties_len;
-        cursor = cursor.slice(properties_len);
-      } catch (e) {
-        throw new Error(`{properties}: ${e.message}`);
+      } catch (err) {
+        err.message = '{properties}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(properties_len);
 
-      //const v = new g.Vertex(id, label, properties);
       const v = new g.Edge(
         id,
         new g.Vertex(outVId, outVLabel, null),
@@ -201,8 +208,8 @@ module.exports = class EdgeSerializer {
         properties,
       );
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

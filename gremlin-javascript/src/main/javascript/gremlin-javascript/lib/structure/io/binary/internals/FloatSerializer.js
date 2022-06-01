@@ -66,23 +66,23 @@ module.exports = class FloatSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.FLOAT) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       if (cursor.length < 4) {
@@ -92,8 +92,8 @@ module.exports = class FloatSerializer {
 
       const v = cursor.readFloatBE();
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

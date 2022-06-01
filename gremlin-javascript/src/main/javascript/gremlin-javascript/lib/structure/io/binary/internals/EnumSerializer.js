@@ -103,34 +103,35 @@ module.exports = class EnumSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         type = this.bycode[type_code];
         if (!type) {
           throw new Error(`unexpected {type_code}=${type_code}`);
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       let elementName, elementName_len;
       try {
         ({ v: elementName, len: elementName_len } = this.ioc.stringSerializer.deserialize(cursor, true));
         len += elementName_len;
-        cursor = cursor.slice(elementName_len);
-      } catch (e) {
-        throw new Error(`elementName: ${e.message}`);
+      } catch (err) {
+        err.message = 'elementName: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(elementName_len);
 
       let v;
       if (!type) {
@@ -140,8 +141,8 @@ module.exports = class EnumSerializer {
       }
 
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

@@ -67,10 +67,10 @@ module.exports = class StringSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ID) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
       }
       if (fullyQualifiedFormat || nullable) {
         if (cursor.length < 1) {
@@ -78,26 +78,27 @@ module.exports = class StringSerializer {
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       let length, length_len;
       try {
         ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
         len += length_len;
-        cursor = cursor.slice(length_len);
-      } catch (e) {
-        throw new Error(`{length}: ${e.message}`);
+      } catch (err) {
+        err.message = '{length}: ' + err.message;
+        throw err;
       }
       if (length < 0) {
         throw new Error('{length} is less than zero');
       }
+      cursor = cursor.slice(length_len);
 
       if (cursor.length < length) {
         throw new Error('unexpected {text_value} length');
@@ -106,8 +107,8 @@ module.exports = class StringSerializer {
 
       const v = cursor.toString('utf8', 0, length);
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

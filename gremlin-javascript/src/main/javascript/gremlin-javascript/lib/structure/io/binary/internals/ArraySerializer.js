@@ -81,36 +81,37 @@ module.exports = class ArraySerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ID) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       let length, length_len;
       try {
         ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
         len += length_len;
-        cursor = cursor.slice(length_len);
-      } catch (e) {
-        throw new Error(`{length}: ${e.message}`);
+      } catch (err) {
+        err.message = '{length}: ' + err.message;
+        throw err;
       }
       if (length < 0) {
         throw new Error('{length} is less than zero');
       }
+      cursor = cursor.slice(length_len);
 
       const v = [];
       for (let i = 0; i < length; i++) {
@@ -118,16 +119,17 @@ module.exports = class ArraySerializer {
         try {
           ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
           len += value_len;
-          cursor = cursor.slice(value_len);
-        } catch (e) {
-          throw new Error(`{item_${i}}: ${e.message}`);
+        } catch (err) {
+          err.message = `{item_${i}}: ` + err.message;
+          throw err;
         }
+        cursor = cursor.slice(value_len);
         v.push(value);
       }
 
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

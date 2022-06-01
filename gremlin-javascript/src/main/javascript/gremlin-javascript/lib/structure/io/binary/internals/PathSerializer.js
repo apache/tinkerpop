@@ -74,48 +74,50 @@ module.exports = class PathSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.PATH) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       let labels, labels_len;
       try {
         ({ v: labels, len: labels_len } = this.ioc.listSerializer.deserialize(cursor));
         len += labels_len;
-        cursor = cursor.slice(labels_len);
-      } catch (e) {
-        throw new Error(`{labels}: ${e.message}`);
+      } catch (err) {
+        err.message = '{labels}: ' + err.message;
+        throw err;
       }
       // TODO: should we check content of labels to make sure it's List< Set<String> > ?
+      cursor = cursor.slice(labels_len);
 
       let objects, objects_len;
       try {
         ({ v: objects, len: objects_len } = this.ioc.listSerializer.deserialize(cursor));
         len += objects_len;
-        cursor = cursor.slice(objects_len);
-      } catch (e) {
-        throw new Error(`{objects}: ${e.message}`);
+      } catch (err) {
+        err.message = '{objects}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(objects_len);
 
       const v = new g.Path(labels, objects);
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

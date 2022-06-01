@@ -25,7 +25,7 @@
 /*
  * Deserialization error general constructor.
  */
-const des_error = ({ serializer, args, cursor, msg }) => {
+const des_error = ({ serializer, args, cursor, err }) => {
   if (cursor === undefined) {
     cursor = args[0]; // buffer
   }
@@ -47,9 +47,11 @@ const des_error = ({ serializer, args, cursor, msg }) => {
   if (nullable !== undefined) {
     m += `, nullable=${nullable}`;
   }
-  m += `): ${msg.replace(/\.$/, '')}.`;
+  m += `): ${err.message.replace(/\.$/, '')}.`;
 
-  return new Error(m);
+  err.message = m;
+
+  return err;
 };
 
 module.exports = {

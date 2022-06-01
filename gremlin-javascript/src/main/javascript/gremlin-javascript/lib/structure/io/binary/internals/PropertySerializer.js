@@ -78,23 +78,23 @@ module.exports = class PropertySerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.PROPERTY) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
 
         if (cursor.length < 1) {
           throw new Error('{value_flag} is missing');
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       // {key} is a String value
@@ -102,36 +102,40 @@ module.exports = class PropertySerializer {
       try {
         ({ v: key, len: key_len } = this.ioc.stringSerializer.deserialize(cursor, false));
         len += key_len;
-        cursor = cursor.slice(key_len);
-      } catch (e) {
-        throw new Error(`{key}: ${e.message}`);
+      } catch (err) {
+        err.message = '{key}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(key_len);
 
       // {value} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
       let value, value_len;
       try {
         ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
         len += value_len;
-        cursor = cursor.slice(value_len);
-      } catch (e) {
-        throw new Error(`{value}: ${e.message}`);
+      } catch (err) {
+        err.message = '{value}: ' + err.message;
+        throw err;
       }
+      cursor = cursor.slice(value_len);
 
-      // {parent} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which is either an Edge or VertexProperty. Note that as TinkerPop currently sends "references" only this value will always be null.
+      // {parent} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which is either an Edge or VertexProperty.
+      // Note that as TinkerPop currently sends "references" only this value will always be null.
       let parent_len;
       try {
         ({ len: parent_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
         len += parent_len;
-        cursor = cursor.slice(parent_len);
-      } catch (e) {
-        throw new Error(`{parent}: ${e.message}`);
+      } catch (err) {
+        err.message = '{parent}: ' + err.message;
+        throw err;
       }
       // TODO: should we verify that parent is null?
+      cursor = cursor.slice(parent_len);
 
       const v = new g.Property(key, value);
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };

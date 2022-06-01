@@ -75,10 +75,10 @@ module.exports = class UuidSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (type_code !== this.ioc.DataType.UUID) {
           throw new Error('unexpected {type_code}');
         }
+        cursor = cursor.slice(1);
       }
       if (fullyQualifiedFormat || nullable) {
         if (cursor.length < 1) {
@@ -86,13 +86,13 @@ module.exports = class UuidSerializer {
         }
         const value_flag = cursor.readUInt8();
         len++;
-        cursor = cursor.slice(1);
         if (value_flag === 1) {
           return { v: null, len };
         }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
+        cursor = cursor.slice(1);
       }
 
       if (cursor.length < 16) {
@@ -112,8 +112,8 @@ module.exports = class UuidSerializer {
         '-' +
         cursor.slice(10, 16).toString('hex');
       return { v, len };
-    } catch (e) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, msg: e.message });
+    } catch (err) {
+      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
 };
