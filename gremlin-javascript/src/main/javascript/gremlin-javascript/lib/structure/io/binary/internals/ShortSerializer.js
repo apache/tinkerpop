@@ -29,7 +29,7 @@ module.exports = class ShortSerializer {
   }
 
   canBeUsedFor(value) {
-    return false; // it's not expected to be used during serialization
+    // it's not expected to be used during serialization
   }
 
   serialize(item, fullyQualifiedFormat = true) {

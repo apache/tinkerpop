@@ -29,7 +29,7 @@ module.exports = class UuidSerializer {
   }
 
   canBeUsedFor(value) {
-    // TODO
+    // TODO: any idea to support UUID automatic serialization via AnySerializer in future?
   }
 
   serialize(item, fullyQualifiedFormat = true) {

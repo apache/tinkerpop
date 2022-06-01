@@ -29,9 +29,7 @@ module.exports = class LongSerializer {
   }
 
   canBeUsedFor() {
-    // TODO
-    // TODO: what if item is not within int64 limits
-    // TODO: GraphSON LongSerializer.canBeUsedFor() ?
+    // it's not expected to be used, see NumberSerializationStrategy
   }
 
   serialize(item, fullyQualifiedFormat = true) {

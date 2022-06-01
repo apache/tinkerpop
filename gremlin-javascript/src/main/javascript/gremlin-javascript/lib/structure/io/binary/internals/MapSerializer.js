@@ -57,7 +57,7 @@ module.exports = class MapSerializer {
     if (map_length < 0) {
       map_length = 0;
     } else if (map_length > this.ioc.intSerializer.INT32_MAX) {
-      map_length = this.ioc.intSerializer.INT32_MAX; // TODO: is it expected to be silenced?
+      map_length = this.ioc.intSerializer.INT32_MAX; // TODO: is it expected to be silenced? or it's better to error instead?
     }
 
     const bufs = [];

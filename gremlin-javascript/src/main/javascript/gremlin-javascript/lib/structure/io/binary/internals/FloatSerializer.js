@@ -29,7 +29,7 @@ module.exports = class FloatSerializer {
   }
 
   canBeUsedFor(value) {
-    // TODO: it's not expected to be used, are we still okay here?
+    // it's not expected to be used
   }
 
   serialize(item, fullyQualifiedFormat = true) {

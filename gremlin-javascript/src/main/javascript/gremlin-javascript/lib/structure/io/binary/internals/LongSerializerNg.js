@@ -32,8 +32,7 @@ module.exports = class LongSerializerNg {
   }
 
   canBeUsedFor() {
-    // TODO
-    // TODO: what if item is not within int64 limits
+    // it's not expected to be used
   }
 
   serialize(item, fullyQualifiedFormat = true) {

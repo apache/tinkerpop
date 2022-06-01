@@ -41,7 +41,7 @@ module.exports = class ByteSerializer {
       bufs.push(Buffer.from([this.ioc.DataType.BYTE, 0x00]));
     }
     const v = Buffer.alloc(1);
-    v.writeUInt8(item); // TODO: what if item is not within uint8 limits, for now writeUInt8 would error
+    v.writeUInt8(item); // if item is not within uint8 limits writeUInt8 will error
     bufs.push(v);
 
     return Buffer.concat(bufs);

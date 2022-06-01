@@ -27,7 +27,7 @@ const { valueKey, LambdaSerializer: GraphsonLambdaSerializer } = require('../../
 module.exports = class LambdaSerializer {
   constructor(ioc) {
     this.ioc = ioc;
-    // this.ioc.serializers[ioc.DataType.LAMBDA] = this; // TODO: it's not expected to be deserialized
+    // this.ioc.serializers[ioc.DataType.LAMBDA] = this; // it's not expected to be deserialized
     this.graphsonLambdaSerializer = new GraphsonLambdaSerializer();
   }
 

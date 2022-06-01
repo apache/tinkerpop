@@ -53,13 +53,12 @@ module.exports = class IntSerializer {
       return Buffer.from([0x00, 0x00, 0x00, 0x00]);
     }
 
-    // TODO: this and other serializers could be optimised, e.g. to allocate a buf once, instead of multiple bufs to concat, etc
     const bufs = [];
     if (fullyQualifiedFormat) {
       bufs.push(Buffer.from([this.ioc.DataType.INT, 0x00]));
     }
     const v = Buffer.alloc(4);
-    v.writeInt32BE(item); // TODO: what if item is not within int32 limits, for now writeInt32BE would error
+    v.writeInt32BE(item); // if item is not within int32 limits writeInt32BE will error
     bufs.push(v);
 
     return Buffer.concat(bufs);
