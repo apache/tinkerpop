@@ -5,6 +5,7 @@ target/
 *.iws
 *.DS_Store
 *.ipr
+*.swp
 buildAll.sh
 build_output.txt
 .classpath
