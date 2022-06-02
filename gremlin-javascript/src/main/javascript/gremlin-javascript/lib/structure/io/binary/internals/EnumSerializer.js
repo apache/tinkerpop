@@ -41,6 +41,7 @@ module.exports = class EnumSerializer {
       { name: 'Cardinality', code: DT.CARDINALITY, enum: to_orig_enum(t.cardinality) },
       { name: 'Column', code: DT.COLUMN, enum: to_orig_enum(t.column) },
       { name: 'Direction', code: DT.DIRECTION, enum: to_orig_enum(t.direction) },
+      { name: 'Merge', code: DT.MERGE, enum: to_orig_enum(t.merge) },
       { name: 'Operator', code: DT.OPERATOR, enum: to_orig_enum(t.operator) },
       { name: 'Order', code: DT.ORDER, enum: to_orig_enum(t.order) },
       { name: 'Pick', code: DT.PICK, enum: to_orig_enum(t.pick) },

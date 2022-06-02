@@ -94,17 +94,29 @@ class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withComputer(graphComputer, workers, result, persist, vertices, edges, configuration) {
-    return this.withStrategies(
-      new VertexProgramStrategy({
-        graphComputer: graphComputer,
-        workers: workers,
-        result: result,
-        persist: persist,
-        vertices: vertices,
-        edges: edges,
-        configuration: configuration,
-      }),
-    );
+    const m = {};
+    if (graphComputer !== undefined) {
+      m.graphComputer = graphComputer;
+    }
+    if (workers !== undefined) {
+      m.workers = workers;
+    }
+    if (result !== undefined) {
+      m.result = result;
+    }
+    if (persist !== undefined) {
+      m.graphComputer = persist;
+    }
+    if (vertices !== undefined) {
+      m.vertices = vertices;
+    }
+    if (edges !== undefined) {
+      m.edges = edges;
+    }
+    if (configuration !== undefined) {
+      m.configuration = configuration;
+    }
+    return this.withStrategies(new VertexProgramStrategy(m));
   }
 
   /**
