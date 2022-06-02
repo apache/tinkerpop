@@ -32,7 +32,7 @@ const serverAuthUrl = 'wss://localhost:45941/gremlin';
 
 /** @returns {DriverRemoteConnection} */
 exports.getConnection = function getConnection(traversalSource) {
-  return new DriverRemoteConnection(serverUrl, { traversalSource });
+  return new DriverRemoteConnection(serverUrl, { traversalSource, mimeType: process.env.CLIENT_MIMETYPE });
 };
 
 exports.getSecureConnectionWithPlainTextSaslAuthenticator = (traversalSource, username, password) => {
@@ -40,15 +40,24 @@ exports.getSecureConnectionWithPlainTextSaslAuthenticator = (traversalSource, us
   return new DriverRemoteConnection(serverAuthUrl, {
     traversalSource,
     authenticator,
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    mimeType: process.env.CLIENT_MIMETYPE,
   });
 };
 
+exports.getDriverRemoteConnection = (url, options) => {
+  return new DriverRemoteConnection(url, { ...options, mimeType: process.env.CLIENT_MIMETYPE });
+};
+
 exports.getClient = function getClient(traversalSource) {
-  return new Client(serverUrl, { traversalSource });
+  return new Client(serverUrl, { traversalSource, mimeType: process.env.CLIENT_MIMETYPE });
 };
 
 exports.getSessionClient = function getSessionClient(traversalSource) {
   const sessionId = utils.getUuid();
-  return new Client(serverUrl, { 'traversalSource': traversalSource, 'session': sessionId.toString() });
+  return new Client(serverUrl, {
+    'traversalSource': traversalSource,
+    'session': sessionId.toString(),
+    mimeType: process.env.CLIENT_MIMETYPE,
+  });
 };

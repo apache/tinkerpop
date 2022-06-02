@@ -64,7 +64,7 @@ describe('DriverRemoteConnection', function () {
 
       it('should return error when using ws:// for a TLS configured server', function () {
         const authenticator = new PlainTextSaslAuthenticator('stephen', 'password');
-        connection =  new DriverRemoteConnection(badServerAuthUrl, {
+        connection =  helper.getDriverRemoteConnection(badServerAuthUrl, {
           authenticator: authenticator,
           rejectUnauthorized: false
         });
@@ -82,7 +82,7 @@ describe('DriverRemoteConnection', function () {
 
       it('should return error when using ws:// for a TLS configured server', function () {
         const authenticator = new PlainTextSaslAuthenticator('stephen', 'password');
-        connection =  new DriverRemoteConnection(badServerAuthUrl, {
+        connection =  helper.getDriverRemoteConnection(badServerAuthUrl, {
           authenticator: authenticator,
           rejectUnauthorized: false
         });
