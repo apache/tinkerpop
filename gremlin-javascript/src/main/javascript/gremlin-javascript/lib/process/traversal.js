@@ -496,7 +496,7 @@ module.exports = {
   barrier: toEnum('Barrier', 'normSack'),
   cardinality: toEnum('Cardinality', 'list set single'),
   column: toEnum('Column', 'keys values'),
-  direction: toEnum('Direction', 'BOTH IN OUT'),
+  direction: toEnum('Direction', 'BOTH IN OUT from_ to'),
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
   merge: toEnum('Merge', 'onCreate onMatch'),

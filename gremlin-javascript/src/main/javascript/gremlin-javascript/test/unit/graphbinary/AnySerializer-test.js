@@ -167,6 +167,9 @@ describe('GraphBinary.AnySerializer', () => {
       { v: new t.EnumValue('Direction', 'OUT'),
         b: [ DataType.DIRECTION,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x03, ...from('OUT') ]
       },
+      { v: new t.EnumValue('Merge', 'onMatch'),
+        b: [ DataType.MERGE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x07, ...from('onMatch') ]
+      },
       { v: new t.EnumValue('Operator', 'addAll'),
         b: [ DataType.OPERATOR,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
       },
@@ -346,7 +349,6 @@ describe('GraphBinary.AnySerializer', () => {
       { err:/buffer is empty/,                    b:[] },
       { err:/buffer is empty/,                    b:[] },
 
-      { err:/unknown {type_code}/,                b:[0x2E] },
       { err:/unknown {type_code}/,                b:[0x30] },
       { err:/unknown {type_code}/,                b:[0x8F] },
       { err:/unknown {type_code}/,                b:[0xFF] },
@@ -491,6 +493,10 @@ describe('GraphBinary.AnySerializer', () => {
       // DIRECTION
       { v:null,                                   b:[0x18,0x01] },
       { v:new t.EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
+
+      // MERGE
+      { v:null,                                   b:[0x2e,0x01] },
+      { v:new t.EnumValue('Merge','onCreate'),    b:[0x2e,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('onCreate')] },
 
       // OPERATOR
       { v:null,                                   b:[0x19,0x01] },

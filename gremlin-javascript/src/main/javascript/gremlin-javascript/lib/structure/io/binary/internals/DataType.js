@@ -73,6 +73,7 @@ const DataType = {
   TREE: 0x2b,
   METRICS: 0x2c,
   TRAVERSALMETRICS: 0x2d,
+  MERGE: 0x2e,
 
   CHAR: 0x80,
   DURATION: 0x81,
