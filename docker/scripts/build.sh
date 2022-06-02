@@ -88,13 +88,19 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   service ssh start
 
   # start Hadoop
-  echo "export JAVA_HOME=$JAVA_HOME" >> ${HADOOP_PREFIX}/etc/hadoop/hadoop-env.sh
-  cp docker/hadoop/resources/* ${HADOOP_PREFIX}/etc/hadoop/
+  echo "export JAVA_HOME=$JAVA_HOME" >> ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh
+  cp docker/hadoop/resources/* ${HADOOP_HOME}/etc/hadoop/
   hdfs namenode -format
-  ${HADOOP_PREFIX}/sbin/start-dfs.sh
+  export HDFS_DATANODE_USER=root
+  export HDFS_DATANODE_SECURE_USER=hdfs
+  export HDFS_NAMENODE_USER=root
+  export HDFS_SECONDARYNAMENODE_USER=root
+  export YARN_RESOURCEMANAGER_USER=root
+  export YARN_NODEMANAGER_USER=root
+  ${HADOOP_HOME}/sbin/start-dfs.sh
   hdfs dfs -mkdir /user
   hdfs dfs -mkdir /user/${USER}
-  ${HADOOP_PREFIX}/sbin/start-yarn.sh
+  ${HADOOP_HOME}/sbin/start-yarn.sh
 
   # build docs
   mkdir -p ~/.groovy

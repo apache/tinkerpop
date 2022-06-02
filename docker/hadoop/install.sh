@@ -32,7 +32,7 @@ popd > /dev/null
 
 cat >> ~/.bashrc <<EOF
 export USER=`whoami`
-export HADOOP_PREFIX=/usr/local/lib/${HADOOP_BASENAME}
-export PATH="\${PATH}:\${HADOOP_PREFIX}/bin"
-export CLASSPATH="\${CLASSPATH}:\${HADOOP_PREFIX}/etc/hadoop"
+export HADOOP_HOME=/usr/local/lib/${HADOOP_BASENAME}
+export PATH="\${PATH}:\${HADOOP_HOME}/bin"
+export CLASSPATH="\${CLASSPATH}:\${HADOOP_HOME}/etc/hadoop"
 EOF
