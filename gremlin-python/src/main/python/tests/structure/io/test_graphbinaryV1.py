@@ -21,7 +21,7 @@ import datetime
 import uuid
 import math
 
-from gremlin_python.statics import timestamp, long, SingleByte, SingleChar, ByteBufferType
+from gremlin_python.statics import timestamp, long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode
@@ -49,6 +49,11 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 
+    def test_bigint(self):
+        x = bigint(0x1000_0000_0000_0000_0000)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
     def test_float(self):
         x = float(100.001)
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
@@ -70,6 +75,12 @@ class TestGraphSONWriter(object):
         x = 100.001
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
+
+    def test_bigdecimal(self):
+        x = BigDecimal(100, 234)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x.scale == output.scale
+        assert x.unscaled_value == output.unscaled_value
 
     def test_date(self):
         x = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
