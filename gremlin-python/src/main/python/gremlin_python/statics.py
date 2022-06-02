@@ -25,9 +25,19 @@ class long(int):
     pass
 
 
+class bigint(int):
+    pass
+
+
+class short(int):
+    pass
+
+
 FloatType = float
+ShortType = short
 IntType = int
 LongType = long
+BigIntType = bigint
 TypeType = type
 ListType = list
 DictType = dict
@@ -71,7 +81,13 @@ class GremlinType(object):
     """
     def __init__(self, gremlin_type):
         self.gremlin_type = gremlin_type
-        
+
+
+class BigDecimal(object):
+    def __init__(self, scale, unscaled_value):
+        self.scale = scale
+        self.unscaled_value = unscaled_value
+
 
 staticMethods = {}
 staticEnums = {}

@@ -209,7 +209,7 @@ class TestDriverRemoteConnection(object):
         #
         g = traversal().withRemote(remote_connection).with_("x", True).with_('evaluationTimeout', 10)
         try:
-            g.inject(1).sideEffect(lambda: ("Thread.sleep(5000)", "gremlin-groovy")).iterate()
+            g.inject(1).sideEffect(lambda: ("Thread.sleep(1000)", "gremlin-groovy")).iterate()
             assert False
         except GremlinServerError as gse:
             assert gse.status_code == 598

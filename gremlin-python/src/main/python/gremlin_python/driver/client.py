@@ -53,6 +53,7 @@ class Client:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
             message_serializer = serializer.GraphSONSerializersV3d0()
+
         self._message_serializer = message_serializer
         self._username = username
         self._password = password
