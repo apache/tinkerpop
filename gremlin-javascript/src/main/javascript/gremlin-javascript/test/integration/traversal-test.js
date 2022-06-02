@@ -76,7 +76,7 @@ describe('Traversal', function () {
   });
   describe("#construct", function () {
     it('should not hang if server not present', function() {
-      const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:9998/gremlin', {traversalSource: 'g'}));
+      const g = traversal().withRemote(helper.getDriverRemoteConnection('ws://localhost:9998/gremlin', {traversalSource: 'g'}));
       return g.V().toList().then(function() {
         assert.fail("there is no server so an error should have occurred");
       }).catch(function(err) {

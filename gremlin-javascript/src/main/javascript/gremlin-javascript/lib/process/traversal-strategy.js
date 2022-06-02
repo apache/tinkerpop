@@ -295,7 +295,7 @@ class ReservedKeysVerificationStrategy extends TraversalStrategy {
    * @param {Array<String>} keys the list of reserved keys to verify
    */
   constructor(logWarnings = false, throwException = false, keys = ['id', 'label']) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy', {
+    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy', {
       logWarnings: logWarnings,
       throwException: throwException,
       keys: keys,

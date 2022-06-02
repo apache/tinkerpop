@@ -28,6 +28,7 @@ const WebSocket = require('ws');
 const util = require('util');
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
+const { graphBinaryReader, graphBinaryWriter } = require('../structure/io/binary/GraphBinary');
 const ResultSet = require('./result-set');
 const ResponseError = require('./response-error');
 
@@ -40,6 +41,7 @@ const responseStatusCode = {
 
 const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
 const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
+const graphBinaryMimeType = 'application/vnd.graphbinary-v1.0';
 
 const pingIntervalDelay = 60 * 1000;
 const pongTimeoutDelay = 30 * 1000;
@@ -180,7 +182,7 @@ class Connection extends EventEmitter {
           };
 
           const request_buf = this._writer.writeRequest(request);
-          const message = Buffer.concat([this._header_buf, request_buf], this._header_buf.length + request_buf.length);
+          const message = Buffer.concat([this._header_buf, request_buf]);
           this._ws.send(message);
         }),
     );
@@ -211,7 +213,7 @@ class Connection extends EventEmitter {
         };
 
         const request_buf = this._writer.writeRequest(request);
-        const message = Buffer.concat([this._header_buf, request_buf], this._header_buf.length + request_buf.length);
+        const message = Buffer.concat([this._header_buf, request_buf]);
         this._ws.send(message);
       })
       .catch((err) => readableStream.destroy(err));
@@ -220,10 +222,18 @@ class Connection extends EventEmitter {
   }
 
   _getDefaultReader(mimeType) {
+    if (mimeType === graphBinaryMimeType) {
+      return graphBinaryReader;
+    }
+
     return mimeType === graphSON2MimeType ? new serializer.GraphSON2Reader() : new serializer.GraphSONReader();
   }
 
   _getDefaultWriter(mimeType) {
+    if (mimeType === graphBinaryMimeType) {
+      return graphBinaryWriter;
+    }
+
     return mimeType === graphSON2MimeType ? new serializer.GraphSON2Writer() : new serializer.GraphSONWriter();
   }
 
