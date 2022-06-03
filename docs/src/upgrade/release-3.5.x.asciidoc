@@ -21,6 +21,27 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
+== TinkerPop 3.5.4
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5-dev/CHANGELOG.asciidoc#release-3-5-4[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== GraphBinary support for gremlin-javascript
+
+Gremlin JavaScript now also supports GraphBinary. GraphSON3 still remains the default serialization format.
+
+To enable GraphBinary support, set the mime type in the connection options.
+
+[source,javascript]
+----
+const options = { mimeType: 'application/vnd.graphbinary-v1.0' }
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', options));
+----
+
 == TinkerPop 3.5.3
 
 *Release Date: April 4, 2022*
