@@ -395,7 +395,7 @@ func RemoteStrategy(connection DriverRemoteConnection) TraversalStrategy {
 			return
 		}
 
-		rs, err := connection.submitBytecode(g.bytecode)
+		rs, err := connection.submitBytecode(g.Bytecode)
 		if err != nil {
 			return
 		}

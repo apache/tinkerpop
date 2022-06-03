@@ -228,13 +228,13 @@ func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSer
 //		{values_length} is an Int describing the amount values.
 //		{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
 func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	var bc bytecode
+	var bc Bytecode
 	switch typedVal := value.(type) {
 	case *GraphTraversal:
-		bc = *typedVal.bytecode
-	case bytecode:
+		bc = *typedVal.Bytecode
+	case Bytecode:
 		bc = typedVal
-	case *bytecode:
+	case *Bytecode:
 		bc = *typedVal
 	default:
 		return nil, newError(err0402BytecodeWriterError)
@@ -632,7 +632,7 @@ func bindingWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *grap
 
 func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType, error) {
 	switch val.(type) {
-	case *bytecode, bytecode, *GraphTraversal:
+	case *Bytecode, Bytecode, *GraphTraversal:
 		return bytecodeType, nil
 	case string:
 		return stringType, nil

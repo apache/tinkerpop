@@ -155,8 +155,8 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 	return result, err
 }
 
-// submitBytecode submits bytecode to the server to execute and returns a ResultSet.
-func (client *Client) submitBytecode(bytecode *bytecode) (ResultSet, error) {
+// submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
+func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
 	request := makeBytecodeRequest(bytecode, client.traversalSource, client.session)
 	return client.connections.write(&request)

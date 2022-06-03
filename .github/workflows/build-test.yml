@@ -227,8 +227,9 @@ jobs:
       - name: Execute Go tests
         working-directory: ./gremlin-go
         run: |
-          docker-compose up --exit-code-from gremlin-go-integration-tests
-          docker-compose down
+          chmod +x ./run.sh
+          ./run.sh
+        shell: bash
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v2

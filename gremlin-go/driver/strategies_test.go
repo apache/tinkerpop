@@ -119,7 +119,7 @@ func TestStrategy(t *testing.T) {
 		assert.Equal(t, int32(0), val)
 	})
 
-	t.Run("Test bytecode generation for MatchAlgorithmStrategy", func(t *testing.T) {
+	t.Run("Test Bytecode generation for MatchAlgorithmStrategy", func(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 

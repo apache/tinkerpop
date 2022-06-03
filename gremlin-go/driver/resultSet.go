@@ -35,6 +35,7 @@ type ResultSet interface {
 	GetRequestID() string
 	IsEmpty() bool
 	Close()
+	unlockedClose()
 	Channel() chan *Result
 	addResult(result *Result)
 	One() (*Result, bool, error)
@@ -114,6 +115,19 @@ func (channelResultSet *channelResultSet) Close() {
 		channelResultSet.channelMutex.Lock()
 		channelResultSet.closed = true
 		channelResultSet.container.delete(channelResultSet.requestID)
+		close(channelResultSet.channel)
+		channelResultSet.channelMutex.Unlock()
+		channelResultSet.sendSignal()
+	}
+}
+
+// Close and remove from the channelResultSet from the container without locking container. Meant for use when calling
+// function already locks the container.
+func (channelResultSet *channelResultSet) unlockedClose() {
+	if !channelResultSet.closed {
+		channelResultSet.channelMutex.Lock()
+		channelResultSet.closed = true
+		delete(channelResultSet.container.internalMap, channelResultSet.requestID)
 		close(channelResultSet.channel)
 		channelResultSet.channelMutex.Unlock()
 		channelResultSet.sendSignal()
