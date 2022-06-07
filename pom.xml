@@ -168,7 +168,7 @@ limitations under the License.
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <javapoet.version>1.13.0</javapoet.version>
         <jbcrypt.version>0.4</jbcrypt.version>
-        <jcabi.version>1.1</jcabi.version>
+        <jcabi.version>1.2.1</jcabi.version>
         <junit.version>4.13.1</junit.version>
         <kerby.version>2.0.1</kerby.version>
         <logback.version>1.2.3</logback.version>
