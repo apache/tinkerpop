@@ -24,7 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 	"github.com/cucumber/godog"
 	"reflect"
 	"regexp"

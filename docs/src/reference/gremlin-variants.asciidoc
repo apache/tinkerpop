@@ -1645,6 +1645,130 @@ In the above example, defines a timeout of 500 milliseconds, but the script has 
 two internal settings for the timeout using `with()`. The request timeout used by the server will therefore be 1000
 milliseconds (overriding the 500 which itself was an override for whatever configuration was on the server).
 
+[[gremlin-go-dsl]]
+=== Domain Specific Languages
+
+Writing a Gremlin <<dsl,Domain Specific Language>> (DSL) in Go requires embedding of several structs and interfaces:
+
+* `GraphTraversal` - which exposes the various steps used in traversal writing
+* `GraphTraversalSource` - which spawns `GraphTraversal` instances
+* `AnonymousTraversal` - which spawns anonymous traversals from steps
+
+The Social DSL based on the link:https://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
+might look like this:
+
+[source,go]
+----
+// Optional syntactic sugar.
+var __ = gremlingo.T__
+var P = gremlingo.P
+var gt = gremlingo.P.Gt
+// Optional alias for import convenience.
+type GraphTraversal = gremlingo.GraphTraversal
+type GraphTraversalSource = gremlingo.GraphTraversalSource
+type AnonymousTraversal = gremlingo.AnonymousTraversal
+
+// Embed Graph traversal inside custom traversal struct to add custom traversal functions.
+// In go, capitalizing the first letter exports (makes public) the struct/method to outside of package, for this example
+// we have defined everything package private. In actual usage, please see fit to your application.
+type socialTraversal struct {
+	*GraphTraversal
+}
+
+func (s *socialTraversal) knows(personName string) *socialTraversal {
+	return &socialTraversal{s.Out("knows").HasLabel("person").Has("name", personName)}
+}
+
+func (s *socialTraversal) youngestFriendsAge() *socialTraversal {
+	return &socialTraversal{s.Out("knows").HasLabel("person").Values("age").Min()}
+}
+
+func (s *socialTraversal) createdAtLeast(number int) *socialTraversal {
+	return &socialTraversal{s.OutE("created").Count().Is(gt(number))}
+}
+
+// Add custom social traversal source to spaw custom traversals.
+type socialTraversalSource struct {
+	*GraphTraversalSource
+}
+
+// Define the source step function by adding steps to the bytecode.
+func (sts *socialTraversalSource) persons(personNames ...interface{}) *socialTraversal {
+	t := sts.GetGraphTraversal()
+	t.Bytecode.AddStep("V")
+	t.Bytecode.AddStep("hasLabel", "person")
+	if personNames != nil {
+		t.Bytecode.AddStep("has", "name", P.Within(personNames...))
+	}
+	return &socialTraversal{t}
+}
+
+
+// Create the social anonymous traversal interface to embed and extend the anonymous traversal functions.
+type iSocialAnonymousTraversal interface {
+	AnonymousTraversal
+	knows(personName string) *GraphTraversal
+	youngestFriendsAge() *GraphTraversal
+	createdAtLeast(number int) *GraphTraversal
+}
+
+// Add the struct to implement the iSocialAnonymousTraversal interface.
+type socialAnonymousTraversal struct {
+	AnonymousTraversal
+	socialTraversal func() *socialTraversal
+}
+
+// Add the variable s__ to call anonymous traversal step functions in place of __.
+var s__ iSocialAnonymousTraversal = &socialAnonymousTraversal{
+	__,
+	func() *socialTraversal {
+		return &socialTraversal{gremlingo.NewGraphTraversal(nil, gremlingo.NewBytecode(nil), nil)}
+	},
+}
+
+// Extended anonymous traversal functions need to return GraphTraversal for serialization purposes
+func (sat *socialAnonymousTraversal) knows(personName string) *GraphTraversal {
+	return sat.socialTraversal().knows(personName).GraphTraversal
+}
+
+func (sat *socialAnonymousTraversal) youngestFriendsAge() *GraphTraversal {
+	return sat.socialTraversal().youngestFriendsAge().GraphTraversal
+}
+
+func (sat *socialAnonymousTraversal) createdAtLeast(number int) *GraphTraversal {
+	return sat.socialTraversal().createdAtLeast(number).GraphTraversal
+}
+----
+
+Using the DSL requires a social traversal source to be created from the default traversal source:
+
+[source,go]
+----
+// Creating the driver remote connection as regular.
+driverRemoteConnection, _ := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+	func(settings *gremlingo.DriverRemoteConnectionSettings) {
+		settings.TraversalSource = "gmodern"
+	})
+defer driverRemoteConnection.Close()
+
+// Create social traversal source from graph traversal source.
+social := &socialTraversalSource{gremlingo.Traversal_().WithRemote(driverRemoteConnection)}
+
+// We can now use the social traversal source as well as traversal steps
+resBool, _ := social.persons("marko", "stephen").knows("josh").HasNext()
+fmt.Println(resBool)
+
+// Using the createdAtLeast step.
+resCreated, _ := social.persons().createdAtLeast(1).Next()
+fmt.Println(resCreated.GetString())
+
+// Using the social anonymous traversal.
+resAnon, _ := social.persons().Filter(s__.createdAtLeast(1)).Count().Next()
+fmt.Println(resAnon.GetString())
+
+// Note that error handling has been omitted with _ from the above examples.
+----
+
 [[gremlin-go-differences]]
 === Differences
 

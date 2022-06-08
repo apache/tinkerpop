@@ -169,8 +169,8 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 	return result, err
 }
 
-// submitBytecode sends a bytecode traversal to the server.
-func (driver *DriverRemoteConnection) submitBytecode(bytecode *bytecode) (ResultSet, error) {
+// submitBytecode sends a Bytecode traversal to the server.
+func (driver *DriverRemoteConnection) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	if driver.isClosed {
 		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
 	}
@@ -225,13 +225,13 @@ func (driver *DriverRemoteConnection) GetSessionId() string {
 }
 
 func (driver *DriverRemoteConnection) commit() (ResultSet, error) {
-	bc := &bytecode{}
-	bc.addSource("tx", "commit")
+	bc := &Bytecode{}
+	bc.AddSource("tx", "commit")
 	return driver.submitBytecode(bc)
 }
 
 func (driver *DriverRemoteConnection) rollback() (ResultSet, error) {
-	bc := &bytecode{}
-	bc.addSource("tx", "rollback")
+	bc := &Bytecode{}
+	bc.AddSource("tx", "rollback")
 	return driver.submitBytecode(bc)
 }

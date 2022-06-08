@@ -36,6 +36,8 @@ cp *.yaml ${TINKERPOP_HOME}/conf/
 
 java -version
 
+/opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin "$GREMLIN_SERVER_VER"
+
 /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration.yaml &
 
 /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-secure.yaml
