@@ -67,7 +67,7 @@ class Connection extends EventEmitter {
    * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
    * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
    * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
-   * @param {Boolean} [options.connectOnStartup] Open websocket on startup. Defaults to: true.
+   * @param {Boolean} [options.connectOnStartup] Deprecated and non-functional. Open websocket on startup.
    * @constructor
    */
   constructor(url, options) {
@@ -103,8 +103,10 @@ class Connection extends EventEmitter {
     this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
     this._pongTimeoutDelay = this.options.pongTimeout || pongTimeoutDelay;
 
-    if (this.options.connectOnStartup !== false) {
-      this.open();
+    if (this.options.connectOnStartup) {
+      console.warn(
+        'connectOnStartup is now deprecated and non-functional. To open a connection, please call open() after instantiating connection object.',
+      );
     }
   }
 
