@@ -171,7 +171,7 @@ limitations under the License.
         <jcabi.version>1.2.1</jcabi.version>
         <junit.version>4.13.1</junit.version>
         <kerby.version>2.0.1</kerby.version>
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.9</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.3.3</mockito.version>
         <netty.version>4.1.72.Final</netty.version>
