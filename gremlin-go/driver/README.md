@@ -65,7 +65,7 @@ For instructions on simple usage, including connecting, connection settings, ali
 
 ## Design Architecture
 
-See [Gremlin-Go Design Overview](design.MD)
+See [Gremlin-Go Design Overview](../design.md)
 
 ## Building Directly
 
