@@ -174,7 +174,7 @@ final class Handler {
         }
 
         private String getHostName(final ChannelHandlerContext channelHandlerContext) {
-            return ((InetSocketAddress)channelHandlerContext.channel().remoteAddress()).getAddress().getCanonicalHostName();
+            return ((InetSocketAddress)channelHandlerContext.channel().remoteAddress()).getAddress().getHostName();
         }
 
         /**

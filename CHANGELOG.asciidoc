@@ -205,6 +205,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Allowed `datetime()` syntax to accept zone offset with colon separators and seconds.
 * Fixed a minor problem in the Gremlin parser where a `GraphTraversalSource` may not have been initialized.
 * Added getters to high and low properties in RangeLocalStep.
+* TINKERPOP-2229 Added GraphBinary serialization support to gremlin-javascript.
+* TINKERPOP-2740 Improved startup time by removing unnecessary DNS lookup.
+* TINKERPOP-2746 Changes logback version to 1.2.9 from 1.2.3
+* TINKERPOP-2693 Finished graphbinary support
 
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: April 4, 2022)
