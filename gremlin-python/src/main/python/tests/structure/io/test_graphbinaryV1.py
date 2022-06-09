@@ -53,7 +53,7 @@ class TestGraphSONWriter(object):
 
     def test_bigint(self):
         x = bigint(0x1000_0000_0000_0000_0000)
-        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
     def test_float(self):
@@ -80,7 +80,7 @@ class TestGraphSONWriter(object):
 
     def test_bigdecimal(self):
         x = BigDecimal(100, 234)
-        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x.scale == output.scale
         assert x.unscaled_value == output.unscaled_value
 
