@@ -70,7 +70,6 @@ public abstract class Client {
     protected final Cluster cluster;
     protected volatile boolean initialized;
     protected final Client.Settings settings;
-    protected Throwable initializationFailure = null;
 
     Client(final Cluster cluster, final Client.Settings settings) {
         this.cluster = cluster;
@@ -212,15 +211,6 @@ public abstract class Client {
         cluster.init();
 
         initializeImplementation();
-
-        // throw an error if no host is available even after initialization is complete.
-        if (cluster.availableHosts().isEmpty()) {
-            if (this.initializationFailure != null) {
-                throw new NoHostAvailableException(this.initializationFailure);
-            } else {
-                throw new NoHostAvailableException();
-            }
-        }
 
         initialized = true;
         return this;
@@ -438,6 +428,7 @@ public abstract class Client {
 
         protected ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
         private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
+        private Throwable initializationFailure = null;
 
         ClusteredClient(final Cluster cluster, final Client.Settings settings) {
             super(cluster, settings);
@@ -539,8 +530,8 @@ public abstract class Client {
 
             try {
                 CompletableFuture.allOf(cluster.allHosts().stream()
-                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
-                        .toArray(CompletableFuture[]::new))
+                                .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
+                                .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
                 Throwable cause = ExceptionUtils.getRootCause(ex);
@@ -570,7 +561,7 @@ public abstract class Client {
         private void throwNoHostAvailableException() {
             // allow the certain exceptions to propagate as a cause
             if (initializationFailure != null && (initializationFailure instanceof SSLException ||
-                                                  initializationFailure instanceof ConnectException)) {
+                    initializationFailure instanceof ConnectException)) {
                 throw new NoHostAvailableException(initializationFailure);
             } else {
                 throw new NoHostAvailableException();
@@ -615,8 +606,8 @@ public abstract class Client {
             // start the re-initialization attempt for each of the unavailable hosts through Host.makeUnavailable().
             try {
                 CompletableFuture.allOf(unavailableHosts.stream()
-                        .map(host -> CompletableFuture.runAsync(() -> host.makeUnavailable(this::tryReInitializeHost)))
-                        .toArray(CompletableFuture[]::new))
+                                .map(host -> CompletableFuture.runAsync(() -> host.makeUnavailable(this::tryReInitializeHost)))
+                                .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
                 logger.error("", (ex.getCause() == null) ? ex : ex.getCause());
@@ -728,7 +719,11 @@ public abstract class Client {
         @Override
         protected void initializeImplementation() {
             // no init required
-            if (close.isDone()) throw new IllegalStateException("Client is closed");
+            if (close.isDone()) {
+                throw new IllegalStateException("Client is closed");
+            } else if (cluster.availableHosts().isEmpty()) {
+                throw new NoHostAvailableException();
+            }
         }
 
         /**
@@ -835,7 +830,7 @@ public abstract class Client {
                 selectedHost.makeAvailable();
             } catch (RuntimeException ex) {
                 logger.error("Could not initialize client for {}", host, ex);
-                this.initializationFailure = ex;
+                throw new NoHostAvailableException(ex);
             }
         }
 
