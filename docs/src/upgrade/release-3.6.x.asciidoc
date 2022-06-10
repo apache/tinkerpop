@@ -689,6 +689,15 @@ this time, but the camel cased steps will be removed in some future major versio
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2650[TINKERPOP-2650]
 
+==== GraphBinary set as the default serialization format for gremlin-python and Gremlin.NET
+
+Python and .NET have support for GraphBinary at least since 3.5.0 but kept GraphSON 3 by default. It now seems safe 
+to make GraphBinary the default in 3.6.x.
+
+To continue using the GraphSon, explicitly specify the serializer.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2723[TINKERPOP-2723]
+
 ==== `property()` with Map
 
 The `property()` step has been extended to take a `Map` of property key/value pairs as an argument with two new signatures:
