@@ -79,6 +79,14 @@ var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSO
 // end::serializationGraphSon[]
         }
 
+        [Fact(Skip = "No Server under localhost")]
+        public void SerializationGraphson3Test()
+        {
+// tag::serializationGraphSon3[]
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON3MessageSerializer());
+// end::serializationGraphSon3[]
+        }
+
         [Fact(Skip="We can't apply strategies")]
         public void TraversalStrategiesTest()
         {
