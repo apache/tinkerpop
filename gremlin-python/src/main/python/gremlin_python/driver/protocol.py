@@ -23,11 +23,6 @@ import struct
 
 # import kerberos    Optional dependency imported in relevant codeblock
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
 from gremlin_python.driver import request
 from gremlin_python.driver.resultset import ResultSet
 
