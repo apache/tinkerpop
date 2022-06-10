@@ -16,13 +16,17 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-try:
-    import ujson as json
-except ImportError:
-    import json
+
+import logging
 import struct
 import uuid
 import io
+try:
+    import ujson as json
+    if int(json.__version__[0]) < 2:
+        logging.warning("Detected ujson version below 2.0.0. This is not recommended as precision may be lost.")
+except ImportError:
+    import json
 
 from gremlin_python.structure.io import graphbinaryV1
 from gremlin_python.structure.io import graphsonV2d0

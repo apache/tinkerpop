@@ -42,6 +42,20 @@ const options = { mimeType: 'application/vnd.graphbinary-v1.0' }
 const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', options));
 ----
 
+==== Deprecated connectOnStartup option in gremlin-javascript
+Deprecated and removed functionality of the `connectOnStartup` option for Gremlin Javascript to resolve potential `unhandledRejection` and race conditions. Setting `connectOnStartup` to `true` will only trigger a console warning.
+
+New DriverRemoteConnection objects no longer initiate connection by default at startup. Call `open()` explicitly if one wishes to connect on startup.
+For example:
+
+[source,javascript]
+----
+const drc = new DriverRemoteConnection(url);
+drc.open().catch(err => {
+   // Handle error upon open.
+})
+----
+
 == TinkerPop 3.5.3
 
 *Release Date: April 4, 2022*
