@@ -31,10 +31,11 @@ from struct import pack, unpack
 from aenum import Enum
 from datetime import timedelta
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
-                                   SingleByte, ByteBufferType, GremlinType, SingleChar
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
-                                             Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
+from gremlin_python.statics import FloatType, BigDecimal, FunctionType, ShortType, IntType, LongType, BigIntType, \
+                                   TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, GremlinType, \
+                                   SingleChar
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, \
+                                             Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
@@ -84,11 +85,11 @@ class DataType(Enum):
     scope = 0x1f
     t = 0x20
     traverser = 0x21
-    bigdecimal = 0x22             # todo
-    biginteger = 0x23             # todo
+    bigdecimal = 0x22
+    biginteger = 0x23
     byte = 0x24
     bytebuffer = 0x25
-    short = 0x26                  # todo
+    short = 0x26
     boolean = 0x27
     textp = 0x28
     traversalstrategy = 0x29
@@ -126,6 +127,7 @@ def _make_packer(format_string):
 
 int64_pack, int64_unpack = _make_packer('>q')
 int32_pack, int32_unpack = _make_packer('>i')
+int16_pack, int16_unpack = _make_packer('>h')
 int8_pack, int8_unpack = _make_packer('>b')
 uint64_pack, uint64_unpack = _make_packer('>Q')
 uint8_pack, uint8_unpack = _make_packer('>B')
@@ -255,7 +257,7 @@ class LongIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         if obj < -9223372036854775808 or obj > 9223372036854775807:
-            raise Exception("TODO: don't forget bigint")
+            raise Exception("Value too big, please use bigint Gremlin type")
         else:
             cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
             to_extend.extend(cls.byte_format_pack(obj))
@@ -263,7 +265,7 @@ class LongIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-            return cls.is_null(buff, reader, lambda b, r: int64_unpack(buff.read(8)), nullable)
+        return cls.is_null(buff, reader, lambda b, r: int64_unpack(buff.read(8)), nullable)
 
 
 class IntIO(LongIO):
@@ -276,6 +278,53 @@ class IntIO(LongIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader, lambda b, r: cls.read_int(b), nullable)
+
+
+class ShortIO(LongIO):
+
+    python_type = ShortType
+    graphbinary_type = DataType.short
+    byte_format_pack = int16_pack
+    byte_format_unpack = int16_unpack
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: int16_unpack(buff.read(2)), nullable)
+
+
+class BigIntIO(_GraphBinaryTypeIO):
+
+    python_type = BigIntType
+    graphbinary_type = DataType.biginteger
+
+    @classmethod
+    def write_bigint(cls, obj, to_extend):
+        length = (obj.bit_length() + 7) // 8
+        if obj > 0:
+            b = obj.to_bytes(length, byteorder='big')
+            to_extend.extend(int32_pack(length + 1))
+            to_extend.extend(int8_pack(0))
+            to_extend.extend(b)
+        else:
+            # handle negative
+            b = obj.to_bytes(length, byteorder='big', signed=True)
+            to_extend.extend(int32_pack(length))
+            to_extend.extend(b)
+        return to_extend
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        return cls.write_bigint(obj, to_extend)
+
+    @classmethod
+    def read_bigint(cls, buff):
+        size = cls.read_int(buff)
+        return int.from_bytes(buff.read(size), byteorder='big', signed=True)
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=False):
+        return cls.is_null(buff, reader, lambda b, r: cls.read_bigint(b), nullable)
 
 
 class DateIO(_GraphBinaryTypeIO):
@@ -376,6 +425,28 @@ class DoubleIO(FloatIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader, lambda b, r: double_unpack(b.read(8)), nullable)
+
+
+class BigDecimalIO(_GraphBinaryTypeIO):
+
+    python_type = BigDecimal
+    graphbinary_type = DataType.bigdecimal
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        to_extend.extend(int32_pack(obj.scale))
+        return BigIntIO.write_bigint(obj.unscaled_value, to_extend)
+
+    @classmethod
+    def _read(cls, buff):
+        scale = int32_unpack(buff.read(4))
+        unscaled_value = BigIntIO.read_bigint(buff)
+        return BigDecimal(scale, unscaled_value)
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=False):
+        return cls.is_null(buff, reader, lambda b, r: cls._read(b), nullable)
 
 
 class CharIO(_GraphBinaryTypeIO):

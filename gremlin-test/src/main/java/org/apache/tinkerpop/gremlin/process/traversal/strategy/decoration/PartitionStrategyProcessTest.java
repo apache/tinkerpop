@@ -23,8 +23,10 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -51,6 +54,21 @@ import static org.junit.Assert.fail;
  */
 public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     private static final String partition = "gremlin.partitionGraphStrategy.partition";
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldPartitionWithAbstractLambdaChildTraversal() {
+        final PartitionStrategy partitionStrategy = PartitionStrategy.build()
+                .partitionKey(partition).writePartition("A").readPartitions("A").create();
+        final Vertex v = g.withStrategies(partitionStrategy).addV("testV").property("prop1", "thing").addE("self").inV().next();
+
+        assertNotNull(v);
+        assertEquals("thing", g.withStrategies(partitionStrategy).V()
+                .hasLabel("testV")
+                .project("id", "prop1")
+                .by(T.id)
+                .by("prop1").next().get("prop1"));
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)

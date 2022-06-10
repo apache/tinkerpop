@@ -27,9 +27,12 @@ from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport
+from gremlin_python.statics import *
 from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
+
+test_no_auth_url = 'ws://localhost:45940/gremlin'
 
 
 def test_connection(connection):
@@ -47,11 +50,12 @@ def test_connection(connection):
 
 def test_client_message_too_big(client):
     try:
-        client = Client("http://localhost", 'g', max_content_length=1024)
-        client.submit("1+1").all().result()
+        client = Client(test_no_auth_url, 'g', max_content_length=1024)
+        client.submit("\" \".repeat(2000)").all().result()
         assert False
-    except Exception:
-        assert True
+    except Exception as ex:
+        assert ex.args[0].startswith("Received error on read: 'Message size") \
+               and ex.args[0].endswith("exceeds limit 1024'")
     finally:
         client.close()
 
@@ -80,7 +84,7 @@ def test_client_error(client):
 
 def test_client_connection_pool_after_error(client):
     # Overwrite fixture with pool_size=1 client
-    client = Client('ws://localhost:45940/gremlin', 'gmodern', pool_size=1)
+    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
 
     try:
         # should fire an exception
@@ -93,12 +97,12 @@ def test_client_connection_pool_after_error(client):
 
 
 def test_client_side_timeout_set_for_aiohttp(client):
-    client = Client('ws://localhost:45940/gremlin', 'gmodern',
+    client = Client(test_no_auth_url, 'gmodern',
                     transport_factory=lambda: AiohttpTransport(read_timeout=1, write_timeout=1))
 
     try:
         # should fire an exception
-        client.submit('Thread.sleep(2000);1').all().result()
+        client.submit('Thread.sleep(1000);1').all().result()
         assert False
     except TimeoutError as err:
         # asyncio TimeoutError has no message.
@@ -108,7 +112,7 @@ def test_client_side_timeout_set_for_aiohttp(client):
 async def async_connect(enable):
     try:
         transport = AiohttpTransport(call_from_event_loop=enable)
-        transport.connect('ws://localhost:45940/gremlin')
+        transport.connect(test_no_auth_url)
         transport.close()
         return True
     except RuntimeError:
@@ -165,7 +169,7 @@ def test_client_async(client):
 
 def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
-    client = Client('ws://localhost:45940/gremlin', 'gmodern', pool_size=1)
+    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
@@ -187,7 +191,7 @@ def test_multi_conn_pool(client):
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
-    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1)
+    client = Client(test_no_auth_url, 'g', pool_size=1)
     future = client.submit_async(message)
     future2 = client.submit_async(message2)
 
@@ -240,9 +244,20 @@ def test_multi_thread_pool(client):
     assert results[3][0][0].object == 6
 
 
-def test_client_bytecode_with_int(client):
+def test_client_bytecode_with_long(client):
     g = Graph().traversal()
-    t = g.V().has('age', 851401972585122).count()
+    t = g.V().has('age', long(851401972585122)).count()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1
+
+
+def test_client_bytecode_with_bigint(client):
+    g = Graph().traversal()
+    t = g.V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
     results = []
@@ -254,7 +269,7 @@ def test_client_bytecode_with_int(client):
 def test_multi_request_in_session(client):
     # Overwrite fixture with session client
     session_id = str(uuid.uuid4())
-    client = Client('ws://localhost:45940/gremlin', 'g', session=session_id)
+    client = Client(test_no_auth_url, 'g', session=session_id)
 
     assert client.submit('x = 1').all().result()[0] == 1
     assert client.submit('x + 2').all().result()[0] == 3
@@ -262,7 +277,7 @@ def test_multi_request_in_session(client):
     client.close()
 
     # attempt reconnect to session and make sure "x" is no longer a thing
-    client = Client('ws://localhost:45940/gremlin', 'g', session=session_id)
+    client = Client(test_no_auth_url, 'g', session=session_id)
     try:
         # should fire an exception
         client.submit('x').all().result()
@@ -275,7 +290,7 @@ def test_client_pool_in_session(client):
     # Overwrite fixture with pool_size=2 client
     try:
         # should fire an exception
-        client = Client('ws://localhost:45940/gremlin', 'g', session=str(uuid.uuid4()), pool_size=2)
+        client = Client(test_no_auth_url, 'g', session=str(uuid.uuid4()), pool_size=2)
         assert False
     except Exception:
         assert True

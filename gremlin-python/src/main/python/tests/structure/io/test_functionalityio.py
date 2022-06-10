@@ -20,7 +20,7 @@ under the License.
 import datetime
 import uuid
 
-from gremlin_python.driver.serializer import GraphSONSerializersV2d0
+from gremlin_python.driver.serializer import GraphSONSerializersV2d0, GraphBinarySerializersV1
 from gremlin_python.structure.graph import Graph
 from gremlin_python.statics import *
 
@@ -65,6 +65,71 @@ def test_uuid(remote_connection):
         g.V(vid).drop().iterate()
 
 
+def test_short(remote_connection):
+    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+        return
+
+    g = Graph().traversal().withRemote(remote_connection)
+    num = short(1111)
+    resp = g.addV('test_vertex').property('short', num).toList()
+    vid = resp[0].id
+    try:
+        bigint_prop = g.V(vid).properties('short').toList()[0]
+        assert isinstance(bigint_prop.value, int)
+        assert bigint_prop.value == num
+    finally:
+        g.V(vid).drop().iterate()
+
+
+def test_bigint_positive(remote_connection):
+    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+        return
+
+    g = Graph().traversal().withRemote(remote_connection)
+    big = bigint(0x1000_0000_0000_0000_0000)
+    resp = g.addV('test_vertex').property('bigint', big).toList()
+    vid = resp[0].id
+    try:
+        bigint_prop = g.V(vid).properties('bigint').toList()[0]
+        assert isinstance(bigint_prop.value, int)
+        assert bigint_prop.value == big
+    finally:
+        g.V(vid).drop().iterate()
+
+
+def test_bigint_negative(remote_connection):
+    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+        return
+
+    g = Graph().traversal().withRemote(remote_connection)
+    big = bigint(-0x1000_0000_0000_0000_0000)
+    resp = g.addV('test_vertex').property('bigint', big).toList()
+    vid = resp[0].id
+    try:
+        bigint_prop = g.V(vid).properties('bigint').toList()[0]
+        assert isinstance(bigint_prop.value, int)
+        assert bigint_prop.value == big
+    finally:
+        g.V(vid).drop().iterate()
+
+
+def test_bigdecimal(remote_connection):
+    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+        return
+
+    g = Graph().traversal().withRemote(remote_connection)
+    bigdecimal = BigDecimal(101, 235)
+    resp = g.addV('test_vertex').property('bigdecimal', bigdecimal).toList()
+    vid = resp[0].id
+    try:
+        bigdecimal_prop = g.V(vid).properties('bigdecimal').toList()[0]
+        assert isinstance(bigdecimal_prop.value, BigDecimal)
+        assert bigdecimal_prop.value.scale == bigdecimal.scale
+        assert bigdecimal_prop.value.unscaled_value == bigdecimal.unscaled_value
+    finally:
+        g.V(vid).drop().iterate()
+
+
 def test_odd_bits(remote_connection):
     if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
         g = Graph().traversal().withRemote(remote_connection)
@@ -85,7 +150,7 @@ def test_odd_bits(remote_connection):
             assert v == char_upper
         finally:
             g.V(vid).drop().iterate()
-                
+
         dur = datetime.timedelta(seconds=1000, microseconds=1000)
         resp = g.addV('test_vertex').property('dur', dur).toList()
         vid = resp[0].id
