@@ -102,7 +102,7 @@ def test_client_side_timeout_set_for_aiohttp(client):
 
     try:
         # should fire an exception
-        client.submit('Thread.sleep(1000);1').all().result()
+        client.submit('Thread.sleep(2000);1').all().result()
         assert False
     except TimeoutError as err:
         # asyncio TimeoutError has no message.
