@@ -132,9 +132,13 @@ namespace Gremlin.Net.Driver.Messages
                 case ResponseStatusCode.Authenticate:
                     return false;
                 case ResponseStatusCode.Unauthorized:
+                case ResponseStatusCode.Forbidden:
+                case ResponseStatusCode.TooManyRequests:
+                case ResponseStatusCode.ClientSerializationError:
                 case ResponseStatusCode.MalformedRequest:
                 case ResponseStatusCode.InvalidRequestArguments:
                 case ResponseStatusCode.ServerError:
+                case ResponseStatusCode.ServerErrorTemporary:
                 case ResponseStatusCode.ServerEvaluationError:
                 case ResponseStatusCode.ServerTimeout:
                 case ResponseStatusCode.ServerSerializationError:
