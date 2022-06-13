@@ -75,12 +75,96 @@ func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sess
 		newProcessor = sessionProcessor
 		newArgs["session"] = sessionId
 	}
+
+	for k, v := range extractReqArgs(bytecodeGremlin) {
+		newArgs[k] = v
+	}
+
 	return request{
 		requestID: uuid.New(),
 		op:        bytecodeOp,
 		processor: newProcessor,
 		args:      newArgs,
 	}
+}
+
+// allowedReqArgs contains the arguments that will be extracted from the
+// bytecode and sent with the request.
+var allowedReqArgs = map[string]bool{
+	"evaluationTimeout":       true,
+	"scriptEvaluationTimeout": true,
+	"batchSize":               true,
+	"requestId":               true,
+	"userAgent":               true,
+}
+
+// extractReqArgs extracts request arguments from the provided bytecode.
+func extractReqArgs(bytecode *Bytecode) map[string]interface{} {
+	args := make(map[string]interface{})
+
+	for _, insn := range bytecode.sourceInstructions {
+		switch insn.operator {
+		case "withStrategies":
+			for k, v := range extractWithStrategiesReqArgs(insn) {
+				args[k] = v
+			}
+		case "with":
+			if k, v := extractWithReqArgs(insn); k != "" {
+				args[k] = v
+			}
+		}
+	}
+
+	return args
+}
+
+// extractWithStrategiesReqArgs extracts request arguments from the passed
+// "withStrategies" source instruction. Only OptionsStrategy is considered.
+func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
+	args := make(map[string]interface{})
+
+	for _, strategyInterface := range insn.arguments {
+		strategy, ok := strategyInterface.(*traversalStrategy)
+		if !ok {
+			// (*GraphTraversalSource).WithStrategies accepts
+			// TraversalStrategy parameters only. Thus, this
+			// should be unreachable.
+			continue
+		}
+
+		if strategy.name != decorationNamespace+"OptionsStrategy" {
+			continue
+		}
+
+		for k, v := range strategy.configuration {
+			if allowedReqArgs[k] {
+				args[k] = v
+			}
+		}
+	}
+
+	return args
+}
+
+// extractWithReqArgs extracts a request argument from the passed "with" source
+// instruction.
+func extractWithReqArgs(insn instruction) (key string, value interface{}) {
+	if len(insn.arguments) != 2 {
+		// (*GraphTraversalSource).With accepts two parameters. Thus,
+		// this should be unreachable.
+		return "", nil
+	}
+
+	key, ok := insn.arguments[0].(string)
+	if !ok {
+		return "", nil
+	}
+
+	if !allowedReqArgs[key] {
+		return "", nil
+	}
+
+	return key, insn.arguments[1]
 }
 
 func makeBasicAuthRequest(auth string) (req request) {

@@ -1121,4 +1121,26 @@ func TestConnection(t *testing.T) {
 		// This routine.
 		assert.Equal(t, startCount, runtime.NumGoroutine())
 	})
+
+	t.Run("Test per-request arguments", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		_, err := g.With("evaluationTimeout", 10).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
+		assert.NotNil(t, err)
+
+		_, err = g.With("evaluationTimeout", 10000).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
+		assert.Nil(t, err)
+
+		_, err = g.With("evaluationTimeout", 10000).With("evaluationTimeout", 10).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
+		assert.NotNil(t, err)
+
+		_, err = g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10})).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
+		assert.NotNil(t, err)
+
+		_, err = g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10000})).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
+		assert.Nil(t, err)
+	})
 }
