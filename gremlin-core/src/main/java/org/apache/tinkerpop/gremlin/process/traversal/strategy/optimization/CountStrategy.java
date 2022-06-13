@@ -164,6 +164,7 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                                 } else {
                                     inner = __.identity().asAdmin();
                                 }
+                                traversal.getGraph().ifPresent(graph -> inner.setGraph(graph));
                                 if (prev != null)
                                     TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
                                 else
