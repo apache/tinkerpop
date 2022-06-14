@@ -50,12 +50,15 @@ def test_connection(connection):
 
 def test_client_message_too_big(client):
     try:
-        client = Client(test_no_auth_url, 'g', max_content_length=1024)
-        client.submit("\" \".repeat(2000)").all().result()
+        client = Client(test_no_auth_url, 'g', max_content_length=4096)
+        client.submit("\" \"*8000").all().result()
         assert False
     except Exception as ex:
         assert ex.args[0].startswith("Received error on read: 'Message size") \
-               and ex.args[0].endswith("exceeds limit 1024'")
+               and ex.args[0].endswith("exceeds limit 4096'")
+
+        # confirm the client instance is still usable and not closed
+        assert ["test"] == client.submit("'test'").all().result()
     finally:
         client.close()
 
