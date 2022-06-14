@@ -29,9 +29,11 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5-dev/CHANGELOG.a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
 ==== Gremlin-Go
-Announcing the release of Gremlin-Go! An official Tinkerpop Gremlin client for Golang is now available. To get started,
-there are a few simple prerequisites required:
+
+After introducing a number of release candidates over the past several months, the offical release of Gremlin-Go is now
+available starting at 3.5.4. There are a few simple prerequisites required to get started:
 
 * A Golang version of `1.17` or greater. Please see link:https://go.dev/dl/[Go Downloads] for more details on installing Golang.
 * A basic understanding of link:https://go.dev/blog/using-go-modules[Go Modules].
@@ -82,7 +84,9 @@ func main() {
 }
 ----
 
-For full documentation on the available API to give Gremlin Go a try, click link:https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3@v3.5.4/driver[here.]
+For full documentation on the available API to give Gremlin Go a try, click link:https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3@v3.5.4/driver[here].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2692[TINKERPOP-2692]
 
 ==== GraphBinary support for gremlin-javascript
 
@@ -97,10 +101,12 @@ const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182
 ----
 
 ==== Deprecated connectOnStartup option in gremlin-javascript
-Deprecated and removed functionality of the `connectOnStartup` option for Gremlin Javascript to resolve potential `unhandledRejection` and race conditions. Setting `connectOnStartup` to `true` will only trigger a console warning.
 
-New DriverRemoteConnection objects no longer initiate connection by default at startup. Call `open()` explicitly if one wishes to connect on startup.
-For example:
+Deprecated and removed functionality of the `connectOnStartup` option for Gremlin Javascript to resolve potential
+`unhandledRejection` and race conditions. Setting `connectOnStartup` to `true` will only trigger a console warning.
+
+New DriverRemoteConnection objects no longer initiate connection by default at startup. Call `open()` explicitly if one
+wishes to connect on startup. For example:
 
 [source,javascript]
 ----
@@ -109,6 +115,8 @@ drc.open().catch(err => {
    // Handle error upon open.
 })
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2708[TINKERPOP-2708]
 
 == TinkerPop 3.5.3
 
