@@ -21,6 +21,24 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Tinkerheart*
 
+== TinkerPop 3.6.1
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.1/CHANGELOG.asciidoc#release-3-6-1[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== GraphBinary Default Serialization
+
+Python and .NET have support for GraphBinary at least since 3.5.0, but kept GraphSON 3 by default. It now seems safe
+to make GraphBinary the default in 3.6.x. With this change, all language variants now have GraphBinary as their default
+serialization format.
+
+To continue using the GraphSON, explicitly specify it as the serializer to use in the configuration.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2723[TINKERPOP-2723]
+
 == TinkerPop 3.6.0
 
 *Release Date: April 4, 2022*

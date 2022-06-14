@@ -1160,13 +1160,13 @@ server as well as data that could potentially be controlled by an untrusted user
 [[gremlin-dotnet-serialization]]
 === Serialization
 
-The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use another serialization format by passing a message serializer when creating the `GremlinClient`.
+The Gremlin.Net driver uses by default GraphBinary but it is also possible to use another serialization format by passing a message serializer when creating the `GremlinClient`.
 
-GraphBinary can be configured like this:
+GraphSON 3.0 can be configured like this:
 
 [source,csharp]
 ----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationBinary]
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serializationGraphSon3]
 ----
 
 and GraphSON 2.0 like this:
@@ -2030,7 +2030,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |Key |Description |Default
 |headers |Additional headers that will be added to each request message. |`None`
 |max_workers |Maximum number of worker threads. |Number of CPUs * 5
-|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
+|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV1`
 |password |The password to submit on requests that require authentication. |""
 |pool_size |The number of connections used by the pool. |4
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`

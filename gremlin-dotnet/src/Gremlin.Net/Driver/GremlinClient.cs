@@ -26,6 +26,7 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO;
+using Gremlin.Net.Structure.IO.GraphBinary;
 using Gremlin.Net.Structure.IO.GraphSON;
 
 namespace Gremlin.Net.Driver
@@ -159,7 +160,7 @@ namespace Gremlin.Net.Driver
             Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null,
             bool disableCompression = false)
         {
-            messageSerializer ??= new GraphSON3MessageSerializer();
+            messageSerializer ??= new GraphBinaryMessageSerializer();
             var webSocketSettings = new WebSocketSettings
             {
                 WebSocketConfigurationCallback = webSocketConfiguration
