@@ -25,7 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-5-4, 3.5.4>>.
 
-* Made GraphBinary the default serialization format for .NET and Python. *(breaking)*
+* Made GraphBinary the default serialization format for .NET and Python.
 
 [[release-3-6-0]]
 === TinkerPop 3.6.0 (Release Date: April 4, 2022)
