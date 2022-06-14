@@ -29,6 +29,60 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5-dev/CHANGELOG.a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+==== Gremlin-Go
+Announcing the release of Gremlin-Go! An official Tinkerpop Gremlin client for Golang is now available. To get started,
+there are a few simple prerequisites required:
+
+* A Golang version of `1.17` or greater. Please see link:https://go.dev/dl/[Go Downloads] for more details on installing Golang.
+* A basic understanding of link:https://go.dev/blog/using-go-modules[Go Modules].
+* A project set up using Go Modules where `gremlin-go` will be used as a dependency.
+
+In the root directory of your project, containing the `go.mod` file, run the following command:
+
+`go get github.com/apache/tinkerpop/gremlin-go/v3@v3.5.4`
+
+Afterwards, we can quickly get started with writing Gremlin in Go:
+
+[source,go]
+----
+package main
+
+import (
+    "fmt"
+    "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+)
+
+func main() {
+    // Creating the connection to the server
+    driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+        func(settings *gremlingo.DriverRemoteConnectionSettings) {
+            // Configure optional settings
+            settings.LogVerbosity = gremlingo.Info
+            settings.InitialConcurrentConnections = 2
+        }
+    )
+    // Handle error
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    // Cleanup
+    defer driverRemoteConnection.Close()
+
+    // Creating graph traversal
+    g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+
+    // Perform traversal
+    result, err := g.V().Count().ToList()
+    if err != nil {
+    fmt.Println(err)
+        return
+    }
+    fmt.Println(result[0].GetString())
+}
+----
+
+For full documentation on the available API to give Gremlin Go a try, click link:https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3@v3.5.4/driver[here.]
 
 ==== GraphBinary support for gremlin-javascript
 
