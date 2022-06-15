@@ -162,7 +162,7 @@ limitations under the License.
         <exp4j.version>0.4.8</exp4j.version>
         <groovy.version>2.5.14</groovy.version>
         <guice.version>4.2.3</guice.version>
-        <hadoop.version>3.3.1</hadoop.version>
+        <hadoop.version>3.3.3</hadoop.version>
         <hamcrest.version>2.2</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
@@ -177,7 +177,7 @@ limitations under the License.
         <netty.version>4.1.77.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.27</snakeyaml.version>
-        <spark.version>3.2.0</spark.version>
+        <spark.version>3.2.1</spark.version>
         <powermock.version>2.0.9</powermock.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
