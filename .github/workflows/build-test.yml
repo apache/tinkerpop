@@ -170,7 +170,7 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Set up Python 3.x
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
       - name: Setup Python requirements
@@ -248,7 +248,7 @@ jobs:
         shell: bash
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           working-directory: ./gremlin-go
 
