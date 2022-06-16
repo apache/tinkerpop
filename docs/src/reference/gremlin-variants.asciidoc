@@ -1451,7 +1451,7 @@ results, err := g.With("evaluationTimeout", 500).V().Out("knows").ToList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+`evaluationTimeout`.
 
 anchor:go-imports[]
 [[gremlin-go-imports]]
@@ -1627,7 +1627,7 @@ resultSet, err := client.Submit("g.V().repeat(both()).times(100)", map[string]in
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+`evaluationTimeout`.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
 with bytecode may try `g.with("evaluationTimeout", 500)` within a script. Scripts with multiple traversals and multiple
