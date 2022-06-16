@@ -526,6 +526,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 throw new IllegalStateException(String.format(
                         "Bytecode in request is not a recognized graph operation: %s", bytecode.toString()));
             }
+        } else {
+            UnsupportedOperationException uoe = Graph.Exceptions.transactionsNotSupported();
+            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                    .statusMessage(uoe.getMessage())
+                    .statusAttributeException(uoe).create());
         }
     }
 
