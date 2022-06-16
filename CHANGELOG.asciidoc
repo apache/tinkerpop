@@ -218,6 +218,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to netty 4.1.77.
 * Added GraphBinary support in gremlin-python for short, bigdecimal and biginteger.
 * Fixed bug in `PartitionStrategy` where the use of `AbstractLambdaTraversal` caused an unexpected exception.
+* Fixed bug where close requests for sessions were improperly validating the request in the `UnifiedChannelizer`.
 * Deprecated and removed functionality of the `connectOnStartup` option in `gremlin-javascript` to resolve potential `unhandledRejection` and race conditions.
 
 [[release-3-5-3]]
