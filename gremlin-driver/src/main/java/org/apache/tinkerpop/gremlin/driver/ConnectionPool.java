@@ -142,8 +142,7 @@ final class ConnectionPool {
 
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-        final Connection leastUsedConn = selectLeastUsed();
-
+        // Initialize connections if the connection pool is empty
         if (connections.isEmpty()) {
             logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
             for (int i = 0; i < minPoolSize; i++) {
@@ -154,43 +153,75 @@ final class ConnectionPool {
                     newConnection();
                 }
             }
+        }
+        return waitForConnection(timeout, unit);
+    }
 
-            return waitForConnection(timeout, unit);
+    private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
+        long start = System.nanoTime();
+        long remaining = timeout;
+        long to = timeout;
+
+        // Select the initial connection from pool
+        Connection leastUsed = selectLeastUsed();
+
+        // Consider a new connection based on the status of the initial connection selected
+        if (leastUsed != null) {
+            final int currentPoolSize = connections.size();
+            if (!canAcceptNewRequestsOnConnection(leastUsed) && currentPoolSize < maxPoolSize) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Least used {} on {} exceeds maxSimultaneousUsagePerConnection but pool size {} < maxPoolSize - consider new connection",
+                            leastUsed.getConnectionInfo(), host, currentPoolSize);
+                considerNewConnection();
+            }
         }
 
-        if (null == leastUsedConn) {
+        do {
             if (isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
-            logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
-            return waitForConnection(timeout, unit);
-        }
 
-        // if the number borrowed on the least used connection exceeds the max allowed and the pool size is
-        // not at maximum then consider opening a connection
-        final int currentPoolSize = connections.size();
-        if (leastUsedConn.borrowed.get() >= maxSimultaneousUsagePerConnection && currentPoolSize < maxPoolSize) {
-            if (logger.isDebugEnabled())
-                logger.debug("Least used {} on {} exceeds maxSimultaneousUsagePerConnection but pool size {} < maxPoolSize - consider new connection",
-                        leastUsedConn.getConnectionInfo(), host, currentPoolSize);
-            considerNewConnection();
-        }
+            // Verify selected connection is valid for use
+            if (leastUsed != null) {
+                while (true) {
+                    final int inFlight = leastUsed.borrowed.get();
+                    final int availableInProcess = leastUsed.availableInProcess();
+                    if (!canAcceptNewRequestsOnConnection(leastUsed) && availableInProcess == 0) {
+                        // The selected connection cannot be used - wait for a different one
+                        logger.debug("Least used connection selected from pool for {} but borrowed [{}] >= availableInProcess [{}] - wait",
+                                host, inFlight, availableInProcess);
+                        break;
+                    }
 
-        while (true) {
-            final int borrowed = leastUsedConn.borrowed.get();
-            final int availableInProcess = leastUsedConn.availableInProcess();
-
-            if (borrowed >= maxSimultaneousUsagePerConnection && leastUsedConn.availableInProcess() == 0) {
-                logger.debug("Least used connection selected from pool for {} but borrowed [{}] >= availableInProcess [{}] - wait",
-                        host, borrowed, availableInProcess);
-                return waitForConnection(timeout, unit);
+                    if (leastUsed.borrowed.compareAndSet(inFlight, inFlight + 1)) {
+                        // The selected connection is valid - return it
+                        if (logger.isDebugEnabled())
+                            logger.debug("Return least used {} on {}", leastUsed.getConnectionInfo(), host);
+                        return leastUsed;
+                    }
+                }
+            } else {
+                logger.debug("Pool was initialized but a connection could not be selected - waiting for connection on {}", host);
             }
 
-            if (leastUsedConn.borrowed.compareAndSet(borrowed, borrowed + 1)) {
-                if (logger.isDebugEnabled())
-                    logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
-                return leastUsedConn;
+            try {
+                awaitAvailableConnection(remaining, unit);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                to = 0;
             }
-        }
+            leastUsed = selectLeastUsed();
+
+            remaining = to - TimeUtil.timeSince(start, unit);
+            logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
+        } while (remaining > 0);
+
+        logger.error("Timed-out ({} {}) waiting for connection on {} - possibly unavailable", timeout, unit, host);
+
+        // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
+        // either way supply a function to reconnect
+        this.considerHostUnavailable();
+
+        throw new TimeoutException("Timed-out waiting for connection on " + host + " - possibly unavailable");
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
@@ -361,7 +392,7 @@ final class ConnectionPool {
     }
 
     public void definitelyDestroyConnection(final Connection connection) {
-        // only add to the bin for future removal if its not already there.
+        // only add to the bin for future removal if it's not already there.
         if (!bin.contains(connection) && !connection.isClosing()) {
             bin.add(connection);
             connections.remove(connection);
@@ -376,53 +407,6 @@ final class ConnectionPool {
                 logger.debug("{} destroyed", connection.getConnectionInfo());
             }
         }
-    }
-
-    private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
-        long start = System.nanoTime();
-        long remaining = timeout;
-        long to = timeout;
-        do {
-            try {
-                awaitAvailableConnection(remaining, unit);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                to = 0;
-            }
-
-            if (isClosed())
-                throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
-
-            final Connection leastUsed = selectLeastUsed();
-            if (leastUsed != null) {
-                while (true) {
-                    final int inFlight = leastUsed.borrowed.get();
-                    final int availableInProcess = leastUsed.availableInProcess();
-                    if (inFlight >= availableInProcess) {
-                        logger.debug("Least used {} on {} has requests borrowed [{}] >= availableInProcess [{}] - may timeout waiting for connection",
-                                leastUsed, host, inFlight, availableInProcess);
-                        break;
-                    }
-
-                    if (leastUsed.borrowed.compareAndSet(inFlight, inFlight + 1)) {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
-                        return leastUsed;
-                    }
-                }
-            }
-
-            remaining = to - TimeUtil.timeSince(start, unit);
-            logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
-        } while (remaining > 0);
-
-        logger.error("Timed-out ({} {}) waiting for connection on {} - possibly unavailable", timeout, unit, host);
-
-        // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
-        // either way supply a function to reconnect
-        this.considerHostUnavailable();
-
-        throw new TimeoutException("Timed-out waiting for connection on " + host + " - possibly unavailable");
     }
 
     public void considerHostUnavailable() {
@@ -511,6 +495,10 @@ final class ConnectionPool {
         } finally {
             waitLock.unlock();
         }
+    }
+
+    private boolean canAcceptNewRequestsOnConnection(Connection connection) {
+        return connection.borrowed.get() < this.maxSimultaneousUsagePerConnection;
     }
 
     /**
