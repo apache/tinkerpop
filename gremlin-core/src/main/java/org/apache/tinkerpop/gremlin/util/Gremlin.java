@@ -26,10 +26,10 @@ import java.io.IOException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
-    private static String version;
+    private static final String version;
 
     static {
-        version = Manifests.read("version");
+        version = Manifests.read("tinkerpop-version");
     }
 
     private Gremlin() {

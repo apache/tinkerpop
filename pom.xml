@@ -368,6 +368,7 @@ limitations under the License.
                         <manifestEntries>
                             <version>${project.version}</version>
                             <hash>${buildNumber}</hash>
+                            <tinkerpop-version>${project.version}</tinkerpop-version>
                         </manifestEntries>
                     </archive>
                 </configuration>
