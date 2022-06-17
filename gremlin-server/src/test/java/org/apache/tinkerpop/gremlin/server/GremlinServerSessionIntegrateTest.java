@@ -18,6 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -48,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -685,5 +693,29 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             assertEquals(ResponseStatusCode.SUCCESS, checkAgainstResponses.get(0).getStatus().getCode());
             assertThat(((List<Boolean>) checkAgainstResponses.get(0).getResult().getData()).get(0), is(false));
         }
+    }
+
+    @Test(timeout=30000)
+    // Ref: TINKERPOP-2751
+    public void shouldThrowExceptionOnTransactionUnsupportedGraph() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        final GraphTraversalSource gtx = g.tx().begin();
+        assertThat(gtx.tx().isOpen(), is(true));
+
+        gtx.addV("person").iterate();
+        assertEquals(1, (long) gtx.V().count().next());
+
+        try {
+            // Without Neo4j plugin this should fail on gremlin-server
+            gtx.tx().commit();
+            fail("commit should throw exception on non-transaction supported graph");
+        } catch (Exception ex){
+            final Throwable root = ExceptionHelper.getRootCause(ex);
+            assertEquals("Graph does not support transactions", root.getMessage());
+        }
+
+        cluster.close();
     }
 }
