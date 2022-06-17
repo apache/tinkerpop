@@ -33,8 +33,10 @@ import static org.junit.Assert.fail;
 
 public class GremlinServerSessionIntegrateWithUnifiedChannelizerTest extends UnifiedChannelizerIntegrateTest {
 
+    /**
+     * Reproducer for TINKERPOP-2751
+     */
     @Test(timeout=30000)
-    // Ref: TINKERPOP-2751
     public void shouldThrowExceptionOnTransactionUnsupportedGraph() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
