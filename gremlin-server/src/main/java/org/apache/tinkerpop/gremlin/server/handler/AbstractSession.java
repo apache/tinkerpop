@@ -666,6 +666,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 throw new IllegalStateException(String.format(
                         "Bytecode in request is not a recognized graph operation: %s", bytecode.toString()));
             }
+        } else {
+            throw Graph.Exceptions.transactionsNotSupported();
         }
     }
 
