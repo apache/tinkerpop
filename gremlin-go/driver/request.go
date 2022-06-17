@@ -108,7 +108,7 @@ func extractReqArgs(bytecode *Bytecode) map[string]interface{} {
 				args[k] = v
 			}
 		case "with":
-			if k, v := extractWithReqArgs(insn); k != "" {
+			if k, v := extractWithReqArg(insn); k != "" {
 				args[k] = v
 			}
 		}
@@ -145,9 +145,9 @@ func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
 	return args
 }
 
-// extractWithReqArgs extracts a request argument from the passed "with" source
+// extractWithReqArg extracts a request argument from the passed "with" source
 // instruction.
-func extractWithReqArgs(insn instruction) (key string, value interface{}) {
+func extractWithReqArg(insn instruction) (key string, value interface{}) {
 	if len(insn.arguments) != 2 {
 		// (*GraphTraversalSource).With accepts two parameters. Thus,
 		// this should be unreachable.
