@@ -161,15 +161,21 @@ func (protocol *gremlinServerWSProtocol) write(request *request) error {
 	return protocol.transporter.Write(bytes)
 }
 
-func (protocol *gremlinServerWSProtocol) close() (err error) {
+func (protocol *gremlinServerWSProtocol) close() error {
 	protocol.mutex.Lock()
-	if !protocol.closed {
-		err = protocol.transporter.Close()
-		protocol.closed = true
+
+	if protocol.closed {
+		protocol.mutex.Unlock()
+		return nil
 	}
+
+	err := protocol.transporter.Close()
+	protocol.closed = true
 	protocol.mutex.Unlock()
+
 	protocol.wg.Wait()
-	return
+
+	return err
 }
 
 func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, connSettings *connectionSettings, results *synchronizedMap,
