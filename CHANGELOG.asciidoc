@@ -33,6 +33,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 This release also includes changes from <<release-3-5-4, 3.5.4>>.
 
 * Made GraphBinary the default serialization format for .NET and Python.
+* Added missing `ResponseStatusCodeEnum` entry for 595 for .NET.
 
 [[release-3-6-0]]
 === TinkerPop 3.6.0 (Release Date: April 4, 2022)
@@ -217,6 +218,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved startup time by removing unnecessary DNS lookup.
 * Bumped to logback 1.2.9.
 * Bumped to netty 4.1.77.
+* Added missing `ResponseStatusCodeEnum` entries for 403, 429, 497, and 596 for .NET.
 * Added GraphBinary support in gremlin-python for short, bigdecimal and biginteger.
 * Fixed bug in `PartitionStrategy` where the use of `AbstractLambdaTraversal` caused an unexpected exception.
 * Fixed bug where close requests for sessions were improperly validating the request in the `UnifiedChannelizer`.

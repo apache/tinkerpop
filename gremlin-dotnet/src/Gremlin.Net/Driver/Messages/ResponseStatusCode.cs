@@ -54,9 +54,25 @@ namespace Gremlin.Net.Driver.Messages
         Unauthorized = 401,
 
         /// <summary>
+        ///     The server could authenticate the request, but will not fulfill it.  This is a general purpose code that
+        ///     would typically be returned if the request is authenticated but not authorized to do what it is doing.
+        /// </summary>
+        Forbidden = 403,
+
+        /// <summary>
         ///     A challenge from the server for the client to authenticate its request.
         /// </summary>
         Authenticate = 407,
+
+        /// <summary>
+        ///     Indicates that too many requests have been sent in a given amount of time.
+        /// </summary>
+        TooManyRequests = 429,
+
+        /// <summary>
+        ///    The request message contains objects that were not serializable on the client side.
+        /// </summary>
+        ClientSerializationError = 497,
 
         /// <summary>
         ///     The request message was not properly formatted which means it could not be parsed at all or the "op" code
@@ -75,6 +91,19 @@ namespace Gremlin.Net.Driver.Messages
         ///     A general server error occurred that prevented the request from being processed.
         /// </summary>
         ServerError = 500,
+
+        /// <summary>
+        ///     A server error that is produced when the fail()-step is triggered.
+        /// </summary>
+        ServerErrorFailStep = 595,
+
+        /// <summary>
+        ///     A server error that indicates that the client should retry the request. A graph will typically return this error
+        ///     when a transaction fails due to a locking exception or some other sort of concurrent modification. In other
+        ///     words, the request was likely valid but the state of the server at the particular time the request arrived
+        ///     could not be processed to success, but could be at a later moment.
+        /// </summary>
+        ServerErrorTemporary = 596,
 
         /// <summary>
         ///     The request submitted for processing evaluated by the server with errors and could not be processed.
@@ -108,9 +137,14 @@ namespace Gremlin.Net.Driver.Messages
                 case ResponseStatusCode.Authenticate:
                     return false;
                 case ResponseStatusCode.Unauthorized:
+                case ResponseStatusCode.Forbidden:
+                case ResponseStatusCode.TooManyRequests:
+                case ResponseStatusCode.ClientSerializationError:
                 case ResponseStatusCode.MalformedRequest:
                 case ResponseStatusCode.InvalidRequestArguments:
                 case ResponseStatusCode.ServerError:
+                case ResponseStatusCode.ServerErrorFailStep:
+                case ResponseStatusCode.ServerErrorTemporary:
                 case ResponseStatusCode.ServerEvaluationError:
                 case ResponseStatusCode.ServerTimeout:
                 case ResponseStatusCode.ServerSerializationError:
