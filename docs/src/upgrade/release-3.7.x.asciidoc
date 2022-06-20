@@ -17,23 +17,24 @@ limitations under the License.
 
 = TinkerPop 3.7.0
 
-image::https://3.7.x/place/holder/image[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-running.png[width=185]
 
-*3.7.0*
+*NOT OFFICIALLY NAMED YET*
 
 == TinkerPop 3.7.0
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/master/CHANGELOG.asciidoc#release-3-7.0[changelog] for a
-complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asciidoc#release-3-7-0[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Removed connectOnStartup option in gremlin-javascript
-Removed the `connectOnStartup` option for Gremlin Javascript API to resolve potential `unhandledRejection` and race conditions.
+==== Removed connectOnStartup javascript
 
-New DriverRemoteConnection objects no longer initiate connection by default at startup. Call `open()` explicitly if one wishes to connect on startup.
+Removed the `connectOnStartup` option for Gremlin Javascript API to resolve potential `unhandledRejection` and race
+conditions. New `DriverRemoteConnection` objects no longer initiate connection by default at startup. Call `open()`
+explicitly if one wishes to manually connect on startup.
+
 For example:
 
 [source,javascript]
