@@ -65,14 +65,15 @@ limitations under the License.
                             </properties>
                             <scripts>
                                 <script>
-def file = new File(projectBaseDir,"Gremlin.Net/Gremlin.Net.csproj")
-file.write(file.getText("UTF-8").replaceFirst(/&lt;Version&gt;(.*)&lt;\/Version&gt;/, "&lt;Version&gt;" + mavenVersion + "&lt;/Version&gt;"))
+                                    def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath.replace("\\.this-definitely-does-not-exist", "").replace("/.this-definitely-does-not-exist", "").replace("\\", "/")
+                                    def file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net/Gremlin.Net.csproj")
+                                    file.write(file.getText("UTF-8").replaceFirst(/&lt;Version&gt;(.*)&lt;\/Version&gt;/, "&lt;Version&gt;" + mavenVersion + "&lt;/Version&gt;"))
 
-file = new File(projectBaseDir,"Gremlin.Net.Template/Gremlin.Net.Template.csproj")
-file.write(file.getText("UTF-8").replaceFirst(/Version="(.*)"/, "Version=\"" + mavenVersion + "\""))
+                                    file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net.Template/Gremlin.Net.Template.csproj")
+                                    file.write(file.getText("UTF-8").replaceFirst(/Version="(.*)"/, "Version=\"" + mavenVersion + "\""))
 
-file = new File(projectBaseDir,"Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
-file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&gt;/, "&lt;version&gt;" + mavenVersion + "&lt;/version&gt;"))
+                                    file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
+                                    file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&gt;/, "&lt;version&gt;" + mavenVersion + "&lt;/version&gt;"))
                                 </script>
                             </scripts>
                         </configuration>
