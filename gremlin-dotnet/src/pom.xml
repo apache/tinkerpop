@@ -65,7 +65,6 @@ limitations under the License.
                             </properties>
                             <scripts>
                                 <script>
-                                    def mavenVersion = "${project.version}"
                                     def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath.replace("\\.this-definitely-does-not-exist", "").replace("/.this-definitely-does-not-exist", "").replace("\\", "/")
                                     def file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net/Gremlin.Net.csproj")
                                     file.write(file.getText("UTF-8").replaceFirst(/&lt;Version&gt;(.*)&lt;\/Version&gt;/, "&lt;Version&gt;" + mavenVersion + "&lt;/Version&gt;"))
