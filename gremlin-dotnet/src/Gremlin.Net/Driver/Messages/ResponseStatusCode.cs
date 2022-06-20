@@ -93,6 +93,11 @@ namespace Gremlin.Net.Driver.Messages
         ServerError = 500,
 
         /// <summary>
+        ///     A server error that is produced when the fail()-step is triggered.
+        /// </summary>
+        ServerErrorFailStep = 595,
+
+        /// <summary>
         ///     A server error that indicates that the client should retry the request. A graph will typically return this error
         ///     when a transaction fails due to a locking exception or some other sort of concurrent modification. In other
         ///     words, the request was likely valid but the state of the server at the particular time the request arrived
@@ -138,6 +143,7 @@ namespace Gremlin.Net.Driver.Messages
                 case ResponseStatusCode.MalformedRequest:
                 case ResponseStatusCode.InvalidRequestArguments:
                 case ResponseStatusCode.ServerError:
+                case ResponseStatusCode.ServerErrorFailStep:
                 case ResponseStatusCode.ServerErrorTemporary:
                 case ResponseStatusCode.ServerEvaluationError:
                 case ResponseStatusCode.ServerTimeout:
