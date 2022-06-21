@@ -41,6 +41,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated and removed functionality of the `connectOnStartup` option in `gremlin-javascript` to resolve potential `unhandledRejection` and race conditions.
 * Fixed potential `NullPointerException` in `gremlin-driver` where initialization of a `ConnectionPool` would fail but not throw an exception due to centralized error check being satisfied by a different process.
 * Fixed a bug where the JavaScript client would hang indefinitely on traversals if the connection to the server was terminated.
+* Fixed Traversal.graph is empty in StepStrategy.apply() with `count().is(0)`.
 
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: April 4, 2022)
