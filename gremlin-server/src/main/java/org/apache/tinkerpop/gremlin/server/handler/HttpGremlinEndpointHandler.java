@@ -117,159 +117,156 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-        if (msg instanceof FullHttpRequest) {
-            final FullHttpRequest req = (FullHttpRequest) msg;
-            final boolean keepAlive = HttpUtil.isKeepAlive(req);
+        try {
+            if (msg instanceof FullHttpRequest) {
+                final FullHttpRequest req = (FullHttpRequest) msg;
+                final boolean keepAlive = HttpUtil.isKeepAlive(req);
 
-            if ("/favicon.ico".equals(req.uri())) {
-                HttpHandlerUtil.sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico", keepAlive);
-                ReferenceCountUtil.release(msg);
-                return;
-            }
-
-            if (HttpUtil.is100ContinueExpected(req)) {
-                ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
-            }
-
-            if (req.method() != GET && req.method() != POST) {
-                HttpHandlerUtil.sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), keepAlive);
-                ReferenceCountUtil.release(msg);
-                return;
-            }
-
-            final Quartet<String, Map<String, Object>, String, Map<String, String>> requestArguments;
-            try {
-                requestArguments = HttpHandlerUtil.getRequestArguments(req);
-            } catch (IllegalArgumentException iae) {
-                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
-                ReferenceCountUtil.release(msg);
-                return;
-            }
-
-            final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
-            final Pair<String, MessageTextSerializer<?>> serializer = chooseSerializer(acceptString);
-            if (null == serializer) {
-                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString),
-                        keepAlive);
-                ReferenceCountUtil.release(msg);
-                return;
-            }
-
-            final String origin = req.headers().get(ORIGIN);
-
-            // not using the req any where below here - assume it is safe to release at this point.
-            ReferenceCountUtil.release(msg);
-
-            try {
-                logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
-                        requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
-                if (settings.enableAuditLog) {
-                    AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
-                    if (null == user) {    // This is expected when using the AllowAllAuthenticator
-                        user = AuthenticatedUser.ANONYMOUS_USER;
-                    }
-                    String address = ctx.channel().remoteAddress().toString();
-                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-                    auditLogger.info("User {} with address {} requested: {}", user.getName(), address, requestArguments.getValue0());
-                }
-                final ChannelPromise promise = ctx.channel().newPromise();
-                final AtomicReference<Object> resultHolder = new AtomicReference<>();
-                promise.addListener(future -> {
-                    // if failed then the error was already written back to the client as part of the eval future
-                    // processing of the exception
-                    if (future.isSuccess()) {
-                        logger.debug("Preparing HTTP response for request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
-                                requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
-                        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
-                        response.headers().set(CONTENT_TYPE, serializer.getValue0());
-
-                        // handle cors business
-                        if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-
-                        HttpHandlerUtil.sendAndCleanupConnection(ctx, keepAlive, response);
-                    }
-                });
-
-                final Timer.Context timerContext = evalOpTimer.time();
-
-                final Bindings bindings;
-                try {
-                    bindings = createBindings(requestArguments.getValue1(), requestArguments.getValue3());
-                } catch (IllegalStateException iae) {
-                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
-                    ReferenceCountUtil.release(msg);
+                if ("/favicon.ico".equals(req.uri())) {
+                    HttpHandlerUtil.sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico", keepAlive);
                     return;
                 }
 
-                // provide a transform function to serialize to message - this will force serialization to occur
-                // in the same thread as the eval. after the CompletableFuture is returned from the eval the result
-                // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
-                final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), bindings,
-                        FunctionUtils.wrapFunction(o -> {
-                            // stopping the timer here is roughly equivalent to where the timer would have been stopped for
-                            // this metric in other contexts.  we just want to measure eval time not serialization time.
-                            timerContext.stop();
+                if (HttpUtil.is100ContinueExpected(req)) {
+                    ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
+                }
 
-                            logger.debug("Transforming result of request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
-                                    requestArguments.getValue0(), requestArguments.getValue1(), o, Thread.currentThread().getName());
-                            final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
-                                    .code(ResponseStatusCode.SUCCESS)
-                                    .result(IteratorUtils.asList(o)).create();
+                if (req.method() != GET && req.method() != POST) {
+                    HttpHandlerUtil.sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), keepAlive);
+                    return;
+                }
 
-                            // http server is sessionless and must handle commit on transactions. the commit occurs
-                            // before serialization to be consistent with how things work for websocket based
-                            // communication.  this means that failed serialization does not mean that you won't get
-                            // a commit to the database
-                            attemptCommit(requestArguments.getValue3(), graphManager, settings.strictTransactionManagement);
+                final Quartet<String, Map<String, Object>, String, Map<String, String>> requestArguments;
+                try {
+                    requestArguments = HttpHandlerUtil.getRequestArguments(req);
+                } catch (IllegalArgumentException iae) {
+                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                    return;
+                }
 
-                            try {
-                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
-                            } catch (Exception ex) {
-                                logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
+                final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
+                final Pair<String, MessageTextSerializer<?>> serializer = chooseSerializer(acceptString);
+                if (null == serializer) {
+                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString),
+                            keepAlive);
+                    return;
+                }
 
-                                // creating a new SerializationException will clear the cause which will allow the
-                                // future to report a better error message. if the cause is present, then
-                                // GremlinExecutor will prefer the cause and we'll get a low level Jackson sort of
-                                // error in the response.
-                                if (ex instanceof SerializationException) {
-                                    throw new SerializationException(String.format(
-                                            "Could not serialize the result with %s - %s",
-                                            serializer.getValue0(),
-                                            ex.getMessage()));
+                final String origin = req.headers().get(ORIGIN);
+
+                try {
+                    logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
+                            requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
+                    if (settings.enableAuditLog) {
+                        AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
+                        if (null == user) {    // This is expected when using the AllowAllAuthenticator
+                            user = AuthenticatedUser.ANONYMOUS_USER;
+                        }
+                        String address = ctx.channel().remoteAddress().toString();
+                        if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                        auditLogger.info("User {} with address {} requested: {}", user.getName(), address, requestArguments.getValue0());
+                    }
+                    final ChannelPromise promise = ctx.channel().newPromise();
+                    final AtomicReference<Object> resultHolder = new AtomicReference<>();
+                    promise.addListener(future -> {
+                        // if failed then the error was already written back to the client as part of the eval future
+                        // processing of the exception
+                        if (future.isSuccess()) {
+                            logger.debug("Preparing HTTP response for request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
+                                    requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
+                            final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
+                            response.headers().set(CONTENT_TYPE, serializer.getValue0());
+
+                            // handle cors business
+                            if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+
+                            HttpHandlerUtil.sendAndCleanupConnection(ctx, keepAlive, response);
+                        }
+                    });
+
+                    final Timer.Context timerContext = evalOpTimer.time();
+
+                    final Bindings bindings;
+                    try {
+                        bindings = createBindings(requestArguments.getValue1(), requestArguments.getValue3());
+                    } catch (IllegalStateException iae) {
+                        HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                        return;
+                    }
+
+                    // provide a transform function to serialize to message - this will force serialization to occur
+                    // in the same thread as the eval. after the CompletableFuture is returned from the eval the result
+                    // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
+                    final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), bindings,
+                            FunctionUtils.wrapFunction(o -> {
+                                // stopping the timer here is roughly equivalent to where the timer would have been stopped for
+                                // this metric in other contexts.  we just want to measure eval time not serialization time.
+                                timerContext.stop();
+
+                                logger.debug("Transforming result of request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
+                                        requestArguments.getValue0(), requestArguments.getValue1(), o, Thread.currentThread().getName());
+                                final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
+                                        .code(ResponseStatusCode.SUCCESS)
+                                        .result(IteratorUtils.asList(o)).create();
+
+                                // http server is sessionless and must handle commit on transactions. the commit occurs
+                                // before serialization to be consistent with how things work for websocket based
+                                // communication.  this means that failed serialization does not mean that you won't get
+                                // a commit to the database
+                                attemptCommit(requestArguments.getValue3(), graphManager, settings.strictTransactionManagement);
+
+                                try {
+                                    return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
+                                } catch (Exception ex) {
+                                    logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
+
+                                    // creating a new SerializationException will clear the cause which will allow the
+                                    // future to report a better error message. if the cause is present, then
+                                    // GremlinExecutor will prefer the cause and we'll get a low level Jackson sort of
+                                    // error in the response.
+                                    if (ex instanceof SerializationException) {
+                                        throw new SerializationException(String.format(
+                                                "Could not serialize the result with %s - %s",
+                                                serializer.getValue0(),
+                                                ex.getMessage()));
+                                    }
+
+                                    throw ex;
                                 }
+                            }));
 
-                                throw ex;
-                            }
-                        }));
+                    evalFuture.exceptionally(t -> {
+                        if (t.getMessage() != null)
+                            HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t), keepAlive);
+                        else
+                            HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
+                                    , Optional.of(t), keepAlive);
+                        promise.setFailure(t);
+                        return null;
+                    });
 
-                evalFuture.exceptionally(t -> {
-                    if (t.getMessage() != null)
-                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t), keepAlive);
-                    else
-                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
-                                , Optional.of(t), keepAlive);
-                    promise.setFailure(t);
-                    return null;
-                });
-
-                evalFuture.thenAcceptAsync(r -> {
-                    // now that the eval/serialization is done in the same thread - complete the promise so we can
-                    // write back the HTTP response on the same thread as the original request
-                    resultHolder.set(r);
-                    promise.setSuccess();
-                }, gremlinExecutor.getExecutorService());
-            } catch (Exception ex) {
-                // send the error response here and don't rely on exception caught because it might not have the
-                // context on whether to close the connection or not, based on keepalive.
-                final Throwable t = ExceptionHelper.getRootCause(ex);
-                if (t instanceof TooLongFrameException) {
-                    HttpHandlerUtil.sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
-                } else if (t != null){
-                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
-                } else {
-                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, ex.getMessage(), keepAlive);
+                    evalFuture.thenAcceptAsync(r -> {
+                        // now that the eval/serialization is done in the same thread - complete the promise so we can
+                        // write back the HTTP response on the same thread as the original request
+                        resultHolder.set(r);
+                        promise.setSuccess();
+                    }, gremlinExecutor.getExecutorService());
+                } catch (Exception ex) {
+                    // send the error response here and don't rely on exception caught because it might not have the
+                    // context on whether to close the connection or not, based on keepalive.
+                    final Throwable t = ExceptionHelper.getRootCause(ex);
+                    if (t instanceof TooLongFrameException) {
+                        HttpHandlerUtil.sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
+                    } else if (t != null) {
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
+                    } else {
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, ex.getMessage(), keepAlive);
+                    }
                 }
             }
+        } finally {
+            // Because this handler is at the end of the handler chain, msg should be safely released at the end
+            ReferenceCountUtil.release(msg);
         }
     }
 
