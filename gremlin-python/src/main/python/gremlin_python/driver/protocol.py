@@ -6,9 +6,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -36,6 +36,7 @@ class GremlinServerError(Exception):
         super(GremlinServerError, self).__init__('{0}: {1}'.format(status['code'], status['message']))
         self._status_attributes = status['attributes']
         self.status_code = status['code']
+        self.status_message = status['message']
 
     @property
     def status_attributes(self):
