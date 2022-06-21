@@ -149,6 +149,17 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         return this.selectKeysSet;
     }
 
+    /**
+     * Get the keys for this SelectStep. Unlike {@link SelectStep#getScopeKeys()}, this returns a list possibly with
+     * a duplicate key. This guarantees to return the keys in the same order as passed in.
+     * TODO: getScopeKeys should return order-aware data structure instead of HashSet so that graph providers can
+     *       get the keys in the order passed in a query, and can associate them with by-traversals in a correct sequence.
+     *
+     */
+    public List<String> getSelectKeys() {
+        return this.selectKeys;
+    }
+
     public Map<String, Traversal.Admin<Object, E>> getByTraversals() {
         final Map<String, Traversal.Admin<Object, E>> map = new HashMap<>();
         this.traversalRing.reset();
