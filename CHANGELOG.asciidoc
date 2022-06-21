@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.5.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added exception to Gremlin Server that is thrown when using a transaction on a non-transaction graph.
+* Exposed error message sent by the server as a property on `GremlinServerError` for gremlin-python
 * Allowed `datetime()` syntax to accept zone offset with colon separators and seconds.
 * Fixed a minor problem in the Gremlin parser where a `GraphTraversalSource` may not have been initialized.
 * Added getters to high and low properties in RangeLocalStep.

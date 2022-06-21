@@ -83,6 +83,7 @@ def test_client_error(client):
     except GremlinServerError as ex:
         assert 'exceptions' in ex.status_attributes
         assert 'stackTrace' in ex.status_attributes
+        assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
 
 def test_client_connection_pool_after_error(client):
