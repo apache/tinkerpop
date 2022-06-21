@@ -1128,19 +1128,63 @@ func TestConnection(t *testing.T) {
 		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
-		_, err := g.With("evaluationTimeout", 10).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
-		assert.NotNil(t, err)
+		reqArgsTests := []struct {
+			msg       string
+			traversal *GraphTraversal
+			nilErr    bool
+		}{
+			{
+				"Traversal must time out (With)",
+				g.
+					With("evaluationTimeout", 10).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				false,
+			},
+			{
+				"Traversal must finish (With)",
+				g.
+					With("evaluationTimeout", 10000).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				true,
+			},
+			{
+				"evaluationTimeout is overridden and traversal must time out (With)",
+				g.
+					With("evaluationTimeout", 10000).With("evaluationTimeout", 10).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				false,
+			},
+			{
+				"Traversal must time out (OptionsStrategy)",
+				g.
+					WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10})).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				false,
+			},
+			{
+				"Traversal must finish (OptionsStrategy)",
+				g.
+					WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10000})).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				true,
+			},
+		}
 
-		_, err = g.With("evaluationTimeout", 10000).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
-		assert.Nil(t, err)
+		gotErrs := make([]<-chan error, len(reqArgsTests))
 
-		_, err = g.With("evaluationTimeout", 10000).With("evaluationTimeout", 10).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
-		assert.NotNil(t, err)
+		// Run tests in parallel.
+		for i, tt := range reqArgsTests {
+			gotErrs[i] = tt.traversal.Iterate()
+		}
 
-		_, err = g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10})).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
-		assert.NotNil(t, err)
-
-		_, err = g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10000})).Inject(1).SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}).Next()
-		assert.Nil(t, err)
+		// Check error promises.
+		for i, tt := range reqArgsTests {
+			assert.Equal(t, <-gotErrs[i] == nil, tt.nilErr, tt.msg)
+		}
 	})
 }
