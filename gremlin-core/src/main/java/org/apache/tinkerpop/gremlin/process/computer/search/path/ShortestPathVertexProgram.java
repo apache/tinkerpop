@@ -452,11 +452,14 @@ public class ShortestPathVertexProgram implements VertexProgram<Triplet<Path, Ed
                 otherV = edge.outVertex();
 
             // only send message if the adjacent vertex is not yet part of the current path
-            if (!currentPath.objects().contains(otherV)) {
-                messenger.sendMessage(MessageScope.Global.of(otherV),
-                        Triplet.with(currentPath, this.includeEdges ? edge : null,
-                                NumberHelper.add(currentDistance, distance)));
+            if (currentPath != null) {
+                if (!currentPath.objects().contains(otherV)) {
+                    messenger.sendMessage(MessageScope.Global.of(otherV),
+                            Triplet.with(currentPath, this.includeEdges ? edge : null,
+                                    NumberHelper.add(currentDistance, distance)));
+                }
             }
+        
         }
     }
 
