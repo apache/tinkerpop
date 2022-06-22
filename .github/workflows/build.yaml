@@ -1,0 +1,93 @@
+name: Build
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16.x]
+        os: [ubuntu-latest]
+
+    steps:
+      - id: setup-node
+        name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Check out code repository source code
+        uses: actions/checkout@v3
+
+      - run: cd gremlin-javascript/src/main/javascript/gremlin-javascript
+      - run: npm install
+      - run: npm run lint
+      - run: npm run unit-test
+
+  # Publishing is done in a separate job to allow
+  # for all matrix builds to complete.
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    # if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Publish new version?
+        run: |
+          # Do not fail on errror
+          set +e
+
+          cd gremlin-javascript/src/main/javascript/gremlin-javascript
+
+          PACKAGE_NAME=$( node -p "require('./package.json').name" )
+          PUBLISHED_VERSION=$( npm view ${PACKAGE_NAME} version 2>/dev/null )
+          CURRENT_VERSION=$( node -p "require('./package.json').version" )
+
+          echo "Package: ${PACKAGE_NAME}"
+          echo "Published version: ${PUBLISHED_VERSION}"
+          echo "Current version: ${CURRENT_VERSION}"
+
+          if [ "${PUBLISHED_VERSION}" == "${CURRENT_VERSION}" ]; then
+            echo "Current version has already been published."
+            echo "publish=false" >> ${GITHUB_ENV}
+          else
+            echo "Current version has not been published. Publishing..."
+            echo "publish=true" >> ${GITHUB_ENV}
+          fi
+
+          echo NPM_PUBLISH_PACKAGE_NAME=${PACKAGE_NAME} >> ${GITHUB_ENV}
+
+      - name: Publish
+        if: env.publish == 'true' && github.ref == 'refs/heads/master'
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: |
+          if [ "${NPM_AUTH_TOKEN}" == "" ]; then
+            echo "NPM_AUTH_TOKEN environment variable not found"
+            exit 2
+          fi
+
+          if [ "${NPM_PUBLISH_PACKAGE_NAME}" == "" ]; then
+            echo "NPM_PUBLISH_PACKAGE_NAME environment variable not found"
+            exit 3
+          fi
+
+          echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
+
+          cd gremlin-javascript/src/main/javascript/gremlin-javascript
+
+          npm install
+          npm publish --access restricted --unsafe-perm --user 0
+          npm access grant read-only jupiterone:readonly-developers $NPM_PUBLISH_PACKAGE_NAME --unsafe-perm --user 0
