@@ -45,11 +45,21 @@ from gremlin_python import __version__
 version = __version__.version
 
 install_requires = [
-    'nest_asyncio',
-    'aiohttp>=3.8.0,<=3.8.1',
     'aenum>=1.4.5,<4.0.0',
     'isodate>=0.6.0,<1.0.0'
 ]
+
+# Users who plan to use a custom transport (instead of AiohttpTransport) can
+# opt out of installing the aiohttp and nest_asyncio packages by setting the
+# environment variable GREMLINPYTHON_NO_AIOHTTP, and installing from source:
+#   export GREMLINPYTHON_NO_AIOHTTP=1
+#   pip install --no-binary gremlinpython gremlinpython
+opt_out_aiohttp = bool(os.getenv("GREMLINPYTHON_NO_AIOHTTP"))
+if not opt_out_aiohttp:
+    install_requires += [
+        'nest_asyncio',
+        'aiohttp>=3.8.0,<=3.8.1'
+    ]
 
 if sys.version_info < (3, 5):
     install_requires += ['pyparsing>=2.4.7,<3.0.0']
