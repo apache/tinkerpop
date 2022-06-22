@@ -22,7 +22,8 @@
  */
 'use strict';
 
-const {Given, Then, When} = require('cucumber');
+const {Given, Then, When, setDefaultTimeout} = require('cucumber');
+setDefaultTimeout(10 * 1000);
 const expect = require('chai').expect;
 const util = require('util');
 const gremlin = require('./gremlin').gremlin;

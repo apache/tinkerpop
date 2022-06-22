@@ -140,7 +140,7 @@ jobs:
           mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
   javascript:
     name: javascript
-    timeout-minutes: 15
+    timeout-minutes: 30
     needs: smoke
     runs-on: ${{ matrix.os }}
     strategy:
