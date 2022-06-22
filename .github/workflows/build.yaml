@@ -70,7 +70,7 @@ jobs:
           echo NPM_PUBLISH_PACKAGE_NAME=${PACKAGE_NAME} >> ${GITHUB_ENV}
 
       - name: Publish
-        if: env.publish == 'true' && github.ref == 'refs/heads/master'
+        if: env.publish == 'true'
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         working-directory: ./gremlin-javascript/src/main/javascript/gremlin-javascript
@@ -89,6 +89,4 @@ jobs:
 
           echo "Will publish ${NPM_PUBLISH_PACKAGE_NAME}"
 
-          npm install
-          npm publish --access restricted .
-          npm access grant read-only jupiterone:readonly-developers $NPM_PUBLISH_PACKAGE_NAME
+          npm publish --access public .
