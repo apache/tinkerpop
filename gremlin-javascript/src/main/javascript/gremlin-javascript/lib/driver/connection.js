@@ -378,6 +378,11 @@ class Connection extends EventEmitter {
     }
     this._pongTimeout = null;
 
+    // Invoke waiting callbacks to complete Promises when closing the websocket
+    Object.keys(this._responseHandlers).forEach((requestId) => {
+      const handler = this._responseHandlers[requestId];
+      handler.callback(new Error('Connection has been closed.'));
+    });
     this._ws.removeAllListeners();
     this._openPromise = null;
     this._closePromise = null;
