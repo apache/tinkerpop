@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
+* Changed `Gremlin.version()` to read from the more specificly named `tinkerpop-version` attribute.
 
 [[release-3-6-1]]
 === TinkerPop 3.6.1 (Release Date: NOT OFFICIALLY RELEASED YET)
