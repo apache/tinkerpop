@@ -40,6 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `PartitionStrategy` where the use of `AbstractLambdaTraversal` caused an unexpected exception.
 * Fixed bug where close requests for sessions were improperly validating the request in the `UnifiedChannelizer`.
 * Deprecated and removed functionality of the `connectOnStartup` option in `gremlin-javascript` to resolve potential `unhandledRejection` and race conditions.
+* Ensured `Graph` instance was set between `TraversalStrategy` executions.
 * Fixed potential `NullPointerException` in `gremlin-driver` where initialization of a `ConnectionPool` would fail but not throw an exception due to centralized error check being satisfied by a different process.
 * Fixed a bug where the JavaScript client would hang indefinitely on traversals if the connection to the server was terminated.
 
