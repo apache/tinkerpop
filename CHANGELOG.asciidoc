@@ -20,13 +20,10 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
-==== Improvements
-
-* TINKERPOP-2764 Adds status_message as a property on GremlinServerError
-
 [[release-3-5-4]]
 === TinkerPop 3.5.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Expose error message sent by the server as a property on GremlinServerError for gremlin-python
 * Allowed `datetime()` syntax to accept zone offset with colon separators and seconds.
 * Fixed a minor problem in the Gremlin parser where a `GraphTraversalSource` may not have been initialized.
 * Added getters to high and low properties in RangeLocalStep.
