@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.5.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Expose error message sent by the server as a property on GremlinServerError for gremlin-python
+* Added exception to Gremlin Server that is thrown when using a transaction on a non-transaction graph.
 * Allowed `datetime()` syntax to accept zone offset with colon separators and seconds.
 * Fixed a minor problem in the Gremlin parser where a `GraphTraversalSource` may not have been initialized.
 * Added getters to high and low properties in RangeLocalStep.
@@ -36,6 +37,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `PartitionStrategy` where the use of `AbstractLambdaTraversal` caused an unexpected exception.
 * Fixed bug where close requests for sessions were improperly validating the request in the `UnifiedChannelizer`.
 * Deprecated and removed functionality of the `connectOnStartup` option in `gremlin-javascript` to resolve potential `unhandledRejection` and race conditions.
+* Fixed potential `NullPointerException` in `gremlin-driver` where initialization of a `ConnectionPool` would fail but not throw an exception due to centralized error check being satisfied by a different process.
 
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: April 4, 2022)
