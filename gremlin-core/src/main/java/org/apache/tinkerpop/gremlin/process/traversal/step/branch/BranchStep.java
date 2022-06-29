@@ -78,6 +78,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 pickOptionTraversal = new PredicateTraversal(pickToken);
             }
             this.traversalOptions.add(Pair.with(pickOptionTraversal, traversalOption));
+            this.integrateChild(pickOptionTraversal);
         }
 
         traversalOption.addStep(new EndStep(traversalOption));
@@ -93,10 +94,10 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     @Override
-    public List<Traversal.Admin<S, E>> getGlobalChildren() {
+    public List<Traversal.Admin> getGlobalChildren() {
         return Collections.unmodifiableList(Stream.concat(
                 this.traversalPickOptions.values().stream().flatMap(List::stream),
-                this.traversalOptions.stream().map(Pair::getValue1)).collect(Collectors.toList()));
+                this.traversalOptions.stream().flatMap(p -> Stream.of(p.getValue0(), p.getValue1()))).collect(Collectors.toList()));
     }
 
     @Override
