@@ -77,6 +77,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 pickOptionTraversal = new PredicateTraversal(pickToken);
             }
             this.traversalOptions.add(Pair.with(pickOptionTraversal, traversalOption));
+            this.integrateChild(pickOptionTraversal);
         }
 
         traversalOption.addStep(new EndStep(traversalOption));
