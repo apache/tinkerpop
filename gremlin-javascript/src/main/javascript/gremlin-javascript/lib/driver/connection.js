@@ -257,7 +257,7 @@ class Connection extends EventEmitter {
 
   _handleError(err) {
     this.emit('log', `ws error ${err}`);
-    this._cleanupWebsocket();
+    this._cleanupWebsocket(err);
     this.emit('socketError', err);
   }
 
@@ -361,7 +361,7 @@ class Connection extends EventEmitter {
   /**
    * clean websocket context
    */
-  _cleanupWebsocket() {
+  _cleanupWebsocket(err) {
     if (this._pingInterval) {
       clearInterval(this._pingInterval);
     }
@@ -371,6 +371,17 @@ class Connection extends EventEmitter {
     }
     this._pongTimeout = null;
 
+    // Invoke waiting callbacks to complete Promises when closing the websocket
+    Object.keys(this._responseHandlers).forEach((requestId) => {
+      const handler = this._responseHandlers[requestId];
+      const isStreamingResponse = handler.result instanceof Stream.Readable;
+      if (isStreamingResponse) {
+        handler.callback(null);
+      } else {
+        const cause = err ? err : new Error('Connection has been closed.');
+        handler.callback(cause);
+      }
+    });
     this._ws.removeAllListeners();
     this._openPromise = null;
     this._closePromise = null;
