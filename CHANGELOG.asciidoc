@@ -27,7 +27,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Exposed error message sent by the server as a property on `GremlinServerError` for gremlin-python
 * Allowed `datetime()` syntax to accept zone offset with colon separators and seconds.
 * Fixed a minor problem in the Gremlin parser where a `GraphTraversalSource` may not have been initialized.
-* Added getters to high and low properties in RangeLocalStep.
+* Added getters to high and low properties in `RangeLocalStep`.
+* Added `Pick` traversal to the return from `getGlobalChildren()` for `BranchStep`.
+* Ensured `Pick` traversal was an integrated child.
 * Added GraphBinary serialization support to gremlin-javascript.
 * Improved startup time by removing unnecessary DNS lookup.
 * Bumped to logback 1.2.9.
