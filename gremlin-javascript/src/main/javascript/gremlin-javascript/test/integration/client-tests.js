@@ -107,5 +107,48 @@ describe('Client', function () {
       assert.strictEqual(output.length, 3);
       assert.ok(output[0] instanceof graphModule.Vertex);
     });
+
+    it("should reject pending traversal promises if connection closes", async () => {
+      const closingClient = helper.getClient('gmodern');
+      await closingClient.open();
+      const timeout = 10000;
+      const startTime = Date.now();
+      let isRejected = false;
+      
+      const pending = async function submitTraversals() {
+        while (Date.now() < startTime + timeout) {
+          try {
+            await closingClient.submit(new Bytecode().addStep('V', []).addStep('tail', []));
+          } catch (e) {
+            isRejected = true;
+            return;
+          }
+        }
+      };
+      const pendingPromise = pending();
+
+      await closingClient.close();
+      await pendingPromise;
+      assert.strictEqual(isRejected, true);
+    });
+
+    it("should end streams on traversals if connection closes", async () => {
+      const closingClient = helper.getClient('gmodern');
+      await closingClient.open();
+      let isRejected = false;
+
+      const readable = client.stream('g.V().limit(3)', {}, { batchSize: 2 });
+
+      readable.on('end', () => {
+        isRejected = true;
+      });
+
+      await closingClient.close();
+      for await (const result of readable) {
+        // Consume the stream
+      }
+
+      assert.strictEqual(isRejected, true);
+    });
   });
 });
