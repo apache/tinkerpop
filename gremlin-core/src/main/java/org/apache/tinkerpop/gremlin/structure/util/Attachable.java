@@ -27,8 +27,14 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -42,6 +48,8 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Attachable<V> {
+
+    Logger logger = LoggerFactory.getLogger(Attachable.class);
 
     /**
      * Get the raw object trying to be attached.
@@ -291,12 +299,21 @@ public interface Attachable<V> {
             final Vertex vertex = hostGraph.features().vertex().willAllowId(baseVertex.id()) ?
                     hostGraph.addVertex(T.id, baseVertex.id(), T.label, baseVertex.label()) :
                     hostGraph.addVertex(T.label, baseVertex.label());
-            baseVertex.properties().forEachRemaining(vp -> {
-                final VertexProperty vertexProperty = hostGraph.features().vertex().properties().willAllowId(vp.id()) ?
-                        vertex.property(hostGraph.features().vertex().getCardinality(vp.key()), vp.key(), vp.value(), T.id, vp.id()) :
-                        vertex.property(hostGraph.features().vertex().getCardinality(vp.key()), vp.key(), vp.value());
-                vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
-            });
+            final Map<String, List<VertexProperty<Object>>> propertyMap = new HashMap<>();
+            baseVertex.properties().forEachRemaining(vp -> propertyMap.computeIfAbsent(vp.key(), k -> new ArrayList<>()).add(vp));
+            for (Map.Entry<String, List<VertexProperty<Object>>> entry : propertyMap.entrySet()) {
+                final VertexProperty.Cardinality cardinality = hostGraph.features().vertex().getCardinality(entry.getKey());
+                if (VertexProperty.Cardinality.single == cardinality && entry.getValue().size() > 1) {
+                    logger.warn("{} has SINGLE cardinality but with more than one value: {}. Only last value will be retained.",
+                        entry.getKey(), entry.getValue());
+                }
+                for (VertexProperty<Object> vp : entry.getValue()) {
+                    final VertexProperty<Object> vertexProperty = hostGraph.features().vertex().properties().willAllowId(vp.id()) ?
+                        vertex.property(cardinality, vp.key(), vp.value(), T.id, vp.id()) :
+                        vertex.property(cardinality, vp.key(), vp.value());
+                    vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
+                }
+            }
             return vertex;
         }
 

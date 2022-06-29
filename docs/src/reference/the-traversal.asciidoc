@@ -1758,6 +1758,10 @@ time is not critical) that are loading to an empty graph - incremental loading i
 writing perspective is not that different in there are no parallel operations in play, however streaming the output
 to disk requires a single pass of the data without high memory requirements for larger datasets.
 
+IMPORTANT: Default graph formats don't contain information about property cardinality, so it is up to the graph
+provider to choose the appropriate one. You will see a warning message if the chosen cardinality is SINGLE
+while your graph input contains multiple values for that property.
+
 In general, TinkerPop recommends that users examine the native bulk import/export tools of the graph implementation
 that they choose. Those tools will often outperform the `io()`-step and perhaps be easier to use with a greater
 feature set. That said, graph providers do have the option to optimize `io()` to back it with their own
