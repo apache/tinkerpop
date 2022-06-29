@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -289,6 +290,7 @@ public abstract class AbstractGremlinTest {
         if (!traversal.asAdmin().isLocked()) traversal.asAdmin().applyStrategies();
         logger.info("  post-strategy:" + traversal);
         verifyUniqueStepIds(traversal.asAdmin());
+        verifyRootIdentification(traversal.asAdmin(), true);
     }
 
     public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
@@ -308,6 +310,24 @@ public abstract class AbstractGremlinTest {
 
     public static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
         AbstractGremlinTest.verifyUniqueStepIds(traversal, 0, new HashSet<>());
+    }
+
+    /**
+     * Ensures that the {@link Traversal} and all of its children is constructed in a fashion where the parent/child
+     * relationship is properly established.
+     */
+    public static void verifyRootIdentification(final Traversal.Admin<?, ?> traversal, final boolean expectRoot) {
+        assertThat(traversal.isRoot(), is(expectRoot));
+        for (final Step<?,?> step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> globalTraversal : ((TraversalParent) step).getGlobalChildren()) {
+                    verifyRootIdentification(globalTraversal, false);
+                }
+                for (final Traversal.Admin<?, ?> localTraversal : ((TraversalParent) step).getLocalChildren()) {
+                    verifyRootIdentification(localTraversal, false);
+                }
+            }
+        }
     }
 
     private static Set<FeatureRequirement> getFeatureRequirementsForTest(final Method testMethod, final LoadGraphWith[] loadGraphWiths) {
