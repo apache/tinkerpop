@@ -41,6 +41,9 @@ func TestProtocol(t *testing.T) {
 		assert.Nil(t, protocol)
 	})
 
+	// protocol.closed is only modified by protocol.close(). If it is true
+	// it means that protocol.wg.Wait() has already been called, so it
+	// should not be called again.
 	t.Run("Test protocol close when closed", func(t *testing.T) {
 		wg := &sync.WaitGroup{}
 		protocol := &gremlinServerWSProtocol{
