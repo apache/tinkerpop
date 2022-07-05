@@ -1862,7 +1862,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 if (client instanceof Client.SessionedClient) {
                     assertThat(re2.getCause().getCause(), instanceOf(ConnectionException.class));
                 } else {
-                    assertThat(re2.getCause(), instanceOf(ConnectException.class));
+                    assertThat(re2.getCause().getCause().getCause(), instanceOf(ConnectException.class));
                 }
             }
 
