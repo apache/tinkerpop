@@ -56,7 +56,6 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -90,9 +89,6 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
                             stream().
                             filter(parent -> !parent.getGlobalChildren().isEmpty()).findAny().isPresent())) {
                 final Traversal.Admin<?, ?> computerTraversal = step.computerTraversal.get().clone();
-                // apply the strategies up to this point
-                final List<TraversalStrategy<?>> strategies = step.getTraversal().getStrategies().toList();
-
                 if (computerTraversal.getSteps().size() > 1 &&
                         !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&
                         TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(VertexStep.class, EdgeVertexStep.class), computerTraversal) &&
