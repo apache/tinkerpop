@@ -29,6 +29,7 @@ limitations under the License.
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
+        <tinkerpop.root.dir>${project.parent.basedir}</tinkerpop.root.dir>
         <npm.version>8.1.0</npm.version>
         <node.version>v16.13.0</node.version>
     </properties>
@@ -132,8 +133,8 @@ limitations under the License.
                             <scripts>
                                 <script>
                                     def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath.replace("\\.this-definitely-does-not-exist", "").replace("/.this-definitely-does-not-exist", "").replace("\\", "/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/gremlin-javascript/src/main/javascript/gremlin-javascript/package.json")
+                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
+                                    def file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package.json")
                                     file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
                                 </script>
                             </scripts>
@@ -166,6 +167,10 @@ limitations under the License.
                                 <property>
                                     <name>projectBaseDir</name>
                                     <value>${project.basedir}</value>
+                                </property>
+                                <property>
+                                    <name>tinkerpopRootDir</name>
+                                    <value>${tinkerpop.root.dir}</value>
                                 </property>
                             </properties>
                             <scripts>
