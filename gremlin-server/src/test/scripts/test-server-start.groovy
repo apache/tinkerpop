@@ -48,12 +48,10 @@ if (testTransactions) {
 log.info("Starting Gremlin Server instances for native testing of ${executionName}")
 log.info("Transactions validated (enabled with -DincludeNeo4j and only available on port 45940): " + testTransactions)
 
-def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath
-        .replace("\\.this-definitely-does-not-exist", "") // Windows
-        .replace("\\", "/") // Windows
-        .replace("/.this-definitely-does-not-exist","") // Unix
+def platformAgnosticBaseDirPath = "${tinkerpopRootDir}".replace("\\", "/")
 def platformAgnosticGremlinServerDir = platformAgnosticBaseDirPath + "/gremlin-server"
-def platformAgnosticSettingsFile = platformAgnosticGremlinServerDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml"
+def platformAgnosticSettingsFile = platformAgnosticGremlinServerDir + "/src/test/resources/org" +
+        "/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml"
 
 def settings = Settings.read("${platformAgnosticSettingsFile}")
 settings.graphs.graph = platformAgnosticGremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"

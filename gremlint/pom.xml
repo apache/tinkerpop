@@ -72,8 +72,8 @@ limitations under the License.
                                 <script>
                                     def mavenVersion = "${project.version}"
                                     def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath.replace("\\.this-definitely-does-not-exist", "").replace("/.this-definitely-does-not-exist", "").replace("\\","/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/gremlint/package.json")
+                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\","/")
+                                    def file = new File(platformAgnosticBaseDirPath + "/package.json")
                                     file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
                                 </script>
                             </scripts>

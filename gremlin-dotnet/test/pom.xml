@@ -32,6 +32,7 @@ limitations under the License.
         <skipTests>${maven.test.skip}</skipTests>
         <!-- this path only works when maven is started from the direct parent directory, this should be fixed -->
         <gremlin.server.dir>${project.parent.parent.basedir}/gremlin-server</gremlin.server.dir>
+        <tinkerpop.root.dir>${project.parent.parent.basedir}</tinkerpop.root.dir>
     </properties>
 
     <build>
@@ -187,6 +188,10 @@ limitations under the License.
                                         <property>
                                             <name>projectBaseDir</name>
                                             <value>${project.basedir}</value>
+                                        </property>
+                                        <property>
+                                            <name>tinkerpopRootDir</name>
+                                            <value>${tinkerpop.root.dir}</value>
                                         </property>
                                     </properties>
                                     <scripts>
