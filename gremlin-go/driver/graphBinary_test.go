@@ -34,8 +34,6 @@ import (
 func TestGraphBinaryV1(t *testing.T) {
 	t.Run("graphBinaryTypeSerializer tests", func(t *testing.T) {
 		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
-		initSerializers()
-		initDeserializers()
 
 		t.Run("getType should return correct type for simple type", func(t *testing.T) {
 			res, err := serializer.getType(int32(1))
@@ -75,9 +73,6 @@ func TestGraphBinaryV1(t *testing.T) {
 	})
 
 	t.Run("read-write tests", func(t *testing.T) {
-		initSerializers()
-		initDeserializers()
-
 		t.Run("read-write string", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
