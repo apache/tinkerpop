@@ -48,6 +48,11 @@ type reader func(data *[]byte, i *int) (interface{}, error)
 var deserializers map[dataType]reader
 var serializers map[dataType]writer
 
+func init() {
+	initSerializers()
+	initDeserializers()
+}
+
 func newGraphBinarySerializer(handler *logHandler) serializer {
 	serializer := graphBinaryTypeSerializer{handler}
 	return graphBinarySerializer{&serializer}
@@ -84,8 +89,6 @@ func convertArgs(request *request, gs graphBinarySerializer) (map[string]interfa
 
 // serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
-	initSerializers()
-
 	args, err := convertArgs(request, gs)
 	if err != nil {
 		return nil, err
@@ -182,8 +185,6 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 		return msg, newError(err0405ReadValueInvalidNullInputError)
 	}
 
-	initDeserializers()
-
 	// Skip version and nullable byte.
 	i := 2
 	id, err := readUuid(&message, &i)
@@ -218,110 +219,106 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 }
 
 func initSerializers() {
-	if serializers == nil || len(serializers) == 0 {
-		serializers = map[dataType]writer{
-			bytecodeType:   bytecodeWriter,
-			stringType:     stringWriter,
-			bigDecimalType: bigDecimalWriter,
-			bigIntegerType: bigIntWriter,
-			longType:       longWriter,
-			intType:        intWriter,
-			shortType:      shortWriter,
-			byteType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, value.(uint8))
-				return buffer.Bytes(), err
-			},
-			booleanType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, value.(bool))
-				return buffer.Bytes(), err
-			},
-			uuidType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, value)
-				return buffer.Bytes(), err
-			},
-			floatType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, value)
-				return buffer.Bytes(), err
-			},
-			doubleType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-				err := binary.Write(buffer, binary.BigEndian, value)
-				return buffer.Bytes(), err
-			},
-			vertexType:            vertexWriter,
-			edgeType:              edgeWriter,
-			propertyType:          propertyWriter,
-			vertexPropertyType:    vertexPropertyWriter,
-			lambdaType:            lambdaWriter,
-			traversalStrategyType: traversalStrategyWriter,
-			pathType:              pathWriter,
-			setType:               setWriter,
-			dateType:              timeWriter,
-			durationType:          durationWriter,
-			cardinalityType:       enumWriter,
-			columnType:            enumWriter,
-			directionType:         enumWriter,
-			operatorType:          enumWriter,
-			orderType:             enumWriter,
-			pickType:              enumWriter,
-			popType:               enumWriter,
-			tType:                 enumWriter,
-			barrierType:           enumWriter,
-			scopeType:             enumWriter,
-			mergeType:             enumWriter,
-			pType:                 pWriter,
-			textPType:             textPWriter,
-			bindingType:           bindingWriter,
-			mapType:               mapWriter,
-			listType:              listWriter,
-			byteBuffer:            byteBufferWriter,
-			classType:             classWriter,
-		}
+	serializers = map[dataType]writer{
+		bytecodeType:   bytecodeWriter,
+		stringType:     stringWriter,
+		bigDecimalType: bigDecimalWriter,
+		bigIntegerType: bigIntWriter,
+		longType:       longWriter,
+		intType:        intWriter,
+		shortType:      shortWriter,
+		byteType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+			err := binary.Write(buffer, binary.BigEndian, value.(uint8))
+			return buffer.Bytes(), err
+		},
+		booleanType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+			err := binary.Write(buffer, binary.BigEndian, value.(bool))
+			return buffer.Bytes(), err
+		},
+		uuidType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+			err := binary.Write(buffer, binary.BigEndian, value)
+			return buffer.Bytes(), err
+		},
+		floatType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+			err := binary.Write(buffer, binary.BigEndian, value)
+			return buffer.Bytes(), err
+		},
+		doubleType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+			err := binary.Write(buffer, binary.BigEndian, value)
+			return buffer.Bytes(), err
+		},
+		vertexType:            vertexWriter,
+		edgeType:              edgeWriter,
+		propertyType:          propertyWriter,
+		vertexPropertyType:    vertexPropertyWriter,
+		lambdaType:            lambdaWriter,
+		traversalStrategyType: traversalStrategyWriter,
+		pathType:              pathWriter,
+		setType:               setWriter,
+		dateType:              timeWriter,
+		durationType:          durationWriter,
+		cardinalityType:       enumWriter,
+		columnType:            enumWriter,
+		directionType:         enumWriter,
+		operatorType:          enumWriter,
+		orderType:             enumWriter,
+		pickType:              enumWriter,
+		popType:               enumWriter,
+		tType:                 enumWriter,
+		barrierType:           enumWriter,
+		scopeType:             enumWriter,
+		mergeType:             enumWriter,
+		pType:                 pWriter,
+		textPType:             textPWriter,
+		bindingType:           bindingWriter,
+		mapType:               mapWriter,
+		listType:              listWriter,
+		byteBuffer:            byteBufferWriter,
+		classType:             classWriter,
 	}
 }
 
 func initDeserializers() {
-	if deserializers == nil || len(deserializers) == 0 {
-		deserializers = map[dataType]reader{
-			// Primitive
-			booleanType:    readBoolean,
-			byteType:       readByte,
-			shortType:      readShort,
-			intType:        readInt,
-			longType:       readLong,
-			bigDecimalType: readBigDecimal,
-			bigIntegerType: readBigInt,
-			floatType:      readFloat,
-			doubleType:     readDouble,
-			stringType:     readString,
+	deserializers = map[dataType]reader{
+		// Primitive
+		booleanType:    readBoolean,
+		byteType:       readByte,
+		shortType:      readShort,
+		intType:        readInt,
+		longType:       readLong,
+		bigDecimalType: readBigDecimal,
+		bigIntegerType: readBigInt,
+		floatType:      readFloat,
+		doubleType:     readDouble,
+		stringType:     readString,
 
-			// Composite
-			listType:   readList,
-			mapType:    readMap,
-			setType:    readSet,
-			uuidType:   readUuid,
-			byteBuffer: readByteBuffer,
-			classType:  readClass,
+		// Composite
+		listType:   readList,
+		mapType:    readMap,
+		setType:    readSet,
+		uuidType:   readUuid,
+		byteBuffer: readByteBuffer,
+		classType:  readClass,
 
-			// Date Time
-			dateType:      timeReader,
-			timestampType: timeReader,
-			durationType:  durationReader,
+		// Date Time
+		dateType:      timeReader,
+		timestampType: timeReader,
+		durationType:  durationReader,
 
-			// Graph
-			traverserType:      traverserReader,
-			vertexType:         vertexReader,
-			edgeType:           edgeReader,
-			propertyType:       propertyReader,
-			vertexPropertyType: vertexPropertyReader,
-			pathType:           pathReader,
-			bulkSetType:        bulkSetReader,
-			tType:              enumReader,
-			directionType:      enumReader,
-			bindingType:        bindingReader,
+		// Graph
+		traverserType:      traverserReader,
+		vertexType:         vertexReader,
+		edgeType:           edgeReader,
+		propertyType:       propertyReader,
+		vertexPropertyType: vertexPropertyReader,
+		pathType:           pathReader,
+		bulkSetType:        bulkSetReader,
+		tType:              enumReader,
+		directionType:      enumReader,
+		bindingType:        bindingReader,
 
-			// Metrics
-			metricsType:          metricsReader,
-			traversalMetricsType: traversalMetricsReader,
-		}
+		// Metrics
+		metricsType:          metricsReader,
+		traversalMetricsType: traversalMetricsReader,
 	}
 }
