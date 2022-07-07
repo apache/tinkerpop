@@ -99,10 +99,13 @@ const (
 	err1104TransactionRepeatedCloseError     errorCode = "E1104_TRANSACTION_REPEATED_CLOSE_ERROR"
 )
 
+var localizer *i18n.Localizer
+
+func init() {
+	initializeLocalizer(language.English)
+}
+
 func initializeLocalizer(locale language.Tag) {
-	if localizer != nil {
-		return
-	}
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
@@ -113,10 +116,7 @@ func initializeLocalizer(locale language.Tag) {
 	localizer = i18n.NewLocalizer(bundle, locale.String())
 }
 
-var localizer *i18n.Localizer
-
 func newError(errorCode errorCode, args ...interface{}) error {
-	initializeLocalizer(language.English)
 	config := i18n.LocalizeConfig{
 		MessageID: string(errorCode),
 	}
