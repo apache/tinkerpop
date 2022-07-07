@@ -215,6 +215,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved startup time by removing unnecessary DNS lookup.
 * Bumped to logback 1.2.9.
 * Bumped to netty 4.1.77.
+* Fixed bug in `submitAsync()` in gremlin-python where the deprecated version was not returning its result.
 * Added missing `ResponseStatusCodeEnum` entries for 403, 429, 497, and 596 for .NET.
 * Added GraphBinary support in gremlin-python for short, bigdecimal and biginteger.
 * Fixed bug in `PartitionStrategy` where the use of `AbstractLambdaTraversal` caused an unexpected exception.
