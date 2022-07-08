@@ -780,7 +780,7 @@ public final class Cluster {
          * {@link #maxSimultaneousUsagePerConnection} setting, but is slightly different in that it refers to
          * the total number of requests on a {@link Connection}.  In other words, a {@link Connection} might
          * be borrowed once to have multiple requests executed against it.  This number controls the maximum
-         * number of requests whereas {@link #maxInProcessPerConnection} controls the times borrowed.
+         * number of requests whereas {@link #maxSimultaneousUsagePerConnection} controls the times borrowed.
          */
         public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
             this.maxInProcessPerConnection = maxInProcessPerConnection;
