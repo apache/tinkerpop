@@ -149,7 +149,16 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             final Iterator<TraversalStrategy<?>> strategyIterator = this.strategies.iterator();
             while (strategyIterator.hasNext()) {
                 final TraversalStrategy<?> strategy = strategyIterator.next();
-                TraversalHelper.applyTraversalRecursively(strategy::apply, this);
+                TraversalHelper.applyTraversalRecursively(t -> {
+                    strategy.apply(t);
+
+                    // after the strategy is applied, it may have modified the traversal where a new traversal object
+                    // was added. if the strategy didn't set the Graph object it could leave that new traversal in a
+                    // state where another strategy might fail if that dependency is not satisfied
+                    TraversalHelper.applyTraversalRecursively(i -> {
+                        if (hasGraph) i.setGraph(this.graph);
+                    }, this);
+                }, this);
             }
 
             // don't need to re-apply strategies to "this" - leads to endless recursion in GraphComputer.

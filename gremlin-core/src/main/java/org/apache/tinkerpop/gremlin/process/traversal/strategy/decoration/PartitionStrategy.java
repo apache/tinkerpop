@@ -126,7 +126,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         // writes.
         final Optional<Graph.Features.VertexFeatures> vertexFeatures;
         if (includeMetaProperties) {
-            final Graph graph = TraversalHelper.getRootTraversal(traversal).getGraph().orElseThrow(
+            final Graph graph = traversal.getGraph().orElseThrow(
                     () -> new IllegalStateException("PartitionStrategy does not work with anonymous Traversals when includeMetaProperties is enabled"));
             final Graph.Features.VertexFeatures vf = graph.features().vertex();
             final boolean supportsMetaProperties = vf.supportsMetaProperties();
