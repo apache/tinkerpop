@@ -1293,21 +1293,6 @@ name of the plugin to activate.
 NOTE: When `:install` is used logging dependencies related to link:http://www.slf4j.org/[SLF4J] are filtered out so as
 not to introduce multiple logger bindings (which generates warning messages to the logs).
 
-A plugin can do much more than just import classes.  One can expand the Gremlin language with new functions or steps,
-provide useful commands to make repetitive or complex tasks easier to execute, or do helpful integrations with other
-systems.  The secret to doing so lies in the `PluginAcceptor`.  As mentioned earlier, the `PluginAcceptor` provides
-access to the host of the plugin.  It provides several important methods for doing so:
-
-. `addBinding` - These two function allow the plugin to inject whatever context it wants to the host.  For example,
-doing `addBinding('x',1)` would place a variable of `x` with a value of 1 into the console at the time of the plugin load.
-. `eval` - Evaluates a script in the context of the host at the time of plugin startup.  For example, doing
-`eval("sum={x,y->x+y}")` would create a `sum` function that would be available to the user of the Console after the
-load of the plugin.
-. `environment` - Provides context from the host environment.  For the console, the environment will return a `Map`
-containing a reference to the `IO` stream and the `Groovysh` instance.  These classes represent very low-level access
-to the underpinnings of the console.  Access to `Groovysh` allows for advanced features such as registering new
-commands (e.g. like the `:plugin` or `:remote` commands).
-
 Plugins can also tie into the `:remote` and `:submit` commands.  Recall that a `:remote` represents a different
 context within which Gremlin is executed, when issued with `:submit`.  It is encouraged to use this integration point
 when possible, as opposed to registering new commands that can otherwise follow the `:remote` and `:submit` pattern.
