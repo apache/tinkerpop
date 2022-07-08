@@ -2356,6 +2356,31 @@ key.
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
 `aggregate(local)` and then convert those results to something the client can use locally.
+* Use of the aiohttp library in the default transport requires the use of asyncio's event loop to run the async functions.
+This can be an issue in situations where the application calling Gremlin-Python is already using an event loop.
+Certain types of event loops can be patched using nest-asyncio which allows Gremlin-Python to proceed without an error like
+"Cannot run the event loop while another loop is running". This is the preferred approach to avoiding the issue and can be
+enabled by passing `call_from_event_loop=True` to the `AiohttpTransport` class.
+
++
+However, in situations where the loop cannot be patched (e.g. uvloop), then the current suggested workaround is to run
+Gremlin-Python in a separate thread. This is not ideal for asynchronous web servers as the number of concurrent connections
+will be limited by the number of threads the system can handle. The following snippet shows how Gremlin-Python can be called
+from asynchronous code using a thread.
+
++
+[source,python]
+----
+def print_vertices():
+    g = traversal().withRemote(DriverRemoteConnection("ws://localhost:8182/gremlin"))
+    # Do your traversal.
+
+async def run_in_thread():
+    running_loop = asyncio.get_running_loop()
+
+    with ThreadPoolExecutor() as pool:
+        await running_loop.run_in_executor(pool, print_vertices)
+----
 
 [[gremlin-python-examples]]
 === Application Examples
