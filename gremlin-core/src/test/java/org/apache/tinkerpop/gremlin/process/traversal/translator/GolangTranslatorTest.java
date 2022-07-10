@@ -108,7 +108,7 @@ public class GolangTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(int32(1)).V()." +
+        assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(1).V()." +
                         "Filter(&gremlingo.Lambda{Script:\"x -> x.get().label() == 'person'\", Language:\"\"})." +
                         "FlatMap(&gremlingo.Lambda{Script:\"it.get().vertices(Direction.OUT)\", Language:\"\"})." +
                         "Map(&gremlingo.Lambda{Script:\"x -> x : len(x.get().value('name'))\", Language:\"\"})." +
