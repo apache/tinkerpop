@@ -35,10 +35,8 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,9 +53,6 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
     private final static  String GO_PACKAGE_NAME = "gremlingo.";
-    private final static Set<String> METHODS_TO_CHECK = new HashSet<>(Arrays.asList(
-            "inject", "withSack", "sample", "with", "constant")
-    );
 
     private GolangTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
@@ -299,23 +294,9 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                 script.append(".").append(resolveSymbol(methodName)).append("(");
 
                 for (int i = 0; i < arguments.length; i++) {
-                    if (methodName.equals("times")) {
-                        script.append("int32(");
-                        convertToScript(arguments[i]);
-                        script.append(")");
-                    } else if (METHODS_TO_CHECK.contains(methodName)
-                            && arguments[i] instanceof Integer) {
-                        script.append("int32(");
-                        convertToScript(arguments[i]);
-                        script.append(")");
-                        if (i != arguments.length - 1) {
-                            script.append(", ");
-                        }
-                    } else {
-                        convertToScript(arguments[i]);
-                        if (i != arguments.length - 1) {
-                            script.append(", ");
-                        }
+                    convertToScript(arguments[i]);
+                    if (i != arguments.length - 1) {
+                        script.append(", ");
                     }
                 }
 

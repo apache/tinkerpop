@@ -20,6 +20,7 @@ under the License.
 package gremlingo
 
 import (
+	"math"
 	"sync"
 )
 
@@ -89,7 +90,8 @@ func (g *GraphTraversal) As(args ...interface{}) *GraphTraversal {
 
 // Barrier adds the barrier step to the GraphTraversal.
 func (g *GraphTraversal) Barrier(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("barrier", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	g.Bytecode.AddStep("barrier", int32Args(args)...)
 	return g
 }
 
@@ -161,7 +163,8 @@ func (g *GraphTraversal) ConnectedComponent(args ...interface{}) *GraphTraversal
 
 // Constant adds the constant step to the GraphTraversal.
 func (g *GraphTraversal) Constant(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("constant", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	g.Bytecode.AddStep("constant", int32Args(args)...)
 	return g
 }
 
@@ -323,7 +326,8 @@ func (g *GraphTraversal) Index(args ...interface{}) *GraphTraversal {
 
 // Inject adds the inject step to the GraphTraversal.
 func (g *GraphTraversal) Inject(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("inject", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	g.Bytecode.AddStep("inject", int32Args(args)...)
 	return g
 }
 
@@ -551,7 +555,8 @@ func (g *GraphTraversal) Sack(args ...interface{}) *GraphTraversal {
 
 // Sample adds the sample step to the GraphTraversal.
 func (g *GraphTraversal) Sample(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("sample", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	g.Bytecode.AddStep("sample", int32Args(args)...)
 	return g
 }
 
@@ -617,7 +622,8 @@ func (g *GraphTraversal) TimeLimit(args ...interface{}) *GraphTraversal {
 
 // Times adds the times step to the GraphTraversal.
 func (g *GraphTraversal) Times(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("times", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	g.Bytecode.AddStep("times", int32Args(args)...)
 	return g
 }
 
@@ -689,7 +695,8 @@ func (g *GraphTraversal) Where(args ...interface{}) *GraphTraversal {
 
 // With adds the with step to the GraphTraversal.
 func (g *GraphTraversal) With(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("with", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	g.Bytecode.AddStep("with", int32Args(args)...)
 	return g
 }
 
@@ -697,6 +704,34 @@ func (g *GraphTraversal) With(args ...interface{}) *GraphTraversal {
 func (g *GraphTraversal) Write(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("write", args...)
 	return g
+}
+
+func int32Args(args ...interface{}) []interface{} {
+	for i, arg := range args {
+		switch val := arg.(type) {
+		case uint:
+			if val <= math.MaxInt32 {
+				args[i] = int32(val)
+			}
+		case uint32:
+			if val <= math.MaxInt32 {
+				args[i] = int32(val)
+			}
+		case uint64:
+			if val <= math.MaxInt32 {
+				args[i] = int32(val)
+			}
+		case int:
+			if val <= math.MaxInt32 && val >= math.MinInt32 {
+				args[i] = int32(val)
+			}
+		case int64:
+			if val <= math.MaxInt32 && val >= math.MinInt32 {
+				args[i] = int32(val)
+			}
+		}
+	}
+	return args
 }
 
 type Transaction struct {

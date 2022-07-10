@@ -91,7 +91,8 @@ func (gts *GraphTraversalSource) WithPath(args ...interface{}) *GraphTraversalSo
 // WithSack adds a sack to be used throughout the life of a spawned Traversal.
 func (gts *GraphTraversalSource) WithSack(args ...interface{}) *GraphTraversalSource {
 	source := gts.clone()
-	source.bytecode.AddSource("withSack", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	source.bytecode.AddSource("withSack", int32Args(args)...)
 	return source
 }
 
@@ -172,7 +173,8 @@ func (gts *GraphTraversalSource) Call(args ...interface{}) *GraphTraversal {
 // Inject inserts arbitrary objects to start the traversal.
 func (gts *GraphTraversalSource) Inject(args ...interface{}) *GraphTraversal {
 	traversal := gts.GetGraphTraversal()
-	traversal.Bytecode.AddStep("inject", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	traversal.Bytecode.AddStep("inject", int32Args(args)...)
 	return traversal
 }
 
