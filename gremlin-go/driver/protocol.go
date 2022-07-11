@@ -30,7 +30,7 @@ import (
 type protocol interface {
 	readLoop(resultSets *synchronizedMap, errorCallback func())
 	write(request *request) error
-	close() (err error)
+	close(wait bool) error
 }
 
 const authenticationFailed = uint16(151)
@@ -161,19 +161,19 @@ func (protocol *gremlinServerWSProtocol) write(request *request) error {
 	return protocol.transporter.Write(bytes)
 }
 
-func (protocol *gremlinServerWSProtocol) close() error {
+func (protocol *gremlinServerWSProtocol) close(wait bool) error {
+	var err error
+
 	protocol.mutex.Lock()
-
-	if protocol.closed {
-		protocol.mutex.Unlock()
-		return nil
+	if !protocol.closed {
+		err = protocol.transporter.Close()
+		protocol.closed = true
 	}
-
-	err := protocol.transporter.Close()
-	protocol.closed = true
 	protocol.mutex.Unlock()
 
-	protocol.wg.Wait()
+	if wait {
+		protocol.wg.Wait()
+	}
 
 	return err
 }
