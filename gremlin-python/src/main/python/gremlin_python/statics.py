@@ -59,7 +59,7 @@ class SingleByte(int):
     """
     def __new__(cls, b):
         if -128 <= b < 128:
-            int.__new__(cls, b)
+            return int.__new__(cls, b)
         else:
             raise ValueError("value must be between -128 and 127 inclusive")
 
@@ -69,8 +69,8 @@ class SingleChar(str):
     Provides a way to pass a single character via Gremlin.
     """
     def __new__(cls, c):
-        if len(b) == 1:
-            str.__new__(cls, c)
+        if len(c) == 1:
+            return str.__new__(cls, c)
         else:
             raise ValueError("string must contain a single character")
 

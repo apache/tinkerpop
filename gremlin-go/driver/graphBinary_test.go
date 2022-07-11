@@ -142,6 +142,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
+		t.Run("read-write short int8", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := int8(123)
+			buf, err := shortWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readShort(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, int16(source), res)
+		})
 		t.Run("read-write long", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
@@ -161,6 +171,26 @@ func TestGraphBinaryV1(t *testing.T) {
 			res, err := readBigInt(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
+		})
+		t.Run("read-write bigInt uint64", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := uint64(123)
+			buf, err := bigIntWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigInt(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, new(big.Int).SetUint64(source), res)
+		})
+		t.Run("read-write bigInt uint64", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := uint(123)
+			buf, err := bigIntWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigInt(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, new(big.Int).SetUint64(uint64(source)), res)
 		})
 		t.Run("read-write list", func(t *testing.T) {
 			pos := 0
