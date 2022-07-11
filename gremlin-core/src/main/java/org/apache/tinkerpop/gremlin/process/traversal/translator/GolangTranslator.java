@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.*;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -102,8 +101,6 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
     public String toString() {
         return StringFactory.translatorString(this);
     }
-
-    ///////
 
     /**
      * Performs standard type translation for the TinkerPop types to Go.
