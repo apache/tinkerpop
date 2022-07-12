@@ -1292,7 +1292,6 @@ While the `@value` is expected to be a JSON number, it might also be a `String` 
           "@type" : "g:Int32",
           "@value" : 10
         },
-        "label" : "software"
         "label" : "software",
         "properties" : {
           "name" : [ {
@@ -1319,7 +1318,7 @@ While the `@value` is expected to be a JSON number, it might also be a `String` 
           "@type" : "g:Int32",
           "@value" : 11
         },
-        "label" : "software"
+        "label" : "software",
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
