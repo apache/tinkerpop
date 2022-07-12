@@ -706,7 +706,7 @@ func (g *GraphTraversal) Write(args ...interface{}) *GraphTraversal {
 	return g
 }
 
-func int32Args(args ...interface{}) []interface{} {
+func int32Args(args []interface{}) []interface{} {
 	for i, arg := range args {
 		switch val := arg.(type) {
 		case uint:
