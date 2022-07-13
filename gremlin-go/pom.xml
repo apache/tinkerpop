@@ -88,36 +88,14 @@ limitations under the License.
                         <version>1.2.1</version>
                         <executions>
                             <execution>
-                                <id>run integration tests</id>
-                                <phase>verify</phase>
+                                <id>run-tests</id>
+                                <phase>integration-test</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- tests pass, but there is some trouble running these in docker/build.sh
-                                         as docker-compose isn't a command available in that image. skipping until
-                                         resolved -->
-                                    <skip>true</skip>
-                                    <executable>docker-compose</executable>
-                                    <arguments>
-                                        <argument>up</argument>
-                                        <argument>--exit-code-from</argument>
-                                        <argument>gremlin-go-integration-tests</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>shutdown container</id>
-                                <phase>verify</phase>
-                                <configuration>
-                                    <!-- tests pass, but there is some trouble running these in docker/build.sh
-                                         as docker-compose isn't a command available in that image. skipping until
-                                         resolved -->
-                                    <skip>true</skip>
-                                    <executable>docker-compose</executable>
-                                    <arguments>
-                                        <argument>down</argument>
-                                    </arguments>
+                                    <skip>${skipTests}</skip>
+                                    <executable>./run.sh</executable>
                                 </configuration>
                             </execution>
                         </executions>
