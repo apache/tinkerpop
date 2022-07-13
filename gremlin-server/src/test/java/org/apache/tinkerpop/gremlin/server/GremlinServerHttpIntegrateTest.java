@@ -46,6 +46,11 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -125,6 +130,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 break;
             case "should200OnPOSTWithAuthorizationHeader":
                 configureForAuthentication(settings);
+                break;
+            case "should500OnGETWithEvaluationTimeout":
+                settings.evaluationTimeout = 5000;
+                settings.gremlinPool = 1;
                 break;
         }
         return settings;
@@ -906,5 +915,45 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode node = mapper.readTree(json);
             assertEquals(1521621344741L, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).longValue());
         }
+    }
+
+    @Test
+    public void should500OnGETWithEvaluationTimeout() throws Exception {
+        // Related to TINKERPOP-2769. This is a similar test to those for WebSocketChannelizer and UnifiedChannelizer.
+        final CloseableHttpClient firstClient = HttpClients.createDefault();
+        final CloseableHttpClient secondClient = HttpClients.createDefault();
+
+        final HttpPost post = new HttpPost(TestClientFactory.createURLString());
+        post.setEntity(new StringEntity("{\"gremlin\":\"g.addV('person').as('p').addE('self').to('p').iterate()\"}", Consts.UTF_8));
+        try (final CloseableHttpResponse response = firstClient.execute(post)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
+
+        // This query has a cycle, so it runs until it times out.
+        final HttpGet firstGet = new HttpGet(TestClientFactory.createURLString("?gremlin=g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate()"));
+        // Add a shorter timeout to the second query to ensure that its timeout is less than the first query's running time.
+        final HttpGet secondGet = new HttpGet(TestClientFactory.createURLString("?gremlin=g.with('evaluationTimeout',1000).V().repeat(__.out()).until(__.outE().count().is(0)).iterate()"));
+
+        final Callable<Integer> firstQueryWrapper = () -> {
+            try (final CloseableHttpResponse response = firstClient.execute(firstGet)) {
+                return response.getStatusLine().getStatusCode();
+            }
+        };
+
+        final Callable<Integer> secondQueryWrapper = () -> {
+            try (final CloseableHttpResponse response = secondClient.execute(secondGet)) {
+                return response.getStatusLine().getStatusCode();
+            }
+        };
+        final ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(2);
+        final Future<Integer> firstGetResult = threadPool.submit(firstQueryWrapper);
+        // Schedule the second task with a slight delay so that it runs after the first task.
+        final Future<Integer> secondGetResult = threadPool.schedule(secondQueryWrapper, 1500, TimeUnit.MILLISECONDS);
+
+        // Make sure both requests return a response and don't hang.
+        assertEquals(500, firstGetResult.get().intValue());
+        assertEquals(500, secondGetResult.get().intValue());
+
+        threadPool.shutdown();
     }
 }

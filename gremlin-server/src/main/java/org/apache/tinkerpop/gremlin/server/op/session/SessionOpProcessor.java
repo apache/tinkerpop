@@ -410,6 +410,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         // final Timer.Context timerContext = traversalOpTimer.time();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
+            context.setStartedResponse();
             final Graph graph = g.getGraph();
 
             try {
@@ -474,7 +475,12 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         final Future<?> executionFuture = session.getGremlinExecutor().getExecutorService().submit(evalFuture);
         if (seto > 0) {
             // Schedule a timeout in the thread pool for future execution
-            context.getScheduledExecutorService().schedule(() -> executionFuture.cancel(true), seto, TimeUnit.MILLISECONDS);
+            context.getScheduledExecutorService().schedule(() -> {
+                executionFuture.cancel(true);
+                if (!context.getStartedResponse()) {
+                    context.sendTimeoutResponse();
+                }
+            }, seto, TimeUnit.MILLISECONDS);
         }
     }
 

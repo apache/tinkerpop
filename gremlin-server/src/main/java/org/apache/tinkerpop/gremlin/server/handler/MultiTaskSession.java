@@ -59,6 +59,7 @@ public class MultiTaskSession extends AbstractSession {
     private final GremlinScriptEngineManager scriptEngineManager;
     private ScheduledFuture<?> requestCancelFuture;
     private Bindings bindings;
+    private final SessionTask initialSessionTask;
 
     /**
      * Creates a new {@code MultiTaskSession} object providing the initial starting {@link SessionTask} that gets
@@ -72,6 +73,7 @@ public class MultiTaskSession extends AbstractSession {
                      final ConcurrentMap<String, Session> sessions) {
         super(initialSessionTask, sessionId, false, sessions);
 
+        this.initialSessionTask = initialSessionTask;
         queue = new LinkedBlockingQueue<>(initialSessionTask.getSettings().maxSessionTaskQueueSize);
 
         // using a global function cache is cheaper than creating a new on per session especially if you have to
@@ -114,6 +116,13 @@ public class MultiTaskSession extends AbstractSession {
     }
 
     @Override
+    public void sendTimeoutResponseForUncommencedTask() {
+        this.close(); // Need to close as this task won't ever start to run, so it should just end.
+        initialSessionTask.sendTimeoutResponse(
+                String.format("A session timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to sessionLifetimeTimeout", initialSessionTask.getRequestMessage()));
+    }
+
+    @Override
     public boolean submitTask(final SessionTask sessionTask) throws RejectedExecutionException {
         try {
             return isAcceptingTasks() && queue.add(sessionTask);
@@ -126,6 +135,8 @@ public class MultiTaskSession extends AbstractSession {
 
     @Override
     public void run() {
+        sessionTaskStarted.set(true);
+
         // allow the Session to know about the thread that is running it which will be a thread from the gremlinPool
         // the thread really only has relevance once the session has started. this thread is then held below in the
         // while() loop awaiting items to arrive on the request queue. it will hold until the session is properly
