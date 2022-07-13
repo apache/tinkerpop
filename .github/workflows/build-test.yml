@@ -236,8 +236,7 @@ jobs:
       - name: Generate Gremlin Server Base Image
         working-directory: .
         run: |
-          mvn clean install -DskipTests -DskipIntegrationTests=true -am
-          mvn install -Pdocker-images -pl :gremlin-server -DskipTests
+          mvn clean install -DskipTests -DskipIntegrationTests=true -Dci
       - name: Build with Maven
         working-directory: .
         run: |
