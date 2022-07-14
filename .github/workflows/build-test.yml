@@ -96,14 +96,21 @@ jobs:
             mvn clean install -pl gremlin-server -DskipTests -DskipIntegrationTests=true -Dci -am
         - name: Save Docker image
           working-directory: ./gremlin-server
-          run: docker save tinkerpop/gremlin-server > gremlin-server.tar
-        - uses: actions/cache@v2
+          run: docker save --output gremlin-server.tar tinkerpop/gremlin-server
+        - uses: actions/cache@v3
           id: gremlin-server-test-docker-image
           with:
             path: |
               ./gremlin-server/*
               ~/.m2/repository/org/apache/tinkerpop/*
             key: ${{ github.sha }}
+         # Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
+#        - name: Upload Docker image for Windows
+#          uses: actions/upload-artifact@v3
+#          with:
+#            name: ${{ github.sha }}
+#            path: ./gremlin-server/gremlin-server.tar
+#            retention-days: 1
   spark-core:
     name: spark core
     timeout-minutes: 45
@@ -171,11 +178,13 @@ jobs:
   javascript:
     name: javascript
     timeout-minutes: 15
-    needs: smoke
+    needs: cache-gremlin-server-docker-image
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # Windows Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
+        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -183,8 +192,27 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+      - name: Get Cached Server Base Image
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v3
+        id: gremlin-server-test-docker-image
+        with:
+          path: |
+            ./gremlin-server/*
+            ~/.m2/repository/org/apache/tinkerpop/*
+          key: ${{ github.sha }}
+      - name: Download Server Base Image
+        if: matrix.os == 'windows-latest'
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+          path: ./gremlin-server
+      - name: Load Docker Image
+        working-directory: ./gremlin-server
+        run: docker load --input gremlin-server.tar
       - name: Build with Maven
         run: |
+          touch gremlin-javascript/.glv
           mvn clean install -pl -:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :gremlin-javascript,:gremlint -DincludeNeo4j
   python:
@@ -267,7 +295,7 @@ jobs:
         with:
           go-version: '1.17'
       - name: Get Cached Server Base Image
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: gremlin-server-test-docker-image
         with:
           path: |
@@ -276,7 +304,7 @@ jobs:
           key: ${{ github.sha }}
       - name: Load Docker Image
         working-directory: ./gremlin-server
-        run: docker load < gremlin-server.tar
+        run: docker load --input gremlin-server.tar
       - name: Build with Maven
         working-directory: .
         run: |

@@ -62,6 +62,9 @@ cp *.yaml ${TINKERPOP_HOME}/conf/
 
 java -version
 
+dos2unix /opt/gremlin-server/bin/gremlin-server.sh
+dos2unix /opt/gremlin-server/bin/gremlin-server.conf
+
 # dynamically installs Neo4j libraries so that we can test variants with transactions,
 # but only only port 45940 is configured with the neo4j graph as the neo4j-empty.properties
 # is statically pointing at a temp directory and that space can only be accessed by one
@@ -71,16 +74,16 @@ if [ ! -z "${INCLUDE_NEO4J}" ]; then
   /opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin ${GREMLIN_SERVER_VERSION}
 fi
 
-/opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration.yaml &
+/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml &
 
-/opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-secure.yaml &
+/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-secure.yaml &
 
 java -cp /opt/gremlin-test/gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
      -Dlog4j.configuration="file:/opt/gremlin-server/conf/log4j-server.properties" \
      org.apache.tinkerpop.gremlin.server.KdcFixture /opt/gremlin-server &
 
 export JAVA_OPTIONS="-Xms512m -Xmx4096m -Djava.security.krb5.conf=/opt/gremlin-server/target/kdc/krb5.conf"
-exec /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-krb5.yaml
+/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-krb5.yaml
 
 
 #######################################################################

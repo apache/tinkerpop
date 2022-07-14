@@ -28,262 +28,11 @@ limitations under the License.
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
-        <tinkerpop.root.dir>${project.parent.basedir}</tinkerpop.root.dir>
         <npm.version>6.14.6</npm.version>
         <node.version>v10.22.0</node.version>
     </properties>
     <build>
-        <directory>${basedir}/target</directory>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.github.eirslett</groupId>
-                    <artifactId>frontend-maven-plugin</artifactId>
-                    <version>1.12.1</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
-            <plugin>
-                <!--
-                Use gmavenplus-plugin to:
-                    - Generate js sources
-                    - Start and stop gremlin server for integration tests
-                -->
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.tinkerpop</groupId>
-                        <artifactId>gremlin-server</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.tinkerpop</groupId>
-                        <artifactId>gremlin-test</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.tinkerpop</groupId>
-                        <artifactId>neo4j-gremlin</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>commons-io</groupId>
-                        <artifactId>commons-io</artifactId>
-                        <version>${commons.io.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                        <version>${log4j.version}</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-all</artifactId>
-                        <version>${groovy.version}</version>
-                        <type>pom</type>
-                        <scope>runtime</scope>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>generate-radish-support</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                                <property>
-                                    <name>projectBaseDir</name>
-                                    <value>${project.basedir}/../</value>
-                                </property>
-                            </properties>
-                            <scripts>
-                                <script>${project.basedir}/build/generate.groovy</script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>update-version</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <scripts>
-                                <script>
-                                    def mavenVersion = "${project.version}"
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package.json")
-                                    file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
-                                </script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>gremlin-server-start</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                                <property>
-                                    <name>skipTests</name>
-                                    <value>${skipTests}</value>
-                                </property>
-                                <property>
-                                    <name>gremlinServerDir</name>
-                                    <value>${gremlin.server.dir}</value>
-                                </property>
-                                <property>
-                                    <name>settingsFile</name>
-                                    <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml</value>
-                                </property>
-                                <property>
-                                    <name>executionName</name>
-                                    <value>${project.name}</value>
-                                </property>
-                                <property>
-                                    <name>projectBaseDir</name>
-                                    <value>${project.basedir}</value>
-                                </property>
-                                <property>
-                                    <name>tinkerpopRootDir</name>
-                                    <value>${tinkerpop.root.dir}</value>
-                                </property>
-                            </properties>
-                            <scripts>
-                                <script>${gremlin.server.dir}/src/test/scripts/test-server-start.groovy</script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>gremlin-server-stop</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                                <property>
-                                    <name>skipTests</name>
-                                    <value>${skipTests}</value>
-                                </property>
-                                <property>
-                                    <name>executionName</name>
-                                    <value>${project.name}</value>
-                                </property>
-                            </properties>
-                            <scripts>
-                                <script>${gremlin.server.dir}/src/test/scripts/test-server-stop.groovy</script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>install node and npm</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>npm install</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm lint</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipTests}</skip>
-                            <arguments>run lint</arguments>
-                            <failOnError>true</failOnError>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>grunt jsdoc</id>
-                        <goals>
-                            <goal>grunt</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <arguments>jsdoc</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm test</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipTests}</skip>
-                            <arguments>test --exit</arguments>
-                            <failOnError>true</failOnError>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm test gherkin features</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipTests}</skip>
-                            <arguments>run-script features</arguments>
-                            <failOnError>true</failOnError>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
-
-                    <!--
-                    transaction testing is disabled unless the -DincludeNeo4j flag enables the include-neo4j
-                    maven profile which is a standard profile we use to add neo4j to testing explicitly - for
-                    npm we set this TEST_TRANSACTIONS environment variable that can be accessed in tests to
-                    determine if we skip transaction oriented tests or not. without neo4j we can't test tx()
-                    so this is disabled by default and enabled in the include-neo4j profile below
-                    -->
-                    <environmentVariables>
-                        <TEST_TRANSACTIONS>false</TEST_TRANSACTIONS>
-                    </environmentVariables>
-                </configuration>
-            </plugin>
             <!--
             there is no point to building/deploying the jvm stuff - there is no java source really - just poms
             -->
@@ -318,126 +67,70 @@ limitations under the License.
         </plugins>
     </build>
     <profiles>
-        <!--
-          This profile will include neo4j for purposes of transactional testing within Gremlin Server.
-          Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
-        -->
+        <!-- Test gremlin-javascript in Docker -->
         <profile>
-            <id>include-neo4j</id>
+            <id>glv-js</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>includeNeo4j</name>
-                </property>
+                <file>
+                    <exists>.glv</exists>
+                </file>
             </activation>
             <build>
+                <finalName>${project.artifactId}-${project.version}</finalName>
                 <plugins>
-                    <!-- with neo4j present we can enable transaction testing -->
                     <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <configuration>
-                            <environmentVariables combine.children="override">
-                                <TEST_TRANSACTIONS>true</TEST_TRANSACTIONS>
-                            </environmentVariables>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.gmavenplus</groupId>
-                        <artifactId>gmavenplus-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.neo4j</groupId>
-                                <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                                <version>0.9-3.4.0</version>
-                                <exclusions>
-                                    <exclusion>
-                                        <groupId>org.neo4j</groupId>
-                                        <artifactId>neo4j-kernel</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.apache.commons</groupId>
-                                        <artifactId>commons-lang3</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.apache.commons</groupId>
-                                        <artifactId>commons-text</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>com.github.ben-manes.caffeine</groupId>
-                                        <artifactId>caffeine</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.scala-lang</groupId>
-                                        <artifactId>scala-library</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.scala-lang</groupId>
-                                        <artifactId>scala-reflect</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.slf4j</groupId>
-                                        <artifactId>slf4j-api</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.slf4j</groupId>
-                                        <artifactId>slf4j-nop</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.apache.lucene</groupId>
-                                        <artifactId>lucene-core</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>io.dropwizard.metrics</groupId>
-                                        <artifactId>metrics-core</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>io.netty</groupId>
-                                        <artifactId>netty-all</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.ow2.asm</groupId>
-                                        <artifactId>asm</artifactId>
-                                    </exclusion>
-                                </exclusions>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.scala-lang</groupId>
-                                <artifactId>scala-library</artifactId>
-                                <version>2.11.8</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.scala-lang</groupId>
-                                <artifactId>scala-reflect</artifactId>
-                                <version>2.11.8</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.apache.lucene</groupId>
-                                <artifactId>lucene-core</artifactId>
-                                <version>5.5.0</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>io.dropwizard.metrics</groupId>
-                                <artifactId>metrics-core</artifactId>
-                                <version>4.2.11</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.neo4j</groupId>
-                                <artifactId>neo4j-kernel</artifactId>
-                                <version>3.4.11</version>
-                                <exclusions>
-                                    <exclusion>
-                                        <groupId>io.netty</groupId>
-                                        <artifactId>netty-all</artifactId>
-                                    </exclusion>
-                                </exclusions>
-                            </dependency>
-                        </dependencies>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>run-tests</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <environmentVariables>
+                                        <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
+                                        <!-- setting this env variable is needed to be cross-platform compatible -->
+                                        <HOME>${user.home}</HOME>
+                                    </environmentVariables>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>up</argument>
+                                        <argument>--build</argument>
+                                        <argument>--exit-code-from</argument>
+                                        <argument>gremlin-js-integration-tests</argument>
+                                    </arguments>
+                                    <workingDirectory>./src/main/javascript/gremlin-javascript</workingDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>shutdown-container</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <environmentVariables>
+                                        <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
+                                        <HOME>${user.home}</HOME>
+                                    </environmentVariables>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>down</argument>
+                                    </arguments>
+                                    <workingDirectory>./src/main/javascript/gremlin-javascript</workingDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-
         <!--
         Provides a way to deploy the gremlin-javascript GLV to npm. This cannot be part of the standard maven execution
         because npm does not have a staging environment like sonatype for releases. As soon as the release is

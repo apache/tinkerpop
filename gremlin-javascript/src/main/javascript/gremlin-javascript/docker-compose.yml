@@ -1,0 +1,56 @@
+#  Licensed to the Apache Software Foundation (ASF) under one
+#    or more contributor license agreements.  See the NOTICE file
+#    distributed with this work for additional information
+#    regarding copyright ownership.  The ASF licenses this file
+#    to you under the Apache License, Version 2.0 (the
+#    "License"); you may not use this file except in compliance
+#    with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing,
+#    software distributed under the License is distributed on an
+#    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#    KIND, either express or implied.  See the License for the
+#    specific language governing permissions and limitations
+#    under the License.
+
+version: "3.7"
+
+services:
+
+  gremlin-server-test-js:
+    container_name: gremlin-server-test-js
+    image: tinkerpop:gremlin-server-test-${GREMLIN_SERVER}
+    build:
+      context: ../../../../../
+      dockerfile: docker/gremlin-test-server/Dockerfile
+      args:
+        - GREMLIN_SERVER=${GREMLIN_SERVER}
+    ports:
+      - "45940:45940"
+      - "45941:45941"
+      - "45942:45942"
+      - "4588:4588"
+    volumes:
+      - ${HOME}/.groovy:/root/.groovy
+      - ${HOME}/.m2:/root/.m2
+      - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
+
+  gremlin-js-integration-tests:
+    container_name: gremlin-js-integration-tests
+    image: node:16
+    volumes:
+      - .:/js_app
+      - ../../../../../gremlin-test/features:/gremlin-test
+      - ../../../../../docker/gremlin-test-server:/js_app/gremlin-test-server
+    environment:
+      - DOCKER_ENVIRONMENT=true
+    working_dir: /js_app
+    command: >
+      bash -c "apt-get update && apt-get install dos2unix && dos2unix ./gremlin-test-server/wait-for-server.sh
+      && ./gremlin-test-server/wait-for-server.sh gremlin-server-test-js 45940 300 
+      && npm config set cache /tmp --global
+      && npm ci && npm run test && npm run features-docker"
+    depends_on:
+      - gremlin-server-test-js
