@@ -52,13 +52,14 @@ type gremlinServerWSProtocol struct {
 }
 
 func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, errorCallback func()) {
+	defer protocol.wg.Done()
+
 	for {
 		// Read from transport layer. If the channel is closed, this will error out and exit.
 		msg, err := protocol.transporter.Read()
 		protocol.mutex.Lock()
 		if protocol.closed {
 			protocol.mutex.Unlock()
-			protocol.wg.Done()
 			return
 		}
 		protocol.mutex.Unlock()
@@ -67,7 +68,6 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 			_ = protocol.transporter.Close()
 			protocol.logHandler.logf(Error, readLoopError, err.Error())
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
-			protocol.wg.Done()
 			return
 		}
 
@@ -76,14 +76,12 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 		if err != nil {
 			protocol.logHandler.logf(Error, logErrorGeneric, "gremlinServerWSProtocol.readLoop()", err.Error())
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
-			protocol.wg.Done()
 			return
 		}
 
 		err = protocol.responseHandler(resultSets, resp)
 		if err != nil {
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
-			protocol.wg.Done()
 			return
 		}
 	}
