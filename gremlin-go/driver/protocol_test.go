@@ -41,10 +41,7 @@ func TestProtocol(t *testing.T) {
 		assert.Nil(t, protocol)
 	})
 
-	// protocol.closed is only modified by protocol.close(). If it is true
-	// it means that protocol.wg.Wait() has already been called, so it
-	// should not be called again.
-	t.Run("Test protocol close when closed", func(t *testing.T) {
+	t.Run("Test protocol close wait", func(t *testing.T) {
 		wg := &sync.WaitGroup{}
 		protocol := &gremlinServerWSProtocol{
 			closed: true,
@@ -56,14 +53,39 @@ func TestProtocol(t *testing.T) {
 		done := make(chan bool)
 
 		go func() {
-			protocol.close()
+			protocol.close(true)
 			done <- true
 		}()
 
 		select {
 		case <-time.After(1 * time.Second):
-			t.Fatal("timeout")
+			// Ok. Close must wait.
 		case <-done:
+			t.Fatal("protocol.close is not waiting")
+		}
+	})
+
+	t.Run("Test protocol close no wait", func(t *testing.T) {
+		wg := &sync.WaitGroup{}
+		protocol := &gremlinServerWSProtocol{
+			closed: true,
+			mutex:  sync.Mutex{},
+			wg:     wg,
+		}
+		wg.Add(1)
+
+		done := make(chan bool)
+
+		go func() {
+			protocol.close(false)
+			done <- true
+		}()
+
+		select {
+		case <-time.After(1 * time.Second):
+			t.Fatal("protocol.close is waiting")
+		case <-done:
+			// Ok. Close must not wait.
 		}
 	})
 }
