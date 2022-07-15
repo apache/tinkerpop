@@ -95,7 +95,36 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <skip>${skipTests}</skip>
-                                    <executable>./run.sh</executable>
+                                    <environmentVariables>
+                                        <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
+                                        <!-- setting this env variable is needed to be cross-platform compatible -->
+                                        <HOME>${user.home}</HOME>
+                                    </environmentVariables>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>up</argument>
+                                        <argument>--build</argument>
+                                        <argument>--exit-code-from</argument>
+                                        <argument>gremlin-go-integration-tests</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>shutdown-container</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <environmentVariables>
+                                        <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
+                                        <HOME>${user.home}</HOME>
+                                    </environmentVariables>
+                                    <executable>docker-compose</executable>
+                                    <arguments>
+                                        <argument>down</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>
