@@ -323,7 +323,7 @@ g.V().has("name","gremlin").as("a").
                     <div class="col-md-12 col-lg-6 mb-4 mb-lg-0">
                         <div class="code-box h-100">
                                                     <code>
-                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span> <span class="text-blue">as</span><span class="text-success">("a").</span>
+                                                        <span class="text-purpal">g</span><span class="text-blue">.V</span><span class="text-success">().</span><span class="text-blue">has</span><span class="text-success">("name","gremlin").</span><span class="text-blue">as</span><span class="text-success">("a").</span>
 
                                                             <br>&nbsp;&nbsp;<span class="text-blue">out</span><span class="text-success">("created").</span><span class="text-blue">in</span><span class="text-success">("created").</span>
 
@@ -355,9 +355,9 @@ g.V().has("name","gremlin").as("a").
 
                                                             <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">out</span><span class="text-success">("created").as("b"),</span>
 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">in</span><span class="text-success">("created").as("c"),</span>
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("b").</span><span class="text-blue">in</span><span class="text-success">("created").as("c"),</span>
 
-                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("a").</span><span class="text-blue">in</span><span class="text-success">("manages").as("d"),</span>
+                                                            <br>&nbsp;&nbsp;<span class="text-blue">as</span><span class="text-success">("c").</span><span class="text-blue">in</span><span class="text-success">("manages").as("d"),</span>
 
                                                             <br>&nbsp;&nbsp;&nbsp;<span class="text-blue">where</span><span class="text-success">("a",</span><span class="text-blue">neq</span><span class="text-success">("c"))).</span>
 
