@@ -142,16 +142,16 @@ func (transporter *gorillaTransporter) IsClosed() bool {
 }
 
 func (transporter *gorillaTransporter) writeLoop() {
+	defer transporter.wg.Done()
+
 	ticker := time.NewTicker(transporter.connSettings.keepAliveInterval)
-	defer func() {
-		ticker.Stop()
-	}()
+	defer ticker.Stop()
+
 	for {
 		select {
 		case message, ok := <-transporter.writeChannel:
 			if !ok {
 				// Channel was closed, we can disconnect and exit.
-				transporter.wg.Done()
 				return
 			}
 
@@ -159,7 +159,6 @@ func (transporter *gorillaTransporter) writeLoop() {
 			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.connSettings.writeDeadline))
 			if err != nil {
 				transporter.logHandler.logf(Error, failedToSetWriteDeadline, err.Error())
-				transporter.wg.Done()
 				return
 			}
 
@@ -167,7 +166,6 @@ func (transporter *gorillaTransporter) writeLoop() {
 			err = transporter.connection.WriteMessage(websocket.BinaryMessage, message)
 			if err != nil {
 				transporter.logHandler.logf(Error, failedToWriteMessage, "BinaryMessage", err.Error())
-				transporter.wg.Done()
 				return
 			}
 		case <-ticker.C:
@@ -175,7 +173,6 @@ func (transporter *gorillaTransporter) writeLoop() {
 			err := transporter.connection.SetWriteDeadline(time.Now().Add(transporter.connSettings.keepAliveInterval))
 			if err != nil {
 				transporter.logHandler.logf(Error, failedToSetWriteDeadline, err.Error())
-				transporter.wg.Done()
 				return
 			}
 
@@ -183,7 +180,6 @@ func (transporter *gorillaTransporter) writeLoop() {
 			err = transporter.connection.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
 				transporter.logHandler.logf(Error, failedToWriteMessage, "PingMessage", err.Error())
-				transporter.wg.Done()
 				return
 			}
 		}
