@@ -45,6 +45,8 @@ of the basic `mvn clean install` sort of function.
 IMPORTANT: For those who intend to offer a contribution, building with a minimal configuration may not be sufficient
 when submitting a pull request. Consider setting up the full environment.
 
+TIP: Consider using link:https://sdkman.io/[SDKMAN!] to manage Java and Maven versions and environments.
+
 NOTE: For those using Windows, efforts have been made to keep the build OS independent, but, in practice, it is likely
 that TinkerPop's build system will only allow for a minimum build at best. +
  +
@@ -202,6 +204,8 @@ mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
 can be used to help run tests.
 
+TIP: Consider use of link:https://realpython.com/intro-to-pyenv/[pyenv] to better manage Python versions and environments.
+
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[dotnet-environment]]
@@ -250,6 +254,8 @@ IMPORTANT: Beware of unexpected or unwanted changes on `package-lock.json` files
 
 TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
 can be used to help run tests.
+
+TIP: Consider using link:https://github.com/nvm-sh/nvm[nvm] to manage node.js versions and environments.
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
