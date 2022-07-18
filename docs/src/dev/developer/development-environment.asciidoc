@@ -402,6 +402,9 @@ TinkerPop provides a shell script, that can start several build tasks within a D
 required Docker images will be built automatically if they don't exist yet. Thus the first invocation
 of the Docker script is expected to take some time.
 
+NOTE: Currently, `gremlin-go` integration is not supported within this Docker container, but can be run separately with Docker.
+Please see the `Testing With Docker` section under the xref:../../../../gremlin-go/driver/README.md[Gremlin Go Driver] for details.
+
 The script can be found under `PROJECT_HOME/docker/build.sh`. The following tasks are currently
 supported:
 
