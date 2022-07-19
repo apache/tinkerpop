@@ -102,7 +102,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
                 const long timeOutInMs = 1L;
-                const int scriptSleepTimeInMs = 30000;
+                const int scriptSleepTimeInMs = 60000;
                 var sleepScript = _requestMessageProvider.GetSleepGremlinScript(scriptSleepTimeInMs);
 
                 var requestMsg =
@@ -120,7 +120,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 Assert.Contains("ServerTimeout", thrownException.Message);
                 Assert.Contains(timeOutInMs.ToString(), thrownException.Message);
                 Assert.True(evaluationStopWatch.ElapsedMilliseconds < scriptSleepTimeInMs,
-                    $"Elapsed {evaluationStopWatch.ElapsedMilliseconds} > 5000");
+                    $"Elapsed {evaluationStopWatch.ElapsedMilliseconds} > {scriptSleepTimeInMs}");
             }
         }
 
