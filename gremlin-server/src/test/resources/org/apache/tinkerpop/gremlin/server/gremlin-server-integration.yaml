@@ -29,7 +29,7 @@
 # gremlin-server/src/test/resources/scripts/test-server-start.groovy
 ###############################################################################
 
-host: localhost
+host: 0.0.0.0
 port: 45940
 evaluationTimeout: 30000
 graphs: {
