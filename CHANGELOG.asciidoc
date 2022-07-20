@@ -212,7 +212,7 @@ This release also includes changes from <<release-3-5-3, 3.5.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-4]]
-=== TinkerPop 3.5.4 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.4 (Release Date: July 18, 2022)
 
 * Added exception to Gremlin Server that is thrown when using a transaction on a non-transaction graph.
 * Exposed error message sent by the server as a property on `GremlinServerError` for gremlin-python
@@ -236,6 +236,27 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug where the JavaScript client would hang indefinitely on traversals if the connection to the server was terminated.
 * Fix a javadoc comment in Cluster.Builder regarding maxInProcessPerConnection.
 * Added a getter for selectKeys in SelectStep
+
+==== Bugs
+
+* TINKERPOP-2734 NullPointerException when calling Client chooseConnection()
+* TINKERPOP-2735 IllegalStateException: Unrecognized content of the 'gremlin' argument... on connection close
+* TINKERPOP-2736 PluginAcceptror interface no more available in 3.5.3+ but referred in documentation
+* TINKERPOP-2741 GraphMLWriter error message is not properly formatted
+* TINKERPOP-2751 Transaction: tx.commit() hangs up in javascript client-lib
+* TINKERPOP-2754 Javascript client hangs if the server restarts
+* TINKERPOP-2763 client.submitAsync returns None value
+* TINKERPOP-2768 BranchStep pickToken should be integrated when added as a child option
+
+==== Improvements
+
+* TINKERPOP-2229 JavaScript GLV: Add GraphBinary Support
+* TINKERPOP-2631 GraphSON float serialization when ujson is used is imprecise
+* TINKERPOP-2693 Complete GraphBinary support in Python
+* TINKERPOP-2740 first request suspend more than 9s when using gremlin-java-driver
+* TINKERPOP-2748 Medium security vulnerability on netty-all and netty-codec
+* TINKERPOP-2762 getScopeKeys should respect the order of keys passed in Step
+* TINKERPOP-2764 AWS Neptune returns an inaccessible structured error response
 
 [[release-3-5-3]]
 === TinkerPop 3.5.3 (Release Date: April 4, 2022)
