@@ -23,16 +23,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.5.4
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: July 18, 2022*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.5-dev/CHANGELOG.asciidoc#release-3-5-4[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.4/CHANGELOG.asciidoc#release-3-5-4[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
 ==== Gremlin-Go
 
-After introducing a number of release candidates over the past several months, the offical release of Gremlin-Go is now
+After introducing a number of release candidates over the past several months, the official release of Gremlin-Go is now
 available starting at 3.5.4. There are a few simple prerequisites required to get started:
 
 * A Golang version of `1.17` or greater. Please see link:https://go.dev/dl/[Go Downloads] for more details on installing Golang.
