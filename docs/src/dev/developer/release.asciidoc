@@ -210,7 +210,13 @@ current release was under development as this new release will have those change
 . `git diff` and review the updated files
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 .. This step should update the Gremlin.Net project file and Gremlin Javascript package file with the newly bumped version.
-. `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have a gray background and do not show the results of the commands.
+. `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up
+through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have
+a gray background and do not show the results of the commands. In the event of failure, especially with `GraphComputer`
+related code examples, they best recourse is to take the time to test the example manually. While `process-docs.sh`
+tries to output the errors it can often point out a red herring where running the example manually will immediately
+showcase the problem. Unless you immediately know what is wrong, it is almost never a good idea to try to debug the
+problem based on the error shown by `process-docs.sh`.
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step handled
 document generation and this step now merely needs to upload what was generated. Note that this step will be responsible
 for generating javadoc.
