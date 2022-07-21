@@ -171,7 +171,8 @@ namespace Gremlin.Net.UnitTest.Driver
             await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request2);
 
             // delay for NotifyAboutConnectionFailure running in another thread
-            while (connection.NrRequestsInFlight == 2)
+            var runs = 0;
+            while (connection.NrRequestsInFlight == 2 && ++runs < 5)
             {
                 await Task.Delay(5);
             }
