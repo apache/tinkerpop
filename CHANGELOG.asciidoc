@@ -21,13 +21,35 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
 [[release-3-6-1]]
-=== TinkerPop 3.6.1 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.6.1 (Release Date: July 18, 2022)
 
 This release also includes changes from <<release-3-5-4, 3.5.4>>.
 
 * Made GraphBinary the default serialization format for .NET and Python.
 * Added missing `ResponseStatusCodeEnum` entry for 595 for .NET.
-* Fix a javadoc comment in Cluster.Builder regarding maxInProcessPerConnection.
+* Fix a javadoc comment in `Cluster.Builder` regarding maxInProcessPerConnection.
+
+==== Bugs
+
+* TINKERPOP-2734 NullPointerException when calling Client chooseConnection()
+* TINKERPOP-2736 PluginAcceptor interface no more available in 3.5.3+ but referred in documentation
+* TINKERPOP-2741 GraphMLWriter error message is not properly formatted
+* TINKERPOP-2746 Medium security vulnerabilities on logback-core
+* TINKERPOP-2751 Transaction: tx.commit() hangs up in javascript client-lib
+* TINKERPOP-2754 Javascript client hangs if the server restarts
+* TINKERPOP-2768 BranchStep pickToken should be integrated when added as a child option
+
+==== Improvements
+
+* TINKERPOP-2229 JavaScript GLV: Add GraphBinary Support
+* TINKERPOP-2631 GraphSON float serialization when ujson is used is imprecise
+* TINKERPOP-2693 Complete GraphBinary support in Python
+* TINKERPOP-2715 remove log4jv1 dependency
+* TINKERPOP-2723 Make GraphBinary the default serialization format for .NET and Python *(breaking)*
+* TINKERPOP-2740 first request suspend more than 9s when using gremlin-java-driver
+* TINKERPOP-2748 Medium security vulnerability on netty-all and netty-codec
+* TINKERPOP-2762 getScopeKeys should respect the order of keys passed in Step
+* TINKERPOP-2764 AWS Neptune returns an inaccessible structured error response
 
 [[release-3-6-0]]
 === TinkerPop 3.6.0 (Release Date: April 4, 2022)

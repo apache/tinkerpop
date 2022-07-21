@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.6.1-SNAPSHOT</version>
+        <version>3.6.1</version>
     </parent>
     <artifactId>hadoop-gremlin</artifactId>
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
@@ -204,6 +204,13 @@ limitations under the License.
                         <manifestEntries>
                             <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:${hadoop.version}
                             </Gremlin-Plugin-Dependencies>
+                            <!-- initialization failures for using jackson after 2.12.* and hadoop pulls these in -->
+                            <Gremlin-Plugin-Paths>
+                                jackson-annotations-2.13.2.jar=;jackson-databind-2.13.2.2.jar=;jackson-core-2.13.2.jar=
+                            </Gremlin-Plugin-Paths>
+                            <Gremlin-Lib-Paths>
+                                jackson-annotations-2.13.2.jar=;jackson-databind-2.13.2.2.jar=;jackson-core-2.13.2.jar=
+                            </Gremlin-Lib-Paths>
                         </manifestEntries>
                     </archive>
                 </configuration>

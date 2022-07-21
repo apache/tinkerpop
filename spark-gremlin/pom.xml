@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.6.1-SNAPSHOT</version>
+        <version>3.6.1</version>
     </parent>
     <artifactId>spark-gremlin</artifactId>
     <name>Apache TinkerPop :: Spark Gremlin</name>
@@ -203,7 +203,7 @@ limitations under the License.
             <artifactId>scala-library</artifactId>
             <version>2.12.10</version>
         </dependency>
-        <!-- use jackson 2.12.3 to fit better with spark where Scala module 2.12.3 requires Jackson Databind version >= 2.12.0 and < 2.13.0 -->
+        <!-- use jackson 2.12.7 to fit better with spark where Scala module 2.12.3 requires Jackson Databind version >= 2.12.0 and < 2.13.0 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -326,6 +326,13 @@ limitations under the License.
                             <Gremlin-Plugin-Dependencies>
                                 org.apache.hadoop:hadoop-client:${hadoop.version};org.apache.hadoop:hadoop-yarn-server-web-proxy:${hadoop.version};org.apache.spark:spark-yarn_2.12:${spark.version}
                             </Gremlin-Plugin-Dependencies>
+                            <!-- initialization failures for using jackson after 2.12.* and hadoop pulls these in -->
+                            <Gremlin-Plugin-Paths>
+                                jackson-annotations-2.13.2.jar=;jackson-databind-2.13.2.2.jar=;jackson-core-2.13.2.jar=
+                            </Gremlin-Plugin-Paths>
+                            <Gremlin-Lib-Paths>
+                                jackson-annotations-2.13.2.jar=;jackson-databind-2.13.2.2.jar=;jackson-core-2.13.2.jar=
+                            </Gremlin-Lib-Paths>
                         </manifestEntries>
                     </archive>
                 </configuration>
