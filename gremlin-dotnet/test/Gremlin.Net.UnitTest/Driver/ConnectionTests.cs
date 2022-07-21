@@ -165,15 +165,16 @@ namespace Gremlin.Net.UnitTest.Driver
 
             // Release the connection close message.
             receiveSempahore.Release();
-            // delay to set new mocked response for mockedClientWebSocket
-            while (mockedClientWebSocket.Object.State != WebSocketState.CloseReceived)
-            {
-                await Task.Delay(5);
-            }
 
             // Assert that both requests get notified with the closed exception.
             await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request1);
             await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request2);
+
+            // delay for NotifyAboutConnectionFailure running in another thread
+            while (connection.NrRequestsInFlight == 2)
+            {
+                await Task.Delay(5);
+            }
 
             Assert.False(connection.IsOpen);
             Assert.Equal(0, connection.NrRequestsInFlight);
