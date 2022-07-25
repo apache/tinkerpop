@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Changed label generation in `PathProcessorStrategy` to be more deterministic.
 * Bumped to Apache `commons-configuration` 2.8.0 to fix security vulnerability.
+* Fixed issue where the `GremlinGroovyScriptEngine` reused the same translator concurrently which lead to incorrect translations.
 
 [[release-3-5-4]]
 === TinkerPop 3.5.4 (Release Date: July 18, 2022)
