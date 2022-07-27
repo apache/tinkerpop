@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-
+* Changed label generation in `PathProcessorStrategy` to be more deterministic.
 
 [[release-3-5-4]]
 === TinkerPop 3.5.4 (Release Date: July 18, 2022)
