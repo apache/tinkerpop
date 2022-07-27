@@ -1829,11 +1829,6 @@ To make the code more readable and close to the Gremlin query language), you can
 type implementation. To input a set into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface
 will be serialized as a set. `gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go
 that can be used to fulfill the `gremlingo.Set` interface if desired.
-* The `path` data type serialization is currently incomplete as labels are represented as list of lists instead of list
-of sets. Fully functional Path serialization will be implemented when set is implemented in the next milestone. Path
-can be successfully deserialized.
-* Traversal step functions currently take `string` arguments with double quotes only. Operations using Gremlin keywords,
-such as `By(label)`, will be supported in the next milestone.
 
 [[gremlin-go-examples]]
 === Application Examples
