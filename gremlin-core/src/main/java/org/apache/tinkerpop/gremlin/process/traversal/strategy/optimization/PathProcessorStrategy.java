@@ -118,7 +118,7 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                 int index = TraversalHelper.stepIndex(whereTraversalStep, traversal);
                 final SelectOneStep<?, ?> selectOneStep = new SelectOneStep<>(traversal, Pop.last, whereStartStep.getScopeKeys().iterator().next());
                 traversal.addStep(index, selectOneStep);
-                final String generatedLabel = PathProcessorStrategy.generateLabel();
+                final String generatedLabel = generateLabel(whereStartStep);
                 if (selectOneStep.getPreviousStep() instanceof EmptyStep) {
                     TraversalHelper.insertBeforeStep(new IdentityStep<>(traversal), selectOneStep, traversal);
                     index++;
@@ -191,8 +191,19 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
         return INSTANCE;
     }
 
-    private static String generateLabel() {
-        return IS_TESTING ? "xyz" : UUID.randomUUID().toString();
+    private static String generateLabel(final Step<?, ?> step) {
+        // use a predictable label here rather than a UUID. the UUID step label might get generated in
+        // different threads in OLAP and misbehave for something like:
+        // g.withComputer().V().as("a").out("created").where(__.as("a").values("name").is("josh")).in("created").values("name")
+        // because labels won't propagate for the SelectOneStep with processTraverserPathLabels if the labels
+        // end up being different. this bug has only recently shown itself an only under conditions i can't
+        // quite identify. it may have been masked for years by the "is.testing" flag which was pinning the
+        // label to "xyz" and for maven that flag is enabled. not sure if using the step id is "right" or "best"
+        // but it seems to give a predictable label/unique and actually one nicer label than the UUID. in the
+        // profile() the UUID almost looks like a bug if you don't understand why it's there. at least with
+        // this labelling the name of the strategy gives a hint
+        return IS_TESTING ? "xyz" : "[" + PathProcessorStrategy.class.getSimpleName() + "-" +
+                step.getId().replace(".", "+").replace("()", "") + "]";
     }
 
     private static int labelCount(final String label, final Traversal.Admin<?, ?> traversal) {

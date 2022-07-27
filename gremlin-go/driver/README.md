@@ -119,24 +119,24 @@ Please review the [staticcheck documentation][scheck docs] for more details on i
 
 ## Testing with Docker
 
-Docker allows you to test the driver without installing any dependencies. Please make sure Docker is installed and running on your system.
-You will need to install both [Docker Engine][dengine] and [Docker Compose][dcompose], which are included in [Docker Desktop][ddesktop].
+Docker allows you to test the driver without installing any dependencies. Gremlin Go uses Docker for all of its testing. Please make sure Docker is installed and running on your system. You will need to install both [Docker Engine][dengine] and [Docker Compose][dcompose], which are included in [Docker Desktop][ddesktop].
 
 The docker compose environment variable `GREMLIN_SERVER` specifies the Gremlin server docker image to use, i.e. an image with the tag
 `tinkerpop/gremlin-server:$GREMLIN_SERVER`, and is a required environment variable. This also requires the specified docker image to exist,
 either locally or in [Docker Hub][dhub].
 
-If your OS Platform cannot build a local SNAPSHOT Gremlin server through `maven`, it is recommended to use the latest released server version
-from [Docker Hub][dhub] (do not use `GREMLIN_SERVER=latest`, use actual version number, e.g. `GREMLIN_SERVER=3.5.x` or `GREMLIN_SERVER=3.6.x`).
+Running `mvn clean install -pl gremlin-server -DskipTests -DskipIntegrationTests=true -Dci -am` in the main `tinkerpop` directory will automatically build a local SNAPSHOT Gremlin server image. If your OS Platform cannot build a local SNAPSHOT Gremlin server through `maven`, it is recommended to use the latest released server version from [Docker Hub][dhub] (do not use `GREMLIN_SERVER=latest`, use actual version number, e.g. `GREMLIN_SERVER=3.5.x` or `GREMLIN_SERVER=3.6.x`).
 
-There are 4 ways to launch the test suite and set the `GREMLIN_SERVER` environment variable depending on your Platform:
-- Execute tests via the `run.sh` script, which sets `GREMLIN_SERVER` by default. Run `./run.sh -h` for usage information (Unix/Linux - recommended).
-- Add `GREMLIN_SERVER=<server-image-version>` to an `.env` file inside `gremlin-go` and run `docker-compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
+The docker compose environment variable `HOME` specifies the user home directory for mounting volumes during test image set up. This varibale is set by default in Unix/Linux, but will need to be set for Windows, for example, run `$env:HOME=$env:USERPROFILE` in PowerShell.
+
+There are different ways to launch the test suite and set the `GREMLIN_SERVER` environment variable depending on your Platform:
+- Run Maven commands, e.g. `mvn clean install` inside of `tinkerpop/gremlin-go`, or `mvn clean install -pl gremlin-go` inside of `tinkerpop` (platform-agnostic - recommended)
+- Run the `run.sh` script, which sets `GREMLIN_SERVER` by default. Run `./run.sh -h` for usage information (Unix/Linux - recommended).
+- Add `GREMLIN_SERVER=<server-image-version>` and `HOME=<user-home-directory>` to an `.env` file inside `gremlin-go` and run `docker-compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
 - Run `GREMLIN_SERVER=<server-image-version> docker-compose up --exit-code-from gremlin-go-integration-tests` in Unix/Linux.
-- Run `$env:GREMLIN_SERVER="<server-image-version>";docker-compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
+- Run `$env:GREMLIN_SERVER="<server-image-version>";$env:HOME=$env:USERPROFILE;docker-compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
 
-You should see exit code 0 upon successful completion of the test suites. Run `docker-compose down` to remove the service containers (not needed
-if you executed `run.sh`), or `docker-compose down --rmi all` to remove the service containers while deleting all used images.
+You should see exit code 0 upon successful completion of the test suites. Run `docker-compose down` to remove the service containers (not needed if you executed Maven commands or `run.sh`), or `docker-compose down --rmi all` to remove the service containers while deleting all used images.
 
 [go]: https://go.dev/dl/
 [gomods]: https://go.dev/blog/using-go-modules
