@@ -34,6 +34,8 @@ TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 11` for 
 [source,bash]
 mvn clean install
 
+Please see the xref:docs/src/dev/developer/development-environment.asciidoc#building-on-windows[Building on Windows] section for Windows specific build instructions.
+
 The zip distributions can be found in the following directories:
 
 . `gremlin-server/target`

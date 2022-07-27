@@ -50,10 +50,8 @@ TIP: Consider using link:https://sdkman.io/[SDKMAN!] to manage Java and Maven ve
 NOTE: For those using Windows, efforts have been made to keep the build OS independent, but, in practice, it is likely
 that TinkerPop's build system will only allow for a minimum build at best. +
  +
- For Hadoop Gremlin to work on Windows, the `winutils.exe` binary needs to be downloaded and placed in local folder in
- the following file structure: `hadoop/bin/winutils.exe` and `HADOOP_HOME` must point to the `hadoop` folder as an
- environment variable. The binary for Hadoop-2.7.7 can be found https://github.com/cdarlint/winutils/blob/master/hadoop-2.7.7/bin/winutils.exe[here]
-
+ Refer to <<building-on-windows>> section for more details.
+ 
 [[groovy-environment]]
 === Groovy Environment
 
@@ -461,12 +459,32 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Generate web site locally: `bin/generate-home.sh`
 ** Publish web site: `bin/publish-home.sh <username>`
 
+[[building-on-windows]]
+== Building On Windows
+
+The following steps must be taken in order to build TinkerPop on Windows:
+
+. Install winutils for Hadoop
+* Download the latest version of link:https://github.com/cdarlint/winutils[winutils] binaries for Hadoop. The binaries `winutils.exe` and `hadoop.dll` are required.
+* Place contents of the bin folder on your local driver in the following folder structure:
+** e.g. `hadoop-3.2.2/bin/winutils.exe`
+* Set `HADOOP_HOME` to point to the `hadoop-3.2.2` folder
+* Add `%HADOOP_HOME%\bin` to your `PATH`
+. Run `mvn clean install` from root of tinkerpop
+. Follow IDE specific steps if applicable:
+* <<intellij>>
+
+You should now be able to work with TinkerPop on Windows.
+
 [[docker-integration]]
 == Docker Integration
 
 TinkerPop provides a shell script, that can start several build tasks within a Docker container. The
 required Docker images will be built automatically if they don't exist yet. Thus the first invocation
 of the Docker script is expected to take some time.
+
+NOTE: Currently, `gremlin-go` integration is not supported within this Docker container, but can be run separately with Docker.
+Please see the `Testing With Docker` section under the xref:../../../../gremlin-go/driver/README.md[Gremlin Go Driver] for details.
 
 The script can be found under `PROJECT_HOME/docker/build.sh`. The following tasks are currently
 supported:
