@@ -59,19 +59,6 @@ line of 22H2.
 * Add string manipulation functions (`split()`, `substring()` etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
 * Case-insensitive search (link:https://issues.apache.org/jira/browse/TINKERPOP-2673[TINKERPOP-2673])
 
-== 3.6.x - Target 22Q3
-
-The initial release of this line was produced April 2022 with the next follow-on release targeted for 22Q3.
-
-
-
-== 3.5.x - Target 22Q3
-
-This initial release of this line was produced in May 2021 with the next follow-on release targeted for 22Q3.
-
-* GraphBinary support for Javascript (link:https://issues.apache.org/jira/browse/TINKERPOP-2229[TINKERPOP-2229])
-* Gremlin Language Variant for Go (link:https://issues.apache.org/jira/browse/TINKERPOP-2692[TINKERPOP-2692])
-
 = Proposals
 
 This section tracks and details future ideas. While the dev list is the primary place to talk about new ideas, complex

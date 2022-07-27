@@ -20,6 +20,13 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
+[[release-3-6-2]]
+=== TinkerPop 3.6.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-5-5, 3.5.5>>.
+
+
+
 [[release-3-6-1]]
 === TinkerPop 3.6.1 (Release Date: July 18, 2022)
 
