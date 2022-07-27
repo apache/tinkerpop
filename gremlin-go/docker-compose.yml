@@ -49,8 +49,10 @@ services:
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
       - TEST_TRANSACTIONS=true
     working_dir: /go_app
-    command: ["./wait-for-server.sh", gremlin-test-server, "45940", "180", "bash", "-c",
-      "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"]
+    command: >
+      bash -c "apt-get update && apt-get install dos2unix && dos2unix ./wait-for-server.sh
+      && ./wait-for-server.sh gremlin-test-server 45940 300
+      && go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
     depends_on:
       - gremlin-test-server

@@ -92,7 +92,7 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
@@ -116,7 +116,7 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
@@ -240,10 +240,7 @@ jobs:
       - name: Build with Maven
         working-directory: .
         run: |
-          ls -la ./gremlin-go
-          touch ./gremlin-go/.glv
-          chmod +x ./gremlin-go/run.sh
-          ls -la ./gremlin-go
+          touch gremlin-go/.glv
           mvn verify -pl :gremlin-go
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3

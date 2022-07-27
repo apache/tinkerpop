@@ -29,7 +29,9 @@ RUN chmod 755 /opt/docker-entrypoint.sh
 # Installing dos2unix to avoid errors in running the entrypoint script on Windows machines where their
 # carriage return is \r\n instead of the \n needed for linux/unix containers
 RUN apk update && apk add dos2unix
-RUN dos2unix /opt/docker-entrypoint.sh && apk del dos2unix
+RUN dos2unix /opt/docker-entrypoint.sh
+RUN dos2unix /opt/gremlin-server/bin/gremlin-server.conf
+RUN dos2unix /opt/gremlin-server/bin/gremlin-server.sh && apk del dos2unix
 
 ARG GREMLIN_SERVER
 ENV GREMLIN_SERVER_VER=$GREMLIN_SERVER
