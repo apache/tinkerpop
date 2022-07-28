@@ -405,10 +405,11 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 The following steps must be taken in order to build TinkerPop on Windows:
 
 . Install winutils for Hadoop
-* Download the latest version of link:https://github.com/cdarlint/winutils[winutils] binaries for Hadoop. The binaries `winutils.exe` and `hadoop.dll` are required.
+* Download the latest version of link:https://github.com/kontext-tech/winutils[winutils] binaries for Hadoop. The binaries `winutils.exe` and `hadoop.dll` are required.
+** Note that these libraries require Microsoft Visual C++ Redistributable 2015-2022 to be installed. We've tested it on Windows 10 and Windows 11 with Microsoft Visual C++ Redistributable 2015-2022 14.32.31326.
 * Place contents of the bin folder on your local driver in the following folder structure:
-** e.g. `hadoop-3.2.2/bin/winutils.exe`
-* Set `HADOOP_HOME` to point to the `hadoop-3.2.2` folder
+** e.g. `hadoop-3.3.1/bin/winutils.exe`
+* Set `HADOOP_HOME` to point to the `hadoop-3.3.1` folder
 * Add `%HADOOP_HOME%\bin` to your `PATH`
 . Run `mvn clean install` from root of tinkerpop
 . Follow IDE specific steps if applicable:
