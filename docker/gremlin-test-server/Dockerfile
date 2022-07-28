@@ -22,21 +22,18 @@ USER root
 RUN mkdir -p /opt
 WORKDIR /opt
 COPY gremlin-server/src/test /opt/test/
-COPY gremlin-go/docker/generate-all.groovy /opt/test/scripts/
-COPY gremlin-go/docker/docker-entrypoint.sh gremlin-go/docker/*.yaml /opt/
+COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml /opt/
 RUN chmod 755 /opt/docker-entrypoint.sh
 
 # Installing dos2unix to avoid errors in running the entrypoint script on Windows machines where their
 # carriage return is \r\n instead of the \n needed for linux/unix containers
 RUN apk update && apk add dos2unix
-RUN dos2unix /opt/docker-entrypoint.sh
-RUN dos2unix /opt/gremlin-server/bin/gremlin-server.conf
-RUN dos2unix /opt/gremlin-server/bin/gremlin-server.sh && apk del dos2unix
+RUN dos2unix /opt/docker-entrypoint.sh && apk del dos2unix
 
 ARG GREMLIN_SERVER
-ENV GREMLIN_SERVER_VER=$GREMLIN_SERVER
+ENV GREMLIN_SERVER_VERSION=$GREMLIN_SERVER
 
-EXPOSE 45940 45941
+EXPOSE 45940-45942 4588
 
-ENTRYPOINT ["bash", "/opt/docker-entrypoint.sh"]
+ENTRYPOINT ["/opt/docker-entrypoint.sh", "-n"]
 CMD []

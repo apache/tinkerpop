@@ -19,20 +19,23 @@ version: "3.7"
 
 services:
 
-  gremlin-test-server:
-    container_name: gremlin-test-server
-    image: tinkerpop:gremlin-test-server-${GREMLIN_SERVER}
+  gremlin-server-test:
+    container_name: gremlin-server-test
+    image: tinkerpop:gremlin-server-test-${GREMLIN_SERVER}
     build:
       context: ../
-      dockerfile: gremlin-go/Dockerfile
+      dockerfile: docker/gremlin-test-server/Dockerfile
       args:
         - GREMLIN_SERVER=${GREMLIN_SERVER}
     ports:
       - "45940:45940"
       - "45941:45941"
+      - "45942:45942"
+      - "4588:4588"
     volumes:
       - ${HOME}/.groovy:/root/.groovy
       - ${HOME}/.m2:/root/.m2
+      - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
 
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
@@ -40,19 +43,20 @@ services:
     volumes:
       - .:/go_app
       - ../gremlin-test/features:/gremlin-test
+      - ../docker/gremlin-test-server:/go_app/gremlin-test-server
     environment:
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test
-      - GREMLIN_SERVER_URL=ws://gremlin-test-server:45940/gremlin
-      - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-test-server:45941/gremlin
+      - GREMLIN_SERVER_URL=ws://gremlin-server-test:45940/gremlin
+      - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-server-test:45941/gremlin
       - RUN_INTEGRATION_TESTS=true
       - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
       - TEST_TRANSACTIONS=true
     working_dir: /go_app
     command: >
-      bash -c "apt-get update && apt-get install dos2unix && dos2unix ./wait-for-server.sh
-      && ./wait-for-server.sh gremlin-test-server 45940 300
+      bash -c "apt-get update && apt-get install dos2unix && dos2unix ./gremlin-test-server/wait-for-server.sh
+      && ./gremlin-test-server/wait-for-server.sh gremlin-server-test 45940 300
       && go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
       && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
     depends_on:
-      - gremlin-test-server
+      - gremlin-server-test

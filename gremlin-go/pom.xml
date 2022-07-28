@@ -97,6 +97,7 @@ limitations under the License.
                                     <skip>${skipTests}</skip>
                                     <environmentVariables>
                                         <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
+                                        <ABS_PROJECT_HOME>${project.basedir}</ABS_PROJECT_HOME>
                                         <!-- setting this env variable is needed to be cross-platform compatible -->
                                         <HOME>${user.home}</HOME>
                                     </environmentVariables>
@@ -119,6 +120,7 @@ limitations under the License.
                                     <skip>${skipTests}</skip>
                                     <environmentVariables>
                                         <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
+                                        <ABS_PROJECT_HOME>${project.basedir}</ABS_PROJECT_HOME>
                                         <HOME>${user.home}</HOME>
                                     </environmentVariables>
                                     <executable>docker-compose</executable>

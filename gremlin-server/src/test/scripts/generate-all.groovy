@@ -75,4 +75,9 @@ def dynamicGtx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["t
 if (dynamicGtx != null)
     globals << [gtx : traversal().withEmbedded(dynamicGtx).withStrategies(ReferenceElementStrategy)]
 
+// dynamically detect existence of gimmutable as it is only used in gremlin-go testing suite
+def dynamicGimmutable = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["immutable"]
+if (dynamicGimmutable != null)
+    globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable).withStrategies(ReferenceElementStrategy)]
+
 globals
