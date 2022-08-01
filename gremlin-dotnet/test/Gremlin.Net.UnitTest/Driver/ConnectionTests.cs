@@ -170,6 +170,13 @@ namespace Gremlin.Net.UnitTest.Driver
             await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request1);
             await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request2);
 
+            // delay for NotifyAboutConnectionFailure running in another thread
+            var runs = 0;
+            while (connection.NrRequestsInFlight == 2 && ++runs < 5)
+            {
+                await Task.Delay(5);
+            }
+
             Assert.False(connection.IsOpen);
             Assert.Equal(0, connection.NrRequestsInFlight);
             mockedClientWebSocket.Verify(m => m.ConnectAsync(uri, It.IsAny<CancellationToken>()), Times.Once);
