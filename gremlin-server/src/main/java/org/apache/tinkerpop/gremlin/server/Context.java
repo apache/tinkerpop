@@ -53,6 +53,7 @@ public class Context {
     private final long requestTimeout;
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
+    private final AtomicBoolean startedResponse = new AtomicBoolean(false);
 
     /**
      * The type of the request as determined by the contents of {@link Tokens#ARGS_GREMLIN}.
@@ -150,6 +151,34 @@ public class Context {
      */
     public GremlinExecutor getGremlinExecutor() {
         return gremlinExecutor;
+    }
+
+    /**
+     * Gets whether the server has started processing the response for this request.
+     */
+    public boolean getStartedResponse() { return startedResponse.get(); }
+
+    /**
+     * Signal that the server has started processing the response.
+     */
+    public void setStartedResponse() { startedResponse.set(true); }
+
+    /**
+     * Writes a default timeout error response message to the underlying channel.
+     */
+    public void sendTimeoutResponse() {
+        sendTimeoutResponse(String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", requestMessage));
+    }
+
+    /**
+     * Writes a specific timeout error response message to the underlying channel.
+     */
+    public void sendTimeoutResponse(final String message) {
+        logger.warn(message);
+        writeAndFlush(ResponseMessage.build(requestMessage)
+                .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                .statusMessage(message)
+                .statusAttributeException(new InterruptedException()).create());
     }
 
     /**

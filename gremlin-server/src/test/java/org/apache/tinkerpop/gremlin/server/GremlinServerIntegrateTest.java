@@ -23,6 +23,8 @@ import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -70,6 +72,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -114,6 +120,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         setProperty("clusterConfiguration.port", TestClientFactory.PORT);
         setProperty("clusterConfiguration.hosts", "localhost");
     }};
+    private static final int POOL_SIZE_FOR_TIMEOUT_TESTS = 1;
 
     private static LogCaptor logCaptor;
 
@@ -229,6 +236,25 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldBlowTheWorkQueueSize":
                 settings.gremlinPool = 1;
                 settings.maxWorkQueueSize = 1;
+                break;
+            case "shouldRespondToTimeoutCancelledWsRequest":
+            case "shouldRespondToTimeoutCancelledSessionRequest":
+                tryIncludeNeo4jGraph(settings);
+                settings.evaluationTimeout = 5000;
+                settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
+                settings.channelizer = WebSocketChannelizer.class.getName();
+                break;
+            case "shouldRespondToTimeoutCancelledSingleTaskUnifiedRequest":
+                settings.evaluationTimeout = 5000;
+                settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
+                settings.channelizer = UnifiedChannelizer.class.getName();
+                break;
+            case "shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest":
+                tryIncludeNeo4jGraph(settings);
+                settings.evaluationTimeout = 30000;
+                settings.sessionLifetimeTimeout = 5000; // This needs to be shorter because of the delay in scheduling session task.
+                settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
+                settings.channelizer = UnifiedChannelizer.class.getName();
                 break;
             default:
                 break;
@@ -1077,6 +1103,115 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2769 with request sent to WebSocketChannelizer.
+     */
+    @Test(timeout = 180000) // Add timeout in case the test hangs.
+    public void shouldRespondToTimeoutCancelledWsRequest() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+        runTimeoutTest(g);
+        g.close();
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2769 with request having a Session ID sent to WebSocketChannelizer.
+     */
+    @Test(timeout = 180000) // Add timeout in case the test hangs.
+    public void shouldRespondToTimeoutCancelledSessionRequest() throws Exception {
+        // Don't test with UnifiedChannelizer since we only want to test the case where a task is cancelled before
+        // running which is handled by shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest.
+        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        runTimeoutTest(gtx);
+
+        gtx.tx().commit();
+        cluster.close();
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2769 with request sent to UnifiedChannelizer.
+     */
+    @Test(timeout = 180000) // Add timeout in case the test hangs.
+    public void shouldRespondToTimeoutCancelledSingleTaskUnifiedRequest() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+        runTimeoutTest(g);
+        g.close();
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2769 with request having a Session ID sent to UnifiedChannelizer.
+     */
+    @Test(timeout = 180000) // Add timeout in case the test hangs.
+    public void shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest() throws Exception {
+        assumeNeo4jIsPresent();
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        g.addV("person").as("p").addE("self").to("p").iterate();
+
+        // Number of threads/tasks must be larger than the size of the gremlinPool set in overrideSettings().
+        final ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(2);
+        // Use a request without session to fill the queue since we want to test cancel on first session request.
+        final Future<?> firstResult = threadPool.submit(() -> g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate());
+        // Delay this request slightly as we want to test that the MultiTaskSession is properly returning an error when it is cancelled.
+        final Future<?> secondResult = threadPool.schedule(() -> gtx.V().repeat(__.out()).until(__.outE().count().is(0)).iterate(), 5000, TimeUnit.MILLISECONDS);
+
+        try {
+            firstResult.get();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause().getCause(); // Get the nested ResponseException.
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        try {
+            secondResult.get();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause().getCause(); // Get the nested ResponseException.
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        threadPool.shutdown();
+        gtx.tx().rollback();
+        cluster.close();
+    }
+
+    private void runTimeoutTest(GraphTraversalSource g) throws Exception {
+        // make a graph with a cycle in it to force a long run traversal
+        g.addV("person").as("p").addE("self").to("p").iterate();
+
+        // Number of threads/tasks must be larger than the size of the gremlinPool set in overrideSettings().
+        final int numTasksNeededToOverloadPool = POOL_SIZE_FOR_TIMEOUT_TESTS + 2;
+        final ExecutorService threadPool = Executors.newFixedThreadPool(numTasksNeededToOverloadPool);
+        // test "unending" traversals
+        final List<Future<?>> results = new ArrayList<>();
+        for (int i = 0; i < numTasksNeededToOverloadPool; i++) {
+            results.add(threadPool.submit(() -> g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate()));
+        }
+
+        for (final Future<?> result : results) {
+            try {
+                result.get();
+                fail("This traversal should have timed out");
+            } catch (Exception ex) {
+                final Throwable t = ex.getCause().getCause(); // Get the nested ResponseException.
+                assertThat(t, instanceOf(ResponseException.class));
+                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            }
+        }
+
+        threadPool.shutdown();
     }
 
     @Test
