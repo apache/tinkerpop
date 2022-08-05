@@ -74,6 +74,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -109,6 +110,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     protected final GraphManager graphManager;
     protected final ConcurrentMap<String, Session> sessions;
     protected final Set<String> aliasesUsedBySession = new HashSet<>();
+    protected final AtomicBoolean sessionTaskStarted = new AtomicBoolean(false);
 
     /**
      * The reason that a particular session closed. The reason for the close is generally not important as a
@@ -174,6 +176,10 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         final FutureTask<?> sf = (FutureTask) sessionFuture.get();
         if (sf != null && !sf.isDone()) {
             sf.cancel(mayInterruptIfRunning);
+
+            if (!sessionTaskStarted.get()) {
+                sendTimeoutResponseForUncommencedTask();
+            }
         }
     }
 
@@ -204,6 +210,12 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     public GremlinScriptEngine getScriptEngine(final SessionTask sessionTask, final String language) {
         return sessionTask.getGremlinExecutor().getScriptEngineManager().getEngineByName(language);
     }
+
+    /**
+     * Respond to the client with the specific timeout response for this Session implementation.
+     * This is for situations where the Session hasn't started running.
+     */
+    protected abstract void sendTimeoutResponseForUncommencedTask();
 
     @Override
     public void setSessionCancelFuture(final ScheduledFuture<?> f) {
