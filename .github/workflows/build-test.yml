@@ -244,11 +244,8 @@ jobs:
   dotnet:
     name: .NET
     timeout-minutes: 20
-    needs: smoke
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    needs: cache-gremlin-server-docker-image
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK11
@@ -260,6 +257,17 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0.x'
+      - name: Get Cached Server Base Image
+        uses: actions/cache@v3
+        id: gremlin-server-test-docker-image
+        with:
+          path: |
+            ./gremlin-server/*
+            ~/.m2/repository/org/apache/tinkerpop/*
+          key: ${{ github.sha }}
+      - name: Load Docker Image
+        working-directory: ./gremlin-server
+        run: docker load --input gremlin-server.tar
       - name: Build with Maven
         run: |
           touch gremlin-dotnet/src/.glv

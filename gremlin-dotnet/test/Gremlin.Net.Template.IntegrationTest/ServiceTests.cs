@@ -21,9 +21,11 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
+using Gremlin.Net.IntegrationTest;
 using Xunit;
 
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
@@ -32,8 +34,8 @@ namespace Gremlin.Net.Template.IntegrationTest
 {
     public class ServiceTests
     {
-        private const string TestHost = "localhost";
-        private const int TestPort = 45940;
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
         private const string TestTraversalSource = "gmodern";
 
         [Fact]

@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
@@ -41,7 +42,13 @@ namespace Gremlin.Net.IntegrationTest
             var builder = new ConfigurationBuilder()
                 .AddJsonFile(configFile, false, false);
 
-            return builder.Build();
+            IConfiguration config = builder.Build();
+            if (Convert.ToBoolean(Environment.GetEnvironmentVariable("DOCKER_ENVIRONMENT")))
+            {
+                config["TestServerIpAddress"] = config["TestServerIpAddressDocker"];
+            }
+
+            return config;
         }
     }
 }
