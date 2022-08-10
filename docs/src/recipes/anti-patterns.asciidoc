@@ -299,7 +299,7 @@ These examples are a bit contrived for sake of demonstration, but the common pat
 
 [gremlin-groovy,modern]
 ----
-g.withSideEffect('x',[name: 'josh']).V().has('name', select('x').select('name'))
+g.withSideEffect('x',['name': 'josh']).V().has('name', select('x').select('name'))
 ----
 
 The above example represents a commonly seen mistake where we try to dynamically inject the value "josh" from a
@@ -309,7 +309,7 @@ as in the following example:
 
 [gremlin-groovy,modern]
 ----
-g.withSideEffect('x',[name: 'josh']).V().as('a').where('a',eq('x')).by('name')
+g.withSideEffect('x',['name': 'josh']).V().as('a').where('a',eq('x')).by('name')
 ----
 
 As a final note on this topic, it's worth noting how `has(String,Traversal)` can be used. Note that the traverser that
