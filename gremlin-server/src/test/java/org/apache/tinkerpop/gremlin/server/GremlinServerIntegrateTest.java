@@ -1214,6 +1214,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         threadPool.shutdown();
     }
 
+    /**
+     * Reproducer for TINKERPOP-2765 when run using the UnifiedChannelizer.
+     */
+    @Test
+    public void shouldHandleMultipleLambdaTranslationsInParallel() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+
+        final CompletableFuture<Traversal<Object, Object>> firstRes = g.with("evaluationTimeout", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
+        final CompletableFuture<Traversal<Object, Object>> secondRes = g.with("evaluationTimeout", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
+        final CompletableFuture<Traversal<Object, Object>> thirdRes = g.with("evaluationTimeout", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
+
+        try {
+            firstRes.get();
+            secondRes.get();
+            thirdRes.get();
+        } catch (Exception ce) {
+            fail("An exception was not expected because the traversals are all valid.");
+        } finally {
+            g.close();
+        }
+    }
+
     @Test
     public void shouldGenerateFailureErrorResponseStatusCode() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();

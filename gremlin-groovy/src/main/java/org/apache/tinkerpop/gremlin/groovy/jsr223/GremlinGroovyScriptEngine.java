@@ -198,7 +198,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private final boolean interpreterModeEnabled;
     private final long expectedCompilationTime;
-    private final Translator.ScriptTranslator.TypeTranslator typeTranslator;
+    private final Optional<Translator.ScriptTranslator.TypeTranslator> typeTranslator;
 
     /**
      * There is no need to require type checking infrastructure if type checking is not enabled.
@@ -260,8 +260,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final Optional<TranslatorCustomizer> translatorCustomizer = listOfCustomizers.stream().
                 filter(p -> p instanceof TranslatorCustomizer).
                 map(p -> (TranslatorCustomizer) p).findFirst();
-        typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator).
-                orElseGet(() -> new GroovyTranslator.DefaultTypeTranslator(false));
+        typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator);
 
         createClassLoader();
     }
@@ -295,7 +294,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         inner.putAll(bindings);
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
-        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode);
+        // DefaultTypeTranslator isn't thread-safe so a new one needs to be instantiated to keep this ScriptEngine thread-safe.
+        final Translator.ScriptTranslator.TypeTranslator translator = typeTranslator.isPresent() ? typeTranslator.get() : new GroovyTranslator.DefaultTypeTranslator(false);
+        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, translator).translate(bytecode);
         script.getParameters().ifPresent(inner::putAll);
         return (Traversal.Admin) this.eval(script.getScript(), inner);
     }
