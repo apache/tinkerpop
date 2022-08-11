@@ -68,6 +68,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkIOUtil;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -282,28 +283,26 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     }
                 }
             }
-            final InputRDD inputRDD;
-            final OutputRDD outputRDD;
+            final InputRDD inputRDD = SparkIOUtil.createInputRDD(hadoopConfiguration);
             final boolean filtered;
+            // if the input class can filter on load, then set the filters
+            if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class))) {
+                GraphFilterAware.storeGraphFilter(graphComputerConfiguration, hadoopConfiguration, this.graphFilter);
+                filtered = false;
+            } else if (inputRDD instanceof GraphFilterAware) {
+                ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
+                filtered = false;
+            } else if (this.graphFilter.hasFilter()) {
+                filtered = true;
+            } else {
+                filtered = false;
+            }
+
+            final OutputRDD outputRDD;
             try {
-                inputRDD = InputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class)) ?
-                        hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputRDD.class, InputRDD.class).newInstance() :
-                        InputFormatRDD.class.newInstance();
                 outputRDD = OutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class)) ?
                         hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputRDD.class, OutputRDD.class).newInstance() :
                         OutputFormatRDD.class.newInstance();
-                // if the input class can filter on load, then set the filters
-                if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class))) {
-                    GraphFilterAware.storeGraphFilter(graphComputerConfiguration, hadoopConfiguration, this.graphFilter);
-                    filtered = false;
-                } else if (inputRDD instanceof GraphFilterAware) {
-                    ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
-                    filtered = false;
-                } else if (this.graphFilter.hasFilter()) {
-                    filtered = true;
-                } else {
-                    filtered = false;
-                }
             } catch (final InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -331,7 +330,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 updateLocalConfiguration(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
                 boolean partitioned = false;
-                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(graphComputerConfiguration, sparkContext);
+                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = SparkIOUtil.loadVertices(inputRDD, graphComputerConfiguration, sparkContext);
                 // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
                 if (filtered) {
                     this.logger.debug("Filtering the loaded graphRDD: " + this.graphFilter);

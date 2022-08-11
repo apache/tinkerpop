@@ -41,6 +41,11 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== SparkIOUtil utility
+
+A utility class `SparkIOUtil` is introduces, which allows users to load graph into Spark RDD via
+`loadVertices(org.apache.commons.configuration2.Configuration, JavaSparkContext)` method.
+
 ==== Gremlin-Go
 
 After introducing a number of release candidates over the past several months, the official release of Gremlin-Go is now
