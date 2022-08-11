@@ -534,14 +534,8 @@ public abstract class Client {
                                 .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
-                Throwable cause = ExceptionUtils.getRootCause(ex);
-                if (null != cause) {
-                    logger.error("", cause);
-                    this.initializationFailure = cause;
-                } else {
-                    logger.error("", ex);
-                    this.initializationFailure = ex;
-                }
+                logger.error("Initialization failed", ex);
+                this.initializationFailure = ex;
             } finally {
                 hostExecutor.shutdown();
             }
@@ -559,9 +553,9 @@ public abstract class Client {
         }
 
         private void throwNoHostAvailableException() {
+            final Throwable rootCause = ExceptionUtils.getRootCause(initializationFailure);
             // allow the certain exceptions to propagate as a cause
-            if (initializationFailure != null && (initializationFailure instanceof SSLException ||
-                    initializationFailure instanceof ConnectException)) {
+            if (rootCause instanceof SSLException || rootCause instanceof ConnectException) {
                 throw new NoHostAvailableException(initializationFailure);
             } else {
                 throw new NoHostAvailableException();
