@@ -1348,7 +1348,7 @@ genericLiteralExpr
 
 genericLiteralRange
     : integerLiteral DOT DOT integerLiteral
-    | StringLiteral DOT DOT StringLiteral
+    | stringLiteral DOT DOT stringLiteral
     ;
 
 genericLiteralCollection
@@ -1400,7 +1400,8 @@ mapEntry
     ;
 
 stringLiteral
-    : StringLiteral
+    : EmptyStringLiteral
+    | NonEmptyStringLiteral
     ;
 
 integerLiteral
@@ -1421,7 +1422,8 @@ booleanLiteral
     ;
 
 stringBasedLiteral
-    : StringLiteral
+    : EmptyStringLiteral
+    | NonEmptyStringLiteral
     | NullLiteral
     | gremlinStringConstants
     ;
@@ -1640,11 +1642,6 @@ InfLiteral
 
 
 // String Literals
-
-StringLiteral
-    : NonEmptyStringLiteral
-    | EmptyStringLiteral
-    ;
 
 // String literal is customized since Java only allows double quoted strings where Groovy supports single quoted
 // literals also. A side effect of this is ANTLR will not be able to parse single character string literals with
