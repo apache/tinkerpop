@@ -27,7 +27,7 @@ import (
 
 // Result Struct to abstract the Result and provide functions to use it.
 type Result struct {
-	result interface{}
+	Result interface{}
 }
 
 // String returns the string representation of the Result struct in Go-syntax format.
