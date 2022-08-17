@@ -21,6 +21,9 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 	"math/big"
 	"os"
 	"reflect"
@@ -30,10 +33,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 )
 
 const personLabel = "Person"
