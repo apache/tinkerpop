@@ -173,6 +173,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: |
+          touch gremlin-python/.glv
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
           mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
   javascript:
