@@ -22,7 +22,9 @@
  */
 'use strict';
 
-const {Given, Then, When} = require('cucumber');
+const {Given, Then, When, setDefaultTimeout} = require('cucumber');
+// Setting Cucumber timeout to 10s for Floating Errors on Windows on GitHub Actions
+setDefaultTimeout(10 * 1000);
 const expect = require('chai').expect;
 const util = require('util');
 const gremlin = require('./gremlin').gremlin;
