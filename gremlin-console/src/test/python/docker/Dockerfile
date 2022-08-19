@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-#  http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -14,9 +14,11 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-[aliases]
-test=pytest
 
-[tool:pytest]
-addopts = --junitxml=./python-reports/TEST-native-python.xml
-norecursedirs = '.*', 'build', 'dist', 'CVS', '_darcs', '{arch}', '*.egg' lib lib64
+# Image used for running integration tests for gremlin-console.
+FROM python:3.8.12
+
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-11-jre && apt-get install dos2unix
+
+WORKDIR /console_app
+CMD bash -c "dos2unix ./gremlin-console/bin/gremlin.sh && python3 setup.py build && python3 setup.py test"
