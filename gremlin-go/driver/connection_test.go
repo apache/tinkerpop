@@ -858,7 +858,7 @@ func TestConnection(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
 		assert.Equal(t, 1, len(r))
-		metrics := r[0].Result.(*TraversalMetrics)
+		metrics := r[0].Data.(*TraversalMetrics)
 		assert.NotNil(t, metrics)
 		assert.GreaterOrEqual(t, len(metrics.Metrics), 2)
 
@@ -879,7 +879,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.Result.(*GremlinType))
+		assert.Equal(t, prop, r.Data.(*GremlinType))
 
 		resetGraph(t, g)
 	})
@@ -898,7 +898,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.Result.(*BigDecimal))
+		assert.Equal(t, prop, r.Data.(*BigDecimal))
 
 		resetGraph(t, g)
 	})
@@ -917,7 +917,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.Result)
+		assert.Equal(t, prop, r.Data)
 
 		resetGraph(t, g)
 	})
