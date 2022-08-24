@@ -309,7 +309,7 @@ limitations under the License.
                 <dependency>
                     <groupId>io.dropwizard.metrics</groupId>
                     <artifactId>metrics-core</artifactId>
-                    <version>4.0.2</version>
+                    <version>4.2.11</version>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
