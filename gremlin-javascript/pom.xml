@@ -419,12 +419,12 @@ limitations under the License.
                             <dependency>
                                 <groupId>io.dropwizard.metrics</groupId>
                                 <artifactId>metrics-core</artifactId>
-                                <version>4.0.2</version>
+                                <version>4.2.11</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.neo4j</groupId>
                                 <artifactId>neo4j-kernel</artifactId>
-                                <version>3.4.11</version>
+                                <version>4.4.10</version>
                                 <exclusions>
                                     <exclusion>
                                         <groupId>io.netty</groupId>
