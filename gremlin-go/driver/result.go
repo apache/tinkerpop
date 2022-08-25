@@ -27,17 +27,17 @@ import (
 
 // Result Struct to abstract the Result and provide functions to use it.
 type Result struct {
-	result interface{}
+	Data interface{}
 }
 
 // String returns the string representation of the Result struct in Go-syntax format.
 func (r *Result) String() string {
-	return fmt.Sprintf("result{object=%v class=%T}", r.result, r.result)
+	return fmt.Sprintf("result{object=%v class=%T}", r.Data, r.Data)
 }
 
 // GetString gets the string representation of the result.
 func (r *Result) GetString() string {
-	return fmt.Sprintf("%v", r.result)
+	return fmt.Sprintf("%v", r.Data)
 }
 
 // GetInt gets the result by coercing it into an int, else returns an error if not parsable.
@@ -139,12 +139,12 @@ func (r *Result) GetBool() (bool, error) {
 
 // IsNil checks if the result is null.
 func (r *Result) IsNil() bool {
-	return nil == r.result
+	return nil == r.Data
 }
 
 // GetVertex returns the result if it is a Vertex, otherwise returns an error.
 func (r *Result) GetVertex() (*Vertex, error) {
-	res, ok := r.result.(*Vertex)
+	res, ok := r.Data.(*Vertex)
 	if !ok {
 		return nil, newError(err0601ResultNotVertexError)
 	}
@@ -153,7 +153,7 @@ func (r *Result) GetVertex() (*Vertex, error) {
 
 // GetEdge returns the result if it is an edge, otherwise returns an error.
 func (r *Result) GetEdge() (*Edge, error) {
-	res, ok := r.result.(*Edge)
+	res, ok := r.Data.(*Edge)
 	if !ok {
 		return nil, newError(err0602ResultNotEdgeError)
 	}
@@ -162,7 +162,7 @@ func (r *Result) GetEdge() (*Edge, error) {
 
 // GetElement returns the result if it is an Element, otherwise returns an error.
 func (r *Result) GetElement() (*Element, error) {
-	res, ok := r.result.(*Element)
+	res, ok := r.Data.(*Element)
 	if !ok {
 		return nil, newError(err0603ResultNotElementError)
 	}
@@ -171,7 +171,7 @@ func (r *Result) GetElement() (*Element, error) {
 
 // GetPath returns the result if it is a path, otherwise returns an error.
 func (r *Result) GetPath() (*Path, error) {
-	res, ok := r.result.(*Path)
+	res, ok := r.Data.(*Path)
 	if !ok {
 		return nil, newError(err0604ResultNotPathError)
 	}
@@ -180,7 +180,7 @@ func (r *Result) GetPath() (*Path, error) {
 
 // GetProperty returns the result if it is a property, otherwise returns an error.
 func (r *Result) GetProperty() (*Property, error) {
-	res, ok := r.result.(*Property)
+	res, ok := r.Data.(*Property)
 	if !ok {
 		return nil, newError(err0605ResultNotPropertyError)
 	}
@@ -189,7 +189,7 @@ func (r *Result) GetProperty() (*Property, error) {
 
 // GetVertexProperty returns the result if it is a Vertex property, otherwise returns an error.
 func (r *Result) GetVertexProperty() (*VertexProperty, error) {
-	res, ok := r.result.(*VertexProperty)
+	res, ok := r.Data.(*VertexProperty)
 	if !ok {
 		return nil, newError(err0606ResultNotVertexPropertyError)
 	}
@@ -198,7 +198,7 @@ func (r *Result) GetVertexProperty() (*VertexProperty, error) {
 
 // GetTraverser returns the Result if it is a Traverser, otherwise returns an error.
 func (r *Result) GetTraverser() (*Traverser, error) {
-	res, ok := r.result.(Traverser)
+	res, ok := r.Data.(Traverser)
 	if !ok {
 		return nil, newError(err0607ResultNotTraverserError)
 	}
@@ -207,7 +207,7 @@ func (r *Result) GetTraverser() (*Traverser, error) {
 
 // GetSlice returns the Result if it is a Slice, otherwise returns an error.
 func (r *Result) GetSlice() (*[]interface{}, error) {
-	res, ok := r.result.([]interface{})
+	res, ok := r.Data.([]interface{})
 	if !ok {
 		return nil, newError(err0608ResultNotSliceError)
 	}
@@ -216,10 +216,10 @@ func (r *Result) GetSlice() (*[]interface{}, error) {
 
 // GetType returns the type of the result.
 func (r *Result) GetType() reflect.Type {
-	return reflect.TypeOf(r.result)
+	return reflect.TypeOf(r.Data)
 }
 
 // GetInterface returns the result item.
 func (r *Result) GetInterface() interface{} {
-	return r.result
+	return r.Data
 }
