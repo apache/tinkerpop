@@ -27,7 +27,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn clean install -pl -:gremlin-javascript -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean install -pl -:gremlin-javascript,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+         directory: ./gremlin-tools/gremlin-coverage/target/site
   java-jdk8:
     name: mvn clean install - jdk8
     timeout-minutes: 45
