@@ -21,9 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 	"math/big"
 	"os"
 	"reflect"
@@ -33,6 +30,10 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
 const personLabel = "Person"
@@ -857,7 +858,7 @@ func TestConnection(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
 		assert.Equal(t, 1, len(r))
-		metrics := r[0].result.(*TraversalMetrics)
+		metrics := r[0].Data.(*TraversalMetrics)
 		assert.NotNil(t, metrics)
 		assert.GreaterOrEqual(t, len(metrics.Metrics), 2)
 
@@ -878,7 +879,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.result.(*GremlinType))
+		assert.Equal(t, prop, r.Data.(*GremlinType))
 
 		resetGraph(t, g)
 	})
@@ -897,7 +898,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.result.(*BigDecimal))
+		assert.Equal(t, prop, r.Data.(*BigDecimal))
 
 		resetGraph(t, g)
 	})
@@ -916,7 +917,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.result)
+		assert.Equal(t, prop, r.Data)
 
 		resetGraph(t, g)
 	})
