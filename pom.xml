@@ -1896,6 +1896,13 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>report</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
                                 <id>prepare-it-agent</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
@@ -1913,7 +1920,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
+                            <argLine>@{surefireArgLine} -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
@@ -1921,7 +1928,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
+                            <argLine>@{failsafeArgLine} -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs} -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 == TinkerPop3
-
+image::https://codecov.io/gh/apache/tinkerpop/branch/master/graph/badge.svg?token=TojD2nR5Qd[link="https://codecov.io/gh/apache/tinkerpop"]
 image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="https://tinkerpop.apache.org"]
 
 === Documentation
