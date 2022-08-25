@@ -188,7 +188,7 @@ func (channelResultSet *channelResultSet) All() ([]*Result, error) {
 func (channelResultSet *channelResultSet) addResult(r *Result) {
 	channelResultSet.channelMutex.Lock()
 	if r.GetType().Kind() == reflect.Array || r.GetType().Kind() == reflect.Slice {
-		for _, v := range r.result.([]interface{}) {
+		for _, v := range r.Data.([]interface{}) {
 			if reflect.TypeOf(v) == reflect.TypeOf(&Traverser{}) {
 				for i := int64(0); i < (v.(*Traverser)).bulk; i++ {
 					channelResultSet.channel <- &Result{(v.(*Traverser)).value}
@@ -198,7 +198,7 @@ func (channelResultSet *channelResultSet) addResult(r *Result) {
 			}
 		}
 	} else {
-		channelResultSet.channel <- &Result{r.result}
+		channelResultSet.channel <- &Result{r.Data}
 	}
 	channelResultSet.channelMutex.Unlock()
 	channelResultSet.sendSignal()
