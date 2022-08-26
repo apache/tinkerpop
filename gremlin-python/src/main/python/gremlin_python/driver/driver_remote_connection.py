@@ -38,7 +38,7 @@ class DriverRemoteConnection(RemoteConnection):
                  transport_factory=None, pool_size=None, max_workers=None,
                  username="", password="", kerberized_service='',
                  message_serializer=None, graphson_reader=None,
-                 graphson_writer=None, headers=None, session=None,
+                 graphson_writer=None, headers=None, session=None, retry_connection=False,
                  **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
@@ -55,6 +55,7 @@ class DriverRemoteConnection(RemoteConnection):
         self.__graphson_writer = graphson_writer
         self.__headers = headers
         self.__session = session
+        self.__retry_connection = retry_connection
         self.__transport_kwargs = transport_kwargs
 
         # keeps a list of sessions that have been spawned from this DriverRemoteConnection
@@ -98,10 +99,23 @@ class DriverRemoteConnection(RemoteConnection):
         self._client.close()
 
     def submit(self, bytecode):
-        log.debug("submit with bytecode '%s'", str(bytecode))
-        result_set = self._client.submit(bytecode, request_options=self._extract_request_options(bytecode))
-        results = result_set.all().result()
-        return RemoteTraversal(iter(results))
+        def send_submission():
+            log.debug("submit with bytecode '%s'", str(bytecode))
+            result_set = self._client.submit(bytecode, request_options=self._extract_request_options(bytecode))
+            results = result_set.all().result()
+            return RemoteTraversal(iter(results))
+        try:
+            remote_traversal = send_submission()
+        except Exception as e:
+            log.debug("submit request errored out", e)
+            if (self.__retry_connection is False):
+                raise e
+            log.debug("retrying connection and submission")
+            while not self._client._pool.empty():
+                conn = self._client._pool.get(True)
+                conn.close()
+            remote_traversal = send_submission()
+        return remote_traversal
 
     def submitAsync(self, message, bindings=None, request_options=None):
         warnings.warn(
