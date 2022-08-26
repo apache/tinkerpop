@@ -127,7 +127,7 @@ either locally or in [Docker Hub][dhub].
 
 Running `mvn clean install -pl gremlin-server -DskipTests -DskipIntegrationTests=true -Dci -am` in the main `tinkerpop` directory will automatically build a local SNAPSHOT Gremlin server image. If your OS Platform cannot build a local SNAPSHOT Gremlin server through `maven`, it is recommended to use the latest released server version from [Docker Hub][dhub] (do not use `GREMLIN_SERVER=latest`, use actual version number, e.g. `GREMLIN_SERVER=3.5.x` or `GREMLIN_SERVER=3.6.x`).
 
-The docker compose environment variable `HOME` specifies the user home directory for mounting volumes during test image set up. This varibale is set by default in Unix/Linux, but will need to be set for Windows, for example, run `$env:HOME=$env:USERPROFILE` in PowerShell.
+The docker compose environment variable `HOME` specifies the user home directory for mounting volumes during test image set up. This variable is set by default in Unix/Linux, but will need to be set for Windows, for example, run `$env:HOME=$env:USERPROFILE` in PowerShell.
 
 There are different ways to launch the test suite and set the `GREMLIN_SERVER` environment variable depending on your Platform:
 - Run Maven commands, e.g. `mvn clean install` inside of `tinkerpop/gremlin-go`, or `mvn clean install -pl gremlin-go` inside of `tinkerpop` (platform-agnostic - recommended)

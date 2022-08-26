@@ -213,6 +213,9 @@ The build optionally requires link:https://dotnet.microsoft.com/download[.NET SD
 `gremlin-dotnet` module. If .NET SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 
+`gremlin-dotnet` uses Docker for all of its testing. Please make sure Docker is installed and running on your system. 
+You will need to install both link:https://docs.docker.com/engine/install/[Docker Engine] and link:https://docs.docker.com/compose/install/[Docker Compose], which are included in link:https://docs.docker.com/desktop/[Docker Desktop].
+
 `gremlin-dotnet` can be built and tested from the command line with:
 
 [source,text]
@@ -247,6 +250,9 @@ To run the development and build scripts of `gremlint` and its corresponding web
 have to be installed. When generating or publishing the TinkerPop website, the `docs/gremlint` web page has to be
 built. Consequently, the scripts `bin/generate-home.sh` and `bin/publish-home.sh` require that Node.js and npm are
 installed. Version 6.x or newer of npm is required. This is covered in more detail in the <<site,Site>> section.
+
+`gremlin-javascript` uses Docker for all of its testing. Please make sure Docker is installed and running on your system. 
+You will need to install both link:https://docs.docker.com/engine/install/[Docker Engine] and link:https://docs.docker.com/compose/install/[Docker Compose], which are included in link:https://docs.docker.com/desktop/[Docker Desktop].
 
 IMPORTANT: Beware of unexpected or unwanted changes on `package-lock.json` files when committing and merging. 
 
@@ -496,6 +502,42 @@ docker/gremlin-server.sh 3.4.2
 
 To be a bit more clear, the version can not be a Docker tag like "latest" because there is no such TinkerPop artifact
 that has been published with that version number.
+
+[[docker-testing]]
+== Testing with Docker
+
+Currently gremlin-go, gremlin-javascript, gremlin-dotnet, gremlin-python and gremlin-console can be tested through Docker.
+
+Please make sure Docker is installed and running on your system. 
+You will need to install both link:https://docs.docker.com/engine/install/[Docker Engine] and link:https://docs.docker.com/compose/install/[Docker Compose], which are included in link:https://docs.docker.com/desktop/[Docker Desktop].
+
+The following environment variables used by Docker Compose will automatically be set when running with Maven.
+
+The docker compose environment variable `GREMLIN_SERVER` specifies the Gremlin server docker image to use, i.e. an
+image with the tag `tinkerpop/gremlin-server:$GREMLIN_SERVER`, and is a required environment variable. This also 
+requires the specified docker image to exist, either locally or in link:https://hub.docker.com/r/tinkerpop/gremlin-server[Docker Hub].
+
+Running `mvn clean install -pl gremlin-server -DskipTests -DskipIntegrationTests=true -Dci -am` in the main `tinkerpop` 
+directory will automatically build a local SNAPSHOT Gremlin server image. If your OS Platform cannot build a local 
+SNAPSHOT Gremlin server through `maven`, it is recommended to use the latest released server version from link:https://hub.docker.com/r/tinkerpop/gremlin-server[Docker Hub] (do not use `GREMLIN_SERVER=latest`,
+use actual version number, e.g. `GREMLIN_SERVER=3.5.x` or `GREMLIN_SERVER=3.6.x`).
+
+The docker compose environment variable `HOME` specifies the user home directory for mounting volumes during test image 
+set up. This variable is set by default in Unix/Linux, but will need to be set for Windows, for example, run 
+`$env:HOME=$env:USERPROFILE` in PowerShell.
+
+There are different ways to launch the test suite and set the `GREMLIN_SERVER` environment variable depending on 
+your Platform:
+
+* Run Maven commands, e.g. `mvn clean install` inside of project folder e.g. `tinkerpop/gremlin-go`, or `mvn clean install -pl gremlin-go` 
+inside of `tinkerpop` (platform-agnostic - recommended)
+* Add `GREMLIN_SERVER=<server-image-version>` and `HOME=<user-home-directory>` to an `.env` file inside project folder and run `docker-compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
+* Run `GREMLIN_SERVER=<server-image-version> docker-compose up --exit-code-from gremlin-go-integration-tests` in Unix/Linux.
+* Run `$env:GREMLIN_SERVER="<server-image-version>";$env:HOME=$env:USERPROFILE;docker-compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
+
+You should see exit code 0 upon successful completion of the test suites. Run `docker-compose down` to remove the 
+service containers (not needed if you executed Maven commands or `run.sh`), or `docker-compose down --rmi all` to 
+remove the service containers while deleting all used images.
 
 [[intellij]]
 == Intellij Usage
