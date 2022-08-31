@@ -15,13 +15,13 @@
 #    specific language governing permissions and limitations
 #    under the License.
 
-version: "3.7"
+version: "3.8"
 
 services:
 
   gremlin-server-test-js:
     container_name: gremlin-server-test-js
-    image: tinkerpop:gremlin-server-test-${GREMLIN_SERVER}
+    image: tinkerpop/gremlin-server-test:${GREMLIN_SERVER}
     build:
       context: ../../../../../
       dockerfile: docker/gremlin-test-server/Dockerfile
@@ -36,6 +36,12 @@ services:
       - ${HOME}/.groovy:/root/.groovy
       - ${HOME}/.m2:/root/.m2
       - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
+    healthcheck:
+      test: [ "CMD-SHELL", "apk add curl && curl -f http://localhost:45940?gremlin=100-1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
 
   gremlin-js-integration-tests:
     container_name: gremlin-js-integration-tests
@@ -48,9 +54,8 @@ services:
       - DOCKER_ENVIRONMENT=true
     working_dir: /js_app
     command: >
-      bash -c "apt-get update && apt-get install dos2unix && dos2unix ./gremlin-test-server/wait-for-server.sh
-      && ./gremlin-test-server/wait-for-server.sh gremlin-server-test-js 45940 300 
-      && npm config set cache /tmp --global
+      bash -c "npm config set cache /tmp --global
       && npm ci && npm run test && npm run features-docker"
     depends_on:
-      - gremlin-server-test-js
+      gremlin-server-test-js:
+        condition: service_healthy

@@ -186,6 +186,22 @@ limitations under the License.
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>remove-dangling-images</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipImageBuild}</skip>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>image</argument>
+                                <argument>prune</argument>
+                                <argument>-f</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

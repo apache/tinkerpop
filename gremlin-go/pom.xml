@@ -118,14 +118,26 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <skip>${skipTests}</skip>
-                                    <environmentVariables>
-                                        <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
-                                        <ABS_PROJECT_HOME>${project.basedir}</ABS_PROJECT_HOME>
-                                        <HOME>${user.home}</HOME>
-                                    </environmentVariables>
+                                    <!-- don't need to set env variables for container tear down -->
                                     <executable>docker-compose</executable>
                                     <arguments>
                                         <argument>down</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>remove-dangling-images</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>image</argument>
+                                        <argument>prune</argument>
+                                        <argument>-f</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
