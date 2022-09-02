@@ -52,6 +52,7 @@ services:
       - ../../../../../docker/gremlin-test-server:/js_app/gremlin-test-server
     environment:
       - DOCKER_ENVIRONMENT=true
+      - TEST_TRANSACTIONS=true
     working_dir: /js_app
     command: >
       bash -c "npm config set cache /tmp --global

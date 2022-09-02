@@ -20,13 +20,13 @@ port: 45940
 evaluationTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
 graphs: {
-  graph: scripts/tinkergraph-empty.properties,
-  immutable: scripts/tinkergraph-empty.properties,
-  classic: scripts/tinkergraph-empty.properties,
-  modern: scripts/tinkergraph-empty.properties,
-  crew: scripts/tinkergraph-empty.properties,
-  grateful: scripts/tinkergraph-empty.properties,
-  sink: scripts/tinkergraph-empty.properties
+  graph: conf/tinkergraph-service.properties,
+  immutable: conf/tinkergraph-service.properties,
+  classic: conf/tinkergraph-service.properties,
+  modern: conf/tinkergraph-service.properties,
+  crew: conf/tinkergraph-service.properties,
+  grateful: conf/tinkergraph-service.properties,
+  sink: conf/tinkergraph-service.properties
 }
 scriptEngines: {
   gremlin-lang : {},
