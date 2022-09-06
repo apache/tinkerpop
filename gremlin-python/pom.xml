@@ -87,8 +87,10 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
-                            <!-- copy source files in python directory to target/, to keep testing separate from packaging.
-                            We use target/python3 for testing and target/python-packaged for distribution tasks.-->
+                            <!--
+                            copy source files in python directory to target/, to keep testing separate from packaging.
+                            we use target/python3 for testing and target/python-packaged for distribution tasks.
+                            -->
                             <execution>
                                 <id>setup-env</id>
                                 <phase>process-resources</phase>
@@ -96,7 +98,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <!-- pytest will create python-reports inside target/python3/python-reports
                                         as docker compose cannot access outside its working directory -->
                                         <copy todir="${project.build.directory}/python3">
@@ -105,7 +107,7 @@ limitations under the License.
                                         <copy todir="${project.build.directory}/python-packaged">
                                             <fileset dir="src/main/python"/>
                                         </copy>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <!--
@@ -135,7 +137,7 @@ limitations under the License.
                             use docker-compose to run unit tests, radish, and integration tests.
                             -->
                             <execution>
-                                <id>native-python3-test</id>
+                                <id>python-tests</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -247,6 +249,15 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
+                                        <!--
+                                        set up and run virtual env to sandbox python. there is no need to "activate"
+                                        the virtualenv because all calls to python occur directly from bin/
+                                        -->
+                                        <mkdir dir="${project.build.directory}/python-packaged/env"/>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python3 env"/>
+                                        </exec>
                                         <!--
                                         seems like https://github.com/pypa/twine/issues/338 is the reason to stay bound
                                         to this old version of twine. as long as keyring gets in the way and can't be
