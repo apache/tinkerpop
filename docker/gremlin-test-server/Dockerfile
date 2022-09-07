@@ -18,6 +18,8 @@
 ARG GREMLIN_SERVER
 FROM tinkerpop/gremlin-server:$GREMLIN_SERVER
 
+LABEL maintainer="dev@tinkerpop.apache.org"
+
 USER root
 RUN mkdir -p /opt
 WORKDIR /opt

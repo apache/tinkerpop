@@ -133,6 +133,8 @@ limitations under the License.
                                     <arguments>
                                         <argument>image</argument>
                                         <argument>prune</argument>
+                                        <argument>--filter</argument>
+                                        <argument>label=maintainer=dev@tinkerpop.apache.org</argument>
                                         <argument>-f</argument>
                                     </arguments>
                                 </configuration>
