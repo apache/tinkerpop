@@ -317,6 +317,7 @@ jobs:
         working-directory: .
         run: |
           touch gremlin-go/.glv
+          mvn clean install -pl -:gremlin-python,-:gremlin-javascript,-:gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :gremlin-go
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3
