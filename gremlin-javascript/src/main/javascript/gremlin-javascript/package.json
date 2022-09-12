@@ -49,6 +49,9 @@
     "features": "npm run features-graphson30 && npm run features-graphbinary",
     "features-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../../../../../gremlin-test/features/",
     "features-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../../../../../gremlin-test/features/",
+    "features-docker": "npm run features-graphson30-docker && npm run features-graphbinary-docker",
+    "features-graphson30-docker": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../gremlin-test/",
+    "features-graphbinary-docker": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../gremlin-test/",
     "lint": "eslint --ext .js ."
   },
   "engines": {
