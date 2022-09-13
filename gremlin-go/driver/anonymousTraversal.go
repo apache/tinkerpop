@@ -45,7 +45,7 @@ func Traversal_() AnonymousTraversalSource {
 type AnonymousTraversal interface {
 	// T__ creates an empty GraphTraversal.
 	T__(args ...interface{}) *GraphTraversal
-	// E adds the v step to the GraphTraversal.
+	// E adds the e step to the GraphTraversal.
 	E(args ...interface{}) *GraphTraversal
 	// V adds the v step to the GraphTraversal.
 	V(args ...interface{}) *GraphTraversal
@@ -280,7 +280,7 @@ func (anonymousTraversal *anonymousTraversal) T__(args ...interface{}) *GraphTra
 	return anonymousTraversal.Inject(args...)
 }
 
-// E adds the v step to the GraphTraversal.
+// E adds the e step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) E(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().E(args...)
 }
