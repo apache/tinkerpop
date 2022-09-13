@@ -291,8 +291,8 @@ limitations under the License.
     </build>
 
     <profiles>
-        <!-- activates the building of python components and requires that python be installed on the system. use
-             the .glv file in gremlin-python as an indicator to activate -->
+        <!-- activates the building of python components through Docker.
+             use the .glv file in gremlin-python as an indicator to activate -->
         <profile>
             <id>console-integration-tests</id>
             <activation>
