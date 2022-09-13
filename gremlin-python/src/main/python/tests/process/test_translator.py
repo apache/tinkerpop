@@ -350,6 +350,12 @@ class TestTraversalStrategies(object):
         # 98
         tests.append([g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name','peter')),
                      "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
+        # 99
+        tests.append([g.V().coalesce(__.E(),__.addE('person')),
+                     "g.V().coalesce(__.E(),__.addE('person'))"])
+        # 100
+        tests.append([g.inject(1).E(),
+                     "g.inject(1).E()"])
 
         tlr = Translator().of('g')
 

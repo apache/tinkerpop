@@ -1236,8 +1236,8 @@ g.V()
 [[e-step]]
 === E Step
 
-The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`. Unlike the related
-<<v-step,V()>> it cannot be used mid-traversal.
+The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`, but can also
+be used mid-traversal.
 
 [gremlin-groovy,modern]
 ----

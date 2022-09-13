@@ -332,6 +332,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * A {@code E} step is usually used to start a traversal but it may also be used mid-traversal.
+     *
+     * @param edgeIdsOrElements vertices to inject into the traversal
+     * @return the traversal with an appended {@link GraphStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#e-step" target="_blank">Reference Documentation - E Step</a>
+     * @since 3.7.0
+     */
+    public default GraphTraversal<S, Edge> E(final Object... edgeIdsOrElements) {
+        // a single null is [null]
+        final Object[] ids = null == edgeIdsOrElements ? new Object[] { null } : edgeIdsOrElements;
+        this.asAdmin().getBytecode().addStep(Symbols.E, ids);
+        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Edge.class, false, ids));
+    }
+
+    /**
      * Map the {@link Vertex} to its adjacent vertices given a direction and edge labels.
      *
      * @param direction  the direction to traverse from the current vertex

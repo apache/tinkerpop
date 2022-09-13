@@ -56,6 +56,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         method = "g_VX1X_V_valuesXnameX",
         reason = "Mid-traversal V()/E() is currently not supported on GraphComputer")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeTest",
+        method = "g_EX11X_E",
+        reason = "Mid-traversal V()/E() is currently not supported on GraphComputer")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest",
         method = "*",
         reason = "The inject() step is not supported by GraphComputer")

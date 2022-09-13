@@ -484,6 +484,7 @@ const gremlins = {
     g_V_repeatXoutX_timesX8X_count: [function({g}) { return g.V().repeat(__.out()).times(8).count() }], 
     g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count: [function({g}) { return g.V().repeat(__.out()).times(5).as("a").out("writtenBy").as("b").select("a","b").count() }], 
     g_V_repeatXoutX_timesX3X_count: [function({g}) { return g.V().repeat(__.out()).times(3).count() }], 
+    g_EX11X_E: [function({g, eid11}) { return g.E(eid11).E() }], 
     g_V_properties_element: [function({g, xx1}) { return g.V(xx1).properties().element().limit(1) }], 
     g_E_properties_element: [function({g, xx1}) { return g.E(xx1).properties().element().limit(1) }], 
     g_V_properties_properties_element_element: [function({g, xx1}) { return g.V(xx1).properties().properties().element().element().limit(1) }], 

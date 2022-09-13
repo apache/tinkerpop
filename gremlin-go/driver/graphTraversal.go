@@ -58,6 +58,12 @@ func (g *GraphTraversal) V(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// E adds the e step to the GraphTraversal.
+func (g *GraphTraversal) E(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("E", args...)
+	return g
+}
+
 // AddE adds the addE step to the GraphTraversal.
 func (g *GraphTraversal) AddE(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("addE", args...)

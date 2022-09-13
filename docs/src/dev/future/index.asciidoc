@@ -49,7 +49,6 @@ line of 22H2.
 
 * Add support for traversals as parameters for `V()`, `is()`, and `has()` (includes `Traversal` arguments to `P`)
 * Geospatial support for TinkerPop (link:++https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial++[DISCUSS Thread])
-* Add mid-traversal `E()` support
 * Allow properties on elements (as opposed to just references) for remote traversals
 * Add subgraph/tree structure in all GLVs
 * List functions (`concat()`/etc.)

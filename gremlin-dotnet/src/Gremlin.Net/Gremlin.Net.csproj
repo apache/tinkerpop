@@ -67,7 +67,7 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>    
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <EnablePackageValidation>false</EnablePackageValidation>
     <PackageValidationBaselineVersion>3.5.2</PackageValidationBaselineVersion>
   </PropertyGroup>
 
