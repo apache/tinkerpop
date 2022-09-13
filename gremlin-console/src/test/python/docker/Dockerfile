@@ -18,6 +18,8 @@
 # Image used for running integration tests for gremlin-console.
 FROM python:3.8.12
 
+LABEL maintainer="dev@tinkerpop.apache.org"
+
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-11-jre && apt-get install dos2unix
 
 WORKDIR /console_app
