@@ -19,8 +19,8 @@ version: "3.8"
 
 services:
 
-  gremlin-server-test:
-    container_name: gremlin-server-test
+  gremlin-server-test-dotnet:
+    container_name: gremlin-server-test-dotnet
     image: tinkerpop/gremlin-server-test:${GREMLIN_SERVER}
     build:
       context: ../
@@ -43,25 +43,19 @@ services:
       retries: 30
       start_period: 30s
 
-  gremlin-go-integration-tests:
-    container_name: gremlin-go-integration-tests
-    image: golang:1.17
+  gremlin-dotnet-integration-tests:
+    container_name: gremlin-dotnet-integration-tests
+    image: mcr.microsoft.com/dotnet/sdk:6.0
     volumes:
-      - .:/go_app
-      - ../gremlin-test/features:/gremlin-test
-      - ../docker/gremlin-test-server:/go_app/gremlin-test-server
+      - .:/gremlin-dotnet
+      - ../gremlin-test/features:/gremlin-test/features
+      - ../docker/gremlin-test-server:/gremlin-dotnet/gremlin-test-server
     environment:
-      - CUCUMBER_FEATURE_FOLDER=/gremlin-test
-      - GREMLIN_SERVER_URL=ws://gremlin-server-test:45940/gremlin
-      - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-server-test:45941/gremlin
-      - RUN_INTEGRATION_TESTS=true
-      - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
-      - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
+      - DOCKER_ENVIRONMENT=true
       - TEST_TRANSACTIONS=true
-    working_dir: /go_app
+    working_dir: /gremlin-dotnet
     command: >
-      bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
+      bash -c "dotnet test ./Gremlin.Net.sln -c Release"
     depends_on:
-      gremlin-server-test:
+      gremlin-server-test-dotnet:
         condition: service_healthy

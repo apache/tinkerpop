@@ -42,10 +42,14 @@ fi
 # Parses current gremlin server version from project pom.xml file using perl regex
 GREMLIN_SERVER_VERSION=$(grep tinkerpop -A2 pom.xml | grep -Po '(?<=<version>)([0-9]+\.?){3}(-SNAPSHOT)?(?=<)')
 export GREMLIN_SERVER="${1:-$GREMLIN_SERVER_VERSION}"
-echo "$GREMLIN_SERVER"
+echo "Running server version: $GREMLIN_SERVER"
 
-# Passes current gremlin server version into docker compose as environment variable & removes all service containers
+ABS_PROJECT_HOME=$(dirname $(realpath "$0"))/..
+export ABS_PROJECT_HOME
+
+# Passes current gremlin server version into docker compose as environment variable
 docker-compose up --build --exit-code-from gremlin-go-integration-tests
 EXIT_CODE=$?
+# Removes all service containers
 docker-compose down
 exit $EXIT_CODE
