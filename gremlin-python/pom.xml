@@ -158,6 +158,11 @@ limitations under the License.
                                             <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
                                             <arg line="down"/>
                                         </exec>
+                                        <exec executable="docker" failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
+                                            <arg line="image prune --filter label=maintainer=dev@tinkerpop.apache.org -f"/>
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
