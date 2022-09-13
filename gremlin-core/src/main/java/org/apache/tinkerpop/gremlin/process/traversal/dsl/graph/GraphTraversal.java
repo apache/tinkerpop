@@ -334,7 +334,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * A {@code E} step is usually used to start a traversal but it may also be used mid-traversal.
      *
-     * @param edgeIdsOrElements vertices to inject into the traversal
+     * @param edgeIdsOrElements edges to inject into the traversal
      * @return the traversal with an appended {@link GraphStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#e-step" target="_blank">Reference Documentation - E Step</a>
      * @since 3.7.0
