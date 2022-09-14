@@ -17,6 +17,7 @@
 # under the License.
 #
 import concurrent.futures
+import os
 import sys
 from threading import Thread
 from six.moves import queue
@@ -27,6 +28,8 @@ from gremlin_python.process.anonymous_traversal import traversal
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+test_no_auth_url = gremlin_server_url.format(45940)
 
 def test_conns_in_threads(remote_connection):
     q = queue.Queue()
@@ -59,8 +62,7 @@ def _executor(q, conn):
     if not conn:
         # This isn't a fixture so close manually
         close = True
-        conn = DriverRemoteConnection(
-            'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
+        conn = DriverRemoteConnection(test_no_auth_url, 'gmodern', pool_size=4)
     try:
         g = traversal().withRemote(conn)
         future = g.V().promise()
@@ -77,7 +79,7 @@ def _executor(q, conn):
 
 def handle_request():
     try:
-        remote_connection = DriverRemoteConnection("ws://localhost:45940/gremlin", "g")
+        remote_connection = DriverRemoteConnection(test_no_auth_url, "g")
         g = traversal().withRemote(remote_connection)
         g.V().limit(1).toList()
         remote_connection.close()

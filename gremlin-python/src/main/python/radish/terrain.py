@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import os
 
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
@@ -28,7 +29,8 @@ label = __.label
 inV = __.inV
 project = __.project
 tail = __.tail
-
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+test_no_auth_url = gremlin_server_url.format(45940)
 
 @before.all
 def prepare_static_traversal_source(features, marker):
@@ -95,4 +97,4 @@ def __create_remote(server_graph_name):
     else:
         raise ValueError('serializer not found - ' + world.config.user_data["serializer"])
 
-    return DriverRemoteConnection('ws://localhost:45940/gremlin', server_graph_name, message_serializer=s)
+    return DriverRemoteConnection(test_no_auth_url, server_graph_name, message_serializer=s)
