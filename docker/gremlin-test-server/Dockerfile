@@ -24,7 +24,7 @@ USER root
 RUN mkdir -p /opt
 WORKDIR /opt
 COPY gremlin-server/src/test /opt/test/
-COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml /opt/
+COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml docker/gremlin-server/*.conf /opt/
 RUN chmod 755 /opt/docker-entrypoint.sh
 
 # Installing dos2unix to avoid errors in running the entrypoint script on Windows machines where their
