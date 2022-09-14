@@ -47,9 +47,31 @@ import static org.junit.Assert.assertEquals;
 @RunWith(GremlinProcessRunner.class)
 public abstract class EdgeTest extends AbstractGremlinProcessTest {
 
+    public abstract Traversal<Vertex, Edge> get_g_V_EX11X(final Object e11Id);
+
     public abstract Traversal<Edge, Edge> get_g_EX11X_E(final Object e11Id);
 
+    public abstract Traversal<Vertex, Edge> get_g_V_EXnullX();
+
+    public abstract Traversal<Integer, Edge> get_g_injectX1X_EX11_nullX(final Object e11Id);
+
     public abstract Traversal<Integer, Edge> get_g_injectX1X_coalesceXEX_hasLabelXtestsX_addEXtestsX_from_V_hasXnameX_XjoshXX_toXV_hasXnameX_XvadasXXX();
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_EX11X() {
+        final Object edgeId = convertToEdgeId("josh", "created", "lop");
+        final Traversal<Vertex, Edge> traversal = get_g_V_EX11X(edgeId);
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<Edge> edges = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            edges.add(traversal.next());
+        }
+        assertEquals(6, edges.size());
+        assertEquals(6, counter);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -65,6 +87,37 @@ public abstract class EdgeTest extends AbstractGremlinProcessTest {
         }
         assertEquals(6, edges.size());
         assertEquals(6, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_EXnullX() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_EXnullX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<Edge> edges = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            edges.add(traversal.next());
+        }
+        assertEquals(0, edges.size());
+        assertEquals(0, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_injectX1X_EX11_nullX() {
+        final Object edgeId = convertToEdgeId("josh", "created", "lop");
+        final Traversal<Integer, Edge> traversal = get_g_injectX1X_EX11_nullX(edgeId);
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<Edge> edges = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            edges.add(traversal.next());
+        }
+        assertEquals(1, edges.size());
+        assertEquals(1, counter);
     }
 
     @Test
@@ -85,9 +138,18 @@ public abstract class EdgeTest extends AbstractGremlinProcessTest {
     public static class Traversals extends EdgeTest {
 
         @Override
+        public Traversal<Vertex, Edge> get_g_V_EX11X(final Object e11Id) { return g.V().E(e11Id); }
+
+        @Override
         public Traversal<Edge, Edge> get_g_EX11X_E(final Object e11Id) {
             return g.E(e11Id).E();
         }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_EXnullX() { return g.V().E(null); }
+
+        @Override
+        public Traversal<Integer, Edge> get_g_injectX1X_EX11_nullX(final Object e11Id) { return g.inject(1).E(e11Id,null); }
 
         @Override
         public Traversal<Integer, Edge> get_g_injectX1X_coalesceXEX_hasLabelXtestsX_addEXtestsX_from_V_hasXnameX_XjoshXX_toXV_hasXnameX_XvadasXXX() {
