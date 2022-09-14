@@ -308,6 +308,9 @@ mvn clean install -pl gremlin-server,gremlin-console -DdockerImages
 
 which enables the "docker-images" Maven profile.
 
+As of TinkerPop 3.5.5, a docker image of the Gremlin Server will be built automatically with `mvn clean install`, which
+is use for GLV tests inside of Docker. To skip building this image, append the `-DskipImageBuild` flag to Maven commands.
+
 [[release-environment]]
 === Release Environment
 
