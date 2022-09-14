@@ -17,6 +17,7 @@
 # under the License.
 #
 import asyncio
+import os
 import threading
 import uuid
 
@@ -32,7 +33,8 @@ from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-test_no_auth_url = 'ws://localhost:45940/gremlin'
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+test_no_auth_url = gremlin_server_url.format(45940)
 
 
 def test_connection(connection):

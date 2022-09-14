@@ -78,7 +78,7 @@ fi
 
 /opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-secure.yaml &
 
-java -cp /opt/gremlin-test/gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
+java -cp /opt/gremlin-test/apache-tinkerpop-gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
      -Dlogback.configurationFile="file:/opt/gremlin-server/conf/logback.xml" \
      org.apache.tinkerpop.gremlin.server.KdcFixture /opt/gremlin-server &
 
