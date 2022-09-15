@@ -107,11 +107,11 @@ namespace Gremlin.Net.Driver.Remote
         /// </summary>
         /// <param name="bytecode">The <see cref="Bytecode" /> to submit.</param>
         /// <returns>A <see cref="ITraversal" /> allowing to access the results and side-effects.</returns>
-        public async Task<ITraversal<S, E>> SubmitAsync<S, E>(Bytecode bytecode)
+        public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode)
         {
             var requestId = Guid.NewGuid();
             var resultSet = await SubmitBytecodeAsync(requestId, bytecode).ConfigureAwait(false);
-            return new DriverRemoteTraversal<S, E>(_client, requestId, resultSet);
+            return new DriverRemoteTraversal<TStart, TEnd>(_client, requestId, resultSet);
         }
 
         private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode)

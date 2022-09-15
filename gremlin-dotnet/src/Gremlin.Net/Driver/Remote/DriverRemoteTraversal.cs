@@ -27,7 +27,7 @@ using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Driver.Remote
 {
-    internal class DriverRemoteTraversal<S, E> : DefaultTraversal<S, E>
+    internal class DriverRemoteTraversal<TStart, TEnd> : DefaultTraversal<TStart, TEnd>
     {
         public DriverRemoteTraversal(IGremlinClient gremlinClient, Guid requestId,
             IEnumerable<Traverser> traversers)

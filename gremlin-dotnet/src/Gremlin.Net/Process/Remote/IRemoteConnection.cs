@@ -37,7 +37,7 @@ namespace Gremlin.Net.Process.Remote
         /// </summary>
         /// <param name="bytecode">The <see cref="Bytecode" /> to send.</param>
         /// <returns>The <see cref="ITraversal" /> with the results and optional side-effects.</returns>
-        Task<ITraversal<S, E>> SubmitAsync<S, E>(Bytecode bytecode);
+        Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode);
 
         /// <summary>
         ///     Creates a <see cref="RemoteTransaction" /> in the context of a <see cref="GraphTraversalSource" /> designed to work with
