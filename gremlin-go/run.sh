@@ -40,7 +40,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 fi
 
 # Parses current gremlin server version from project pom.xml file using perl regex
-GREMLIN_SERVER_VERSION=$(grep tinkerpop -A2 pom.xml | grep -Po '(?<=<version>)([0-9]+\.?){3}(-SNAPSHOT)?(?=<)')
+GREMLIN_SERVER_VERSION=$(grep tinkerpop -A2 pom.xml | sed -r -n 's/.*<version>(([0-9]+\.?){3})(-SNAPSHOT)?<\/version>/\1\3/p')
 export GREMLIN_SERVER="${1:-$GREMLIN_SERVER_VERSION}"
 echo "Running server version: $GREMLIN_SERVER"
 

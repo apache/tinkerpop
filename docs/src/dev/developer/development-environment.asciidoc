@@ -510,9 +510,6 @@ TinkerPop provides a shell script, that can start several build tasks within a D
 required Docker images will be built automatically if they don't exist yet. Thus the first invocation
 of the Docker script is expected to take some time.
 
-NOTE: Currently, `gremlin-go` integration is not supported within this Docker container, but can be run separately with Docker.
-Please see the `Testing With Docker` section under the xref:../../../../gremlin-go/driver/README.md[Gremlin Go Driver] for details.
-
 The script can be found under `PROJECT_HOME/docker/build.sh`. The following tasks are currently
 supported:
 
@@ -523,6 +520,18 @@ supported:
 
 A list of command line options is provided by `docker/build.sh --help`. The container will install,
 configure and start all required dependencies, such as Hadoop.
+
+By default, this script will run every module in the project. However, if you are planning on working on just a
+small set of the modules (e.g. the GLVs) then you can use the script options to reduce the modules included by
+specifically selecting which modules you want. This behavior is currently supported for the non-Java GLVs and
+gremlin-console. This option will include only the selected modules as well as gremlin-server, gremlin-test,
+neo4j-gremlin and all their dependencies. This is the minimum set of modules required to build and test the GLVs.
+
+[source,bash]
+.Build and test gremlin-python and gremlin-go with minimal Gremlin Server dependencies
+----
+./docker/build.sh --tests --integration-tests --python --golang
+----
 
 Options can be passed to Docker by setting the `TINKERPOP_DOCKER_OPTS` environment variable. A speed boost can
 be gained at the expense of memory by using tmpfs and the special directory `/usr/src/tinkermem`.
