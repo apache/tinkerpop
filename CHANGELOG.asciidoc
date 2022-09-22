@@ -252,6 +252,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Set the exact exception in `initializationFailure` on the Java driver instead of the root cause.
 * Added `SparkIOUtil` utility to load graph into Spark RDD.
 * Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.
+* Bumped to `snakeyaml` 1.32 to fix security vulnerability.
 
 [[release-3-5-4]]
 === TinkerPop 3.5.4 (Release Date: July 18, 2022)
