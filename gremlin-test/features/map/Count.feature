@@ -125,3 +125,47 @@ Feature: Step - count()
     Then the result should be ordered
       | result |
       | d[14465066].l |
+
+  Scenario: g_V_order_byXlangX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by("lang").count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[2].l |
+
+  Scenario: g_E_sampleX1X_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.E().sample(1).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[1].l |
+
+  Scenario: g_V_sampleX1X_byXageX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().sample(1).by("age").count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[1].l |
+
+  Scenario: g_V_order_byXnoX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by("no").count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[0].l |
