@@ -130,6 +130,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#E(Object...)
+     */
+    public static <A> GraphTraversal<A, Edge> E(final Object... edgeIdsOrElements) {
+        return __.<A>start().E(edgeIdsOrElements);
+    }
+
+    /**
      * @see GraphTraversal#to(Direction, String...)
      */
     public static GraphTraversal<Vertex, Vertex> to(final Direction direction, final String... edgeLabels) {

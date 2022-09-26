@@ -77,6 +77,18 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_E(final GremlinParser.TraversalMethod_EContext ctx) {
+        if (ctx.genericLiteralList().getChildCount() != 0) {
+            return this.graphTraversal.E(GenericLiteralVisitor.getGenericLiteralList(ctx.genericLiteralList()));
+        } else {
+            return this.graphTraversal.E();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_addV_Empty(final GremlinParser.TraversalMethod_addV_EmptyContext ctx) {
         return this.graphTraversal.addV();
     }

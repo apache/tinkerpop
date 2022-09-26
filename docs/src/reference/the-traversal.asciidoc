@@ -1236,16 +1236,18 @@ g.V()
 [[e-step]]
 === E Step
 
-The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`. Unlike the related
-<<v-step,V()>> it cannot be used mid-traversal.
+The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`, but can also
+be used mid-traversal.
 
 [gremlin-groovy,modern]
 ----
 g.E(11) <1>
 g.E().hasLabel('knows').has('weight', gt(0.75))
+g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas"))) <2>
 ----
 
 <1> Find the edge by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
+<2> Get edges with label `knows`, if there is none then add new one between `josh` and `vadas`.
 
 *Additional References*
 

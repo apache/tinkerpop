@@ -94,12 +94,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy
         }
 
         /// <inheritdoc />
-        public virtual void Apply<S, E>(ITraversal<S, E> traversal)
+        public virtual void Apply<TStart, TEnd>(ITraversal<TStart, TEnd> traversal)
         {
         }
 
         /// <inheritdoc />
-        public virtual Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
+        public virtual Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal)
         {
             return Task.CompletedTask;
         }

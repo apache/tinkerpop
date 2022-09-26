@@ -435,9 +435,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the inject step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Inject<S>(params S[] starts)
+        public GraphTraversal<TStart, TStart> Inject<TStart>(params TStart[] starts)
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
 
             // null starts is treated as g.inject(null) meaning inject a single null traverser
             if (starts == null)
@@ -458,10 +458,10 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the io step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Io<S>(string file)
+        public GraphTraversal<TStart, TStart> Io<TStart>(string file)
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
-                traversal.Bytecode.AddStep("io", file);
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("io", file);
             return traversal;
         }
 
@@ -469,9 +469,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Call<S>()
+        public GraphTraversal<TStart, TStart> Call<TStart>()
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("call");
             return traversal;
         }
@@ -480,9 +480,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Call<S>(string service)
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service)
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("call", service);
             return traversal;
         }
@@ -491,9 +491,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Call<S>(string service, IDictionary<object,object> m)
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, IDictionary<object, object> m)
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("call", service, m);
             return traversal;
         }
@@ -502,9 +502,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Call<S>(string service, ITraversal t)
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, ITraversal t)
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("call", service, t);
             return traversal;
         }
@@ -513,13 +513,12 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Call<S>(string service, IDictionary<object,object> m, ITraversal t)
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, IDictionary<object, object> m, ITraversal t)
         {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("call", service, m, t);
             return traversal;
         }
-
 
     }
     

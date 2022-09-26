@@ -50,6 +50,16 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the E step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> E(params object[] edgeIdsOrElements)
+        {
+            return edgeIdsOrElements is { Length: 0 }
+                ? new GraphTraversal<object, Edge>().E()
+                : new GraphTraversal<object, Edge>().E(edgeIdsOrElements);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Edge> AddE(string edgeLabel)

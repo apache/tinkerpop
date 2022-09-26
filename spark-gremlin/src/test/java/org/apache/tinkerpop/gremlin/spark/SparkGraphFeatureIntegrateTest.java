@@ -59,7 +59,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @StepDrop and not @StepV and not @StepIndex and not @StepInject and " +
+        tags = "not @RemoteOnly and not @StepDrop and not @StepV and not @StepE and not @StepIndex and not @StepInject and " +
                "not @GraphComputerVerificationOneBulk and not @GraphComputerVerificationStrategyNotSupported and " +
                "not @GraphComputerVerificationMidVNotSupported and not @GraphComputerVerificationElementSupported and " +
                "not @GraphComputerVerificationInjectionNotSupported and " +

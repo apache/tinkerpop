@@ -365,6 +365,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal E method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  E(...args) {
+    this.bytecode.addStep('E', args);
+    return this;
+  }
+
+  /**
    * Graph traversal addE method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1443,6 +1453,7 @@ function callOnEmptyTraversal(fnName, args) {
  * @type {Object}
  */
 const statics = {
+  E: (...args) => callOnEmptyTraversal('E', args),
   V: (...args) => callOnEmptyTraversal('V', args),
   addE: (...args) => callOnEmptyTraversal('addE', args),
   addV: (...args) => callOnEmptyTraversal('addV', args),

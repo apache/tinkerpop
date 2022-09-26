@@ -1124,4 +1124,25 @@ public class TraversalMethodVisitorTest {
         compare(g.V().with("blah", "bleh"),
                 eval("g.V().with('blah', 'bleh')"));
     }
+
+    @Test
+    public void testTraversalMethod_midTraversal_E() throws Exception {
+        compare(g.inject(1).E(), eval("g.inject(1).E()"));
+    }
+
+    @Test
+    public void testTraversalMethod_midTraversal_E_multipleArgs() throws Exception {
+        compare(g.inject(1).E(2,null), eval("g.inject(1).E(2,null)"));
+    }
+
+    @Test
+    public void testTraversalMethod_midTraversal_E_spawning() throws Exception {
+        compare(g.V().coalesce(E(),addE("person")), eval("g.V().coalesce(__.E(),__.addE('person'))"));
+    }
+
+    @Test
+    public void testTraversalMethod_midTraversal_E_multipleArgs_spawning() throws Exception {
+        compare(g.V().coalesce(E(1,2),addE("person")),
+                eval("g.V().coalesce(__.E(1,2),__.addE('person'))"));
+    }
 }

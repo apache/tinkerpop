@@ -116,6 +116,7 @@ public class TinkerGraphWorld implements World {
                 "@StepDrop",
                 "@StepInject",
                 "@StepV",
+                "@StepE",
                 "@GraphComputerVerificationOneBulk",
                 "@GraphComputerVerificationStrategyNotSupported",
                 "@GraphComputerVerificationMidVNotSupported",

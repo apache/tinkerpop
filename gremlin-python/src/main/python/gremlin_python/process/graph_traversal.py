@@ -274,6 +274,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("V", *args)
         return self
 
+    def E(self, *args):
+        self.bytecode.add_step("E", *args)
+        return self
+
     def addE(self, *args):
         warnings.warn(
             "gremlin_python.process.GraphTraversal.addE will be replaced by "
@@ -925,6 +929,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def __(cls, *args):
         return __.inject(*args)
+
+    @classmethod
+    def E(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).E(*args)
 
     @classmethod
     def V(cls, *args):
@@ -1580,6 +1588,10 @@ class Transaction:
         self._session_based_connection.close()
         self.__is_open = False
         return session
+
+
+def E(*args):
+    return __.E(*args)
 
 
 def V(*args):
