@@ -44,3 +44,4 @@ docs/gremlint/
 gremlint/
 coverage.out
 .env
+gremlinconsoletest.egg-info

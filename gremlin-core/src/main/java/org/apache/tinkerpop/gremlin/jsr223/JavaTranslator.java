@@ -297,8 +297,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
         // if it got down here then the method was in the cache but it was never called as it could not be found
         // for the supplied arguments
-        throw new IllegalStateException(generateMethodNotFoundMessage(
-                "Could not locate method", delegate, methodName, argumentsCopy));
+        throw new IllegalArgumentException(generateMethodNotFoundMessage(
+                "Could not locate exact method given the supplied arguments", delegate, methodName, argumentsCopy));
     }
 
     /**

@@ -173,6 +173,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: |
+          touch gremlin-python/.glv
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
           mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
   javascript:
@@ -212,13 +213,12 @@ jobs:
         run: docker load --input gremlin-server.tar
       - name: Build with Maven
         run: |
-          touch gremlin-javascript/.glv
           mvn clean install -pl -:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :gremlin-javascript,:gremlint
   python:
     name: python
     timeout-minutes: 20
-    needs: smoke
+    needs: cache-gremlin-server-docker-image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -231,16 +231,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.8'
-      - name: Setup Python requirements
-        run: |
-          sudo apt install gcc libkrb5-dev
-          python3 -m pip install --upgrade pip
-          pip install virtualenv
       - name: Build with Maven
         run: |
           touch gremlin-python/.glv
           mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl gremlin-python -DincludeNeo4j
+          mvn verify -pl gremlin-python
   dotnet:
     name: .NET
     timeout-minutes: 20

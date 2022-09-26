@@ -129,15 +129,15 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), s -> s + "m"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), s -> s + "n"));
 
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next().toString()));
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
             final Iterator<Object> itty = g.V().has("name", s).id();
             final Translator.ScriptTranslator.TypeTranslator typeTranslator = new GroovyTranslator.LanguageTypeTranslator(false);
             return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ? typeTranslator.apply("g", itty.next()).getScript() : s, Vertex.DEFAULT_LABEL);
         }));
-        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> getEdgeIdString(g, s)));
-        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> getEdgeIdString(g, s)));
+        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
+        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), s -> String.format("Direction.%s", s)));
 

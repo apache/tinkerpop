@@ -176,7 +176,7 @@ limitations under the License.
         <mockito.version>3.3.3</mockito.version>
         <netty.version>4.1.77.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <snakeyaml.version>1.27</snakeyaml.version>
+        <snakeyaml.version>1.32</snakeyaml.version>
         <spark.version>3.2.1</spark.version>
         <powermock.version>2.0.9</powermock.version>
 
@@ -456,6 +456,7 @@ limitations under the License.
                         <exclude>**/docfx/**</exclude>
                         <exclude>**/go.sum</exclude>
                         <exclude>**/coverage.out</exclude>
+                        <exclude>**/gremlinconsoletest.egg-info/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -603,7 +604,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>1.11.0</version>
+                    <version>1.13.1</version>
                     <configuration>
                         <targetBytecode>1.8</targetBytecode>
                     </configuration>
