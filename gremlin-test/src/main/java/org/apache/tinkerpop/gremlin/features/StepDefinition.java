@@ -133,8 +133,8 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
             final Iterator<Object> itty = g.V().has("name", s).id();
-            final Translator.ScriptTranslator.TypeTranslator typeTranslator = new GroovyTranslator.LanguageTypeTranslator(false);
-            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ? typeTranslator.apply("g", itty.next()).getScript() : s, Vertex.DEFAULT_LABEL);
+            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ?
+                    world.convertIdToScript(itty.next(), Vertex.class) : s, Vertex.DEFAULT_LABEL);
         }));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
