@@ -32,6 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `SparkIOUtil` utility to load graph into Spark RDD.
 * Changed `JavaTranslator` exception handling so that an `IllegalArgumentException` is used for cases where the method exists but the signature can't be discerned given the arguments supplied.
 * Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.
+* Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.
 * Bumped to `snakeyaml` 1.32 to fix security vulnerability.
 
 ==== Bugs

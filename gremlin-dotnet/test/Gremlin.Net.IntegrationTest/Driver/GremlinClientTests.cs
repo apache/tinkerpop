@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -104,6 +105,23 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 Assert.Contains($"ServerEvaluationError: No such property: {requestMsg}",
                     exception.Message);
             }
+        }
+
+        [Fact]
+        public async Task ShouldSupportCancellation()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+            const int sleepTime = 5000;
+            var requestMsg = _requestMessageProvider.GetSleepMessage(sleepTime);
+            var cts = new CancellationTokenSource();
+
+            var submitTask = gremlinClient.SubmitAsync<object>(requestMsg, cts.Token);
+            await Task.Delay(TimeSpan.FromMilliseconds(sleepTime * 0.1), CancellationToken.None);
+            cts.Cancel();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() => submitTask);
+            Assert.True(submitTask.IsCanceled);
         }
 
         [Fact]

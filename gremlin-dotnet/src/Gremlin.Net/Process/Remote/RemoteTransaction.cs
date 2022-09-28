@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -68,9 +69,11 @@ namespace Gremlin.Net.Process.Remote
         /// <summary>
         ///     Commits the transaction.
         /// </summary>
-        public async Task CommitAsync()
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
-            await _sessionBasedConnection.SubmitAsync<object, object>(GraphOp.Commit).ConfigureAwait(false);
+            await _sessionBasedConnection.SubmitAsync<object, object>(GraphOp.Commit, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>

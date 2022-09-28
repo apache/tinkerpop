@@ -25,8 +25,6 @@ using System;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-
 namespace Gremlin.Net.UnitTest.Process.Traversal
 {
     public class GraphTraversalSourceTests

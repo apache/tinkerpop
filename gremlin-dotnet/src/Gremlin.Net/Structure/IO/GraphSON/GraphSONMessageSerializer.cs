@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
@@ -57,8 +58,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         }
 
         /// <inheritdoc />
-        public virtual Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage)
+        public virtual Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage,
+            CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.CanBeCanceled) cancellationToken.ThrowIfCancellationRequested();
             var graphSONMessage = _graphSONWriter.WriteObject(requestMessage);
             return Task.FromResult(Encoding.UTF8.GetBytes(MessageWithHeader(graphSONMessage)));
         }
@@ -69,9 +72,11 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         }
 
         /// <inheritdoc />
-        public virtual Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message)
+        public virtual Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
+            CancellationToken cancellationToken = default)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
+            if (cancellationToken.CanBeCanceled) cancellationToken.ThrowIfCancellationRequested();
             if (message.Length == 0) return Task.FromResult<ResponseMessage<List<object>>>(null);
             
             var reader = new Utf8JsonReader(message);
