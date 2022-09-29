@@ -1,0 +1,77 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 2*
+
+= Gremlin Arrow Flight
+
+== Introduction
+Gremlin Server and Clients are based on WebSockets with a https://tinkerpop.apache.org/docs/current/dev/provider/#_graph_driver_provider_requirements/[custom sub-protocol] and serialization to GraphSON and GraphBinary. Developers for each driver must implement those protocols from scratch and there is a limited amount of code which is being reused (only 3rd party WebSocket libraries are currently reused in the client variants). The protocol implementation is a complicated and error-prone process, so most drivers only support some subset of Gremlin Server features. The maintenance cost is also constantly increasing with the number of new client variants being added to TinkerPop.
+
+== Motivation
+We would like to propose a solution to reduce maintenance and simplify the development of the client drivers by using a standard protocol based on the Apache Arrow Flight. As Arrow Flight is implemented in the most common languages like C++, C#, Java and Python we anticipate a larger amount of existing codebase can be reused which would help to reduce maintenance costs in the future. Also, we can reuse some other Arrow Flight features like authentication and error handling.
+
+== Assumptions
+
+* Need to reuse existing code as much as possible
+* It is desirable, but not necessary, to maintain compatibility with existing drivers
+* To simplify development at the initial stage, we will reuse existing serialization mechanism
+
+== Requirements
+
+* Gremlin Server and drivers should replace the network layer with Arrow Flight
+* No significant drop in performance
+* Gremlin Arrow must pass the Gherkin test suite
+
+== Specifications
+=== Design Overview
+
+The main idea is to replace the transport layer with FlightServer and FlightClient. They support asynchronous data transfer, splitting data into chunks, and authorization. While Arrow Flight typically requires schema, in a short term we can proceed with implementation using existing serializers and GraphBinary format. By using GraphBinary we will not have all capabilities that Arrow Flight provides out of the box, like efficient compression. However, in future, we see the value of adding capabilities to generate a schema from the server-side, and that can enable additional use cases.
+
+==== First stage: replace transport layer, but keep serializers
+
+Arrow Flight Server and Client implementations can be used to replace network code for Gremlin Server and GLV's.
+
+Pros:
+* Reduction of the code base to be developed and maintained
+* A relatively low number of modifications
+
+Cons:
+* We may observe reduced performance due to schema transfer and other overhead
+* Still need to support GraphBinary serialization
+
+==== Second stage: replace transport layer, make dynamic schema generation and use native Arrow structures for data transmission
+
+In addition, need to rework the serialization and add schema generation.
+We can use a user-provided schema to simplify development and reduce the size of the data transferred.
+
+Pros:
+* Greater reduction of the codebase to be developed and maintained
+* Performance and memory usage will be improved for large data sets due to Arrow Flight optimizations and the ability to transfer data in parallel
+* No need to support GraphBinary and GraphSON serialization protocols 
+* We can use Arrow libraries to import and export data, supported several popular formats like CSV, JSON, Apache Parquet, Apache ORC
+
+Cons:
+* Reduced performance for small result sets
+* Can be complicated and expensive to generate a schema for each request. Can be solved with intoducing schema to Tinkerpop.
+
+Open question: how to efficiently serialize heterogeneous data, for example `g.inject(1,"str",new HashMap<>())`.
+
+== Similar solutions
+
+link:https://github.com/neo4j-field/neo4j-arrow/[neo4j-arrow]
