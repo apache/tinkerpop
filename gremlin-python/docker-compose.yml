@@ -70,7 +70,8 @@ services:
       && python3 ./setup.py test
       && python3 ./setup.py install
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0'"
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0'
+      && chown -R `stat -c "%u:%g" .` ."
     depends_on:
       gremlin-server-test-python:
         condition: service_healthy
@@ -84,4 +85,5 @@ services:
     environment:
       - VERSION=${VERSION}
     command: >
-      bash -c "python3 setup.py sdist bdist_wheel"
+      bash -c "python3 setup.py sdist bdist_wheel
+      && chown -R `stat -c "%u:%g" .` ."
