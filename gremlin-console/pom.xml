@@ -55,6 +55,11 @@ limitations under the License.
             <artifactId>logback-classic</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>1.17.1</version>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>

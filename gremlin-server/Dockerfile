@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM adoptopenjdk/openjdk11:alpine-slim
+FROM alpine
 
 LABEL maintainer="dev@tinkerpop.apache.org"
 
@@ -23,7 +23,8 @@ ARG GREMLIN_SERVER_DIR
 
 RUN apk add --no-cache --update \
     bash \
-    perl
+    perl \
+    openjdk11-jdk
 
 COPY src/main/docker/docker-entrypoint.sh /
 COPY ${GREMLIN_SERVER_DIR} /opt/gremlin-server
