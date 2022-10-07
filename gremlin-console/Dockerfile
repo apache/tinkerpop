@@ -15,13 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM adoptopenjdk/openjdk11:alpine-slim
+FROM alpine
 
 LABEL maintainer="dev@tinkerpop.apache.org"
 
 ARG GREMLIN_CONSOLE_DIR
 
-RUN apk add --no-cache --update bash
+RUN apk add --no-cache --update \
+    bash \
+    openjdk11-jdk
 
 COPY src/main/docker/docker-entrypoint.sh /
 COPY ${GREMLIN_CONSOLE_DIR} /opt/gremlin-console
