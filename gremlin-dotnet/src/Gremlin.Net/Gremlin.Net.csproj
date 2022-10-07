@@ -68,7 +68,6 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <PublishRepositoryUrl>true</PublishRepositoryUrl>    
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>3.5.2</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
