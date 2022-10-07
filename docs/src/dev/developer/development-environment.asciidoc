@@ -631,6 +631,10 @@ You should see exit code 0 upon successful completion of the test suites. Run `d
 service containers (not needed if you executed Maven commands or `run.sh`), or `docker-compose down --rmi all` to
 remove the service containers while deleting all used images.
 
+Note for running docker with MacOS on ARM processors: Docker's performance is extremely poor on ARM Mac's in its
+default configuration. It is recommended to enable both the "New Virtualization Framework" and "VirtioFS" under
+Docker Desktop Settings -> Experimental Features.
+
 [[intellij]]
 == Intellij Usage
 
