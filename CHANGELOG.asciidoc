@@ -37,7 +37,6 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 This release also includes changes from <<release-3-5-5, 3.5.5>>.
 
 * Fixed bug in the Gremlin grammar for parsing of empty queries.
-* Fixed bug in `count()` when using `order()` or `sample()` with TinkerGraph.
 
 [[release-3-6-1]]
 === TinkerPop 3.6.1 (Release Date: July 18, 2022)
