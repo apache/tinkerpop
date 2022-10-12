@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO;
 using Gremlin.Net.Structure.IO.GraphSON;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gremlin.Net.Driver
 {
@@ -37,6 +39,8 @@ namespace Gremlin.Net.Driver
     public class GremlinClient : IGremlinClient
     {
         private readonly ConnectionPool _connectionPool;
+        
+        internal ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
@@ -119,8 +123,11 @@ namespace Gremlin.Net.Driver
                     connectionPoolSettings = new ConnectionPoolSettings {PoolSize = 1};
                 }
             }
-            _connectionPool =
-                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
+
+            LoggerFactory = NullLoggerFactory.Instance;
+
+            _connectionPool = new ConnectionPool(connectionFactory,
+                connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
         }
 
         private static void VerifyGraphSONArgumentTypeForMimeType<T>(object argument, string argumentName,
@@ -150,15 +157,16 @@ namespace Gremlin.Net.Driver
         /// <param name="disableCompression">
         ///     Whether to disable compression. Compression is only supported since .NET 6.
         ///     There it is also enabled by default.
-        ///
+        /// 
         ///     Note that compression might make your application susceptible to attacks like CRIME/BREACH. Compression
         ///     should therefore be turned off if your application sends sensitive data to the server as well as data
         ///     that could potentially be controlled by an untrusted user.
         /// </param>
+        /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
         public GremlinClient(GremlinServer gremlinServer, IMessageSerializer messageSerializer = null,
             ConnectionPoolSettings connectionPoolSettings = null,
             Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null,
-            bool disableCompression = false)
+            bool disableCompression = false, ILoggerFactory loggerFactory = null)
         {
             messageSerializer ??= new GraphSON3MessageSerializer();
             var webSocketSettings = new WebSocketSettings
@@ -185,8 +193,11 @@ namespace Gremlin.Net.Driver
                     connectionPoolSettings = new ConnectionPoolSettings {PoolSize = 1};
                 }
             }
-            _connectionPool =
-                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
+
+            LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+
+            _connectionPool = new ConnectionPool(connectionFactory,
+                connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
         }
 
         /// <summary>
