@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Process.Traversal
@@ -109,7 +110,9 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
         /// <param name="callback">The function to execute on the current traversal.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The result of the executed <paramref name="callback" />.</returns>
-        Task<TReturn> Promise<TReturn>(Func<ITraversal<TStart, TEnd>, TReturn> callback);
+        Task<TReturn> Promise<TReturn>(Func<ITraversal<TStart, TEnd>, TReturn> callback,
+            CancellationToken cancellationToken = default);
     }
 }

@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Remote;
@@ -106,15 +107,18 @@ namespace Gremlin.Net.Driver.Remote
         ///     Submits <see cref="Bytecode" /> for evaluation to a remote Gremlin Server.
         /// </summary>
         /// <param name="bytecode">The <see cref="Bytecode" /> to submit.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A <see cref="ITraversal" /> allowing to access the results and side-effects.</returns>
-        public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode)
+        public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode,
+            CancellationToken cancellationToken = default)
         {
             var requestId = Guid.NewGuid();
-            var resultSet = await SubmitBytecodeAsync(requestId, bytecode).ConfigureAwait(false);
+            var resultSet = await SubmitBytecodeAsync(requestId, bytecode, cancellationToken).ConfigureAwait(false);
             return new DriverRemoteTraversal<TStart, TEnd>(_client, requestId, resultSet);
         }
 
-        private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode)
+        private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode,
+            CancellationToken cancellationToken)
         {
             var requestMsg =
                 RequestMessage.Build(Tokens.OpsBytecode)
@@ -142,7 +146,7 @@ namespace Gremlin.Net.Driver.Remote
                 }
             }
             
-            return await _client.SubmitAsync<Traverser>(requestMsg.Create()).ConfigureAwait(false);
+            return await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

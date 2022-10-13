@@ -23,6 +23,7 @@
 
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -40,16 +41,18 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(char value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(char value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
             var bytes = Encoding.UTF8.GetBytes(value.ToString());
-            await stream.WriteAsync(bytes).ConfigureAwait(false);
+            await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<char> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<char> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var firstByte = await stream.ReadByteAsync().ConfigureAwait(false);
+            var firstByte = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
             var byteLength = 1;
             // A byte with the first byte ON (10000000) signals that more bytes are needed to represent the UTF-8 char
             if ((firstByte & 0x80) > 0)
@@ -75,7 +78,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             {
                 bytes = new byte[byteLength];
                 bytes[0] = firstByte;
-                await stream.ReadAsync(bytes, 1, byteLength - 1).ConfigureAwait(false);
+                await stream.ReadAsync(bytes, 1, byteLength - 1, cancellationToken).ConfigureAwait(false);
             }
 
             return Encoding.UTF8.GetChars(bytes)[0];

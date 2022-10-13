@@ -25,6 +25,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Process.Traversal
@@ -177,10 +178,10 @@ namespace Gremlin.Net.Process.Traversal
                 strategy.Apply(this);
         }
 
-        private async Task ApplyStrategiesAsync()
+        private async Task ApplyStrategiesAsync(CancellationToken cancellationToken)
         {
             foreach (var strategy in TraversalStrategies)
-                await strategy.ApplyAsync(this).ConfigureAwait(false);
+                await strategy.ApplyAsync(this, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -264,10 +265,12 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
         /// <param name="callback">The function to execute on the current traversal.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The result of the executed <paramref name="callback" />.</returns>
-        public async Task<TReturn> Promise<TReturn>(Func<ITraversal<TStart, TEnd>, TReturn> callback)
+        public async Task<TReturn> Promise<TReturn>(Func<ITraversal<TStart, TEnd>, TReturn> callback,
+            CancellationToken cancellationToken = default)
         {
-            await ApplyStrategiesAsync().ConfigureAwait(false);
+            await ApplyStrategiesAsync(cancellationToken).ConfigureAwait(false);
             return callback(this);
         }
     }

@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -41,7 +42,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             traversal.Traversers = _traversers;
         }
 
-        public Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal)
+        public Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal, CancellationToken cancellationToken)
         {
             traversal.Traversers = _traversers;
             return Task.CompletedTask;

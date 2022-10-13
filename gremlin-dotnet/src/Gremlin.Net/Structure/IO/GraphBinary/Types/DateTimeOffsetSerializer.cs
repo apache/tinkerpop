@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -49,15 +50,18 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(DateTimeOffset value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(DateTimeOffset value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await stream.WriteLongAsync(value.ToUnixTimeMilliseconds()).ConfigureAwait(false);
+            await stream.WriteLongAsync(value.ToUnixTimeMilliseconds(), cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<DateTimeOffset> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<DateTimeOffset> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            return DateTimeOffset.FromUnixTimeMilliseconds(await stream.ReadLongAsync().ConfigureAwait(false));
+            return DateTimeOffset.FromUnixTimeMilliseconds(await stream.ReadLongAsync(cancellationToken)
+                .ConfigureAwait(false));
         }
     }
 }
