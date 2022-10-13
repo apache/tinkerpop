@@ -21,8 +21,6 @@
 
 #endregion
 
-using System.Collections.Generic;
-
 namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
 {
     /// <summary>

@@ -56,5 +56,10 @@ namespace Gremlin.Net.Driver
         {
             _tcs.TrySetException(objException);
         }
+
+        public void Cancel()
+        {
+            _tcs.SetCanceled();
+        }
     }
 }

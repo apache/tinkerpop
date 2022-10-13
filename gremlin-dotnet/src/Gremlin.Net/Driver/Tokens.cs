@@ -21,7 +21,6 @@
 
 #endregion
 
-using System;
 using Gremlin.Net.Driver.Messages;
 
 namespace Gremlin.Net.Driver

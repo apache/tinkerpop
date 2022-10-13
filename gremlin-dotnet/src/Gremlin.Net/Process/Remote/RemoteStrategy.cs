@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -46,14 +47,15 @@ namespace Gremlin.Net.Process.Remote
         /// <inheritdoc />
         public void Apply<S, E>(ITraversal<S, E> traversal)
         {
-            ApplyAsync(traversal).WaitUnwrap();
+            ApplyAsync(traversal, CancellationToken.None).WaitUnwrap();
         }
 
         /// <inheritdoc />
-        public async Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
+        public async Task ApplyAsync<S, E>(ITraversal<S, E> traversal, CancellationToken cancellationToken = default)
         {
             if (traversal.Traversers != null) return;
-            var remoteTraversal = await _remoteConnection.SubmitAsync<S, E>(traversal.Bytecode).ConfigureAwait(false);
+            var remoteTraversal = await _remoteConnection.SubmitAsync<S, E>(traversal.Bytecode, cancellationToken)
+                .ConfigureAwait(false);
             traversal.Traversers = remoteTraversal.Traversers;
         }
     }

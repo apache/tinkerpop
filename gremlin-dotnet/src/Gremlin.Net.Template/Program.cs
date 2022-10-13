@@ -24,8 +24,6 @@
 using System;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure;
-
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.Template

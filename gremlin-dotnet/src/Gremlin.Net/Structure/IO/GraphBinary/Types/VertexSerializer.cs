@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -39,22 +40,24 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Vertex value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Vertex value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteAsync(value.Id, stream).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Label, stream, false).ConfigureAwait(false);
-            await writer.WriteAsync(null, stream).ConfigureAwait(false);
+            await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<Vertex> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<Vertex> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
 
-            var v = new Vertex(await reader.ReadAsync(stream).ConfigureAwait(false),
-                (string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false));
+            var v = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
+                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false));
             
             // discard properties
-            await reader.ReadAsync(stream).ConfigureAwait(false);
+            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             return v;
         }
     }
