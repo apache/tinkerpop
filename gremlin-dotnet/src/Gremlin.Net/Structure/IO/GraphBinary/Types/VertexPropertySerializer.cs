@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -39,32 +40,34 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(VertexProperty value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(VertexProperty value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteAsync(value.Id, stream).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Label, stream, false).ConfigureAwait(false);
-            await writer.WriteAsync(value.Value, stream).ConfigureAwait(false);
+            await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for the parent vertex
-            await writer.WriteAsync(null, stream).ConfigureAwait(false);
+            await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for properties
-            await writer.WriteAsync(null, stream).ConfigureAwait(false);
+            await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
 
         }
 
         /// <inheritdoc />
-        protected override async Task<VertexProperty> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<VertexProperty> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var vp = new VertexProperty(await reader.ReadAsync(stream).ConfigureAwait(false),
-                (string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false),
-                await reader.ReadAsync(stream).ConfigureAwait(false));
+            var vp = new VertexProperty(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
+                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
+                await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
 
             // discard the parent vertex
-            await reader.ReadAsync(stream).ConfigureAwait(false);
+            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             
             // discard the properties
-            await reader.ReadAsync(stream).ConfigureAwait(false);
+            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             
             return vp;
         }

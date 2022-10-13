@@ -187,7 +187,7 @@ namespace Gremlin.Net.UnitTest.Driver
             fakedConnection.Setup(f => f.IsOpen).Returns(false);
             mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
 
-            await returnedConnection.SubmitAsync<bool>(null);
+            await returnedConnection.SubmitAsync<bool>(null, CancellationToken.None);
             returnedConnection.Dispose();
 
             Assert.Equal(1, pool.NrConnections);

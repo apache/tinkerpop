@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Process.Traversal.Strategy
@@ -99,7 +100,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy
         }
 
         /// <inheritdoc />
-        public virtual Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
+        public virtual Task ApplyAsync<S, E>(ITraversal<S, E> traversal, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }

@@ -21,9 +21,6 @@
 
 #endregion
 
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Running;
 
 namespace Gremlin.Net.Benchmarks

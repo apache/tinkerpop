@@ -22,7 +22,6 @@
 #endregion
 
 using System;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Net.Security;

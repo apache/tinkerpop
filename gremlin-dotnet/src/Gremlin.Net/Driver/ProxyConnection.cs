@@ -22,7 +22,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
@@ -45,9 +44,10 @@ namespace Gremlin.Net.Driver
             await ProxiedConnection.ConnectAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage,
+            CancellationToken cancellationToken)
         {
-            return await ProxiedConnection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
+            return await ProxiedConnection.SubmitAsync<T>(requestMessage, cancellationToken).ConfigureAwait(false);
         }
 
         public int NrRequestsInFlight => ProxiedConnection.NrRequestsInFlight;

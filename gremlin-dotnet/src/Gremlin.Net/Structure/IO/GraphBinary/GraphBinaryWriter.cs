@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Structure.IO.GraphBinary.Types;
 
@@ -53,15 +54,17 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         {
             _registry = registry ?? TypeSerializerRegistry.Instance;
         }
-        
+
         /// <summary>
         /// Writes a value without including type information.
         /// </summary>
         /// <param name="value">The value to write.</param>
         /// <param name="stream">The stream to write to.</param>
         /// <param name="nullable">Whether or not the value can be null.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteValueAsync(object value, Stream stream, bool nullable)
+        public async Task WriteValueAsync(object value, Stream stream, bool nullable,
+            CancellationToken cancellationToken = default)
         {
             if (value == null)
             {
@@ -70,26 +73,27 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                     throw new IOException("Unexpected null value when nullable is false");
                 }
 
-                await WriteValueFlagNullAsync(stream).ConfigureAwait(false);
+                await WriteValueFlagNullAsync(stream, cancellationToken).ConfigureAwait(false);
                 return;
             }
             
             var valueType = value.GetType();
             var serializer = _registry.GetSerializerFor(valueType);
-            await serializer.WriteValueAsync(value, stream, this, nullable).ConfigureAwait(false);
+            await serializer.WriteValueAsync(value, stream, this, nullable, cancellationToken).ConfigureAwait(false);
         }
-        
+
         /// <summary>
         /// Writes an object in fully-qualified format, containing {type_code}{type_info}{value_flag}{value}.
         /// </summary>
         /// <param name="value">The value to write.</param>
         /// <param name="stream">The stream to write to.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteAsync(object value, Stream stream)
+        public async Task WriteAsync(object value, Stream stream, CancellationToken cancellationToken = default)
         {
             if (value == null)
             {
-                await stream.WriteAsync(UnspecifiedNullBytes).ConfigureAwait(false);
+                await stream.WriteAsync(UnspecifiedNullBytes, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -98,33 +102,36 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
 
             if (serializer is CustomTypeSerializer customTypeSerializer)
             {
-                await stream.WriteAsync(CustomTypeCodeBytes).ConfigureAwait(false);
-                await WriteValueAsync(customTypeSerializer.TypeName, stream, false).ConfigureAwait(false);
-                await customTypeSerializer.WriteAsync(value, stream, this).ConfigureAwait(false);
+                await stream.WriteAsync(CustomTypeCodeBytes, cancellationToken).ConfigureAwait(false);
+                await WriteValueAsync(customTypeSerializer.TypeName, stream, false, cancellationToken)
+                    .ConfigureAwait(false);
+                await customTypeSerializer.WriteAsync(value, stream, this, cancellationToken).ConfigureAwait(false);
                 return;
             }
-            
-            await stream.WriteByteAsync(serializer.DataType.TypeCode).ConfigureAwait(false);
-            await serializer.WriteAsync(value, stream, this).ConfigureAwait(false);
+
+            await stream.WriteByteAsync(serializer.DataType.TypeCode, cancellationToken).ConfigureAwait(false);
+            await serializer.WriteAsync(value, stream, this, cancellationToken).ConfigureAwait(false);
         }
-        
+
         /// <summary>
         /// Writes a single byte representing the null value_flag.
         /// </summary>
         /// <param name="stream">The stream to write to.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteValueFlagNullAsync(Stream stream)
+        public async Task WriteValueFlagNullAsync(Stream stream, CancellationToken cancellationToken = default)
         {
-            await stream.WriteByteAsync(ValueFlagNull).ConfigureAwait(false);
+            await stream.WriteByteAsync(ValueFlagNull, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Writes a single byte with value 0, representing an unset value_flag.
         /// </summary>
         /// <param name="stream">The stream to write to.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteValueFlagNoneAsync(Stream stream) {
-            await stream.WriteByteAsync(ValueFlagNone).ConfigureAwait(false);
+        public async Task WriteValueFlagNoneAsync(Stream stream, CancellationToken cancellationToken = default) {
+            await stream.WriteByteAsync(ValueFlagNone, cancellationToken).ConfigureAwait(false);
         }
 
         

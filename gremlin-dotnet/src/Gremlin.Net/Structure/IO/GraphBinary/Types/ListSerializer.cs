@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -41,24 +42,26 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(IList<TMember> value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(IList<TMember> value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Count, stream, false).ConfigureAwait(false);
+            await writer.WriteValueAsync(value.Count, stream, false, cancellationToken).ConfigureAwait(false);
             
             foreach (var item in value)
             {
-                await writer.WriteAsync(item, stream).ConfigureAwait(false);
+                await writer.WriteAsync(item, stream, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        protected override async Task<IList<TMember>> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<IList<TMember>> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var length = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
+            var length = (int)await reader.ReadValueAsync<int>(stream, false, cancellationToken).ConfigureAwait(false);
             var result = new List<TMember>(length);
             for (var i = 0; i < length; i++)
             {
-                result.Add((TMember) await reader.ReadAsync(stream).ConfigureAwait(false));
+                result.Add((TMember) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
             }
 
             return result;

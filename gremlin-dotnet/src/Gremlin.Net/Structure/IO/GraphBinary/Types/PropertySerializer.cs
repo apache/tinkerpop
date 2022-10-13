@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -39,23 +40,26 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Property value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Property value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Key, stream, false).ConfigureAwait(false);
-            await writer.WriteAsync(value.Value, stream).ConfigureAwait(false);
+            await writer.WriteValueAsync(value.Key, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for the parent element
-            await writer.WriteAsync(null, stream).ConfigureAwait(false);
+            await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<Property> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<Property> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var p = new Property((string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false),
-                await reader.ReadAsync(stream).ConfigureAwait(false));
+            var p = new Property(
+                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
+                await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
 
             // discard parent element
-            await reader.ReadAsync(stream).ConfigureAwait(false);
+            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             
             return p;
         }
