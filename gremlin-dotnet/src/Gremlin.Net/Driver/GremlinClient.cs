@@ -108,7 +108,11 @@ namespace Gremlin.Net.Driver
 
             var connectionFactory =
                 new ConnectionFactory(gremlinServer, messageSerializer,
-                    new WebSocketSettings { WebSocketConfigurationCallback = webSocketConfiguration }, sessionId);
+                    new WebSocketSettings
+                    {
+                        WebSocketConfigurationCallback = webSocketConfiguration,
+                        EnableUserAgentOnConnect = connectionPoolSettings?.EnableUserAgentOnConnect ?? ConnectionPoolSettings.DefaultEnableUserAgentOnConnect
+                    }, sessionId);
 
             // make sure one connection in pool as session mode
             if (!string.IsNullOrEmpty(sessionId))
@@ -171,7 +175,8 @@ namespace Gremlin.Net.Driver
             messageSerializer ??= new GraphSON3MessageSerializer();
             var webSocketSettings = new WebSocketSettings
             {
-                WebSocketConfigurationCallback = webSocketConfiguration
+                WebSocketConfigurationCallback = webSocketConfiguration,
+                EnableUserAgentOnConnect = connectionPoolSettings?.EnableUserAgentOnConnect ?? ConnectionPoolSettings.DefaultEnableUserAgentOnConnect
 #if NET6_0_OR_GREATER
                 , UseCompression = !disableCompression
 #endif

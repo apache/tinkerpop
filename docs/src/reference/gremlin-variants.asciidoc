@@ -1127,6 +1127,9 @@ on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClien
 |MaxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |32
 |ReconnectionAttempts |The number of attempts to get an open connection from the pool to submit a request. |4
 |ReconnectionBaseDelay |The base delay used for the exponential backoff for the reconnection attempts. |1 s
+|EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 A `NoConnectionAvailableException` is thrown if all connections have reached the `MaxInProcessPerConnection` limit
