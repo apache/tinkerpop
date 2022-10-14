@@ -371,9 +371,10 @@ final class ConnectionPool {
         // only close the connection for good once it is done being borrowed or when it is dead
         if (connection.isDead() || connection.borrowed.get() == 0) {
             if (bin.remove(connection)) {
-                connection.closeAsync();
-                // TODO: Log the following message on completion of the future returned by closeAsync.
-                logger.debug("{} destroyed", connection.getConnectionInfo());
+                final CompletableFuture<Void> closeFuture = connection.closeAsync();
+                closeFuture.whenComplete((v, t) -> {
+                    logger.debug("Destroyed {}{}{}", connection.getConnectionInfo(), System.lineSeparator(), this.getPoolInfo());
+                });
             }
         }
     }
@@ -416,13 +417,24 @@ final class ConnectionPool {
             logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
-        logger.error("Timed-out ({} {}) waiting for connection on {} - possibly unavailable", timeout, unit, host);
+        // if we get to this point, we waited up to maxWaitForConnection from the pool and did not get a Connection.
+        // this can either mean the pool is exhausted or the host is unavailable. for the former, this could mean
+        // the connection pool and/or server is not sized correctly for the workload as connections are not freeing up
+        // to keep up requests and for the latter it could mean anything from a network hiccup to the server simply
+        // being down. it is critical that the caller be able to discern between these two. the following error
+        // message written to the log should provide some insight into the state of the connection pool telling the
+        // user if the pool was running at maximum.
+        final String timeoutErrorMessage = String.format(
+                "Timed-out (%s %s) waiting for connection on %s%s%s",
+                timeout, unit, host, System.lineSeparator(), this.getPoolInfo());
+
+        logger.error(timeoutErrorMessage);
 
         // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
         // either way supply a function to reconnect
         this.considerHostUnavailable();
 
-        throw new TimeoutException("Timed-out waiting for connection on " + host + " - possibly unavailable");
+        throw new TimeoutException(timeoutErrorMessage);
     }
 
     public void considerHostUnavailable() {
@@ -521,14 +533,46 @@ final class ConnectionPool {
         return connections.stream().map(Connection::getChannelId).collect(Collectors.toSet());
     }
 
+    /**
+     * Gets a message that describes the state of the connection pool.
+     */
     public String getPoolInfo() {
+        return getPoolInfo(null);
+    }
+
+    /**
+     * Gets a message that describes the state of the connection pool.
+     *
+     * @param connectionToCallout the connection from the pool to identify more clearly in the message
+     */
+    public String getPoolInfo(final Connection connectionToCallout) {
         final StringBuilder sb = new StringBuilder("ConnectionPool (");
         sb.append(host);
-        sb.append(") - ");
-        connections.forEach(c -> {
-            sb.append(c);
-            sb.append(",");
-        });
+        sb.append(")");
+
+        if (connections.isEmpty()) {
+            sb.append("- no connections in pool");
+        } else {
+            final int connectionCount = connections.size();
+            sb.append(System.lineSeparator());
+            sb.append(String.format("Connection Pool Status (size=%s max=%s min=%s)", connectionCount, maxPoolSize, minPoolSize));
+            sb.append(System.lineSeparator());
+
+            for (int ix = 0; ix < connectionCount; ix++) {
+                final Connection c = connections.get(ix);
+
+                if (c == connectionToCallout)
+                    sb.append("==> ");
+                else
+                    sb.append("> ");
+
+                sb.append(c.getConnectionInfo(false));
+
+                if (ix < connectionCount - 1)
+                    sb.append(System.lineSeparator());
+            }
+        }
+
         return sb.toString().trim();
     }
 

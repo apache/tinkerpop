@@ -50,6 +50,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to Netty 4.1.85.
 * Bumped `ivy` to 2.5.1 to fix security vulnerability
 * Removed default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
+* Improved logging for `gremlin-driver`.
 
 ==== Bugs
 

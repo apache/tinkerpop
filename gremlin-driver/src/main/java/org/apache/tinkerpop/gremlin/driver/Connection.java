@@ -123,8 +123,14 @@ final class Connection {
             channel.closeFuture().addListener((ChannelFutureListener) future -> {
                 logger.debug("OnChannelClose callback called for channel {}", channel);
 
-                // Replace the channel if it was not intentionally closed using CloseAsync method.
+                // if the closeFuture is not set, it means that closeAsync() wasn't called which means that the
+                // close did not come from the client side. it means the server closed the channel for some reason.
+                // it's important to distinguish that difference in debugging
                 if (thisConnection.closeFuture.get() == null) {
+                    logger.error(String.format(
+                            "Server closed the Connection on channel %s - scheduling removal from %s",
+                            channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
+
                     // delegate the task to worker thread and free up the event loop
                     thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
                 }
@@ -355,9 +361,24 @@ final class Connection {
         }
     }
 
+    /**
+     * Gets a message that describes the state of the connection.
+     */
     public String getConnectionInfo() {
-        return String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                channel, pool.host, isDead(), borrowed, pending.size());
+        return getConnectionInfo(true);
+    }
+
+    /**
+     * Gets a message that describes the state of the connection.
+     *
+     * @param showHost determines if the {@link Host} should be displayed in the message.
+     */
+    public String getConnectionInfo(final boolean showHost) {
+        return showHost ?
+                String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
+                channel.id().asShortText(), pool.host, isDead(), borrowed, pending.size()) :
+                String.format("Connection{channel=%s, isDead=%s, borrowed=%s, pending=%s}",
+                        channel.id().asShortText(), isDead(), borrowed, pending.size());
     }
 
     /**
