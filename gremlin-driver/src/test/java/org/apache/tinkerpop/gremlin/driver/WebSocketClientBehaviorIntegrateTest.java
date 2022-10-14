@@ -271,4 +271,64 @@ public class WebSocketClientBehaviorIntegrateTest {
                         .filter(str -> str.contains("Considering new connection on"))
                         .count());
     }
+
+    @Test
+    public void shouldNotThrowHostNotAvailable() throws Exception {
+
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        final Result req1 = client.submit("1", RequestOptions.build()
+                .overrideRequestId(TestWSGremlinInitializer.CLOSE_RESPONSE_ID).create()).one();
+
+        final Vertex v = client.submit("1",
+                        RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
+                .one().getVertex();
+
+        final Vertex v2 = client.submit("1",
+                        RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
+                .one().getVertex();
+    }
+
+    @Test
+    public void shouldNotThrowHostNotAvailableForMultiInFlightRequests() throws Exception {
+
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(10)
+                .maxInProcessPerConnection(1)
+                .minSimultaneousUsagePerConnection(1)
+                .maxSimultaneousUsagePerConnection(1)
+                .connectionSetupTimeoutMillis(1500)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        final CompletableFuture<ResultSet> req1 = client.submitAsync("1",
+                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create());
+
+        final CompletableFuture<ResultSet> req2 = client.submitAsync("1",
+                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create());
+
+        final CompletableFuture<ResultSet> req3 = client.submitAsync("1",
+                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create());
+
+        final CompletableFuture<ResultSet> req4 = client.submitAsync("1",
+                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create());
+
+        final CompletableFuture<ResultSet> req5 = client.submitAsync("1",
+                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create());
+
+        req1.get();
+        req2.get();
+        req3.get();
+        req4.get();
+        req5.get();
+    }
 }

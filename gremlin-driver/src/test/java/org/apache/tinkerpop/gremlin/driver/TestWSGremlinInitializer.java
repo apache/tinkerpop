@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -69,7 +71,8 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             UUID.fromString("3c4cf18a-c7f2-4dad-b9bf-5c701eb33000");
     public static final UUID RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID =
             UUID.fromString("0d333b1d-6e91-4807-b915-50b9ad721d20");
-
+    public static final UUID CLOSE_RESPONSE_ID =
+            UUID.fromString("12345678-1234-1234-1234-123456789123");
     /**
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
      */
@@ -126,13 +129,27 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             } else if (msg.getRequestId().equals(RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
-            }
+            } else if (msg.getRequestId().equals(CLOSE_RESPONSE_ID)) {
+            ChannelFuture future = ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(CLOSE_RESPONSE_ID)));
+            future.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    ctx.close().sync();
+                }
+            });
+        }
         }
 
         private String returnSingleVertexResponse(final UUID requestID) throws SerializationException {
             final TinkerGraph graph = TinkerFactory.createClassic();
             final GraphTraversalSource g = graph.traversal();
             final Vertex t = g.V().limit(1).next();
+
+            try { // Add time to keep connection borrowed for longer.
+                Thread.sleep(300);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(t).create());
         }
