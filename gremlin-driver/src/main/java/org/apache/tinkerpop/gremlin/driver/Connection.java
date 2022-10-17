@@ -131,14 +131,14 @@ final class Connection {
                             "Server closed the Connection on channel %s - scheduling removal from %s",
                             channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
 
-                    // delegate the task to worker thread and free up the event loop
-                    thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
+                    // delegate the task to scheduler thread and free up the event loop
+                    thisConnection.cluster.connectionScheduler().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
                 }
             });
 
             logger.info("Created new connection for {}", uri);
         } catch (Exception ex) {
-            throw new ConnectionException(uri, "Could not open " + this.toString(), ex);
+            throw new ConnectionException(uri, "Could not open " + this.getConnectionInfo(true), ex);
         }
     }
 
@@ -201,7 +201,7 @@ final class Connection {
                 shutdown(future);
         } else {
             // there may be some pending requests. schedule a job to wait for those to complete and then shutdown
-            new CheckForPending(future).runUntilDone(cluster.executor());
+            new CheckForPending(future).runUntilDone(cluster.connectionScheduler());
         }
 
         return future;
@@ -376,7 +376,7 @@ final class Connection {
     public String getConnectionInfo(final boolean showHost) {
         return showHost ?
                 String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                channel.id().asShortText(), pool.host, isDead(), borrowed, pending.size()) :
+                getChannelId(), pool.host, isDead(), borrowed, pending.size()) :
                 String.format("Connection{channel=%s, isDead=%s, borrowed=%s, pending=%s}",
                         channel.id().asShortText(), isDead(), borrowed, pending.size());
     }

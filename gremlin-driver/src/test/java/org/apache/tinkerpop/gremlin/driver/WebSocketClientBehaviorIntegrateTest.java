@@ -141,7 +141,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldNotDeadlockOnInitialization() throws Exception {
-        // it seems you cah add the same host more than once so while kinda weird it is helpful in faithfully
+        // it seems you can add the same host more than once so while kinda weird it is helpful in faithfully
         // recreating the deadlock situation, though it can/will happen with just one host. workerPoolSize at
         // "1" also helps faithfully reproduce the problem though it can happen at larger pool sizes depending
         // on the timing/interleaving of tasks. the larger connection pool sizes may not be required given the

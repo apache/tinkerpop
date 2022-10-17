@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +45,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -518,26 +515,15 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
-            // use a special executor here to initialize the Host instances as the worker thread pool may be
-            // insufficiently sized for this task and the parallel initialization of the ConnectionPool. if too small
-            // tasks may be schedule in such a way as to produce a deadlock: TINKERPOP-2550
-            //
-            // the cost of this single threaded executor here should be fairly small because it is only used once at
-            // initialization and shutdown. since users will typically construct a Client once for the life of their
-            // application there shouldn't be tons of thread pools being created and destroyed.
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-initializer").build();
-            final ExecutorService hostExecutor = Executors.newSingleThreadExecutor(threadFactory);
-
             try {
                 CompletableFuture.allOf(cluster.allHosts().stream()
-                                .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
+                                .map(host -> CompletableFuture.runAsync(
+                                        () -> initializeConnectionSetupForHost.accept(host), cluster.hostScheduler()))
                                 .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
                 logger.error("Initialization failed", ex);
                 this.initializationFailure = ex;
-            } finally {
-                hostExecutor.shutdown();
             }
 
             // throw an error if there is no host available after initializing connection pool.
@@ -548,7 +534,7 @@ public abstract class Client {
             final List<Host> unavailableHosts = cluster.allHosts()
                     .stream().filter(host -> !host.isAvailable()).collect(Collectors.toList());
             if (!unavailableHosts.isEmpty()) {
-                CompletableFuture.runAsync(() -> handleUnavailableHosts(unavailableHosts));
+                handleUnavailableHosts(unavailableHosts);
             }
         }
 
@@ -596,15 +582,15 @@ public abstract class Client {
             }
         };
 
-        private void handleUnavailableHosts(List<Host> unavailableHosts) {
+        private void handleUnavailableHosts(final List<Host> unavailableHosts) {
             // start the re-initialization attempt for each of the unavailable hosts through Host.makeUnavailable().
-            try {
-                CompletableFuture.allOf(unavailableHosts.stream()
-                                .map(host -> CompletableFuture.runAsync(() -> host.makeUnavailable(this::tryReInitializeHost)))
-                                .toArray(CompletableFuture[]::new))
-                        .join();
-            } catch (CompletionException ex) {
-                logger.error("", (ex.getCause() == null) ? ex : ex.getCause());
+            for (Host host : unavailableHosts) {
+                final CompletableFuture<Void> f = CompletableFuture.runAsync(
+                        () -> host.makeUnavailable(this::tryReInitializeHost), cluster.hostScheduler());
+                f.exceptionally(t -> {
+                    logger.error("", (t.getCause() == null) ? t : t.getCause());
+                    return null;
+                });
             }
         }
 

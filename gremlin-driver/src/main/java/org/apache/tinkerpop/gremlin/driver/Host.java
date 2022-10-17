@@ -77,7 +77,7 @@ public final class Host {
 
         // only do a connection re-attempt if one is not already in progress
         if (retryInProgress.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
-            retryThread = this.cluster.scheduler().scheduleAtFixedRate(() -> {
+            retryThread = this.cluster.hostScheduler().scheduleAtFixedRate(() -> {
                     logger.debug("Trying to reconnect to dead host at {}", this);
                     if (reconnect.apply(this)) reconnected();
                 }, cluster.connectionPoolSettings().reconnectInterval,

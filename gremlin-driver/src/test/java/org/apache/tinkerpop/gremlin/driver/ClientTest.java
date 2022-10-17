@@ -58,7 +58,7 @@ public class ClientTest {
         when(mockAvailableHost.isAvailable()).thenReturn(true);
         when(cluster.allHosts()).thenReturn(Collections.singletonList(mockAvailableHost));
         when(cluster.executor()).thenReturn(executor);
-        when(cluster.scheduler()).thenReturn(scheduler);
+        when(cluster.hostScheduler()).thenReturn(scheduler);
     }
 
     @After

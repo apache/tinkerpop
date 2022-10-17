@@ -105,7 +105,7 @@ final class ConnectionPool {
                     } catch (ConnectionException e) {
                         throw new CompletionException(e);
                     }
-                }, cluster.executor()));
+                }, cluster.connectionScheduler()));
             }
 
             CompletableFuture.allOf(connectionCreationFutures.toArray(new CompletableFuture[0])).join();
@@ -311,7 +311,7 @@ final class ConnectionPool {
     }
 
     private void newConnection() {
-        cluster.executor().submit(() -> {
+        cluster.connectionScheduler().submit(() -> {
             addConnectionIfUnderMaximum();
             scheduledForCreation.decrementAndGet();
             return null;

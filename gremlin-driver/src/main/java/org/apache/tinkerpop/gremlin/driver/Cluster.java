@@ -476,8 +476,12 @@ public final class Cluster {
         return manager.executor;
     }
 
-    ScheduledExecutorService scheduler() {
-        return manager.scheduler;
+    ScheduledExecutorService hostScheduler() {
+        return manager.hostScheduler;
+    }
+
+    ScheduledExecutorService connectionScheduler() {
+        return manager.connectionScheduler;
     }
 
     Settings.ConnectionPoolSettings connectionPoolSettings() {
@@ -1054,8 +1058,20 @@ public final class Cluster {
         private final Supplier<RequestMessage.Builder> validationRequest;
         private final HandshakeInterceptor interceptor;
 
+        /**
+         * Thread pool for requests.
+         */
         private final ScheduledThreadPoolExecutor executor;
-        private final ScheduledThreadPoolExecutor scheduler;
+
+        /**
+         * Thread pool for background work related to the {@link Host}.
+         */
+        private final ScheduledThreadPoolExecutor hostScheduler;
+
+        /**
+         * Thread pool for background work related to the {@link Connection} and {@link ConnectionPool}.
+         */
+        private final ScheduledThreadPoolExecutor connectionScheduler;
 
         private final int nioPoolSize;
         private final int workerPoolSize;
@@ -1120,9 +1136,14 @@ public final class Cluster {
             // the executor above should be reserved for reading/writing background tasks that wont interfere with each
             // other if the thread pool is 1 otherwise tasks may be schedule in such a way as to produce a deadlock
             // as in TINKERPOP-2550. not sure if there is a way to only require the worker pool for all of this. as it
-            // sits now the worker pool probably doesn't need to be a scheduled executor type
-            this.scheduler = new ScheduledThreadPoolExecutor(1,
-                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-scheduler").build());
+            // sits now the worker pool probably doesn't need to be a scheduled executor type.
+            this.hostScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-host-scheduler-%d").build());
+
+            // we distinguish between the hostScheduler and the connectionScheduler because you can end in deadlock
+            // if all the possible jobs the driver allows for go to a single thread pool.
+            this.connectionScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
             validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
         }
@@ -1227,14 +1248,15 @@ public final class Cluster {
             final CompletableFuture<Void> closeIt = new CompletableFuture<>();
             closeFuture.set(closeIt);
 
-            scheduler.submit(() -> {
+            hostScheduler.submit(() -> {
                 factory.shutdown();
                 closeIt.complete(null);
             });
 
             // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete
             executor.shutdown();
-            scheduler.shutdown();
+            connectionScheduler.shutdown();
+            hostScheduler.shutdown();
 
             return closeIt;
         }

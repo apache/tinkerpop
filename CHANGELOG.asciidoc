@@ -51,6 +51,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped `ivy` to 2.5.1 to fix security vulnerability
 * Removed default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
 * Improved logging for `gremlin-driver`.
+* Modified `Connection` and `Host` job scheduling in `gremlin-driver` by dividing their work to two different thread pools and sparing work from the primary pool responsible for submitting requests and reading results.
+* Prevented usage of the fork-join pool for `gremlin-driver` job scheduling.
+* Changed `Host` initialization within a `Client` to be parallel again in `gremlin-driver`.
 
 ==== Bugs
 
