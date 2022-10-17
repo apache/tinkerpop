@@ -61,11 +61,11 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
                                      final DetachStrategy.DetachOptions detachOptions) {
         super(vertexProperty);
         this.value = vertexProperty.value();
-        this.vertex = DetachedFactory.detach(vertexProperty.element(), detachOptions);
+        this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
         if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
                 || !vertexProperty.graph().features().vertex().supportsMetaProperties()
-                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && properties == null)
+                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && detachOptions.properties == null)
             return;
 
         final Iterator<Property<Object>> propertyIterator = vertexProperty.properties();
@@ -77,11 +77,13 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         if (detachOptions.detachMode == DetachStrategy.DetachMode.ALL) {
             propertyIterator.forEachRemaining(property -> this.properties.put(property.key(),
                     Collections.singletonList(DetachedFactory.detach(property))));
+            return;
         }
 
         propertyIterator.forEachRemaining(property -> {
             if (PropertyUtil.Match(detachOptions.properties, property.key()))
-                this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))); // todo: pass detachMode and props
+                this.properties.put(property.key(),
+                        Collections.singletonList(DetachedFactory.detach(property))); // todo: pass detachMode and props
         });
     }
 

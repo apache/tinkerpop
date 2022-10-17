@@ -80,7 +80,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         super(vertex);
 
         if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
-                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && properties == null)
+                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && detachOptions.properties == null)
             return;
 
         final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
@@ -95,6 +95,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                 list.add(DetachedFactory.detach(property, true));
                 this.properties.put(property.key(), list);
             });
+            return;
         }
 
         propertyIterator.forEachRemaining(property -> {
