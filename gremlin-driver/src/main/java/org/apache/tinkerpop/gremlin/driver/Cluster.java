@@ -993,9 +993,6 @@ public final class Cluster {
         /**
          * Sets the duration of time in milliseconds provided for connection setup to complete which includes WebSocket
          * handshake and SSL handshake. Beyond this duration an exception would be thrown.
-         *
-         * Note that this value should be greater that SSL handshake timeout defined in
-         * {@link io.netty.handler.ssl.SslHandler} since WebSocket handshake include SSL handshake.
          */
         public Builder connectionSetupTimeoutMillis(final long connectionSetupTimeoutMillis) {
             this.connectionSetupTimeoutMillis = connectionSetupTimeoutMillis;
