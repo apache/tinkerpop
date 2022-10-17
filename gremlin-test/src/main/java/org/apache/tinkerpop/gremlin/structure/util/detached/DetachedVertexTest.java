@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -100,6 +101,22 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
         assertEquals("123", detachedVertex.value("test"));
+        assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldConstructCustomDetachedVertex() {
+        final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
+        detachOptions.detachMode = DetachStrategy.DetachMode.CUSTOM;
+        detachOptions.properties = new String[] { "foo" };
+
+        final Vertex v = graph.addVertex("foo", "123", "bar", "234");
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
+
+        assertEquals(v.id(), detachedVertex.id());
+        assertEquals(v.label(), detachedVertex.label());
+        assertEquals("123", detachedVertex.value("foo"));
         assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
     }
 

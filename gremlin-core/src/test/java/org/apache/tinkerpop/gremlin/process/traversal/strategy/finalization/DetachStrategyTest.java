@@ -16,11 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -34,18 +33,18 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Valentyn Kahamlyk
  */
-public class ReferenceElementStrategyTest {
+public class DetachStrategyTest {
 
     private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance()).
-            withStrategies(ReferenceElementStrategy.instance());
+            withStrategies(new DetachStrategy(DetachStrategy.DetachMode.ALL, null));
 
     @Test
-    public void shouldAppendOneReferenceElementStep() {
+    public void shouldAppendOneDetachElementStep() {
         final Traversal<Vertex, ?> t = g.V().union(out(), in()).groupCount();
         t.asAdmin().applyStrategies();
-        assertThat((t.asAdmin().getEndStep() instanceof ReferenceElementStrategy.ReferenceElementStep), is(true));
-        assertEquals(1, TraversalHelper.getStepsOfAssignableClass(ReferenceElementStrategy.ReferenceElementStep.class, t.asAdmin()).size());
+        assertThat((t.asAdmin().getEndStep() instanceof DetachStrategy.DetachElementStep), is(true));
+        assertEquals(1, TraversalHelper.getStepsOfAssignableClass(DetachStrategy.DetachElementStep.class, t.asAdmin()).size());
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -72,6 +73,37 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                 });
             }
         }
+    }
+
+    protected DetachedVertex(final Vertex vertex,
+                             final DetachStrategy.DetachOptions detachOptions) {
+        super(vertex);
+
+        if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
+                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && properties == null)
+            return;
+
+        final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
+        if (!propertyIterator.hasNext())
+            return;
+
+        this.properties = new HashMap<>();
+
+        if (detachOptions.detachMode == DetachStrategy.DetachMode.ALL) {
+            propertyIterator.forEachRemaining(property -> {
+                final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
+                list.add(DetachedFactory.detach(property, true));
+                this.properties.put(property.key(), list);
+            });
+        }
+
+        propertyIterator.forEachRemaining(property -> {
+            if (PropertyUtil.Match(detachOptions.properties, property.key())) {
+                final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
+                list.add(DetachedFactory.detach(property, detachOptions));
+                this.properties.put(property.key(), list);
+            }
+        });
     }
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties) {

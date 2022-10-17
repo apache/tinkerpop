@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.util.detached;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -109,6 +110,79 @@ public class DetachedFactory {
                             new HashMap(((Map) object).size());
             for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
                 map.put(DetachedFactory.detach(entry.getKey(), withProperties), DetachedFactory.detach(entry.getValue(), withProperties));
+            }
+            return (D) map;
+        } else {
+            return (D) object;
+        }
+    }
+
+    // detached with options
+    public static DetachedVertex detach(final Vertex vertex, final DetachStrategy.DetachOptions detachOptions) {
+        return vertex instanceof DetachedVertex ? (DetachedVertex) vertex : new DetachedVertex(vertex, detachOptions);
+    }
+
+    public static DetachedEdge detach(final Edge edge, final DetachStrategy.DetachOptions detachOptions) {
+        return edge instanceof DetachedEdge ? (DetachedEdge) edge : new DetachedEdge(edge, true); // todo
+    }
+
+    public static <V> DetachedVertexProperty detach(final VertexProperty<V> vertexProperty, final DetachStrategy.DetachOptions detachOptions) {
+        return vertexProperty instanceof DetachedVertexProperty ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty<>(vertexProperty, detachOptions);
+    }
+
+    /*public static <V> DetachedProperty<V> detach(final Property<V> property) {
+        return property instanceof DetachedProperty ? (DetachedProperty<V>) property : new DetachedProperty<>(property);
+    }*/
+
+    public static DetachedPath detach(final Path path, final DetachStrategy.DetachOptions detachOptions) {
+        return path instanceof DetachedPath ? (DetachedPath) path : new DetachedPath(path, true); // todo
+    }
+
+    public static DetachedElement detach(final Element element, final DetachStrategy.DetachOptions detachOptions) {
+        if (element instanceof Vertex)
+            return detach((Vertex) element, detachOptions);
+        else if (element instanceof Edge)
+            return detach((Edge) element, detachOptions);
+        else if (element instanceof VertexProperty)
+            return detach((VertexProperty) element, detachOptions);
+        else
+            throw new IllegalArgumentException("The provided argument is an unknown element: " + element + ':' + element.getClass());
+    }
+
+    public static <D> D detach(final Object object, final DetachStrategy.DetachOptions detachOptions) {
+        if (object instanceof Element) {
+            return (D) DetachedFactory.detach((Element) object, detachOptions);
+        } else if (object instanceof Property) {
+            return (D) DetachedFactory.detach((Property) object);
+        } else if (object instanceof Path) {
+            return (D) DetachedFactory.detach((Path) object, detachOptions);
+        } else if (object instanceof List) {
+            final List list = new ArrayList(((List) object).size());
+            for (final Object item : (List) object) {
+                list.add(DetachedFactory.detach(item, detachOptions));
+            }
+            return (D) list;
+        } else if (object instanceof BulkSet) {
+            final BulkSet set = new BulkSet();
+            for (Map.Entry<Object, Long> entry : ((BulkSet<Object>) object).asBulk().entrySet()) {
+                set.add(DetachedFactory.detach(entry.getKey(), detachOptions), entry.getValue());
+            }
+            return (D) set;
+        } else if (object instanceof Set) {
+            final Set set = object instanceof LinkedHashSet ?
+                    new LinkedHashSet(((Set) object).size()) :
+                    new HashSet(((Set) object).size());
+            for (final Object item : (Set) object) {
+                set.add(DetachedFactory.detach(item, detachOptions));
+            }
+            return (D) set;
+        } else if (object instanceof Map) {
+            final Map map = object instanceof Tree ? new Tree() :
+                    object instanceof LinkedHashMap ?
+                            new LinkedHashMap(((Map) object).size()) :
+                            new HashMap(((Map) object).size());
+            for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
+                map.put(DetachedFactory.detach(entry.getKey(), detachOptions), DetachedFactory.detach(entry.getValue(), detachOptions));
             }
             return (D) map;
         } else {
