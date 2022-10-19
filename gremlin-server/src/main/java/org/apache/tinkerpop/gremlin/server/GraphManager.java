@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -123,5 +124,33 @@ public interface GraphManager {
             final Graph graph = getGraph(graphName);
             return graph.features().graph().supportsTransactions() && graph.tx().isOpen();
         });
+    }
+ 
+    /**
+     * This method will be called before a script or query is processed by the
+     * gremlin-server.
+     * The msg is the {@link RequestMessage} received by the gremlin-server.
+     */
+
+    default void beforeQueryStart(RequestMessage msg) {
+
+    }
+
+    /**
+     * This method will be called before a script or query is processed by the
+     * gremlin-server.
+     * The msg is the {@link RequestMessage} received by the gremlin-server.
+     * The error is the exception encounted during processing from the gremlin-server.
+     */
+    default void onQueryError(RequestMessage msg, Throwable error) {
+
+    }
+
+    /**
+     * When a script or query successfully completes this method will be called.
+     * The msg is the {@link RequestMessage} received by the gremlin-server.
+     */
+    default void onQuerySuccess(RequestMessage msg) {
+
     }
 }
