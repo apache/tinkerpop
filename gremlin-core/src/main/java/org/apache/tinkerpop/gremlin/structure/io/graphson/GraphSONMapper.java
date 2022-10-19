@@ -243,6 +243,19 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
+         * Supply a default extension module of V2_0 and V3_0 for serialization/deserialization.
+         */
+        public Builder addDefaultXModule(final GraphSONVersion version) {
+            this.version = version;
+            if (this.version == GraphSONVersion.V2_0) {
+                this.addCustomModule(GraphSONXModuleV2d0.build().create(false));
+            } else if (this.version == GraphSONVersion.V3_0) {
+                this.addCustomModule(GraphSONXModuleV3d0.build().create(false));
+            }
+            return this;
+        }
+
+        /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
          * the one supplied to the {@link #addCustomModule(SimpleModule)};
          */
