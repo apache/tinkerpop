@@ -123,19 +123,16 @@ public class DetachedFactory {
     }
 
     public static DetachedEdge detach(final Edge edge, final DetachStrategy.DetachOptions detachOptions) {
-        return edge instanceof DetachedEdge ? (DetachedEdge) edge : new DetachedEdge(edge, true); // todo
+        return edge instanceof DetachedEdge ? (DetachedEdge) edge : new DetachedEdge(edge, detachOptions);
     }
 
     public static <V> DetachedVertexProperty detach(final VertexProperty<V> vertexProperty, final DetachStrategy.DetachOptions detachOptions) {
-        return vertexProperty instanceof DetachedVertexProperty ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty<>(vertexProperty, detachOptions);
+        return vertexProperty instanceof DetachedVertexProperty ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty<>(vertexProperty, false);
     }
 
-    /*public static <V> DetachedProperty<V> detach(final Property<V> property) {
-        return property instanceof DetachedProperty ? (DetachedProperty<V>) property : new DetachedProperty<>(property);
-    }*/
-
     public static DetachedPath detach(final Path path, final DetachStrategy.DetachOptions detachOptions) {
-        return path instanceof DetachedPath ? (DetachedPath) path : new DetachedPath(path, true); // todo
+        // todo: DetachedPath is not Element, clarify
+        return path instanceof DetachedPath ? (DetachedPath) path : new DetachedPath(path, true);
     }
 
     public static DetachedElement detach(final Element element, final DetachStrategy.DetachOptions detachOptions) {

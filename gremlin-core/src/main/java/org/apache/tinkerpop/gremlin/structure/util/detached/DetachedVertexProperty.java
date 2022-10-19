@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -27,7 +26,10 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,35 +59,26 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         }
     }
 
-    protected DetachedVertexProperty(final VertexProperty<V> vertexProperty,
-                                     final DetachStrategy.DetachOptions detachOptions) {
+    /*protected DetachedVertexProperty(final VertexProperty<V> vertexProperty,
+                                     final DetachStrategy.DetachMode detachMode,
+                                     final String[] properties) {
         super(vertexProperty);
         this.value = vertexProperty.value();
         this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
-        if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
+        if (detachMode == DetachStrategy.DetachMode.NONE
                 || !vertexProperty.graph().features().vertex().supportsMetaProperties()
-                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && detachOptions.properties == null)
+                || detachMode == DetachStrategy.DetachMode.CUSTOM && properties == null)
             return;
 
-        final Iterator<Property<Object>> propertyIterator = vertexProperty.properties();
-        if (!propertyIterator.hasNext())
-            return;
-
-        this.properties = new HashMap<>();
-
-        if (detachOptions.detachMode == DetachStrategy.DetachMode.ALL) {
-            propertyIterator.forEachRemaining(property -> this.properties.put(property.key(),
-                    Collections.singletonList(DetachedFactory.detach(property))));
-            return;
+        if (detachMode == DetachStrategy.DetachMode.ALL) {
+            final Iterator<Property<Object>> propertyIterator = vertexProperty.properties();
+            if (propertyIterator.hasNext()) {
+                this.properties = new HashMap<>();
+                propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
+            }
         }
-
-        propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.Match(detachOptions.properties, property.key()))
-                this.properties.put(property.key(),
-                        Collections.singletonList(DetachedFactory.detach(property))); // todo: pass detachMode and props
-        });
-    }
+    }*/
 
     public DetachedVertexProperty(final Object id, final String label, final V value,
                                   final Map<String, Object> properties,
@@ -111,7 +104,8 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
 
         if (null != properties && !properties.isEmpty()) {
             this.properties = new HashMap<>();
-            properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
+            properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(),
+                    Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
         }
     }
 

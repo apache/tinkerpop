@@ -106,7 +106,24 @@ public class DetachedVertexTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldConstructCustomDetachedVertex() {
+    public void shouldConstructCustomDetachedVertexWithAllProps() {
+        final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
+        detachOptions.detachMode = DetachStrategy.DetachMode.ALL;
+        detachOptions.properties = new String[] { "foo" };
+
+        final Vertex v = graph.addVertex("foo", "123", "bar", "234");
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
+
+        assertEquals(v.id(), detachedVertex.id());
+        assertEquals(v.label(), detachedVertex.label());
+        assertEquals("123", detachedVertex.value("foo"));
+        assertEquals("234", detachedVertex.value("bar"));
+        assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldConstructCustomDetachedVertexWithNamedProps() {
         final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
         detachOptions.detachMode = DetachStrategy.DetachMode.CUSTOM;
         detachOptions.properties = new String[] { "foo" };
@@ -118,6 +135,21 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         assertEquals(v.label(), detachedVertex.label());
         assertEquals("123", detachedVertex.value("foo"));
         assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldConstructCustomDetachedVertexWithoutProps() {
+        final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
+        detachOptions.detachMode = DetachStrategy.DetachMode.NONE;
+        detachOptions.properties = new String[] { "foo" };
+
+        final Vertex v = graph.addVertex("foo", "123", "bar", "234");
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
+
+        assertEquals(v.id(), detachedVertex.id());
+        assertEquals(v.label(), detachedVertex.label());
+        assertEquals(0, IteratorUtils.count(detachedVertex.properties()));
     }
 
     @Test

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -25,7 +26,6 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +68,35 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                 propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
             }
         }
+    }
+
+    protected DetachedEdge(final Edge edge,
+                           final DetachStrategy.DetachOptions detachOptions) {
+        super(edge);
+        this.outVertex = DetachedFactory.detach(edge.outVertex(), false);
+        this.inVertex = DetachedFactory.detach(edge.inVertex(), false);
+
+        if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
+                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && detachOptions.properties == null)
+            return;
+
+        final Iterator<Property<Object>> propertyIterator = edge.properties();
+        if (!propertyIterator.hasNext())
+            return;
+
+        this.properties = new HashMap<>();
+
+        if (detachOptions.detachMode == DetachStrategy.DetachMode.ALL) {
+            propertyIterator.forEachRemaining(property -> this.properties.put(property.key(),
+                    Collections.singletonList(DetachedFactory.detach(property))));
+            return;
+        }
+
+        propertyIterator.forEachRemaining(property -> {
+            if (PropertyUtil.Match(detachOptions.properties, property.key())) {
+                this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property)));
+            }
+        });
     }
 
     public DetachedEdge(final Object id, final String label,
