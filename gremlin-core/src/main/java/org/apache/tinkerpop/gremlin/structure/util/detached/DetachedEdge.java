@@ -76,8 +76,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         this.outVertex = DetachedFactory.detach(edge.outVertex(), false);
         this.inVertex = DetachedFactory.detach(edge.inVertex(), false);
 
-        if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
-                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && detachOptions.properties == null)
+        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.NONE
+                || detachOptions.getDetachMode() == DetachStrategy.DetachMode.CUSTOM && detachOptions.getProperties() == null)
             return;
 
         final Iterator<Property<Object>> propertyIterator = edge.properties();
@@ -86,14 +86,14 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
         this.properties = new HashMap<>();
 
-        if (detachOptions.detachMode == DetachStrategy.DetachMode.ALL) {
+        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.ALL) {
             propertyIterator.forEachRemaining(property -> this.properties.put(property.key(),
                     Collections.singletonList(DetachedFactory.detach(property))));
             return;
         }
 
         propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.Match(detachOptions.properties, property.key())) {
+            if (PropertyUtil.Match(detachOptions.getProperties(), property.key())) {
                 this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property)));
             }
         });

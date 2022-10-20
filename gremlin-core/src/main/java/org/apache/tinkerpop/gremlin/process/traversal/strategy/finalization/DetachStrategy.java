@@ -44,9 +44,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     private DetachOptions detachOptions;
 
     public DetachStrategy(final DetachMode detachMode, final String[] properties) {
-        detachOptions = new DetachOptions();
-        detachOptions.detachMode = detachMode;
-        detachOptions.properties = properties;
+        detachOptions = DetachOptions.build().detachMode(detachMode).properties(properties).create();
     }
 
     @Override
@@ -78,10 +76,46 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         NONE;
     }
 
-    // todo: add builder
     public static class DetachOptions {
-        public DetachMode detachMode;
-        public String[] properties;
+        private DetachMode detachMode;
+        private String[] properties;
+
+        private DetachOptions(final DetachOptions.Builder builder) {
+            this.detachMode = builder.detachMode;
+            this.properties = builder.properties;
+        }
+
+        public static DetachOptions.Builder build() {
+            return new DetachOptions.Builder();
+        }
+
+        public DetachMode getDetachMode() {
+            return this.detachMode;
+        }
+
+        public String[] getProperties() {
+            return this.properties;
+        }
+
+        public static final class Builder {
+
+            private DetachMode detachMode = DetachMode.NONE;
+            private String[] properties;
+
+            public DetachOptions.Builder detachMode(final DetachMode detachMode) {
+                this.detachMode = detachMode;
+                return this;
+            }
+
+            public DetachOptions.Builder properties(final String[] properties) {
+                this.properties = properties;
+                return this;
+            }
+
+            public DetachOptions create() {
+                return new DetachOptions(this);
+            }
+        }
     }
 
     public static class DetachElementStep<S, E> extends ScalarMapStep<S, E> {
@@ -92,8 +126,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
             super(traversal);
 
-            detachOptions = new DetachOptions();
-            detachOptions.detachMode = DetachMode.NONE;
+            detachOptions = DetachOptions.build().create();
         }
 
         public DetachElementStep(final Traversal.Admin traversal, final DetachOptions detachOptions) {

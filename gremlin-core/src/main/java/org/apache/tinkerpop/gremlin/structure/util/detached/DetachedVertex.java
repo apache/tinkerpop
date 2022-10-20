@@ -79,8 +79,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                              final DetachStrategy.DetachOptions detachOptions) {
         super(vertex);
 
-        if (detachOptions.detachMode == DetachStrategy.DetachMode.NONE
-                || detachOptions.detachMode == DetachStrategy.DetachMode.CUSTOM && detachOptions.properties == null)
+        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.NONE
+                || detachOptions.getDetachMode() == DetachStrategy.DetachMode.CUSTOM && detachOptions.getProperties() == null)
             return;
 
         final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
@@ -89,7 +89,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
         this.properties = new HashMap<>();
 
-        if (detachOptions.detachMode == DetachStrategy.DetachMode.ALL) {
+        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.ALL) {
             propertyIterator.forEachRemaining(property -> {
                 final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
                 list.add(DetachedFactory.detach(property, true));
@@ -99,7 +99,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         }
 
         propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.Match(detachOptions.properties, property.key())) {
+            if (PropertyUtil.Match(detachOptions.getProperties(), property.key())) {
                 final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
                 list.add(DetachedFactory.detach(property, detachOptions));
                 this.properties.put(property.key(), list);

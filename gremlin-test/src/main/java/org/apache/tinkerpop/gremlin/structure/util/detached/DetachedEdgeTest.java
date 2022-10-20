@@ -115,9 +115,8 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructCustomDetachedEdgeWithAllProps() {
-        final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
-        detachOptions.detachMode = DetachStrategy.DetachMode.ALL;
-        detachOptions.properties = new String[] { "year" };
+        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
+                .detachMode(DetachStrategy.DetachMode.ALL).properties(new String[] { "year" }).create();
 
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
@@ -141,9 +140,8 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructCustomDetachedEdgeWithNamedProps() {
-        final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
-        detachOptions.detachMode = DetachStrategy.DetachMode.CUSTOM;
-        detachOptions.properties = new String[] { "year" };
+        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
+                .detachMode(DetachStrategy.DetachMode.CUSTOM).properties(new String[] { "year" }).create();
 
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
@@ -166,9 +164,8 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructCustomDetachedEdgeWithoutProps() {
-        final DetachStrategy.DetachOptions detachOptions = new DetachStrategy.DetachOptions();
-        detachOptions.detachMode = DetachStrategy.DetachMode.NONE;
-        detachOptions.properties = new String[] { "year" };
+        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
+                .detachMode(DetachStrategy.DetachMode.NONE).properties(new String[] { "year" }).create();
 
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
