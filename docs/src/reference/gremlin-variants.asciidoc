@@ -329,6 +329,7 @@ The following table describes the various configuration options for the Gremlin 
 |serializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
+|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.

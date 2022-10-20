@@ -35,6 +35,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.
 * Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.
 * Bumped to `snakeyaml` 1.32 to fix security vulnerability.
+* Added user agent to web socket handshake in java driver. Can be controlled by a new enableUserAgentOnConnect configuration. It is enabled by default.
 * Added logging in .NET.
 
 ==== Bugs
