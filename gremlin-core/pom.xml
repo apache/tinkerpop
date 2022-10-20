@@ -67,6 +67,10 @@ limitations under the License.
             <version>${jcabi.version}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
