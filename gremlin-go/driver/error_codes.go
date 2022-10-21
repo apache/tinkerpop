@@ -1,5 +1,3 @@
-//go:generate go-bindata -prefix "resources/error-messages" -o resources/error-messages/error.go -pkg bindata_error -ignore=resources/error-messages/error.go resources/error-messages/...
-
 /*
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
