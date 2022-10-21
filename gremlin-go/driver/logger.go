@@ -1,5 +1,3 @@
-//go:generate go-bindata -prefix "resources/logger-messages" -o resources/logger-messages/logger.go -pkg bindata_error -ignore=resources/logger-messages/logger.go resources/logger-messages/...
-
 /*
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
