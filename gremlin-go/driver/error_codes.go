@@ -112,7 +112,7 @@ func initializeLocalizer(locale language.Tag) {
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
 	// Register resource package here for additional languages.
-	langFile := "en.json"
+	langFile := "error-messages/en.json"
 	bundle.LoadMessageFileFS(resources.ErrorMessagesFS, langFile)
 
 	localizer = i18n.NewLocalizer(bundle, locale.String())

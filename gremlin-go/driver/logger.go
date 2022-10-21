@@ -76,7 +76,7 @@ func newLogHandler(logger Logger, verbosity LogVerbosity, locale language.Tag) *
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
 	// Register resource package here for additional languages.
-	langFile := "en.json"
+	langFile := "logger-messages/en.json"
 	bundle.LoadMessageFileFS(resources.LoggerMessagesFS, langFile)
 
 	localizer := i18n.NewLocalizer(bundle, locale.String())
