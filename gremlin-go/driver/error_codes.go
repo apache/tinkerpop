@@ -1,3 +1,5 @@
+//go:generate go-bindata -prefix "resources/error-messages" -o resources/error-messages/error.go -pkg bindata_error -ignore=resources/error-messages/error.go resources/error-messages/...
+
 /*
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -22,11 +24,11 @@ package gremlingo
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver/resources"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
-	"path/filepath"
-	"runtime"
-	"strings"
 )
 
 type errorCode string
@@ -110,9 +112,9 @@ func initializeLocalizer(locale language.Tag) {
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
 	// Register resource package here for additional languages.
-	_, path, _, _ := runtime.Caller(0)
-	path = filepath.Join(filepath.Dir(path), "resources/error-messages/en.json")
-	bundle.LoadMessageFile(path)
+	langFile := "en.json"
+	bundle.LoadMessageFileFS(resources.ErrorMessagesFS, langFile)
+
 	localizer = i18n.NewLocalizer(bundle, locale.String())
 }
 
