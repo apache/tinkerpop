@@ -25,7 +25,7 @@ import (
 	"encoding/json"
 	"log"
 
-	bindata_logger "github.com/apache/tinkerpop/gremlin-go/v3/driver/resources/logger-messages"
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver/resources"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
@@ -77,8 +77,7 @@ func newLogHandler(logger Logger, verbosity LogVerbosity, locale language.Tag) *
 
 	// Register resource package here for additional languages.
 	langFile := "en.json"
-	b, _ := bindata_logger.Asset(langFile)
-	bundle.ParseMessageFileBytes(b, langFile)
+	bundle.LoadMessageFileFS(resources.LoggerMessagesFS, langFile)
 
 	localizer := i18n.NewLocalizer(bundle, locale.String())
 	return &logHandler{logger, verbosity, localizer}

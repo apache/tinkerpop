@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"strings"
 
-	bindata_error "github.com/apache/tinkerpop/gremlin-go/v3/driver/resources/error-messages"
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver/resources"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
@@ -113,8 +113,7 @@ func initializeLocalizer(locale language.Tag) {
 
 	// Register resource package here for additional languages.
 	langFile := "en.json"
-	b, _ := bindata_error.Asset(langFile)
-	bundle.ParseMessageFileBytes(b, langFile)
+	bundle.LoadMessageFileFS(resources.ErrorMessagesFS, langFile)
 
 	localizer = i18n.NewLocalizer(bundle, locale.String())
 }
