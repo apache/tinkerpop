@@ -43,6 +43,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     private DetachOptions detachOptions;
 
+    // todo: is public constructor ok or better make private?
     public DetachStrategy(final DetachMode detachMode, final String[] properties) {
         detachOptions = DetachOptions.build().detachMode(detachMode).properties(properties).create();
     }
@@ -55,6 +56,10 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
                     .orElseGet(() -> traversal.getSteps().size());
             traversal.addStep(index, new DetachElementStep<>(traversal, detachOptions));
         }
+    }
+
+    public static DetachStrategy create(final Configuration configuration) {
+        return new DetachStrategy(DetachMode.valueOf(configuration.getString(ID_MODE)), configuration.getStringArray(ID_PROPERTIES));
     }
 
     public static final String ID_MODE = "mode";
