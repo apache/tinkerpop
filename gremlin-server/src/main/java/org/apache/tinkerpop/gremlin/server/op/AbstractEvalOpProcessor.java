@@ -236,11 +236,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     graphManager.onQueryError(msg, t);
                     if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
                 })
-                .afterTimeout(b -> {
-                  final String errorMessage = String.format(
-                  "A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider",
-                  msg);
-                  TimeoutException t = new TimeoutException(errorMessage);
+                .afterTimeout((b, t) -> {
                   graphManager.onQueryError(msg, t);
                 })
                 .beforeEval(b -> {
