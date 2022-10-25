@@ -127,8 +127,17 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>>
         if (null == this.barrierStep) {
             if (this.valueTraversal.hasNext())
                 map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.valueTraversal.next());
-        } else if (this.barrierStep.hasNextBarrier())
-            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.barrierStep.nextBarrier());
+
+
+        } else if (this.barrierStep.hasNextBarrier()) {
+            try {
+                map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.barrierStep.nextBarrier());
+            } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
+                throw new IllegalStateException(String.format(
+                    "group().by() failed because by() traversal (which is: %s) failed with: %s",
+                    keyTraversal.toString(), e.getMessage()));
+            }
+        }
         return map;
     }
 
