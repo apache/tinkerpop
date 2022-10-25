@@ -57,22 +57,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
-        super(vertex);
-
-        // only serialize properties if requested, and there are meta properties present. this prevents unnecessary
-        // object creation of a new HashMap of a new HashMap which will just be empty.  it will use
-        // Collections.emptyMap() by default
-        if (withProperties) {
-            final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
-            if (propertyIterator.hasNext()) {
-                this.properties = new HashMap<>();
-                propertyIterator.forEachRemaining(property -> {
-                    final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
-                    list.add(DetachedFactory.detach(property, true));
-                    this.properties.put(property.key(), list);
-                });
-            }
-        }
+        this(vertex, DetachStrategy.DetachOptions.build()
+                .detachMode(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE).create());
     }
 
     protected DetachedVertex(final Vertex vertex,
