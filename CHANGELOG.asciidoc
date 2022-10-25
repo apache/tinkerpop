@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed bug in `count()` when using `order()` or `sample()` with TinkerGraph.
 * Changed the `Result` struct in gremlin-go to make it more suitable for mocking in tests.
 * Changed label generation in `PathProcessorStrategy` to be more deterministic.
 * Bumped to Apache `commons-configuration` 2.8.0 to fix security vulnerability.
@@ -30,6 +31,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug where tasks that haven't started running yet time out due to `evaluationTimeout` and never send a response back to the client.
 * Set the exact exception in `initializationFailure` on the Java driver instead of the root cause.
 * Added `SparkIOUtil` utility to load graph into Spark RDD.
+* Changed `JavaTranslator` exception handling so that an `IllegalArgumentException` is used for cases where the method exists but the signature can't be discerned given the arguments supplied.
+* Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.
+* Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.
+* Bumped to `snakeyaml` 1.32 to fix security vulnerability.
+
+==== Bugs
+
+GENERATED AT RELEASE
+
+==== Improvements
+
+GENERATED AT RELEASE
 
 [[release-3-5-4]]
 === TinkerPop 3.5.4 (Release Date: July 18, 2022)

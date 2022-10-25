@@ -28,7 +28,6 @@ using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphBinary;
 using Xunit;

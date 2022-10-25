@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.IndexedTraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -188,6 +189,7 @@ final class WorkerExecutor {
         if (step instanceof Barrier) {
             if (step instanceof Bypassing)
                 ((Bypassing) step).setBypass(true);
+
             if (step instanceof LocalBarrier) {
                 // local barrier traversers are stored on the vertex until the master traversal synchronizes the system
                 final LocalBarrier<Object> barrier = (LocalBarrier<Object>) step;
@@ -212,9 +214,17 @@ final class WorkerExecutor {
                 memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
             } else {
                 final Barrier barrier = (Barrier) step;
-                while (barrier.hasNextBarrier()) {
-                    memory.add(step.getId(), barrier.nextBarrier());
+                if (barrier.hasNextBarrier()) {
+                    while (barrier.hasNextBarrier()) {
+                        memory.add(step.getId(), barrier.nextBarrier());
+                    }
+                } else {
+                    // ensure the step id gets added to memory or else barriers that filter like order().by('no-exist')
+                    // will end in error when that memory key can't be found by MasterExecutor.processMemory()
+                    memory.add(step.getId(), new TraverserSet<>());
                 }
+
+
                 memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
             }
         } else { // LOCAL PROCESSING

@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -40,16 +41,19 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Path value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Path value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteAsync(value.Labels, stream).ConfigureAwait(false);
-            await writer.WriteAsync(value.Objects, stream).ConfigureAwait(false);
+            await writer.WriteAsync(value.Labels, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(value.Objects, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<Path> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<Path> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var readLabelObjects = (List<object>) await reader.ReadAsync(stream).ConfigureAwait(false);
+            var readLabelObjects =
+                (List<object>)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var labels = new List<ISet<string>>();
             foreach (var labelObjectList in readLabelObjects)
             {
@@ -61,7 +65,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
                 labels.Add(labelSet);
             }
             
-            var objects = (List<object>) await reader.ReadAsync(stream).ConfigureAwait(false);
+            var objects = (List<object>) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             
             return new Path(labels, objects);
         }

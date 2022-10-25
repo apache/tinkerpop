@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import os
 
 from gremlin_python import statics
 from gremlin_python.driver.protocol import GremlinServerError
@@ -33,6 +34,8 @@ from gremlin_python.driver.serializer import GraphSONSerializersV2d0
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+test_no_auth_url = gremlin_server_url.format(45940)
 
 class TestDriverRemoteConnection(object):
     def test_traversals(self, remote_connection):
@@ -108,7 +111,7 @@ class TestDriverRemoteConnection(object):
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
-        assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
+        assert "remoteconnection[{},gmodern]".format(test_no_auth_url) == str(remote_connection)
         g = traversal().withRemote(remote_connection)
 
         assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum().next()

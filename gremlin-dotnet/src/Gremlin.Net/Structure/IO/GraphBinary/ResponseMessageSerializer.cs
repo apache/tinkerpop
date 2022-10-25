@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
@@ -39,10 +40,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// </summary>
         /// <param name="stream">The GraphBinary data to parse.</param>
         /// <param name="reader">A <see cref="GraphBinaryReader"/> that can be used to read nested values.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read response message.</returns>
-        public async Task<ResponseMessage<List<object>>> ReadValueAsync(MemoryStream stream, GraphBinaryReader reader)
+        public async Task<ResponseMessage<List<object>>> ReadValueAsync(MemoryStream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var version = await stream.ReadByteAsync().ConfigureAwait(false) & 0xff;
+            var version = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false) & 0xff;
 
             if (version >> 7 != 1)
             {
@@ -51,12 +54,15 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 throw new IOException("The most significant bit should be set according to the format");
             }
 
-            var requestId = (Guid?) await reader.ReadValueAsync<Guid>(stream, true).ConfigureAwait(false);
-            var code = (ResponseStatusCode) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
-            var message = (string) await reader.ReadValueAsync<string>(stream, true).ConfigureAwait(false);
+            var requestId =
+                (Guid?)await reader.ReadValueAsync<Guid>(stream, true, cancellationToken).ConfigureAwait(false);
+            var code = (ResponseStatusCode)await reader.ReadValueAsync<int>(stream, false, cancellationToken)
+                .ConfigureAwait(false);
+            var message = (string)await reader.ReadValueAsync<string>(stream, true, cancellationToken)
+                .ConfigureAwait(false);
             var dictObj = await reader
-                .ReadValueAsync<Dictionary<string, object>>(stream, false).ConfigureAwait(false);
-            var attributes = (Dictionary<string, object>) dictObj;
+                .ReadValueAsync<Dictionary<string, object>>(stream, false, cancellationToken).ConfigureAwait(false);
+            var attributes = (Dictionary<string, object>)dictObj;
 
             var status = new ResponseStatus
             {
@@ -66,9 +72,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             };
             var result = new ResponseResult<List<object>>
             {
-                Meta = (Dictionary<string, object>) await reader
-                    .ReadValueAsync<Dictionary<string, object>>(stream, false).ConfigureAwait(false),
-                Data = (List<object>) await reader.ReadAsync(stream).ConfigureAwait(false)
+                Meta = (Dictionary<string, object>)await reader
+                    .ReadValueAsync<Dictionary<string, object>>(stream, false, cancellationToken).ConfigureAwait(false),
+                Data = (List<object>)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false)
             };
 
             return new ResponseMessage<List<object>>
