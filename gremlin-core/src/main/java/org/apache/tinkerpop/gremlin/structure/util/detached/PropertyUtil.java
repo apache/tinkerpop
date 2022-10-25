@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
  * @author Valentyn Kahamlyk
  */
 public class PropertyUtil {
-    public static boolean Match(final DetachStrategy.DetachOptions detachOptions, final Property property) {
+    public static boolean match(final DetachStrategy.DetachOptions detachOptions, final Property property) {
         return ArrayUtils.contains(detachOptions.getProperties(), property.key());
     }
 }

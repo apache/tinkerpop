@@ -81,7 +81,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         }
 
         propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.Match(detachOptions, property)) {
+            if (PropertyUtil.match(detachOptions, property)) {
                 this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property)));
             }
         });

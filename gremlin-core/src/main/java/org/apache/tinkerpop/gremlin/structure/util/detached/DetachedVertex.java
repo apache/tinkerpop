@@ -85,7 +85,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         }
 
         propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.Match(detachOptions, property)) {
+            if (PropertyUtil.match(detachOptions, property)) {
                 final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
                 list.add(DetachedFactory.detach(property, detachOptions));
                 this.properties.put(property.key(), list);
