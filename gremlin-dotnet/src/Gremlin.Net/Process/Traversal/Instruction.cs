@@ -57,7 +57,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public override string ToString()
         {
-            return OperatorName + " [" + String.Join(",", Arguments) + "]";
+            return $"{OperatorName}({string.Join(", ", Arguments.Select(a => a ?? "null"))})";
         }
 
         /// <inheritdoc />

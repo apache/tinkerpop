@@ -30,7 +30,25 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlin.NET: Add logging
 
+The Gremlin.NET driver can now be configured for logging to get more insights into its internal state, like when
+a connection was closed and will therefore be replaced. It uses `Microsoft.Extensions.Logging` for this so all kinds
+of different .NET logging implementations can be used.
+
+The following example shows how to provide a `LoggerFactory` that is configured to log to the console to
+`GremlinClient`:
+
+[source,csharp]
+----
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+});
+var client = new GremlinClient(new GremlinServer("localhost", 8182), loggerFactory: loggerFactory);
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2471[TINKERPOP-2471]
 
 == TinkerPop 3.5.4
 
