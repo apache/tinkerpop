@@ -255,7 +255,7 @@ class LongIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: int64_unpack(buff.read(8)), nullable)
+        return LongType(cls.is_null(buff, reader, lambda b, r: int64_unpack(buff.read(8)), nullable))
 
 
 class IntIO(LongIO):
@@ -314,7 +314,7 @@ class BigIntIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=False):
-        return cls.is_null(buff, reader, lambda b, r: cls.read_bigint(b), nullable)
+        return BigIntType(cls.is_null(buff, reader, lambda b, r: cls.read_bigint(b), nullable))
 
 
 class DateIO(_GraphBinaryTypeIO):
