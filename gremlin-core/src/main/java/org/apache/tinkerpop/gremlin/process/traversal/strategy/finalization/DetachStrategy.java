@@ -140,17 +140,9 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
             this.detachOptions = detachOptions;
         }
 
-        // todo: update factory
         @Override
         protected E map(final Traverser.Admin<S> traverser) {
-            switch(detachOptions.detachMode) {
-                case ALL:
-                    return DetachedFactory.detach(traverser.get(), true);
-                case NONE:
-                    return DetachedFactory.detach(traverser.get(), false);
-                default:
-                    throw new UnsupportedOperationException("TODO");
-            }
+            return DetachedFactory.detach(traverser.get(), detachOptions);
         }
     }
 }
