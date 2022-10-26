@@ -168,5 +168,11 @@ namespace Gremlin.Net.Process.Traversal
         {
             return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>);
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"[[{string.Join(", ", SourceInstructions)}], [{string.Join(", ", StepInstructions)}]]";
+        }
     }
 }

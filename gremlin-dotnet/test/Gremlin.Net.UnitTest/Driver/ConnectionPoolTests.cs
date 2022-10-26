@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -389,12 +390,11 @@ namespace Gremlin.Net.UnitTest.Driver
         private static ConnectionPool CreateConnectionPool(IConnectionFactory connectionFactory, int poolSize = 2,
             int reconnectionAttempts = 1)
         {
-            return new ConnectionPool(connectionFactory,
-                new ConnectionPoolSettings
-                {
-                    PoolSize = poolSize, ReconnectionAttempts = reconnectionAttempts,
-                    ReconnectionBaseDelay = TimeSpan.FromMilliseconds(10)   // let the tests execute fast
-                });
+            return new ConnectionPool(connectionFactory, new ConnectionPoolSettings
+            {
+                PoolSize = poolSize, ReconnectionAttempts = reconnectionAttempts,
+                ReconnectionBaseDelay = TimeSpan.FromMilliseconds(10) // let the tests execute fast
+            }, NullLogger<ConnectionPool>.Instance);
         }
     }
 }
