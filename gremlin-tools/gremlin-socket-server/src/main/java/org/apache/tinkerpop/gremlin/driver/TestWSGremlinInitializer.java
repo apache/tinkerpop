@@ -46,42 +46,24 @@ import java.util.UUID;
 /**
  * Initializer which partially mimics the Gremlin Server. This initializer injects a handler in the
  * server pipeline that can be modified to send the desired response for a test case.
+ * This handler identifies incoming requests with ids matching those in {@link SocketServerSettings}
+ * and delivers the response which corresponds to the request id.
  */
 public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
     private static final Logger logger = LoggerFactory.getLogger(TestWSGremlinInitializer.class);
-    /**
-     * If a request with this ID comes to the server, the server responds back with a single vertex picked from Modern
-     * graph.
-     */
-    public static final UUID SINGLE_VERTEX_REQUEST_ID =
-            UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
 
-    /**
-     * If a request with this ID comes to the server, the server responds back with a single vertex picked from Modern
-     * graph. After some delay, server sends a Close WebSocket frame on the same connection.
-     */
-    public static final UUID SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID =
-            UUID.fromString("3cb39c94-9454-4398-8430-03485d08bdae");
+    private final SocketServerSettings settings;
 
-    public static final UUID FAILED_AFTER_DELAY_REQUEST_ID =
-            UUID.fromString("edf79c8b-1d32-4102-a5d2-a5feeca40864");
-    public static final UUID CLOSE_CONNECTION_REQUEST_ID =
-            UUID.fromString("0150143b-00f9-48a7-a268-28142d902e18");
-    public static final UUID CLOSE_CONNECTION_REQUEST_ID_2 =
-            UUID.fromString("3c4cf18a-c7f2-4dad-b9bf-5c701eb33000");
-    public static final UUID RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID =
-            UUID.fromString("0d333b1d-6e91-4807-b915-50b9ad721d20");
-    /**
-     * If a request with this ID comes to the server, the server responds with the user agent (if any) that was captured
-     * during the web socket handshake.
-     */
-    public static final UUID USER_AGENT_REQUEST_ID =
-            UUID.fromString("20ad7bfb-4abf-d7f4-f9d3-9f1d55bee4ad");
+    private final String USER_AGENT_HEADER = "User-Agent";
 
     /**
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
      */
     private static final GraphSONMessageSerializerV2d0 SERIALIZER = new GraphSONMessageSerializerV2d0();
+
+    public TestWSGremlinInitializer(final SocketServerSettings settings) {
+        this.settings = settings;
+    }
 
     @Override
     public void postInit(ChannelPipeline pipeline) {
@@ -91,8 +73,9 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
     /**
      * Handler introduced in the server pipeline to configure expected response for test cases.
      */
-    private static class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
+    private class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
         private String userAgent = "";
+
         @Override
         protected void decode(final ChannelHandlerContext ctx, final BinaryWebSocketFrame frame, final List<Object> objects)
                 throws Exception {
@@ -111,40 +94,37 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             }
             final RequestMessage msg = SERIALIZER.deserializeRequest(messageBytes.discardReadBytes());
 
-            if (msg.getRequestId().equals(SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID)) {
+            if (msg.getRequestId().equals(settings.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID)) {
                 logger.info("sending vertex result frame");
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(
-                        SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID)));
+                        settings.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID)));
                 logger.info("waiting for 2 sec");
                 Thread.sleep(2000);
                 logger.info("sending close frame");
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
-            } else if (msg.getRequestId().equals(SINGLE_VERTEX_REQUEST_ID)) {
+            } else if (msg.getRequestId().equals(settings.SINGLE_VERTEX_REQUEST_ID)) {
                 logger.info("sending vertex result frame");
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(SINGLE_VERTEX_REQUEST_ID)));
-            } else if (msg.getRequestId().equals(FAILED_AFTER_DELAY_REQUEST_ID)) {
-                logger.info("waiting for 2 sec");
+                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(settings.SINGLE_VERTEX_REQUEST_ID)));
+            } else if (msg.getRequestId().equals(settings.FAILED_AFTER_DELAY_REQUEST_ID)) {
+                logger.info("waiting for 1 sec");
                 Thread.sleep(1000);
                 final ResponseMessage responseMessage = ResponseMessage.build(msg)
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(new RuntimeException()).create();
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(SERIALIZER.serializeResponseAsString(responseMessage)));
-            } else if (msg.getRequestId().equals(CLOSE_CONNECTION_REQUEST_ID)) {
-                Thread.sleep(1000);
-                ctx.channel().writeAndFlush(new CloseWebSocketFrame());
-            } else if (msg.getRequestId().equals(RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID)) {
+            } else if (msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID) || msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID_2)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             }
-            else if (msg.getRequestId().equals(USER_AGENT_REQUEST_ID)) {
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSimpleStringResponse(USER_AGENT_REQUEST_ID, userAgent)));
+            else if (msg.getRequestId().equals(settings.USER_AGENT_REQUEST_ID)) {
+                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSimpleStringResponse(settings.USER_AGENT_REQUEST_ID, userAgent)));
             }
         }
 
         private String returnSingleVertexResponse(final UUID requestID) throws SerializationException {
             final TinkerGraph graph = TinkerFactory.createClassic();
             final GraphTraversalSource g = graph.traversal();
-            final Vertex t = g.V().limit(1).next();
+            final Vertex[] t = {g.V().limit(1).next()};
 
             return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(t).create());
         }
@@ -165,8 +145,8 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
                 WebSocketServerProtocolHandler.HandshakeComplete handshake = (WebSocketServerProtocolHandler.HandshakeComplete) evt;
                 HttpHeaders requestHeaders = handshake.requestHeaders();
-                if(requestHeaders.contains(UserAgent.USER_AGENT_HEADER_NAME)) {
-                    userAgent = requestHeaders.get(UserAgent.USER_AGENT_HEADER_NAME);
+                if(requestHeaders.contains(USER_AGENT_HEADER)) {
+                    userAgent = requestHeaders.get(USER_AGENT_HEADER);
                 }
                 else {
                     ctx.fireUserEventTriggered(evt);

@@ -1096,6 +1096,9 @@ Gremlin Server will send:
 NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Reference Documentation] for more
 examples of `RequestMessage` and `ResponseMessage` instances.
 
+NOTE: Tinkerpop provides a test server which may be useful for testing drivers. Details can be found
+link:https://tinkerpop.apache.org/docs/current/dev/developer/#gremlin-socket-server-tests[here]
+
 === OpProcessors Arguments
 
 The following sections define a non-exhaustive list of available operations and arguments for embedded `OpProcessors`

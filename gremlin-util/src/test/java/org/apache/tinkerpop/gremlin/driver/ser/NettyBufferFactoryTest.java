@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

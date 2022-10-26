@@ -32,6 +32,9 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Added support for mid-traversal `E()`-steps to Gremlin core and GLV's.
 * Added nullable annotations to Gremlin.NET.
 * Bumped Objenesis to 3.3 in `gremlin-shaded`.
+* Moves java serializer, message and token classes from `gremlin-driver` to a new `gremlin-util` module.
+* Moves `SimpleSocketServer` and its initializers to a new `gremlin-tools/gremlin-socket-server` module.
+* Configures `gremlin-socket-server` to build a docker image which can be used for testing GLV's. (Can be skipped with -DskipImageBuild)
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: NOT OFFICIALLY RELEASED YET)

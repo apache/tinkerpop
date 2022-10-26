@@ -29,12 +29,17 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 /**
- * Simple Netty Server
+ * A Simple Netty Server intended to be used as a base for gremlin test servers.
+ * Server behavior is defined by the {@link ChannelInitializer} passed in the start method.
  */
 public class SimpleSocketServer {
-    public static final int PORT = 45940;
+    private final SocketServerSettings settings;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+
+    public SimpleSocketServer(final SocketServerSettings settings) {
+        this.settings = settings;
+    }
 
     public Channel start(final ChannelInitializer<SocketChannel> channelInitializer) throws InterruptedException {
         bossGroup = new NioEventLoopGroup(1);
@@ -44,7 +49,7 @@ public class SimpleSocketServer {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(channelInitializer);
-        return b.bind(PORT).sync().channel();
+        return b.bind(settings.PORT).sync().channel();
     }
 
     public void stop() {
