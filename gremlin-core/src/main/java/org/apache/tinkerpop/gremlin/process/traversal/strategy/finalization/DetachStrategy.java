@@ -48,6 +48,10 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         detachOptions = DetachOptions.build().detachMode(detachMode).properties(properties).create();
     }
 
+    public DetachStrategy(final String detachMode, final String[] properties) {
+        detachOptions = DetachOptions.build().detachMode(DetachMode.valueOf(detachMode)).properties(properties).create();
+    }
+
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getParent() == EmptyStep.instance()) {
