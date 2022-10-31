@@ -175,6 +175,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
+                            DetachStrategy.DetachMode.class,
                             Direction.class,
                             Merge.class,
                             Operator.class,
@@ -260,6 +261,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Bytecode.class, new TraversalSerializersV3d0.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,
                     Column.class,
+                    DetachStrategy.DetachMode.class,
                     Direction.class,
                     Merge.class,
                     Operator.class,
@@ -418,6 +420,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
+                            DetachStrategy.DetachMode.class,
                             Direction.class,
                             Merge.class,
                             Operator.class,
@@ -499,6 +502,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Bytecode.class, new TraversalSerializersV2d0.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,
                     Column.class,
+                    DetachStrategy.DetachMode.class,
                     Direction.class,
                     Merge.class,
                     Operator.class,

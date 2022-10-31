@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
@@ -33,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Rese
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<TraversalStrategy> {
     protected final DefaultGremlinBaseVisitor<Traversal> tvisitor;
@@ -164,7 +166,10 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
 
     private static DetachStrategy getDetachStrategy(final GremlinParser.TraversalStrategyArgs_DetachStrategyContext ctx) {
         final DetachStrategy.Builder builder = DetachStrategy.build();
-        builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
+
+        builder.detachMode(TraversalEnumParser.parseTraversalEnumFromContext(DetachStrategy.DetachMode.class, ctx.stringBasedLiteral()));
+        // todo: or correct is
+        //builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
         builder.properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())).create();
 
         return builder.create();

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
@@ -391,6 +392,12 @@ public class GryoMapperTest {
         assertEquals(startingWith, serializeDeserialize(startingWith, TextP.class));
         final TextP regex = TextP.regex("meh");
         assertEquals(regex, serializeDeserialize(regex, TextP.class));
+    }
+
+    @Test
+    public void shouldHandleDetachMode() throws Exception {
+        final DetachStrategy.DetachMode detachMode = DetachStrategy.DetachMode.CUSTOM;
+        assertEquals(detachMode, serializeDeserialize(detachMode, DetachStrategy.DetachMode.class));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
