@@ -583,6 +583,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     EarlyLimitStrategy.class,
                     EdgeLabelVerificationStrategy.class,
                     ReservedKeysVerificationStrategy.class,
+                    DetachStrategy.class,
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
