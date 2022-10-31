@@ -44,18 +44,20 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     private static final DetachStrategy INSTANCE = new DetachStrategy(DetachMode.ALL, null);
     private DetachOptions detachOptions;
 
-    // todo: is public constructor ok or better make private?
-    public DetachStrategy(final DetachMode detachMode, final String[] properties) {
-        detachOptions = DetachOptions.build().detachMode(detachMode).properties(properties).create();
+    private DetachStrategy(final DetachMode detachMode, final String[] properties) {
+        detachOptions = new DetachOptions();
+        detachOptions.detachMode = detachMode;
+        detachOptions.properties = properties;
     }
 
-    public DetachStrategy(final String detachMode, final String[] properties) {
-        detachOptions = DetachOptions.build().detachMode(DetachMode.valueOf(detachMode)).properties(properties).create();
-    }
+    /*private DetachStrategy(final String detachMode, final String[] properties) {
+        this(DetachMode.valueOf(detachMode), properties);
+    }*/
 
-    // todo: rework to strategy builder
-    public DetachStrategy(final DetachOptions detachOptions) {
-        this.detachOptions = detachOptions;
+    private DetachStrategy(final Builder builder) {
+        detachOptions = new DetachOptions();
+        detachOptions.detachMode = builder.detachMode;
+        detachOptions.properties = builder.properties;
     }
 
     @Override
@@ -98,17 +100,47 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         NONE;
     }
 
-    public static class DetachOptions {
-        private DetachMode detachMode;
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+
+        private DetachMode detachMode = DetachMode.NONE;
         private String[] properties;
 
-        private DetachOptions(final DetachOptions.Builder builder) {
-            this.detachMode = builder.detachMode;
-            this.properties = builder.properties;
+        Builder() {}
+
+        public Builder detachMode(final DetachMode detachMode) {
+            this.detachMode = detachMode;
+            return this;
         }
 
-        public static DetachOptions.Builder build() {
-            return new DetachOptions.Builder();
+        public Builder detachMode(final String detachMode) {
+            this.detachMode = DetachMode.valueOf(detachMode);
+            return this;
+        }
+
+        public Builder properties(final String[] properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        public DetachStrategy create() {
+            return new DetachStrategy(this);
+        }
+    }
+
+    public static class DetachOptions {
+        private DetachMode detachMode = DetachMode.ALL;;
+        private String[] properties;
+
+        private DetachOptions() {}
+
+        public DetachOptions(DetachMode detachMode, String[] properties)
+        {
+            this.detachMode = detachMode;
+            this.properties = properties;
         }
 
         public DetachMode getDetachMode() {
@@ -117,26 +149,6 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
         public String[] getProperties() {
             return this.properties;
-        }
-
-        public static final class Builder {
-
-            private DetachMode detachMode = DetachMode.NONE;
-            private String[] properties;
-
-            public DetachOptions.Builder detachMode(final DetachMode detachMode) {
-                this.detachMode = detachMode;
-                return this;
-            }
-
-            public DetachOptions.Builder properties(final String[] properties) {
-                this.properties = properties;
-                return this;
-            }
-
-            public DetachOptions create() {
-                return new DetachOptions(this);
-            }
         }
     }
 
@@ -148,7 +160,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
             super(traversal);
 
-            detachOptions = DetachOptions.build().create();
+            detachOptions = new DetachOptions();
         }
 
         public DetachElementStep(final Traversal.Admin traversal, final DetachOptions detachOptions) {

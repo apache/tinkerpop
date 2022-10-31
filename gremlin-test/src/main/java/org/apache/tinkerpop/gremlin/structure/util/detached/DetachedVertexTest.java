@@ -107,8 +107,8 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructCustomDetachedVertexWithAllProps() {
-        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
-                .detachMode(DetachStrategy.DetachMode.ALL).properties(new String[] { "foo" }).create();
+        final DetachStrategy.DetachOptions detachOptions =
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, new String[] { "foo" });;
 
         final Vertex v = graph.addVertex("foo", "123", "bar", "234");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
@@ -123,8 +123,8 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructCustomDetachedVertexWithNamedProps() {
-        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
-                .detachMode(DetachStrategy.DetachMode.CUSTOM).properties(new String[] { "foo" }).create();
+        final DetachStrategy.DetachOptions detachOptions =
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, new String[] { "foo" });
 
         final Vertex v = graph.addVertex("foo", "123", "bar", "234");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
@@ -138,8 +138,8 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructCustomDetachedVertexWithoutProps() {
-        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
-                .detachMode(DetachStrategy.DetachMode.NONE).properties(new String[] { "foo" }).create();
+        final DetachStrategy.DetachOptions detachOptions =
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, new String[] { "foo" });
 
         final Vertex v = graph.addVertex("foo", "123", "bar", "234");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);

@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 public class DetachStrategyTest {
 
     private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance()).
-            withStrategies(new DetachStrategy(DetachStrategy.DetachMode.ALL, null));
+            withStrategies(DetachStrategy.build().create());
 
     @Test
     public void shouldAppendOneDetachElementStep() {

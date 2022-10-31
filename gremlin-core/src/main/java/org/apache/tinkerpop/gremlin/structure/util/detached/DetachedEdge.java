@@ -54,8 +54,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     private DetachedEdge() {}
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
-        this(edge, DetachStrategy.DetachOptions.build()
-                .detachMode(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE).create());
+        this(edge, new DetachStrategy.DetachOptions(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE, null));
     }
 
     protected DetachedEdge(final Edge edge,

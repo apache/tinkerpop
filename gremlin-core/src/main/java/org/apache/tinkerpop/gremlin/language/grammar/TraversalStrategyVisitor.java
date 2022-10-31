@@ -163,10 +163,10 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
     }
 
     private static DetachStrategy getDetachStrategy(final GremlinParser.TraversalStrategyArgs_DetachStrategyContext ctx) {
-        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
-                .detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())))
-                .properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())).create();
+        final DetachStrategy.Builder builder = DetachStrategy.build();
+        builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
+        builder.properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())).create();
 
-        return new DetachStrategy(detachOptions);
+        return builder.create();
     }
 }

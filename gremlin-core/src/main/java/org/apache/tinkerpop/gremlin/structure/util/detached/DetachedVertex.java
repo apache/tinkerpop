@@ -57,8 +57,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
-        this(vertex, DetachStrategy.DetachOptions.build()
-                .detachMode(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE).create());
+        this(vertex, new DetachStrategy.DetachOptions(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE, null));
     }
 
     protected DetachedVertex(final Vertex vertex,
