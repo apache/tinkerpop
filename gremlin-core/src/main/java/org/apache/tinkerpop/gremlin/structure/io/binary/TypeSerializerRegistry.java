@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.binary;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.*;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -142,6 +143,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
             new RegistryEntry<>(Metrics.class, new MetricsSerializer()),
             new RegistryEntry<>(TraversalMetrics.class, new TraversalMetricsSerializer()),
+            new RegistryEntry<>(DetachStrategy.DetachMode.class, EnumSerializer.DetachModeSerializer),
 
             // TransformSerializer implementations
             new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),

@@ -541,6 +541,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Merge.class, 196));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
+            add(GryoTypeReg.of(DetachStrategy.DetachMode.class, 199));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
 

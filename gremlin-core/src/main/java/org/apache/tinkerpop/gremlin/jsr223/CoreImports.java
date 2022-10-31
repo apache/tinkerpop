@@ -208,6 +208,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(P.class);
         CLASS_IMPORTS.add(TextP.class);
         CLASS_IMPORTS.add(WithOptions.class);
+        CLASS_IMPORTS.add(DetachStrategy.DetachMode.class);
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
         CLASS_IMPORTS.add(EmptyGraph.class);
@@ -278,7 +279,6 @@ public final class CoreImports {
         CLASS_IMPORTS.add(EdgeLabelVerificationStrategy.class);
         CLASS_IMPORTS.add(VertexProgramRestrictionStrategy.class);
         CLASS_IMPORTS.add(DetachStrategy.class);
-        CLASS_IMPORTS.add(DetachStrategy.DetachMode.class);
         // graph traversal
         CLASS_IMPORTS.add(AnonymousTraversalSource.class);
         CLASS_IMPORTS.add(__.class);

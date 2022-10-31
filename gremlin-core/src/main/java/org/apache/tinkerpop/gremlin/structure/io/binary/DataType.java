@@ -88,6 +88,9 @@ public enum DataType {
     ZONEDATETIME(0X8D),
     ZONEOFFSET(0X8E),
 
+    // todo: temporary
+    DETACHMODE(0X90),
+
     CUSTOM(0),
     UNSPECIFIED_NULL(0XFE);
 
