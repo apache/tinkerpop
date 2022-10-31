@@ -44,15 +44,15 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     private static final DetachStrategy INSTANCE = new DetachStrategy(DetachMode.ALL, null);
     private DetachOptions detachOptions;
 
+    private DetachStrategy() {
+        detachOptions = new DetachOptions();
+    }
+
     private DetachStrategy(final DetachMode detachMode, final String[] properties) {
         detachOptions = new DetachOptions();
         detachOptions.detachMode = detachMode;
         detachOptions.properties = properties;
     }
-
-    /*private DetachStrategy(final String detachMode, final String[] properties) {
-        this(DetachMode.valueOf(detachMode), properties);
-    }*/
 
     private DetachStrategy(final Builder builder) {
         detachOptions = new DetachOptions();
