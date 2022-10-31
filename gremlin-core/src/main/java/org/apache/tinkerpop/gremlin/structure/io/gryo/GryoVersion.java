@@ -55,6 +55,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
@@ -368,6 +369,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
             add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
             add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));
+            add(GryoTypeReg.of(DetachStrategy.class, 198, new JavaSerializer())); //todo: verify
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -613,6 +615,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
             add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));
+            add(GryoTypeReg.of(DetachStrategy.class, 198, new JavaSerializer())); //todo: verify
             // skip 171, 172 to sync with the 3.3.x
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
 
