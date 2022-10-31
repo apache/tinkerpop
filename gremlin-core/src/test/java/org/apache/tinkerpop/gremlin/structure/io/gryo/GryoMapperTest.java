@@ -394,11 +394,11 @@ public class GryoMapperTest {
         assertEquals(regex, serializeDeserialize(regex, TextP.class));
     }
 
-    @Test
+    /*@Test
     public void shouldHandleDetachMode() throws Exception {
         final DetachStrategy.DetachMode detachMode = DetachStrategy.DetachMode.CUSTOM;
         assertEquals(detachMode, serializeDeserialize(detachMode, DetachStrategy.DetachMode.class));
-    }
+    }*/
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
         final Kryo kryo = builder.get().create().createMapper();
