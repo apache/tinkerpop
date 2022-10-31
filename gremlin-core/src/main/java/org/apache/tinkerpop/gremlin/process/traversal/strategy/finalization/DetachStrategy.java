@@ -41,6 +41,7 @@ import java.util.Optional;
  */
 public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
 
+    private static final DetachStrategy INSTANCE = new DetachStrategy(DetachMode.ALL, null);
     private DetachOptions detachOptions;
 
     // todo: is public constructor ok or better make private?
@@ -50,6 +51,11 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     public DetachStrategy(final String detachMode, final String[] properties) {
         detachOptions = DetachOptions.build().detachMode(DetachMode.valueOf(detachMode)).properties(properties).create();
+    }
+
+    // todo: rework to strategy builder
+    public DetachStrategy(final DetachOptions detachOptions) {
+        this.detachOptions = detachOptions;
     }
 
     @Override
@@ -64,6 +70,13 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     public static DetachStrategy create(final Configuration configuration) {
         return new DetachStrategy(DetachMode.valueOf(configuration.getString(ID_MODE)), configuration.getStringArray(ID_PROPERTIES));
+    }
+
+    /**
+     * Gets the standard configuration of this strategy that will return all properties.
+     */
+    public static DetachStrategy instance() {
+        return INSTANCE;
     }
 
     public static final String ID_MODE = "mode";

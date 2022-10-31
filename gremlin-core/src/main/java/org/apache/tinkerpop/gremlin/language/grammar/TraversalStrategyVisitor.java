@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
@@ -64,6 +65,8 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                 return new SeedStrategy(Long.parseLong(ctx.integerLiteral().getText()));
             else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
                 return getProductiveByStrategy(ctx.traversalStrategyArgs_ProductiveByStrategy());
+            else if (strategyName.equals(DetachStrategy.class.getSimpleName()))
+                return getDetachStrategy(ctx.traversalStrategyArgs_DetachStrategy());
         }
         throw new IllegalStateException("Unexpected TraversalStrategy specification - " + ctx.getText());
     }
@@ -157,5 +160,13 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         final ProductiveByStrategy.Builder builder = ProductiveByStrategy.build();
         builder.productiveKeys(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
         return builder.create();
+    }
+
+    private static DetachStrategy getDetachStrategy(final GremlinParser.TraversalStrategyArgs_DetachStrategyContext ctx) {
+        final DetachStrategy.DetachOptions detachOptions = DetachStrategy.DetachOptions.build()
+                .detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())))
+                .properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())).create();
+
+        return new DetachStrategy(detachOptions);
     }
 }
