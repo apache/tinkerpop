@@ -216,7 +216,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             EarlyLimitStrategyProcessTest.class,
 
             // finalization
-            DetachStrategyProcessTest.class
+            // DetachStrategyProcessTest.class
     };
 
     /**
