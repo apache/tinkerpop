@@ -25,9 +25,12 @@
 # Port exposed by gremlin-socket-server
 PORT: 45943
 
+# Configures which serializer will be used. Ex: GraphBinaryV1 or GraphSONV2
+SERIALIZER: GraphBinaryV1
+
 # If a request with this ID comes to the server, the server responds back with a single
 # vertex picked from Modern graph.
-SINGLE_VERTEX_REQUEST_ID: 6457272A-4018-4538-B9AE-08DD5DDC0AA1
+SINGLE_VERTEX_REQUEST_ID: 6457272a-4018-4538-b9ae-08dd5ddc0aa1
 
 # If a request with this ID comes to the server, the server responds back with a single
 # vertex picked from Modern graph. After a 2 second delay, server sends a Close WebSocket

@@ -25,6 +25,8 @@ import socket
 import logging
 import queue
 
+import yaml
+
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
 from gremlin_python.driver import serializer
@@ -38,15 +40,21 @@ from gremlin_python.driver.aiohttp.transport import AiohttpTransport
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'wss://localhost:{}/gremlin')
+gremlin_socket_server_url = os.environ.get('GREMLIN_SOCKET_SERVER_URL', 'ws://localhost:{}/gremlin')
+gremlin_socket_server_config_path = os.environ.get("GREMLIN_SOCKET_SERVER_CONFIG_PATH",
+                                                   "../../../../../../gremlin-tools/gremlin-socket-server/conf/"
+                                                   "test-ws-gremlin.yaml")
 kerberos_hostname = os.environ.get('KRB_HOSTNAME', socket.gethostname())
 anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)
 kerberos_url = gremlin_server_url.format(45942)
+
 kerberized_service = 'test-service@{}'.format(kerberos_hostname)
 verbose_logging = False
 
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
+
 
 @pytest.fixture
 def connection(request):
@@ -83,6 +91,35 @@ def client(request):
         request.addfinalizer(fin)
         return client
 
+
+@pytest.fixture
+def socket_server_client(request, socket_server_settings):
+    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
+    if socket_server_settings["SERIALIZER"] == "GraphBinaryV1":
+        ser = serializer.GraphBinarySerializersV1()
+    elif socket_server_settings["SERIALIZER"] == "GraphSONV2":
+        ser = serializer.GraphSONSerializersV2d0()
+    elif socket_server_settings["SERIALIZER"] == "GraphSONV3":
+        ser = serializer.GraphSONSerializersV3d0()
+    else:
+        ser = serializer.GraphBinarySerializersV1()
+    try:
+        client = Client(url, 'g', pool_size=1, message_serializer=ser)
+    except OSError:
+        pytest.skip('Gremlin Socket Server is not running')
+    else:
+        def fin():
+            client.close()
+
+        request.addfinalizer(fin)
+        return client
+
+
+@pytest.fixture
+def socket_server_settings(request):
+    with open(gremlin_socket_server_config_path, mode="rb") as file:
+        settings = yaml.safe_load(file)
+    return settings
 
 @pytest.fixture(params=['basic', 'kerberos'])
 def authenticated_client(request):

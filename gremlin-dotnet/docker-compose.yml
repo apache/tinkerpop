@@ -42,6 +42,8 @@ services:
       timeout: 10s
       retries: 30
       start_period: 30s
+    depends_on:
+      - gremlin-socket-server
 
   gremlin-dotnet-integration-tests:
     container_name: gremlin-dotnet-integration-tests
@@ -50,6 +52,7 @@ services:
       - .:/gremlin-dotnet
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features
       - ../docker/gremlin-test-server:/gremlin-dotnet/gremlin-test-server
+      - ../gremlin-tools/gremlin-socket-server/conf:/gremlin-dotnet/gremlin-socket-server/conf/
     environment:
       - DOCKER_ENVIRONMENT=true
       - TEST_TRANSACTIONS=true
@@ -59,3 +62,10 @@ services:
     depends_on:
       gremlin-server-test-dotnet:
         condition: service_healthy
+
+  gremlin-socket-server:
+    container_name: gremlin-socket-server
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"
+

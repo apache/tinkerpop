@@ -43,6 +43,8 @@ services:
       timeout: 10s
       retries: 30
       start_period: 30s
+    depends_on:
+      - gremlin-socket-server
 
   gremlin-python-integration-tests:
     container_name: gremlin-python-integration-tests
@@ -51,6 +53,8 @@ services:
       - ${BUILD_DIR:-./src/main/python}:/python_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/python_app/gremlin-test/features
       - ../docker/gremlin-test-server:/python_app/gremlin-test-server
+      - ../gremlin-tools/gremlin-socket-server/conf:/python_app/gremlin-socket-server/conf/
+
     environment:
       - TEST_TRANSACTIONS=${TEST_TRANSACTIONS:-true}
       - DEBIAN_FRONTEND=noninteractive
@@ -60,6 +64,8 @@ services:
       - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-server-test-python:{}/gremlin
       - KRB_HOSTNAME=${KRB_HOSTNAME:-gremlin-server-test}
       - VERSION=${VERSION}
+      - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-python:{}/gremlin
+      - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/python_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
     working_dir: /python_app
     command: >
       bash -c "apt-get update && apt-get -y install libkrb5-dev krb5-user
@@ -87,3 +93,9 @@ services:
     command: >
       bash -c "python3 setup.py sdist bdist_wheel;
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
+
+  gremlin-socket-server:
+    container_name: gremlin-socket-server-python
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"

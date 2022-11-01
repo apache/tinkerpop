@@ -21,7 +21,12 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
+	"log"
+	"os"
 	"testing"
 )
 
@@ -50,4 +55,111 @@ func TestClient(t *testing.T) {
 		assert.NotNil(t, result)
 		client.Close()
 	})
+}
+
+// Client is used to connect and interact with a Gremlin-supported server.
+type SocketServerSettings struct {
+	PORT int `yaml:"PORT"`
+	/**
+	 * Configures which serializer will be used. Ex: "GraphBinaryV1" or "GraphSONV2"
+	 */
+	SERIALIZER string `yaml:"SERIALIZER"`
+	/**
+	 * If a request with this ID comes to the server, the server responds back with a single vertex picked from Modern
+	 * graph.
+	 */
+	SINGLE_VERTEX_REQUEST_ID uuid.UUID `yaml:"SINGLE_VERTEX_REQUEST_ID"`
+	/**
+	 * If a request with this ID comes to the server, the server responds back with a single vertex picked from Modern
+	 * graph. After a 2 second delay, server sends a Close WebSocket frame on the same connection.
+	 */
+	SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID uuid.UUID `yaml:"SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID"`
+	/**
+	 * Server waits for 1 second, then responds with a 500 error status code
+	 */
+	FAILED_AFTER_DELAY_REQUEST_ID uuid.UUID `yaml:"FAILED_AFTER_DELAY_REQUEST_ID"`
+	/**
+	 * Server waits for 1 second then responds with a close web socket frame
+	 */
+	CLOSE_CONNECTION_REQUEST_ID uuid.UUID `yaml:"CLOSE_CONNECTION_REQUEST_ID"`
+	/**
+	 * Same as CLOSE_CONNECTION_REQUEST_ID
+	 */
+	CLOSE_CONNECTION_REQUEST_ID_2 uuid.UUID `yaml:"CLOSE_CONNECTION_REQUEST_ID_2"`
+	/**
+	 * If a request with this ID comes to the server, the server responds with the user agent (if any) that was captured
+	 * during the web socket handshake.
+	 */
+	USER_AGENT_REQUEST_ID uuid.UUID `yaml:"USER_AGENT_REQUEST_ID"`
+}
+
+func FromYaml(path string) *SocketServerSettings {
+	socketServerSettings := new(SocketServerSettings)
+	f, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := yaml.Unmarshal(f, socketServerSettings); err != nil {
+		log.Fatal(err)
+	}
+	return socketServerSettings
+}
+
+func TestClientAgainstSocketServer(t *testing.T) {
+	// Integration test variables.
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+	settings := FromYaml(getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_CONFIG_PATH", "../../gremlin-tools/gremlin-socket-server/conf/test-ws-gremlin.yaml"))
+	testSocketServerUrl := getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_URL", "ws://localhost")
+	testSocketServerUrl = fmt.Sprintf("%s:%v/gremlin", testSocketServerUrl, settings.PORT)
+
+	/**
+	 * Note: This test does not demonstrate anything useful other than the ability to connect to and
+	 * use gremlin-socket-server. Currently, implementing more useful tests are blocked by TINKERPOP-2845.
+	 * This test can be safely removed once more interesting tests have been added which utilize
+	 * gremlin-socket-server.
+	 */
+	t.Run("Should get single vertex response from gremlin socket server", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testSocketServerUrl)
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.SINGLE_VERTEX_REQUEST_ID})
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, ok, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.NotNil(t, result)
+		client.Close()
+	})
+
+	/**
+	 * Note: This test currently fails due to race condition check in go test and is only included for demonstration
+	 * purposes. See https://issues.apache.org/jira/browse/TINKERPOP-2845.
+	 * This test should be uncommented with the resolution of TINKERPOP-2845
+	 */
+	/*
+		t.Run("Should try create new connection if closed by server", func(t *testing.T) {
+			skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+			client, err := NewClient(testSocketServerUrl)
+			assert.Nil(t, err)
+			assert.NotNil(t, client)
+			resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.CLOSE_CONNECTION_REQUEST_ID})
+			assert.Nil(t, err)
+			assert.NotNil(t, resultSet)
+
+			result, ok, err := resultSet.One()
+
+			assert.EqualError(t, err, "websocket: close 1005 (no status)")
+
+			resultSet, err = client.Submit("1", map[string]interface{}{"requestId": settings.SINGLE_VERTEX_REQUEST_ID})
+			assert.Nil(t, err)
+			assert.NotNil(t, resultSet)
+			result, ok, err = resultSet.One()
+			assert.Nil(t, err)
+			assert.True(t, ok)
+			assert.NotNil(t, result)
+			client.Close()
+		})
+	*/
 }
