@@ -80,7 +80,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         return INSTANCE;
     }
 
-    public static final String ID_MODE = "mode";
+    public static final String ID_MODE = "detachMode";
     public static final String ID_PROPERTIES = "properties";
 
     @Override
