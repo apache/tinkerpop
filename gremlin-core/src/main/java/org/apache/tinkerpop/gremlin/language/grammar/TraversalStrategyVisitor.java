@@ -164,13 +164,24 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         return builder.create();
     }
 
-    private static DetachStrategy getDetachStrategy(final GremlinParser.TraversalStrategyArgs_DetachStrategyContext ctx) {
+    private static DetachStrategy getDetachStrategy(final List<GremlinParser.TraversalStrategyArgs_DetachStrategyContext> ctxs) {
         final DetachStrategy.Builder builder = DetachStrategy.build();
 
-        builder.detachMode(TraversalEnumParser.parseTraversalEnumFromContext(DetachStrategy.DetachMode.class, ctx.stringBasedLiteral()));
-        // todo: or correct is
-        //builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
-        builder.properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())).create();
+        if (null == ctxs || ctxs.isEmpty())
+            return builder.create();
+
+        ctxs.forEach(ctx -> {
+            switch (ctx.getChild(0).getText()) {
+                case DetachStrategy.ID_MODE:
+                    builder.detachMode(TraversalEnumParser.parseTraversalEnumFromContext(DetachStrategy.DetachMode.class, ctx.stringBasedLiteral()));
+                    // todo: or correct is
+                    // builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
+                    break;
+                case DetachStrategy.ID_PROPERTIES:
+                    builder.properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList()));
+                    break;
+            }
+        });
 
         return builder.create();
     }
