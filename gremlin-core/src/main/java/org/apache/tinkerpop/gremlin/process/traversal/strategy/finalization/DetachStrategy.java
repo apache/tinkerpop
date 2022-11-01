@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -131,7 +132,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         }
     }
 
-    public static class DetachOptions {
+    public static class DetachOptions implements Serializable {
         private DetachMode detachMode = DetachMode.ALL;;
         private String[] properties;
 
