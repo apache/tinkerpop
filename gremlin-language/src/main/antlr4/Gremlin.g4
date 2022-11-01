@@ -854,8 +854,8 @@ traversalStrategy
     ;
 
 traversalStrategyArgs_DetachStrategy
-    : 'detachMode' COLON stringBasedLiteral // todo: enum
-    | 'properties' COLON stringLiteralList
+    : 'properties' COLON stringLiteralList
+    | 'detachMode' COLON stringBasedLiteral
     ;
 
 traversalStrategyArgs_ProductiveByStrategy
