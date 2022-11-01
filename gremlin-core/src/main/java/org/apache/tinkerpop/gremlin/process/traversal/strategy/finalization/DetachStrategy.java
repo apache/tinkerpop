@@ -87,7 +87,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     public Configuration getConfiguration() {
         final Map<String, Object> map = new HashMap<>();
         map.put(STRATEGY, DetachStrategy.class.getCanonicalName());
-        map.put(ID_MODE, this.detachMode);
+        map.put(ID_MODE, this.detachMode.toString());
         map.put(ID_PROPERTIES, this.properties);
         return new MapConfiguration(map);
     }
