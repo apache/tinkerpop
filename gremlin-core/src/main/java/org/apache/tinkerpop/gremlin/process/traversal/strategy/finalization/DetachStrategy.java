@@ -43,22 +43,20 @@ import java.util.Optional;
 public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
 
     private static final DetachStrategy INSTANCE = new DetachStrategy(DetachMode.ALL, null);
-    private DetachOptions detachOptions;
+    private DetachMode detachMode = DetachMode.ALL;
+    private String[] properties;
 
     private DetachStrategy() {
-        detachOptions = new DetachOptions();
     }
 
     private DetachStrategy(final DetachMode detachMode, final String[] properties) {
-        detachOptions = new DetachOptions();
-        detachOptions.detachMode = detachMode;
-        detachOptions.properties = properties;
+        this.detachMode = detachMode;
+        this.properties = properties;
     }
 
     private DetachStrategy(final Builder builder) {
-        detachOptions = new DetachOptions();
-        detachOptions.detachMode = builder.detachMode;
-        detachOptions.properties = builder.properties;
+        this.detachMode = builder.detachMode;
+        this.properties = builder.properties;
     }
 
     @Override
@@ -67,7 +65,8 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
             final Optional<ProfileSideEffectStep> profileStep = TraversalHelper.getFirstStepOfAssignableClass(ProfileSideEffectStep.class, traversal);
             final int index = profileStep.map(step -> traversal.getSteps().indexOf(step))
                     .orElseGet(() -> traversal.getSteps().size());
-            traversal.addStep(index, new DetachElementStep<>(traversal, detachOptions));
+            traversal.addStep(index,
+                    new DetachElementStep<>(traversal, new DetachOptions(detachMode, properties)));
         }
     }
 
@@ -89,8 +88,8 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     public Configuration getConfiguration() {
         final Map<String, Object> map = new HashMap<>();
         map.put(STRATEGY, DetachStrategy.class.getCanonicalName());
-        map.put(ID_MODE, this.detachOptions.detachMode);
-        map.put(ID_PROPERTIES, this.detachOptions.properties);
+        map.put(ID_MODE, this.detachMode);
+        map.put(ID_PROPERTIES, this.properties);
         return new MapConfiguration(map);
     }
 
