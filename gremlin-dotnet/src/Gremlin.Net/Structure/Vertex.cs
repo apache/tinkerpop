@@ -38,7 +38,7 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="id">The id of the vertex.</param>
         /// <param name="label">The label of the vertex.</param>
-        public Vertex(object id, string label = DefaultLabel)
+        public Vertex(object? id, string label = DefaultLabel)
             : base(id, label)
         {
         }

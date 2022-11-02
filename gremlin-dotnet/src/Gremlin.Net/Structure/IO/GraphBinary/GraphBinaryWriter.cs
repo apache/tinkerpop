@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,36 +51,46 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// Initializes a new instance of the <see cref="GraphBinaryWriter" /> class.
         /// </summary>
         /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for serialization.</param>
-        public GraphBinaryWriter(TypeSerializerRegistry registry = null)
+        public GraphBinaryWriter(TypeSerializerRegistry? registry = null)
         {
             _registry = registry ?? TypeSerializerRegistry.Instance;
         }
 
         /// <summary>
-        /// Writes a value without including type information.
+        /// Writes a nullable value without including type information.
         /// </summary>
         /// <param name="value">The value to write.</param>
         /// <param name="stream">The stream to write to.</param>
-        /// <param name="nullable">Whether or not the value can be null.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteValueAsync(object value, Stream stream, bool nullable,
+        public async Task WriteNullableValueAsync(object? value, Stream stream,
             CancellationToken cancellationToken = default)
         {
             if (value == null)
             {
-                if (!nullable)
-                {
-                    throw new IOException("Unexpected null value when nullable is false");
-                }
-
                 await WriteValueFlagNullAsync(stream, cancellationToken).ConfigureAwait(false);
                 return;
             }
             
             var valueType = value.GetType();
             var serializer = _registry.GetSerializerFor(valueType);
-            await serializer.WriteValueAsync(value, stream, this, nullable, cancellationToken).ConfigureAwait(false);
+            await serializer.WriteNullableValueAsync(value, stream, this, cancellationToken).ConfigureAwait(false);
+        }
+        
+        /// <summary>
+        /// Writes a non-nullable value without including type information.
+        /// </summary>
+        /// <param name="value">The value to write.</param>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        /// <returns>A task that represents the asynchronous write operation.</returns>
+        public async Task WriteNonNullableValueAsync(object value, Stream stream,
+            CancellationToken cancellationToken = default)
+        {
+            if (value == null) throw new IOException($"{nameof(value)} cannot be null");
+            var valueType = value.GetType();
+            var serializer = _registry.GetSerializerFor(valueType);
+            await serializer.WriteNonNullableValueAsync(value, stream, this, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -89,7 +100,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <param name="stream">The stream to write to.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteAsync(object value, Stream stream, CancellationToken cancellationToken = default)
+        public async Task WriteAsync(object? value, Stream stream, CancellationToken cancellationToken = default)
         {
             if (value == null)
             {
@@ -103,7 +114,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             if (serializer is CustomTypeSerializer customTypeSerializer)
             {
                 await stream.WriteAsync(CustomTypeCodeBytes, cancellationToken).ConfigureAwait(false);
-                await WriteValueAsync(customTypeSerializer.TypeName, stream, false, cancellationToken)
+                await WriteNonNullableValueAsync(customTypeSerializer.TypeName, stream, cancellationToken)
                     .ConfigureAwait(false);
                 await customTypeSerializer.WriteAsync(value, stream, this, cancellationToken).ConfigureAwait(false);
                 return;

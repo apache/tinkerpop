@@ -35,7 +35,7 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="id">The id of the element.</param>
         /// <param name="label">The label of the element.</param>
-        protected Element(object id, string label)
+        protected Element(object? id, string label)
         {
             Id = id;
             Label = label;
@@ -44,7 +44,7 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Gets the id of this <see cref="Element" />.
         /// </summary>
-        public object Id { get; }
+        public object? Id { get; }
 
         /// <summary>
         ///     Gets the label of this <see cref="Element" />.
@@ -52,7 +52,7 @@ namespace Gremlin.Net.Structure
         public string Label { get; }
 
         /// <inheritdoc />
-        public bool Equals(Element other)
+        public bool Equals(Element? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -60,7 +60,7 @@ namespace Gremlin.Net.Structure
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -71,7 +71,7 @@ namespace Gremlin.Net.Structure
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return Id != null ? Id.GetHashCode() : 0;
         }
     }
 }

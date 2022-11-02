@@ -36,7 +36,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 return new HashSet<object>();
             }
             // ISet<object>
-            return new HashSet<object>(graphsonObject.EnumerateArray().Select(reader.ToObject));
+            return new HashSet<object?>(graphsonObject.EnumerateArray().Select(reader.ToObject));
         }
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)

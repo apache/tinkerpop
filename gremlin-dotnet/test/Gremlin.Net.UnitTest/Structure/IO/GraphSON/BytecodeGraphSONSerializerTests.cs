@@ -163,5 +163,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Bytecode = bytecode;
             IsAnonymous = true;
         }
+
+        public override Bytecode Bytecode { get; }
     }
 }

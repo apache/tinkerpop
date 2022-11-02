@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.IO;
 using System.Text.Json;
 using Gremlin.Net.Process.Traversal;
 
@@ -30,7 +31,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            return T.GetByValue(graphsonObject.GetString());
+            return T.GetByValue(graphsonObject.GetString()??
+                                throw new IOException($"Read null but expected a {nameof(T)} string representation"));
         }
     }
 }

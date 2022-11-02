@@ -35,9 +35,9 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         {
         }
 
-        public VertexProgramStrategy(string graphComputer = null, int? workers = null, string persist = null,
-            string result = null, ITraversal vertices = null, ITraversal edges = null,
-            Dictionary<string, dynamic> configuration = null)
+        public VertexProgramStrategy(string? graphComputer = null, int? workers = null, string? persist = null,
+            string? result = null, ITraversal? vertices = null, ITraversal? edges = null,
+            Dictionary<string, dynamic>? configuration = null)
             : this()
         {
             if (graphComputer != null)

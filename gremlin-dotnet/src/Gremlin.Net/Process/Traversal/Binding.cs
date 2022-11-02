@@ -35,7 +35,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="key">The key that identifies the <see cref="Binding" />.</param>
         /// <param name="value">The value of the <see cref="Binding" />.</param>
-        public Binding(string key, object value)
+        public Binding(string key, object? value)
         {
             Key = key;
             Value = value;
@@ -49,18 +49,18 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets the value of the <see cref="Binding" />.
         /// </summary>
-        public object Value { get; }
+        public object? Value { get; }
 
         /// <inheritdoc />
-        public bool Equals(Binding other)
+        public bool Equals(Binding? other)
         {
             if (other == null)
                 return false;
-            return Key == other.Key && Value.Equals(other.Value);
+            return Key == other.Key && (Value?.Equals(other.Value) ?? other.Value == null);
         }
 
         /// <inheritdoc />
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

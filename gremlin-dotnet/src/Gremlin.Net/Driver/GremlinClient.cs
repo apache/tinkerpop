@@ -57,8 +57,8 @@ namespace Gremlin.Net.Driver
         /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
         [Obsolete("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter,
-            ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null)
+            ConnectionPoolSettings? connectionPoolSettings = null,
+            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null)
             : this(gremlinServer, graphSONReader, graphSONWriter, SerializationTokens.GraphSON3MimeType,
                 connectionPoolSettings, webSocketConfiguration, sessionId)
         {
@@ -78,9 +78,9 @@ namespace Gremlin.Net.Driver
         /// </param>
         /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
         [Obsolete("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
-        public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter,
-            string mimeType, ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null)
+        public GremlinClient(GremlinServer gremlinServer, GraphSONReader? graphSONReader, GraphSONWriter? graphSONWriter,
+            string mimeType, ConnectionPoolSettings? connectionPoolSettings = null,
+            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null)
         {
             IMessageSerializer messageSerializer;
             switch (mimeType)
@@ -91,8 +91,8 @@ namespace Gremlin.Net.Driver
                     VerifyGraphSONArgumentTypeForMimeType<GraphSON3Writer>(graphSONWriter, nameof(graphSONWriter),
                         mimeType);
                     messageSerializer = new GraphSON3MessageSerializer(
-                        (GraphSON3Reader) graphSONReader ?? new GraphSON3Reader(),
-                        (GraphSON3Writer) graphSONWriter ?? new GraphSON3Writer());
+                        (GraphSON3Reader?) graphSONReader ?? new GraphSON3Reader(),
+                        (GraphSON3Writer?) graphSONWriter ?? new GraphSON3Writer());
                     break;
                 case SerializationTokens.GraphSON2MimeType:
                     VerifyGraphSONArgumentTypeForMimeType<GraphSON2Reader>(graphSONReader, nameof(graphSONReader),
@@ -100,8 +100,8 @@ namespace Gremlin.Net.Driver
                     VerifyGraphSONArgumentTypeForMimeType<GraphSON2Writer>(graphSONWriter, nameof(graphSONWriter),
                         mimeType);
                     messageSerializer = new GraphSON2MessageSerializer(
-                        (GraphSON2Reader) graphSONReader ?? new GraphSON2Reader(),
-                        (GraphSON2Writer) graphSONWriter ?? new GraphSON2Writer());
+                        (GraphSON2Reader?) graphSONReader ?? new GraphSON2Reader(),
+                        (GraphSON2Writer?) graphSONWriter ?? new GraphSON2Writer());
                     break;
                 default:
                     throw new ArgumentException(nameof(mimeType), $"{mimeType} not supported");
@@ -131,10 +131,10 @@ namespace Gremlin.Net.Driver
                 connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
         }
 
-        private static void VerifyGraphSONArgumentTypeForMimeType<T>(object argument, string argumentName,
+        private static void VerifyGraphSONArgumentTypeForMimeType<T>(object? argument, string argumentName,
             string mimeType)
         {
-            if (argument != null && !(argument is T))
+            if (argument != null && argument is not T)
             {
                 throw new ArgumentException(
                     $"{argumentName} is not a {typeof(T).Name} but the mime type is: {mimeType}", argumentName);
@@ -164,10 +164,10 @@ namespace Gremlin.Net.Driver
         ///     that could potentially be controlled by an untrusted user.
         /// </param>
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
-        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer messageSerializer = null,
-            ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null,
-            bool disableCompression = false, ILoggerFactory loggerFactory = null)
+        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
+            ConnectionPoolSettings? connectionPoolSettings = null,
+            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null,
+            bool disableCompression = false, ILoggerFactory? loggerFactory = null)
         {
             messageSerializer ??= new GraphBinaryMessageSerializer();
             var webSocketSettings = new WebSocketSettings

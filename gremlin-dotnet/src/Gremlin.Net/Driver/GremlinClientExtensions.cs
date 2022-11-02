@@ -52,9 +52,9 @@ namespace Gremlin.Net.Driver
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        public static async Task<T> SubmitWithSingleResultAsync<T>(this IGremlinClient gremlinClient,
+        public static async Task<T?> SubmitWithSingleResultAsync<T>(this IGremlinClient gremlinClient,
             string requestScript,
-            Dictionary<string, object> bindings = null,
+            Dictionary<string, object>? bindings = null,
             CancellationToken cancellationToken = default)
         {
             var resultCollection = await gremlinClient.SubmitAsync<T>(requestScript, bindings, cancellationToken)
@@ -78,7 +78,7 @@ namespace Gremlin.Net.Driver
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        public static async Task<T> SubmitWithSingleResultAsync<T>(this IGremlinClient gremlinClient,
+        public static async Task<T?> SubmitWithSingleResultAsync<T>(this IGremlinClient gremlinClient,
             RequestMessage requestMessage, CancellationToken cancellationToken = default)
         {
             var resultCollection =
@@ -100,7 +100,7 @@ namespace Gremlin.Net.Driver
         ///     that an error occurred.
         /// </exception>
         public static async Task SubmitAsync(this IGremlinClient gremlinClient, string requestScript,
-            Dictionary<string, object> bindings = null, CancellationToken cancellationToken = default)
+            Dictionary<string, object>? bindings = null, CancellationToken cancellationToken = default)
         {
             await gremlinClient.SubmitAsync<object>(requestScript, bindings, cancellationToken).ConfigureAwait(false);
         }
@@ -138,7 +138,7 @@ namespace Gremlin.Net.Driver
         /// </exception>
         public static async Task<ResultSet<T>> SubmitAsync<T>(this IGremlinClient gremlinClient,
             string requestScript,
-            Dictionary<string, object> bindings = null,
+            Dictionary<string, object>? bindings = null,
             CancellationToken cancellationToken = default)
         {
             var msgBuilder = RequestMessage.Build(Tokens.OpsEval).AddArgument(Tokens.ArgsGremlin, requestScript);

@@ -44,12 +44,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
             
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.InV.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.InV.Label, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.OutV.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.OutV.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.OutV.Label, stream, cancellationToken).ConfigureAwait(false);
 
             // Placeholder for the parent vertex
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
@@ -63,13 +63,13 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var label = (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken)
+            var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
                 .ConfigureAwait(false);
 
             var inV = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false));
+                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false));
             var outV = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false));
+                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false));
             
             // discard possible parent vertex
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);

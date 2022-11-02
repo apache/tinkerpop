@@ -54,7 +54,7 @@ namespace Gremlin.Net.Driver.Remote
             Tokens.RequestId, Tokens.ArgsUserAgent
         };
 
-        private readonly string _sessionId;
+        private readonly string? _sessionId;
         private string Processor => IsSessionBound ? Tokens.ProcessorSession : Tokens.ProcessorTraversal;
 
         /// <inheritdoc />
@@ -69,7 +69,7 @@ namespace Gremlin.Net.Driver.Remote
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
         public DriverRemoteConnection(string host, int port, string traversalSource = "g",
-            ILoggerFactory loggerFactory = null) : this(
+            ILoggerFactory? loggerFactory = null) : this(
             new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory), traversalSource,
             logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
         {
@@ -86,8 +86,8 @@ namespace Gremlin.Net.Driver.Remote
         {
         }
 
-        private DriverRemoteConnection(IGremlinClient client, string traversalSource, string sessionId = null,
-            ILogger<DriverRemoteConnection> logger = null)
+        private DriverRemoteConnection(IGremlinClient client, string traversalSource, string? sessionId = null,
+            ILogger<DriverRemoteConnection>? logger = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _traversalSource = traversalSource ?? throw new ArgumentNullException(nameof(traversalSource));
@@ -115,7 +115,7 @@ namespace Gremlin.Net.Driver.Remote
         {
             var requestId = Guid.NewGuid();
             var resultSet = await SubmitBytecodeAsync(requestId, bytecode, cancellationToken).ConfigureAwait(false);
-            return new DriverRemoteTraversal<TStart, TEnd>(_client, requestId, resultSet);
+            return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
         }
 
         private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode,
@@ -132,15 +132,15 @@ namespace Gremlin.Net.Driver.Remote
 
             if (IsSessionBound)
             {
-                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId);
+                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId!);
             }
 
             var optionsStrategyInst = bytecode.SourceInstructions.Find(
                 s => s.OperatorName == "withStrategies" && s.Arguments[0] is OptionsStrategy);
             if (optionsStrategyInst != null)
             {
-                OptionsStrategy optionsStrategy = optionsStrategyInst.Arguments[0];
-                foreach (KeyValuePair<string,dynamic> pair in optionsStrategy.Configuration)
+                OptionsStrategy optionsStrategy = optionsStrategyInst.Arguments[0]!;
+                foreach (var pair in optionsStrategy.Configuration)
                 {
                     if (_allowedKeys.Contains(pair.Key))
                     {

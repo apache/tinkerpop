@@ -54,21 +54,21 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         private static async Task WriteInstructionsAsync(IReadOnlyCollection<Instruction> instructions, Stream stream,
             GraphBinaryWriter writer, CancellationToken cancellationToken)
         {
-            await writer.WriteValueAsync(instructions.Count, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(instructions.Count, stream, cancellationToken).ConfigureAwait(false);
 
             foreach (var instruction in instructions)
             {
-                await writer.WriteValueAsync(instruction.OperatorName, stream, false, cancellationToken)
+                await writer.WriteNonNullableValueAsync(instruction.OperatorName, stream, cancellationToken)
                     .ConfigureAwait(false);
                 await WriteArgumentsAsync(instruction.Arguments, stream, writer, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
 
-        private static async Task WriteArgumentsAsync(object[] arguments, Stream stream, GraphBinaryWriter writer,
+        private static async Task WriteArgumentsAsync(object?[] arguments, Stream stream, GraphBinaryWriter writer,
             CancellationToken cancellationToken)
         {
-            await writer.WriteValueAsync(arguments.Length, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(arguments.Length, stream, cancellationToken).ConfigureAwait(false);
 
             foreach (var value in arguments)
             {
@@ -82,11 +82,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         {
             var result = new Bytecode();
 
-            var stepsLength = (int) await reader.ReadValueAsync<int>(stream, false, cancellationToken).ConfigureAwait(false);
+            var stepsLength = (int) await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
             for (var i = 0; i < stepsLength; i++)
             {
                 result.AddStep(
-                    (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
+                    (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
                     await ReadArgumentsAsync(stream, reader, cancellationToken).ConfigureAwait(false));
             }
             
@@ -94,19 +94,19 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             for (var i = 0; i < sourcesLength; i++)
             {
                 result.AddSource(
-                    (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
+                    (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
                     await ReadArgumentsAsync(stream, reader, cancellationToken).ConfigureAwait(false));
             }
             
             return result;
         }
 
-        private static async Task<object[]> ReadArgumentsAsync(Stream stream, GraphBinaryReader reader,
+        private static async Task<object?[]> ReadArgumentsAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken)
         {
             var valuesLength =
-                (int)await reader.ReadValueAsync<int>(stream, false, cancellationToken).ConfigureAwait(false);
-            var values = new object[valuesLength];
+                (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
+            var values = new object?[valuesLength];
             for (var i = 0; i < valuesLength; i++)
             {
                 values[i] = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);

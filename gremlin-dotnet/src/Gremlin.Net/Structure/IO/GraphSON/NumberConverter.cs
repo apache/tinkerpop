@@ -27,7 +27,7 @@ using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal abstract class NumberConverter<T> : IGraphSONDeserializer, IGraphSONSerializer
+    internal abstract class NumberConverter<T> : IGraphSONDeserializer, IGraphSONSerializer where T : notnull
     {
         protected abstract string GraphSONTypeName { get; }
         protected virtual string Prefix => "g";

@@ -35,7 +35,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// </summary>
         /// <param name="graphSONReader">The <see cref="GraphSON2Reader"/> used to deserialize from GraphSON.</param>
         /// <param name="graphSONWriter">The <see cref="GraphSON2Writer"/> used to serialize to GraphSON.</param>
-        public GraphSON2MessageSerializer(GraphSON2Reader graphSONReader = null, GraphSON2Writer graphSONWriter = null)
+        public GraphSON2MessageSerializer(GraphSON2Reader? graphSONReader = null, GraphSON2Writer? graphSONWriter = null)
             : base(MimeType, graphSONReader ?? new GraphSON2Reader(), graphSONWriter ?? new GraphSON2Writer())
         {
         }

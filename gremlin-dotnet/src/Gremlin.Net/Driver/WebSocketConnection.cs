@@ -118,7 +118,7 @@ namespace Gremlin.Net.Driver
                     throw new ConnectionClosedException(received.CloseStatus, received.CloseStatusDescription);
                 }
 
-                ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
+                ms.Write(receiveBuffer.Array!, receiveBuffer.Offset, received.Count);
             } while (!received.EndOfMessage);
 
             return ms.ToArray();
