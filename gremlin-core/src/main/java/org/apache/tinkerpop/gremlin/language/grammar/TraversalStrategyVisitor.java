@@ -178,7 +178,7 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                     // builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
                     break;
                 case DetachStrategy.ID_PROPERTIES:
-                    builder.properties(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList()));
+                    builder.properties(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
                     break;
             }
         });

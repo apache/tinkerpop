@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Property;
 
@@ -30,6 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.Property;
  */
 public class PropertyUtil {
     public static boolean match(final DetachStrategy.DetachOptions detachOptions, final Property property) {
-        return ArrayUtils.contains(detachOptions.getProperties(), property.key());
+        return detachOptions.getProperties() != null && detachOptions.getProperties().contains(property.key());
     }
 }

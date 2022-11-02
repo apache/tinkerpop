@@ -30,7 +30,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,12 +47,12 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     private static final DetachStrategy INSTANCE = new DetachStrategy(DetachMode.ALL, null);
     private DetachMode detachMode = DetachMode.ALL;
-    private String[] properties;
+    private List<String> properties;
 
     private DetachStrategy() {
     }
 
-    private DetachStrategy(final DetachMode detachMode, final String[] properties) {
+    private DetachStrategy(final DetachMode detachMode, final List<String> properties) {
         this.detachMode = detachMode;
         this.properties = properties;
     }
@@ -70,7 +74,8 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     }
 
     public static DetachStrategy create(final Configuration configuration) {
-        return new DetachStrategy(DetachMode.valueOf(configuration.getString(ID_MODE)), configuration.getStringArray(ID_PROPERTIES));
+        return new DetachStrategy(DetachMode.valueOf(configuration.getString(ID_MODE)),
+                new ArrayList<>((Collection<String>) configuration.getProperty(ID_PROPERTIES)));
     }
 
     /**
@@ -106,7 +111,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     public static final class Builder {
 
         private DetachMode detachMode = DetachMode.NONE;
-        private String[] properties;
+        private final ArrayList<String> properties = new ArrayList<>();
 
         Builder() {}
 
@@ -120,8 +125,16 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
             return this;
         }
 
-        public Builder properties(final String[] properties) {
-            this.properties = properties;
+        public Builder properties(final String key, final String... rest) {
+            properties.clear();
+            properties.add(key);
+            properties.addAll(Arrays.asList(rest));
+            return this;
+        }
+
+        public Builder properties(final Collection<String> properties) {
+            properties.clear();
+            properties.addAll(properties);
             return this;
         }
 
@@ -132,11 +145,11 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     public static class DetachOptions {
         private DetachMode detachMode = DetachMode.ALL;;
-        private String[] properties;
+        private List<String> properties;
 
         private DetachOptions() {}
 
-        public DetachOptions(DetachMode detachMode, String[] properties)
+        public DetachOptions(DetachMode detachMode, List<String> properties)
         {
             this.detachMode = detachMode;
             this.properties = properties;
@@ -146,7 +159,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
             return this.detachMode;
         }
 
-        public String[] getProperties() {
+        public List<String> getProperties() {
             return this.properties;
         }
     }

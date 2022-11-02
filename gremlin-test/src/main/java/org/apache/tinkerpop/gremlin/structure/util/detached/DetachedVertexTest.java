@@ -108,7 +108,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructCustomDetachedVertexWithAllProps() {
         final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, new String[] { "foo" });;
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, Arrays.asList("foo"));
 
         final Vertex v = graph.addVertex("foo", "123", "bar", "234");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
@@ -124,7 +124,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructCustomDetachedVertexWithNamedProps() {
         final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, new String[] { "foo" });
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, Arrays.asList("foo"));
 
         final Vertex v = graph.addVertex("foo", "123", "bar", "234");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
@@ -139,7 +139,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructCustomDetachedVertexWithoutProps() {
         final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, new String[] { "foo" });
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, Arrays.asList("foo"));
 
         final Vertex v = graph.addVertex("foo", "123", "bar", "234");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);

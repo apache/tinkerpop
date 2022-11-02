@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructCustomDetachedEdgeWithAllProps() {
         final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, new String[] { "year" });
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, Arrays.asList("year"));
 
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
@@ -141,7 +142,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructCustomDetachedEdgeWithNamedProps() {
         final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, new String[] { "year" });
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, Arrays.asList("year"));
 
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
@@ -165,7 +166,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructCustomDetachedEdgeWithoutProps() {
         final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, new String[] { "year" });
+                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, Arrays.asList("year"));
 
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
