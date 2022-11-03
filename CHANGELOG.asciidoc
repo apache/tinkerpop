@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.
 * Bumped to `snakeyaml` 1.32 to fix security vulnerability.
 * Added logging in .NET.
+* Bumped to `jackson-databind` 2.13.4.2 to fix security vulnerability.
 
 ==== Bugs
 
