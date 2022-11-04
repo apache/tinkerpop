@@ -1157,6 +1157,17 @@ attacks like CRIME/BREACH. Compression should therefore be turned off if the app
 server as well as data that could potentially be controlled by an untrusted user. Compression can be disabled via the
 `disableCompression` parameter.
 
+[[gremlin-dotnet-logging]]
+=== Logging
+
+It is possible to enable logging for the Gremlin.Net driver by providing an `ILoggerFactory` (from the
+`Microsoft.Extensions.Logging.Abstractions` package) to the `GremlinClient` constructor:
+
+[source,csharp]
+----
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=logging]
+----
+
 [[gremlin-dotnet-serialization]]
 === Serialization
 

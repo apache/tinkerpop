@@ -172,5 +172,19 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var arg = bytecode.SourceInstructions[0].Arguments[0] as ISet<object>;
             Assert.Equal(new Binding("setVariable", "setValue"), arg.ToList()[1]);
         }
+
+        [Fact]
+        public void ShouldIncludeStepAndSourceInstructionsForToString()
+        {
+            var bytecode = new Bytecode();
+            bytecode.AddSource("source", 1, 2);
+            bytecode.AddStep("step1", 9, 8);
+            bytecode.AddStep("step2", 0);
+            bytecode.AddStep("step3", 0, null, 0d);
+            bytecode.AddStep("step4", "0), stepX(\"hello\"");
+
+            Assert.Equal("[[source(1, 2)], [step1(9, 8), step2(0), step3(0, null, 0), step4(0), stepX(\"hello\")]]",
+                bytecode.ToString());
+        }
     }
 }

@@ -30,6 +30,8 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
@@ -291,6 +293,34 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     // do nothing
                 }
             }
+        }
+
+        [Fact]
+        public void ShouldLogWithProvidedLoggerFactory()
+        {
+            var loggerFactoryMock = new Mock<ILoggerFactory>();
+            var loggerMock = new Mock<ILogger>();
+            loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            
+            using var gremlinClient = new GremlinClient(gremlinServer, loggerFactory: loggerFactoryMock.Object);
+
+            loggerMock.VerifyMessageWasLogged(LogLevel.Information, "connections");
+        }
+        
+        [Fact]
+        public void ShouldNotLogForDisabledLogLevel()
+        {
+            var loggerFactoryMock = new Mock<ILoggerFactory>();
+            var loggerMock = new Mock<ILogger>();
+            loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(false);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            
+            using var gremlinClient = new GremlinClient(gremlinServer, loggerFactory: loggerFactoryMock.Object);
+
+            loggerMock.VerifyNothingWasLogged();
         }
     }
 }

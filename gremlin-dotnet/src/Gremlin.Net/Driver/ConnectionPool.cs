@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Process;
+using Microsoft.Extensions.Logging;
 using Polly;
 
 namespace Gremlin.Net.Driver
@@ -42,16 +43,19 @@ namespace Gremlin.Net.Driver
         private readonly ConcurrentDictionary<IConnection, byte> _deadConnections =
             new ConcurrentDictionary<IConnection, byte>();
         private readonly ConnectionPoolSettings _settings;
+        private readonly ILogger<ConnectionPool> _logger;
         private int _connectionIndex;
         private int _poolState;
         private const int PoolIdle = 0;
         private const int PoolPopulationInProgress = 1;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public ConnectionPool(IConnectionFactory connectionFactory, ConnectionPoolSettings settings)
+        public ConnectionPool(IConnectionFactory connectionFactory, ConnectionPoolSettings settings,
+            ILogger<ConnectionPool> logger)
         {
             _connectionFactory = connectionFactory;
             _settings = settings;
+            _logger = logger;
             ReplaceDeadConnectionsAsync().WaitUnwrap();
         }
         
@@ -60,7 +64,11 @@ namespace Gremlin.Net.Driver
         public IConnection GetAvailableConnection()
         {
             var connection = Policy.Handle<ServerUnavailableException>()
-                .WaitAndRetry(_settings.ReconnectionAttempts, ComputeRetrySleepDuration)
+                .WaitAndRetry(_settings.ReconnectionAttempts, ComputeRetrySleepDuration, onRetry:
+                    (_, _, retryCount, _) =>
+                    {
+                        _logger.CouldNotGetConnectionFromPool(retryCount, _settings.ReconnectionAttempts);
+                    })
                 .Execute(GetConnectionFromPool);
 
             return ProxiedConnection(connection);
@@ -116,10 +124,11 @@ namespace Gremlin.Net.Driver
 
             _deadConnections.Clear();
         }
-        
+
         private async Task FillPoolAsync()
         {
             var nrConnectionsToCreate = _settings.PoolSize - _connections.Count;
+            _logger.FillingPool(nrConnectionsToCreate);
             var connectionCreationTasks = new List<Task<IConnection>>(nrConnectionsToCreate);
             try
             {
@@ -218,6 +227,7 @@ namespace Gremlin.Net.Driver
         
         private void RemoveConnectionFromPool(IConnection connection)
         {
+            _logger.RemovingClosedConnectionFromPool();
             _deadConnections.TryAdd(connection, 0);
         }
 
