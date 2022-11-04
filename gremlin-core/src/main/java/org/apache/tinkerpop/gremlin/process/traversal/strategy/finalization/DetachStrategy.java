@@ -49,8 +49,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     private DetachMode detachMode = DetachMode.ALL;
     private List<String> properties;
 
-    private DetachStrategy() {
-    }
+    private DetachStrategy() {}
 
     private DetachStrategy(final DetachMode detachMode, final List<String> properties) {
         this.detachMode = detachMode;
@@ -58,8 +57,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     }
 
     private DetachStrategy(final Builder builder) {
-        this.detachMode = builder.detachMode;
-        this.properties = builder.properties;
+        this(builder.detachMode, builder.properties);
     }
 
     @Override
@@ -121,8 +119,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         }
 
         public Builder detachMode(final String detachMode) {
-            this.detachMode = DetachMode.valueOf(detachMode);
-            return this;
+            return detachMode(DetachMode.valueOf(detachMode));
         }
 
         public Builder properties(final String key, final String... rest) {

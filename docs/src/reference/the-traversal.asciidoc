@@ -4916,6 +4916,28 @@ g.V().hasLabel('person'). <1>
 <8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
 <9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
+=== DetachStrategy
+
+`DetachStrategy` manages the fields that will be included in the result. The strategy adds a step to the end of the traversal 
+and does not affect the previous steps.
+There are 3 options for detachMode: `ALL` for all properties, `NONE` for no properties, `CUSTOM` for a specific list of properties.
+`id` and `label` always included in response.
+Same for Vertexes and Edges.
+
+WARNING: by default Gremlin Server configured to use `ReferenceElementStrategy` which removes all properties.
+
+[source,java,tab]
+----
+DetachStrategy detachStrategy = DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).properties("name", "age").create();
+// return Vertexes with only 2 properties, other properties are not included in the result
+g.withStrategies(detachStrategy).V().iterate();
+----
+[source,groovy]
+----
+// return Vertexes with only 2 properties, other properties are not included in the result
+g.withStrategies(new DetachStrategy(detachMode: "CUSTOM", properties: ["name", "age"])).V().iterate()
+----
+
 === EdgeLabelVerificationStrategy
 
 `EdgeLabelVerificationStrategy` prevents traversals from writing traversals that do not explicitly specify and edge

@@ -853,6 +853,7 @@ traversalStrategy
 //  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
     ;
 
+// todo: introduce enum for detachMode or keep as string for simplification?
 traversalStrategyArgs_DetachStrategy
     : 'properties' COLON stringLiteralList
     | 'detachMode' COLON stringBasedLiteral

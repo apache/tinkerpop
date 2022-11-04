@@ -47,6 +47,9 @@ public class DetachStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vWithName = g
                 .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).properties("name", "---").create())
                 .V(1).next();
+        final Vertex vWithRandomProps = g
+                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).properties("---1", "---2").create())
+                .V(1).next();
         final Vertex vWithoutProps = g
                 .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.NONE).properties("name").create())
                 .V(1).next();
@@ -56,6 +59,7 @@ public class DetachStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(2, IteratorUtils.count(vWithAllProps.properties()));
         assertEquals(1, IteratorUtils.count(vWithName.properties()));
         assertEquals(1, IteratorUtils.count(vWithName.properties("name")));
+        assertEquals(0, IteratorUtils.count(vWithRandomProps.properties()));
         assertEquals(0, IteratorUtils.count(vWithoutProps.properties()));
     }
 }
