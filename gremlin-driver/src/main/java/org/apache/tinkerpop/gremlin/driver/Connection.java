@@ -114,11 +114,8 @@ final class Connection {
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             channelizer.connected();
 
-            /* Configure behaviour on close of this channel.
-             *
-             * This callback would trigger the workflow to destroy this connection, so that a new request doesn't pick
-             * this closed connection.
-             */
+            // Configure behaviour on close of this channel. This callback would trigger the workflow to destroy this
+            // connection, so that a new request doesn't pick this closed connection.
             final Connection thisConnection = this;
             channel.closeFuture().addListener((ChannelFutureListener) future -> {
                 logger.debug("OnChannelClose callback called for channel {}", channel);
@@ -138,7 +135,7 @@ final class Connection {
 
             logger.info("Created new connection for {}", uri);
         } catch (Exception ex) {
-            throw new ConnectionException(uri, "Could not open " + this.getConnectionInfo(true), ex);
+            throw new ConnectionException(uri, "Could not open " + getConnectionInfo(true), ex);
         }
     }
 
@@ -316,6 +313,9 @@ final class Connection {
                         RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
 
                 final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
+
+                // TINKERPOP-2822 should investigate this write more carefully to check for sensible behavior
+                // in the event the Channel was not created but we try to send the close message
                 write(closeMessage, closed);
 
                 try {
@@ -336,27 +336,37 @@ final class Connection {
                 }
             }
 
-            channelizer.close(channel);
+            // take a defensive posture here in the event the channelizer didn't get initialized somehow and a
+            // close() on the Connection is still called
+            if (channelizer != null)
+                channelizer.close(channel);
 
-            final ChannelPromise promise = channel.newPromise();
-            promise.addListener(f -> {
-                if (f.cause() != null) {
-                    future.completeExceptionally(f.cause());
+            // seems possible that the channelizer could initialize but fail to produce a channel, so worth checking
+            // null before proceeding here
+            if (channel != null) {
+                final ChannelPromise promise = channel.newPromise();
+                promise.addListener(f -> {
+                    if (f.cause() != null) {
+                        future.completeExceptionally(f.cause());
+                    } else {
+                        if (logger.isDebugEnabled())
+                            logger.debug("{} destroyed successfully.", connectionInfo);
+
+                        future.complete(null);
+                    }
+                });
+
+                // close the netty channel, if not already closed
+                if (!channel.closeFuture().isDone()) {
+                    channel.close(promise);
                 } else {
-                    if (logger.isDebugEnabled())
-                        logger.debug("{} destroyed successfully.", connectionInfo);
-
-                    future.complete(null);
+                    if (!promise.trySuccess()) {
+                        logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
+                    }
                 }
-            });
-
-            // close the netty channel, if not already closed
-            if (!channel.closeFuture().isDone()) {
-                channel.close(promise);
             } else {
-                if (!promise.trySuccess()) {
-                    logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
-                }
+                logger.debug("Connection {} is shutting down but the channel was not initialized to begin with",
+                        getConnectionInfo());
             }
         }
     }
@@ -365,7 +375,7 @@ final class Connection {
      * Gets a message that describes the state of the connection.
      */
     public String getConnectionInfo() {
-        return getConnectionInfo(true);
+        return this.getConnectionInfo(true);
     }
 
     /**
@@ -375,10 +385,10 @@ final class Connection {
      */
     public String getConnectionInfo(final boolean showHost) {
         return showHost ?
-                String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                getChannelId(), pool.host, isDead(), borrowed, pending.size()) :
-                String.format("Connection{channel=%s, isDead=%s, borrowed=%s, pending=%s}",
-                        channel.id().asShortText(), isDead(), borrowed, pending.size());
+                String.format("Connection{channel=%s host=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s}",
+                        getChannelId(), pool.host.toString(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing()) :
+                String.format("Connection{channel=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s}",
+                        getChannelId(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing());
     }
 
     /**

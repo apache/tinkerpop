@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -50,6 +51,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
@@ -67,6 +69,8 @@ public abstract class Client {
     protected final Cluster cluster;
     protected volatile boolean initialized;
     protected final Client.Settings settings;
+
+    private static final Random random = new Random();
 
     Client(final Cluster cluster, final Client.Settings settings) {
         this.cluster = cluster;
@@ -423,7 +427,7 @@ public abstract class Client {
      */
     public final static class ClusteredClient extends Client {
 
-        protected ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+        ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
         private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
         private Throwable initializationFailure = null;
 
@@ -492,7 +496,11 @@ public abstract class Client {
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts;
             if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
-                // TODO: not sure what should be done if unavailable - select new host and re-submit traversal?
+                // looking at this code about putting the Host on the RequestMessage in light of 3.5.4, not sure
+                // this is being used as intended here. server side usage is to place the channel.remoteAddress
+                // in this token in the status metadata for the response. can't remember why it is being used this
+                // way here exactly. created TINKERPOP-2821 to examine this more carefully to clean this up in a
+                // future version.
                 final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
                 msg.getArgs().remove(Tokens.ARGS_HOST);
                 possibleHosts = IteratorUtils.of(host);
@@ -500,14 +508,17 @@ public abstract class Client {
                 possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
             }
 
-            // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
-            // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
-            if (!possibleHosts.hasNext())
-                throwNoHostAvailableException();
-
-            final Host bestHost = possibleHosts.next();
+            // try a random host if none are marked available. maybe it will reconnect in the meantime. better than
+            // going straight to a fast NoHostAvailableException as was the case in versions 3.5.4 and earlier
+            final Host bestHost = possibleHosts.hasNext() ? possibleHosts.next() : chooseRandomHost();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+        }
+
+        private Host chooseRandomHost() {
+            final List<Host> hosts = new ArrayList<>(cluster.allHosts());
+            final int ix = random.nextInt(hosts.size());
+            return hosts.get(ix);
         }
 
         /**
