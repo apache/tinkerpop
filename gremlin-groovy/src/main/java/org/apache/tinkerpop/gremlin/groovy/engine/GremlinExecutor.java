@@ -33,6 +33,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedE
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.bytebuddy.implementation.bytecode.Throw;
+
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -554,8 +556,19 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
+         /**
+         * @deprecated As of release 3.6.2, replaced by {@link #afterTimeout(BiConsumer)}.
+         */
+        @Deprecated
+        public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
+          BiConsumer<Bindings, Throwable> updatedAfterTimeout = (b, t) -> {
+            afterTimeout.accept(b);
+          };
+          return afterTimeout(updatedAfterTimeout);
+        }
+
         /**
-         * A {@link Consumer} to execute if the script times out.
+         * A {@link BiConsumer} to execute if the script times out.
          */
         public Builder afterTimeout(final BiConsumer<Bindings, Throwable> afterTimeout) {
             this.afterTimeout = afterTimeout;
@@ -711,6 +724,23 @@ public class GremlinExecutor implements AutoCloseable {
             public Builder afterTimeout(final BiConsumer<Bindings, Throwable> afterTimeout) {
                 this.afterTimeout = afterTimeout;
                 return this;
+            }
+
+            /**
+             * Specifies the function to execute if the script evaluation times out. This
+             * function can also be
+             * specified globally on
+             * {@link GremlinExecutor.Builder#afterTimeout(BiConsumer)}.
+             */
+            public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
+              this.afterTimeout = new BiConsumer<Bindings,Throwable>() {
+                @Override
+                public void accept(Bindings arg0, Throwable arg1) {
+                  // TODO Auto-generated method stub
+                  
+                }
+              };
+              return this;
             }
 
             /**

@@ -270,7 +270,7 @@ public class GremlinExecutorTest {
                 .evaluationTimeout(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b, e) -> timeOutCount.countDown()).create();
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             gremlinExecutor.eval("Thread.sleep(1000);10").get();
             fail("This script should have timed out with an exception");
@@ -297,7 +297,7 @@ public class GremlinExecutorTest {
                 .evaluationTimeout(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b, e) -> timeOutCount.countDown()).create();
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             gremlinExecutor.eval("Thread.sleep(1000);10").get();
             fail("This script should have timed out with an exception");
@@ -324,7 +324,7 @@ public class GremlinExecutorTest {
                 .evaluationTimeout(10000)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b, e) -> timeOutCount.countDown()).create();
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                     .evaluationTimeoutOverride(250L).create();
@@ -353,7 +353,7 @@ public class GremlinExecutorTest {
                 .evaluationTimeout(10000)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b, e) -> timeOutCount.countDown()).create();
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                     .evaluationTimeoutOverride(250L).create();
@@ -423,7 +423,7 @@ public class GremlinExecutorTest {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b, e) -> timeoutCalled.set(true)).create();
+                .afterTimeout((b) -> timeoutCalled.set(true)).create();
         try {
             gremlinExecutor.eval("10/0").get();
             fail();
@@ -446,7 +446,7 @@ public class GremlinExecutorTest {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b, e) -> timeoutCalled.set(true)).create();
+                .afterTimeout((b) -> timeoutCalled.set(true)).create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
 
         // need to wait long enough for the callback to register
