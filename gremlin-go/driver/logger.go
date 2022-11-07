@@ -22,9 +22,8 @@ package gremlingo
 import (
 	"encoding/json"
 	"log"
-	"path/filepath"
-	"runtime"
 
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver/resources"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
@@ -75,9 +74,9 @@ func newLogHandler(logger Logger, verbosity LogVerbosity, locale language.Tag) *
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
 	// Register resource package here for additional languages.
-	_, path, _, _ := runtime.Caller(0)
-	path = filepath.Join(filepath.Dir(path), "resources/logger-messages/en.json")
-	bundle.LoadMessageFile(path)
+	langFile := "logger-messages/en.json"
+	bundle.LoadMessageFileFS(resources.LoggerMessagesFS, langFile)
+
 	localizer := i18n.NewLocalizer(bundle, locale.String())
 	return &logHandler{logger, verbosity, localizer}
 }
