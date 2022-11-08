@@ -127,6 +127,7 @@ public class DetachedFactory {
     }
 
     public static <V> DetachedVertexProperty detach(final VertexProperty<V> vertexProperty, final DetachStrategy.DetachOptions detachOptions) {
+        // todo: clarify
         return vertexProperty instanceof DetachedVertexProperty ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty<>(vertexProperty, false);
     }
 

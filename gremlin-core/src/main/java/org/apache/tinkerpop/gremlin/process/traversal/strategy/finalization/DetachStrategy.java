@@ -30,13 +30,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A strategy that manages the properties that will be in the result.
@@ -47,17 +47,17 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     private static final DetachStrategy INSTANCE = new DetachStrategy(DetachMode.ALL, null);
     private DetachMode detachMode = DetachMode.ALL;
-    private List<String> properties;
+    private Set<String> keys;
 
     private DetachStrategy() {}
 
-    private DetachStrategy(final DetachMode detachMode, final List<String> properties) {
+    private DetachStrategy(final DetachMode detachMode, final Set<String> keys) {
         this.detachMode = detachMode;
-        this.properties = properties;
+        this.keys = keys;
     }
 
     private DetachStrategy(final Builder builder) {
-        this(builder.detachMode, builder.properties);
+        this(builder.detachMode, builder.keys);
     }
 
     @Override
@@ -67,13 +67,13 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
             final int index = profileStep.map(step -> traversal.getSteps().indexOf(step))
                     .orElseGet(() -> traversal.getSteps().size());
             traversal.addStep(index,
-                    new DetachElementStep<>(traversal, new DetachOptions(detachMode, properties)));
+                    new DetachElementStep<>(traversal, new DetachOptions(detachMode, keys)));
         }
     }
 
     public static DetachStrategy create(final Configuration configuration) {
         return new DetachStrategy(DetachMode.valueOf(configuration.getString(ID_MODE)),
-                new ArrayList<>((Collection<String>) configuration.getProperty(ID_PROPERTIES)));
+                new HashSet<>((Collection<String>) configuration.getProperty(ID_KEYS)));
     }
 
     /**
@@ -84,14 +84,14 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     }
 
     public static final String ID_MODE = "detachMode";
-    public static final String ID_PROPERTIES = "properties";
+    public static final String ID_KEYS = "keys";
 
     @Override
     public Configuration getConfiguration() {
         final Map<String, Object> map = new HashMap<>();
         map.put(STRATEGY, DetachStrategy.class.getCanonicalName());
         map.put(ID_MODE, this.detachMode.toString());
-        map.put(ID_PROPERTIES, this.properties);
+        map.put(ID_KEYS, this.keys);
         return new MapConfiguration(map);
     }
 
@@ -109,7 +109,7 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
     public static final class Builder {
 
         private DetachMode detachMode = DetachMode.NONE;
-        private final ArrayList<String> properties = new ArrayList<>();
+        private final Set<String> keys = new HashSet<>();
 
         Builder() {}
 
@@ -122,16 +122,16 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
             return detachMode(DetachMode.valueOf(detachMode));
         }
 
-        public Builder properties(final String key, final String... rest) {
-            properties.clear();
-            properties.add(key);
-            properties.addAll(Arrays.asList(rest));
+        public Builder keys(final String key, final String... rest) {
+            keys.clear();
+            keys.add(key);
+            keys.addAll(Arrays.asList(rest));
             return this;
         }
 
-        public Builder properties(final Collection<String> properties) {
-            properties.clear();
-            properties.addAll(properties);
+        public Builder keys(final Collection<String> keys) {
+            keys.clear();
+            keys.addAll(keys);
             return this;
         }
 
@@ -142,22 +142,22 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     public static class DetachOptions {
         private DetachMode detachMode = DetachMode.ALL;;
-        private List<String> properties;
+        private Set<String> keys;
 
         private DetachOptions() {}
 
-        public DetachOptions(DetachMode detachMode, List<String> properties)
+        public DetachOptions(DetachMode detachMode, Collection<String> keys)
         {
             this.detachMode = detachMode;
-            this.properties = properties;
+            this.keys = new HashSet<>(keys);
         }
 
         public DetachMode getDetachMode() {
             return this.detachMode;
         }
 
-        public List<String> getProperties() {
-            return this.properties;
+        public Set<String> getProperties() {
+            return this.keys;
         }
     }
 
