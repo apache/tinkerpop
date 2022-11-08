@@ -42,16 +42,16 @@ public class DetachStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final Vertex v = g.V(1).next();
         final Vertex vWithAllProps = g
-                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.ALL).properties("name").create())
+                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.ALL).keys("name").create())
                 .V(1).next();
         final Vertex vWithName = g
-                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).properties("name", "---").create())
+                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).keys("name", "---").create())
                 .V(1).next();
         final Vertex vWithRandomProps = g
-                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).properties("---1", "---2").create())
+                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.CUSTOM).keys("---1", "---2").create())
                 .V(1).next();
         final Vertex vWithoutProps = g
-                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.NONE).properties("name").create())
+                .withStrategies(DetachStrategy.build().detachMode(DetachStrategy.DetachMode.NONE).keys("name").create())
                 .V(1).next();
 
         assertNotNull(v);
