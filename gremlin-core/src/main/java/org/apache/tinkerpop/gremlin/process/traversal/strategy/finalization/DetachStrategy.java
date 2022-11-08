@@ -149,7 +149,9 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
         public DetachOptions(DetachMode detachMode, Collection<String> keys)
         {
             this.detachMode = detachMode;
-            this.keys = new HashSet<>(keys);
+            if (keys != null) {
+                this.keys = new HashSet<>(keys);
+            }
         }
 
         public DetachMode getDetachMode() {
