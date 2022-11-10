@@ -156,7 +156,7 @@ public interface Channelizer extends ChannelHandler {
         public void close(final Channel channel) {
             if (channel.isOpen()) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Sending CloseWS frame to server.");
+                    logger.debug("Sending CloseWS frame to server from channel={}", channel.id().asShortText());
                 }
                 channel.writeAndFlush(new CloseWebSocketFrame());
             }
