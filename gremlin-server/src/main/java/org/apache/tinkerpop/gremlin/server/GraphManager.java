@@ -129,28 +129,30 @@ public interface GraphManager {
     /**
      * This method will be called before a script or query is processed by the
      * gremlin-server.
-     * The msg is the {@link RequestMessage} received by the gremlin-server.
+     *
+     * @param msg the {@link RequestMessage} received by the gremlin-server.
      */
-
-    default void beforeQueryStart(RequestMessage msg) {
+    default void beforeQueryStart(final RequestMessage msg) {
 
     }
 
     /**
      * This method will be called before a script or query is processed by the
      * gremlin-server.
-     * The msg is the {@link RequestMessage} received by the gremlin-server.
-     * The error is the exception encounted during processing from the gremlin-server.
+     *
+     * @param msg the {@link RequestMessage} received by the gremlin-server.
+     * @param error the exception encountered during processing from the gremlin-server.
      */
-    default void onQueryError(RequestMessage msg, Throwable error) {
+    default void onQueryError(final RequestMessage msg, final Throwable error) {
 
     }
 
     /**
      * When a script or query successfully completes this method will be called.
-     * The msg is the {@link RequestMessage} received by the gremlin-server.
+     *
+     * @param msg the {@link RequestMessage} received by the gremlin-server.
      */
-    default void onQuerySuccess(RequestMessage msg) {
+    default void onQuerySuccess(final RequestMessage msg) {
 
     }
 }

@@ -735,7 +735,7 @@ public class GremlinExecutor implements AutoCloseable {
             public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
               this.afterTimeout = new BiConsumer<Bindings,Throwable>() {
                 @Override
-                public void accept(Bindings arg0, Throwable arg1) {
+                public void accept(final Bindings arg0, final Throwable arg1) {
                   // TODO Auto-generated method stub
                   
                 }

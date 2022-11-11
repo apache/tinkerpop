@@ -29,7 +29,19 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.2/CHANGELOG.asc
 
 === Upgrading for Users
 
+=== Upgrading for Providers
 
+==== Graph System Providers
+
+===== Callbacks for GraphManager
+
+The `GraphManager` class now has several new methods that act as callbacks for various Gremlin Server operations
+related to query processing. Overriding these methods in a `GraphManager` implementation can help make it easier for
+providers to get notification of a query starting and whether it ends in success or failure. The feature may even
+be useful to Gremlin Server users who simply wish to develop more advanced logging capabilities and other custom
+features without having to extend more complicated classes within the Gremlin Server structure.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2806[TINKERPOP-2806]
 
 == TinkerPop 3.6.1
 

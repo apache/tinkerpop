@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op.traversal;
 
 import com.codahale.metrics.Timer;
+import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -381,7 +382,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
             if (!nettyContext.channel().isActive()) {
-                onError(graph, context, new Error("Client closed connection"));
+                onError(graph, context, new ChannelException("Channel is not active - cannot write any more results"));
                 break;
             }
 

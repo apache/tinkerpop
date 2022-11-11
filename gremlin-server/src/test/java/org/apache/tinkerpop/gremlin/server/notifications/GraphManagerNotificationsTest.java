@@ -27,6 +27,9 @@ import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.junit.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -47,18 +50,18 @@ public class GraphManagerNotificationsTest extends AbstractGremlinServerIntegrat
     final Cluster cluster = TestClientFactory.open();
     final Client client = cluster.connect(name.getMethodName());
     final Random random = TestHelper.RANDOM;
-    UUID requestID = new UUID(random.nextLong(), random.nextLong());
-    RequestOptions options = RequestOptions.build().overrideRequestId(requestID).create();
+    final UUID requestID = new UUID(random.nextLong(), random.nextLong());
+    final RequestOptions options = RequestOptions.build().overrideRequestId(requestID).create();
 
-    String script = "1+1";
+    final String script = "1+1";
     client.submit(script, options).all().get().get(0);
 
-    ProviderGraphManagerHelper graphManager = (ProviderGraphManagerHelper) server.getServerGremlinExecutor()
+    final ProviderGraphManagerHelper graphManager = (ProviderGraphManagerHelper) server.getServerGremlinExecutor()
         .getGraphManager();
-    Map<String, Object> requestArgs = graphManager.getBeforeQueryStartTracking(requestID.toString());
+    final Map<String, Object> requestArgs = graphManager.getBeforeQueryStartTracking(requestID.toString());
     assertEquals(script, requestArgs.get(Tokens.ARGS_GREMLIN));
-    assertEquals(true, graphManager.didRequestSucceed(requestID.toString()));
-    assertEquals(false, graphManager.didRequestFail(requestID.toString()));
+    assertThat(graphManager.didRequestSucceed(requestID.toString()), is(true));
+    assertThat(graphManager.didRequestFail(requestID.toString()), is(false));
     cluster.close();
   }
 
@@ -67,10 +70,10 @@ public class GraphManagerNotificationsTest extends AbstractGremlinServerIntegrat
     final Cluster cluster = TestClientFactory.open();
     final Client client = cluster.connect(name.getMethodName());
     final Random random = TestHelper.RANDOM;
-    UUID requestID = new UUID(random.nextLong(), random.nextLong());
-    RequestOptions options = RequestOptions.build().overrideRequestId(requestID).create();
+    final UUID requestID = new UUID(random.nextLong(), random.nextLong());
+    final RequestOptions options = RequestOptions.build().overrideRequestId(requestID).create();
 
-    String script = "x";
+    final String script = "x";
     try {
       client.submit(script, options).all().get().get(0);
       fail("This script should fail since the variable x is not defined");
@@ -78,12 +81,12 @@ public class GraphManagerNotificationsTest extends AbstractGremlinServerIntegrat
       //
     }
 
-    ProviderGraphManagerHelper graphManager = (ProviderGraphManagerHelper) server.getServerGremlinExecutor()
+    final ProviderGraphManagerHelper graphManager = (ProviderGraphManagerHelper) server.getServerGremlinExecutor()
         .getGraphManager();
-    Map<String, Object> requestArgs = graphManager.getBeforeQueryStartTracking(requestID.toString());
+    final Map<String, Object> requestArgs = graphManager.getBeforeQueryStartTracking(requestID.toString());
     assertEquals(script, requestArgs.get(Tokens.ARGS_GREMLIN));
-    assertEquals(false, graphManager.didRequestSucceed(requestID.toString()));
-    assertEquals(true, graphManager.didRequestFail(requestID.toString()));
+    assertThat(graphManager.didRequestSucceed(requestID.toString()), is(false));
+    assertThat(graphManager.didRequestFail(requestID.toString()), is(true));
     cluster.close();
   }
 

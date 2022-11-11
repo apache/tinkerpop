@@ -36,7 +36,7 @@ public class ProviderGraphManagerHelper extends DefaultGraphManager {
 
   private List<String> onQueryErrorCount;
 
-  public ProviderGraphManagerHelper(Settings settings) {
+  public ProviderGraphManagerHelper(final Settings settings) {
     super(settings);
     this.beforeQueryStartTracking = new HashMap<String, Map<String, Object>>();
     this.onQuerySuccessCount = new ArrayList<String>();
@@ -44,33 +44,33 @@ public class ProviderGraphManagerHelper extends DefaultGraphManager {
   }
  
   @Override
-  public void beforeQueryStart(RequestMessage msg) {
-    Map<String, Object> args = msg.getArgs();
-    String requestID = msg.getRequestId().toString();
+  public void beforeQueryStart(final RequestMessage msg) {
+    final Map<String, Object> args = msg.getArgs();
+    final String requestID = msg.getRequestId().toString();
     this.beforeQueryStartTracking.put(requestID, args);
   }
 
   @Override
-  public void onQuerySuccess(RequestMessage msg) {
-    String requestID = msg.getRequestId().toString();
+  public void onQuerySuccess(final RequestMessage msg) {
+    final String requestID = msg.getRequestId().toString();
     this.onQuerySuccessCount.add(requestID);
   }
 
   @Override
-  public void onQueryError(RequestMessage msg, Throwable e) {
-    String requestID = msg.getRequestId().toString();
+  public void onQueryError(final RequestMessage msg, final Throwable e) {
+    final String requestID = msg.getRequestId().toString();
     this.onQueryErrorCount.add(requestID);
   }
 
-  public Map<String, Object> getBeforeQueryStartTracking(String requestID) {
+  public Map<String, Object> getBeforeQueryStartTracking(final String requestID) {
     return this.beforeQueryStartTracking.get(requestID);
   }
 
-  public boolean didRequestSucceed(String requestID) {
+  public boolean didRequestSucceed(final String requestID) {
     return this.onQuerySuccessCount.contains(requestID);
   }
 
-  public boolean didRequestFail(String requestID) {
+  public boolean didRequestFail(final String requestID) {
     return this.onQueryErrorCount.contains(requestID);
   }
 
