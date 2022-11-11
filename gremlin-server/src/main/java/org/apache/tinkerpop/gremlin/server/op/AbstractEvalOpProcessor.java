@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
@@ -211,6 +212,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
         final Timer.Context timerContext = evalOpTimer.time();
         final RequestMessage msg = ctx.getRequestMessage();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
+        final GraphManager graphManager = ctx.getGraphManager();
         final Settings settings = ctx.getSettings();
 
         final Map<String, Object> args = msg.getArgs();
@@ -231,9 +233,14 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .evaluationTimeoutOverride(seto)
                 .afterFailure((b,t) -> {
+                    graphManager.onQueryError(msg, t);
                     if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
                 })
+                .afterTimeout((b, t) -> {
+                  graphManager.onQueryError(msg, t);
+                })
                 .beforeEval(b -> {
+                    graphManager.beforeQueryStart(msg);
                     try {
                         b.putAll(bindingsSupplier.get());
                     } catch (OpProcessorException ope) {
@@ -258,6 +265,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
                     try {
                         handleIterator(ctx, itty);
+                        graphManager.onQuerySuccess(msg);
                     } catch (Exception ex) {
                         if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
 

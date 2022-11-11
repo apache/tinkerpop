@@ -120,7 +120,7 @@ public class ServerGremlinExecutor {
                 .evaluationTimeout(settings.getEvaluationTimeout())
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
                 .beforeEval(b -> this.graphManager.rollbackAll())
-                .afterTimeout(b -> this.graphManager.rollbackAll())
+                .afterTimeout((b, e) -> this.graphManager.rollbackAll())
                 .globalBindings(this.graphManager.getAsBindings())
                 .executorService(this.gremlinExecutorService)
                 .scheduledExecutorService(this.scheduledExecutorService);

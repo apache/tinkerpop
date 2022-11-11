@@ -231,7 +231,7 @@ public class Session {
     private GremlinExecutor.Builder initializeGremlinExecutor() {
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .evaluationTimeout(settings.getEvaluationTimeout())
-                .afterTimeout(b -> {
+                .afterTimeout((b, e) -> {
                     graphManager.rollbackAll();
                     this.bindings.clear();
                     this.bindings.putAll(b);

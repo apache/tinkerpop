@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op.traversal;
 
 import com.codahale.metrics.Timer;
+import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -241,6 +242,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         }
                         context.writeAndFlush(specialResponseMsg.create());
                     } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
+                        graphManager.onQueryError(msg, t);
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
@@ -252,7 +254,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                                                              .statusMessage(ex.getMessage())
                                                              .statusAttributeException(ex).create());
                     }
-                    onError(graph, context);
+                    onError(graph, context, ex);
                 }
             } catch (Exception ex) {
                 // if any exception in the chain is TemporaryException or Failure then we should respond with the
@@ -277,7 +279,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                             .statusMessage(ex.getMessage())
                             .statusAttributeException(ex).create());
                 }
-                onError(graph, context);
+                onError(graph, context, ex);
             } finally {
                 timerContext.stop();
             }
@@ -303,14 +305,23 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {
+      final GraphManager graphManager = ctx.getGraphManager();
+      final RequestMessage msg = ctx.getRequestMessage();
+      graphManager.beforeQueryStart(msg);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
-    protected void onError(final Graph graph, final Context ctx) {
+    protected void onError(final Graph graph, final Context ctx, Throwable error) {
+        final GraphManager graphManager = ctx.getGraphManager();
+        final RequestMessage msg = ctx.getRequestMessage();
+        graphManager.onQueryError(msg, error); 
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
+        final GraphManager graphManager = ctx.getGraphManager();
+        final RequestMessage msg = ctx.getRequestMessage();
+        graphManager.onQuerySuccess(msg);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
     }
 
@@ -371,7 +382,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
             if (!nettyContext.channel().isActive()) {
-                onError(graph, context);
+                onError(graph, context, new ChannelException("Channel is not active - cannot write any more results"));
                 break;
             }
 
@@ -403,7 +414,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
-                        onError(graph, context);
+                        onError(graph, context, ex);
                         break;
                     }
 
