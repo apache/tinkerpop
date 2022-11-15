@@ -602,7 +602,8 @@ class EdgeIO(_GraphBinaryTypeIO):
         inv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
         outv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
         edge = Edge(edgeid, outv, edgelbl, inv)
-        b.read(4)
+        b.read(2)
+        r.read_object(b)  # properties
         return edge
 
 
@@ -681,7 +682,7 @@ class VertexIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_vertex(cls, b, r):
         vertex = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
-        b.read(2)
+        r.read_object(b)  # properties
         return vertex
 
 
