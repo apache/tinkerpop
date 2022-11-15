@@ -73,7 +73,9 @@ public final class DetachStrategy extends AbstractTraversalStrategy<TraversalStr
 
     public static DetachStrategy create(final Configuration configuration) {
         return new DetachStrategy(DetachMode.valueOf(configuration.getString(ID_MODE)),
-                new HashSet<>((Collection<String>) configuration.getProperty(ID_KEYS)));
+                configuration.containsKey(ID_KEYS)
+                ? new HashSet<>((Collection<String>) configuration.getProperty(ID_KEYS))
+                : null);
     }
 
     /**

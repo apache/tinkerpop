@@ -61,7 +61,7 @@ globals << [hook : [
 
 // add default TraversalSource instances for each graph instance
 globals << [gclassic : traversal().withEmbedded(classic).withStrategies(ReferenceElementStrategy)]
-globals << [gmodern : traversal().withEmbedded(modern).withStrategies(ReferenceElementStrategy)]
+globals << [gmodern : traversal().withEmbedded(modern)]
 globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
 globals << [gcrew : traversal().withEmbedded(crew).withStrategies(ReferenceElementStrategy)]
 globals << [ggraph : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
@@ -78,6 +78,6 @@ if (dynamicGtx != null)
 // dynamically detect existence of gimmutable as it is only used in gremlin-go testing suite
 def dynamicGimmutable = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["immutable"]
 if (dynamicGimmutable != null)
-    globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable).withStrategies(ReferenceElementStrategy)]
+    globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable)]
 
 globals

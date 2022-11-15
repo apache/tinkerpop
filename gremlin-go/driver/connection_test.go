@@ -1188,4 +1188,27 @@ func TestConnection(t *testing.T) {
 			assert.Equal(t, <-gotErrs[i] == nil, tt.nilErr, tt.msg)
 		}
 	})
+
+	t.Run("Get properties from immutable", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Initialize graph
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		r, err := g.V().Next()
+		assert.NotNil(t, r)
+		assert.Nil(t, err)
+
+		vertex, _ := r.GetVertex()
+		assert.NotNil(t, vertex)
+
+		properties, _ := vertex.Properties.([]interface{})
+		assert.Equal(t, 2, len(properties))
+		property, _ := properties[0].(*VertexProperty)
+
+		assert.NotNil(t, property)
+		assert.Equal(t, "foo", property.Label)
+		assert.Equal(t, int64(1), property.Value)
+	})
 }

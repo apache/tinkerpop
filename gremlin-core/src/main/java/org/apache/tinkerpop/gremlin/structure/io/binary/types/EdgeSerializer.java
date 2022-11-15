@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -71,8 +73,12 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
         // we don't serialize the parent Vertex for edges. they are "references", but we leave a place holder
         // here as an option for the future as we've waffled this soooooooooo many times now
         context.write(null, buffer);
-        // we don't serialize properties for graph vertices/edges. they are "references", but we leave a place holder
-        // here as an option for the future as we've waffled this soooooooooo many times now
-        context.write(null, buffer);
+        if (value.properties() == null) {
+            context.write(null, buffer);
+        }
+        else {
+            List<?> asList = IteratorUtils.toList(value.properties());
+            context.write(asList, buffer);
+        }
     }
 }

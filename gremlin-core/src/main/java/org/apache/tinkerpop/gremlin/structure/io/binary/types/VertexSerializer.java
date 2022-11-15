@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -50,6 +52,12 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     protected void writeValue(final Vertex value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.id(), buffer);
         context.writeValue(value.label(), buffer, false);
-        context.write(null, buffer);
+        if (value.properties() == null) {
+            context.write(null, buffer);
+        }
+        else {
+            List<?> asList = IteratorUtils.toList(value.properties());
+            context.write(asList, buffer);
+        }
     }
 }

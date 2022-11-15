@@ -200,6 +200,37 @@ type MatchAlgorithmStrategyConfig struct {
 	MatchAlgorithm string
 }
 
+type detachModes struct {
+	All    string
+	Custom string
+	None   string
+}
+
+// DetachMode used in DetachStrategy to describe method to handle Elements properties in response.
+var DetachMode = detachModes{
+	All:    "ALL",
+	Custom: "CUSTOM",
+	None:   "NONE",
+}
+
+// DetachStrategy allows to customize the list of fields that you want to get as a result.
+func DetachStrategy(config DetachStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	configMap["detachMode"] = config.DetachMode
+	if config.Keys != nil {
+		configMap["keys"] = config.Keys
+	}
+
+	return &traversalStrategy{name: finalizationNamespace + "DetachStrategy", configuration: configMap}
+}
+
+// DetachStrategyConfig provides configuration options for DetachStrategy.
+// Zeroed (unset) values are skipped.
+type DetachStrategyConfig struct {
+	DetachMode string
+	Keys       []string
+}
+
 // Verification strategies
 
 // EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.

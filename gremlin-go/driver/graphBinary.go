@@ -433,7 +433,7 @@ func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	return buffer.Bytes(), nil
 }
 
-//Format: {Key}{Value}{parent}
+// Format: {Key}{Value}{parent}
 func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	v := value.(*Property)
 
@@ -452,7 +452,7 @@ func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *gra
 	return buffer.Bytes(), nil
 }
 
-//Format: {Id}{Label}{Value}{parent}{properties}
+// Format: {Id}{Label}{Value}{parent}{properties}
 func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	vp := value.(*VertexProperty)
 	_, err := typeSerializer.write(vp.Id, buffer)
@@ -475,7 +475,7 @@ func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerialize
 	return buffer.Bytes(), nil
 }
 
-//Format: {Labels}{Objects}
+// Format: {Labels}{Objects}
 func pathWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	p := value.(*Path)
 	_, err := typeSerializer.write(p.Labels, buffer)
@@ -1052,8 +1052,8 @@ func vertexReader(data *[]byte, i *int) (interface{}, error) {
 	return vertexReaderNullByte(data, i, true)
 }
 
-// {fully qualified id}{unqualified label}{[unused null byte]}
-func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, error) {
+// {fully qualified id}{unqualified label}{fully qualified properties}
+func vertexReaderNullByte(data *[]byte, i *int, readProperties bool) (interface{}, error) {
 	var err error
 	v := new(Vertex)
 	v.Id, err = readFullyQualifiedNullable(data, i, true)
@@ -1065,13 +1065,16 @@ func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, e
 		return nil, err
 	}
 	v.Label = label.(string)
-	if unusedByte {
-		*i += 2
+	if readProperties {
+		v.Properties, err = readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return v, nil
 }
 
-// {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{unused null byte}
+// {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{fully qualified properties}
 func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	var err error
 	e := new(Edge)
@@ -1091,7 +1094,11 @@ func edgeReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 	e.OutV = *v.(*Vertex)
-	*i += 4
+	*i += 2
+	e.Properties, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	return e, nil
 }
 
