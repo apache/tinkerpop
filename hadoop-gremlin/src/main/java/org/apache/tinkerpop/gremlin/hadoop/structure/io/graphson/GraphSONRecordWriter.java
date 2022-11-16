@@ -66,7 +66,7 @@ public final class GraphSONRecordWriter extends RecordWriter<NullWritable, Verte
         final Mapper mapper = GraphSONMapper.build().
                 version(graphSONVersion).
                 typeInfo(TypeInfo.PARTIAL_TYPES).
-                addDefaultXModule(graphSONVersion).
+                addDefaultXModule(true).
                 addRegistries(IoRegistryHelper.createRegistries(
                         ConfUtil.makeApacheConfiguration(configuration))).create();
         this.graphsonWriter = GraphSONWriter.build().mapper(mapper).create();

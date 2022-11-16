@@ -64,7 +64,7 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
         final Mapper mapper = GraphSONMapper.build().
                 version(graphSONVersion).
                 typeInfo(TypeInfo.PARTIAL_TYPES).
-                addDefaultXModule(graphSONVersion).
+                addDefaultXModule(true).
                 addRegistries(IoRegistryHelper.createRegistries(
                         ConfUtil.makeApacheConfiguration(context.getConfiguration()))).create();
         this.graphsonReader = GraphSONReader.build().mapper(mapper).create();

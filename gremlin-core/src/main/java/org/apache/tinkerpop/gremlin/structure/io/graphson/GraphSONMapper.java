@@ -199,6 +199,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V3_0;
+        private boolean includeDefaultXModule = false;
 
         /**
          * GraphSON 2.0/3.0 should have types activated by default (3.0 does not have a typeless option), and 1.0
@@ -245,13 +246,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         /**
          * Supply a default extension module of V2_0 and V3_0 for serialization/deserialization.
          */
-        public Builder addDefaultXModule(final GraphSONVersion version) {
-            this.version = version;
-            if (this.version == GraphSONVersion.V2_0) {
-                this.addCustomModule(GraphSONXModuleV2d0.build().create(false));
-            } else if (this.version == GraphSONVersion.V3_0) {
-                this.addCustomModule(GraphSONXModuleV3d0.build().create(false));
-            }
+        public Builder addDefaultXModule(final boolean includeDefaultXModule) {
+            this.includeDefaultXModule = includeDefaultXModule;
             return this;
         }
 
@@ -288,6 +284,14 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                 final List<Pair<Class, SimpleModule>> simpleModules = registry.find(GraphSONIo.class, SimpleModule.class);
                 simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
             });
+
+            if (includeDefaultXModule) {
+                if (this.version == GraphSONVersion.V2_0) {
+                    this.addCustomModule(GraphSONXModuleV2d0.build().create(false));
+                } else if (this.version == GraphSONVersion.V3_0) {
+                    this.addCustomModule(GraphSONXModuleV3d0.build().create(false));
+                }
+            }
 
             return new GraphSONMapper(this);
         }
