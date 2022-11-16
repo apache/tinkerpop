@@ -37,6 +37,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to `snakeyaml` 1.32 to fix security vulnerability.
 * Added logging in .NET.
 * Bumped to `jackson-databind` 2.14.0 to fix security vulnerability.
+* Added `addDefaultXModule` to `GraphSONMapper` as a shortcut for including a version matched GraphSON extension module.
+* Modified `GraphSONRecordReader` and `GraphSONRecordWriter` to include the GraphSON extension module by default.
 
 ==== Bugs
 

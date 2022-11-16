@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
