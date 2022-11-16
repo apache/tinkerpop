@@ -56,6 +56,7 @@ public class GraphSONMapperTest {
         return Arrays.asList(new Object[][]{
                 {GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
                 {GraphSONMapper.build().version(GraphSONVersion.V2_0).addCustomModule(GraphSONXModuleV2d0.build().create(false)).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
+                {GraphSONMapper.build().version(GraphSONVersion.V2_0).addDefaultXModule(true).typeInfo(TypeInfo.NO_TYPES).create().createMapper()}, // alternate construction of v2
         });
     }
 
