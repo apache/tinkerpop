@@ -258,6 +258,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.
 * Bumped to `snakeyaml` 1.32 to fix security vulnerability.
 * Added logging in .NET.
+* Added `addDefaultXModule` to `GraphSONMapper` as a shortcut for including a version matched GraphSON extension module.
+* Modified `GraphSONRecordReader` and `GraphSONRecordWriter` to include the GraphSON extension module by default.
 
 ==== Bugs
 
