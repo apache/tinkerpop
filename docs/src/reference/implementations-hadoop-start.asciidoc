@@ -82,7 +82,7 @@ gremlin> hdfs
 ----
 
 The `HADOOP_GREMLIN_LIBS` references locations that contain jars that should be uploaded to a respective
-distributed cache (link:http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html[YARN] or SparkServer).
+distributed cache (link:http://hadoop.apache.org/docs/x.y.z/hadoop-yarn/hadoop-yarn-site/YARN.html[YARN] or SparkServer).
 Note that the locations in `HADOOP_GREMLIN_LIBS` can be colon-separated (`:`) and all jars from all locations will
 be loaded into the cluster. Locations can be local paths (e.g. `/path/to/libs`), but may also be prefixed with a file
 scheme to reference files or directories in different file systems (e.g. `hdfs:///path/to/distributed/libs`).

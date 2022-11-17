@@ -1665,7 +1665,7 @@ Writing a Gremlin <<dsl,Domain Specific Language>> (DSL) in Go requires embeddin
 * `GraphTraversalSource` - which spawns `GraphTraversal` instances
 * `AnonymousTraversal` - which spawns anonymous traversals from steps
 
-The Social DSL based on the link:https://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
+The Social DSL based on the link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png["modern" toy graph]
 might look like this:
 
 [source,go]
@@ -2240,7 +2240,7 @@ Writing a Gremlin <<dsl,Domain Specific Language>> (DSL) in Python simply requir
 * `__` - which spawns anonymous traversals from steps
 * `GraphTraversalSource` - which spawns `GraphTraversal` instances
 
-The Social DSL based on the link:https://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
+The Social DSL based on the link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png["modern" toy graph]
 might look like this:
 
 [source,python]
