@@ -395,7 +395,7 @@ Thank you very much,
 
 The template below refers to the "name of release line" and the "release line logo". Every release line has a name
 and logo. For example, 3.1.x had the name, "A 187 On The Undercover Gremlinz" and the logo shown
-link:https://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
+link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
 
 [source,text]
 ----

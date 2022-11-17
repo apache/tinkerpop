@@ -39,7 +39,7 @@ inherit from the more general forms diagrammed above. A list of all the steps (a
 in the TinkerPop link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[GraphTraversal JavaDoc].
 
 IMPORTANT: The basics for starting a traversal are described in <<the-graph-process,The Graph Process>> section as
-well as in the link:https://tinkerpop.apache.org/docs/current/tutorials/getting-started/[Getting Started] tutorial.
+well as in the link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started] tutorial.
 
 NOTE: To reduce the verbosity of the expression, it is good to
 `+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*+`. This way, instead of doing `+__.inE()+`
@@ -290,7 +290,7 @@ the <<sessions,Considering Sessions>> Section.
 At this time, transactional patterns for Remote Gremlin Providers are largely in line with Gremlin Server. As most of
 RGPs do not expose a `Graph` instance, access to lower level transactional functions available to embedded graphs
 even in a sessionless fashion are not typically permitted. For example, without a `Graph` instance it is not possible
-to link:https://tinkerpop.apache.org/docs/current/reference/#tx-embedded[configure] transaction close or read-write
+to link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tx-embedded[configure] transaction close or read-write
 behaviors. The nature of what a "transaction" means will be dependent on the RGP as is the case with any
 TinkerPop-enabled graph system, so it is important to consult that systems documentation for more details.
 
@@ -389,7 +389,7 @@ Gremlin steps are chained together to produce the actual traversal and are trigg
 on the `GraphTraversalSource`.
 
 IMPORTANT: More details about the Gremlin language can be found in the Provider Documentation within the
-<<gremlin-semantics,Gremlin Semantics Section>>.
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics[Gremlin Semantics Section].
 
 [[general-steps]]
 === General Steps
@@ -1610,7 +1610,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/TextP.html++[`TextP`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`],
-link:++https://tinkerpop.apache.org/docs/current/recipes/#has-traversal++[Recipes - Anti-pattern]
+link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#has-traversal++[Recipes - Anti-pattern]
 
 [[id-step]]
 === Id Step
@@ -2733,8 +2733,8 @@ results.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none--++[`none()`]
-link:++https://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate--++[`iterate()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none--++[`none()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate--++[`iterate()`]
 
 [[not-step]]
 === Not Step
@@ -5306,7 +5306,7 @@ Display stack trace? [yN]
 Gremlin is a link:http://en.wikipedia.org/wiki/Domain-specific_language[domain specific language] (DSL) for traversing
 graphs. It operates in the language of vertices, edges and properties. Typically, applications built with Gremlin are
 not of the graph domain, but instead model their domain within a graph. For example, the
-link:https://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph] models
+link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png["modern" toy graph] models
 software and person domain objects with the relationships between them (i.e. a person "knows" another person and a
 person "created" software).
 

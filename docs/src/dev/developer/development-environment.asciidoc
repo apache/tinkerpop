@@ -124,7 +124,7 @@ scripts should work on Mac and Linux.
 To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 3.3.x] is running in
 link:https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
-link:https://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[reference documentation]. It is also important
 to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
 
 The `/etc/hadoop/yarn-site.xml` file prefers this configuration over the one provided in the Hadoop documentation
@@ -193,7 +193,7 @@ The `/etc/hadoop/mapred-site.xml` file prefers the following configuration:
 ----
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
-The link:https://tinkerpop.apache.org/docs/current/recipes/#olap-spark-yarn[YARN recipe] also uses the `zip` program to
+The link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#olap-spark-yarn[YARN recipe] also uses the `zip` program to
 create an archive so that needs to be installed, too, if you don't have it already.
 
 The Hadoop 3.3.x installation instructions call for installing `pdsh` but installing that seems to cause permission

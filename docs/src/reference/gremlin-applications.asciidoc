@@ -848,7 +848,7 @@ channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
 
 NOTE: The `UnifiedChannelizer` introduced in 3.5.0 can also be used to support HTTP requests as its functionality
 is similar to `WsAndHttpChannelizer`. Please see the Gremlin Server UnifiedChannelizer Section of the Upgrade
-Documentation for 3.5.0 for more link:https://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_5_0[details].
+Documentation for 3.5.0 for more link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#_tinkerpop_3_5_0[details].
 
 The `HttpChannelizer` is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin
 Server distribution.  To utilize it, start Gremlin Server as follows:
@@ -1121,7 +1121,7 @@ different serializers: GraphSON and GraphBinary.
 The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those
 trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major
 programming languages and can be consumed by a wide variety of tools. The format itself is described in the
-link:https://tinkerpop.apache.org/docs/current/dev/io/#graphson[IO Documentation].
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Documentation].
 
 [source,yaml]
 ----
@@ -1181,7 +1181,7 @@ results to the HTTP endpoint in Gremlin Server. GraphSON 1.0 must be configured 
 
 GraphBinary is a binary serialization format suitable for object trees, designed to reduce serialization overhead on
 both the client and the server, as well as limiting the size of the payload that is transmitted over the wire. The
-format itself is described in the link:https://tinkerpop.apache.org/docs/current/dev/io/#graphbinary[IO Documentation].
+format itself is described in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphbinary[IO Documentation].
 
 [source,yaml]
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1 }

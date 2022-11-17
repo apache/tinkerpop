@@ -845,7 +845,7 @@ The following is just an example as taken from TinkerGraph:
 
 The `@CucumberOptions` that are used are mostly implementation specific, so it will be up to the provider to make some
 choices as to what is right for their environment. For TinkerGraph, it needed to ignore Gherkin tests with the
-`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/current/dev/developer/#gherkin-tags[here]),
+`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]),
 as will most providers. The "glue" will be the same for all test implementers as it refers to a package containing
 TinkerPop's test infrastructure in `gremlin-test` (unless of course, a provider needs to develop their own
 infrastructure for some reason). The "features" is the path to the actual Gherkin test files that should be made
@@ -1083,7 +1083,7 @@ Gremlin Server will send:
 |599 |SERVER ERROR SERIALIZATION |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
-NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
+NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Reference Documentation] for more
 examples of `RequestMessage` and `ResponseMessage` instances.
 
 === OpProcessors Arguments
