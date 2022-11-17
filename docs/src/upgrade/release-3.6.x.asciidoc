@@ -571,7 +571,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2652[TINKERPOP-2652]
 ==== gremlin-annotations
 
 There is a new module called `gremlin-annotations` and it holds the annotations used to construct
-link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-java-dsl[Java-based Gremlin DSLs]. These annotations
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-java-dsl[Java-based Gremlin DSLs]. These annotations
 were formerly in `gremlin-core` and therefore it will be necessary to modify dependencies accordingly when upgrading
 to 3.6.0. Package and class names have remained the same and general usage is unchanged.
 
