@@ -62,7 +62,8 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
         else
             traverser.set(DetachedFactory.detach(traverser.get(), true));*/
 
-        traverser.set(DetachedFactory.detach(traverser.get(), true));
+        // !!!
+        // traverser.set(DetachedFactory.detach(traverser.get(), true));
         return traverser;
     }
 

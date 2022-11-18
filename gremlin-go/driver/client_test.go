@@ -38,10 +38,11 @@ func TestClient(t *testing.T) {
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
 				settings.AuthInfo = testNoAuthAuthInfo
+				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
-		resultSet, err := client.Submit("g.V().count()")
+		resultSet, err := client.Submit("g.V(1)")
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()

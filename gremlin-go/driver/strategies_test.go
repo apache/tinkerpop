@@ -214,7 +214,7 @@ func TestStrategy(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		config := DetachStrategyConfig{DetachMode: "CUSTOM", Keys: []string{"weight"}}
+		config := DetachStrategyConfig{DetachMode: DetachMode.Custom, Keys: []string{"weight"}}
 		r, err := g.WithStrategies(DetachStrategy(config)).E(7).Next()
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
