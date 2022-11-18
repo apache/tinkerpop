@@ -18,7 +18,7 @@ Original source copyright:
 Copyright (c) 2008 Alexander Beider & Stephen P. Morse.
 
 ------------------------------------------------------------------------
-Apache Groovy 2.5.14 (AL ASF)
+Apache Groovy 2.5.19 (AL ASF)
 ------------------------------------------------------------------------
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
@@ -60,7 +60,7 @@ HPPC borrowed code, ideas or both from:
    (Apache license)
 
 ------------------------------------------------------------------------
-Netty 4.1.72
+Netty 4.1.77
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
