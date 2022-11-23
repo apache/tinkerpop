@@ -44,7 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task WriteValueAsync(Traverser value, Stream stream, GraphBinaryWriter writer,
             CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Bulk, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Bulk, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.Object, stream, cancellationToken).ConfigureAwait(false);
         }
 
@@ -52,7 +52,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task<Traverser> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
-            var bulk = (long)await reader.ReadValueAsync<long>(stream, false, cancellationToken).ConfigureAwait(false);
+            var bulk = (long)await reader.ReadNonNullableValueAsync<long>(stream, cancellationToken).ConfigureAwait(false);
             var v = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             return new Traverser(v, bulk);
         }

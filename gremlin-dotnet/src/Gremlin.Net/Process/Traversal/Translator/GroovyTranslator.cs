@@ -107,7 +107,7 @@ namespace Gremlin.Net.Process.Traversal.Translator
             return $".{step.OperatorName}({TranslateArguments(step.Arguments)})";
         }
         
-        private string TranslateWithArguments(dynamic[] arguments)
+        private string TranslateWithArguments(dynamic?[] arguments)
         {
             if (arguments[0] == WithOptions.Tokens)
             {
@@ -138,10 +138,10 @@ namespace Gremlin.Net.Process.Traversal.Translator
             { WithOptions.Map, "WithOptions.map" }
         };
 
-        private string TranslateArguments(IEnumerable<object> arguments) =>
+        private string TranslateArguments(IEnumerable<object?> arguments) =>
             string.Join(", ", arguments.Select(TranslateArgument));
 
-        private string TranslateArgument(object argument)
+        private string TranslateArgument(object? argument)
         {
             return argument switch
             {
@@ -157,7 +157,7 @@ namespace Gremlin.Net.Process.Traversal.Translator
                 IEnumerable e => TranslateCollection(e),
                 ITraversal t => TranslateTraversal(t),
                 AbstractTraversalStrategy strategy => TranslateStrategy(strategy),
-                _ => Convert.ToString(argument, CultureInfo.InvariantCulture)
+                _ => Convert.ToString(argument, CultureInfo.InvariantCulture)!
             };
         }
         

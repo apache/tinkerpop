@@ -29,10 +29,11 @@ namespace Gremlin.Net.Driver.Remote
 {
     internal class DriverRemoteTraversal<TStart, TEnd> : DefaultTraversal<TStart, TEnd>
     {
-        public DriverRemoteTraversal(IGremlinClient gremlinClient, Guid requestId,
-            IEnumerable<Traverser> traversers)
+        public DriverRemoteTraversal(IEnumerable<Traverser> traversers)
         {
             Traversers = traversers;
         }
+
+        public override Bytecode Bytecode => throw new NotSupportedException("Remote traversals do not have Bytecode");
     }
 }

@@ -36,7 +36,7 @@ namespace Gremlin.Net.Structure
         /// <param name="key">The key of the property.</param>
         /// <param name="value">The value of the property.</param>
         /// <param name="element">The (optional) element that the property is associated with.</param>
-        public Property(string key, dynamic value, Element element = null)
+        public Property(string key, dynamic? value, Element? element = null)
         {
             Key = key;
             Value = value;
@@ -51,15 +51,15 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Gets the value of the property.
         /// </summary>
-        public dynamic Value { get; }
+        public dynamic? Value { get; }
 
         /// <summary>
         ///     Gets the element that this property is associated with.
         /// </summary>
-        public Element Element { get; }
+        public Element? Element { get; }
 
         /// <inheritdoc />
-        public bool Equals(Property other)
+        public bool Equals(Property? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -73,7 +73,7 @@ namespace Gremlin.Net.Structure
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

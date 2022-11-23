@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 
@@ -34,7 +35,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             var labels =
                 graphsonObject.GetProperty("labels").EnumerateArray()
                     .Select(readObjLabels =>
-                        new HashSet<string>(readObjLabels.EnumerateArray().Select(l => l.GetString())))
+                        new HashSet<string>(readObjLabels.EnumerateArray().Select(l =>
+                            l.GetString() ?? throw new IOException("Read null but expected a Path label"))))
                     .ToList<ISet<string>>();
             var objects = graphsonObject.GetProperty("objects").EnumerateArray().Select(o => reader.ToObject(o))
                 .ToList();

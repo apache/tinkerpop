@@ -34,10 +34,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets an instance of the <see cref="Bindings" /> class.
         /// </summary>
-        public static Bindings Instance { get; } = new Bindings();
+        public static Bindings Instance { get; } = new();
 
-        private static readonly ThreadLocal<Dictionary<object, string>> BoundVariableByValue =
-            new ThreadLocal<Dictionary<object, string>>();
+        private static readonly ThreadLocal<Dictionary<object, string>> BoundVariableByValue = new();
 
         /// <summary>
         ///     Binds the variable to the specified value.
@@ -45,7 +44,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="variable">The variable to bind.</param>
         /// <param name="value">The value to which the variable should be bound.</param>
         /// <returns>The bound value.</returns>
-        public TV Of<TV>(string variable, TV value)
+        public TV Of<TV>(string variable, TV value) where TV : notnull
         {
             var dict = BoundVariableByValue.Value;
             if (dict == null)
@@ -57,7 +56,7 @@ namespace Gremlin.Net.Process.Traversal
             return value;
         }
 
-        internal static string GetBoundVariable<TV>(TV value)
+        internal static string? GetBoundVariable<TV>(TV value) where TV : notnull
         {
             var dict = BoundVariableByValue.Value;
             if (dict == null)

@@ -49,7 +49,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
         /// </summary>
         /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for serialization.</param>
-        public GraphBinaryMessageSerializer(TypeSerializerRegistry registry = null)
+        public GraphBinaryMessageSerializer(TypeSerializerRegistry? registry = null)
         {
             _reader = new GraphBinaryReader(registry);
             _writer = new GraphBinaryWriter(registry);
@@ -81,7 +81,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         }
 
         /// <inheritdoc />
-        public async Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
+        public async Task<ResponseMessage<List<object>>?> DeserializeMessageAsync(byte[] message,
             CancellationToken cancellationToken = default)
         {
             using var stream = new MemoryStream(message);

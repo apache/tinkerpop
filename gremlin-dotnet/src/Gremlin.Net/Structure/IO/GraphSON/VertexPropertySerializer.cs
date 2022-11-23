@@ -34,9 +34,12 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             {
                 {"id", writer.ToDict(vertexProperty.Id)},
                 {"label", vertexProperty.Label},
-                {"value", writer.ToDict(vertexProperty.Value)},
-                {"vertex", writer.ToDict(vertexProperty.Vertex.Id)}
+                {"value", writer.ToDict(vertexProperty.Value)}
             };
+            if (vertexProperty.Vertex != null)
+            {
+                valueDict.Add("vertex", writer.ToDict(vertexProperty.Vertex.Id));
+            }
             return GraphSONUtil.ToTypedValue(nameof(VertexProperty), valueDict);
         }
     }

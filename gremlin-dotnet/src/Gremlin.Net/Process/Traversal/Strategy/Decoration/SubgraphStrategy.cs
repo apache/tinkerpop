@@ -44,8 +44,8 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// <param name="edges">Constrains edges for the <see cref="ITraversal" />.</param>
         /// <param name="vertexProperties">Constrains vertex properties for the <see cref="ITraversal" />.</param>
         /// <param name="checkAdjacentVertices">Determines if filters are applied to the adjacent vertices of an edge.</param>
-        public SubgraphStrategy(ITraversal vertices = null, ITraversal edges = null,
-            ITraversal vertexProperties = null, bool? checkAdjacentVertices = null)
+        public SubgraphStrategy(ITraversal? vertices = null, ITraversal? edges = null,
+            ITraversal? vertexProperties = null, bool? checkAdjacentVertices = null)
             : this()
         {
             if (vertices != null)

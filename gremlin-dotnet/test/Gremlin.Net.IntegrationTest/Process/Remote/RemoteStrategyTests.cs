@@ -93,5 +93,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
             TraversalStrategies.Add(traversalStrategy);
             Bytecode = bytecode;
         }
+
+        public override Bytecode Bytecode { get; }
     }
 }

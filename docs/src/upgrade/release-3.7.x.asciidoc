@@ -29,6 +29,17 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Gremlin.NET: Nullable Annotations
+
+Gremlin.NET now uses link:https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-variable-annotations[nullable annotations]
+to state wether an argument or a return value can be null or not. This should make it much less likely to get a
+`NullReferenceException` from Gremlin.NET.
+
+This change required to make some breaking changes but most users should not be affected by this as the breaking
+changes are limited to APIs that are mostly intended for graph driver providers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
+
 ==== Removed connectOnStartup javascript
 
 Removed the `connectOnStartup` option for Gremlin Javascript API to resolve potential `unhandledRejection` and race
@@ -44,3 +55,19 @@ drc.open().catch(err => {
    // Handle error upon open.
 })
 ----
+
+=== Upgrading for Graph Driver Providers
+
+==== Gremlin.NET: Nullable Reference Types
+
+Enabling nullable reference types comes with some breaking changes in Gremlin.NET which can affect driver providers.
+
+GraphBinary APIs changed to make better use of nullable reference types. Instead of one method `WriteValueAsync` and
+one method `ReadValueAsync`, there are now methods `WriteNullableValueAsync` and `ReadNullableValueAsync` that allow
+`null` values and methods `WriteNonNullableValueAsync` and `ReadNonNullableValueAsync` that do not allow `null` values.
+
+Some `set` property accessors were removed from some pure data classes in the `Structure` and the `Driver.Messages`
+namespaces to initialize these properties directly from the constructor which ensures that they are really not `null`.
+We also used this opportunity to convert some of these pure data classes into a `record`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]

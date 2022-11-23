@@ -39,7 +39,7 @@ namespace Gremlin.Net.Driver
         ///     Gets or sets the delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
         ///     object used to configure WebSocket connections.
         /// </summary>
-        public Action<ClientWebSocketOptions> WebSocketConfigurationCallback { get; set; }
+        public Action<ClientWebSocketOptions>? WebSocketConfigurationCallback { get; set; }
 
 #if NET6_0_OR_GREATER
         /// <summary>

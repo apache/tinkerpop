@@ -46,7 +46,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var bytes = value.ToByteArray().Reverse().ToArray();
-            await writer.WriteValueAsync(bytes.Length, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(bytes.Length, stream, cancellationToken).ConfigureAwait(false);
             await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
         }
 
@@ -54,7 +54,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task<BigInteger> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
-            var length = (int)await reader.ReadValueAsync<int>(stream, false, cancellationToken).ConfigureAwait(false);
+            var length = (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
             var bytes = await stream.ReadAsync(length, cancellationToken).ConfigureAwait(false);
             return new BigInteger(bytes.Reverse().ToArray());
         }

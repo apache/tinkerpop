@@ -108,7 +108,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         }
 
         /// <inheritdoc />
-        public bool Equals(DataType other)
+        public bool Equals(DataType? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -116,7 +116,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

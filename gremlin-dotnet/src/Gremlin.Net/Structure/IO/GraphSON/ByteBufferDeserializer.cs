@@ -21,6 +21,7 @@
 #endregion
 
 using System;
+using System.IO;
 using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -30,7 +31,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             var base64String = graphsonObject.GetString();
-            return Convert.FromBase64String(base64String);
+            return Convert.FromBase64String(base64String ??
+                                            throw new IOException("Read null but expected a base64 byte string"));
         }
     }
 }

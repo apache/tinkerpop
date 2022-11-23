@@ -27,11 +27,11 @@ namespace Gremlin.Net.Driver
     {
         private readonly WebSocketSettings _webSocketSettings;
         private readonly GremlinServer _gremlinServer;
-        private readonly string _sessionId;
+        private readonly string? _sessionId;
         private readonly IMessageSerializer _messageSerializer;
 
         public ConnectionFactory(GremlinServer gremlinServer, IMessageSerializer messageSerializer,
-            WebSocketSettings webSocketSettings, string sessionId)
+            WebSocketSettings webSocketSettings, string? sessionId)
         {
             _gremlinServer = gremlinServer;
             _messageSerializer = messageSerializer;

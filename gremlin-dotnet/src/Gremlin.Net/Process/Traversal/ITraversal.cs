@@ -48,7 +48,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
         /// </summary>
-        IEnumerable<Traverser> Traversers { get; set; }
+        IEnumerable<Traverser>? Traversers { get; set; }
 
         /// <summary>
         ///     Iterates all <see cref="Traverser" /> instances in the traversal.
@@ -60,13 +60,13 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     A traversal represents a directed walk over a graph.
     /// </summary>
-    public interface ITraversal<TStart, TEnd> : ITraversal, IEnumerator<TEnd>
+    public interface ITraversal<TStart, TEnd> : ITraversal, IEnumerator<TEnd?>
     {
         /// <summary>
         ///     Gets the next result from the traversal.
         /// </summary>
         /// <returns>The result.</returns>
-        TEnd Next();
+        TEnd? Next();
 
         /// <summary>
         ///     Determines if the traversal contains any additional results for iteration.
@@ -79,7 +79,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="amount">The number of results to get.</param>
         /// <returns>The n-results.</returns>
-        IEnumerable<TEnd> Next(int amount);
+        IEnumerable<TEnd?> Next(int amount);
 
         /// <summary>
         ///     Iterates all <see cref="Traverser" /> instances in the traversal.
@@ -97,13 +97,13 @@ namespace Gremlin.Net.Process.Traversal
         ///     Puts all the results into a <see cref="IList{T}" />.
         /// </summary>
         /// <returns>The results in a list.</returns>
-        IList<TEnd> ToList();
+        IList<TEnd?> ToList();
 
         /// <summary>
         ///     Puts all the results into a <see cref="ISet{T}" />.
         /// </summary>
         /// <returns>The results in a set.</returns>
-        ISet<TEnd> ToSet();
+        ISet<TEnd?> ToSet();
 
         /// <summary>
         ///     Starts a promise to execute a function on the current traversal that will be completed in the future.

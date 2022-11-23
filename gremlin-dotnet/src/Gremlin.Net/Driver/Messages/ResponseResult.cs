@@ -30,16 +30,27 @@ namespace Gremlin.Net.Driver.Messages
     ///     <see cref="ResponseMessage{T}"/> by the server.
     /// </summary>
     /// <typeparam name="T">The type of the <see cref="Data"/>.</typeparam>
-    public class ResponseResult<T>
+    public record ResponseResult<T>
     {
         /// <summary>
-        ///     Gets or sets the data of this result.
+        /// Initializes a new instance of the <see cref="ResponseResult{T}" /> record.
         /// </summary>
-        public T Data { get; set; }
+        /// <param name="data">The data of this result.</param>
+        /// <param name="meta">The (optional) meta data of this result.</param>
+        public ResponseResult(T? data, Dictionary<string, object>? meta = null)
+        {
+            Data = data;
+            Meta = meta ?? new Dictionary<string, object>();
+        }
+        
+        /// <summary>
+        ///     Gets the data of this result.
+        /// </summary>
+        public T? Data { get; }
 
         /// <summary>
-        ///     Gets or sets meta data of this result.
+        ///     Gets meta data of this result.
         /// </summary>
-        public Dictionary<string, object> Meta { get; set; }
+        public Dictionary<string, object> Meta { get; }
     }
 }

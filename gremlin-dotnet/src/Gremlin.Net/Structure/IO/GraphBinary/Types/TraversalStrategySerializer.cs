@@ -45,9 +45,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task WriteValueAsync(AbstractTraversalStrategy value, Stream stream,
             GraphBinaryWriter writer, CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(GremlinType.FromFqcn(value.Fqcn), stream, false, cancellationToken)
+            await writer.WriteNonNullableValueAsync(GremlinType.FromFqcn(value.Fqcn), stream, cancellationToken)
                 .ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Configuration, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Configuration, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

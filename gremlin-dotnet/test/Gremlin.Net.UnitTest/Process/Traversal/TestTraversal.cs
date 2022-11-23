@@ -49,5 +49,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             TraversalStrategies = traversalStrategies;
         }
+
+        public override Bytecode Bytecode { get; }
     }
 }

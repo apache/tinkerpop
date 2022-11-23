@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -31,7 +32,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
             var type = (Type) objectData;
-            return writer.ToDict(Activator.CreateInstance(type));
+            return writer.ToDict(Activator.CreateInstance(type) ??
+                                 throw new IOException($"Cannot write {objectData}. maybe it is not a supported type"));
         }
     }
 }
