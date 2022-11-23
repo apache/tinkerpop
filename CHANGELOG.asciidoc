@@ -262,6 +262,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified `GraphSONRecordReader` and `GraphSONRecordWriter` to include the GraphSON extension module by default.
 * Bumped `jackson-databind` to 2.14.0 to fix security vulnerability.
 * Bumped to Groovy 2.5.19.
+* Bumped to Netty 4.1.85.
 
 ==== Bugs
 
