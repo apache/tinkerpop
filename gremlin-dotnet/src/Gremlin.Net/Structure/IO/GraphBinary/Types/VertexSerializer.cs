@@ -21,7 +21,9 @@
 
 #endregion
 
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,13 +54,14 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task<Vertex> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
+            var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var label = (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false);
 
-            var v = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false));
-            
-            // discard properties
-            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            return v;
+            var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var propertiesAsDictionary = (properties as List<object>)?.Cast<VertexProperty>()
+                .ToDictionary(k => k.Key, v => (dynamic)new dynamic[] { v });
+
+            return new Vertex(id, label, propertiesAsDictionary);
         }
     }
 }

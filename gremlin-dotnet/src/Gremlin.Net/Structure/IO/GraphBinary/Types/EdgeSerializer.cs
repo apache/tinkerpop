@@ -21,7 +21,9 @@
 
 #endregion
 
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,7 +47,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
-            
+
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteValueAsync(value.InV.Label, stream, false, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.OutV.Id, stream, cancellationToken).ConfigureAwait(false);
@@ -53,7 +55,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
 
             // Placeholder for the parent vertex
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
-            
+
             // placeholder for the properties
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
@@ -70,14 +72,15 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
                 (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false));
             var outV = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
                 (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false));
-            
+
             // discard possible parent vertex
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
-            // discard possible properties
-            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var propertiesAsDictionary = (properties as List<object>)?.Cast<Property>()
+                .ToDictionary(k => k.Key, v => (dynamic)new dynamic[] { v });
 
-            return new Edge(id, outV, label, inV);
+            return new Edge(id, outV, label, inV, propertiesAsDictionary);
         }
     }
 }

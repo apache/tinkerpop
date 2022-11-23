@@ -35,7 +35,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
-        private readonly IList<DriverRemoteConnectionImpl> _connections = new List<DriverRemoteConnectionImpl>();
+        private readonly IList<IDisposable> _cleanUp = new List<IDisposable>();
         private readonly IMessageSerializer _messageSerializer;
 
         public RemoteConnectionFactory(IMessageSerializer messageSerializer = null)
@@ -49,19 +49,32 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             return CreateRemoteConnection("gmodern", connectionPoolSize);
         }
 
-        public IRemoteConnection CreateRemoteConnection(string traversalSource, int connectionPoolSize = 2)
+        public IRemoteConnection CreateRemoteConnection(string traversalSource, 
+            int connectionPoolSize = 2,
+            IMessageSerializer messageSerializer = null)
         {
             var c = new DriverRemoteConnectionImpl(
-                new GremlinClient(new GremlinServer(TestHost, TestPort), _messageSerializer,
+                new GremlinClient(new GremlinServer(TestHost, TestPort), 
+                    messageSerializer ?? _messageSerializer,
                     connectionPoolSettings: new ConnectionPoolSettings { PoolSize = connectionPoolSize }),
                 traversalSource);
-            _connections.Add(c);
+            _cleanUp.Add(c);
+            return c;
+        }
+
+        public IGremlinClient CreateClient(IMessageSerializer messageSerializer = null)
+        {
+            var c = new GremlinClient(new GremlinServer(TestHost, TestPort),
+                    messageSerializer ?? _messageSerializer,
+                    connectionPoolSettings: new ConnectionPoolSettings { PoolSize = 2 });
+
+            _cleanUp.Add(c);
             return c;
         }
 
         public void Dispose()
         {
-            foreach (var connection in _connections)
+            foreach (var connection in _cleanUp)
             {
                 connection.Dispose();
             }
