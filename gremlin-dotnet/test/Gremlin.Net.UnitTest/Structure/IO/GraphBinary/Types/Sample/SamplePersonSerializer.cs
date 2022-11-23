@@ -86,7 +86,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
                 .ConfigureAwait(false);
         }
 
-        public override async Task<object> ReadAsync(Stream stream, GraphBinaryReader reader,
+        public override async Task<object?> ReadAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
             // {custom type info}, {value_flag} and {value}
@@ -99,7 +99,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
             return await ReadNullableValueAsync(stream, reader, cancellationToken).ConfigureAwait(false);
         }
 
-        public override async Task<object> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader,
+        public override async Task<object?> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
             var valueFlag = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);

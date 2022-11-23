@@ -52,8 +52,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         
         private readonly RemoteConnectionFactory _connectionFactory;
 
-        public Scenario CurrentScenario;
-        public Feature CurrentFeature;
+        public Scenario? CurrentScenario;
+        public Feature? CurrentFeature;
 
         public ScenarioDataPerGraph GetByGraphName(string name)
         {
@@ -109,7 +109,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             // Property name might not exist and C# doesn't support "null" keys in Dictionary
             if (g.V().Count().Next() == g.V().Has("name").Count().Next())
             {
-                return g.V().Group<string, object>().By("name").By(__.Tail<Vertex>()).Next()
+                return g.V().Group<string, object>().By("name").By(__.Tail<Vertex>()).Next()!
                     .ToDictionary(kv => kv.Key, kv => (Vertex) kv.Value);
             }
             else
@@ -128,7 +128,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 return g.E().Group<string, Edge>()
                     .By(lambda)
                     .By(__.Tail<object>())
-                    .Next();
+                    .Next()!;
             }
             catch (ResponseException)
             {
@@ -191,7 +191,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 return g.V().Properties<VertexProperty>().Group<string, VertexProperty>()
                     .By(lambda)
                     .By(__.Tail<object>())
-                    .Next();
+                    .Next()!;
             }
             catch (ResponseException)
             {

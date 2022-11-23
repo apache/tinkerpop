@@ -40,7 +40,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
 
             var path = new Path(labels, objects);
 
@@ -57,7 +57,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var path = new Path(labels, new List<object>());
+            var path = new Path(labels, new List<object?>());
 
             var containsKey = path.ContainsKey("c");
 
@@ -73,7 +73,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var path = new Path(labels, new List<object>());
+            var path = new Path(labels, new List<object?>());
 
             var containsKey = path.ContainsKey("z");
 
@@ -83,7 +83,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnCountOfObjectsForCountProperty()
         {
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(new List<ISet<string>>(), objects);
 
             var count = path.Count;
@@ -94,7 +94,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldEnumeratorObjectsIntoListWhenToListIsCalled()
         {
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(new List<ISet<string>>(), objects);
 
             var enumeratedObj = path.ToList();
@@ -112,7 +112,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> {1, new Vertex(1), "hello"});
+                    }, new List<object?> {1, new Vertex(1), "hello"});
             var secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -120,7 +120,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> {1, new Vertex(1), "hello"});
+                    }, new List<object?> {1, new Vertex(1), "hello"});
 
             var equals = firstPath.Equals(secondPath);
 
@@ -137,7 +137,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> {1, new Vertex(1), "hello"});
+                    }, new List<object?> {1, new Vertex(1), "hello"});
             var secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -145,7 +145,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> {1, new Vertex(1), "hello"});
+                    }, new List<object?> {1, new Vertex(1), "hello"});
 
             var equals = firstPath.Equals(secondPath);
 
@@ -162,7 +162,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> {1, new Vertex(1), "hello"});
+                    }, new List<object?> {1, new Vertex(1), "hello"});
             var secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -170,7 +170,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> {3, new Vertex(1), "hello"});
+                    }, new List<object?> {3, new Vertex(1), "hello"});
 
             var equals = firstPath.Equals(secondPath);
 
@@ -187,7 +187,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
             object secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -195,7 +195,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
 
             var equals = firstPath.Equals(secondPath);
 
@@ -212,7 +212,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
             object secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -220,7 +220,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
 
             var equals = firstPath.Equals(secondPath);
 
@@ -237,7 +237,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
             object secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -245,7 +245,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 3, new Vertex(1), "hello" });
+                    }, new List<object?> { 3, new Vertex(1), "hello" });
 
             var equals = firstPath.Equals(secondPath);
 
@@ -255,7 +255,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnFalseForEqualsWhereOtherIsNull()
         {
-            var path = new Path(new List<ISet<string>> {new HashSet<string> {"a", "b"},}, new List<object> {1});
+            var path = new Path(new List<ISet<string>> { new HashSet<string> { "a", "b" }, }, new List<object?> { 1 });
 
             var equals = path.Equals(null);
 
@@ -272,7 +272,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
             var secondPath =
                 new Path(
                     new List<ISet<string>>
@@ -280,7 +280,7 @@ namespace Gremlin.Net.UnitTest.Structure
                         new HashSet<string> {"a", "b"},
                         new HashSet<string> {"c", "b"},
                         new HashSet<string>()
-                    }, new List<object> { 1, new Vertex(1), "hello" });
+                    }, new List<object?> { 1, new Vertex(1), "hello" });
 
             var firstHashCode = firstPath.GetHashCode();
             var secondHashCode = secondPath.GetHashCode();
@@ -291,7 +291,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldThrowWhenInvalidIndexIsAccessed()
         {
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(new List<ISet<string>>(), objects);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => path[3]);
@@ -300,7 +300,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnObjectsByTheirIndex()
         {
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(new List<ISet<string>>(), objects);
 
             Assert.Equal(1, path[0]);
@@ -317,7 +317,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
 
             var bObjects = path["b"];
@@ -334,7 +334,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
 
             Assert.Equal(1, path["a"]);
@@ -345,7 +345,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldThrowWhenUnknownKeyIsAccessed()
         {
-            var path = new Path(new List<ISet<string>>(), new List<object>());
+            var path = new Path(new List<ISet<string>>(), new List<object?>());
 
             Assert.Throws<KeyNotFoundException>(() => path["unknownKey"]);
         }
@@ -359,7 +359,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
 
             var pathStr = path.ToString();
@@ -376,10 +376,10 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
 
-            var success = path.TryGetValue("b", out object actualObj);
+            var success = path.TryGetValue("b", out object? actualObj);
 
             Assert.True(success);
             Assert.Equal(new List<object> {1, new Vertex(1)}, actualObj);
@@ -394,10 +394,10 @@ namespace Gremlin.Net.UnitTest.Structure
                 new HashSet<string> {"c", "b"},
                 new HashSet<string>()
             };
-            var objects = new List<object> {1, new Vertex(1), "hello"};
+            var objects = new List<object?> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
 
-            var success = path.TryGetValue("b", out object actualObj);
+            var success = path.TryGetValue("b", out var actualObj);
 
             Assert.True(success);
             Assert.Equal(new Vertex(1), actualObj);
@@ -406,9 +406,9 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnFalseForTryGetWhenUnknownKeyIsProvided()
         {
-            var path = new Path(new List<ISet<string>>(), new List<object>());
+            var path = new Path(new List<ISet<string>>(), new List<object?>());
 
-            var success = path.TryGetValue("unknownKey", out object _);
+            var success = path.TryGetValue("unknownKey", out _);
 
             Assert.False(success);
         }

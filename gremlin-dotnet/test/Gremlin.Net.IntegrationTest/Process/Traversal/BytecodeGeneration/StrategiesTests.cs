@@ -90,7 +90,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
             Assert.Equal(new MatchAlgorithmStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
             Assert.Contains("greedy",
-                ((MatchAlgorithmStrategy) bytecode.SourceInstructions[0].Arguments[0]).Configuration.Values);
+                ((MatchAlgorithmStrategy) bytecode.SourceInstructions[0].Arguments[0]!).Configuration.Values);
         }
 
         [Fact]
@@ -118,8 +118,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             Assert.Single(bytecode.SourceInstructions[0].Arguments);
             Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
             Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal("ReadOnlyStrategy", bytecode.SourceInstructions[0].Arguments[0].ToString());
-            Assert.Equal(new ReadOnlyStrategy().GetHashCode(), bytecode.SourceInstructions[0].Arguments[0].GetHashCode());
+            Assert.Equal("ReadOnlyStrategy", bytecode.SourceInstructions[0].Arguments[0]!.ToString());
+            Assert.Equal(new ReadOnlyStrategy().GetHashCode(),
+                bytecode.SourceInstructions[0].Arguments[0]!.GetHashCode());
             Assert.Equal(0, g.TraversalStrategies.Count);
         }
 
@@ -150,9 +151,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             Assert.Single(bytecode.SourceInstructions[0].Arguments);
             Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
             Assert.Equal(new SubgraphStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            SubgraphStrategy strategy = bytecode.SourceInstructions[0].Arguments[0];
-            Assert.Equal(typeof(GraphTraversal<object, object>), strategy.Configuration["vertices"].GetType());
-            ITraversal traversal = strategy.Configuration["vertices"];
+            SubgraphStrategy strategy = bytecode.SourceInstructions[0].Arguments[0]!;
+            Assert.Equal(typeof(GraphTraversal<object, object>), strategy.Configuration["vertices"]!.GetType());
+            ITraversal traversal = strategy.Configuration["vertices"]!;
             Assert.Equal("has", traversal.Bytecode.StepInstructions[0].OperatorName);
             Assert.Equal(new List<string> {"name", "marko"}, traversal.Bytecode.StepInstructions[0].Arguments);
             Assert.Equal(false, strategy.Configuration["checkAdjacentVertices"]);

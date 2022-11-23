@@ -409,7 +409,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             var writer = CreateGraphBinaryWriter();
             var serializationStream = new MemoryStream();
 
-            await Assert.ThrowsAsync<IOException>(() => writer.WriteNonNullableValueAsync(null, serializationStream));
+            await Assert.ThrowsAsync<IOException>(() => writer.WriteNonNullableValueAsync(null!, serializationStream));
         }
         
         [Fact]
@@ -434,7 +434,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
                 new Path(
                     new List<ISet<string>>
                         {new HashSet<string> {"a", "b"}, new HashSet<string> {"c", "d"}, new HashSet<string> {"e"}},
-                    new List<object> {1, 2, 3});
+                    new List<object?> {1, 2, 3});
             var writer = CreateGraphBinaryWriter();
             var reader = CreateGraphBinaryReader();
             var serializationStream = new MemoryStream();
@@ -669,9 +669,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (Bytecode) await reader.ReadAsync(serializationStream);
+            var actual = (Bytecode?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.SourceInstructions, actual.SourceInstructions);
+            Assert.Equal(expected.SourceInstructions, actual!.SourceInstructions);
             Assert.Equal(expected.StepInstructions, actual.StepInstructions);
         }
         
@@ -801,9 +801,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (StringBasedLambda) await reader.ReadAsync(serializationStream);
+            var actual = (StringBasedLambda?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.Language, actual.Language);
+            Assert.Equal(expected.Language, actual!.Language);
             Assert.Equal(expected.LambdaExpression, actual.LambdaExpression);
             Assert.Equal(expected.Arguments, actual.Arguments);
         }
@@ -818,9 +818,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (P) await reader.ReadAsync(serializationStream);
+            var actual = (P?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.OperatorName, actual.OperatorName);
+            Assert.Equal(expected.OperatorName, actual!.OperatorName);
             Assert.Equal(expected.Other, actual.Other);
             Assert.Equal(expected.Value, actual.Value);
         }
@@ -835,9 +835,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (P) await reader.ReadAsync(serializationStream);
+            var actual = (P?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.OperatorName, actual.OperatorName);
+            Assert.Equal(expected.OperatorName, actual!.OperatorName);
             Assert.Equal(expected.Other, actual.Other);
             Assert.Equal(expected.Value, actual.Value);
         }
@@ -852,9 +852,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (P) await reader.ReadAsync(serializationStream);
+            var actual = (P?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.ToString(), actual.ToString());
+            Assert.Equal(expected.ToString(), actual!.ToString());
         }
         
         [Fact]
@@ -867,9 +867,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (TextP) await reader.ReadAsync(serializationStream);
+            var actual = (TextP?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.OperatorName, actual.OperatorName);
+            Assert.Equal(expected.OperatorName, actual!.OperatorName);
             Assert.Equal(expected.Other, actual.Other);
             Assert.Equal(expected.Value, actual.Value);
         }
@@ -884,9 +884,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (Traverser) await reader.ReadAsync(serializationStream);
+            var actual = (Traverser?) await reader.ReadAsync(serializationStream);
             
-            Assert.Equal(expected.Object, actual.Object);
+            Assert.Equal(expected.Object, actual!.Object);
             Assert.Equal(expected.Bulk, actual.Bulk);
         }
         

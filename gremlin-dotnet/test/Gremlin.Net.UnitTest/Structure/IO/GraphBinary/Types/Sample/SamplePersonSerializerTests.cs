@@ -43,7 +43,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (SamplePerson) await reader.ReadAsync(serializationStream);
+            var actual = (SamplePerson?) await reader.ReadAsync(serializationStream);
             
             Assert.Equal(expected, actual);
         }
@@ -60,7 +60,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
 
             await writer.WriteNullableValueAsync(expected, serializationStream).ConfigureAwait(false);
             serializationStream.Position = 0;
-            var actual = (SamplePerson)await reader.ReadNullableValueAsync<SamplePerson>(serializationStream)
+            var actual = (SamplePerson?)await reader.ReadNullableValueAsync<SamplePerson>(serializationStream)
                 .ConfigureAwait(false);
             
             Assert.Equal(expected, actual);

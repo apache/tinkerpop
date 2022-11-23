@@ -38,8 +38,8 @@ namespace Gremlin.Net.IntegrationTest.Driver
 {
     public class GremlinClientTests
     {
-        private readonly RequestMessageProvider _requestMessageProvider = new RequestMessageProvider();
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private readonly RequestMessageProvider _requestMessageProvider = new();
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Theory]
@@ -67,7 +67,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
                 var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
 
-                Assert.Equal(responseMsgSize, response.Length);
+                Assert.Equal(responseMsgSize, response!.Length);
             }
         }
 
@@ -246,7 +246,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ShouldConfigureWebSocketOptionsAsSpecified()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            ClientWebSocketOptions optionsSet = null;
+            ClientWebSocketOptions? optionsSet = null;
             var expectedKeepAliveInterval = TimeSpan.FromMilliseconds(11);
             var webSocketConfiguration =
                 new Action<ClientWebSocketOptions>(options =>
