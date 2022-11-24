@@ -169,7 +169,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
         public static List<object[]> Serializers => new()
         {
-            // new [] { new GraphSON2MessageSerializer() },
+            new [] { new GraphSON2MessageSerializer() },
             new [] { new GraphSON3MessageSerializer() },
             new [] { new GraphBinaryMessageSerializer() }
         };
