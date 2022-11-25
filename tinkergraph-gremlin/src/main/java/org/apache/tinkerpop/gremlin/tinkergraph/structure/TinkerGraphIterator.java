@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 
@@ -60,7 +61,7 @@ public class TinkerGraphIterator<E> implements CloseableIterator<E> {
     @Override
     public E next() {
         if (!hasNext()) {
-            throw new NoSuchElementException();
+            throw FastNoSuchElementException.instance();
         }
 
         final E ret = next;
