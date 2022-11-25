@@ -25,6 +25,24 @@ from gremlin_python.structure.graph import Graph
 from gremlin_python.statics import *
 
 
+def test_vertex(remote_connection):
+    g = Graph().traversal().withRemote(remote_connection)
+    vertex = g.V(1).next()
+    assert vertex.id == 1
+    assert len(vertex.properties) == 2
+    assert vertex.properties[1].key == 'age'
+    assert vertex.properties[1].value == 29
+
+
+def test_edge(remote_connection):
+    g = Graph().traversal().withRemote(remote_connection)
+    edge = g.E(7).next()
+    assert edge.id == 7
+    assert len(edge.properties) == 1
+    assert edge.properties[0].key == 'weight'
+    assert edge.properties[0].value == 0.5
+
+
 def test_timestamp(remote_connection):
     g = Graph().traversal().withRemote(remote_connection)
     ts = timestamp(1481750076295 / 1000)
