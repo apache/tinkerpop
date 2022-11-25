@@ -124,6 +124,11 @@ limitations under the License.
                     <groupId>com.thoughtworks.paranamer</groupId>
                     <artifactId>paranamer</artifactId>
                 </exclusion>
+                <!-- Use our ivy 2.5.1 for security vulnerability -->
+                <exclusion>
+                    <groupId>org.apache.ivy</groupId>
+                    <artifactId>ivy</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- spark self-conflict and hadoop conflict -->
