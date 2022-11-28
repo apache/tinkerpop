@@ -29,6 +29,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +57,8 @@ final class Connection {
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
+    private final String creatingThread;
+    private final String createdTimestamp;
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
@@ -95,7 +98,8 @@ final class Connection {
         this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
-
+        this.creatingThread = Thread.currentThread().getName();
+        this.createdTimestamp = Instant.now().toString();
         connectionLabel = "Connection{host=" + pool.host + "}";
 
         if (cluster.isClosing())
@@ -302,8 +306,6 @@ final class Connection {
         // guess). that seems to put the executor thread in a monitor state that it doesn't recover from. since all
         // the code in here is behind shutdownInitiated the synchronized doesn't seem necessary
         if (shutdownInitiated.compareAndSet(false, true)) {
-            final String connectionInfo = this.getConnectionInfo();
-
             // the session close message was removed in 3.5.0 after deprecation at 3.3.11. That removal was perhaps
             // a bit hasty as session semantics may still require this message in certain cases. Until we can look
             // at this in more detail, it seems best to bring back the old functionality to the driver.
@@ -342,7 +344,8 @@ final class Connection {
                 channelizer.close(channel);
 
             // seems possible that the channelizer could initialize but fail to produce a channel, so worth checking
-            // null before proceeding here
+            // null before proceeding here. also if the cluster is in shutdown then the event loop could be shutdown
+            // already and there will be no way to get a new promise out there.
             if (channel != null) {
                 final ChannelPromise promise = channel.newPromise();
                 promise.addListener(f -> {
@@ -350,7 +353,7 @@ final class Connection {
                         future.completeExceptionally(f.cause());
                     } else {
                         if (logger.isDebugEnabled())
-                            logger.debug("{} destroyed successfully.", connectionInfo);
+                            logger.debug("{} destroyed successfully.", this.getConnectionInfo());
 
                         future.complete(null);
                     }
@@ -365,9 +368,12 @@ final class Connection {
                     }
                 }
             } else {
-                logger.debug("Connection {} is shutting down but the channel was not initialized to begin with",
-                        getConnectionInfo());
+                // if we dont handle the supplied future it can hang the close
+                future.complete(null);
             }
+        } else {
+            // if we dont handle the supplied future it can hang the close
+            future.complete(null);
         }
     }
 
@@ -385,10 +391,10 @@ final class Connection {
      */
     public String getConnectionInfo(final boolean showHost) {
         return showHost ?
-                String.format("Connection{channel=%s host=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s}",
-                        getChannelId(), pool.host.toString(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing()) :
-                String.format("Connection{channel=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s}",
-                        getChannelId(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing());
+                String.format("Connection{channel=%s host=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s created=%s thread=%s}",
+                        getChannelId(), pool.host.toString(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread) :
+                String.format("Connection{channel=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s created=%s thread=%s}",
+                        getChannelId(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread);
     }
 
     /**

@@ -24,6 +24,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
@@ -60,6 +61,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -1038,10 +1040,14 @@ public final class Cluster {
             return b;
         }
 
-        void shutdown() {
+        /**
+         * Gracefully shutsdown the event loop and returns the termination future which signals that all jobs are done.
+         */
+        Future<?> shutdown() {
             // Do not provide a quiet period (default is 2s) to accept more requests. Once we have decided to shutdown,
             // no new requests should be accepted.
-            group.shutdownGracefully(/*quiet period*/0, /*timeout*/2, TimeUnit.SECONDS).awaitUninterruptibly();
+            group.shutdownGracefully(/*quiet period*/0, /*timeout*/2, TimeUnit.SECONDS);
+            return group.terminationFuture();
         }
     }
 
@@ -1238,25 +1244,33 @@ public final class Cluster {
             if (closeFuture.get() != null)
                 return closeFuture.get();
 
+            final List<CompletableFuture<Void>> clientCloseFutures = new ArrayList<>(openedClients.size());
             for (WeakReference<Client> openedClient : openedClients) {
                 final Client client = openedClient.get();
-                if (client != null && !client.isClosing()) {
-                    client.close();
+                if (client != null) {
+                    // best to call close() even if the Client is already closing so that we can be sure that
+                    // any background client closing operations are included in this shutdown future
+                    clientCloseFutures.add(client.closeAsync());
                 }
             }
 
-            final CompletableFuture<Void> closeIt = new CompletableFuture<>();
-            closeFuture.set(closeIt);
+            // when all the clients are fully closed then shutdown the netty event loop. not sure why this needs to
+            // block here, but if it doesn't then factory.shutdown() below doesn't seem to want to ever complete.
+            // ideally, this should all be async, but i guess it wasn't before this change so just going to leave it
+            // for now as this really isn't the focus on this change
+            CompletableFuture.allOf(clientCloseFutures.toArray(new CompletableFuture[0])).join();
 
-            hostScheduler.submit(() -> {
-                factory.shutdown();
+            final CompletableFuture<Void> closeIt = new CompletableFuture<>();
+            // shutdown the event loop. that shutdown can trigger some final jobs to get scheduled so add a listener
+            // to the termination event to shutdown remaining thread pools
+            factory.shutdown().awaitUninterruptibly().addListener(f -> {
+                executor.shutdown();
+                hostScheduler.shutdown();
+                connectionScheduler.shutdown();
                 closeIt.complete(null);
             });
 
-            // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete
-            executor.shutdown();
-            connectionScheduler.shutdown();
-            hostScheduler.shutdown();
+            closeFuture.set(closeIt);
 
             return closeIt;
         }

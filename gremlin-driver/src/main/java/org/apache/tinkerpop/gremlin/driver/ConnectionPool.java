@@ -272,12 +272,23 @@ final class ConnectionPool {
         return bin.size();
     }
 
+    /**
+     * Calls close on connections in the pool gathering close futures from both active connections and ones in the
+     * bin.
+     */
     private CompletableFuture<Void> killAvailableConnections() {
-        final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
+        final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size() + bin.size());
         for (Connection connection : connections) {
             final CompletableFuture<Void> future = connection.closeAsync();
             future.thenRun(open::decrementAndGet);
             futures.add(future);
+        }
+
+        // Without the ones in the bin the close for the ConnectionPool won't account for their shutdown and could
+        // lead to scenario where the bin connections stay open after the channel executor is closed which then
+        // leads to close operation getting rejected in Connection.close() for channel.newPromise().
+        for (Connection connection : bin) {
+            futures.add(connection.closeAsync());
         }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -368,7 +379,7 @@ final class ConnectionPool {
 
     private boolean destroyConnection(final Connection connection) {
         while (true) {
-            int opened = open.get();
+            final int opened = open.get();
             if (opened <= minPoolSize)
                 return false;
 
@@ -598,8 +609,8 @@ final class ConnectionPool {
         } else {
             final int connectionCount = connections.size();
             sb.append(System.lineSeparator());
-            sb.append(String.format("Connection Pool Status (size=%s max=%s min=%s toCreate=%s markedOpen=%s bin=%s)",
-                    connectionCount, maxPoolSize, minPoolSize, this.scheduledForCreation.get(), this.open.get(), bin.size()));
+            sb.append(String.format("Connection Pool Status (size=%s max=%s min=%s toCreate=%s bin=%s)",
+                    connectionCount, maxPoolSize, minPoolSize, this.scheduledForCreation.get(), bin.size()));
             sb.append(System.lineSeparator());
 
             appendConnections(sb, connectionToCallout, connections);

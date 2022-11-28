@@ -184,6 +184,8 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         // if there was a exception in the worker thread, then it had better be a TimeoutException
         assertThat(hadFailOtherThanTimeout.get(), is(false));
 
+        connectionFactory.jittery = false;
+
         cluster.close();
     }
 
@@ -212,7 +214,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
             if (jittery && connectionsCreated.incrementAndGet() % numberOfConnectionsBetweenErrors == 0) {
                 connectionFailures.incrementAndGet();
                 throw new ConnectionException(pool.host.getHostUri(),
-                        new SSLHandshakeException("SSL on the funk - server is big mad"));
+                        new SSLHandshakeException("SSL on the funk - server is big mad with the jitters"));
             }
 
             return ConnectionFactory.super.create(pool);
