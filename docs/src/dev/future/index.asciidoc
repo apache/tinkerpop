@@ -42,10 +42,10 @@ in each release line represent unreleased changes only. Once an official release
 are removed with new items taking their place as they are planned. The release line is removed from the roadmap
 completely when it is no longer maintained.
 
-== 3.7.x - Target 22Q4
+== 3.7.x - Target 2023H1
 
-Development has not yet started on the 3.7.x release line with a targeted release date for the initial release of the
-line of 22H2.
+The development of the 3.7.x release line is currently under way with a target release date for the initial release of
+the line of 23H1.
 
 * Add support for traversals as parameters for `V()`, `is()`, and `has()` (includes `Traversal` arguments to `P`)
 * Geospatial support for TinkerPop (link:++https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial++[DISCUSS Thread])
