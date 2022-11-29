@@ -52,7 +52,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 radishGremlinFile = new File("${projectBaseDir}/gremlin-javascript/src/main/javascript/gremlin-javascript/test/cucumber/gremlin.js")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
-gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "features").toString())
+gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString())
 
 gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(
         (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()) },

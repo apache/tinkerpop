@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 
 public class FeatureReaderTest {
 
-    private static final String featureDir = Paths.get("..", "gremlin-test", "features").toString();
+    private static final String featureDir = Paths.get("..", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString();
 
     @Test
     public void shouldParseGroupedInSameOrder() throws IOException {

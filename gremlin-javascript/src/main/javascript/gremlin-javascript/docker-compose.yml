@@ -48,7 +48,7 @@ services:
     image: node:16
     volumes:
       - .:/js_app
-      - ../../../../../gremlin-test/features:/gremlin-test
+      - ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
       - ../../../../../docker/gremlin-test-server:/js_app/gremlin-test-server
     environment:
       - DOCKER_ENVIRONMENT=true

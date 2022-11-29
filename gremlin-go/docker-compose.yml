@@ -48,7 +48,7 @@ services:
     image: golang:1.17
     volumes:
       - .:/go_app
-      - ../gremlin-test/features:/gremlin-test
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
       - ../docker/gremlin-test-server:/go_app/gremlin-test-server
     environment:
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test

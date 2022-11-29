@@ -49,7 +49,7 @@ services:
     image: python:3.8
     volumes:
       - ${BUILD_DIR:-./src/main/python}:/python_app
-      - ../gremlin-test/features:/python_app/gremlin-test/features
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/python_app/gremlin-test/features
       - ../docker/gremlin-test-server:/python_app/gremlin-test-server
     environment:
       - TEST_TRANSACTIONS=${TEST_TRANSACTIONS:-true}

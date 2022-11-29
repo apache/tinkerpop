@@ -43,6 +43,24 @@ features without having to extend more complicated classes within the Gremlin Se
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2806[TINKERPOP-2806]
 
+===== Gherkin Tests Moved to Resources
+
+The Gherkin feature tests have been moved from `gremlin-test/features` to actual resources on `gremlin-test`. In this
+way, these files can be more easily referenced from the classpath. Providers can now configure their `CucumberOptions`
+in this fashion (taken from TinkerGraph):
+
+[source,java]
+----
+@CucumberOptions(
+        tags = "not @RemoteOnly and not @GraphComputerOnly and not @AllowNullPropertyValues",
+        glue = { "org.apache.tinkerpop.gremlin.features" },
+        objectFactory = TinkerGraphFeatureTest.TinkerGraphGuiceFactory.class,
+        features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
+        plugin = {"progress", "junit:target/cucumber.xml"})
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2804[TINKERPOP-2804]
+
 == TinkerPop 3.6.1
 
 *Release Date: July 18, 2022*

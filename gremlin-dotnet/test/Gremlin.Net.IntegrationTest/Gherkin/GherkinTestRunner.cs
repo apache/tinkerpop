@@ -382,7 +382,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private IEnumerable<Feature> GetFeatures()
         {
             var rootPath = GetRootPath();
-            var path = Path.Combine(rootPath, "gremlin-test", "features");
+            var path = Path.Combine(rootPath, "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features");
             var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
             foreach (var gherkinFile in files)
             {
