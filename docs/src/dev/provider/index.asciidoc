@@ -1077,6 +1077,7 @@ Gremlin Server will send:
 |498 |REQUEST ERROR MALFORMED REQUEST |The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
 |499 |REQUEST ERROR INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
 |500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
+|595 |SERVER ERROR FAIL STEP | A server error that is produced when the `fail()` step is triggered. The returned exception will include information consistent with the `Failure` interface.
 |596 |SERVER ERROR TEMPORARY |A server error occurred, but it was temporary in nature and therefore the client is free to retry it's request as-is with the potential for success.
 |597 |SERVER ERROR EVALUATION |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
 |598 |SERVER ERROR TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
