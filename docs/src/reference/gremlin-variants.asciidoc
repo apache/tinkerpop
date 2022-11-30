@@ -2043,13 +2043,21 @@ import ssl
 ...
 g = traversal().withRemote(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
-                         transport_factory=lambda: AiohttpTransport(read_timeout=10,
-                                                                    write_timeout=10,
-                                                                    heartbeat=1.0,
+                         transport_factory=lambda: AiohttpTransport(read_timeout=60,
+                                                                    write_timeout=20,
+                                                                    heartbeat=10,
                                                                     call_from_event_loop=True,
                                                                     max_content_length=100*1024*1024,
                                                                     ssl_options=ssl.create_default_context(Purpose.CLIENT_AUTH))))
 ----
+
+Note that the `heartbeat` enables keep-alive functionality within aiohttp and it is not enabled by default. It is
+important that the heartbeat interval is not too short, as the wait for the server response to the heartbeat request
+is half the amount of this value. Therefore, if the heartbeat is ten seconds then the wait for the response is just
+five seconds. If the response is not received in that time period then the connection will be closed and any ongoing
+requests on that connection will fail to retrieve results. Therefore, if the heartbeat is set to one second, it only
+provides a half-second to get the response which raises the possibility considerably that the connection will be
+inadvertently closed.
 
 Compression configuration options are described in the
 link:https://docs.python.org/3.6/library/zlib.html#zlib.compressobj[zlib documentation]. By default, compression
