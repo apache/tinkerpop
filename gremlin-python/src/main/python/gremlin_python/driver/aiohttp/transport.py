@@ -29,7 +29,6 @@ __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 class AiohttpTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
-    # Default heartbeat of 5.0 seconds.
     def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs):
         if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
             """ 
