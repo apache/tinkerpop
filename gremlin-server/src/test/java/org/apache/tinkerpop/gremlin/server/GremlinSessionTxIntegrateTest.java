@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -26,9 +27,11 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -59,9 +62,56 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
         switch (nameOfTest) {
             case "shouldExecuteBytecodeInSession":
                 break;
+            case "shouldTimeoutTxBytecode":
+                settings.processors.clear();
+
+                // OpProcessor setting
+                final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
+                processorSettings.className = SessionOpProcessor.class.getCanonicalName();
+                processorSettings.config = new HashMap<>();
+                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
+                settings.processors.add(processorSettings);
+
+                // Unified setting
+                settings.sessionLifetimeTimeout = 3000L;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    @Ignore("TINKERPOP-2832")
+    public void shouldTimeoutTxBytecode() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV("person").addE("link").iterate();
+        gtx.tx().commit();
+
+        assertEquals(1L, g.V().count().next().longValue());
+        assertEquals(1L, g.E().count().next().longValue());
+
+        try {
+            gtx = g.tx().begin();
+
+            assertEquals(1L, gtx.V().count().next().longValue());
+            assertEquals(1L, gtx.E().count().next().longValue());
+
+            // wait long enough for the session to die
+            Thread.sleep(4000);
+
+            // the following should fail with a dead session
+            gtx.V().count().iterate();
+            fail("Session is dead - a new one should not reopen to server this request");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        cluster.close();
     }
 
     @Test
