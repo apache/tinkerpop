@@ -60,7 +60,7 @@ services:
       - TEST_TRANSACTIONS=true
     working_dir: /go_app
     command: >
-      bash -c "go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
+      bash -c "go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
       && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
     depends_on:
       gremlin-server-test:
