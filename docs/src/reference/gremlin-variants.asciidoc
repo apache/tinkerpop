@@ -658,6 +658,31 @@ social.persons("marko").knows("josh");
 NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
+[[gremlin-java-troubleshooting]]
+=== Troubleshooting
+
+*Max frame length of 65536 has been exceeded*
+
+This error occurs when the driver attempts to process a request/response that exceeds the configured maximum size.
+The most direct way to fix this problem is to increase the `maxContentLength` setting in the driver. Ideally, the
+`maxContentLength` set for the driver should match the setting defined on the server.
+
+*TimeoutException*
+
+A `TimeoutException` is thrown by the driver when the time limit assigned by the `maxWaitForConnection` is exceeded
+when trying to borrow a connection from the connection pool for a particular host. There are generally two scenarios
+where this occurs:
+
+1. The server has actually reached its maximum capacity or the driver has just learned that the server is unreachable.
+2. The client is throttling requests.
+
+The latter of the two can be addressed from the driver side in the following ways:
+
+* Increase the `maxWaitForConnection` allowing the client to wait a bit longer for a connection to become available.
+* Increase the number of requests allowed per connection by increasing the `maxSimultaneousUsagePerConnection` and
+`maxInProcessPerConnection` settings.
+* Increase the number of connections available in the connection pool by increasing the `maxConnectionPoolSize`.
+
 anchor:java-application-examples[]
 anchor:gremlin-archetypes[]
 [[gremlin-java-examples]]

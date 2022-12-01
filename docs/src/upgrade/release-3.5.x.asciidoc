@@ -50,6 +50,43 @@ var client = new GremlinClient(new GremlinServer("localhost", 8182), loggerFacto
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2471[TINKERPOP-2471]
 
+==== gremlin-driver Host Availability
+
+The Java drivers approach to determine the health of the host to which it is connected is important to how it behaves.
+The driver has generally taken a pessimistic approach to make this determination, where a failure to borrow a
+connection from the pool would constitute enough evidence to mark the host as dead. Unfortunately a failure to borrow
+from the pool is not the best indicator for a dead host. Intermittent network failure, an overly busy client, or other
+temporary issues could have been at play while the server was perfectly available.
+
+The consequences for marking a host dead are fairly severe as the connection pool is shutdown. While it is shutdown
+in an orderly fashion so as to allow for existing requests to complete if at all possible, it immediately blocks new
+requests producing an immediate `NoHostAvailableException` (assuming there are actually no other hosts to route
+requests to). There is then some delay to reconnect to the server and re-establish each of the connections in the pool,
+which might take some time especially if there was a large pool. If an application were sending hundreds of request
+a second, it would quickly equate to hundreds of exceptions a second, filling logs quickly and making it hard to
+decipher the original root cause from that initial inability to simply borrow a connection.
+
+For 3.5.5, the driver has dropped some of its pessimistic ways and has taken a more optimistic posture when it comes
+to considering host availability. When the driver now has a problem borrowing a connection from the pool, it does not
+assume the worst of a failed host. It instead checks if the other connections in the pool are still alive. If at least
+one is alive it assumes the host is still available and the user simply gets a `TimeoutException` for waiting beyond
+the `maxWaitForConnection` setting. In the event that there are no connections deemed alive, the driver will try to
+issue an immediate reconnect to determine host health. If the reconnect succeeds then the host remains in an available
+state for future requests and if it fails it is finally marked as dead and thus unavailable.
+
+If a host is marked unavailable, the driver, like before, will try to route requests to other configured hosts that
+are healthy. If there are no such other hosts and all are unhealthy, the driver will now make an immediate attempt to
+route the request to a random unavailable host on the off chance it will come back online and the connection pool thus
+re-established. So, rather than a `NoHostAvailableException` flood, the user would instead see a `TimeoutException`
+per request made.
+
+Since the driver was already throwing `NoHostAvailableException` and `TimeoutException`, there shouldn't be too
+many code changes required on upgrade to this version. The main difference to consider is that
+`NoHostAvailableException` should appear less often, so any code that mitigated against a flood of these exceptions,
+such defenses might not be necessary anymore.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2813[TINKERPOP-2813]
+
 == TinkerPop 3.5.4
 
 *Release Date: July 18, 2022*
