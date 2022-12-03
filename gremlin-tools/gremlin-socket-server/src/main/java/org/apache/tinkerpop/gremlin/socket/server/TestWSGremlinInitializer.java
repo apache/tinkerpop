@@ -49,12 +49,11 @@ import java.util.UUID;
  * This handler identifies incoming requests with ids matching those in {@link SocketServerSettings}
  * and delivers the response which corresponds to the request id.
  */
-public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
+public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServerInitializer {
     private static final Logger logger = LoggerFactory.getLogger(TestWSGremlinInitializer.class);
+    private static final String USER_AGENT_HEADER = "User-Agent";
 
     private final SocketServerSettings settings;
-
-    private final String USER_AGENT_HEADER = "User-Agent";
 
     /**
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
@@ -67,14 +66,17 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
 
     @Override
     public void postInit(ChannelPipeline pipeline) {
-        pipeline.addLast(new ClientTestConfigurableHandler());
+        pipeline.addLast(new ClientTestConfigurableHandler(settings));
     }
 
     /**
      * Handler introduced in the server pipeline to configure expected response for test cases.
      */
-    private class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
+    static class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
+        private SocketServerSettings settings;
         private String userAgent = "";
+
+        public ClientTestConfigurableHandler(SocketServerSettings settings) { this.settings = settings; }
 
         @Override
         protected void decode(final ChannelHandlerContext ctx, final BinaryWebSocketFrame frame, final List<Object> objects)
@@ -115,9 +117,15 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             } else if (msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID) || msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID_2)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
-            }
-            else if (msg.getRequestId().equals(settings.USER_AGENT_REQUEST_ID)) {
+            } else if (msg.getRequestId().equals(settings.USER_AGENT_REQUEST_ID)) {
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSimpleStringResponse(settings.USER_AGENT_REQUEST_ID, userAgent)));
+            } else {
+                try {
+                    Thread.sleep(Long.parseLong((String) msg.getArgs().get("gremlin")));
+                    ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(msg.getRequestId())));
+                } catch (NumberFormatException nfe) {
+                    // Ignore. Only return a vertex if the query was a long value.
+                }
             }
         }
 
