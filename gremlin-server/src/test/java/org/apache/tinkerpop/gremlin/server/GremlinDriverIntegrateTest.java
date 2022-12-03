@@ -79,6 +79,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -1830,6 +1831,40 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
+    }
+
+    /**
+     * Tests to make sure that the stack trace contains an informative cause when the request times out because the
+     * client was unable to get a connection and the pool is already maxed out.
+     */
+    @Test
+    public void shouldReturnClearExceptionCauseWhenClientIsTooBusyAndConnectionPoolIsFull() throws InterruptedException {
+        final Cluster cluster = TestClientFactory.build()
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .connectionSetupTimeoutMillis(100)
+                .maxWaitForConnection(150)
+                .minInProcessPerConnection(0)
+                .maxInProcessPerConnection(1)
+                .minSimultaneousUsagePerConnection(0)
+                .maxSimultaneousUsagePerConnection(1)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        for (int i = 0; i < 3; i++) {
+            try {
+                client.submitAsync("Thread.sleep(5000);");
+            } catch (Exception e) {
+                final Throwable root = ExceptionHelper.getRootCause(e);
+                assertTrue(root instanceof TimeoutException);
+                assertTrue(root.getMessage().contains(Client.TOO_MANY_IN_FLIGHT_REQUESTS));
+            }
+
+            Thread.sleep(300);
+        }
+
+        cluster.close();
     }
 
     /**

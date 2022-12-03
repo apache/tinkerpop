@@ -47,7 +47,7 @@ import java.util.UUID;
  * Initializer which partially mimics the Gremlin Server. This initializer injects a handler in the
  * server pipeline that can be modified to send the desired response for a test case.
  */
-public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
+public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServerInitializer {
     private static final Logger logger = LoggerFactory.getLogger(TestWSGremlinInitializer.class);
     /**
      * If a request with this ID comes to the server, the server responds back with a single vertex picked from Modern
@@ -91,7 +91,7 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
     /**
      * Handler introduced in the server pipeline to configure expected response for test cases.
      */
-    private static class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
+    static class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
         private String userAgent = "";
         @Override
         protected void decode(final ChannelHandlerContext ctx, final BinaryWebSocketFrame frame, final List<Object> objects)
@@ -135,9 +135,15 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             } else if (msg.getRequestId().equals(RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
-            }
-            else if (msg.getRequestId().equals(USER_AGENT_REQUEST_ID)) {
+            } else if (msg.getRequestId().equals(USER_AGENT_REQUEST_ID)) {
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSimpleStringResponse(USER_AGENT_REQUEST_ID, userAgent)));
+            } else {
+                try {
+                    Thread.sleep(Long.parseLong((String) msg.getArgs().get("gremlin")));
+                    ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(msg.getRequestId())));
+                } catch (NumberFormatException nfe) {
+                    // Ignore. Only return a vertex if the query was a long value.
+                }
             }
         }
 
