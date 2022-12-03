@@ -24,19 +24,25 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.ReferenceCountUtil;
 
 /**
-* Handler that will drop requests to the WebSocket path.
-*/
-public class NoOpWebSocketServerHandler extends ChannelInboundHandlerAdapter {
-    private String websocketPath;
+ * Class that holds the handlers that can used by the initializers in TestChannelizers.
+ */
+public class TestHandlers {
 
-    public NoOpWebSocketServerHandler(String websocketPath) {
-        this.websocketPath = websocketPath;
-    }
+    /**
+     * Handler that will drop requests to the WebSocket path.
+     */
+    public static class NoOpWebSocketServerHandler extends ChannelInboundHandlerAdapter {
+        private String websocketPath;
 
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        if ((msg instanceof HttpRequest) && ((HttpRequest) msg).uri().endsWith(websocketPath)) {
-            ReferenceCountUtil.release(msg);
+        public NoOpWebSocketServerHandler(String websocketPath) {
+            this.websocketPath = websocketPath;
+        }
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) {
+            if ((msg instanceof HttpRequest) && ((HttpRequest) msg).uri().endsWith(websocketPath)) {
+                ReferenceCountUtil.release(msg);
+            }
         }
     }
 }

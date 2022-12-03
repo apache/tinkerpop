@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ final class ConnectionPool {
     public static final int MAX_POOL_SIZE = 8;
     public static final int MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 8;
     public static final int MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 16;
+    // A small buffer in millis used for comparing if a connection was created within a certain amount of time.
+    private static final int CONNECTION_SETUP_TIME_DELTA = 25;
 
     public final Host host;
     private final Cluster cluster;
@@ -67,12 +70,29 @@ final class ConnectionPool {
     private final String poolLabel;
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
+    private final AtomicReference<ConnectionResult> latestConnectionResult = new AtomicReference<>(new ConnectionResult());
+
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
     private volatile int waiter = 0;
     private final Lock waitLock = new ReentrantLock(true);
     private final Condition hasAvailableConnection = waitLock.newCondition();
     ConnectionFactory connectionFactory;
+
+    /**
+     * The result of a connection attempt. A null value for failureCause means that the connection attempt was successful.
+     */
+    public class ConnectionResult {
+        private long timeOfConnectionAttempt;
+        private Throwable failureCause;
+
+        public ConnectionResult() {}
+
+        public Throwable getFailureCause() { return failureCause; }
+        public long getTime() { return timeOfConnectionAttempt; }
+        public void setFailureCause(Throwable cause) { failureCause = cause; }
+        public void setTimeNow() { timeOfConnectionAttempt = System.currentTimeMillis(); }
+    }
 
     public ConnectionPool(final Host host, final Client client) {
         this(host, client, Optional.empty(), Optional.empty());
@@ -105,11 +125,19 @@ final class ConnectionPool {
             final List<CompletableFuture<Void>> connectionCreationFutures = new ArrayList<>();
             for (int i = 0; i < minPoolSize; i++) {
                 connectionCreationFutures.add(CompletableFuture.runAsync(() -> {
+                    final ConnectionResult result = new ConnectionResult();
                     try {
                         this.connections.add(connectionFactory.create(this));
                         this.open.incrementAndGet();
                     } catch (ConnectionException e) {
+                        result.setFailureCause(e);
                         throw new CompletionException(e);
+                    } finally {
+                        result.setTimeNow();
+                        if ((latestConnectionResult.get() == null) ||
+                                (latestConnectionResult.get().getTime() < result.getTime())) {
+                            latestConnectionResult.set(result);
+                        }
                     }
                 }, cluster.connectionScheduler()));
             }
@@ -339,6 +367,7 @@ final class ConnectionPool {
             return false;
         }
 
+        final ConnectionResult result = new ConnectionResult();
         try {
             connections.add(connectionFactory.create(this));
         } catch (Exception ex) {
@@ -348,7 +377,13 @@ final class ConnectionPool {
                             openCountToActOn, maxPoolSize),
                     ex);
             considerHostUnavailable();
+            result.setFailureCause(ex);
             return false;
+        } finally {
+            result.setTimeNow();
+            if (latestConnectionResult.get().getTime() < result.getTime()) {
+                latestConnectionResult.set(result);
+            }
         }
 
         announceAllAvailableConnection();
@@ -415,6 +450,19 @@ final class ConnectionPool {
             logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
+        final StringBuilder cause = new StringBuilder("Potential Cause: ");
+        final ConnectionResult res = latestConnectionResult.get();
+        // If a connection attempt failed within a request's maxWaitForConnection then it likely contributed to that
+        // request getting a TimeoutException.
+        if (((System.currentTimeMillis() - res.getTime()) < (cluster.getMaxWaitForConnection() + CONNECTION_SETUP_TIME_DELTA)) &&
+                (res.getFailureCause() != null)) {
+            // Assumes that the root cause will give better information about why the connection failed.
+            cause.append(ExceptionHelper.getRootCause(res.getFailureCause()).getMessage());
+        } else if (open.get() >= maxPoolSize) {
+            cause.append(Client.TOO_MANY_IN_FLIGHT_REQUESTS);
+        } else {
+            cause.setLength(0);
+        }
         // if we get to this point, we waited up to maxWaitForConnection from the pool and did not get a Connection.
         // this can either mean the pool is exhausted or the host is unavailable. for the former, this could mean
         // the connection pool and/or server is not sized correctly for the workload as connections are not freeing up
@@ -423,8 +471,8 @@ final class ConnectionPool {
         // message written to the log should provide some insight into the state of the connection pool telling the
         // user if the pool was running at maximum.
         final String timeoutErrorMessage = String.format(
-                "Timed-out (%s %s) waiting for connection on %s%s%s",
-                timeout, unit, host, System.lineSeparator(), this.getPoolInfo());
+                "Timed-out (%s %s) waiting for connection on %s. %s%s%s",
+                timeout, unit, host, cause.toString(), System.lineSeparator(), this.getPoolInfo());
 
         logger.error(timeoutErrorMessage);
 

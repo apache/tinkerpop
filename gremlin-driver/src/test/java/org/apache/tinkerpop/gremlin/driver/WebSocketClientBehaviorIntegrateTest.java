@@ -32,12 +32,17 @@ import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.core.Is.is;
@@ -73,7 +78,10 @@ public class WebSocketClientBehaviorIntegrateTest {
         server = new SimpleSocketServer();
         if (name.getMethodName().equals("shouldAttemptHandshakeForLongerThanDefaultNettySslHandshakeTimeout") ||
                 name.getMethodName().equals("shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout")) {
-            server.start(new TestWSNoOpInitializer());
+            server.start(new TestChannelizers.TestWSNoOpInitializer());
+        } else if (name.getMethodName().equals("shouldContinueRunningRemainingConnectionsIfServerThrottlesNewConnections") ||
+                name.getMethodName().equals("shouldReturnCorrectExceptionIfServerThrottlesNewConnectionsAndMaxWaitExceeded")) {
+            server.start(new TestChannelizers.TestConnectionThrottlingInitializer());
         } else {
             server.start(new TestWSGremlinInitializer());
         }
@@ -334,17 +342,19 @@ public class WebSocketClientBehaviorIntegrateTest {
             assertTrue(caught instanceof NoHostAvailableException);
             assertTrue(logCaptor.getLogs().stream().anyMatch(str -> str.contains("SSL handshake not completed")));
         }
+
+        cluster.close();
     }
 
     /**
      * Tests to make sure that the correct error message is logged when a non-SSL connection attempt times out.
      */
     @Test
-    public void shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout() {
+    public void shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout() throws InterruptedException {
         final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .connectionSetupTimeoutMillis(100)
+                .connectionSetupTimeoutMillis(120)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -357,7 +367,142 @@ public class WebSocketClientBehaviorIntegrateTest {
         } finally {
             assertTrue(caught != null);
             assertTrue(caught instanceof NoHostAvailableException);
+            Thread.sleep(150);
             assertTrue(logCaptor.getLogs().stream().anyMatch(str -> str.contains("WebSocket handshake not completed")));
         }
+
+        cluster.close();
+    }
+
+    /**
+     * Tests that if a server throttles new connections (doesn't allow new connections to be made) then all requests
+     * will run and complete on the connections that are already open.
+     */
+    @Test
+    public void shouldContinueRunningRemainingConnectionsIfServerThrottlesNewConnections() throws ExecutionException, InterruptedException, TimeoutException {
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(5)
+                .maxWaitForConnection(15000) // large value ensures that request will eventually find a connection.
+                .connectionSetupTimeoutMillis(1000)
+                .minInProcessPerConnection(0)
+                .maxInProcessPerConnection(1)
+                .minSimultaneousUsagePerConnection(0)
+                .maxSimultaneousUsagePerConnection(1)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        final List<CompletableFuture<ResultSet>> results = new ArrayList<CompletableFuture<ResultSet>>();
+        for (int i = 0; i < 5; i++) {
+            results.add(client.submitAsync("500"));
+        }
+
+        for (CompletableFuture<ResultSet> result : results) {
+            assertNotNull(result.get(60000, TimeUnit.MILLISECONDS).one().getVertex());
+        }
+
+        cluster.close();
+    }
+
+    /**
+     * Tests that if a server throttles new connections (doesn't allow new connections to be made) then any request
+     * that can't find a connection within its maxWaitForConnection will return an informative exception regarding
+     * the inability to open new connections.
+     */
+    @Test
+    public void shouldReturnCorrectExceptionIfServerThrottlesNewConnectionsAndMaxWaitExceeded() {
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(5)
+                .maxWaitForConnection(250) // small value ensures that requests will return TimeoutException.
+                .connectionSetupTimeoutMillis(100)
+                .minInProcessPerConnection(0)
+                .maxInProcessPerConnection(1)
+                .minSimultaneousUsagePerConnection(0)
+                .maxSimultaneousUsagePerConnection(1)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        for (int i = 0; i < 5; i++) {
+            try {
+                client.submitAsync("3000");
+            } catch (Exception e) {
+                final Throwable rootCause = ExceptionHelper.getRootCause(e);
+                assertTrue(rootCause instanceof TimeoutException);
+                assertTrue(rootCause.getMessage().contains("WebSocket handshake not completed"));
+            }
+        }
+
+        cluster.close();
+    }
+
+    /**
+     * Tests that the client continues to work if the server temporarily goes down between two requests.
+     */
+    @Test
+    public void shouldContinueRunningIfServerGoesDownTemporarily() throws InterruptedException {
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+        final Object lock = new Object();
+
+        final ScheduledExecutorService scheduledPool = Executors.newScheduledThreadPool(1);
+        scheduledPool.schedule(() -> {
+            try {
+                server.stopSync();
+                server = new SimpleSocketServer();
+                server.start(new TestWSGremlinInitializer());
+                synchronized (lock) {
+                    lock.notify();
+                }
+            } catch (InterruptedException ignored) {
+                // Ignored.
+            }
+        }, 1000, TimeUnit.MILLISECONDS);
+
+        synchronized (lock) {
+            assertNotNull(client.submit("1").one().getVertex());
+            lock.wait(30000);
+        }
+
+        assertNotNull(client.submit("1").one().getVertex());
+
+        cluster.close();
+    }
+
+    /**
+     * Tests that if the host is unavailable then the client will return an exception that contains information about
+     * the status of the host.
+     */
+    @Test
+    public void shouldReturnCorrectExceptionIfServerGoesDown() throws InterruptedException {
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .maxWaitForConnection(500)
+                .connectionSetupTimeoutMillis(100)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+        client.submit("1");
+
+        server.stopSync();
+
+        try {
+            client.submit("1");
+        } catch (Exception e) {
+            final Throwable rootCause = ExceptionHelper.getRootCause(e);
+            assertTrue(rootCause instanceof TimeoutException);
+            assertTrue(rootCause.getMessage().contains("Connection refused"));
+        }
+
+        cluster.close();
     }
 }
