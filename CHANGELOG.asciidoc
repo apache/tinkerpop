@@ -38,6 +38,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added user agent to web socket handshake in java driver. Can be controlled by a new enableUserAgentOnConnect configuration. It is enabled by default.
 * Added user agent to web socket handshake in Gremlin.Net driver. Can be controlled by `EnableUserAgentOnConnect` in `ConnectionPoolSettings`. It is enabled by default.
 * Added user agent to web socket handshake in go driver. Can be controlled by a new `EnableUserAgentOnConnect` setting. It is enabled by default.
+* Added user agent to web socket handshake in python driver. Can be controlled by a new `enable_user_agent_on_connect` setting. It is enabled by default.
 * Added logging in .NET.
 * Added `addDefaultXModule` to `GraphSONMapper` as a shortcut for including a version matched GraphSON extension module.
 * Modified `GraphSONRecordReader` and `GraphSONRecordWriter` to include the GraphSON extension module by default.

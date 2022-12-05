@@ -41,11 +41,12 @@ class Client:
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
                  kerberized_service="", headers=None, session=None,
-                 **transport_kwargs):
+                 enable_user_agent_on_connect=True, **transport_kwargs):
         logging.info("Creating Client with url '%s'", url)
         self._closed = False
         self._url = url
         self._headers = headers
+        self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._traversal_source = traversal_source
         if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
@@ -140,7 +141,7 @@ class Client:
         return connection.Connection(
             self._url, self._traversal_source, protocol,
             self._transport_factory, self._executor, self._pool,
-            headers=self._headers)
+            headers=self._headers, enable_user_agent_on_connect=self._enable_user_agent_on_connect)
 
     def submit(self, message, bindings=None, request_options=None):
         return self.submit_async(message, bindings=bindings, request_options=request_options).result()

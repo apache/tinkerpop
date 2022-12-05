@@ -2037,6 +2037,9 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |username |The username to submit on requests that require authentication. |""
 |kerberized_service |the first part of the principal name configured for the gremlin service|"""
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
+|enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
