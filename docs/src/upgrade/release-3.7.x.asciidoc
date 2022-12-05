@@ -61,11 +61,22 @@ drc.open().catch(err => {
 `gremlin-driver` has been refactored and several classes have been extracted to a new `gremlin-util` module. Any classes
 which are utilized by both `gremlin-driver` and `gremlin-server` have been extracted to `gremlin-util`. This includes
 the entire `tinkerpop.gremlin.driver.ser` and `tinkerpop.gremlin.driver.message` packages as well as
-`tinkerpop.gremlin.driver.MessageSerializer` and `tinkerpop.gremlin.driver.Tokens`. This change is non-breaking as the
-package names remain unchanged and `gremlin-util` remains included in `gremlin-driver` as a dependency. As long as
-maven is being used as a build system, there is no change to the use in any of these classes.
+`tinkerpop.gremlin.driver.MessageSerializer` and `tinkerpop.gremlin.driver.Tokens`. For a full list of the migrated
+classes, see: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819].
+All migrated classes have had their packages updated to reflect this change. For these classes, packages have changed
+from `tinkerpop.gremlin.driver.*` to `tinkerpop.gremlin.util.*`. For example
+`org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1` has been updated to
+`org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1`. All imports of these classes should be updated
+to reflect this change. All server config files which declare a list of serializers should also be updated to
+reflect the new location of serializer classes.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819]
+
+==== Removal of `gremlin-driver` from `gremlin-server`
+
+`gremlin-driver` is no longer a dependency of `gremlin-server` and thus will no longer be packaged in server
+distributions. Any app which makes use of both `gremlin-driver` and `gremlin-server` will now need to directly
+include both modules.
 
 === Upgrading for Providers
 

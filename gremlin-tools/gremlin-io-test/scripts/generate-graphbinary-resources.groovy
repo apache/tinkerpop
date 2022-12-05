@@ -19,7 +19,7 @@
 
 import io.netty.buffer.ByteBufAllocator
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter
-import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.*
@@ -48,8 +48,8 @@ toGraphBinary = { o, type, mapper, suffix = "" ->
         buffer.readerIndex(0)
         buffer.readBytes(filestream, buffer.readableBytes())
     } catch (Exception ex) {
-        if (ex.message == "Serializer for type org.apache.tinkerpop.gremlin.driver.message.RequestMessage not found" ||
-                ex.message == "Serializer for type org.apache.tinkerpop.gremlin.driver.message.ResponseMessage not found" )
+        if (ex.message == "Serializer for type org.apache.tinkerpop.gremlin.util.message.RequestMessage not found" ||
+                ex.message == "Serializer for type org.apache.tinkerpop.gremlin.util.message.ResponseMessage not found" )
             fileToWriteTo.delete()
         else
             throw ex

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -104,7 +104,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.apache.tinkerpop.gremlin.driver.SocketServerRunner</mainClass>
+                            <mainClass>org.apache.tinkerpop.gremlin.socket.server.SocketServerRunner</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                         </manifest>

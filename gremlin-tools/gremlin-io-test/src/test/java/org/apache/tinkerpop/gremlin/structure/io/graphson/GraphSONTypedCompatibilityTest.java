@@ -38,13 +38,13 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
             addRegistry(TinkerIoRegistryV2d0.instance()).
             typeInfo(TypeInfo.PARTIAL_TYPES).
             addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-            addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+            addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
             version(GraphSONVersion.V2_0).create().createMapper();
 
     private static ObjectMapper mapperV3 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV3d0.instance()).
             addCustomModule(GraphSONXModuleV3d0.build().create(false)).
-            addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0.GremlinServerModule()).
+            addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0.GremlinServerModule()).
             version(GraphSONVersion.V3_0).create().createMapper();
 
     @Parameterized.Parameters(name = "expect({0})")

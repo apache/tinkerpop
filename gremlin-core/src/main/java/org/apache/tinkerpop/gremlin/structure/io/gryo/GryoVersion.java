@@ -423,10 +423,10 @@ public enum GryoVersion {
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
             // placeholders so that the format stays stable
-            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.RequestMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 167);
-            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.ResponseMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
+            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.util.message.RequestMessage",
+                    "org.apache.tinkerpop.gremlin.util.ser.RequestMessageGryoSerializer", 167);
+            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.util.message.ResponseMessage",
+                    "org.apache.tinkerpop.gremlin.util.ser.ResponseMessageGryoSerializer", 169);
 
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
                     null, 184);
