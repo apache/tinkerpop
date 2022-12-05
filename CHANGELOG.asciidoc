@@ -39,6 +39,7 @@ This release also includes changes from <<release-3-5-5, 3.5.5>>.
 
 * Fixed bug in the Gremlin grammar for parsing of empty queries.
 * Provided mechanism for provider plugins to get notified on script/query processing via `GraphManager`.
+* Moved Gherkin feature tests to `gremlin-test` resources so that they are more easily referenced by providers.
 
 [[release-3-6-1]]
 === TinkerPop 3.6.1 (Release Date: July 18, 2022)

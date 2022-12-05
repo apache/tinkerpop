@@ -23,7 +23,7 @@ This section provides details on Gremlin language operational semantics. Describ
 them with tests in the Gremlin test suite makes it easier for providers to implement the language and for the
 TinkerPop Community to have better consistency in their user experiences. While the general Gremlin test suite offers
 an integrated approach to testing Gremlin queries, the `@StepClassSemantics` oriented tests found
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features[here] are especially focused to the
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here] are especially focused to the
 definitions found in this section. References to the location of specific tests can be found throughout the
 sub-sections below.
 
@@ -254,7 +254,7 @@ Edge cases:
 ** `Float.±Infinity` and `Double.±Infinity` adhere to the same type promotion rules.
 * As described above `NaN` is not <<Equality,Equal>> and not <<Comparability,Comparable>> to any Number (including itself).
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
 ===== nulltype
 As described in the table above, `null == null`, but is not <<Equality,Equal>> and not <<Comparability,Comparable>> to
@@ -478,8 +478,8 @@ The following table maps the notions proposed above to the various `P` operators
 
 ==== See Also
 
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Comparability.feature[Comparability Tests]
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
 
 == Steps
 

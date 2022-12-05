@@ -48,7 +48,7 @@ services:
     image: mcr.microsoft.com/dotnet/sdk:6.0
     volumes:
       - .:/gremlin-dotnet
-      - ../gremlin-test/features:/gremlin-test/features
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features
       - ../docker/gremlin-test-server:/gremlin-dotnet/gremlin-test-server
     environment:
       - DOCKER_ENVIRONMENT=true
