@@ -31,6 +31,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Bumped to `ws` 8.x for `gremlin-javascript`.
 * Added support for mid-traversal `E()`-steps to Gremlin core and GLV's.
 * Added nullable annotations to Gremlin.NET.
+* Bumped Objenesis to 3.3 in `gremlin-shaded`.
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: NOT OFFICIALLY RELEASED YET)

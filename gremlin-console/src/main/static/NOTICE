@@ -64,3 +64,8 @@ Netty 4.1.85
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
+------------------------------------------------------------------------
+Objenesis 3.3 - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.objenesis
+------------------------------------------------------------------------
+Copyright 2006-2022 Joe Walnes, Henri Tremblay, Leonardo Mesquita
+
