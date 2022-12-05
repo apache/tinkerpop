@@ -18,11 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.AttributeKey;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -38,6 +37,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
+import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
@@ -50,11 +50,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
+import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedTestChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -127,12 +134,15 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Logger rootLogger = Logger.getRootLogger();
 
         if (name.getMethodName().equals("shouldPingChannelIfClientDies") ||
-                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
+                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond") ||
+                name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
             final org.apache.log4j.Logger opSelectorHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
             final org.apache.log4j.Logger unifiedHandlerLogger = org.apache.log4j.Logger.getLogger(UnifiedHandler.class);
+            final org.apache.log4j.Logger wsUserAgentHandlerLogger = org.apache.log4j.Logger.getLogger(WsUserAgentHandler.class);
             previousLogLevel = opSelectorHandlerLogger.getLevel();
             opSelectorHandlerLogger.setLevel(Level.INFO);
             unifiedHandlerLogger.setLevel(Level.INFO);
+            wsUserAgentHandlerLogger.setLevel(Level.DEBUG);
         }
 
         rootLogger.addAppender(recordingAppender);
@@ -143,11 +153,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Logger rootLogger = Logger.getRootLogger();
 
         if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
-                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
+                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond") ||
+                name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
             final org.apache.log4j.Logger opSelectorHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
             opSelectorHandlerLogger.setLevel(previousLogLevel);
             final org.apache.log4j.Logger unifiedHandlerLogger = org.apache.log4j.Logger.getLogger(UnifiedHandler.class);
             unifiedHandlerLogger.setLevel(previousLogLevel);
+            final org.apache.log4j.Logger wsUserAgentHandlerLogger = org.apache.log4j.Logger.getLogger(WsUserAgentHandler.class);
+            wsUserAgentHandlerLogger.setLevel(previousLogLevel);
         }
 
         rootLogger.removeAppender(recordingAppender);
@@ -249,6 +262,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
                 settings.channelizer = UnifiedChannelizer.class.getName();
                 break;
+            case "shouldStoreUserAgentInContextWebSocket":
+                settings.channelizer = WebSocketTestChannelizer.class.getName();
+                break;
+            case "shouldStoreUserAgentInContextUnified":
+                settings.channelizer = UnifiedTestChannelizer.class.getName();
+                break;
             default:
                 break;
         }
@@ -281,6 +300,55 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         properties.put("ScriptBaseClass", BaseScriptForTesting.class.getName());
         scriptEngineConf.put("compilerConfigurationOptions", properties);
         return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldCaptureUserAgentFromClient() {
+        final Cluster cluster = TestClientFactory.build().enableUserAgentOnConnect(true).create();
+        final Client client = cluster.connect();
+        client.submit("test");
+
+        assertThat(recordingAppender.logContainsAny(".*New Connection on channel .* with user agent.*$"), is(true));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldStoreUserAgentInContextWebSocket() throws InterruptedException {
+        shouldStoreUserAgentInContext();
+    }
+
+    @Test
+    public void shouldStoreUserAgentInContextUnified() throws InterruptedException {
+        shouldStoreUserAgentInContext();
+    }
+
+    private void shouldStoreUserAgentInContext() throws InterruptedException {
+        if(server.getChannelizer() instanceof TestChannelizer) {
+            assertNull(getUserAgentIfAvailable());
+            final Cluster cluster = TestClientFactory.build().enableUserAgentOnConnect(true).create();
+            final Client client = cluster.connect();
+
+            client.submit("test");
+            assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
+            client.submit("test");
+            assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
+            client.close();
+            cluster.close();
+        }
+    }
+
+    private String getUserAgentIfAvailable() {
+        final AttributeKey<String> userAgentAttrKey = AttributeKey.valueOf(UserAgent.USER_AGENT_HEADER_NAME);
+        if(!(server.getChannelizer() instanceof TestChannelizer)) {
+            return null;
+        }
+        final TestChannelizer channelizer = (TestChannelizer) server.getChannelizer();
+        final ChannelHandlerContext ctx = channelizer.getMostRecentChannelHandlerContext();
+        if(ctx == null || !ctx.channel().hasAttr(userAgentAttrKey)) {
+            return null;
+        }
+        return channelizer.getMostRecentChannelHandlerContext().channel().attr(userAgentAttrKey).get();
     }
 
     @Test

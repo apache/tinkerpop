@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -69,6 +71,12 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             UUID.fromString("3c4cf18a-c7f2-4dad-b9bf-5c701eb33000");
     public static final UUID RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID =
             UUID.fromString("0d333b1d-6e91-4807-b915-50b9ad721d20");
+    /**
+     * If a request with this ID comes to the server, the server responds with the user agent (if any) that was captured
+     * during the web socket handshake.
+     */
+    public static final UUID USER_AGENT_REQUEST_ID =
+            UUID.fromString("20ad7bfb-4abf-d7f4-f9d3-9f1d55bee4ad");
 
     /**
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
@@ -84,6 +92,7 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
      * Handler introduced in the server pipeline to configure expected response for test cases.
      */
     private static class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
+        private String userAgent = "";
         @Override
         protected void decode(final ChannelHandlerContext ctx, final BinaryWebSocketFrame frame, final List<Object> objects)
                 throws Exception {
@@ -127,6 +136,9 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             }
+            else if (msg.getRequestId().equals(USER_AGENT_REQUEST_ID)) {
+                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSimpleStringResponse(USER_AGENT_REQUEST_ID, userAgent)));
+            }
         }
 
         private String returnSingleVertexResponse(final UUID requestID) throws SerializationException {
@@ -135,6 +147,31 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             final Vertex t = g.V().limit(1).next();
 
             return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(t).create());
+        }
+
+        /**
+         * Packages a string message into a ResponseMessage, serializes it, and returns the serialized string
+         * @throws SerializationException
+         */
+        private String returnSimpleStringResponse(final UUID requestID, String message) throws SerializationException {
+            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(message).create());
+        }
+
+        /**
+         * Captures and stores User-Agent if included in header
+         */
+        @Override
+        public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
+            if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+                WebSocketServerProtocolHandler.HandshakeComplete handshake = (WebSocketServerProtocolHandler.HandshakeComplete) evt;
+                HttpHeaders requestHeaders = handshake.requestHeaders();
+                if(requestHeaders.contains(UserAgent.USER_AGENT_HEADER_NAME)) {
+                    userAgent = requestHeaders.get(UserAgent.USER_AGENT_HEADER_NAME);
+                }
+                else {
+                    ctx.fireUserEventTriggered(evt);
+                }
+            }
         }
     }
 }

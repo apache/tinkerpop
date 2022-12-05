@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.WebSocketAuthorizationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
@@ -33,6 +32,8 @@ import org.apache.tinkerpop.gremlin.server.handler.WsGremlinCloseRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
+import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -108,7 +109,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
                 closeOnProtocolViolation(false).allowExtensions(true).maxFramePayloadLength(settings.maxContentLength).build();
         pipeline.addLast(PIPELINE_REQUEST_HANDLER, new WebSocketServerProtocolHandler(GREMLIN_ENDPOINT,
                 null, false, false, 10000L, wsDecoderConfig));
-
+        pipeline.addLast("ws-user-agent-handler", new WsUserAgentHandler());
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
