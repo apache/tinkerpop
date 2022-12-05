@@ -99,6 +99,11 @@ final class Settings {
     public String protocol = null;
 
     /**
+     * Toggles if user agent should be sent in web socket handshakes.
+     */
+    public boolean enableUserAgentOnConnect = true;
+
+    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -142,6 +147,9 @@ final class Settings {
 
         if (conf.containsKey("protocol"))
             settings.protocol = conf.getString("protocol");
+
+        if (conf.containsKey("enableUserAgentOnConnect"))
+            settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());

@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import java.io.File;
@@ -205,6 +204,7 @@ public final class Cluster {
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
+                .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
@@ -561,6 +561,14 @@ public final class Cluster {
         return builder.build();
     }
 
+    /**
+     * Checks if cluster is configured to send a User Agent header
+     * in the web socket handshake
+     */
+    public boolean isUserAgentOnConnectEnabled() {
+        return manager.isUserAgentOnConnectEnabled();
+    }
+
     public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
@@ -597,6 +605,7 @@ public final class Cluster {
         private HandshakeInterceptor interceptor = HandshakeInterceptor.NO_OP;
         private AuthProperties authProps = new AuthProperties();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        private boolean enableUserAgentOnConnect = true;
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -993,6 +1002,16 @@ public final class Cluster {
             return this;
         }
 
+        /**
+         * Configures whether cluster will send a user agent during
+         * web socket handshakes
+         * @param enableUserAgentOnConnect true enables the useragent. false disables the useragent.
+         */
+        public Builder enableUserAgentOnConnect(final boolean enableUserAgentOnConnect) {
+            this.enableUserAgentOnConnect = enableUserAgentOnConnect;
+            return this;
+        }
+
         List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
@@ -1045,6 +1064,7 @@ public final class Cluster {
         private final int workerPoolSize;
         private final int port;
         private final String path;
+        private final boolean enableUserAgentOnConnect;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -1057,6 +1077,7 @@ public final class Cluster {
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
             this.interceptor = builder.interceptor;
+            this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;
@@ -1228,6 +1249,14 @@ public final class Cluster {
         @Override
         public String toString() {
             return String.join(", ", contactPoints.stream().map(InetSocketAddress::toString).collect(Collectors.<String>toList()));
+        }
+
+        /**
+         * Checks if cluster is configured to send a User Agent header
+         * in the web socket handshake
+         */
+        public boolean isUserAgentOnConnectEnabled() {
+            return enableUserAgentOnConnect;
         }
     }
 }

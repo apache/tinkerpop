@@ -41,6 +41,8 @@ namespace Gremlin.Net.Driver
         /// </summary>
         public Action<ClientWebSocketOptions> WebSocketConfigurationCallback { get; set; }
 
+        public bool EnableUserAgentOnConnect { get; set; }
+
 #if NET6_0_OR_GREATER
         /// <summary>
         ///     Gets or sets whether compressions will be used. The default is true. (Only available since .NET 6.)

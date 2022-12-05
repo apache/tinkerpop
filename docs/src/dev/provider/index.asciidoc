@@ -988,6 +988,14 @@ Server returns for a single request.  Again, this description of Gremlin Server'
 out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a
 particular language or style of processing.
 
+It is recommended but not required that a driver include a `User-Agent` header as part of any web socket
+handshake request to Gremlin Server. Gremlin Server uses the user agent in building usage metrics
+as well as debugging. The standard format for connection user agents is:
+
+`"[Application Name] [GLV Name].[Version] [Language Runtime Version] [OS].[Version] [CPU Architecture]"`
+For example:
+`"MyTestApplication Gremlin-Java.3.5.4 11.0.16.1 Mac_OS_X.12.6.1 aarch64"`
+
 To formulate a request to Gremlin Server, a `RequestMessage` needs to be constructed.  The `RequestMessage` is a
 generalized representation of a request that carries a set of "standard" values in addition to optional ones that are
 dependent on the operation being performed.  A `RequestMessage` has these fields:
