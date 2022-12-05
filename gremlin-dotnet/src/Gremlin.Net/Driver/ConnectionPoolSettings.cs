@@ -39,6 +39,7 @@ namespace Gremlin.Net.Driver
         private const int DefaultMaxInProcessPerConnection = 32;
         private const int DefaultReconnectionAttempts = 4;
         private static readonly TimeSpan DefaultReconnectionBaseDelay = TimeSpan.FromSeconds(1);
+        internal const bool DefaultEnableUserAgentOnConnect = true;
 
         /// <summary>
         ///     Gets or sets the size of the connection pool.
@@ -131,5 +132,15 @@ namespace Gremlin.Net.Driver
                 _reconnectionBaseDelay = value;
             }
         }
+        
+        /// <summary>
+        /// Gets or sets whether a connection pool will send a user agent during web socket handshakes
+        /// </summary>
+        /// <remarks>
+        /// The default value is true. When enabled, user agents will only be sent during the web socket
+        /// handshake. User agent follows the form:
+        /// [Application Name] [GLV Name].[Version] [Language Runtime Version] [OS].[Version] [CPU Architecture]
+        /// </remarks>
+        public bool EnableUserAgentOnConnect  { get;  set; } = DefaultEnableUserAgentOnConnect;
     }
 }
