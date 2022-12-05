@@ -1516,6 +1516,9 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |ReadBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
 |WriteBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
 |Session |Session ID. |""
+|EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 [[gremlin-go-strategies]]

@@ -65,9 +65,16 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 		ReadBufferSize:    transporter.connSettings.readBufferSize,
 		WriteBufferSize:   transporter.connSettings.writeBufferSize,
 	}
+	header := transporter.connSettings.authInfo.getHeader()
+	if transporter.connSettings.enableUserAgentOnConnect {
+		if header == nil {
+			header = make(http.Header)
+		}
+		header.Set(userAgentHeader, userAgent)
+	}
 
 	// Nil is accepted as a valid header, so it can always be passed directly through.
-	conn, _, err := dialer.Dial(u.String(), transporter.connSettings.authInfo.getHeader())
+	conn, _, err := dialer.Dial(u.String(), header)
 	if err != nil {
 		return err
 	}
