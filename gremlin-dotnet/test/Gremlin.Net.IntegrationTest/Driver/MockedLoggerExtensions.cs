@@ -34,14 +34,14 @@ public static class MockedLoggerExtensions
     {
         mockedLogger.Verify(
             m => m.Log(expectedLogLevel, It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, _) => o.ToString().Contains(logMessagePart)), null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
+                It.Is<It.IsAnyType>((o, _) => o.ToString()!.Contains(logMessagePart)), null,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
     }
     
     public static void VerifyNothingWasLogged(this Mock<ILogger> mockedLogger)
     {
         mockedLogger.Verify(
             m => m.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Never);
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
     }
 }

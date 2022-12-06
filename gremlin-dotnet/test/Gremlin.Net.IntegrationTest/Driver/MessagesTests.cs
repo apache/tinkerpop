@@ -35,8 +35,8 @@ namespace Gremlin.Net.IntegrationTest.Driver
 {
     public class MessagesTests
     {
-        private readonly RequestMessageProvider _requestMessageProvider = new RequestMessageProvider();
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private readonly RequestMessageProvider _requestMessageProvider = new();
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Fact]

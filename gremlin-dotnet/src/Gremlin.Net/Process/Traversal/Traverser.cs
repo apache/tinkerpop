@@ -50,7 +50,7 @@ namespace Gremlin.Net.Process.Traversal
         public long Bulk { get; internal set; }
 
         /// <inheritdoc />
-        public bool Equals(Traverser other)
+        public bool Equals(Traverser? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

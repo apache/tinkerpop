@@ -486,7 +486,7 @@ public class GroovyTranslatorTests
         }
     }
 
-    private void AssertTranslation(string expectedTranslation, params object[] objs)
+    private void AssertTranslation(string expectedTranslation, params object?[]? objs)
     {
         AssertTraversalTranslation($"g.inject({expectedTranslation})", _g.Inject(objs));
     }

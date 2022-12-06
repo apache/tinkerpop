@@ -37,7 +37,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static string GetMessage(IgnoreReason reason)
         {
-            string reasonSuffix = null;
+            string? reasonSuffix = null;
             switch (reason)
             {
                 case IgnoreReason.NoReason:

@@ -77,7 +77,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             var serializer = CreateMessageSerializer();
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () =>
-                await serializer.SerializeMessageAsync(RequestMessage.Build(default).Create(),
+                await serializer.SerializeMessageAsync(RequestMessage.Build(string.Empty).Create(),
                     new CancellationToken(true)));
         }
     

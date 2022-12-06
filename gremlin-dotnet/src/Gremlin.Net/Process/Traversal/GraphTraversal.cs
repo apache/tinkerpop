@@ -732,7 +732,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> From (Vertex fromVertex)
+        public GraphTraversal<TStart, TEnd> From (Vertex? fromVertex)
         {
             Bytecode.AddStep("from", fromVertex);
             return Wrap<TStart, TEnd>(this);
@@ -1883,7 +1883,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the to step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> To (Vertex toVertex)
+        public GraphTraversal<TStart, TEnd> To (Vertex? toVertex)
         {
             Bytecode.AddStep("to", toVertex);
             return Wrap<TStart, TEnd>(this);

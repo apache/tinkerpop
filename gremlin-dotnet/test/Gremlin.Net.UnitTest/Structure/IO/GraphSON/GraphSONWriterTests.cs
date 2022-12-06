@@ -295,7 +295,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializeGList(int version)
         {
             var writer = CreateGraphSONWriter(version);
-            var list = new List<object> {5, 6, null};
+            var list = new List<object?> {5, 6, null};
 
             var serializedGraphSON = writer.WriteObject(list);
 
@@ -552,7 +552,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
     internal class TestGraphSONSerializer : IGraphSONSerializer
     {
-        public string TestNamespace { get; set; }
+        public string? TestNamespace { get; set; }
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {

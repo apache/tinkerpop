@@ -45,7 +45,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void ShouldThrowWhenGivenNullAsGremlinClient()
         {
-            Assert.Throws<ArgumentNullException>(() => new DriverRemoteConnection(null));
+            Assert.Throws<ArgumentNullException>(() => new DriverRemoteConnection(null!));
         }
     }
 }

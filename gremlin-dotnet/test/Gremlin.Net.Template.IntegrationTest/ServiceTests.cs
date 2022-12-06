@@ -34,7 +34,7 @@ namespace Gremlin.Net.Template.IntegrationTest
 {
     public class ServiceTests
     {
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
         private const string TestTraversalSource = "gmodern";
 
@@ -48,7 +48,7 @@ namespace Gremlin.Net.Template.IntegrationTest
             
                 var creators = service.FindCreatorsOfSoftware("lop");
 
-                Assert.Equal(new List<string> {"marko", "josh", "peter"}, creators);
+                Assert.Equal(new List<string?> {"marko", "josh", "peter"}, creators);
             }
         }
 
