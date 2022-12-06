@@ -1245,6 +1245,10 @@ session-based requests where "engine-name" will be the actual name of the engine
 * `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
 requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
 measured under the `UnifiedChannelizer`.
+* `user-agent.*` - Counts the number of connection requests from clients providing a given user agent.
+
+NOTE: Gremlin Server has a limit of 10000 unique user agents to be tracked by metrics. If this cap is exceeded
+any additional unique user agents will be counted as `user-agent.other`.
 
 ==== As A Service
 

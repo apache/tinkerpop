@@ -27,6 +27,7 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Gremlin.Net.Process;
 
 namespace Gremlin.Net.Driver
 {
@@ -47,9 +48,14 @@ namespace Gremlin.Net.Driver
         private const int ReceiveBufferSize = 1024;
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
         private readonly IClientWebSocket _client;
+        private const string userAgentHeaderName = "User-Agent";
 
         public WebSocketConnection(IClientWebSocket client, WebSocketSettings settings)
         {
+            if (settings.EnableUserAgentOnConnect)
+            {
+                client.Options.SetRequestHeader(userAgentHeaderName, Utils.UserAgent);
+            }
             _client = client;
 
 #if NET6_0_OR_GREATER

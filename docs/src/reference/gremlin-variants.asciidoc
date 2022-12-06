@@ -329,6 +329,7 @@ The following table describes the various configuration options for the Gremlin 
 |serializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
+|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
@@ -1138,6 +1139,9 @@ on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClien
 |MaxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |32
 |ReconnectionAttempts |The number of attempts to get an open connection from the pool to submit a request. |4
 |ReconnectionBaseDelay |The base delay used for the exponential backoff for the reconnection attempts. |1 s
+|EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 A `NoConnectionAvailableException` is thrown if all connections have reached the `MaxInProcessPerConnection` limit
@@ -1524,6 +1528,9 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |ReadBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
 |WriteBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
 |Session |Session ID. |""
+|EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 [[gremlin-go-strategies]]
@@ -2044,6 +2051,9 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |username |The username to submit on requests that require authentication. |""
 |kerberized_service |the first part of the principal name configured for the gremlin service|"""
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
+|enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
