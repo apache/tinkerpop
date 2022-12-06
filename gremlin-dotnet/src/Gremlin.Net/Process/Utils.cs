@@ -35,7 +35,7 @@ namespace Gremlin.Net.Process
     internal static class Utils
     {
         public static string UserAgent => _userAgent ??= GenerateUserAgent();
-        private static string _userAgent;
+        private static string? _userAgent;
         
         /// <summary>
         /// Waits the completion of the provided Task.
