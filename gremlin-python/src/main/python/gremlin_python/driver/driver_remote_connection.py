@@ -40,7 +40,7 @@ class DriverRemoteConnection(RemoteConnection):
                  message_serializer=None, graphson_reader=None,
                  graphson_writer=None, headers=None, session=None,
                  enable_user_agent_on_connect=True, **transport_kwargs):
-        logg.info("Creating DriverRemoteConnection with url '%s'", str(url))
+        log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
         self.__protocol_factory = protocol_factory

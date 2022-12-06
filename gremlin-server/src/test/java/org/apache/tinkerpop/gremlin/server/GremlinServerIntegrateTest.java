@@ -148,7 +148,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void setupForEachTest() {
 
         if (name.getMethodName().equals("shouldPingChannelIfClientDies") ||
-                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
+                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond") ||
+                name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
             final Logger opSelectorHandlerLogger = (Logger) LoggerFactory.getLogger(OpSelectorHandler.class);
             final Logger unifiedHandlerLogger = (Logger) LoggerFactory.getLogger(UnifiedHandler.class);
             final Logger wsUserAgentHandlerLogger = (Logger) LoggerFactory.getLogger(WsUserAgentHandler.class);
@@ -163,8 +164,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @After
     public void teardownForEachTest() {
-        if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
-                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
+        if (name.getMethodName().equals("shouldPingChannelIfClientDies") ||
+                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond") ||
+                name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
             final Logger opSelectorHandlerLogger = (Logger) LoggerFactory.getLogger(OpSelectorHandler.class);
             opSelectorHandlerLogger.setLevel(previousLogLevel);
             final Logger unifiedHandlerLogger = (Logger) LoggerFactory.getLogger(UnifiedHandler.class);
