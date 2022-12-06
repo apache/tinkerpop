@@ -108,6 +108,14 @@ public class WebSocketClientBehaviorIntegrateTest {
     }
 
     /**
+     * Deliberately fails
+     */
+    @Test
+    public void shouldFail() {
+        assertEquals(true, false);
+    }
+
+    /**
      * Tests that no user agent is sent to server when that behaviour is disabled.
      */
     @Test
