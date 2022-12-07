@@ -24,6 +24,8 @@
 'use strict';
 
 const crypto = require('crypto');
+const os = require('os');
+const gremlinVersion = require(__dirname + '/../package.json').version;
 
 exports.toLong = function toLong(value) {
   return new Long(value);
@@ -79,3 +81,25 @@ class ImmutableMap extends Map {
 }
 
 exports.ImmutableMap = ImmutableMap;
+
+function generateUserAgent() {
+  const applicationName = (process.env.npm_package_name || 'NotAvailable').replace('_', ' ');
+  const driverVersion = gremlinVersion.replace('_', ' ');
+  const runtimeVersion = process.version.replace(' ', '_');
+  const osName = os.platform().replace(' ', '_');
+  const osVersion = os.release().replace(' ', '_');
+  const cpuArch = process.arch.replace(' ', '_');
+  const userAgent = `${applicationName} Gremlin-Javascript.${driverVersion} ${runtimeVersion} ${osName}.${osVersion} ${cpuArch}`;
+
+  return userAgent;
+}
+
+exports.getUserAgentHeader = function getUserAgentHeader() {
+  return 'User-Agent';
+};
+
+const userAgent = generateUserAgent();
+
+exports.getUserAgent = function getUserAgent() {
+  return userAgent;
+};
