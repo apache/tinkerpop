@@ -64,6 +64,7 @@ class Connection extends EventEmitter {
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
+   * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
    * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
    * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
@@ -97,6 +98,7 @@ class Connection extends EventEmitter {
     this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
+    this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
 
     this._pingEnabled = this.options.pingEnabled === false ? false : true;
     this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
@@ -116,9 +118,16 @@ class Connection extends EventEmitter {
     }
 
     this.emit('log', 'ws open');
+    let headers = this.options.headers;
+    if (this._enableUserAgentOnConnect) {
+      if (!headers) {
+        headers = [];
+      }
+      headers[utils.getUserAgentHeader()] = utils.getUserAgent();
+    }
 
     this._ws = new WebSocket(this.url, {
-      headers: this.options.headers,
+      headers: headers,
       ca: this.options.ca,
       cert: this.options.cert,
       pfx: this.options.pfx,

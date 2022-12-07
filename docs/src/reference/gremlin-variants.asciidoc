@@ -797,6 +797,34 @@ const { order: { desc } } = gremlin.process;
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
+[[gremlin-javascript-configuration]]
+=== Configuration
+The following table describes the various configuration options for the Gremlin-Javascript Driver. They
+can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
+
+[width="100%",cols="3,3,10,^2",options="header"]
+|=========================================================
+|Key |Type |Description |Default
+|url |String |The resource uri. |None
+|options |Object |The connection options. |{}
+|options.ca |Array |Trusted certificates. |undefined
+|options.cert |String/Array/Buffer |The certificate key. |undefined
+|options.mimeType |String |The mime type to use. |'application/vnd.gremlin-v3.0+json'
+|options.pfx |String/Buffer |The private key, certificate, and CA certs. |undefined
+|options.reader |GraphSONReader/GraphBinaryReader |The reader to use. |select reader according to mimeType
+|options.writer |GraphSONWriter |The writer to use. |select writer according to mimeType
+|options.rejectUnauthorized |Boolean |Determines whether to verify or not the server certificate. |undefined
+|options.traversalSource |String |The traversal source. |'g'
+|options.authenticator |Authenticator |The authentication handler to use. |undefined
+|options.processor |String |The name of the opProcessor to use, leave it undefined or set 'session' when session mode. |undefined
+|options.session |String |The sessionId of Client in session mode. undefined means session-less Client. |undefined
+|options.enableUserAgentOnConnect |Boolean |Determines if a user agent will be sent during connection handshake. |true
+|options.headers |Object |An associative array containing the additional header key/values for the initial request. |undefined
+|options.pingEnabled |Boolean |Setup ping interval. |true
+|options.pingInterval |Number |Ping request interval in ms if ping enabled. |60000
+|options.pongTimeout |Number |Timeout of pong response in ms after sending a ping. |30000
+|=========================================================
+
 [[gremlin-javascript-transactions]]
 === Transactions
 
