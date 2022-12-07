@@ -30,8 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Serialize results to JSON with version 2.0.x schema and the extended module.

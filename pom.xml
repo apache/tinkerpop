@@ -143,6 +143,7 @@ limitations under the License.
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
+        <module>gremlin-util</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>

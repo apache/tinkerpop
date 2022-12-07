@@ -56,9 +56,22 @@ drc.open().catch(err => {
 })
 ----
 
-=== Upgrading for Graph Driver Providers
+==== Creation of New `gremlin-util` Module
 
-==== Gremlin.NET: Nullable Reference Types
+`gremlin-driver` has been refactored and several classes have been extracted to a new `gremlin-util` module. Any classes
+which are utilized by both `gremlin-driver` and `gremlin-server` have been extracted to `gremlin-util`. This includes
+the entire `tinkerpop.gremlin.driver.ser` and `tinkerpop.gremlin.driver.message` packages as well as
+`tinkerpop.gremlin.driver.MessageSerializer` and `tinkerpop.gremlin.driver.Tokens`. This change is non-breaking as the
+package names remain unchanged and `gremlin-util` remains included in `gremlin-driver` as a dependency. As long as
+maven is being used as a build system, there is no change to the use in any of these classes.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819]
+
+=== Upgrading for Providers
+
+==== Graph Driver Providers
+
+===== Gremlin.NET: Nullable Reference Types
 
 Enabling nullable reference types comes with some breaking changes in Gremlin.NET which can affect driver providers.
 
@@ -71,3 +84,9 @@ namespaces to initialize these properties directly from the constructor which en
 We also used this opportunity to convert some of these pure data classes into a `record`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
+
+===== Reworked Gremlin Socket Server
+
+The `SimpleSocketServer` from `gremlin-driver` has been brought into a new module `gremlin-tools/gremlin-socket-server`
+and it has been adapted to be usable by all drivers for testing. See more about creating gremlin socket server tests
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-socket-server-tests[here].
