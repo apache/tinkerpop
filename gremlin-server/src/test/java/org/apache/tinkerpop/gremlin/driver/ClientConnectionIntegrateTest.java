@@ -48,7 +48,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ClientConnectionIntegrateTest.class);
     private Log4jRecordingAppender recordingAppender = null;
     private Level previousLogLevel;
 
@@ -171,7 +170,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         }, "worker-shouldSucceedWithJitteryConnection").start();
 
         // wait long enough for the jitters to kick in at least a little
-        while (latch.getCount() > 500) {
+        while (latch.getCount() > (requests / 2)) {
             TimeUnit.MILLISECONDS.sleep(50);
         }
 
@@ -183,8 +182,6 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
 
         // if there was a exception in the worker thread, then it had better be a TimeoutException
         assertThat(hadFailOtherThanTimeout.get(), is(false));
-
-        connectionFactory.jittery = false;
 
         cluster.close();
     }

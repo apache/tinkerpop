@@ -674,7 +674,7 @@ when trying to borrow a connection from the connection pool for a particular hos
 where this occurs:
 
 1. The server has actually reached its maximum capacity or the driver has just learned that the server is unreachable.
-2. The client is throttling requests.
+2. The client is throttling requests when the pool is exhausted.
 
 The latter of the two can be addressed from the driver side in the following ways:
 
@@ -682,6 +682,9 @@ The latter of the two can be addressed from the driver side in the following way
 * Increase the number of requests allowed per connection by increasing the `maxSimultaneousUsagePerConnection` and
 `maxInProcessPerConnection` settings.
 * Increase the number of connections available in the connection pool by increasing the `maxConnectionPoolSize`.
+
+The exception and logs (assuming they are enabled) should contain information about the state of the connection pool
+along with its connections which can help shed more light on which of these scenarios caused the problem.
 
 anchor:java-application-examples[]
 anchor:gremlin-archetypes[]

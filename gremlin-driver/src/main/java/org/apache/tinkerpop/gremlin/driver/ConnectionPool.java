@@ -363,12 +363,12 @@ final class ConnectionPool {
 
         try {
             connections.add(connectionFactory.create(this));
-        } catch (Exception ce) {
+        } catch (Exception ex) {
             open.decrementAndGet();
             logger.error(String.format(
                     "Connections[%s] were under maximum allowed[%s], but there was an error creating a new connection",
                             openCountToActOn, maxPoolSize),
-                    ce);
+                    ex);
             considerHostUnavailable();
             return false;
         }
