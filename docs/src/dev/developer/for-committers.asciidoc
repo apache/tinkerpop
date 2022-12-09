@@ -162,7 +162,8 @@ this property set.
 affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed. This is a field usually only set by committers.
+which that particular issue will completed. This is a field usually only set by committers and should only be set
+when the issue is being closed with a completed disposition (e.g. "Done", "Fixed", etc.).
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
