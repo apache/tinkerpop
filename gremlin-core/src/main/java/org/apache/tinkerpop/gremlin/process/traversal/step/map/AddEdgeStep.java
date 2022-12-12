@@ -106,6 +106,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     "addE(%s) failed because the to() traversal (which should give a Vertex) failed with: %s",
                     edgeLabel, e.getMessage()));
         }
+
         if (!(theTo instanceof Vertex))
             throw new IllegalStateException(String.format(
                     "addE(%s) could not find a Vertex for to() - encountered: %s", edgeLabel,
@@ -119,6 +120,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     "addE(%s) failed because the from() traversal (which should give a Vertex) failed with: %s",
                     edgeLabel, e.getMessage()));
         }
+
         if (!(theFrom instanceof Vertex))
             throw new IllegalStateException(String.format(
                     "addE(%s) could not find a Vertex for from() - encountered: %s", edgeLabel,
