@@ -28,7 +28,7 @@
     "grunt": "^1.5.3",
     "grunt-cli": "~1.4.3",
     "grunt-jsdoc": "~2.4.1",
-    "mocha": "^9.2.2",
+    "mocha": "^10.2.0",
     "prettier": "^2.7.1"
   },
   "repository": {
