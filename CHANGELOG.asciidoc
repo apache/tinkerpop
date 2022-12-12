@@ -258,6 +258,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed issue where the `GremlinGroovyScriptEngine` reused the same translator concurrently which lead to incorrect translations.
 * Fixed bug where tasks that haven't started running yet time out due to `evaluationTimeout` and never send a response back to the client.
 * Set the exact exception in `initializationFailure` on the Java driver instead of the root cause.
+* Improved error message for when `from()` and `to()` are unproductive for `addE()`.
 * Added `SparkIOUtil` utility to load graph into Spark RDD.
 * Changed `JavaTranslator` exception handling so that an `IllegalArgumentException` is used for cases where the method exists but the signature can't be discerned given the arguments supplied.
 * Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.

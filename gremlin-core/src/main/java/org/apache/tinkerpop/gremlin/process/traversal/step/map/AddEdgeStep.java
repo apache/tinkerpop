@@ -97,13 +97,30 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
-        final Object theTo = this.parameters.get(traverser, TO, traverser::get).get(0);
+
+        final Object theTo;
+        try {
+            theTo = this.parameters.get(traverser, TO, traverser::get).get(0);
+        } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
+            throw new IllegalStateException(String.format(
+                    "addE(%s) failed because the to() traversal (which should give a Vertex) failed with: %s",
+                    edgeLabel, e.getMessage()));
+        }
+
         if (!(theTo instanceof Vertex))
             throw new IllegalStateException(String.format(
                     "addE(%s) could not find a Vertex for to() - encountered: %s", edgeLabel,
                     null == theTo ? "null" : theTo.getClass().getSimpleName()));
 
-        final Object theFrom = this.parameters.get(traverser, FROM, traverser::get).get(0);
+        final Object theFrom;
+        try {
+            theFrom  = this.parameters.get(traverser, FROM, traverser::get).get(0);
+        } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
+            throw new IllegalStateException(String.format(
+                    "addE(%s) failed because the from() traversal (which should give a Vertex) failed with: %s",
+                    edgeLabel, e.getMessage()));
+        }
+
         if (!(theFrom instanceof Vertex))
             throw new IllegalStateException(String.format(
                     "addE(%s) could not find a Vertex for from() - encountered: %s", edgeLabel,
