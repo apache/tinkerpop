@@ -253,11 +253,11 @@ Feature: Step - repeat()
       | loop  |
       | loop  |
 
-Scenario: g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name
+Scenario: g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX
     Given the modern graph
     And the traversal of
       """
-      g.V().repeat(__.out().repeat(__.out()).times(1)).times(1).limit(1).path().by("name")
+      g.V().repeat(__.out().repeat(__.out().order().by("name",desc)).times(1)).times(1).limit(1).path().by("name")
       """
     When iterated next
     Then the result should be unordered
