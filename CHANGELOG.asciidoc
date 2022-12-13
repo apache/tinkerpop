@@ -244,6 +244,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Set the exact exception in `initializationFailure` on the Java driver instead of the root cause.
 * Improved error message for when `from()` and `to()` are unproductive for `addE()`.
 * Added `SparkIOUtil` utility to load graph into Spark RDD.
+* Improved performance of `CloneVertexProgram` by bypassing the shuffle state of `SparkGraphComputer`.
 * Changed `JavaTranslator` exception handling so that an `IllegalArgumentException` is used for cases where the method exists but the signature can't be discerned given the arguments supplied.
 * Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.
 * Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.

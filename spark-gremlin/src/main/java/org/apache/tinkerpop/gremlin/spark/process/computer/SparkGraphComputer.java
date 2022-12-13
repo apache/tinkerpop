@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -59,6 +60,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingP
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkInterceptorStrategy;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkSingleIterationStrategy;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkCloneVertexProgramInterceptor;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
@@ -369,6 +371,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 ////////////////////////////////
                 if (null != this.vertexProgram) {
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
+                    // build a shortcut (which reduces the total Spark stages from 3 to 2) for CloneVertexProgram since it does nothing
+                    // and this improves the overall performance a lot
+                    if (this.vertexProgram.getClass().equals(CloneVertexProgram.class) &&
+                        !graphComputerConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
+                        graphComputerConfiguration.setProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR, SparkCloneVertexProgramInterceptor.class.getName());
+                    }
                     /////////////////
                     // if there is a registered VertexProgramInterceptor, use it to bypass the GraphComputer semantics
                     if (graphComputerConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
