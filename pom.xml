@@ -158,7 +158,10 @@ limitations under the License.
         <commons.lang3.version>3.11</commons.lang3.version>
         <commons.text.version>1.10.0</commons.text.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>2.5.19</groovy.version>
+        <!-- performance after 2.5.15 is similar to the poor performance of 3.x and 4.x - we can't upgrade past this
+             version without a accepting a major performance hit. details related to this issue along with links
+             to attempts to solve the problem with the Groovy community can be found on: TINKERPOP-2373 -->
+        <groovy.version>2.5.15</groovy.version>
         <hadoop.version>2.7.7</hadoop.version>
         <hamcrest.version>2.2</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
