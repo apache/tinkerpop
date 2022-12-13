@@ -60,20 +60,23 @@ Feature: Step - ReadOnlyStrategy
 
   @WithReadOnlyStrategy
   Scenario: g_withStrategiesXReadOnlyStrategyX_addVXpersonX_fromXVX1XX_toXVX2XX
-    Given the empty graph
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.withStrategies(ReadOnlyStrategy).addE("link").from(__.V(1)).to(__.V(2))
+      g.withStrategies(ReadOnlyStrategy).addE("link").from(__.V(vid1)).to(__.V(vid2))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The provided traversal has a mutating step and thus is not read only"
 
   @WithReadOnlyStrategy
   Scenario: g_withStrategiesXReadOnlyStrategyX_V_addVXpersonX_fromXVX1XX
-    Given the empty graph
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withStrategies(ReadOnlyStrategy).V().addE("link").from(__.V(1))
+      g.withStrategies(ReadOnlyStrategy).V().addE("link").from(__.V(vid1))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The provided traversal has a mutating step and thus is not read only"

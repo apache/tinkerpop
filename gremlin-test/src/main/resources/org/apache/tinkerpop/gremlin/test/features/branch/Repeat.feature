@@ -258,30 +258,31 @@ Feature: Step - repeat()
       | loop  |
 
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name
+  Scenario: g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX
       Given the modern graph
       And the traversal of
-        """
-        g.V().repeat(__.out().repeat(__.out()).times(1)).times(1).limit(1).path().by("name")
-        """
+          """
+          g.V().repeat(__.out().repeat(__.out().order().by("name",desc)).times(1)).times(1).limit(1).path().by("name")
+          """
       When iterated next
       Then the result should be unordered
-        | result |
-        | marko |
-        | josh |
-        | ripple |
+          | result |
+          | marko |
+          | josh |
+          | ripple |
+
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX
-      Given the modern graph
-      And the traversal of
-        """
-        g.V().repeat(__.out("knows")).until(__.repeat(__.out("created")).emit(__.has("name", "lop"))).path().by("name")
-        """
-      When iterated next
-      Then the result should be unordered
-        | result |
-        | marko |
-        | josh |
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(__.out("knows")).until(__.repeat(__.out("created")).emit(__.has("name", "lop"))).path().by("name")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
 
   Scenario: g_V_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang
     Given the modern graph
