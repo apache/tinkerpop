@@ -18,26 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
 
 /**
- * A vanilla WebSocket server Initializer implementation using Netty. This initializer would configure the server for
- * WebSocket handshake and decoding incoming WebSocket frames.
+ * A base ChannelInitializer that setups the pipeline for HTTP handling. This class should be sub-classed by a handler
+ * that handles the actual data being received.
  */
-public abstract class TestWebSocketServerInitializer extends TestHttpServerInitializer {
+public class TestHttpServerInitializer extends ChannelInitializer<SocketChannel> {
+    protected static final String WEBSOCKET_PATH = "/gremlin";
 
     @Override
     public void initChannel(SocketChannel ch) {
-        super.initChannel(ch);
-
         final ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new WebSocketServerCompressionHandler());
-        pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
-        this.postInit(ch.pipeline());
+        pipeline.addLast(new HttpServerCodec());
+        pipeline.addLast(new HttpObjectAggregator(65536));
     }
-
-    public abstract void postInit(final ChannelPipeline ch);
 }
