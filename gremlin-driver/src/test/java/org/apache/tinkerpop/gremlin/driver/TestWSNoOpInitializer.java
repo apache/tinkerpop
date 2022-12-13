@@ -18,26 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 
 /**
- * A vanilla WebSocket server Initializer implementation using Netty. This initializer would configure the server for
- * WebSocket handshake and decoding incoming WebSocket frames.
+ * An initializer that adds a handler that will drop WebSocket frames.
  */
-public abstract class TestWebSocketServerInitializer extends TestHttpServerInitializer {
+public class TestWSNoOpInitializer extends TestHttpServerInitializer {
 
     @Override
     public void initChannel(SocketChannel ch) {
         super.initChannel(ch);
-
-        final ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new WebSocketServerCompressionHandler());
-        pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
-        this.postInit(ch.pipeline());
+        ch.pipeline().addLast(new NoOpWebSocketServerHandler(WEBSOCKET_PATH));
     }
-
-    public abstract void postInit(final ChannelPipeline ch);
 }
