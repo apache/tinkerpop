@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -45,6 +46,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class WebSocketClientBehaviorIntegrateTest {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketClientBehaviorIntegrateTest.class);
@@ -77,7 +79,12 @@ public class WebSocketClientBehaviorIntegrateTest {
         logCaptor.clearLogs();
 
         server = new SimpleSocketServer(settings);
-        server.start(new TestWSGremlinInitializer(settings));
+        if (name.getMethodName().equals("shouldAttemptHandshakeForLongerThanDefaultNettySslHandshakeTimeout") ||
+                name.getMethodName().equals("shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout")) {
+            server.start(new TestWSNoOpInitializer());
+        } else {
+            server.start(new TestWSGremlinInitializer(settings));
+        }
     }
 
     @After
@@ -301,5 +308,60 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         assertEquals("No new connection creation should be started", 0,
                 logCaptor.getLogs().stream().filter(str -> str.contains("Considering new connection on")).count());
+    }
+
+    /**
+     * (TINKERPOP-2814) Tests to make sure that the SSL handshake is now capped by connectionSetupTimeoutMillis and not
+     * the default Netty SSL handshake timeout of 10,000ms.
+     */
+    @Test
+    public void shouldAttemptHandshakeForLongerThanDefaultNettySslHandshakeTimeout() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .connectionSetupTimeoutMillis(20000) // needs to be larger than 10000ms.
+                .enableSsl(true)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+        final long start = System.currentTimeMillis();
+
+        Exception caught = null;
+        try {
+            client.submit("1");
+        } catch (Exception e) {
+            caught = e;
+        } finally {
+            // Test against 15000ms which should give a big enough buffer to avoid timing issues.
+            assertTrue(System.currentTimeMillis() - start > 15000);
+            assertTrue(caught != null);
+            assertTrue(caught instanceof NoHostAvailableException);
+            assertTrue(logCaptor.getLogs().stream().anyMatch(str -> str.contains("SSL handshake not completed")));
+        }
+    }
+
+    /**
+     * Tests to make sure that the correct error message is logged when a non-SSL connection attempt times out.
+     */
+    @Test
+    public void shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .connectionSetupTimeoutMillis(100)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        Exception caught = null;
+        try {
+            client.submit("1");
+        } catch (Exception e) {
+            caught = e;
+        } finally {
+            assertTrue(caught != null);
+            assertTrue(caught instanceof NoHostAvailableException);
+            assertTrue(logCaptor.getLogs().stream().anyMatch(str -> str.contains("WebSocket handshake not completed")));
+        }
     }
 }
