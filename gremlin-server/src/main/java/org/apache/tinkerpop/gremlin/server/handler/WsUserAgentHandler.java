@@ -24,7 +24,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
-import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.slf4j.Logger;
@@ -41,16 +40,18 @@ public class WsUserAgentHandler extends ChannelInboundHandlerAdapter {
      */
     private static final int MAX_USER_AGENT_METRICS = 10000;
 
+    private static final String USER_AGENT_HEADER_NAME = "User-Agent";
+
     private static final Logger logger = LoggerFactory.getLogger(WsUserAgentHandler.class);
-    public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(UserAgent.USER_AGENT_HEADER_NAME);
+    public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(USER_AGENT_HEADER_NAME);
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, java.lang.Object evt){
         if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete){
             final HttpHeaders requestHeaders = ((WebSocketServerProtocolHandler.HandshakeComplete) evt).requestHeaders();
 
-            if(requestHeaders.contains(UserAgent.USER_AGENT_HEADER_NAME)){
-                String userAgent = requestHeaders.get(UserAgent.USER_AGENT_HEADER_NAME);
+            if(requestHeaders.contains(USER_AGENT_HEADER_NAME)){
+                String userAgent = requestHeaders.get(USER_AGENT_HEADER_NAME);
 
                 ctx.channel().attr(USER_AGENT_ATTR_KEY).set(userAgent);
                 logger.debug("New Connection on channel [{}] with user agent [{}]", ctx.channel().id().asShortText(), userAgent);

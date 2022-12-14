@@ -35,6 +35,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Moves java serializer, message and token classes from `gremlin-driver` to a new `gremlin-util` module.
 * Moves `SimpleSocketServer` and its initializers to a new `gremlin-tools/gremlin-socket-server` module.
 * Configures `gremlin-socket-server` to build a docker image which can be used for testing GLV's. (Can be skipped with -DskipImageBuild)
+* Reduces dependency from `gremlin-server` onto `gremlin-driver` to a test scope only.
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: NOT OFFICIALLY RELEASED YET)

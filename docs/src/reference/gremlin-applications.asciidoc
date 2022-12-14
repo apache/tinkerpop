@@ -498,10 +498,10 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
 [INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0-stringd with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0
+[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1
+[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0-stringd with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1
 [INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
@@ -1125,7 +1125,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Documentation].
 
 [source,yaml]
 ----
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0 }
 ----
 
 Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has the following configuration option:
@@ -1145,8 +1145,8 @@ To configure Gremlin Server this way, the `GraphSONMessageSerializerV1d0` must b
 
 [source,yaml]
 ----
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0 }
 ----
 
 In the above situation, both `GraphSONMessageSerializerV1d0` and `GraphSONMessageSerializerV3d0` each bind to the
@@ -1156,9 +1156,9 @@ log message will indicate how the server is ultimately configured:
 
 [source,text]
 ----
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] AbstractChannelizer - application/json already has org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 configured - it will not be replaced by org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0, change order of serialization configuration if this is not desired.
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0
+[INFO] AbstractChannelizer - application/json already has org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1d0 configured - it will not be replaced by org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0, change order of serialization configuration if this is not desired.
 ----
 
 Given the above, using GraphSON 3.0 under this configuration will require that the user specific the type:
@@ -1184,7 +1184,7 @@ both the client and the server, as well as limiting the size of the payload that
 format itself is described in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphbinary[IO Documentation].
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1 }
 
 It has the MIME type of `application/vnd.graphbinary-v1.0` and the following configuration options:
 
@@ -1673,7 +1673,7 @@ a grant for string based requests and lambdas, the special value "anonymous" can
 ----
 package org.yourpackage;
 
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -1794,7 +1794,7 @@ public class AllowListAuthorizer implements Authorizer {
      * {@link AuthorizationException} if this is not the case.
      *
      * @param user {@link AuthenticatedUser} that needs authorization.
-     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
+     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.util.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
      */
     public void authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException {
         if (!usernamesSandbox.contains(user.getName())) {

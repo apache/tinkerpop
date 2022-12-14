@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.op;
 
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

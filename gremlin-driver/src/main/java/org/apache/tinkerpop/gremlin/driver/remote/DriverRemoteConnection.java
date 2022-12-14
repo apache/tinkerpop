@@ -38,10 +38,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_EVAL_TIMEOUT;
-import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_USER_AGENT;
-import static org.apache.tinkerpop.gremlin.driver.Tokens.REQUEST_ID;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_USER_AGENT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.REQUEST_ID;
 
 /**
  * A {@link RemoteConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
