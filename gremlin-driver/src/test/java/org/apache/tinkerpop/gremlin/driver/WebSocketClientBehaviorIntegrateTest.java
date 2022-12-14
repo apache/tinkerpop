@@ -296,6 +296,10 @@ public class WebSocketClientBehaviorIntegrateTest {
         // Initialize the client preemptively
         client.init();
 
+        // Clearing logCaptor before attempting to close the connection is in response to an issue where this test can
+        // be polluted by logs from a previous test when running on slow hardware.
+        logCaptor.clearLogs();
+
         // assert number of connections opened
         final ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
         assertEquals(1, channelPool.getConnectionIDs().size());
