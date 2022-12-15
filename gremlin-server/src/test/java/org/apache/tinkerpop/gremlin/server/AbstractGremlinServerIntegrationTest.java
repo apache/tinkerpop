@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.op.OpLoader;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
@@ -117,6 +119,10 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public void startServer() throws Exception {
+        startServerAsync().join();
+    }
+
+    public CompletableFuture<ServerGremlinExecutor> startServerAsync() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
         overriddenSettings = overrideSettings(settings);
@@ -131,7 +137,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
         this.server = new GremlinServer(overriddenSettings);
 
-        server.start().join();
+        return server.start();
     }
 
     @After

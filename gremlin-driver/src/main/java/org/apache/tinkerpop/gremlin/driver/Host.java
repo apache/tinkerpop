@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -77,11 +78,28 @@ public final class Host {
 
         // only do a connection re-attempt if one is not already in progress
         if (retryInProgress.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
-            retryThread = this.cluster.scheduler().scheduleAtFixedRate(() -> {
+            retryThread = this.cluster.hostScheduler().scheduleAtFixedRate(() -> {
                     logger.debug("Trying to reconnect to dead host at {}", this);
                     if (reconnect.apply(this)) reconnected();
                 }, cluster.connectionPoolSettings().reconnectInterval,
                 cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    void tryReconnectingImmediately(final Function<Host, Boolean> reconnect) {
+        // only do a connection re-attempt if one is not already in progress
+        if (retryInProgress.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+            retryThread = this.cluster.hostScheduler().scheduleAtFixedRate(() -> {
+                        logger.debug("Trying to reconnect to host at {}", this);
+                        final boolean reconnected = reconnect.apply(this);
+                        if (reconnected)
+                            reconnected();
+                        else {
+                            logger.warn("Marking {} as unavailable. Trying to reconnect.", this);
+                            isAvailable = false;
+                        }
+                    }, 0,
+                    cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS);
         }
     }
 

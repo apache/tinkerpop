@@ -61,7 +61,6 @@ import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.io.File;
 import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;

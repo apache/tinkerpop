@@ -403,7 +403,6 @@ final class Settings {
         public String validationRequest = "''";
 
         /**
-         *
          * Duration of time in milliseconds provided for connection setup to complete which includes WebSocket
          * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not
          * complete by then.
