@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -99,6 +100,7 @@ public final class GryoMapper implements Mapper<Kryo> {
         kryo.setReferences(referenceTracking);
         for (TypeRegistration tr : typeRegistrations)
             tr.registerWith(kryo);
+        kryo.register(ConcurrentLinkedHashMap.class);
         return kryo;
     }
 

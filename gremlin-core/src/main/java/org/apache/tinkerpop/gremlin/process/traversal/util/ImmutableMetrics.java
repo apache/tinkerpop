@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,7 +44,8 @@ public class ImmutableMetrics implements Metrics, Serializable {
     protected String name;
     protected Map<String, AtomicLong> counts = new ConcurrentHashMap<>();
     protected long durationNs = 0l;
-    protected final Map<String, Object> annotations = Collections.synchronizedMap(new LinkedHashMap<>());
+    protected final Map<String, Object> annotations = new ConcurrentLinkedHashMap
+            .Builder<String, Object>().maximumWeightedCapacity(Integer.MAX_VALUE).build();
     protected final Map<String, ImmutableMetrics> nested = new LinkedHashMap<>();
 
     protected ImmutableMetrics() {
