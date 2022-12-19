@@ -51,4 +51,9 @@ public class SimpleSocketServer {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
     }
+
+    public void stopSync() throws InterruptedException {
+        bossGroup.shutdownGracefully().sync();
+        workerGroup.shutdownGracefully().sync();
+    }
 }

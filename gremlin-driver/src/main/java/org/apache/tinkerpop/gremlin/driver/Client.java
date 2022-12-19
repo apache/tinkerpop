@@ -65,6 +65,8 @@ import java.util.stream.IntStream;
 public abstract class Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    public static final String TOO_MANY_IN_FLIGHT_REQUESTS = "Number of active requests exceeds pool size. " +
+            "Consider increasing the value for maxConnectionPoolSize.";
 
     protected final Cluster cluster;
     protected volatile boolean initialized;
