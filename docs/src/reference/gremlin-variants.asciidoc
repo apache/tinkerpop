@@ -684,7 +684,38 @@ The latter of the two can be addressed from the driver side in the following way
 * Increase the number of connections available in the connection pool by increasing the `maxConnectionPoolSize`.
 
 The exception and logs (assuming they are enabled) should contain information about the state of the connection pool
-along with its connections which can help shed more light on which of these scenarios caused the problem.
+along with its connections which can help shed more light on which of these scenarios caused the problem. Some examples
+of these messages and their meaning are shown below:
+
+_The server is unavailable_
+
+[source,text]
+----
+Timed-out (500 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin}. Potential Cause: Connection refused: no further information
+> ConnectionPool (Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin})- no connections in pool
+----
+
+_Client is likely issuing more requests than the pool size can handle_
+
+[source,text]
+----
+Timed-out (150 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin}. Potential Cause: Number of active requests exceeds pool size. Consider increasing the value for maxConnectionPoolSize.
+ConnectionPool (Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin})
+Connection Pool Status (size=1 max=1 min=1 toCreate=0 bin=0)
+> Connection{channel=5a859d62 isDead=false borrowed=1 pending=1 markedReplaced=false closing=false created=2022-12-19T21:08:21.569613100Z thread=gremlin-driver-conn-scheduler-1}
+-- bin --
+----
+
+_Network traffic is slow and the websocket handshake does not complete in time_
+
+[source,text]
+----
+Timed-out (250 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin}. Potential Cause: WebSocket handshake not completed in stipulated time=[100]ms
+ConnectionPool (Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin})
+Connection Pool Status (size=1 max=5 min=1 toCreate=0 bin=0)
+> Connection{channel=205fc8d2 isDead=false borrowed=1 pending=1 markedReplaced=false closing=false created=2022-12-19T21:10:04.692921600Z thread=gremlin-driver-conn-scheduler-1}
+-- bin --
+----
 
 anchor:java-application-examples[]
 anchor:gremlin-archetypes[]
