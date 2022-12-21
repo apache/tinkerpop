@@ -19,7 +19,10 @@ under the License.
 
 package gremlingo
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+	"github.com/google/uuid"
+)
 
 // request represents a request to the server.
 type request struct {
@@ -47,11 +50,17 @@ func makeStringRequest(stringGremlin string, traversalSource string, sessionId s
 		newProcessor = sessionProcessor
 		newArgs["session"] = sessionId
 	}
+	requestId := uuid.New()
 	if len(bindings) > 0 {
 		newArgs["bindings"] = bindings[0]
+		customRequestId, err := uuid.Parse(fmt.Sprintf("%v", bindings[0]["requestId"]))
+		if err == nil {
+			requestId = customRequestId
+		}
 	}
+
 	return request{
-		requestID: uuid.New(),
+		requestID: requestId,
 		op:        stringOp,
 		processor: newProcessor,
 		args:      newArgs,
