@@ -79,8 +79,8 @@ exports.getSessionClient = function getSessionClient(traversalSource) {
 };
 
 exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(traversalSource) {
-  let settings = exports.getGremlinSocketServerSettings();
-  let url = socketServerUrl + settings.PORT + '/gremlin';
+  const settings = exports.getGremlinSocketServerSettings();
+  const url = socketServerUrl + settings.PORT + '/gremlin';
   let mimeType;
   switch(settings.SERIALIZER) {
     case "GraphSONV2":
@@ -94,7 +94,7 @@ exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(tra
       mimeType = 'application/vnd.graphbinary-v1.0';
       break;
   }
-  return new Client(url, { traversalSource, mimeType: mimeType });
+  return new Client(url, { traversalSource, mimeType });
 };
 
 exports.getGremlinSocketServerSettings = function getGremlinSocketServerSettings() {
