@@ -59,6 +59,8 @@ class Connection:
         if not self._inited:
             self.connect()
         request_id = str(uuid.uuid4())
+        if request_message.args.get("requestId"):
+            request_id = request_message.args.get("requestId")
         result_set = resultset.ResultSet(queue.Queue(), request_id)
         self._results[request_id] = result_set
         # Create write task
