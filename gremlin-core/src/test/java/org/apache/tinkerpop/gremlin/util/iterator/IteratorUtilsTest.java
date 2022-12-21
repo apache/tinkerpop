@@ -25,7 +25,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -174,7 +174,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldConvertMapToIterator() {
-        final Map<String,String> m = new HashMap<>();
+        final Map<String,String> m = new LinkedHashMap<>();
         m.put("key1", "val1");
         m.put("key2", "val2");
         m.put("key3", "val3");
@@ -238,7 +238,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldConvertMapToList() {
-        final Map<String,String> m = new HashMap<>();
+        final Map<String,String> m = new LinkedHashMap<>();
         m.put("key1", "val1");
         m.put("key2", "val2");
         m.put("key3", "val3");
