@@ -122,7 +122,23 @@ func (gts *GraphTraversalSource) WithoutStrategies(args ...TraversalStrategy) *G
 // With provides a configuration to a traversal in the form of a key value pair.
 func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *GraphTraversalSource {
 	source := gts.clone()
-	source.bytecode.AddSource("with", key, value)
+
+	var optionsStrategy TraversalStrategy = nil
+	for _, v := range gts.bytecode.sourceInstructions {
+		if v.operator == "withStrategies" &&
+			v.arguments[0].(*traversalStrategy).name == decorationNamespace+"OptionsStrategy" {
+			optionsStrategy = v.arguments[0]
+			break
+		}
+	}
+
+	if optionsStrategy == nil {
+		optionsStrategy = OptionsStrategy(map[string]interface{}{key.(string): value})
+		return source.WithStrategies(optionsStrategy)
+	}
+
+	options := optionsStrategy.(*traversalStrategy)
+	options.configuration[key.(string)] = value
 	return source
 }
 
