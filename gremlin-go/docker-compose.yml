@@ -42,6 +42,8 @@ services:
       timeout: 10s
       retries: 30
       start_period: 30s
+    depends_on:
+      - gremlin-socket-server
 
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
@@ -50,6 +52,7 @@ services:
       - .:/go_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
       - ../docker/gremlin-test-server:/go_app/gremlin-test-server
+      - ../gremlin-tools/gremlin-socket-server/conf:/go_app/gremlin-socket-server/conf/
     environment:
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test
       - GREMLIN_SERVER_URL=ws://gremlin-server-test:45940/gremlin
@@ -58,6 +61,8 @@ services:
       - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
       - TEST_TRANSACTIONS=true
+      - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-go
+      - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/go_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
     working_dir: /go_app
     command: >
       bash -c "go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
@@ -65,3 +70,9 @@ services:
     depends_on:
       gremlin-server-test:
         condition: service_healthy
+
+  gremlin-socket-server:
+    container_name: gremlin-socket-server-go
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"

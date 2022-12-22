@@ -18,8 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.socket.server;
 
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -37,8 +41,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,10 +62,25 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
     /**
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
      */
-    private static final GraphSONMessageSerializerV2d0 SERIALIZER = new GraphSONMessageSerializerV2d0();
+    private static AbstractMessageSerializer SERIALIZER;
 
     public TestWSGremlinInitializer(final SocketServerSettings settings) {
         this.settings = settings;
+        switch(settings.SERIALIZER) {
+            case "GraphSONV2":
+                SERIALIZER = new GraphSONMessageSerializerV2d0();
+                break;
+            case "GraphSONV3":
+                SERIALIZER = new GraphSONMessageSerializerV3d0();
+                break;
+            case "GraphBinaryV1":
+                SERIALIZER = new GraphBinaryMessageSerializerV1();
+                break;
+            default:
+                logger.warn("Could not recognize serializer [%s], defaulting to GraphBinaryV1", settings.SERIALIZER);
+                SERIALIZER = new GraphBinaryMessageSerializerV1();
+                break;
+        }
     }
 
     @Override
@@ -95,10 +114,9 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 contentTypeBytes.release();
             }
             final RequestMessage msg = SERIALIZER.deserializeRequest(messageBytes.discardReadBytes());
-
             if (msg.getRequestId().equals(settings.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID)) {
                 logger.info("sending vertex result frame");
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSingleVertexResponse(
                         settings.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID)));
                 logger.info("waiting for 2 sec");
                 Thread.sleep(2000);
@@ -106,43 +124,45 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             } else if (msg.getRequestId().equals(settings.SINGLE_VERTEX_REQUEST_ID)) {
                 logger.info("sending vertex result frame");
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(settings.SINGLE_VERTEX_REQUEST_ID)));
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSingleVertexResponse(settings.SINGLE_VERTEX_REQUEST_ID)));
             } else if (msg.getRequestId().equals(settings.FAILED_AFTER_DELAY_REQUEST_ID)) {
                 logger.info("waiting for 1 sec");
                 Thread.sleep(1000);
                 final ResponseMessage responseMessage = ResponseMessage.build(msg)
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(new RuntimeException()).create();
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(SERIALIZER.serializeResponseAsString(responseMessage)));
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(SERIALIZER.serializeResponseAsBinary(responseMessage, ByteBufAllocator.DEFAULT)));
             } else if (msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID) || msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID_2)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             } else if (msg.getRequestId().equals(settings.USER_AGENT_REQUEST_ID)) {
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSimpleStringResponse(settings.USER_AGENT_REQUEST_ID, userAgent)));
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSimpleBinaryResponse(settings.USER_AGENT_REQUEST_ID, userAgent)));
             } else {
                 try {
                     Thread.sleep(Long.parseLong((String) msg.getArgs().get("gremlin")));
-                    ctx.channel().writeAndFlush(new TextWebSocketFrame(returnSingleVertexResponse(msg.getRequestId())));
+                    ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSingleVertexResponse(msg.getRequestId())));
                 } catch (NumberFormatException nfe) {
                     // Ignore. Only return a vertex if the query was a long value.
+                    logger.warn("Request unknown request with RequestId: %s", msg.getRequestId());
                 }
             }
         }
 
-        private String returnSingleVertexResponse(final UUID requestID) throws SerializationException {
+        private ByteBuf returnSingleVertexResponse(final UUID requestID) throws SerializationException {
             final TinkerGraph graph = TinkerFactory.createClassic();
             final GraphTraversalSource g = graph.traversal();
-            final Vertex[] t = {g.V().limit(1).next()};
+            final List<Vertex> t = new ArrayList<>(1);
+            t.add(g.V().limit(1).next());
 
-            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(t).create());
+            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(t).create(), ByteBufAllocator.DEFAULT);
         }
 
         /**
-         * Packages a string message into a ResponseMessage, serializes it, and returns the serialized string
+         * Packages a string message into a ResponseMessage and serializes it into a ByteBuf
          * @throws SerializationException
          */
-        private String returnSimpleStringResponse(final UUID requestID, String message) throws SerializationException {
-            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(message).create());
+        private ByteBuf returnSimpleBinaryResponse(final UUID requestID, String message) throws SerializationException {
+            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(message).create(), ByteBufAllocator.DEFAULT);
         }
 
         /**
