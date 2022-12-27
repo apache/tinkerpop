@@ -177,12 +177,11 @@ limitations under the License.
         <kerby.version>2.0.1</kerby.version>
         <logback.version>1.2.11</logback.version>
         <metrics.version>3.0.2</metrics.version>
-        <mockito.version>3.3.3</mockito.version>
+        <mockito.version>4.10.0</mockito.version>
         <netty.version>4.1.86.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.32</snakeyaml.version>
         <spark.version>3.2.1</spark.version>
-        <powermock.version>2.0.9</powermock.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -780,40 +779,6 @@ limitations under the License.
                 <groupId>org.objenesis</groupId>
                 <artifactId>objenesis</artifactId>
                 <version>3.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- conflict with mockito - excluding from the mockito side doesn't work -->
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy-agent</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- conflict with mockito - excluding from the mockito side doesn't work -->
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy-agent</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
