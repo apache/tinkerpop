@@ -207,7 +207,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-kernel</artifactId>
-                    <version>3.4.11</version>
+                    <version>5.3.0</version>
                     <scope>test</scope>
                 </dependency>
                 <!-- *** WARNING *** -->
