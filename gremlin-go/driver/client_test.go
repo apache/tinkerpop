@@ -134,6 +134,61 @@ func TestClientAgainstSocketServer(t *testing.T) {
 	})
 
 	/**
+	 * Tests that client is correctly sending user agent during web socket handshake by having the server return
+	 * the captured user agent.
+	 */
+	t.Run("Should include user agent in handshake request", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testSocketServerUrl)
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+
+		resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.USER_AGENT_REQUEST_ID})
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.NotNil(t, result)
+
+		userAgentResponse := result.GetString()
+		assert.Equal(t, userAgent, userAgentResponse)
+
+		client.Close()
+	})
+
+	/**
+	 * Tests that no user agent (other than the default one provided by gorilla) is sent to server when
+	 * that behaviour is disabled.
+	 */
+	t.Run("Should not include user agent in handshake request if disabled", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testSocketServerUrl,
+			func(settings *ClientSettings) {
+				settings.EnableUserAgentOnConnect = false
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+
+		resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.USER_AGENT_REQUEST_ID})
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.NotNil(t, result)
+
+		userAgentResponse := result.GetString()
+		//If the gremlin user agent is disabled, the underlying web socket library reverts to sending its default user agent
+		//during connection requests.
+		assert.Contains(t, userAgentResponse, "Go-http-client/")
+
+		client.Close()
+	})
+
+	/**
 	 * Note: This test currently fails due to race condition check in go test and is only included for demonstration
 	 * purposes. See https://issues.apache.org/jira/browse/TINKERPOP-2845.
 	 * This test should be uncommented with the resolution of TINKERPOP-2845

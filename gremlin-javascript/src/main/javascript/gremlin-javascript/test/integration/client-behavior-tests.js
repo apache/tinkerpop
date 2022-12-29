@@ -21,6 +21,7 @@
 
 const assert = require('assert');
 const helper = require('../helper');
+const {getUserAgent} = require("../../lib/utils");
 
 let client;
 let settings;
@@ -48,6 +49,20 @@ describe('Client', function () {
             let result = await client.submit('1', null, {requestId: settings.SINGLE_VERTEX_REQUEST_ID})
             console.log("result received: "+JSON.stringify(result));
             assert.ok(result);
+        });
+        it('should include user agent in handshake request', async function () {
+            let result = await client.submit('1', null, {requestId: settings.USER_AGENT_REQUEST_ID});
+
+            assert.strictEqual(result.first(), getUserAgent());
+        });
+        it('should not include user agent in handshake request if disabled', async function () {
+            let noUserAgentClient = helper.getGremlinSocketServerClientNoUserAgent('gmodern');
+            let result = await noUserAgentClient.submit('1', null,
+                {requestId: settings.USER_AGENT_REQUEST_ID});
+
+            assert.strictEqual(result.first(), "");
+
+            await noUserAgentClient.close();
         });
     });
 });

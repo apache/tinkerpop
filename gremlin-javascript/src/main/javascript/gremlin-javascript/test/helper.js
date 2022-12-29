@@ -78,11 +78,9 @@ exports.getSessionClient = function getSessionClient(traversalSource) {
   });
 };
 
-exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(traversalSource) {
-  const settings = exports.getGremlinSocketServerSettings();
-  const url = socketServerUrl + settings.PORT + '/gremlin';
+function getMimeTypeFromSocketServerSettings(socketServerSettings) {
   let mimeType;
-  switch(settings.SERIALIZER) {
+  switch(socketServerSettings.SERIALIZER) {
     case "GraphSONV2":
       mimeType = 'application/vnd.gremlin-v2.0+json';
       break;
@@ -94,7 +92,21 @@ exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(tra
       mimeType = 'application/vnd.graphbinary-v1.0';
       break;
   }
+  return mimeType;
+}
+
+exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(traversalSource) {
+  const settings = exports.getGremlinSocketServerSettings();
+  const url = socketServerUrl + settings.PORT + '/gremlin';
+  let mimeType = getMimeTypeFromSocketServerSettings(settings)
   return new Client(url, { traversalSource, mimeType });
+};
+
+exports.getGremlinSocketServerClientNoUserAgent = function getGremlinSocketServerClient(traversalSource) {
+  const settings = exports.getGremlinSocketServerSettings();
+  const url = socketServerUrl + settings.PORT + '/gremlin';
+  let mimeType = getMimeTypeFromSocketServerSettings(settings)
+  return new Client(url, { traversalSource, mimeType, enableUserAgentOnConnect:false });
 };
 
 exports.getGremlinSocketServerSettings = function getGremlinSocketServerSettings() {
