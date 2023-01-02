@@ -1383,7 +1383,7 @@ genericLiteral
 	| traversalToken
 	| traversalCardinality
 	| traversalDirection
-    | traversalMerge
+	| traversalMerge
 	| traversalPick
 	| structureVertex
 	| genericLiteralCollection

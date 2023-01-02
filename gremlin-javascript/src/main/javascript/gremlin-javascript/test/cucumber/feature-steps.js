@@ -359,7 +359,7 @@ function toDirection(value) {
     return direction[value.toLowerCase()];
 }
 
-function toDirection(value) {
+function toMerge(value) {
   return merge[value.toLowerCase()];
 }
 
