@@ -139,9 +139,8 @@ Feature: Step - mergeV()
     And using the parameter xx1 defined as "m[{\"t[label]\": null, \"name\":\"marko\"}]"
     And the traversal of
       """
-      g.mergeV(null).option(Merge.onCreate,xx1)
+      g.mergeV(xx1)
       """
-    When iterated to list
     Then the traversal will raise an error
 
   Scenario: g_V_mergeVXnullX_optionXonCreate_label_null_name_markoX
@@ -153,9 +152,8 @@ Feature: Step - mergeV()
     And using the parameter xx1 defined as "m[{\"t[label]\": null, \"name\":\"marko\"}]"
     And the traversal of
       """
-      g.V().mergeV(null).option(Merge.onCreate,xx1)
+      g.V().mergeV(xx1)
       """
-    When iterated to list
     Then the traversal will raise an error
 
   Scenario: g_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
@@ -170,9 +168,10 @@ Feature: Step - mergeV()
       g.mergeV(xx1).option(Merge.onCreate, null)
       """
     When iterated to list
-    Then the result should have a count of 0
-    And the graph should return 1 for count of "g.V()"
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
 
   Scenario: g_V_mergeVXlabel_person_name_stephenX_optionXonCreate_nullX
     Given the empty graph
@@ -186,9 +185,10 @@ Feature: Step - mergeV()
       g.V().mergeV(xx1).option(Merge.onCreate, null)
       """
     When iterated to list
-    Then the result should have a count of 0
-    And the graph should return 1 for count of "g.V()"
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
 
   Scenario: g_mergeVXnullX_optionXonCreate_emptyX
     Given the empty graph
@@ -202,7 +202,7 @@ Feature: Step - mergeV()
       """
     When iterated to list
     Then the result should have a count of 1
-    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V()"
 
   Scenario: g_V_mergeVXnullX_optionXonCreate_emptyX
     Given the empty graph
@@ -216,7 +216,7 @@ Feature: Step - mergeV()
       """
     When iterated to list
     Then the result should have a count of 1
-    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V()"
 
   Scenario: g_mergeVXemptyX_no_existing
     Given the empty graph
@@ -280,7 +280,7 @@ Feature: Step - mergeV()
       g.mergeV(null)
       """
     When iterated to list
-    Then the result should have a count of 0
+    Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
 
   Scenario: g_V_mergeVXnullX
@@ -294,7 +294,7 @@ Feature: Step - mergeV()
       g.V().mergeV(null)
       """
     When iterated to list
-    Then the result should have a count of 0
+    Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
 
   Scenario: g_mergeVXlabel_person_name_stephenX
@@ -655,3 +655,78 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+
+
+
+  # onCreate inheritance from merge
+  Scenario: g_mergeV_onCreate_inheritance_existing
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "mike").property(T.id, 1)
+      """
+    And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
+
+  # onCreate inheritance from merge
+  Scenario: g_mergeV_onCreate_inheritance_new
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
+
+  # onCreate inheritance from merge
+  Scenario: g_mergeV_onCreate_inheritance_new
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": 1}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
+
+  # cannot override T.label in onCreate
+  @UserSuppliedVertexIds
+  Scenario: g_mergeE_label_override_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"a\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"b\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(onCreate, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot override T.id in onCreate
+  @UserSuppliedVertexIds
+  Scenario: g_mergeE_id_override_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": 2}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(onCreate, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+

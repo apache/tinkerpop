@@ -42,5 +42,7 @@ public enum Merge {
      *
      * @since 3.6.0
      */
-    onMatch
+    onMatch,
+
+    outV, inV
 }

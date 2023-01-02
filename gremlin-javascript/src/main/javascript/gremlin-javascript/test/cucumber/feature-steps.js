@@ -40,6 +40,7 @@ const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
+const merge = traversalModule.merge;
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
 // Use false for GraphSON3.
@@ -61,7 +62,8 @@ const parsers = [
   [ 'm\\[(.+)\\]', toMap ],
   [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
-  [ 'D\\[(.+)\\]', toDirection ]
+  [ 'D\\[(.+)\\]', toDirection ],
+  [ 'M\\[(.+)\\]', toMerge ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
@@ -355,6 +357,10 @@ function toDirection(value) {
     return direction["in"];
   else
     return direction[value.toLowerCase()];
+}
+
+function toDirection(value) {
+  return merge[value.toLowerCase()];
 }
 
 function toArray(stringList) {
