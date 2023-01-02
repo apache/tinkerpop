@@ -67,6 +67,7 @@ module.exports = {
     cardinality: t.cardinality,
     column: t.column,
     direction: t.direction,
+    merge: t.merge,
     operator: t.operator,
     order: t.order,
     pick: t.pick,

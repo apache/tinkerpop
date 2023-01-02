@@ -29,6 +29,19 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.2/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Changes to mergeV/E semantics
+
+Main changes are:
+
+1. `onCreate` Map will now inherit from main merge argument, and overrides of existence criteria (`T.id/T.label` and `Direction.OUT/IN`) will be prohibited.
+2. `Direction.IN/OUT` can be specified by additional options (`Merge.inV/outV`), which can take Map arguments, or a traversal which results in a Map or Vertex.
+3. `mergeE()` will no longer accept upstream Vertices as arguments for `Direction.IN/OUT` where not specified in the map arguments. Late binding of those arguments
+will come from `Merge.inV/outV` instead.
+
+This change is relevant to Providers as well.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2850[TINKERPOP-2850]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -60,6 +73,12 @@ in this fashion (taken from TinkerGraph):
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2804[TINKERPOP-2804]
+
+===== Changes to mergeV/E semantics
+
+See above in changes for Users.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2850[TINKERPOP-2850]
 
 == TinkerPop 3.6.1
 

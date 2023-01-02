@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -594,6 +595,17 @@ public class IteratorUtilsTest {
         assertTrue(itty.hasNext());
         assertEquals("c", itty.next());
         assertFalse(itty.hasNext());
+    }
+
+    @Test
+    public void testPeek() {
+        final List<Integer> list = Arrays.asList(0, 1, 2, 3, 4, 5);
+        final AtomicInteger counter = new AtomicInteger();
+        final Iterator<Integer> it = IteratorUtils.peek(list.iterator(), i -> counter.incrementAndGet());
+        for (int i = 0; i < list.size(); i++) {
+            assertEquals(i, it.next().intValue());
+        }
+        assertEquals(list.size(), counter.get());
     }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {

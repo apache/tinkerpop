@@ -40,10 +40,7 @@ const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
-
-// Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
-// Use false for GraphSON3.
-const mapAsObject = false;
+const merge = traversalModule.merge;
 
 const parsers = [
   [ 'vp\\[(.+)\\]', toVertexProperty ],
@@ -61,7 +58,8 @@ const parsers = [
   [ 'm\\[(.+)\\]', toMap ],
   [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
-  [ 'D\\[(.+)\\]', toDirection ]
+  [ 'D\\[(.+)\\]', toDirection ],
+  [ 'M\\[(.+)\\]', toMerge ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
@@ -357,6 +355,10 @@ function toDirection(value) {
     return direction[value.toLowerCase()];
 }
 
+function toMerge(value) {
+  return merge[value];
+}
+
 function toArray(stringList) {
   if (stringList === '') {
     return new Array(0);
@@ -380,13 +382,6 @@ function parseMapValue(value) {
   }
   if (typeof value !== 'object') {
     return value;
-  }
-  if (mapAsObject) {
-    const result = {};
-    Object.keys(value).forEach(key => {
-      result[parseMapValue.call(this, key)] = parseMapValue.call(this, value[key]);
-    });
-    return result;
   }
   const map = new Map();
   Object.keys(value).forEach(key => {
