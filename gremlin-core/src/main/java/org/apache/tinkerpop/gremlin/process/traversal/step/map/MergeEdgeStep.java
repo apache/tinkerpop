@@ -210,6 +210,8 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
         } else {
             // else:
             t = graph.traversal().E();
+            if (edgeLabel != null)
+                t = t.hasLabel(edgeLabel);
         }
 
         // add property constraints

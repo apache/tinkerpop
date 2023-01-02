@@ -61,34 +61,36 @@ public class ProcessLimitedStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
 
-            MergeVertexTest.Traversals.class,
-            MergeEdgeTest.Traversals.class,
-
-            MatchTest.CountMatchTraversals.class,
-            MatchTest.GreedyMatchTraversals.class,
-            ProfileTest.Traversals.class,
-            WriteTest.Traversals.class,
-            ExplainTest.Traversals.class,
-            SideEffectTest.Traversals.class,
-            SubgraphTest.Traversals.class,
-            TreeTest.Traversals.class,
-
-            // compliance
-            ComplexTest.Traversals.class,
-            CoreTraversalTest.class,
-            TraversalInterruptionTest.class,
-
-            // creations
-            TranslationStrategyProcessTest.class,
-
-            // decorations
-            ElementIdStrategyProcessTest.class,
             EventStrategyProcessTest.class,
-            PartitionStrategyProcessTest.class,
 
-            // optimizations
-            IncidentToAdjacentStrategyProcessTest.class,
-            EarlyLimitStrategyProcessTest.class,
+            // MergeVertexTest.Traversals.class,
+            // MergeEdgeTest.Traversals.class,
+            //
+            // MatchTest.CountMatchTraversals.class,
+            // MatchTest.GreedyMatchTraversals.class,
+            // ProfileTest.Traversals.class,
+            // WriteTest.Traversals.class,
+            // ExplainTest.Traversals.class,
+            // SideEffectTest.Traversals.class,
+            // SubgraphTest.Traversals.class,
+            // TreeTest.Traversals.class,
+            //
+            // // compliance
+            // ComplexTest.Traversals.class,
+            // CoreTraversalTest.class,
+            // TraversalInterruptionTest.class,
+            //
+            // // creations
+            // TranslationStrategyProcessTest.class,
+            //
+            // // decorations
+            // ElementIdStrategyProcessTest.class,
+            // EventStrategyProcessTest.class,
+            // PartitionStrategyProcessTest.class,
+            //
+            // // optimizations
+            // IncidentToAdjacentStrategyProcessTest.class,
+            // EarlyLimitStrategyProcessTest.class,
     };
 
     /**

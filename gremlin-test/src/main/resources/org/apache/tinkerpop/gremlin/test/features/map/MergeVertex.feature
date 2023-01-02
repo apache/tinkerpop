@@ -677,7 +677,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
 
   # onCreate inheritance from merge
-  Scenario: g_mergeV_onCreate_inheritance_new
+  Scenario: g_mergeV_onCreate_inheritance_new_1
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
@@ -691,7 +691,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
 
   # onCreate inheritance from merge
-  Scenario: g_mergeV_onCreate_inheritance_new
+  Scenario: g_mergeV_onCreate_inheritance_new_2
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
     And using the parameter xx2 defined as "m[{\"t[id]\": 1}]"

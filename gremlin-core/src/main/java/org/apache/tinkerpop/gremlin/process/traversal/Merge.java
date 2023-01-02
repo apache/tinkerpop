@@ -44,5 +44,17 @@ public enum Merge {
      */
     onMatch,
 
-    outV, inV
+    /**
+     * Allows for more complex definition of the OUT vertex.
+     *
+     * @since 3.6.2
+     */
+    outV,
+
+    /**
+     * Allows for more complex definition of the IN vertex.
+     *
+     * @since 3.6.2
+     */
+    inV
 }

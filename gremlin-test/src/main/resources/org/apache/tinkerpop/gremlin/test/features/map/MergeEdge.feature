@@ -698,7 +698,7 @@ Feature: Step - mergeE()
   # onCreate inherits from merge and can specify an eid
   @UserSuppliedVertexIds
   @UserSuppliedEdgeIds
-  Scenario: g_mergeE_with_eid_specified_and_inheritance
+  Scenario: g_mergeE_with_eid_specified_and_inheritance_1
     Given the empty graph
     And the graph initializer of
       """
@@ -721,7 +721,7 @@ Feature: Step - mergeE()
   # onCreate inherits from merge and can specify an eid
   @UserSuppliedVertexIds
   @UserSuppliedEdgeIds
-  Scenario: g_mergeE_with_eid_specified_and_inheritance
+  Scenario: g_mergeE_with_eid_specified_and_inheritance_2
     Given the empty graph
     And the graph initializer of
       """

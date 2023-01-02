@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -182,7 +183,9 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource gts = create(eventStrategy);
         final Map<Object,Object> m = new HashMap<>();
         m.put(T.label, "self-but-different");
-        gts.V(v).mergeE(m).next();
+        m.put(Direction.OUT, v);
+        m.put(Direction.IN, v);
+        gts.mergeE(m).next();
 
         tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
 

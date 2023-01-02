@@ -61,6 +61,7 @@ func init() {
 		regexp.MustCompile(`^c\[(.+)]$`):            toLambda,
 		regexp.MustCompile(`^t\[(.+)]$`):            toT,
 		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
+		regexp.MustCompile(`^M\[(.+)]$`):            toMerge,
 	}
 }
 
@@ -305,6 +306,21 @@ func toDirection(name, graphName string) interface{} {
 		return gremlingo.Direction.From
 	} else if name == "to" {
 		return gremlingo.Direction.To
+	} else {
+		return name
+	}
+}
+
+func toDirection(name, graphName string) interface{} {
+	// Return as is, since Direction values are just strings.
+	if name == "outV" {
+		return gremlingo.Merge.OutV
+	} else if name == "inV" {
+		return gremlingo.Merge.InV
+	} else if name == "onCreate" {
+		return gremlingo.Merge.OnCreate
+	} else if name == "onMatch" {
+		return gremlingo.Merge.onMatch
 	} else {
 		return name
 	}
