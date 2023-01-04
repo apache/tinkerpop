@@ -721,3 +721,50 @@ resolve to a `Map`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
+
+=== dedup()
+
+*Description:* Removes repeatedly seen results from the Traversal Stream.
+
+*Syntax:* `dedup()` | `dedup(labels)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `labels` - If dedup() is provided a list of labels, then it will ensure that the de-duplication
+is not with respect to the current traverser object, but to the path history of the traverser.
+For Example:
+`g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select('a','b','c')`
+will filter out any such `a` and `b` pairs which have previously been seen.
+
+*Modulation:*
+
+* `by()` - Performs dedup according to the property specified in the by modulation. For example:
+`g.V().dedup().by("name")` will filter out vertices with duplicate names.
+
+*Considerations:*
+
+* There is no guarantee that ordering of results will be preserved across a dedup step.
+* There is no guarantee which element is selected as the survivor when filtering duplicates.
+
+For Example, Given a graph with the following 3 vertices:
+
+[width="100%",options="header"]
+|=========================================================
+|name |age
+|Alex |38
+|Bob |45
+|Chloe |38
+|=========================================================
+
+`g.V().order().by("name", Order.asc).barrier().dedup().by("age").values("name")` can return any of
+`["Alex", "Bob"]`, `["Bob", "Alex"]`, `["Bob", "Chloe"]`, or `["Chloe", "Bob"]`
+
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DedupGlobalStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
