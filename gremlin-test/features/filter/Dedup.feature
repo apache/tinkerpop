@@ -183,6 +183,7 @@ Feature: Step - dedup()
       | josh |
       | ripple |
 
+  # no order guarantees so result may come up with either ripple | lop | vadas with a count of zero edges
   Scenario: g_V_both_both_dedup_byXoutE_countX_name
     Given the modern graph
     And the traversal of
@@ -190,12 +191,15 @@ Feature: Step - dedup()
       g.V().both().both().dedup().by(__.outE().count()).values("name")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | marko |
       | josh |
       | peter |
       | ripple |
+      | lop |
+      | vadas |
+    And the result should have a count of 4
 
   Scenario: g_V_groupCount_selectXvaluesX_unfold_dedup
     Given the modern graph
