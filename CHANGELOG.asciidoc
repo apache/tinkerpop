@@ -36,6 +36,8 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Moves `SimpleSocketServer` and its initializers to a new `gremlin-tools/gremlin-socket-server` module.
 * Configures `gremlin-socket-server` to build a docker image which can be used for testing GLV's. (Can be skipped with -DskipImageBuild)
 * Reduces dependency from `gremlin-server` onto `gremlin-driver` to a test scope only.
+* Added `RequestOptions` and `RequestOptionsBuilder` types to Go GLV to encapsulate per-request settings and bindings.
+* Added `SubmitWithOptions()` methods to `Client` and `DriverRemoteConnection` in Go GLV to pass `RequestOptions` to the server.
 
 == TinkerPop 3.6.0 (Tinkerheart)
 
