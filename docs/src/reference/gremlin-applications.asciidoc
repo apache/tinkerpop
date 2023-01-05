@@ -2147,9 +2147,16 @@ without all the associated structure which can slow the response.
 [[parameterized-scripts]]
 ==== Parameterized Scripts
 
-image:gremlin-parameterized.png[width=150,float=left] Use script parameterization. Period. There are at least two good
+image:gremlin-parameterized.png[width=150,float=left] If using the standard `GremlinGroovyScriptEngine` in Gremlin
+Server, it is imperative to use script parameterization. Period. There are at least two good
 reasons for doing so: script caching and protection from "Gremlin injection" (conceptually the same as the notion of
 SQL injection).
+
+IMPORTANT: It is possible to use the `GremlinLangScriptEngine` in Gremlin Server as opposed to the
+`GremlinGroovyScriptEngine`. The former makes use of `gremlin-language` and its ANTLR grammar for parsing Gremlin
+scripts. This processing is different from the processing performed by Groovy and therefore spares users from the
+concerns of this section. When considering parameterization, users should also consider the graph database they are
+using to determine if it has native mechanisms that preclude the need for parameterization.
 
 With respect to caching, Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a
 hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that
