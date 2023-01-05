@@ -147,15 +147,26 @@ func (client *Client) Close() {
 	client.connections.close()
 }
 
-// Submit submits a Gremlin script to the server and returns a ResultSet.
-func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
+// SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
+func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource, client.session, bindings...)
+	request := makeStringRequest(traversalString, client.traversalSource, client.session, requestOptions)
 	result, err := client.connections.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
 	}
 	return result, err
+}
+
+// Submit submits a Gremlin script to the server and returns a ResultSet. Submit can optionally accept a map of bindings
+// to be applied to the traversalString, it is preferred however to instead wrap any bindings into a RequestOptions
+// struct and use SubmitWithOptions().
+func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
+	requestOptionsBuilder := new(RequestOptionsBuilder)
+	if len(bindings) > 0 {
+		requestOptionsBuilder.SetBindings(bindings[0])
+	}
+	return client.SubmitWithOptions(traversalString, requestOptionsBuilder.Create())
 }
 
 // submitBytecode submits Bytecode to the server to execute and returns a ResultSet.

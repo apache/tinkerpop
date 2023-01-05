@@ -163,13 +163,18 @@ func (driver *DriverRemoteConnection) Close() {
 	driver.isClosed = true
 }
 
-// Submit sends a string traversal to the server.
-func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet, error) {
-	result, err := driver.client.Submit(traversalString)
+// SubmitWithOptions sends a string traversal to the server along with specified RequestOptions.
+func (driver *DriverRemoteConnection) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
+	result, err := driver.client.SubmitWithOptions(traversalString, requestOptions)
 	if err != nil {
 		driver.client.logHandler.logf(Error, logErrorGeneric, "Driver.Submit()", err.Error())
 	}
 	return result, err
+}
+
+// Submit sends a string traversal to the server.
+func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet, error) {
+	return driver.SubmitWithOptions(traversalString, *new(RequestOptions))
 }
 
 // submitBytecode sends a Bytecode traversal to the server.

@@ -32,13 +32,14 @@ func TestClient(t *testing.T) {
 	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
 
-	t.Run("Test client.submit()", func(t *testing.T) {
+	t.Run("Test client.Submit()", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
 				settings.AuthInfo = testNoAuthAuthInfo
 			})
+		defer client.Close()
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 		resultSet, err := client.Submit("g.V().count()")
@@ -48,6 +49,24 @@ func TestClient(t *testing.T) {
 		assert.Nil(t, err)
 		assert.True(t, ok)
 		assert.NotNil(t, result)
-		client.Close()
+	})
+
+	t.Run("Test client.SubmitWithOptions()", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+			})
+		defer client.Close()
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		resultSet, err := client.SubmitWithOptions("g.V().count()", *new(RequestOptions))
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, ok, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.NotNil(t, result)
 	})
 }
