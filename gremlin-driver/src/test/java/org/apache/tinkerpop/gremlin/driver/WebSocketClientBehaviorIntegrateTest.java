@@ -517,4 +517,27 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         cluster.close();
     }
+
+    /**
+     * Tests that client is correctly sending all overridable per request settings (requestId, batchSize,
+     * evaluationTimeout, and userAgent) to the server.
+     */
+    @Test
+    public void shouldSendPerRequestSettingsToServer() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured request settings
+        String response = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.PER_REQUEST_SETTINGS_REQUEST_ID)
+                .timeout(1234).userAgent("helloWorld").batchSize(12).create()).one().getString();
+
+        String expectedResponse = String.format("requestId=%s evaluationTimeout=%d, batchSize=%d, userAgent=%s",
+                settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld");
+        assertEquals(expectedResponse, response);
+    }
 }

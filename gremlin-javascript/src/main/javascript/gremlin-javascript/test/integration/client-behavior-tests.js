@@ -47,7 +47,6 @@ describe('Client', function () {
             assert.equal(connectionClosed, true);
 
             let result = await client.submit('1', null, {requestId: settings.SINGLE_VERTEX_REQUEST_ID})
-            console.log("result received: "+JSON.stringify(result));
             assert.ok(result);
         });
         it('should include user agent in handshake request', async function () {
@@ -63,6 +62,16 @@ describe('Client', function () {
             assert.strictEqual(result.first(), "");
 
             await noUserAgentClient.close();
+        });
+        it('should send per request settings to server', async function () {
+            const resultSet = await client.submit('1', null, {
+                requestId: settings.PER_REQUEST_SETTINGS_REQUEST_ID,
+                evaluationTimeout: 1234,
+                batchSize: 12,
+                userAgent: "helloWorld"
+            })
+            const expectedResult = `requestId=${settings.PER_REQUEST_SETTINGS_REQUEST_ID} evaluationTimeout=1234, batchSize=12, userAgent=helloWorld`;
+            assert.equal(expectedResult, resultSet.first());
         });
     });
 });

@@ -137,6 +137,11 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             } else if (msg.getRequestId().equals(settings.USER_AGENT_REQUEST_ID)) {
                 ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSimpleBinaryResponse(settings.USER_AGENT_REQUEST_ID, userAgent)));
+            } else if (msg.getRequestId().equals(settings.PER_REQUEST_SETTINGS_REQUEST_ID)) {
+                String response = String.format("requestId=%s evaluationTimeout=%d, batchSize=%d, userAgent=%s",
+                        msg.getRequestId(), msg.getArgs().get("evaluationTimeout"),
+                        msg.getArgs().get("batchSize"), msg.getArgs().get("userAgent"));
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSimpleBinaryResponse(settings.PER_REQUEST_SETTINGS_REQUEST_ID, response)));
             } else {
                 try {
                     Thread.sleep(Long.parseLong((String) msg.getArgs().get("gremlin")));

@@ -77,6 +77,14 @@ public class SocketServerSettings
     [YamlMember(Alias = "USER_AGENT_REQUEST_ID", ApplyNamingConventions = false)]
     public Guid UserAgentRequestId { get; set; }
     
+    /**
+     * If a request with this ID comes to the server, the server responds with a string containing all overridden
+     * per request settings from the request message. String will be of the form
+     * "requestId=19436d9e-f8fc-4b67-8a76-deec60918424 evaluationTimeout=1234, batchSize=12, userAgent=testUserAgent"
+     */
+    [YamlMember(Alias = "PER_REQUEST_SETTINGS_REQUEST_ID", ApplyNamingConventions = false)]
+    public Guid PerRequestSettingsRequestId { get; set; }
+    
     public static SocketServerSettings FromYaml(String path)
     {
         var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().Build();
