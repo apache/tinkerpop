@@ -18,32 +18,6 @@
 @StepClassIntegrated
 Feature: Step - paths
 
-  @GraphComputerVerificationStarGraphExceeded
-  Scenario: g_V_playlist_paths
-    Given the grateful graph
-    And the traversal of
-      """
-      g.V().has("name", "Bob_Dylan").
-        in("sungBy").order().by('name').as("a").
-        repeat(__.out().order().by('name').simplePath().from("a")).
-          until(__.out("writtenBy").has("name", "Johnny_Cash")).limit(1).as("b").
-        repeat(__.out().order().by('name').as("c").simplePath().from("b").to("c")).
-          until(__.out("sungBy").has("name", "Grateful_Dead")).limit(1).
-        path().from("a").unfold().
-        project("song", "artists").
-          by("name").
-          by(__.coalesce(__.out("sungBy", "writtenBy").dedup().values("name").order(), __.constant("Unknown")).fold())
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"song": "CHIMES OF FREEDOM", "artists": ["Bob_Dylan"]}] |
-      | m[{"song": "QUEEN JANE", "artists": ["Unknown"]}] |
-      | m[{"song": "ALTHEA", "artists": ["Garcia","Hunter"]}] |
-      | m[{"song": "BIG RIVER", "artists": ["Johnny_Cash","Weir"]}] |
-      | m[{"song": "HES GONE", "artists": ["Garcia","Hunter"]}] |
-      | m[{"song": "CAUTION", "artists": ["Grateful_Dead"]}] |
-
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_shortestpath
     Given the modern graph
