@@ -891,6 +891,8 @@ traversalToken
 traversalMerge
     : 'onCreate' | 'Merge.onCreate'
     | 'onMatch' | 'Merge.onMatch'
+    | 'outV' | 'Merge.outV'
+    | 'inV' | 'Merge.inV'
     ;
 
 traversalOrder
@@ -1376,6 +1378,7 @@ genericLiteral
 	| traversalToken
 	| traversalCardinality
 	| traversalDirection
+	| traversalMerge
 	| traversalPick
 	| structureVertex
 	| genericLiteralCollection

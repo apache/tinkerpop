@@ -1102,7 +1102,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, Vertex> mergeV(final Map<Object, Object> searchCreate) {
-        MergeVertexStep.validateMapInput(searchCreate, false);
         this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
         final MergeVertexStep<S> step = new MergeVertexStep<>(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);
@@ -1146,7 +1145,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> mergeE(final Map<Object, Object> searchCreate) {
         // get a construction time exception if the Map is bad
-        MergeEdgeStep.validateMapInput(searchCreate, false);
         this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
         final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);

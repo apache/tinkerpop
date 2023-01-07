@@ -39,7 +39,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerMergeEVStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -77,8 +76,7 @@ public final class TinkerGraph implements Graph {
     static {
         TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
                 TinkerGraphStepStrategy.instance(),
-                TinkerGraphCountStrategy.instance(),
-                TinkerMergeEVStepStrategy.instance()));
+                TinkerGraphCountStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
