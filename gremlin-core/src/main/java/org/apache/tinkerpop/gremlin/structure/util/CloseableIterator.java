@@ -58,6 +58,10 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
         }
     }
 
+    static <T> CloseableIterator<T> empty() {
+        return EmptyCloseableIterator.instance();
+    }
+
     class EmptyCloseableIterator<T> extends DefaultCloseableIterator<T> {
 
         private static final EmptyCloseableIterator INSTANCE = new EmptyCloseableIterator();

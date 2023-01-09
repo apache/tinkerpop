@@ -499,7 +499,7 @@ module.exports = {
   direction: toEnum('Direction', 'BOTH IN OUT from_ to'),
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
-  merge: toEnum('Merge', 'onCreate onMatch'),
+  merge: toEnum('Merge', 'onCreate onMatch outV inV'),
   operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
   order: toEnum('Order', 'asc desc shuffle'),
   pick: toEnum('Pick', 'any none'),

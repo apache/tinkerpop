@@ -60,6 +60,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"vp\[(.+)\]", ToVertexProperty},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
+                {@"M\[(.+)\]", ToMerge},
                 {@"v\[(.+)\]", ToVertex},
                 {@"v\[(.+)\]\.id", (x, graphName) => ToVertex(x, graphName).Id},
                 {@"v\[(.+)\]\.sid", (x, graphName) => ToVertex(x, graphName).Id!.ToString()},
@@ -131,7 +132,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 _g = _g.WithComputer();
             }
-            
+
             _traversal =
                 Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters);
         }
@@ -366,6 +367,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static object ToDirection(string enumName, string graphName)
         {
             return Direction.GetByValue(enumName);
+        }
+
+        private static object ToMerge(string enumName, string graphName)
+        {
+            return Merge.GetByValue(enumName);
         }
 
         private static object ToNumber(string stringNumber, string graphName)

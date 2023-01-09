@@ -607,8 +607,12 @@ None
 *Arguments:*
 
 * `searchCreate` - A `Map` used to match an `Edge` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` that is the override to the default of `searchCreate`.
+* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
 * `onMatch` - A `Map` used to update the `Edge` that is found using the `searchCreate` criteria.
+* `outV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.OUT` key,
+or else another `Map` used to search for that `Vertex`
+* `inV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.IN` key,
+or else another `Map` used to search for that `Vertex`
 
 The `searchCreate` and `onCreate` `Map` instances must consist of any combination of:
 
@@ -620,38 +624,42 @@ The `onMatch` `Map` instance only allows for `String` keys as the `id` and `labe
 the incident vertices. Values for these valid keys that are `null` will be treated according to the semantics of the
 `addE()` step.
 
-The incoming traverser to this step may be either a `Map` or a `Vertex`. If it is a `Vertex`, it will be assigned to
-the `IN` and `OUT` elements of the `searchCreate`. If it is a `Map` then it will be treated as though it were passed in
-as an argument to `mergeE()`. If `mergeV(Map)` is used, then it will override any settings determined from the incoming
-`Traverser` if `IN` or `OUT` is specified. If those keys are not present, then the assumption is that the `Map` search
-criteria applies to both incoming and outgoing edges of the traverser `Vertex`. If `mergeV(Traversal)` is used, the
-`Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+`mergeE()`. If `mergeE(Map)` is used, then it will override the incoming `Traverser`. If `mergeE(Traversal)` is used,
+the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
 If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `Map`
-instance to be applied.
+instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Null `Map` |Empty `Map`
-|Search |Filters all edges |Matches all edges
-|Create |No new edge |New edge with defaults
-|Update |No update to matched edge |No update to matched edge
+|Event |Empty `Map` (or Null)
+|Search |Matches all edges
+|Create |New edge with defaults
+|Update |No update to matched edge
 |=========================================================
 
 If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for edge creation if the `Graph` does not
-support user supplied identifiers.
+support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label`, and
+`Direction.OUT/IN` do not need to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
+(i.e. `if (exists(x)) return(x) else create(y)` is not supported).
 
 *Modulation:*
 
 * `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
 resolve to a `Map`.
+* `option(Merge.outV/inV)` can also accept a `Traversal` that resolves to a `Vertex`, allowing `mergeE` to be combined
+with `mergeV` via a `select` operation.
 
 *Exceptions*
 
 * `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `String`.
+* If `T.id`, `T.label`, and/or `Direction.IN/OUT` are specified in `searchCreate`, they cannot be overriden in `onCreate`.
+* For late binding of the from and to vertices, `Direction.OUT` must be set to `Merge.outV` and `Direction.IN` must
+be set to `Merge.inV`. Other combinations are not allowed and will result in exception.
 
 *Considerations:*
 
@@ -676,13 +684,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 *Arguments:*
 
 * `searchCreate` - A `Map` used to match a `Vertex` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` that is the override to the default of `searchCreate`.
+* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
 * `onMatch` - A `Map` used to update the `Vertex` that is found using the `searchCreate` criteria.
 
 The `searchCreate` and `onCreate` `Map` instances must consists of any combination of `T.id`, `T.label`, or arbitrary
 `String` keys (which are assumed to be vertex properties). The `onMatch` `Map` instance only allows for `String` keys
-as the `id` and `label` of a `Vertex` are immutable. Values for these valid keys that are `null` will be treated
-according to the semantics of the `addV()` step.
+as the `id` and `label` of a `Vertex` are immutable. `null` Values for these valid keys are not allowed.
 
 The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
@@ -690,18 +697,20 @@ the `Traversal` argument must resolve to a `Map` and it would also override the 
 `onMatch` arguments are assigned via modulation as described below.
 
 If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `Map`
-instance to be applied.
+instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Null `Map` |Empty `Map`
-|Search |Filters all vertices |Matches all vertices
-|Create |No new vertex |New vertex with defaults
-|Update |No update to matched vertex |No update to matched vertex
+|Event |Empty `Map` (or Null)
+|Search |Matches all vertices
+|Create |New vertex with defaults
+|Update |No update to matched vertex
 |=========================================================
 
 If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for vertex creation if the `Graph` does not
-support user supplied identifiers.
+support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label` do not need
+to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
+(i.e. `if (exists(x)) return(x) else create(y)` is not supported).
 
 *Modulation:*
 
@@ -713,6 +722,7 @@ resolve to a `Map`.
 
 * `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `String`.
+* If `T.id` and/or `T.label` are specified in `searchCreate`, they cannot be overriden in `onCreate`.
 
 *Considerations:*
 

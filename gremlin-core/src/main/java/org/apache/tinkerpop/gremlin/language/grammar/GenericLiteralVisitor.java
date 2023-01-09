@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -516,6 +517,14 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     @Override
     public Object visitTraversalDirection(final GremlinParser.TraversalDirectionContext ctx) {
         return TraversalEnumParser.parseTraversalDirectionFromContext(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitTraversalMerge(final GremlinParser.TraversalMergeContext ctx) {
+        return TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx);
     }
 
     /**

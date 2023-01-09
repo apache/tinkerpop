@@ -46,6 +46,7 @@ This release also includes changes from <<release-3-5-5, 3.5.5>>.
 * Provided mechanism for provider plugins to get notified on script/query processing via `GraphManager`.
 * Fixed bug in `select()` when using multiple labels.
 * Moved Gherkin feature tests to `gremlin-test` resources so that they are more easily referenced by providers.
+* Made quality of life changes to semantics for `mergeV/E` based on initial feedback.
 
 [[release-3-6-1]]
 === TinkerPop 3.6.1 (Release Date: July 18, 2022)
