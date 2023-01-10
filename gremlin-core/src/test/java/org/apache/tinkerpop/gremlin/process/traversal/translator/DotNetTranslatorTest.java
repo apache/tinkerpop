@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -201,8 +202,8 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateMergeVNull() {
-        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).asAdmin().getBytecode()).getScript();
-        assertEquals("g.MergeV((IDictionary<object,object>) null).Option(Merge.OnCreate, (IDictionary<object,object>) null)", script);
+        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).mergeV(__.identity()).asAdmin().getBytecode()).getScript();
+        assertEquals("g.MergeV((IDictionary<object,object>) null).Option(Merge.OnCreate, (IDictionary<object,object>) null).MergeV((ITraversal) __.Identity())", script);
     }
 
     @Test

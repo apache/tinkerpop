@@ -477,6 +477,7 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldProduceBindingsForVars() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
+                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
                 (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
 
         final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
@@ -486,7 +487,7 @@ public class GremlinGroovyScriptEngineTest {
         final Traversal.Admin<Vertex, Vertex> t = (Traversal.Admin<Vertex, Vertex>)
                 engine.eval("g.V(v1Id).has(\"person\",\"age\",29).has('person','active',x).in(\"knows\")." +
                         System.lineSeparator() +
-                        "mergeE(m1).mergeV(m2).option(Merge.onCreate,m3)." +
+                        "mergeE(m1).mergeV(m2).option(Merge.onCreate,m3).mergeV(__.identity())." +
                         System.lineSeparator() +
                         "choose(__.out().count()).option(two, __.values(\"name\")).option(three, __.values(\"age\"))." +
                         System.lineSeparator() +
@@ -514,7 +515,7 @@ public class GremlinGroovyScriptEngineTest {
         assertThat(bytecodeBindings.containsKey("two"), is(true));
         assertThat(bytecodeBindings.containsKey("three"), is(true));
 
-        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
+        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).merge_v(__.identity()).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
     }
 
     @Test
