@@ -87,6 +87,9 @@ def test_client_error(client):
         assert 'stackTrace' in ex.status_attributes
         assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+
 
 def test_client_connection_pool_after_error(client):
     # Overwrite fixture with pool_size=1 client
@@ -101,6 +104,9 @@ def test_client_connection_pool_after_error(client):
         assert gse.status_code == 597
         assert client.available_pool_size == 1
 
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+
 
 def test_client_side_timeout_set_for_aiohttp(client):
     client = Client(test_no_auth_url, 'gmodern',
@@ -113,6 +119,9 @@ def test_client_side_timeout_set_for_aiohttp(client):
     except TimeoutError as err:
         # asyncio TimeoutError has no message.
         assert str(err) == ""
+
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
 async def async_connect(enable):
