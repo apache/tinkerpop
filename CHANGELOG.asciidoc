@@ -37,6 +37,10 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Configures `gremlin-socket-server` to build a docker image which can be used for testing GLV's. (Can be skipped with -DskipImageBuild)
 * Reduces dependency from `gremlin-server` onto `gremlin-driver` to a test scope only.
 
+== TinkerPop 3.6.0 (Tinkerheart)
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
+
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: NOT OFFICIALLY RELEASED YET)
 
