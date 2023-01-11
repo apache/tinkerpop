@@ -124,28 +124,11 @@ public class TinkerGraphWorld implements World {
                 "@GraphComputerVerificationReferenceOnly",
                 "@TinkerServiceRegistry");
 
-        private static final List<String> SCENARIOS_TO_IGNORE = Arrays.asList(
-                "g_V_group_byXoutE_countX_byXnameX",
-                "g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX",
-                "g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX",
-                "g_withStrategiesXProductiveByStrategyX_V_group_byXageX",
-                "g_V_order_byXoutE_count_descX_byXnameX",
-                "g_V_both_both_dedup_byXoutE_countX_name",
-                "g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX",
-                "g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX",
-                "g_V_order_byXname_descX_barrier_dedup_age_name");
-
         @Override
         public void beforeEachScenario(final Scenario scenario) {
             final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
             if (!ignores.isEmpty())
                 throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
-
-            // the following needs some further investigation.........may need to improve the definition of result
-            // equality with map<list>
-            final String scenarioName = scenario.getName();
-            if (SCENARIOS_TO_IGNORE.contains(scenarioName))
-                throw new AssumptionViolatedException("There are some internal ordering issues with result where equality is not required but is being enforced");
         }
 
         @Override

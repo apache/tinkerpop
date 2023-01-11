@@ -195,11 +195,11 @@ Feature: Step - order()
       | result |
       | m[{"peter":"d[0.2].d","josh":"d[1.4].d","marko":"d[1.9].d"}] |
 
-  Scenario: g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX
+  Scenario: g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX_byXcountXlocalX_descX
     Given the modern graph
     And the traversal of
       """
-      g.V().map(__.bothE().values("weight").order().by(Order.asc).fold()).order().by(__.sum(Scope.local), Order.desc)
+      g.V().map(__.bothE().values("weight").order().by(Order.asc).fold()).order().by(__.sum(Scope.local), Order.desc).by(__.count(Scope.local), Order.desc)
       """
     When iterated to list
     Then the result should be ordered
@@ -235,11 +235,12 @@ Feature: Step - order()
       | m[{"josh":"d[1.4].d"}]  |
       | m[{"peter":"d[0.2].d"}]  |
 
-  Scenario: g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX_byXselectXvX_nameX
     Given the modern graph
     And the traversal of
       """
-      g.V().as("v").map(__.bothE().values("weight").fold()).sum(Scope.local).as("s").select("v", "s").order().by(__.select("s"), Order.desc)
+      g.V().as("v").map(__.bothE().values("weight").fold()).sum(Scope.local).as("s").select("v", "s").order().by(__.select("s"), Order.desc).by(__.select("v").values("name"))
       """
     When iterated to list
     Then the result should be ordered

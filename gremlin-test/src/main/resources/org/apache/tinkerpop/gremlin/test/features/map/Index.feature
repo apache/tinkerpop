@@ -37,10 +37,11 @@ Feature: Step - index()
       g.V().hasLabel("software").order().by("name").index().with(WithOptions.indexer, WithOptions.map)
       """
     When iterated to list
-    Then the result should be ordered
+    Then the result should be of
       | result |
       | m[{"d[0].i": "v[lop]"}] |
       | m[{"d[0].i": "v[ripple]"}] |
+    And the result should have a count of 2
 
   Scenario: g_V_hasLabelXsoftwareX_name_fold_orderXlocalX_index_unfold_order_byXtailXlocal_1XX
     Given the modern graph

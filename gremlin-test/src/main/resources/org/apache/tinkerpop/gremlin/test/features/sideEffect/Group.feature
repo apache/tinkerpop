@@ -48,9 +48,11 @@ Feature: Step - group()
       g.withStrategies(ProductiveByStrategy).V().group().by("age")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"null":"l[v[lop],v[ripple]]", "d[35].i":"l[v[peter]]", "d[27].i":"l[v[vadas]]", "d[32].i": "l[v[josh]]", "d[29].i":"l[v[marko]]"}] |
+      | m[{"null":"l[v[ripple],v[lop]]", "d[35].i":"l[v[peter]]", "d[27].i":"l[v[vadas]]", "d[32].i": "l[v[josh]]", "d[29].i":"l[v[marko]]"}] |
+    And the result should have a count of 1
 
   Scenario: g_V_group_byXnameX_byXageX
     Given the modern graph
@@ -92,9 +94,11 @@ Feature: Step - group()
       g.V().has("lang").group("a").by("lang").by("name").out().cap("a")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"java":["lop","ripple"]}] |
+      | m[{"java":["ripple","lop"]}] |
+    And the result should have a count of 1
 
   Scenario: g_V_hasXlangX_group_byXlangX_byXcountX
     Given the modern graph
@@ -125,9 +129,15 @@ Feature: Step - group()
       g.V().order().by("name").group().by(__.outE().count()).by("name")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"d[0].l":["lop","ripple","vadas"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["lop","vadas","ripple"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["vadas","lop","ripple"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["vadas","ripple","lop"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["ripple","vadas","lop"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+      | m[{"d[0].l":["ripple","lop","vadas"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
+    And the result should have a count of 1
 
   Scenario: g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX
     Given the modern graph
