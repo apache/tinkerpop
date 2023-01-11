@@ -1211,7 +1211,8 @@ g.V().as('a').both().as('b').both().as('c').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dedup-org.apache.tinkerpop.gremlin.process.traversal.Scope-java.lang.String...-++[`dedup(Scope,String...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dedup-java.lang.String...-++[`dedup(String...)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`],
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_dedup++[`Semantics`]
 
 [[drop-step]]
 === Drop Step
