@@ -93,18 +93,22 @@ def client(request):
 
 
 @pytest.fixture
-def socket_server_client(request, socket_server_settings):
-    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
+def gremlin_socket_server_serializer(socket_server_settings):
     if socket_server_settings["SERIALIZER"] == "GraphBinaryV1":
-        ser = serializer.GraphBinarySerializersV1()
+        return serializer.GraphBinarySerializersV1()
     elif socket_server_settings["SERIALIZER"] == "GraphSONV2":
-        ser = serializer.GraphSONSerializersV2d0()
+        return serializer.GraphSONSerializersV2d0()
     elif socket_server_settings["SERIALIZER"] == "GraphSONV3":
-        ser = serializer.GraphSONSerializersV3d0()
+        return serializer.GraphSONSerializersV3d0()
     else:
-        ser = serializer.GraphBinarySerializersV1()
+        return serializer.GraphBinarySerializersV1()
+
+
+@pytest.fixture
+def socket_server_client(request, socket_server_settings, gremlin_socket_server_serializer):
+    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
     try:
-        client = Client(url, 'g', pool_size=1, message_serializer=ser)
+        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer)
     except OSError:
         pytest.skip('Gremlin Socket Server is not running')
     else:
@@ -116,7 +120,23 @@ def socket_server_client(request, socket_server_settings):
 
 
 @pytest.fixture
-def socket_server_settings(request):
+def socket_server_client_no_user_agent(request, socket_server_settings, gremlin_socket_server_serializer):
+    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
+    try:
+        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer,
+                        enable_user_agent_on_connect=False)
+    except OSError:
+        pytest.skip('Gremlin Socket Server is not running')
+    else:
+        def fin():
+            client.close()
+
+        request.addfinalizer(fin)
+        return client
+
+
+@pytest.fixture
+def socket_server_settings():
     with open(gremlin_socket_server_config_path, mode="rb") as file:
         settings = yaml.safe_load(file)
     return settings

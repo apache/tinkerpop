@@ -162,7 +162,10 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
          * @throws SerializationException
          */
         private ByteBuf returnSimpleBinaryResponse(final UUID requestID, String message) throws SerializationException {
-            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(message).create(), ByteBufAllocator.DEFAULT);
+            //Need to package message in a list of size 1 as some GLV's serializers require all messages to be in a list
+            final List<String> messageList = new ArrayList<>(1);
+            messageList.add(message);
+            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(messageList).create(), ByteBufAllocator.DEFAULT);
         }
 
         /**
