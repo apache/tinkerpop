@@ -83,7 +83,7 @@ class Connection extends EventEmitter {
      */
     this.mimeType = options.mimeType || defaultMimeType;
 
-    // A map containing the request id and the handler
+    // A map containing the request id and the handler. The id should be in lower case to prevent string comparison issues.
     this._responseHandlers = {};
     this._reader = options.reader || this._getDefaultReader(this.mimeType);
     this._writer = options.writer || this._getDefaultWriter(this.mimeType);
@@ -173,7 +173,8 @@ class Connection extends EventEmitter {
 
   /** @override */
   submit(processor, op, args, requestId) {
-    const rid = requestId || utils.getUuid();
+    // TINKERPOP-2847: Use lower case to prevent string comparison issues.
+    const rid = (requestId || utils.getUuid()).toLowerCase();
     return this.open().then(
       () =>
         new Promise((resolve, reject) => {
@@ -201,7 +202,8 @@ class Connection extends EventEmitter {
 
   /** @override */
   stream(processor, op, args, requestId) {
-    const rid = requestId || utils.getUuid();
+    // TINKERPOP-2847: Use lower case to prevent string comparison issues.
+    const rid = (requestId || utils.getUuid()).toLowerCase();
 
     const readableStream = new Stream.Readable({
       objectMode: true,
@@ -315,6 +317,8 @@ class Connection extends EventEmitter {
       return;
     }
 
+    // TINKERPOP-2847: Use lower case to prevent string comparison issues.
+    response.requestId = response.requestId.toLowerCase();
     const handler = this._responseHandlers[response.requestId];
 
     if (!handler) {
