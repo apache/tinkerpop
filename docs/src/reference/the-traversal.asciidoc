@@ -796,7 +796,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === Branch Step
 
 The `branch()` step splits the traverser to all the child traversals provided to it. Please see the
-<<general-steps, General Steps>> section for more information.
+<<general-steps, General Steps>> section for more information, but also consider that `branch()` is the basis for more
+robust steps like <<choose-step, choose()>> and <<union-step,union()>>.
 
 *Additional References*
 
