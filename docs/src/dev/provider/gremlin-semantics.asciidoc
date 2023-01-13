@@ -180,7 +180,7 @@ negation (`P.not`).
 | `ERROR` | `FALSE` | `ERROR` | `X \|\| FALSE == X`
 | `ERROR` | `ERROR` | `ERROR` | `X \|\| X == X`
 |===
-===== Ternary Boolean Semantics for `OR`:
+===== Ternary Boolean Semantics for `NOT`:
 The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERROR` values. The key idea is that, for an
 `ERROR` value, we can neither prove nor disprove the expression, and hence stick with `ERROR`.
 |===
