@@ -28,7 +28,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
- * Predefined {@code Predicate} values that can be used with
+ * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
+ * 
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
