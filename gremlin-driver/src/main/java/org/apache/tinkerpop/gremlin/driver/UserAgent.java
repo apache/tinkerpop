@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.util.Gremlin;
-import javax.naming.NamingException;
 
 public class UserAgent {
 
@@ -35,21 +34,39 @@ public class UserAgent {
     public static final String USER_AGENT;
 
     static {
-        String applicationName = "";
-        try {
-            applicationName = ((String)(new javax.naming.InitialContext().lookup("java:app/AppName"))).replace(' ', '_');
-        } catch (NamingException e) {
-            applicationName = "NotAvailable";
-        };
+        final String applicationName = getAttributeOrDefault(()->{ return (String)(new javax.naming.InitialContext().lookup("java:app/AppName")); });
 
-        final String glvVersion = Gremlin.version().replace(' ', '_');
-        final String javaVersion = System.getProperty("java.version", "NotAvailable").replace(' ', '_');
-        final String osName = System.getProperty("os.name", "NotAvailable").replace(' ', '_');
-        final String osVersion = System.getProperty("os.version", "NotAvailable").replace(' ', '_');
-        final String cpuArch = System.getProperty("os.arch", "NotAvailable").replace(' ', '_');
+        String glvVersion = getAttributeOrDefault(()->{ return Gremlin.version(); });
+        if(glvVersion.equals("VersionNotFound")) {
+            glvVersion = "NotAvailable";
+        }
+
+        final String javaVersion = getAttributeOrDefault(()->{ return System.getProperty("java.version", "NotAvailable"); });
+
+        final String osName = getAttributeOrDefault(()->{ return System.getProperty("os.name", "NotAvailable"); });
+
+        final String osVersion = getAttributeOrDefault(()->{ return System.getProperty("os.version", "NotAvailable"); });
+
+        final String cpuArch = getAttributeOrDefault(()->{ return System.getProperty("os.arch", "NotAvailable"); });
 
         USER_AGENT =  String.format("%s Gremlin-Java.%s %s %s.%s %s",
                                             applicationName, glvVersion, javaVersion,
                                             osName, osVersion, cpuArch);
+    }
+
+    private static String getAttributeOrDefault(ThrowingSupplier<String> supplier){
+        String ret = "NotAvailable";
+        try {
+            ret = supplier.get().replace(' ', '_');
+        }
+        catch (Exception e) {
+            // No action taken, default value of "NotAvailable" will be used if supplier fails
+        }
+        return ret;
+    }
+
+    @FunctionalInterface
+    private interface ThrowingSupplier<T> {
+        T get() throws Exception;
     }
 }

@@ -295,6 +295,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Prevented fast `NoHostAvailableException` in favor of more direct exceptions when borrowing connections from the `ConnectionPool`.
 * Fixed an issue in Go and Python GLVs where modifying per request settings to override request_id's was not working correctly.
 * Fixed incorrect implementation for `GraphTraversalSource.With` in `gremlin-go`.
+* Changed Gremlin.version() to return `"VersionNotFound"` if the version is missing from the manifest.
+* Fixed a case sensitivity issue when comparing request UUIDs in `gremlin-javascript`.
 
 ==== Bugs
 

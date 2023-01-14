@@ -25,7 +25,7 @@
 
 const crypto = require('crypto');
 const os = require('os');
-const gremlinVersion = require(__dirname + '/../package.json').version;
+const { readFileSync } = require('fs');
 
 exports.toLong = function toLong(value) {
   return new Long(value);
@@ -84,7 +84,12 @@ exports.ImmutableMap = ImmutableMap;
 
 function generateUserAgent() {
   const applicationName = (process.env.npm_package_name || 'NotAvailable').replace('_', ' ');
-  const driverVersion = gremlinVersion.replace('_', ' ');
+  let driverVersion;
+  try {
+    driverVersion = JSON.parse(readFileSync(__dirname + '/../package.json')).version.replace('_', ' ');
+  } catch (e) {
+    driverVersion = 'NotAvailable';
+  }
   const runtimeVersion = process.version.replace(' ', '_');
   const osName = os.platform().replace(' ', '_');
   const osVersion = os.release().replace(' ', '_');
