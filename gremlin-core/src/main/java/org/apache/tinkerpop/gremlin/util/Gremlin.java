@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
-    private static final String version;
+    private static String version;
 
     static {
         try {
