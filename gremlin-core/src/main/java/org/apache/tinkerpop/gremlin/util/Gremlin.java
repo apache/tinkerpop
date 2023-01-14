@@ -29,12 +29,21 @@ public final class Gremlin {
     private static String version;
 
     static {
-        version = Manifests.read("version");
+        try {
+            version = Manifests.read("version");
+        }
+        catch (Exception e) {
+            version = "VersionNotFound";
+        }
     }
 
     private Gremlin() {
     }
 
+    /**
+     * Get the current version of tinkerpop. Will return "VersionNotFound" if there are any issues finding
+     * the version. This typically would be the result of the version being missing from the manifest file.
+     */
     public static String version() {
         return version;
     }
