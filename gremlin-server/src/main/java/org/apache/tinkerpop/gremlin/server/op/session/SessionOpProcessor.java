@@ -451,10 +451,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     }
                     onError(graph, context);
                 }
-            } catch (Exception ex) {
+
+            } catch (Throwable t) {
                 // if any exception in the chain is TemporaryException or Failure then we should respond with the
                 // right error code so that the client knows to retry
-                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(t);
                 if (possibleSpecialException.isPresent()) {
                     final Throwable special = possibleSpecialException.get();
                     final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
@@ -469,12 +470,15 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     }
                     context.writeAndFlush(specialResponseMsg.create());
                 } else {
-                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), t);
                     context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(ex.getMessage())
-                            .statusAttributeException(ex).create());
+                            .statusMessage(t.getMessage())
+                            .statusAttributeException(t).create());
                 }
-                onError(graph, context);
+                if (t instanceof Error) {
+                    //Re-throw any errors to be handled by and set as the result of evalFuture
+                    throw t;
+                }
             } finally {
                 // todo: timer matter???
                 //timerContext.stop();
@@ -529,6 +533,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                 .statusAttributes(attributes)
                                 .create());
 
+<<<<<<< HEAD
                     } catch (Exception ex) {
                         // if any exception in the chain is TemporaryException or Failure then we should respond with the
                         // right error code so that the client knows to retry
@@ -549,11 +554,25 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                         } else {
                             logger.warn(String.format("Exception processing a Traversal on request [%s] to %s the transaction.",
                                     msg.getRequestId(), commit ? "commit" : "rollback"), ex);
-                            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                    .statusMessage(ex.getMessage())
-                                    .statusAttributeException(ex).create());
-                        }
+=======
+                    } catch (Throwable t) {
                         onError(graph, context);
+                        final Optional<Throwable> possibleTemporaryException = determineIfTemporaryException(t);
+                        if (possibleTemporaryException.isPresent()) {
+                            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TEMPORARY)
+                                    .statusMessage(possibleTemporaryException.get().getMessage())
+                                    .statusAttributeException(possibleTemporaryException.get()).create());
+                        } else {
+                            logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), t);
+>>>>>>> c12e08cb55 (Fix server not handling StackOverflowError in bytecode traversals)
+                            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                    .statusMessage(t.getMessage())
+                                    .statusAttributeException(t).create());
+                        }
+                        if (t instanceof Error) {
+                            //Re-throw any errors to be handled by and set as the result the FutureTask
+                            throw t;
+                        }
                     }
 
                     return null;
