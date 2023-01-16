@@ -280,8 +280,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
 
             if (itty.isPresent())
                 handleIterator(sessionTask, itty.get());
-        } catch (Exception ex) {
-            handleException(sessionTask, ex);
+        } catch (Throwable t) {
+            handleException(sessionTask, t);
         } finally {
             timer.stop();
         }
