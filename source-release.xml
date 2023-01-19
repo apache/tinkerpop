@@ -64,16 +64,20 @@
 
                 <!-- misc -->
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?cobertura\.ser]</exclude>
+                <exclude>**/.DS_Store</exclude>
 
                 <!-- release-plugin temp files -->
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?pom\.xml\.releaseBackup]</exclude>
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?release\.properties]</exclude>
 
-                <!-- custom gremlin variant exclusions that are not "source" files but aren't really known to maven -->
+                <!-- custom gremlin console exclusions of dockerized python tests output that are not "source" files -->
                 <exclude>gremlin-console/src/test/python/.eggs/**</exclude>
                 <exclude>gremlin-console/src/test/python/.pytest_cache/**</exclude>
                 <exclude>gremlin-console/src/test/python/gremlin*/**</exclude>
                 <exclude>gremlin-console/src/test/python/python-reports/**</exclude>
+                <exclude>gremlin-console/src/test/python/**/__pycache__/**</exclude>
+
+                <!-- custom gremlin variant exclusions that are not "source" files but aren't really known to maven -->
                 <exclude>docs/gremlint/package-lock.json</exclude>
                 <exclude>docs/gremlint/node_modules/**</exclude>
                 <exclude>docs/gremlint/build/**</exclude>

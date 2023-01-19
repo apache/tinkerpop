@@ -236,7 +236,7 @@ This release also includes changes from <<release-3-5-3, 3.5.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-5]]
-=== TinkerPop 3.5.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.5 (Release Date: January 16, 2023)
 
 * Changed the `Result` struct in gremlin-go to make it more suitable for mocking in tests.
 * Changed label generation in `PathProcessorStrategy` to be more deterministic.
@@ -251,6 +251,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Dockerized all test environment for .NET, JavaScript, Python, Go, and Python-based tests for Console, and added Docker as a build requirement.
 * Async operations in .NET can now be cancelled. This however does not cancel work that is already happening on the server.
 * Bumped to `snakeyaml` 1.32 to fix security vulnerability.
+* Update docker/build.sh to work with docker-compose dockerized tests changes.
+* Fix permission issues with Docker generated files by setting permission to current user, so sudo isn't needed for maven operations.
+* Updated base images for gremlin-server and gremlin-console docker images to support arm64.
+* Use Go embed for error/logger resources for `gremlin-go` to avoid missing resource files when using binaries.
 * Added user agent to web socket handshake in java driver. Can be controlled by a new enableUserAgentOnConnect configuration. It is enabled by default.
 * Added user agent to web socket handshake in Gremlin.Net driver. Can be controlled by `EnableUserAgentOnConnect` in `ConnectionPoolSettings`. It is enabled by default.
 * Added user agent to web socket handshake in go driver. Can be controlled by a new `EnableUserAgentOnConnect` setting. It is enabled by default.
@@ -272,6 +276,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed mechanism for determining `Host` health which should make the driver more resilient to intermittent network failures.
 * Removed the delay for reconnecting to a potentially unhealthy `Host` only marking it as unavailable after that initial retry fails.
 * Prevented fast `NoHostAvailableException` in favor of more direct exceptions when borrowing connections from the `ConnectionPool`.
+* Improved Gherkin tests for more consistent results.
+* Provides users with potentially more information to driver TimeoutExceptions.
 * Fixed an issue in Go and Python GLVs where modifying per request settings to override request_id's was not working correctly.
 * Fixed incorrect implementation for `GraphTraversalSource.With` in `gremlin-go`.
 * Changed Gremlin.version() to return `"VersionNotFound"` if the version is missing from the manifest.
@@ -279,11 +285,37 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 ==== Bugs
 
-GENERATED AT RELEASE
+* TINKERPOP-2765 Race condition during script creation when using UnifiedChannelizer
+* TINKERPOP-2769 gremlin-server does not reply with a timeout response to all timed out requests
+* TINKERPOP-2771 Critical severity security vulnerabilty in commons-configuration 2.7
+* TINKERPOP-2796 High severity security vulnerability found in snakeyaml
+* TINKERPOP-2803 Incorrect count() with sample() in TinkerGraph
+* TINKERPOP-2809 High severity security vulnerability found in jackson databind
+* TINKERPOP-2815 Critical security vulnerability for apache commons-text
+* TINKERPOP-2816 Gherkin test issues for implementers
+* TINKERPOP-2817 Support java.lang.Byte in hadoop GraphSONRecordWriter/GraphSONRecordReader
+* TINKERPOP-2826 Critical security vulnerability in ivy
+* TINKERPOP-2836 Github actions do not run java driver integration tests
+* TINKERPOP-2840 Test Failures on NonDex
+* TINKERPOP-2843 Security vulnerabilities found in netty version 4.1.77
+* TINKERPOP-2849 Incorrect implementation for GraphTraversalSource.With in gremlin-go
 
 ==== Improvements
 
-GENERATED AT RELEASE
+* TINKERPOP-2471 Add logging to Gremlin.Net driver
+* TINKERPOP-2480 User agent for Gremlin drivers
+* TINKERPOP-2737 Dockerized Build and Test Environments
+* TINKERPOP-2772 Add Spark utility to load vertices as RDD
+* TINKERPOP-2779 Floating ConnectedComponent Feature Failures for GitHub Actions on windows
+* TINKERPOP-2785 Inability to Mock Returned Result Types in Gremlin-Go Driver
+* TINKERPOP-2792 Better exception when JavaTranslator finds a method but not the overload
+* TINKERPOP-2794 Allow cancellation of Gremlin.Net async methods
+* TINKERPOP-2808 Improve Compatibility on ARM machines
+* TINKERPOP-2813 Improve driver usability for cases where NoHostAvailableException is currently thrown
+* TINKERPOP-2814 Add a SSL handshake timeout configuration to the driver
+* TINKERPOP-2833 TestSupport loads files too slow
+* TINKERPOP-2834 CloneVertexProgram optimization on SparkGraphComputer
+* TINKERPOP-2842 Expand GremlinScriptChecker to include request id overrides
 
 [[release-3-5-4]]
 === TinkerPop 3.5.4 (Release Date: July 18, 2022)
