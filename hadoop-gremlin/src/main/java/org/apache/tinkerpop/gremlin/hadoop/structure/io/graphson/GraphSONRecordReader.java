@@ -26,20 +26,23 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.gremlin.structure.io.util.IoRegistryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -50,6 +53,7 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
     private boolean hasEdges;
+    private GraphFilter graphFilter = null;
 
     public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
@@ -59,6 +63,10 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES, true);
+        if (context.getConfiguration().get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null) {
+            graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(context.getConfiguration()),
+                    Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+        }
         final GraphSONVersion graphSONVersion =
                 GraphSONVersion.valueOf(context.getConfiguration().get(Constants.GREMLIN_HADOOP_GRAPHSON_VERSION, "V3_0"));
         final Mapper mapper = GraphSONMapper.build().
@@ -72,15 +80,24 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
 
     @Override
     public boolean nextKeyValue() throws IOException {
-        if (!this.lineRecordReader.nextKeyValue())
-            return false;
-
-        try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
-            this.vertexWritable.set(this.hasEdges ?
-                    this.graphsonReader.readVertex(in, Attachable::get, Attachable::get, Direction.BOTH) :
-                    this.graphsonReader.readVertex(in, Attachable::get));
-            return true;
+        while(this.lineRecordReader.nextKeyValue()) {
+            try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
+                Vertex vertex = this.hasEdges ?
+                        this.graphsonReader.readVertex(in, Attachable::get, Attachable::get, Direction.BOTH) :
+                        this.graphsonReader.readVertex(in, Attachable::get);
+                this.vertexWritable.set(vertex);
+                if (graphFilter == null) {
+                    return true;
+                } else {
+                    final Optional<StarGraph.StarVertex> vertexWritable = this.vertexWritable.get().applyGraphFilter(graphFilter);
+                    if (vertexWritable.isPresent()) {
+                        this.vertexWritable.set(vertexWritable.get());
+                        return true;
+                    }
+                }
+            }
         }
+        return false;
     }
 
     @Override
