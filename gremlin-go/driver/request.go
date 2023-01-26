@@ -91,10 +91,11 @@ func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sess
 // allowedReqArgs contains the arguments that will be extracted from the
 // bytecode and sent with the request.
 var allowedReqArgs = map[string]bool{
-	"evaluationTimeout": true,
-	"batchSize":         true,
-	"requestId":         true,
-	"userAgent":         true,
+	"evaluationTimeout":     true,
+	"batchSize":             true,
+	"requestId":             true,
+	"userAgent":             true,
+	"materializeProperties": true,
 }
 
 // extractReqArgs extracts request arguments from the provided bytecode.

@@ -67,8 +67,6 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                 return new SeedStrategy(Long.parseLong(ctx.integerLiteral().getText()));
             else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
                 return getProductiveByStrategy(ctx.traversalStrategyArgs_ProductiveByStrategy());
-            else if (strategyName.equals(DetachStrategy.class.getSimpleName()))
-                return getDetachStrategy(ctx.traversalStrategyArgs_DetachStrategy());
         }
         throw new IllegalStateException("Unexpected TraversalStrategy specification - " + ctx.getText());
     }
@@ -161,28 +159,6 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
     private static ProductiveByStrategy getProductiveByStrategy(final GremlinParser.TraversalStrategyArgs_ProductiveByStrategyContext ctx) {
         final ProductiveByStrategy.Builder builder = ProductiveByStrategy.build();
         builder.productiveKeys(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
-        return builder.create();
-    }
-
-    private static DetachStrategy getDetachStrategy(final List<GremlinParser.TraversalStrategyArgs_DetachStrategyContext> ctxs) {
-        final DetachStrategy.Builder builder = DetachStrategy.build();
-
-        if (null == ctxs || ctxs.isEmpty())
-            return builder.create();
-
-        ctxs.forEach(ctx -> {
-            switch (ctx.getChild(0).getText()) {
-                case DetachStrategy.ID_MODE:
-                    builder.detachMode(TraversalEnumParser.parseTraversalEnumFromContext(DetachStrategy.DetachMode.class, ctx.stringBasedLiteral()));
-                    // todo: or correct is
-                    // builder.detachMode(DetachStrategy.DetachMode.valueOf(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral())));
-                    break;
-                case DetachStrategy.ID_KEYS:
-                    builder.keys(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
-                    break;
-            }
-        });
-
         return builder.create();
     }
 }

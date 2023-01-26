@@ -27,12 +27,15 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.slf4j.Logger;
@@ -282,6 +285,13 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                                      final Map<String,Object> statusAttributes) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
+
+            if (!ctx.getMaterializeProperties().equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
+                // aggregate is List<DefaultRemoteTraverser<T>>
+                for (final Object item : aggregate) {
+                    ((AbstractTraverser)item).detach();
+                }
+            }
 
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)

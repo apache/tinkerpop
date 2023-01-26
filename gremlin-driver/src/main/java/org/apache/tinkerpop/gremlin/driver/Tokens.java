@@ -79,6 +79,10 @@ public final class Tokens {
     public static final String ARGS_HOST = "host";
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
+    public static final String ARGS_MATERIALIZE_PROPERTIES = "materializeProperties";
+
+    public static final String MATERIALIZE_PROPERTIES_ALL = "all";
+    public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
 
     /**
      * Argument name that is intended to be used with a session which when its value is {@code true} makes it so

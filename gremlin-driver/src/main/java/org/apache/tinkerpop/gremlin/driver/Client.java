@@ -359,6 +359,7 @@ public abstract class Client {
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
         options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
         options.getLanguage().ifPresent(lang -> request.addArg(Tokens.ARGS_LANGUAGE, lang));
+        options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
         return submitAsync(request.create());
     }
@@ -660,6 +661,7 @@ public abstract class Client {
                 options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
                 options.getOverrideRequestId().ifPresent(request::overrideRequestId);
                 options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
+                options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
                 return submitAsync(request.create());
             } catch (RuntimeException re) {

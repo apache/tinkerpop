@@ -51,6 +51,7 @@ public class Context {
     private final ScheduledExecutorService scheduledExecutorService;
     private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
     private final long requestTimeout;
+    private final String materializeProperties;
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
     private final AtomicBoolean startedResponse = new AtomicBoolean(false);
@@ -89,6 +90,7 @@ public class Context {
         this.gremlinArgument = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
         this.requestContentType = determineRequestContents();
         this.requestTimeout = determineTimeout();
+        this.materializeProperties = determineMaterializeProperties();
     }
 
     /**
@@ -99,6 +101,10 @@ public class Context {
      */
     public long getRequestTimeout() {
         return requestTimeout;
+    }
+
+    public String getMaterializeProperties() {
+        return materializeProperties;
     }
 
     public boolean isFinalResponseWritten() {
@@ -259,5 +265,11 @@ public class Context {
                 GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout() : Optional.empty();
 
         return timeoutDefinedInScript.orElse(seto);
+    }
+
+    private String determineMaterializeProperties() {
+        final Map<String, Object> args = requestMessage.getArgs();
+        return args.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES) ?
+                (String) args.get(Tokens.ARGS_MATERIALIZE_PROPERTIES) : Tokens.MATERIALIZE_PROPERTIES_ALL;
     }
 }

@@ -1189,26 +1189,86 @@ func TestConnection(t *testing.T) {
 		}
 	})
 
-	t.Run("Get properties from immutable", func(t *testing.T) {
+	t.Run("Get all properties when materializeProperties is all", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
-		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		r, err := g.V().Next()
-		assert.NotNil(t, r)
+		// vertex contains 2 properties, name and age
+		r, err := g.With("materializeProperties", "all").V().Has("person", "name", "marko").Next()
 		assert.Nil(t, err)
+		assert.NotNil(t, r)
 
-		vertex, _ := r.GetVertex()
+		vertex, err := r.GetVertex()
+		assert.Nil(t, err)
 		assert.NotNil(t, vertex)
 
-		properties, _ := vertex.Properties.([]interface{})
+		properties, ok := vertex.Properties.([]interface{})
+		assert.True(t, ok)
 		assert.Equal(t, 2, len(properties))
-		property, _ := properties[0].(*VertexProperty)
 
+		property, ok := properties[0].(*VertexProperty)
+		assert.True(t, ok)
 		assert.NotNil(t, property)
-		assert.Equal(t, "foo", property.Label)
-		assert.Equal(t, int64(1), property.Value)
+		assert.Equal(t, "name", property.Label)
+		assert.Equal(t, "marko", property.Value)
+
+		property, ok = properties[1].(*VertexProperty)
+		assert.True(t, ok)
+		assert.NotNil(t, property)
+		assert.Equal(t, "age", property.Label)
+		assert.Equal(t, int32(29), property.Value)
+	})
+
+	t.Run("Skip properties when materializeProperties is tokens", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// vertex contains 2 properties, name and age
+		r, err := g.With("materializeProperties", "tokens").V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+		assert.NotNil(t, r)
+
+		vertex, err := r.GetVertex()
+		assert.Nil(t, err)
+		assert.NotNil(t, vertex)
+
+		properties, ok := vertex.Properties.([]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, 0, len(properties))
+	})
+
+	t.Run("Get all properties when no materializeProperties", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		r, err := g.V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+		assert.NotNil(t, r)
+
+		vertex, err := r.GetVertex()
+		assert.Nil(t, err)
+		assert.NotNil(t, vertex)
+
+		properties, ok := vertex.Properties.([]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, 2, len(properties))
+
+		property, ok := properties[0].(*VertexProperty)
+		assert.True(t, ok)
+		assert.NotNil(t, property)
+		assert.Equal(t, "name", property.Label)
+		assert.Equal(t, "marko", property.Value)
+
+		property, ok = properties[1].(*VertexProperty)
+		assert.True(t, ok)
+		assert.NotNil(t, property)
+		assert.Equal(t, "age", property.Label)
+		assert.Equal(t, int32(29), property.Value)
 	})
 }

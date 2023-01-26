@@ -829,7 +829,6 @@ traversalStrategy
 //  | 'MatchAlgorithmStrategy' - not supported directly as it's internal to match()
 //  | 'ProfileStrategy' - not supported directly as it's internal to profile()
 //  | 'ReferenceElementStrategy' - not supported directly as users really can't/shouldn't change this in our context of a remote Gremlin provider
-    | NEW 'DetachStrategy' LPAREN traversalStrategyArgs_DetachStrategy? (COMMA traversalStrategyArgs_DetachStrategy)* RPAREN
 //  | 'AdjacentToIncidentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
 //  | 'ByModulatorOptimizationStrategy' - not supported as it is a default strategy and we don't allow removal at this time
     | NEW? 'ProductiveByStrategy' (LPAREN traversalStrategyArgs_ProductiveByStrategy? RPAREN)?
@@ -851,11 +850,6 @@ traversalStrategy
     | 'ReadOnlyStrategy'
     | NEW 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
 //  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
-    ;
-
-traversalStrategyArgs_DetachStrategy
-    : 'keys' COLON stringLiteralList
-    | 'detachMode' COLON stringBasedLiteral
     ;
 
 traversalStrategyArgs_ProductiveByStrategy
