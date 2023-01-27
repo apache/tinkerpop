@@ -92,6 +92,25 @@ more likely now to note blocking behavior when a connection cannot be obtained.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2813[TINKERPOP-2813]
 
+==== Added User Agent to Gremlin drivers
+Previously, a server does not distinguish amongst the different types of clients connecting to it. We have now added
+user agent to web socket handshake in all the drivers, each with their own configuration to enable or disable user agent.
+User agent is enabled by default for all drivers.
+
+* Java driver can be controlled by the `enableUserAgentOnConnect` configuration.
+* .Net driver can be controlled by the `EnableUserAgentOnConnect` in `ConnectionPoolSettings`.
+* Go driver can be controlled by the `EnableUserAgentOnConnect` setting.
+* Python driver can be controlled by the `enable_user_agent_on_connect` setting.
+* JavaScript driver can be controlled by the `enableUserAgentOnConnect` option.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2480[TINKERPOP-2480]
+
+==== Update to SSL Handshake Timeout Configuration
+Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. We have removed
+the default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2814[TINKERPOP-2814]
+
 == TinkerPop 3.5.4
 
 *Release Date: July 18, 2022*
