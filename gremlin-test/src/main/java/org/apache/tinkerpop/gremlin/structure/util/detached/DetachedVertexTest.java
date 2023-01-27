@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -102,51 +101,6 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         assertEquals(v.label(), detachedVertex.label());
         assertEquals("123", detachedVertex.value("test"));
         assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldConstructCustomDetachedVertexWithAllProps() {
-        final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, Arrays.asList("foo"));
-
-        final Vertex v = graph.addVertex("foo", "123", "bar", "234");
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
-
-        assertEquals(v.id(), detachedVertex.id());
-        assertEquals(v.label(), detachedVertex.label());
-        assertEquals("123", detachedVertex.value("foo"));
-        assertEquals("234", detachedVertex.value("bar"));
-        assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldConstructCustomDetachedVertexWithNamedProps() {
-        final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, Arrays.asList("foo"));
-
-        final Vertex v = graph.addVertex("foo", "123", "bar", "234");
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
-
-        assertEquals(v.id(), detachedVertex.id());
-        assertEquals(v.label(), detachedVertex.label());
-        assertEquals("123", detachedVertex.value("foo"));
-        assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldConstructCustomDetachedVertexWithoutProps() {
-        final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, Arrays.asList("foo"));
-
-        final Vertex v = graph.addVertex("foo", "123", "bar", "234");
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, detachOptions);
-
-        assertEquals(v.id(), detachedVertex.id());
-        assertEquals(v.label(), detachedVertex.label());
-        assertEquals(0, IteratorUtils.count(detachedVertex.properties()));
     }
 
     @Test

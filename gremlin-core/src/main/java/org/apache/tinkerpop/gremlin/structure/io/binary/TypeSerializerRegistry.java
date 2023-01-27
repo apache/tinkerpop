@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.structure.io.binary;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.*;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;

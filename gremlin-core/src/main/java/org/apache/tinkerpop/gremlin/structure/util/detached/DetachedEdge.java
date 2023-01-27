@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -54,36 +53,20 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     private DetachedEdge() {}
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
-        this(edge, new DetachStrategy.DetachOptions(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE, null));
-    }
-
-    protected DetachedEdge(final Edge edge,
-                           final DetachStrategy.DetachOptions detachOptions) {
         super(edge);
         this.outVertex = DetachedFactory.detach(edge.outVertex(), false);
         this.inVertex = DetachedFactory.detach(edge.inVertex(), false);
 
-        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.NONE
-                || detachOptions.getDetachMode() == DetachStrategy.DetachMode.CUSTOM && detachOptions.getProperties() == null)
-            return;
-
-        final Iterator<Property<Object>> propertyIterator = edge.properties();
-        if (!propertyIterator.hasNext())
-            return;
-
-        this.properties = new HashMap<>();
-
-        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.ALL) {
-            propertyIterator.forEachRemaining(property -> this.properties.put(property.key(),
-                    Collections.singletonList(DetachedFactory.detach(property))));
-            return;
-        }
-
-        propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.match(detachOptions, property)) {
-                this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property)));
+        // only serialize properties if requested, the graph supports it and there are meta properties present.
+        // this prevents unnecessary object creation of a new HashMap of a new HashMap which will just be empty.
+        // it will use Collections.emptyMap() by default
+        if (withProperties) {
+            final Iterator<Property<Object>> propertyIterator = edge.properties();
+            if (propertyIterator.hasNext()) {
+                this.properties = new HashMap<>();
+                propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
             }
-        });
+        }
     }
 
     public DetachedEdge(final Object id, final String label,

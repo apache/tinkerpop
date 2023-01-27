@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -57,39 +56,22 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
-        this(vertex, new DetachStrategy.DetachOptions(withProperties ? DetachStrategy.DetachMode.ALL : DetachStrategy.DetachMode.NONE, null));
-    }
-
-    protected DetachedVertex(final Vertex vertex,
-                             final DetachStrategy.DetachOptions detachOptions) {
         super(vertex);
 
-        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.NONE
-                || detachOptions.getDetachMode() == DetachStrategy.DetachMode.CUSTOM && detachOptions.getProperties() == null)
-            return;
-
-        final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
-        if (!propertyIterator.hasNext())
-            return;
-
-        this.properties = new HashMap<>();
-
-        if (detachOptions.getDetachMode() == DetachStrategy.DetachMode.ALL) {
-            propertyIterator.forEachRemaining(property -> {
-                final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
-                list.add(DetachedFactory.detach(property, true));
-                this.properties.put(property.key(), list);
-            });
-            return;
-        }
-
-        propertyIterator.forEachRemaining(property -> {
-            if (PropertyUtil.match(detachOptions, property)) {
-                final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
-                list.add(DetachedFactory.detach(property, detachOptions));
-                this.properties.put(property.key(), list);
+        // only serialize properties if requested, and there are meta properties present. this prevents unnecessary
+        // object creation of a new HashMap of a new HashMap which will just be empty.  it will use
+        // Collections.emptyMap() by default
+        if (withProperties) {
+            final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
+            if (propertyIterator.hasNext()) {
+                this.properties = new HashMap<>();
+                propertyIterator.forEachRemaining(property -> {
+                    final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
+                    list.add(DetachedFactory.detach(property, true));
+                    this.properties.put(property.key(), list);
+                });
             }
-        });
+        }
     }
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties) {

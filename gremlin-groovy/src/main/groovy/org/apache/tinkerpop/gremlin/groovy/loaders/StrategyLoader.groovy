@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy
@@ -63,7 +62,6 @@ class StrategyLoader {
         MatchAlgorithmStrategy.metaClass.constructor << { Map conf -> MatchAlgorithmStrategy.create(new MapConfiguration(conf)) }
         // # ProfileStrategy is singleton/internal
         // # ReferenceElementStrategy is singleton/internal
-        DetachStrategy.metaClass.constructor << { Map conf -> DetachStrategy.create(new MapConfiguration(conf)) }
         // # ComputerFinalizationStrategy is singleton/internal
 
         // optimization

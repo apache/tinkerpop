@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.DetachStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -99,78 +97,6 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldConstructDetachedEdgeAsReference() {
         g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(), false);
-        assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
-        assertEquals("knows", detachedEdge.label());
-        assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.OUT).next().getClass());
-        assertEquals(convertToVertexId("marko"), detachedEdge.vertices(Direction.OUT).next().id());
-        assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
-        assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.IN).next().getClass());
-        assertEquals(convertToVertexId("vadas"), detachedEdge.vertices(Direction.IN).next().id());
-        assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
-
-        assertEquals(0, IteratorUtils.count(detachedEdge.properties()));
-    }
-
-    @Test
-    @LoadGraphWith(GraphData.MODERN)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldConstructCustomDetachedEdgeWithAllProps() {
-        final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.ALL, Arrays.asList("year"));
-
-        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
-        final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
-                detachOptions);
-        assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
-        assertEquals("knows", detachedEdge.label());
-        assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.OUT).next().getClass());
-        assertEquals(convertToVertexId("marko"), detachedEdge.vertices(Direction.OUT).next().id());
-        assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
-        assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.IN).next().getClass());
-        assertEquals(convertToVertexId("vadas"), detachedEdge.vertices(Direction.IN).next().id());
-        assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
-
-        assertEquals(2, IteratorUtils.count(detachedEdge.properties()));
-        assertEquals(1, IteratorUtils.count(detachedEdge.properties("year")));
-        assertEquals(0.5d, detachedEdge.properties("weight").next().value());
-    }
-
-    @Test
-    @LoadGraphWith(GraphData.MODERN)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldConstructCustomDetachedEdgeWithNamedProps() {
-        final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.CUSTOM, Arrays.asList("year"));
-
-        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
-        final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
-                detachOptions);
-        assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
-        assertEquals("knows", detachedEdge.label());
-        assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.OUT).next().getClass());
-        assertEquals(convertToVertexId("marko"), detachedEdge.vertices(Direction.OUT).next().id());
-        assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
-        assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.IN).next().getClass());
-        assertEquals(convertToVertexId("vadas"), detachedEdge.vertices(Direction.IN).next().id());
-        assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
-
-        assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-        assertEquals(1, IteratorUtils.count(detachedEdge.properties("year")));
-    }
-
-    @Test
-    @LoadGraphWith(GraphData.MODERN)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldConstructCustomDetachedEdgeWithoutProps() {
-        final DetachStrategy.DetachOptions detachOptions =
-                new DetachStrategy.DetachOptions(DetachStrategy.DetachMode.NONE, Arrays.asList("year"));
-
-        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
-        final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(),
-                detachOptions);
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.vertices(Direction.OUT).next().getClass());

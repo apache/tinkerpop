@@ -58,27 +58,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         }
     }
 
-    /*protected DetachedVertexProperty(final VertexProperty<V> vertexProperty,
-                                     final DetachStrategy.DetachMode detachMode,
-                                     final String[] properties) {
-        super(vertexProperty);
-        this.value = vertexProperty.value();
-        this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
-
-        if (detachMode == DetachStrategy.DetachMode.NONE
-                || !vertexProperty.graph().features().vertex().supportsMetaProperties()
-                || detachMode == DetachStrategy.DetachMode.CUSTOM && properties == null)
-            return;
-
-        if (detachMode == DetachStrategy.DetachMode.ALL) {
-            final Iterator<Property<Object>> propertyIterator = vertexProperty.properties();
-            if (propertyIterator.hasNext()) {
-                this.properties = new HashMap<>();
-                propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
-            }
-        }
-    }*/
-
     public DetachedVertexProperty(final Object id, final String label, final V value,
                                   final Map<String, Object> properties,
                                   final Vertex vertex) {
