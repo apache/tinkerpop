@@ -269,6 +269,17 @@ var T = ts{
 	Value: "value",
 }
 
+type materializeProperties struct {
+	All    string
+	Tokens string
+}
+
+// MaterializeProperties is string symbols.
+var MaterializeProperties = materializeProperties{
+	All:    "all",
+	Tokens: "tokens",
+}
+
 type merge string
 
 type merges struct {

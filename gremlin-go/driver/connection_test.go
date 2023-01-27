@@ -1196,7 +1196,7 @@ func TestConnection(t *testing.T) {
 		defer g.remoteConnection.Close()
 
 		// vertex contains 2 properties, name and age
-		r, err := g.With("materializeProperties", "all").V().Has("person", "name", "marko").Next()
+		r, err := g.With("materializeProperties", MaterializeProperties.All).V().Has("person", "name", "marko").Next()
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
 
@@ -1228,7 +1228,7 @@ func TestConnection(t *testing.T) {
 		defer g.remoteConnection.Close()
 
 		// vertex contains 2 properties, name and age
-		r, err := g.With("materializeProperties", "tokens").V().Has("person", "name", "marko").Next()
+		r, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Has("person", "name", "marko").Next()
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
 

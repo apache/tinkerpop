@@ -81,6 +81,7 @@ public final class Tokens {
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_MATERIALIZE_PROPERTIES = "materializeProperties";
 
+    // todo: discuss: keep here or move to {@code T}?
     public static final String MATERIALIZE_PROPERTIES_ALL = "all";
     public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
 
