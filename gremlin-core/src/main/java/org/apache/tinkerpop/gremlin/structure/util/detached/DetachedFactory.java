@@ -115,5 +115,4 @@ public class DetachedFactory {
             return (D) object;
         }
     }
-
 }

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
@@ -33,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Rese
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<TraversalStrategy> {
     protected final DefaultGremlinBaseVisitor<Traversal> tvisitor;

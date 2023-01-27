@@ -212,7 +212,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // optimizations
             IncidentToAdjacentStrategyProcessTest.class,
-            EarlyLimitStrategyProcessTest.class,
+            EarlyLimitStrategyProcessTest.class
     };
 
     /**
