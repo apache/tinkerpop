@@ -103,9 +103,13 @@ User agent is enabled by default for all drivers.
 * Python driver can be controlled by the `enable_user_agent_on_connect` setting.
 * JavaScript driver can be controlled by the `enableUserAgentOnConnect` option.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2480[TINKERPOP-2480]
+
 ==== Update to SSL Handshake Timeout Configuration
 Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. We have removed
 the default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2814[TINKERPOP-2814]
 
 == TinkerPop 3.5.4
 
