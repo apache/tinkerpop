@@ -90,10 +90,10 @@ function generateUserAgent() {
   } catch (e) {
     driverVersion = 'NotAvailable';
   }
-  const runtimeVersion = process.version.replace(' ', '_');
-  const osName = os.platform().replace(' ', '_');
-  const osVersion = os.release().replace(' ', '_');
-  const cpuArch = process.arch.replace(' ', '_');
+  const runtimeVersion = process?.version?.replace(' ', '_');
+  const osName = os?.platform().replace(' ', '_');
+  const osVersion = os?.release().replace(' ', '_');
+  const cpuArch = process?.arch?.replace(' ', '_');
   const userAgent = `${applicationName} Gremlin-Javascript.${driverVersion} ${runtimeVersion} ${osName}.${osVersion} ${cpuArch}`;
 
   return userAgent;
