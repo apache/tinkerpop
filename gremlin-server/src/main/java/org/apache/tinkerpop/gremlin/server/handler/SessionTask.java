@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;

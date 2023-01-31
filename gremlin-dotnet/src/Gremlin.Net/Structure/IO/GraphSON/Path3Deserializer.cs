@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 
@@ -32,12 +33,14 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             // "labels" is a object[] where each item is ISet<object>
-            var labelProperty = (object[])reader.ToObject(graphsonObject.GetProperty("labels"));
+            var labelProperty = (object[]?)reader.ToObject(graphsonObject.GetProperty("labels"));
+            if (labelProperty == null) throw new IOException($"Could not read the labels for the {nameof(Path)}");
             var labels = labelProperty
                 .Select(x => new HashSet<string>(((ISet<object>)x).Cast<string>()))
                 .ToList<ISet<string>>();
             // "objects" is an object[]
-            object[] objects = reader.ToObject(graphsonObject.GetProperty("objects"));
+            object?[] objects = reader.ToObject(graphsonObject.GetProperty("objects")) ??
+                               throw new IOException($"Could not read the objects for the {nameof(Path)}");
             return new Path(labels, objects);
         }
     }

@@ -127,7 +127,10 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task<TEnum> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
-            var enumValue = (string) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            // This should probably be `reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)` instead,
+            // but it's the same in other GLVs and changing this would be a breaking change for the GraphBinary format.
+            var enumValue = (string?) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            if (enumValue == null) throw new IOException($"Read null as a value for {DataType}");
             return _readFunc.Invoke(enumValue);
         }
     }

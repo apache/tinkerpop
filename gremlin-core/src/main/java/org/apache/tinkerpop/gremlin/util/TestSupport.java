@@ -185,10 +185,11 @@ public class TestSupport {
 
         // fill it with the desired contents
         try (final FileOutputStream outputStream = new FileOutputStream(tempFile)) {
-            int data;
+            final byte[] buf = new byte[1024]; // use a buffer to boost the read/write speed
+            int sz;
             try (final InputStream inputStream = resourceClass.getResourceAsStream(resourceName)) {
-                while ((data = inputStream.read()) != -1) {
-                    outputStream.write(data);
+                while ((sz = inputStream.read(buf)) != -1) {
+                    outputStream.write(buf, 0, sz);
                 }
             }
         }

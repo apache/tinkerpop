@@ -38,7 +38,7 @@ public class GraphSON3MessageSerializerTests
         var serializer = CreateMessageSerializer();
 
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await serializer.SerializeMessageAsync(RequestMessage.Build(default).Create(),
+            await serializer.SerializeMessageAsync(RequestMessage.Build(string.Empty).Create(),
                 new CancellationToken(true)));
     }
     

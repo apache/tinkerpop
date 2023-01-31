@@ -433,6 +433,8 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("max", "max_");
             TO_PYTHON_MAP.put("mergeE", "merge_e");
             TO_PYTHON_MAP.put("mergeV", "merge_v");
+            TO_PYTHON_MAP.put("inV", "in_v");
+            TO_PYTHON_MAP.put("outV", "out_v");
             TO_PYTHON_MAP.put("onCreate", "on_create");
             TO_PYTHON_MAP.put("onMatch", "on_match");
             TO_PYTHON_MAP.put("min", "min_");

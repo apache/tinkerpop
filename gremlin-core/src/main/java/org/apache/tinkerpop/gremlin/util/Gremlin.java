@@ -26,15 +26,24 @@ import java.io.IOException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
-    private static final String version;
+    private static String version;
 
     static {
-        version = Manifests.read("tinkerpop-version");
+        try {
+            version = Manifests.read("tinkerpop-version");
+        }
+        catch (Exception e) {
+            version = "VersionNotFound";
+        }
     }
 
     private Gremlin() {
     }
 
+    /**
+     * Get the current version of tinkerpop. Will return "VersionNotFound" if there are any issues finding
+     * the version. This typically would be the result of the version being missing from the manifest file.
+     */
     public static String version() {
         return version;
     }

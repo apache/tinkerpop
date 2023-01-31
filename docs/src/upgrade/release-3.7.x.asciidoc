@@ -29,6 +29,17 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Gremlin.NET: Nullable Annotations
+
+Gremlin.NET now uses link:https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-variable-annotations[nullable annotations]
+to state wether an argument or a return value can be null or not. This should make it much less likely to get a
+`NullReferenceException` from Gremlin.NET.
+
+This change required to make some breaking changes but most users should not be affected by this as the breaking
+changes are limited to APIs that are mostly intended for graph driver providers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
+
 ==== Removed connectOnStartup javascript
 
 Removed the `connectOnStartup` option for Gremlin Javascript API to resolve potential `unhandledRejection` and race
@@ -44,3 +55,49 @@ drc.open().catch(err => {
    // Handle error upon open.
 })
 ----
+
+==== Creation of New `gremlin-util` Module
+
+`gremlin-driver` has been refactored and several classes have been extracted to a new `gremlin-util` module. Any classes
+which are utilized by both `gremlin-driver` and `gremlin-server` have been extracted to `gremlin-util`. This includes
+the entire `tinkerpop.gremlin.driver.ser` and `tinkerpop.gremlin.driver.message` packages as well as
+`tinkerpop.gremlin.driver.MessageSerializer` and `tinkerpop.gremlin.driver.Tokens`. For a full list of the migrated
+classes, see: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819].
+All migrated classes have had their packages updated to reflect this change. For these classes, packages have changed
+from `tinkerpop.gremlin.driver.*` to `tinkerpop.gremlin.util.*`. For example
+`org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1` has been updated to
+`org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1`. All imports of these classes should be updated
+to reflect this change. All server config files which declare a list of serializers should also be updated to
+reflect the new location of serializer classes.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819]
+
+==== Removal of `gremlin-driver` from `gremlin-server`
+
+`gremlin-driver` is no longer a dependency of `gremlin-server` and thus will no longer be packaged in server
+distributions. Any app which makes use of both `gremlin-driver` and `gremlin-server` will now need to directly
+include both modules.
+
+=== Upgrading for Providers
+
+==== Graph Driver Providers
+
+===== Gremlin.NET: Nullable Reference Types
+
+Enabling nullable reference types comes with some breaking changes in Gremlin.NET which can affect driver providers.
+
+GraphBinary APIs changed to make better use of nullable reference types. Instead of one method `WriteValueAsync` and
+one method `ReadValueAsync`, there are now methods `WriteNullableValueAsync` and `ReadNullableValueAsync` that allow
+`null` values and methods `WriteNonNullableValueAsync` and `ReadNonNullableValueAsync` that do not allow `null` values.
+
+Some `set` property accessors were removed from some pure data classes in the `Structure` and the `Driver.Messages`
+namespaces to initialize these properties directly from the constructor which ensures that they are really not `null`.
+We also used this opportunity to convert some of these pure data classes into a `record`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
+
+===== Reworked Gremlin Socket Server
+
+The `SimpleSocketServer` from `gremlin-driver` has been brought into a new module `gremlin-tools/gremlin-socket-server`
+and it has been adapted to be usable by all drivers for testing. See more about creating gremlin socket server tests
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-socket-server-tests[here].

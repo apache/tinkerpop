@@ -39,10 +39,16 @@ namespace Gremlin.Net.Process.Traversal
 
         public static Merge OnMatch => new Merge("onMatch");
 
+        public static Merge OutV => new Merge("outV");
+
+        public static Merge InV => new Merge("inV");
+
         private static readonly IDictionary<string, Merge> Properties = new Dictionary<string, Merge>
         {
             { "onCreate", OnCreate },
             { "onMatch", OnMatch },
+            { "outV", OutV },
+            { "inV", InV },
         };
 
         /// <summary>

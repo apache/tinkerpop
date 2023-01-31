@@ -28,16 +28,16 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -61,7 +61,6 @@ import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.io.File;
 import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -79,6 +78,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -1757,6 +1757,38 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
+    }
+
+    /**
+     * Tests to make sure that the stack trace contains an informative cause when the request times out because the
+     * client was unable to get a connection and the pool is already maxed out.
+     */
+    @Test
+    public void shouldReturnClearExceptionCauseWhenClientIsTooBusyAndConnectionPoolIsFull() throws InterruptedException {
+        final Cluster cluster = TestClientFactory.build()
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .connectionSetupTimeoutMillis(100)
+                .maxWaitForConnection(150)
+                .minInProcessPerConnection(0)
+                .maxInProcessPerConnection(1)
+                .minSimultaneousUsagePerConnection(0)
+                .maxSimultaneousUsagePerConnection(1)
+                .create();
+
+        final Client.ClusteredClient client = cluster.connect();
+
+        for (int i = 0; i < 3; i++) {
+            try {
+                client.submitAsync("Thread.sleep(5000);");
+            } catch (Exception e) {
+                final Throwable root = ExceptionHelper.getRootCause(e);
+                assertTrue(root instanceof TimeoutException);
+                assertTrue(root.getMessage().contains(Client.TOO_MANY_IN_FLIGHT_REQUESTS));
+            }
+        }
+
+        cluster.close();
     }
 
     /**

@@ -364,7 +364,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         if (null == instArg) {
                             script.append("(IDictionary<object,object>) null");
                         } else {
-                            if (instArg instanceof Traversal) {
+                            if (instArg instanceof Traversal || instArg instanceof Bytecode) {
                                 script.append("(ITraversal) ");
                             } else {
                                 script.append("(IDictionary<object,object>) ");

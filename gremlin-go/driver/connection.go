@@ -42,14 +42,15 @@ type connection struct {
 }
 
 type connectionSettings struct {
-	authInfo          *AuthInfo
-	tlsConfig         *tls.Config
-	keepAliveInterval time.Duration
-	writeDeadline     time.Duration
-	connectionTimeout time.Duration
-	enableCompression bool
-	readBufferSize    int
-	writeBufferSize   int
+	authInfo         			*AuthInfo
+	tlsConfig         			*tls.Config
+	keepAliveInterval 			time.Duration
+	writeDeadline     			time.Duration
+	connectionTimeout 			time.Duration
+	enableCompression 			bool
+	readBufferSize				int
+	writeBufferSize				int
+	enableUserAgentOnConnect		bool
 }
 
 func (connection *connection) errorCallback() {

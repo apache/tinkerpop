@@ -84,7 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var vertex = g.V(1).Next();
 
             Assert.Equal(new Vertex(1), vertex);
-            Assert.Equal(1, vertex.Id);
+            Assert.Equal(1, vertex!.Id);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var shortestPath =
                 g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<Vertex>(1).Path().Next();
 
-            Assert.Equal(4, shortestPath.Count);
+            Assert.Equal(4, shortestPath!.Count);
             Assert.Equal(new Vertex(6), shortestPath[3]);
         }
 

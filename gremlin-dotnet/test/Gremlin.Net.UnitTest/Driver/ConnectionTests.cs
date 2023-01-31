@@ -294,10 +294,8 @@ namespace Gremlin.Net.UnitTest.Driver
             var fakeMessageSerializer = new Mock<IMessageSerializer>();
             var receivedBytes = new byte[] { 1, 2, 3 };
             var messageToCancel = RequestMessage.Build(string.Empty).Create();
-            var receivedMessage = new ResponseMessage<List<object>>
-            {
-                RequestId = messageToCancel.RequestId, Status = new ResponseStatus { Code = ResponseStatusCode.Success }
-            };
+            var receivedMessage = new ResponseMessage<List<object>>(messageToCancel.RequestId,
+                new ResponseStatus(ResponseStatusCode.Success), new ResponseResult<List<object>>(null));
             fakeMessageSerializer.Setup(f => f.DeserializeMessageAsync(receivedBytes, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(receivedMessage);
             var fakeWebSocketConnection = new Mock<IWebSocketConnection>();
@@ -316,14 +314,14 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         private static Connection GetConnection(IMock<IClientWebSocket> mockedClientWebSocket,
-            IMessageSerializer messageSerializer = null, Uri uri = null)
+            IMessageSerializer? messageSerializer = null, Uri? uri = null)
         {
             return GetConnection(new WebSocketConnection(mockedClientWebSocket.Object, new WebSocketSettings()),
                 messageSerializer, uri);
         }
         
         private static Connection GetConnection(IWebSocketConnection webSocketConnection,
-            IMessageSerializer messageSerializer = null, Uri uri = null)
+            IMessageSerializer? messageSerializer = null, Uri? uri = null)
         {
             uri ??= new Uri("wss://localhost:8182");
             messageSerializer ??= new GraphBinaryMessageSerializer();
@@ -336,9 +334,10 @@ namespace Gremlin.Net.UnitTest.Driver
                 sessionId: null);
         }
 
-        private static async Task AssertExpectedConnectionClosedException(WebSocketCloseStatus? expectedCloseStatus, string expectedCloseDescription, Func<Task> func)
+        private static async Task AssertExpectedConnectionClosedException(WebSocketCloseStatus? expectedCloseStatus,
+            string? expectedCloseDescription, Func<Task> func)
         {
-            ConnectionClosedException exception = await Assert.ThrowsAsync<ConnectionClosedException>(func);
+            var exception = await Assert.ThrowsAsync<ConnectionClosedException>(func);
             Assert.Equal(expectedCloseStatus, exception.Status);
             Assert.Equal(expectedCloseDescription, exception.Description);
         }

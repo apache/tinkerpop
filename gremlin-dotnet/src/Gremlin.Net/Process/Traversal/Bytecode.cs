@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Gremlin.Net.Process.Traversal
@@ -60,19 +61,19 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets the traversal source instructions.
         /// </summary>
-        public List<Instruction> SourceInstructions { get; } = new List<Instruction>();
+        public List<Instruction> SourceInstructions { get; } = new();
 
         /// <summary>
         ///     Gets the <see cref="ITraversal" /> instructions.
         /// </summary>
-        public List<Instruction> StepInstructions { get; } = new List<Instruction>();
+        public List<Instruction> StepInstructions { get; } = new();
 
         /// <summary>
         ///     Add a traversal source instruction to the bytecode.
         /// </summary>
         /// <param name="sourceName">The traversal source method name (e.g. withSack()).</param>
         /// <param name="args">The traversal source method arguments.</param>
-        public void AddSource(string sourceName, params object[] args)
+        public void AddSource(string sourceName, params object?[] args)
         {
             SourceInstructions.Add(new Instruction(sourceName, FlattenArguments(args)));
             Bindings.Clear();
@@ -83,17 +84,17 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="stepName">The traversal method name (e.g. out()).</param>
         /// <param name="args">The traversal method arguments.</param>
-        public void AddStep(string stepName, params object[] args)
+        public void AddStep(string stepName, params object?[] args)
         {
             StepInstructions.Add(new Instruction(stepName, FlattenArguments(args)));
             Bindings.Clear();
         }
 
-        private object[] FlattenArguments(object[] arguments)
+        private object?[] FlattenArguments(object?[] arguments)
         {
             if (arguments.Length == 0)
                 return EmptyArray;
-            var flatArguments = new List<object>();
+            var flatArguments = new List<object?>();
             foreach (var arg in arguments)
             {
                 if (arg is object[] objects)
@@ -108,7 +109,8 @@ namespace Gremlin.Net.Process.Traversal
             return flatArguments.ToArray();
         }
 
-        private object ConvertArgument(object argument, bool searchBindings)
+        [return: NotNullIfNotNull("argument")]
+        private object? ConvertArgument(object? argument, bool searchBindings)
         {
             if (null == argument)
             {
@@ -129,7 +131,7 @@ namespace Gremlin.Net.Process.Traversal
             
             if (IsDictionaryType(argument.GetType()))
             {
-                var dict = new Dictionary<object, object>();
+                var dict = new Dictionary<object, object?>();
                 foreach (DictionaryEntry item in (IDictionary)argument)
                 {
                     dict[ConvertArgument(item.Key, true)] = ConvertArgument(item.Value, true);
@@ -138,13 +140,13 @@ namespace Gremlin.Net.Process.Traversal
             }
             if (IsListType(argument.GetType()))
             {
-                var list = new List<object>(((IList) argument).Count);
-                list.AddRange(from object item in (IList) argument select ConvertArgument(item, true));
+                var list = new List<object?>(((IList) argument).Count);
+                list.AddRange(from object? item in (IList)argument select ConvertArgument(item, true));
                 return list;
             }
             if (IsHashSetType(argument.GetType()))
             {
-                var set = new HashSet<object>();
+                var set = new HashSet<object?>();
                 foreach (var item in (IEnumerable)argument)
                 {
                     set.Add(ConvertArgument(item, true));
@@ -167,6 +169,12 @@ namespace Gremlin.Net.Process.Traversal
         private bool IsHashSetType(Type type)
         {
             return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>);
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"[[{string.Join(", ", SourceInstructions)}], [{string.Join(", ", StepInstructions)}]]";
         }
     }
 }

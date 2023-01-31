@@ -62,8 +62,8 @@ The packaged `*-secure.yaml` files now restrict the protocol to `TLSv1.2` by def
 
 PEM-based configurations are deprecated and may be removed in a future release.
 
-See also https://tinkerpop.apache.org/docs/current/reference/#_configuration[Connecting via Java Configuration],
-https://tinkerpop.apache.org/docs/current/reference/#_configuring_2[Gremlin Server Configuration].
+See also https://tinkerpop.apache.org/docs/x.y.z/reference/#_configuration[Connecting via Java Configuration],
+https://tinkerpop.apache.org/docs/x.y.z/reference/#_configuring_2[Gremlin Server Configuration].
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2022[TINKERPOP-2022]
 link:https://issues.apache.org/jira/browse/TINKERPOP-2023[TINKERPOP-2023]
@@ -93,8 +93,8 @@ $ docker run tinkerpop/gremlin-server:x.y.z
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1897[TINKERPOP-1897],
-link:https://tinkerpop.apache.org/docs/current/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
-link:https://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
 
 ==== TimedInterruptCustomizerProvider
 
@@ -540,7 +540,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1663[TINKERPOP-1663]
 
 The `GremlinScriptEngine` has a number of new metrics about its cache size and script compilation times which should
 be helpful in understanding usage problems. As `GremlinScriptEngine` instances are used in Gremlin Server these metrics
-are naturally exposed as part of the standard link:https://tinkerpop.apache.org/docs/current/reference/#_metrics[metrics]
+are naturally exposed as part of the standard link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_metrics[metrics]
 set. Note that metrics are captured for both sessionless requests as well as for each individual session that is opened.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
@@ -886,7 +886,7 @@ The "force" argument is passed on the "close" message and is a boolean value. Th
 and defaults to `false`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
-link:https://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
 
 ===== SASL Authentication
 

@@ -48,8 +48,10 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         {
             if (typeof(AbstractTraversalStrategy).IsAssignableFrom(value))
             {
-                var strategyInstance = (AbstractTraversalStrategy) Activator.CreateInstance(value);
-                await writer.WriteValueAsync(strategyInstance.Fqcn, stream, false, cancellationToken)
+                var strategyInstance = (AbstractTraversalStrategy?)Activator.CreateInstance(value) ??
+                                       throw new IOException(
+                                           $"Cannot write the strategy {value} because an instance of that strategy could not be created");
+                await writer.WriteNonNullableValueAsync(strategyInstance.Fqcn, stream, cancellationToken)
                     .ConfigureAwait(false);
             }
             else

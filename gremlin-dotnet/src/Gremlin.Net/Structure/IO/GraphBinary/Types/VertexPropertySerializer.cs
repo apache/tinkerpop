@@ -44,7 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for the parent vertex
@@ -60,7 +60,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var vp = new VertexProperty(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
+                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
                 await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
 
             // discard the parent vertex

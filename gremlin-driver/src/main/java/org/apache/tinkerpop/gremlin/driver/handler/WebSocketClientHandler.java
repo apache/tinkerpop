@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -28,12 +29,18 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker13;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.concurrent.Promise;
 
 import java.net.URI;
 import java.util.concurrent.TimeoutException;
 
+import javax.net.ssl.SSLHandshakeException;
+
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.HandshakeInterceptor;
 import org.slf4j.Logger;
@@ -48,10 +55,13 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
 
     private final long connectionSetupTimeoutMillis;
     private ChannelPromise handshakeFuture;
+    private boolean sslHandshakeCompleted;
+    private boolean useSsl;
 
-    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final long timeoutMillis) {
+    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final long timeoutMillis, final boolean useSsl) {
         super(handshaker, /*handleCloseFrames*/true, /*dropPongFrames*/true, timeoutMillis);
         this.connectionSetupTimeoutMillis = timeoutMillis;
+        this.useSsl = useSsl;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -104,10 +114,21 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
             }
         } else if (ClientHandshakeStateEvent.HANDSHAKE_TIMEOUT.equals(event)) {
             if (!handshakeFuture.isDone()) {
-                handshakeFuture.setFailure(
-                        new TimeoutException(String.format("handshake not completed in stipulated time=[%s]ms",
-                                connectionSetupTimeoutMillis)));
+                TimeoutException te = new TimeoutException(
+                        String.format((useSsl && !sslHandshakeCompleted) ?
+                                        "SSL handshake not completed in stipulated time=[%s]ms" :
+                                        "WebSocket handshake not completed in stipulated time=[%s]ms",
+                                connectionSetupTimeoutMillis));
+                handshakeFuture.setFailure(te);
+                logger.error(te.getMessage());
             }
+
+            if (useSsl && !sslHandshakeCompleted) {
+                SslHandler handler = ((SslHandler) ctx.pipeline().get(Channelizer.AbstractChannelizer.PIPELINE_SSL_HANDLER));
+                ((Promise<Channel>) handler.handshakeFuture()).tryFailure(new SSLHandshakeException("SSL handshake timed out."));
+            }
+        } else if (event instanceof SslHandshakeCompletionEvent) {
+            sslHandshakeCompleted = true;
         } else {
             super.userEventTriggered(ctx, event);
         }

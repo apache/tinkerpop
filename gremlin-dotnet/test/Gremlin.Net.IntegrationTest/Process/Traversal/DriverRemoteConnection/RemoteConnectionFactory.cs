@@ -32,13 +32,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
     internal class RemoteConnectionFactory : IDisposable
     {
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         private readonly IList<IDisposable> _cleanUp = new List<IDisposable>();
         private readonly IMessageSerializer _messageSerializer;
 
-        public RemoteConnectionFactory(IMessageSerializer messageSerializer = null)
+        public RemoteConnectionFactory(IMessageSerializer? messageSerializer = null)
         {
             _messageSerializer = messageSerializer ?? new GraphSON3MessageSerializer();
         }

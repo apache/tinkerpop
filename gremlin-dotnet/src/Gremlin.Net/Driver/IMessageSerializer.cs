@@ -48,7 +48,7 @@ namespace Gremlin.Net.Driver
         /// <param name="message">The serialized message to deserialize.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The deserialized <see cref="ResponseMessage{T}"/>.</returns>
-        Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
+        Task<ResponseMessage<List<object>>?> DeserializeMessageAsync(byte[] message,
             CancellationToken cancellationToken = default);
     }
 }

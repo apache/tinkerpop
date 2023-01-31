@@ -102,7 +102,7 @@ public abstract class RecordReaderWriterTest {
         return splits;
     }
 
-    private static void validateFileSplits(final List<FileSplit> fileSplits, final Configuration configuration,
+    private void validateFileSplits(final List<FileSplit> fileSplits, final Configuration configuration,
                                            final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormatClass,
                                            final Optional<Class<? extends OutputFormat<NullWritable, VertexWritable>>> outFormatClass) throws Exception {
 
@@ -134,21 +134,27 @@ public abstract class RecordReaderWriterTest {
                 inEdgeCount = inEdgeCount + (int) IteratorUtils.count(vertexWritable.get().edges(Direction.IN));
                 //
                 final Vertex vertex = vertexWritable.get();
-                assertEquals(Integer.class, vertex.id().getClass());
-                if (vertex.value("name").equals("SUGAR MAGNOLIA")) {
-                    foundKeyValue = true;
-                    assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
-                    assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
+                if (getInputFilename().startsWith("grateful-dead-v")) {
+                    assertEquals(Integer.class, vertex.id().getClass());
+                    if (vertex.value("name").equals("SUGAR MAGNOLIA")) {
+                        foundKeyValue = true;
+                        assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
+                        assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
+                    }
+                } else if (getInputFilename().startsWith("tinkerpop-classic-byteid-")) {
+                    assertTrue(vertex.id().getClass().equals(Byte.class));
                 }
                 lastProgress = progress;
             }
         }
 
-        assertEquals(8049, outEdgeCount);
-        assertEquals(8049, inEdgeCount);
+        if (getInputFilename().startsWith("grateful-dead-v")) {
+            assertEquals(8049, outEdgeCount);
+            assertEquals(8049, inEdgeCount);
+            assertEquals(808, vertexCount);
+            assertTrue(foundKeyValue);
+        }
         assertEquals(outEdgeCount, inEdgeCount);
-        assertEquals(808, vertexCount);
-        assertTrue(foundKeyValue);
 
         if (null != writer) {
             writer.close(new TaskAttemptContextImpl(configuration, job.getTaskAttemptID()));

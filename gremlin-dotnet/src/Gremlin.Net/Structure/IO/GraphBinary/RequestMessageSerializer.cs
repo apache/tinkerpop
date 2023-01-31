@@ -45,13 +45,13 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             CancellationToken cancellationToken = default)
         {
             await stream.WriteByteAsync(GraphBinaryWriter.VersionByte, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.RequestId, stream, false, cancellationToken)
+            await writer.WriteNonNullableValueAsync(requestMessage.RequestId, stream, cancellationToken)
                 .ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.Operation, stream, false, cancellationToken)
+            await writer.WriteNonNullableValueAsync(requestMessage.Operation, stream, cancellationToken)
                 .ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.Processor, stream, false, cancellationToken)
+            await writer.WriteNonNullableValueAsync(requestMessage.Processor, stream, cancellationToken)
                 .ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.Arguments, stream, false, cancellationToken)
+            await writer.WriteNonNullableValueAsync(requestMessage.Arguments, stream, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

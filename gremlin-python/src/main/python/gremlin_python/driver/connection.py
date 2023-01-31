@@ -18,7 +18,7 @@ import uuid
 import queue
 from concurrent.futures import Future
 
-from gremlin_python.driver import resultset
+from gremlin_python.driver import resultset, useragent
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -26,7 +26,7 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class Connection:
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
-                 executor, pool, headers=None):
+                 executor, pool, headers=None, enable_user_agent_on_connect=True):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -37,6 +37,11 @@ class Connection:
         self._pool = pool
         self._results = {}
         self._inited = False
+        self._enable_user_agent_on_connect = enable_user_agent_on_connect
+        if self._enable_user_agent_on_connect:
+            if self._headers is None:
+                self._headers = dict()
+            self._headers[useragent.userAgentHeader] = useragent.userAgent
 
     def connect(self):
         if self._transport:
@@ -54,6 +59,8 @@ class Connection:
         if not self._inited:
             self.connect()
         request_id = str(uuid.uuid4())
+        if request_message.args.get("requestId"):
+            request_id = request_message.args.get("requestId")
         result_set = resultset.ResultSet(queue.Queue(), request_id)
         self._results[request_id] = result_set
         # Create write task

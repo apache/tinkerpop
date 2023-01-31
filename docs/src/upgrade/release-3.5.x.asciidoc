@@ -21,16 +21,106 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
-== TinkerPop 3.5.5
+== TinkerPop 3.5.6
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.6/CHANGELOG.asciidoc#release-3-5-6[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+
+== TinkerPop 3.5.5
+
+*Release Date: January 16, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.5/CHANGELOG.asciidoc#release-3-5-5[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlin.NET: Add logging
 
+The Gremlin.NET driver can now be configured for logging to get more insights into its internal state, like when
+a connection was closed and will therefore be replaced. It uses `Microsoft.Extensions.Logging` for this so all kinds
+of different .NET logging implementations can be used.
+
+The following example shows how to provide a `LoggerFactory` that is configured to log to the console to
+`GremlinClient`:
+
+[source,csharp]
+----
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+});
+var client = new GremlinClient(new GremlinServer("localhost", 8182), loggerFactory: loggerFactory);
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2471[TINKERPOP-2471]
+
+==== gremlin-driver Host Availability
+
+The Java drivers approach to determine the health of the host to which it is connected is important to how it behaves.
+The driver has generally taken a pessimistic approach to make this determination, where a failure to borrow a
+connection from the pool would constitute enough evidence to mark the host as dead. Unfortunately a failure to borrow
+from the pool is not the best indicator for a dead host. Intermittent network failure, an overly busy client, or other
+temporary issues could have been at play while the server was perfectly available.
+
+The consequences for marking a host dead are fairly severe as the connection pool is shutdown. While it is shutdown
+in an orderly fashion so as to allow for existing requests to complete if at all possible, it immediately blocks new
+requests producing an immediate `NoHostAvailableException` (assuming there are actually no other hosts to route
+requests to). There is then some delay to reconnect to the server and re-establish each of the connections in the pool,
+which might take some time especially if there was a large pool. If an application were sending hundreds of requests
+a second, it would quickly equate to hundreds of exceptions a second, filling logs quickly and making it hard to
+decipher the original root cause from that initial inability to simply borrow a connection.
+
+For 3.5.5, the driver has dropped some of its pessimistic ways and has taken a more optimistic posture when it comes
+to considering host availability. When the driver now has a problem borrowing a connection from the pool, it does not
+assume the worst of a failed host. It instead checks if the other connections in the pool are still alive. If at least
+one is alive it assumes the host is still available and the user simply gets a `TimeoutException` for waiting beyond
+the `maxWaitForConnection` setting. In the event that there are no connections deemed alive, the driver will try to
+issue an immediate reconnect to determine host health. If the reconnect succeeds then the host remains in an available
+state for future requests and if it fails it is finally marked as dead and thus unavailable.
+
+If a host is marked unavailable, the driver, like before, will try to route requests to other configured hosts that
+are healthy. If there are no such other hosts and all are unhealthy, the driver will now make an immediate attempt to
+route the request to a random unavailable host on the chance it will come back online and the connection pool thus
+re-established. So, rather than a `NoHostAvailableException` flood, the user would instead see a `TimeoutException`
+per request made.
+
+Since the driver was already throwing `NoHostAvailableException` and `TimeoutException`, there shouldn't be too
+many code changes required on upgrade to this version. The main difference to consider is that
+`NoHostAvailableException` should appear less often, so any code that mitigated against a flood of these exceptions
+might not be necessary anymore. One should also consider that if code was relying on the asynchronous
+properties that `Client.submitAsync()` implies in its name, that code may now see more blocking behavior than
+before. In doing this refactoring, it was noted that the connection borrowing behavior has never behaved in a truly
+asynchronous manner and only the fast `NoHostAvailableException` aspect of that method behavior really contributed to
+an asynchronous looking call for failed connection borrowing. With the fast `NoHostAvailableException` gone, it may be
+more likely now to note blocking behavior when a connection cannot be obtained.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2813[TINKERPOP-2813]
+
+==== Added User Agent to Gremlin drivers
+Previously, a server does not distinguish amongst the different types of clients connecting to it. We have now added
+user agent to web socket handshake in all the drivers, each with their own configuration to enable or disable user agent.
+User agent is enabled by default for all drivers.
+
+* Java driver can be controlled by the `enableUserAgentOnConnect` configuration.
+* .Net driver can be controlled by the `EnableUserAgentOnConnect` in `ConnectionPoolSettings`.
+* Go driver can be controlled by the `EnableUserAgentOnConnect` setting.
+* Python driver can be controlled by the `enable_user_agent_on_connect` setting.
+* JavaScript driver can be controlled by the `enableUserAgentOnConnect` option.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2480[TINKERPOP-2480]
+
+==== Update to SSL Handshake Timeout Configuration
+Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. We have removed
+the default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2814[TINKERPOP-2814]
 
 == TinkerPop 3.5.4
 
@@ -667,7 +757,7 @@ IMPORTANT: The `g.tx()` is only supported in Java at this time. Support for othe
 future releases on the 3.5.x line.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2537[TINKERPOP-2537],
-link:https://tinkerpop.apache.org/docs/current/reference/#transactions[Reference Documentation - Transactions]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Reference Documentation - Transactions]
 
 ==== Anonymous Child Traversals
 
@@ -1048,7 +1138,7 @@ g = traversal().withRemote(DriverRemoteConnection(
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
-link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python-connecting[Reference Documentation]
 
 ==== Deprecation Removal
 

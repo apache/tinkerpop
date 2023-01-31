@@ -23,12 +23,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics
 
 import java.time.*
 import java.nio.file.*
-import org.apache.tinkerpop.gremlin.driver.ser.*
+import org.apache.tinkerpop.gremlin.util.ser.*
 import org.apache.tinkerpop.gremlin.process.traversal.*
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.graphson.*
-import org.apache.tinkerpop.gremlin.driver.message.*
+import org.apache.tinkerpop.gremlin.util.message.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
 import org.apache.commons.configuration.BaseConfiguration
@@ -110,10 +110,10 @@ writeSupportedV1Objects = { writer, mapper ->
     writer.write("ResponseMessage\n")
     writer.write("~~~~~~~~~~~~~~~\n\n")
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-            code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
+            code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.AUTHENTICATE).create()
     writer.write(toJsonV1d0NoTypes(msg, "Authentication Challenge", mapper, "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server)."))
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-            code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
+            code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.SUCCESS).
             result(Arrays.asList(graph.vertices().next())).create()
     writer.write(toJsonV1d0NoTypes(msg, "Standard Result", mapper, "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
 }
@@ -251,10 +251,10 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     writer.write("ResponseMessage\n")
     writer.write("~~~~~~~~~~~~~~~\n\n")
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-            code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
+            code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.AUTHENTICATE).create()
     writer.write(toJsonFunction(msg, "Authentication Challenge", mapper, "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server)."))
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-            code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
+            code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.SUCCESS).
             result(Arrays.asList(graph.vertices().next())).create()
     writer.write(toJsonFunction(msg, "Standard Result", mapper, "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
 
@@ -296,7 +296,7 @@ mapper = GraphSONMapper.build().
         addRegistry(TinkerIoRegistryV2d0.instance()).
         typeInfo(TypeInfo.PARTIAL_TYPES).
         addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
         version(GraphSONVersion.V2_0).create().createMapper()
 
 file = new File("dev-docs/out-graphson-2d0-partial.txt")
@@ -306,7 +306,7 @@ mapper = GraphSONMapper.build().
         addRegistry(TinkerIoRegistryV2d0.instance()).
         typeInfo(TypeInfo.NO_TYPES).
         addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
         version(GraphSONVersion.V2_0).create().createMapper()
 
 file = new File("dev-docs/out-graphson-2d0-no-type.txt")

@@ -77,9 +77,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                 bindings.put(selectKey, (E) product.get());
             }
 
-            // bindings should be the same size as keys or else there was an uproductive by() in which case we filter
-            // with an EmptyTraverser
-            if (bindings.size() != selectKeys.size()) return EmptyTraverser.instance();
+            // bindings should be the same size as unique keys or else there was an unproductive by() in which case
+            // we filter with an EmptyTraverser.
+            if (bindings.size() != selectKeysSet.size()) return EmptyTraverser.instance();
 
         } catch (KeyNotFoundException nfe) {
             return EmptyTraverser.instance();

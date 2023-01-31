@@ -53,7 +53,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
         tags = "not @RemoteOnly and not @MultiMetaProperties and not @GraphComputerOnly and not @AllowNullPropertyValues and not @UserSuppliedVertexPropertyIds and not @UserSuppliedEdgeIds and not @UserSuppliedVertexIds and not @TinkerServiceRegistry",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
-        features = { "../gremlin-test/features" },
+        features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class Neo4jGraphFeatureTest {
     private static final Logger logger = LoggerFactory.getLogger(Neo4jGraphFeatureTest.class);

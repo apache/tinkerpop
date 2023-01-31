@@ -287,12 +287,18 @@ type merges struct {
 	OnCreate merge
 	// OnMatch Merges on match.
 	OnMatch merge
+	// Specify outV in options
+	OutV merge
+	// Specify inV in options
+	InV merge
 }
 
 // Merge is a set of operations for Vertex and Edge merging.
 var Merge = merges{
 	OnCreate: "onCreate",
 	OnMatch:  "onMatch",
+	OutV:  "outV",
+	InV:  "inV",
 }
 
 type operator string

@@ -48,6 +48,7 @@ type ClientSettings struct {
 	MaximumConcurrentConnections int
 	// Initial amount of instantiated connections. Default: 1
 	InitialConcurrentConnections int
+	EnableUserAgentOnConnect     bool
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -65,17 +66,18 @@ type Client struct {
 // Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource:   "g",
-		TransporterType:   Gorilla,
-		LogVerbosity:      Info,
-		Logger:            &defaultLogger{},
-		Language:          language.English,
-		AuthInfo:          &AuthInfo{},
-		TlsConfig:         &tls.Config{},
-		KeepAliveInterval: keepAliveIntervalDefault,
-		WriteDeadline:     writeDeadlineDefault,
-		ConnectionTimeout: connectionTimeoutDefault,
-		EnableCompression: false,
+		TraversalSource:          "g",
+		TransporterType:          Gorilla,
+		LogVerbosity:             Info,
+		Logger:                   &defaultLogger{},
+		Language:                 language.English,
+		AuthInfo:                 &AuthInfo{},
+		TlsConfig:                &tls.Config{},
+		KeepAliveInterval:        keepAliveIntervalDefault,
+		WriteDeadline:            writeDeadlineDefault,
+		ConnectionTimeout:        connectionTimeoutDefault,
+		EnableCompression:        false,
+		EnableUserAgentOnConnect: true,
 		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
 		// size is zero, then a useful default size is used. The I/O buffer sizes
 		// do not limit the size of the messages that can be sent or received.
@@ -91,14 +93,15 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 	}
 
 	connSettings := &connectionSettings{
-		authInfo:          settings.AuthInfo,
-		tlsConfig:         settings.TlsConfig,
-		keepAliveInterval: settings.KeepAliveInterval,
-		writeDeadline:     settings.WriteDeadline,
-		connectionTimeout: settings.ConnectionTimeout,
-		enableCompression: settings.EnableCompression,
-		readBufferSize:    settings.ReadBufferSize,
-		writeBufferSize:   settings.WriteBufferSize,
+		authInfo:                 settings.AuthInfo,
+		tlsConfig:                settings.TlsConfig,
+		keepAliveInterval:        settings.KeepAliveInterval,
+		writeDeadline:            settings.WriteDeadline,
+		connectionTimeout:        settings.ConnectionTimeout,
+		enableCompression:        settings.EnableCompression,
+		readBufferSize:           settings.ReadBufferSize,
+		writeBufferSize:          settings.WriteBufferSize,
+		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)

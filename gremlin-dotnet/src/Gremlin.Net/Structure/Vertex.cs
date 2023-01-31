@@ -42,7 +42,7 @@ namespace Gremlin.Net.Structure
         /// <param name="id">The id of the vertex.</param>
         /// <param name="label">The label of the vertex.</param>
         /// <param name="properties">Optional properties of the vertex.</param>
-        public Vertex(object id, string label = DefaultLabel, Dictionary<string, dynamic> properties = null)
+        public Vertex(object? id, string label = DefaultLabel, Dictionary<string, dynamic>? properties = null)
             : base(id, label, properties)
         {
         }
@@ -51,7 +51,7 @@ namespace Gremlin.Net.Structure
         /// Get all properties as dictionary
         /// </summary>
         /// <returns>properties</returns>
-        public Dictionary<string, VertexProperty[]> GetPropertiesAsDictionary()
+        public Dictionary<string, VertexProperty[]>? GetPropertiesAsDictionary()
         {
             return Properties?.ToDictionary(property => property.Key,
                         property => ((IEnumerable<dynamic>)property.Value).Cast<VertexProperty>().ToArray());

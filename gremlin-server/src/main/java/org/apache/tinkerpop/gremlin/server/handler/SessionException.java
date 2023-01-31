@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 /**
  * An exception that holds the error-related {@link ResponseMessage} which is meant to be returned to the calling

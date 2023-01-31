@@ -143,6 +143,7 @@ limitations under the License.
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
+        <module>gremlin-util</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -157,10 +158,13 @@ limitations under the License.
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.8.0</commons.io.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <commons.text.version>1.9</commons.text.version>
+        <commons.text.version>1.10.0</commons.text.version>
         <cucumber.version>6.11.0</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>2.5.18</groovy.version>
+        <!-- performance after 2.5.15 is similar to the poor performance of 3.x and 4.x - we can't upgrade past this
+             version without a accepting a major performance hit. details related to this issue along with links
+             to attempts to solve the problem with the Groovy community can be found on: TINKERPOP-2373 -->
+        <groovy.version>2.5.15</groovy.version>
         <guice.version>4.2.3</guice.version>
         <hadoop.version>3.3.3</hadoop.version>
         <hamcrest.version>2.2</hamcrest.version>
@@ -173,12 +177,11 @@ limitations under the License.
         <kerby.version>2.0.1</kerby.version>
         <logback.version>1.2.11</logback.version>
         <metrics.version>3.0.2</metrics.version>
-        <mockito.version>3.3.3</mockito.version>
-        <netty.version>4.1.77.Final</netty.version>
+        <mockito.version>4.10.0</mockito.version>
+        <netty.version>4.1.86.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.32</snakeyaml.version>
         <spark.version>3.2.1</spark.version>
-        <powermock.version>2.0.9</powermock.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -504,7 +507,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>3.0.0</version>
                 </plugin>
                 <!-- reverted surefire to 2.21.0 for performance reasons. 2.22.2 required forkCount=1 and
                      reuseForks=true which seemed to more the double the build time. there are only milestone
@@ -775,41 +778,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.objenesis</groupId>
                 <artifactId>objenesis</artifactId>
-                <version>2.4</version>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- conflict with mockito - excluding from the mockito side doesn't work -->
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy-agent</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- conflict with mockito - excluding from the mockito side doesn't work -->
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.bytebuddy</groupId>
-                        <artifactId>byte-buddy-agent</artifactId>
-                    </exclusion>
-                </exclusions>
+                <version>3.3</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>

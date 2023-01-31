@@ -61,6 +61,7 @@ func init() {
 		regexp.MustCompile(`^c\[(.+)]$`):            toLambda,
 		regexp.MustCompile(`^t\[(.+)]$`):            toT,
 		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
+		regexp.MustCompile(`^M\[(.+)]$`):            toMerge,
 	}
 }
 
@@ -305,6 +306,21 @@ func toDirection(name, graphName string) interface{} {
 		return gremlingo.Direction.From
 	} else if name == "to" {
 		return gremlingo.Direction.To
+	} else {
+		return name
+	}
+}
+
+func toMerge(name, graphName string) interface{} {
+	// Return as is, since Merge values are just strings.
+	if name == "outV" {
+		return gremlingo.Merge.OutV
+	} else if name == "inV" {
+		return gremlingo.Merge.InV
+	} else if name == "onCreate" {
+		return gremlingo.Merge.OnCreate
+	} else if name == "onMatch" {
+		return gremlingo.Merge.OnMatch
 	} else {
 		return name
 	}
@@ -884,7 +900,7 @@ func TestCucumberFeatures(t *testing.T) {
 		Options: &godog.Options{
 			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues",
 			Format:   "pretty",
-			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/features")},
+			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.
 		},
 	}

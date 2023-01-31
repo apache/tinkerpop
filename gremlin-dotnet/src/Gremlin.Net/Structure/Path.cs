@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Gremlin.Net.Process.Traversal;
 
@@ -36,17 +37,17 @@ namespace Gremlin.Net.Structure
     ///     In abstraction, any Path implementation maintains two lists: a list of sets of labels and a list of objects.
     ///     The list of labels are the labels of the steps traversed. The list of objects are the objects traversed.
     /// </remarks>
-    public class Path : IReadOnlyList<object>, IEquatable<Path>
+    public class Path : IReadOnlyList<object?>, IEquatable<Path>
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="Path" /> class.
         /// </summary>
         /// <param name="labels">The labels associated with the path</param>
         /// <param name="objects">The objects in the <see cref="Path" />.</param>
-        public Path(IList<ISet<string>> labels, IList<object> objects)
+        public Path(IList<ISet<string>> labels, IList<object?> objects)
         {
-            Labels = labels;
-            Objects = objects;
+            Labels = labels ?? throw new ArgumentNullException(nameof(labels));
+            Objects = objects ?? throw new ArgumentNullException(nameof(objects));
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Gets an ordered list of the objects in the <see cref="Path" />.
         /// </summary>
-        public IList<object> Objects { get; }
+        public IList<object?> Objects { get; }
 
         /// <summary>
         ///     Gets the object associated with the particular label of the path.
@@ -70,15 +71,15 @@ namespace Gremlin.Net.Structure
         {
             get
             {
-                var objFound = TryGetValue(label, out object obj);
+                var objFound = TryGetValue(label, out var obj);
                 if (!objFound)
                     throw new KeyNotFoundException($"The step with label {label} does not exist");
-                return obj;
+                return obj!;
             }
         }
 
         /// <inheritdoc />
-        public bool Equals(Path other)
+        public bool Equals(Path? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -90,7 +91,7 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="index">The index of the path</param>
         /// <returns>The object associated with the index of the path</returns>
-        public dynamic this[int index] => Objects[index];
+        public dynamic? this[int index] => Objects[index];
 
         /// <summary>
         ///     Gets the number of steps in the path.
@@ -131,7 +132,7 @@ namespace Gremlin.Net.Structure
         /// <param name="label">The label of the path.</param>
         /// <param name="value">The object associated with the label of the path.</param>
         /// <returns>True, if an object was found for the label.</returns>
-        public bool TryGetValue(string label, out object value)
+        public bool TryGetValue(string label, [NotNullWhen(true)] out object? value)
         {
             value = null;
             for (var i = 0; i < Labels.Count; i++)
@@ -139,43 +140,38 @@ namespace Gremlin.Net.Structure
                 if (!Labels[i].Contains(label)) continue;
                 if (value == null)
                     value = Objects[i];
-                else if (value.GetType() == typeof(List<object>))
-                    ((List<object>) value).Add(Objects[i]);
+                else if (value.GetType() == typeof(List<object?>))
+                    ((List<object?>) value).Add(Objects[i]);
                 else
-                    value = new List<object> {value, Objects[i]};
+                    value = new List<object?> {value, Objects[i]};
             }
             return value != null;
         }
 
-        private bool ObjectsEqual(ICollection<object> otherObjects)
+        private bool ObjectsEqual(ICollection<object?> otherObjects)
         {
-            if (Objects == null)
-                return otherObjects == null;
             return Objects.SequenceEqual(otherObjects);
         }
 
         private bool LabelsEqual(ICollection<ISet<string>> otherLabels)
         {
-            if (Labels == null)
-                return otherLabels == null;
             if (Labels.Count != otherLabels.Count)
                 return false;
-            using (var enumOther = otherLabels.GetEnumerator())
-            using (var enumThis = Labels.GetEnumerator())
+            using var enumOther = otherLabels.GetEnumerator();
+            using var enumThis = Labels.GetEnumerator();
+            while (enumOther.MoveNext() && enumThis.MoveNext())
             {
-                while (enumOther.MoveNext() && enumThis.MoveNext())
+                if (!enumOther.Current.SequenceEqual(enumThis.Current))
                 {
-                    if (!enumOther.Current.SequenceEqual(enumThis.Current))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
+
             return true;
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -189,13 +185,12 @@ namespace Gremlin.Net.Structure
             unchecked
             {
                 var hashCode = 19;
-                if (Labels != null)
-                    hashCode = Labels.Where(objLabels => objLabels != null)
-                        .Aggregate(hashCode,
-                            (current1, objLabels) => objLabels.Aggregate(current1,
-                                (current, label) => current * 31 + label.GetHashCode()));
-                if (Objects != null)
-                    hashCode = Objects.Aggregate(hashCode, (current, obj) => current * 31 + obj.GetHashCode());
+                hashCode = Labels
+                    .Aggregate(hashCode,
+                        (current1, objLabels) => objLabels.Aggregate(current1,
+                            (current, label) => current * 31 + label.GetHashCode()));
+                hashCode = Objects.Aggregate(hashCode,
+                    (current, obj) => current * 31 + (obj == null ? 0 : obj.GetHashCode()));
                 return hashCode;
             }
         }

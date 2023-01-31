@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
         tags = "@AllowNullPropertyValues",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = TinkerGraphAllowNullFeatureTest.TinkerGraphGuiceFactory.class,
-        features = { "../gremlin-test/features" },
+        features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class TinkerGraphAllowNullFeatureTest {
 

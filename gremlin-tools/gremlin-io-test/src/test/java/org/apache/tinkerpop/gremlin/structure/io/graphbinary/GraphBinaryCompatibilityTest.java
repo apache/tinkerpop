@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphbinary;
 
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;

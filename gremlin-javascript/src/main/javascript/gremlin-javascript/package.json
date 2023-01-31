@@ -14,7 +14,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "^8.8.1"
+    "ws": "^8.11.0"
   },
   "devDependencies": {
     "chai": "~4.3.6",
@@ -22,13 +22,13 @@
     "colors": "1.4.0",
     "cross-env": "^7.0.3",
     "cucumber": "~6.0.7",
-    "eslint": "^8.23.1",
+    "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "grunt": "^1.5.3",
     "grunt-cli": "~1.4.3",
     "grunt-jsdoc": "~2.4.1",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "prettier": "^2.7.1"
   },
   "repository": {
@@ -47,8 +47,8 @@
     "integration-test-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
     "TODO": "# test other mime types like graphbinary stringd",
     "features": "npm run features-graphson30 && npm run features-graphbinary",
-    "features-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../../../../../gremlin-test/features/",
-    "features-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../../../../../gremlin-test/features/",
+    "features-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "features-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
     "features-docker": "npm run features-graphson30-docker && npm run features-graphbinary-docker",
     "features-graphson30-docker": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../gremlin-test/",
     "features-graphbinary-docker": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../gremlin-test/",

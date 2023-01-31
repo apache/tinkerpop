@@ -35,7 +35,7 @@ namespace Gremlin.Net.Template
             _g = g;
         }
 
-        public IList<string> FindCreatorsOfSoftware(string softwareName)
+        public IList<string?> FindCreatorsOfSoftware(string softwareName)
         {
             return _g.V().HasLabel("software").Has("name", softwareName).In("created").Values<string>("name").ToList();
         }

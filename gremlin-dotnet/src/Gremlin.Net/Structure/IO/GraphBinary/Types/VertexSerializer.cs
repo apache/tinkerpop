@@ -46,7 +46,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
 
@@ -55,13 +55,13 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var label = (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false);
+            var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false);
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var propertiesAsDictionary = (properties as List<object>)?.Cast<VertexProperty>()
                 .ToDictionary(k => k.Key, v => (dynamic)new dynamic[] { v });
 
-            return new Vertex(id, label, propertiesAsDictionary);
+            return new Vertex(id, label, propertiesAsDictionary);            
         }
     }
 }

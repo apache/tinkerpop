@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -29,6 +30,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +58,8 @@ final class Connection {
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
+    private final String creatingThread;
+    private final String createdTimestamp;
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
@@ -95,7 +99,8 @@ final class Connection {
         this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
-
+        this.creatingThread = Thread.currentThread().getName();
+        this.createdTimestamp = Instant.now().toString();
         connectionLabel = "Connection{host=" + pool.host + "}";
 
         if (cluster.isClosing())
@@ -114,25 +119,28 @@ final class Connection {
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             channelizer.connected();
 
-            /* Configure behaviour on close of this channel.
-             *
-             * This callback would trigger the workflow to destroy this connection, so that a new request doesn't pick
-             * this closed connection.
-             */
+            // Configure behaviour on close of this channel. This callback would trigger the workflow to destroy this
+            // connection, so that a new request doesn't pick this closed connection.
             final Connection thisConnection = this;
             channel.closeFuture().addListener((ChannelFutureListener) future -> {
                 logger.debug("OnChannelClose callback called for channel {}", channel);
 
-                // Replace the channel if it was not intentionally closed using CloseAsync method.
+                // if the closeFuture is not set, it means that closeAsync() wasn't called which means that the
+                // close did not come from the client side. it means the server closed the channel for some reason.
+                // it's important to distinguish that difference in debugging
                 if (thisConnection.closeFuture.get() == null) {
-                    // delegate the task to worker thread and free up the event loop
-                    thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
+                    logger.error(String.format(
+                            "Server closed the Connection on channel %s - scheduling removal from %s",
+                            channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
+
+                    // delegate the task to scheduler thread and free up the event loop
+                    thisConnection.cluster.connectionScheduler().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
                 }
             });
 
             logger.info("Created new connection for {}", uri);
         } catch (Exception ex) {
-            throw new ConnectionException(uri, "Could not open " + this.toString(), ex);
+            throw new ConnectionException(uri, "Could not open " + getConnectionInfo(true), ex);
         }
     }
 
@@ -195,7 +203,7 @@ final class Connection {
                 shutdown(future);
         } else {
             // there may be some pending requests. schedule a job to wait for those to complete and then shutdown
-            new CheckForPending(future).runUntilDone(cluster.executor());
+            new CheckForPending(future).runUntilDone(cluster.connectionScheduler());
         }
 
         return future;
@@ -299,8 +307,6 @@ final class Connection {
         // guess). that seems to put the executor thread in a monitor state that it doesn't recover from. since all
         // the code in here is behind shutdownInitiated the synchronized doesn't seem necessary
         if (shutdownInitiated.compareAndSet(false, true)) {
-            final String connectionInfo = this.getConnectionInfo();
-
             // the session close message was removed in 3.5.0 after deprecation at 3.3.11. That removal was perhaps
             // a bit hasty as session semantics may still require this message in certain cases. Until we can look
             // at this in more detail, it seems best to bring back the old functionality to the driver.
@@ -310,6 +316,9 @@ final class Connection {
                         RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
 
                 final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
+
+                // TINKERPOP-2822 should investigate this write more carefully to check for sensible behavior
+                // in the event the Channel was not created but we try to send the close message
                 write(closeMessage, closed);
 
                 try {
@@ -330,34 +339,63 @@ final class Connection {
                 }
             }
 
-            channelizer.close(channel);
+            // take a defensive posture here in the event the channelizer didn't get initialized somehow and a
+            // close() on the Connection is still called
+            if (channelizer != null)
+                channelizer.close(channel);
 
-            final ChannelPromise promise = channel.newPromise();
-            promise.addListener(f -> {
-                if (f.cause() != null) {
-                    future.completeExceptionally(f.cause());
+            // seems possible that the channelizer could initialize but fail to produce a channel, so worth checking
+            // null before proceeding here. also if the cluster is in shutdown then the event loop could be shutdown
+            // already and there will be no way to get a new promise out there.
+            if (channel != null) {
+                final ChannelPromise promise = channel.newPromise();
+                promise.addListener(f -> {
+                    if (f.cause() != null) {
+                        future.completeExceptionally(f.cause());
+                    } else {
+                        if (logger.isDebugEnabled())
+                            logger.debug("{} destroyed successfully.", this.getConnectionInfo());
+
+                        future.complete(null);
+                    }
+                });
+
+                // close the netty channel, if not already closed
+                if (!channel.closeFuture().isDone()) {
+                    channel.close(promise);
                 } else {
-                    if (logger.isDebugEnabled())
-                        logger.debug("{} destroyed successfully.", connectionInfo);
-
-                    future.complete(null);
+                    if (!promise.trySuccess()) {
+                        logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
+                    }
                 }
-            });
-
-            // close the netty channel, if not already closed
-            if (!channel.closeFuture().isDone()) {
-                channel.close(promise);
             } else {
-                if (!promise.trySuccess()) {
-                    logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
-                }
+                // if we dont handle the supplied future it can hang the close
+                future.complete(null);
             }
+        } else {
+            // if we dont handle the supplied future it can hang the close
+            future.complete(null);
         }
     }
 
+    /**
+     * Gets a message that describes the state of the connection.
+     */
     public String getConnectionInfo() {
-        return String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                channel, pool.host, isDead(), borrowed, pending.size());
+        return this.getConnectionInfo(true);
+    }
+
+    /**
+     * Gets a message that describes the state of the connection.
+     *
+     * @param showHost determines if the {@link Host} should be displayed in the message.
+     */
+    public String getConnectionInfo(final boolean showHost) {
+        return showHost ?
+                String.format("Connection{channel=%s host=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s created=%s thread=%s}",
+                        getChannelId(), pool.host.toString(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread) :
+                String.format("Connection{channel=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s created=%s thread=%s}",
+                        getChannelId(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread);
     }
 
     /**

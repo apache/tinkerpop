@@ -44,7 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task WriteValueAsync(Binding value, Stream stream, GraphBinaryWriter writer,
             CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Key, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Key, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
         }
 
@@ -52,7 +52,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task<Binding> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
-            var key = (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken)
+            var key = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
                 .ConfigureAwait(false);
             var value = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             return new Binding(key, value);

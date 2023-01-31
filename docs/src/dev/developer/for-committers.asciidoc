@@ -174,7 +174,8 @@ this property set.
 affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed. This is a field usually only set by committers.
+which that particular issue will completed. This is a field usually only set by committers and should only be set
+when the issue is being closed with a completed disposition (e.g. "Done", "Fixed", etc.).
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
@@ -545,6 +546,28 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 
 Tag filters can be applied to Intellij at execution time by adding a system properties of
 `-Dcucumber.filter.tags=<step-filter>`.
+
+[[gremlin-socket-server-tests]]
+=== Gremlin Socket Server Tests
+`gremlin-socket-server` is an included test server for driver tests which require predefined server
+behavior. Typically, this is to test scenarios such as the server closing the connection or returning
+an error code but other response behavior can be added as needed for tests.
+
+Gremlin socket server uses the request id of incoming messages to determine how to respond.
+Request ids are defined in `gremlin-tools/gremlin-socket-server/conf/*.yaml`. The server side
+behavior for each request id is implemented in `TestWSGremlinInitializer`.
+
+To add new server side behavior, define a new request id in the config yaml, then add a corresponding
+field in `SocketServerSettings`. In `TestWSGremlinInitializer`, add a new block to the if else chain in the
+decode method which matches the request id. Define all server behavior and responses in this block.
+
+To write the driver test, send a request message to the gremlin socket server port as if it were a normal
+gremlin server. Override the request id on the request with one defined in the config yaml and gremlin
+socket server will respond according to the defined behavior.
+
+Ensure that the socket server is running during driver tests. By default, a docker image for
+`gremlin-socket-server` is built during `mvn install`. The simplest way to use the socket server during
+driver tests is to run a gremlin socket server container during the integration phase of driver tests.
 
 == Developing Benchmarks
 

@@ -56,14 +56,15 @@ var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valenty
 
 func newDefaultConnectionSettings() *connectionSettings {
 	return &connectionSettings{
-		authInfo:          &AuthInfo{},
-		tlsConfig:         &tls.Config{},
-		keepAliveInterval: keepAliveIntervalDefault,
-		writeDeadline:     writeDeadlineDefault,
-		connectionTimeout: connectionTimeoutDefault,
-		enableCompression: false,
-		readBufferSize:    0,
-		writeBufferSize:   0,
+		authInfo:                 &AuthInfo{},
+		tlsConfig:                &tls.Config{},
+		keepAliveInterval:        keepAliveIntervalDefault,
+		writeDeadline:            writeDeadlineDefault,
+		connectionTimeout:        connectionTimeoutDefault,
+		enableCompression:        false,
+		enableUserAgentOnConnect: true,
+		readBufferSize:           0,
+		writeBufferSize:          0,
 	}
 }
 

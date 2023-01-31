@@ -20,6 +20,7 @@
  */
 #endregion
 
+using System.IO;
 using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -31,7 +32,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         protected override bool StringifyValue => true;
         protected override dynamic FromJsonElement(JsonElement graphson)
         {
-            var deserializedByte = graphson.GetString();
+            var deserializedByte = graphson.GetString() ?? throw new IOException("Read null but expected a string");
             return deserializedByte[0];
         }
     }

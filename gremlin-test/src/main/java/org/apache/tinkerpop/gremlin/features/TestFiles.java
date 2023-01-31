@@ -55,6 +55,8 @@ public class TestFiles {
                     "grateful-dead-v3d0.json",
                     "tinkerpop-classic-typed-v2d0.json",
                     "tinkerpop-classic-v3d0.json",
+                    "tinkerpop-classic-byteid-v3d0.json",
+                    "tinkerpop-classic-byteid-typed-v2d0.json",
                     "tinkerpop-crew-typed-v2d0.json",
                     "tinkerpop-crew-v3d0.json",
                     "tinkerpop-sink-v3d0.json");

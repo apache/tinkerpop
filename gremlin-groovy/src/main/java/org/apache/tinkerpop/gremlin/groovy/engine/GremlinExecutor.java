@@ -88,7 +88,7 @@ public class GremlinExecutor implements AutoCloseable {
     private final ScheduledExecutorService scheduledExecutorService;
     private final Consumer<Bindings> beforeEval;
     private final Consumer<Bindings> afterSuccess;
-    private final Consumer<Bindings> afterTimeout;
+    private final BiConsumer<Bindings, Throwable> afterTimeout;
     private final BiConsumer<Bindings, Throwable> afterFailure;
     private final boolean suppliedExecutor;
     private final boolean suppliedScheduledExecutor;
@@ -297,7 +297,7 @@ public class GremlinExecutor implements AutoCloseable {
                 if (root instanceof InterruptedException
                         || root instanceof TraversalInterruptedException
                         || root instanceof InterruptedIOException) {
-                    lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
+                    lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings, root);
                     evaluationFuture.completeExceptionally(new TimeoutException(
                             String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
                 } else {
@@ -477,7 +477,7 @@ public class GremlinExecutor implements AutoCloseable {
         };
         private Consumer<Bindings> afterSuccess = (b) -> {
         };
-        private Consumer<Bindings> afterTimeout = (b) -> {
+        private BiConsumer<Bindings, Throwable> afterTimeout = (b, e) -> {
         };
         private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
@@ -554,10 +554,21 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
-        /**
-         * A {@link Consumer} to execute if the script times out.
+         /**
+         * @deprecated As of release 3.6.2, replaced by {@link #afterTimeout(BiConsumer)}.
          */
+        @Deprecated
         public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
+          BiConsumer<Bindings, Throwable> updatedAfterTimeout = (b, t) -> {
+            afterTimeout.accept(b);
+          };
+          return afterTimeout(updatedAfterTimeout);
+        }
+
+        /**
+         * A {@link BiConsumer} to execute if the script times out.
+         */
+        public Builder afterTimeout(final BiConsumer<Bindings, Throwable> afterTimeout) {
             this.afterTimeout = afterTimeout;
             return this;
         }
@@ -610,7 +621,7 @@ public class GremlinExecutor implements AutoCloseable {
         private final Optional<Function<Object, Object>> transformResult;
         private final Optional<Consumer<Object>> withResult;
         private final Optional<Consumer<Bindings>> afterSuccess;
-        private final Optional<Consumer<Bindings>> afterTimeout;
+        private final Optional<BiConsumer<Bindings, Throwable>> afterTimeout;
         private final Optional<BiConsumer<Bindings, Throwable>> afterFailure;
         private final Optional<Long> evaluationTimeoutOverride;
 
@@ -644,7 +655,7 @@ public class GremlinExecutor implements AutoCloseable {
             return afterSuccess;
         }
 
-        public Optional<Consumer<Bindings>> getAfterTimeout() {
+        public Optional<BiConsumer<Bindings, Throwable>> getAfterTimeout() {
             return afterTimeout;
         }
 
@@ -661,7 +672,7 @@ public class GremlinExecutor implements AutoCloseable {
             private Function<Object, Object> transformResult = null;
             private Consumer<Object> withResult = null;
             private Consumer<Bindings> afterSuccess = null;
-            private Consumer<Bindings> afterTimeout = null;
+            private BiConsumer<Bindings, Throwable> afterTimeout = null;
             private BiConsumer<Bindings, Throwable> afterFailure = null;
             private Long evaluationTimeoutOverride = null;
 
@@ -703,12 +714,31 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             /**
-             * Specifies the function to execute if the script evaluation times out.  This function can also be
-             * specified globally on {@link GremlinExecutor.Builder#afterTimeout(Consumer)}.
+             * Specifies the function to execute if the script evaluation times out. This
+             * function can also be
+             * specified globally on
+             * {@link GremlinExecutor.Builder#afterTimeout(BiConsumer)}.
              */
-            public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
+            public Builder afterTimeout(final BiConsumer<Bindings, Throwable> afterTimeout) {
                 this.afterTimeout = afterTimeout;
                 return this;
+            }
+
+            /**
+             * Specifies the function to execute if the script evaluation times out. This
+             * function can also be
+             * specified globally on
+             * {@link GremlinExecutor.Builder#afterTimeout(BiConsumer)}.
+             */
+            public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
+              this.afterTimeout = new BiConsumer<Bindings,Throwable>() {
+                @Override
+                public void accept(final Bindings arg0, final Throwable arg1) {
+                  // TODO Auto-generated method stub
+                  
+                }
+              };
+              return this;
             }
 
             /**

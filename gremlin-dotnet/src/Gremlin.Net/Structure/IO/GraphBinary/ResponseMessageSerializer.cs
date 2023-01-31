@@ -55,34 +55,23 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             }
 
             var requestId =
-                (Guid?)await reader.ReadValueAsync<Guid>(stream, true, cancellationToken).ConfigureAwait(false);
-            var code = (ResponseStatusCode)await reader.ReadValueAsync<int>(stream, false, cancellationToken)
+                (Guid?)await reader.ReadNullableValueAsync<Guid>(stream, cancellationToken).ConfigureAwait(false);
+            var code = (ResponseStatusCode)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken)
                 .ConfigureAwait(false);
-            var message = (string)await reader.ReadValueAsync<string>(stream, true, cancellationToken)
+            var message = (string?)await reader.ReadNullableValueAsync<string>(stream, cancellationToken)
                 .ConfigureAwait(false);
             var dictObj = await reader
-                .ReadValueAsync<Dictionary<string, object>>(stream, false, cancellationToken).ConfigureAwait(false);
+                .ReadNonNullableValueAsync<Dictionary<string, object>>(stream, cancellationToken).ConfigureAwait(false);
             var attributes = (Dictionary<string, object>)dictObj;
 
-            var status = new ResponseStatus
-            {
-                Code = code,
-                Message = message,
-                Attributes = attributes
-            };
-            var result = new ResponseResult<List<object>>
-            {
-                Meta = (Dictionary<string, object>)await reader
-                    .ReadValueAsync<Dictionary<string, object>>(stream, false, cancellationToken).ConfigureAwait(false),
-                Data = (List<object>)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false)
-            };
+            var status = new ResponseStatus(code, attributes, message);
 
-            return new ResponseMessage<List<object>>
-            {
-                RequestId = requestId,
-                Status = status,
-                Result = result
-            };
+            var meta = (Dictionary<string, object>)await reader
+                .ReadNonNullableValueAsync<Dictionary<string, object>>(stream, cancellationToken).ConfigureAwait(false);
+            var data = (List<object>?)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var result = new ResponseResult<List<object>>(data, meta);
+
+            return new ResponseMessage<List<object>>(requestId, status, result);
         }
     }
 }

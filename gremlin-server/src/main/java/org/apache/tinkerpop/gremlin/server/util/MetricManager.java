@@ -392,6 +392,14 @@ public enum MetricManager {
         getRegistry().removeMatching((s, metric) -> true);
     }
 
+    public int getCounterSize() {
+        return INSTANCE.getRegistry().getCounters().size();
+    }
+
+    public boolean contains(String name) {
+        return INSTANCE.getRegistry().getNames().contains(name);
+    }
+
     public Counter getCounter(final String name) {
         return getRegistry().counter(name);
     }

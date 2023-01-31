@@ -3,10 +3,11 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
+      <PackageReference Include="BenchmarkDotNet" Version="0.13.3" />
     </ItemGroup>
 
     <ItemGroup>

@@ -36,7 +36,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var sut = CreateMessageSerializer();
 
-            await Assert.ThrowsAsync<ArgumentNullException>(()=> sut.DeserializeMessageAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(()=> sut.DeserializeMessageAsync(null!));
         }
 
         [Fact]

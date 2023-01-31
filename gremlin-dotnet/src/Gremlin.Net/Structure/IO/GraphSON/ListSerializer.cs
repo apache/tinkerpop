@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -28,7 +29,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class ListSerializer : IGraphSONDeserializer, IGraphSONSerializer
     {
-        private static readonly IReadOnlyList<object> EmptyList = new object[0];
+        private static readonly IReadOnlyList<object> EmptyList = Array.Empty<object>();
         
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
@@ -36,7 +37,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             {
                 return EmptyList;
             }
-            var result = new object[graphsonObject.GetArrayLength()];
+            var result = new object?[graphsonObject.GetArrayLength()];
             for (var i = 0; i < result.Length; i++)
             {
                 result[i] = reader.ToObject(graphsonObject[i]);

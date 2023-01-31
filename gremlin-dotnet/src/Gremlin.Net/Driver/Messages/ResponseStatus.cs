@@ -29,22 +29,36 @@ namespace Gremlin.Net.Driver.Messages
     /// <summary>
     ///     Represents status information of a <see cref="ResponseMessage{T}"/>.
     /// </summary>
-    public class ResponseStatus
+    public record ResponseStatus
     {
         /// <summary>
-        ///     Gets or sets the <see cref="ResponseStatusCode"/>.
+        ///     Initializes a new instance of the <see cref="ResponseStatus" /> record.
         /// </summary>
-        public ResponseStatusCode Code { get; set; }
+        /// <param name="code">The <see cref="ResponseStatusCode" />.</param>
+        /// <param name="attributes">The (optional) attributes with protocol-level information.</param>
+        /// <param name="message">The (optional) message which is just a human-readable string usually associated with errors.</param>
+        public ResponseStatus(ResponseStatusCode code, Dictionary<string, object>? attributes = null,
+            string? message = null)
+        {
+            Code = code;
+            Attributes = attributes ?? new Dictionary<string, object>();
+            Message = message;
+        }
+        
+        /// <summary>
+        ///     Gets the <see cref="ResponseStatusCode"/>.
+        /// </summary>
+        public ResponseStatusCode Code { get; }
 
         /// <summary>
-        ///     Gets or sets the attributes <see cref="Dictionary{TKey,TValue}"/> with protocol-level information.
+        ///     Gets the attributes <see cref="Dictionary{TKey,TValue}"/> with protocol-level information.
         /// </summary>
-        public Dictionary<string, object> Attributes { get; set; }
+        public Dictionary<string, object> Attributes { get; }
 
         /// <summary>
-        ///     Gets or sets the message which is just a human-readable string usually associated with errors.
+        ///     Gets the message which is just a human-readable string usually associated with errors.
         /// </summary>
-        public string Message { get; set; }
+        public string? Message { get; }
     }
 
     internal static class ResponseStatusExtensions

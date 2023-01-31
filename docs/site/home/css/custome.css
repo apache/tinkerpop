@@ -44,6 +44,9 @@ body{
 .text-blue{
     color: #147AA4;
 }
+.text-orange{
+    color: #f08d49;
+}
 .hover-op-low li{
     transition: all 0.2s ease-in-out;
 }

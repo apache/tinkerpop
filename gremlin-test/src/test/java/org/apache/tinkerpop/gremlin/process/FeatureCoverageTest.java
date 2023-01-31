@@ -182,7 +182,7 @@ public class FeatureCoverageTest {
         for (Class<?> t : testClassesToEnforce) {
             final String packge = t.getPackage().getName();
             final String group = packge.substring(packge.lastIndexOf(".") + 1, packge.length());
-            final String featureFileName = "features" + File.separator +
+            final String featureFileName = "org/apache/tinkerpop/gremlin/test/features" + File.separator +
                                            group + File.separator +
                                            t.getSimpleName().replace("Test", "") + ".feature";
             final Set<String> testMethods = Stream.of(t.getDeclaredMethods())

@@ -27,13 +27,15 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import org.slf4j.Logger;
@@ -85,6 +87,7 @@ public interface Channelizer extends ChannelHandler {
 
         protected static final String PIPELINE_GREMLIN_SASL_HANDLER = "gremlin-sasl-handler";
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
+        public static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
 
         public boolean supportsSsl() {
             return cluster.connectionPoolSettings().enableSsl;
@@ -123,7 +126,12 @@ public interface Channelizer extends ChannelHandler {
             }
 
             if (sslCtx.isPresent()) {
-                pipeline.addLast(sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort()));
+                SslHandler sslHandler = sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort());
+                // TINKERPOP-2814. Remove the SSL handshake timeout so that handshakes that take longer than 10000ms
+                // (Netty default) but less than connectionSetupTimeoutMillis can succeed. This means the SSL handshake
+                // will instead be capped by connectionSetupTimeoutMillis.
+                sslHandler.setHandshakeTimeoutMillis(0);
+                pipeline.addLast(PIPELINE_SSL_HANDLER, sslHandler);
             }
 
             configure(pipeline);
@@ -156,7 +164,7 @@ public interface Channelizer extends ChannelHandler {
         public void close(final Channel channel) {
             if (channel.isOpen()) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Sending CloseWS frame to server.");
+                    logger.debug("Sending CloseWS frame to server from channel={}", channel.id().asShortText());
                 }
                 channel.writeAndFlush(new CloseWebSocketFrame());
             }
@@ -178,11 +186,15 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException("To use wss scheme ensure that enableSsl is set to true in configuration");
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
+            final HttpHeaders httpHeaders = new DefaultHttpHeaders();
+            if(connection.getCluster().isUserAgentOnConnectEnabled()) {
+                httpHeaders.set(UserAgent.USER_AGENT_HEADER_NAME, UserAgent.USER_AGENT);
+            }
             handler = new WebSocketClientHandler(
                     new WebSocketClientHandler.InterceptedWebSocketClientHandshaker13(
-                            connection.getUri(), WebSocketVersion.V13, null,true,
-                            EmptyHttpHeaders.INSTANCE, maxContentLength, true, false, -1,
-                            cluster.getHandshakeInterceptor()), cluster.getConnectionSetupTimeout());
+                            connection.getUri(), WebSocketVersion.V13, null, true,
+                            httpHeaders, maxContentLength, true, false, -1,
+                            cluster.getHandshakeInterceptor()), cluster.getConnectionSetupTimeout(), supportsSsl());
 
             final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(
                     cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));

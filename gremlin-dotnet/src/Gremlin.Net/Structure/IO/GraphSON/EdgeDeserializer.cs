@@ -46,13 +46,13 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 ? labelProperty.GetString()
                 : "edge";
 
-            Dictionary<string, dynamic> properties = null;
+            Dictionary<string, dynamic>? properties = null;
             if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
                 && propertiesObject.ValueKind == JsonValueKind.Object)
             {
                 properties = propertiesObject.EnumerateObject()
                     .ToDictionary(property => property.Name,
-                        property => (dynamic)new dynamic[] { reader.ToObject(property.Value) });
+                        property => (dynamic)new dynamic?[] { reader.ToObject(property.Value) });
             }
 
             return new Edge(edgeId, outV, edgeLabel, inV, properties);
