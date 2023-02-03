@@ -90,10 +90,24 @@ function generateUserAgent() {
   } catch (e) {
     driverVersion = 'NotAvailable';
   }
-  const runtimeVersion = process.version.replace(' ', '_');
-  const osName = os.platform().replace(' ', '_');
-  const osVersion = os.release().replace(' ', '_');
-  const cpuArch = process.arch.replace(' ', '_');
+  let runtimeVersion;
+  let osName;
+  let osVersion;
+  let cpuArch;
+  runtimeVersion = osName = osVersion = cpuArch = 'NotAvailable';
+  if (process != null) {
+    if (process.version != null) {
+      runtimeVersion = process.version.replace(' ', '_');
+    }
+    if (process.arch != null) {
+      cpuArch = process.arch.replace(' ', '_');
+    }
+  }
+  if (os != null) {
+    osName = os.platform().replace(' ', '_');
+    osVersion = os.release().replace(' ', '_');
+  }
+
   const userAgent = `${applicationName} Gremlin-Javascript.${driverVersion} ${runtimeVersion} ${osName}.${osVersion} ${cpuArch}`;
 
   return userAgent;
