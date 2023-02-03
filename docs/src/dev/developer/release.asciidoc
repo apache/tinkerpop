@@ -34,6 +34,8 @@ execute.
 IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment>> is setup
 properly for release and includes a `.glv` files in the various GLV modules, so that they all build in full.
 
+TIP: It is recommended to carry out the release process on Linux.
+
 == Development Versions
 
 A "development version" or "snapshot" (in Java parlance) is not an "official" release. Artifacts produced for a
@@ -95,6 +97,10 @@ Your public key also needs to be added to KEYS files in both the
 link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
 link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
 using Apache Subversion (SVN).
+
+NOTE: If you are a committer, you will require the assistance of a PMC member to upload
+your key into the link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directory. This
+can also be done during Release & Promote when release files are uploaded.
 
 == Pre-flight Check
 
@@ -234,6 +240,9 @@ for generating javadoc.
 
 == Release & Promote
 
+NOTE: Certain steps can only be performed by a PMC member. If you are a committer, please enlist
+the help of a PMC member for those steps.
+
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
 . Deploy the GLVs
 .. This build will likely occur from the tag for the release, so be sure to checkout the tag first before executing this step.
@@ -242,8 +251,9 @@ for generating javadoc.
 .. `mvn deploy -pl :gremlin-dotnet-source -DskipTests -Dnuget`
 .. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm`
 .. `mvn deploy -pl gremlint -DskipTests -Dnpm`
-.. `git tag gremlin-go/v3.5.4`
-.. `git push --tags`
+.. `git tag gremlin-go/v3.5.6`
+.. `git push origin gremlin-go/v3.5.6`
+.. `GOPROXY=proxy.golang.org go list -m github.com/apache/tinkerpop/gremlin-go/v3@v3.5.6`
 . Review the GLV releases
 .. link:https://pypi.org/project/gremlinpython/[gremlin-python - PyPi]
 .. link:https://www.nuget.org/packages/Gremlin.Net/[Gremlin.Net - nuget]
@@ -251,15 +261,15 @@ for generating javadoc.
 .. link:https://www.npmjs.com/package/gremlin[gremlin - npm]
 .. link:https://www.npmjs.com/package/gremlint[gremlint - npm]
 .. link:https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3[gremlin-go - go packages]
-. Deploy the Docker images
+. Deploy the Docker images *(PMC member)*
 .. `mvn deploy -pl gremlin-console -DskipTests -DdockerImages`
 .. `mvn deploy -pl gremlin-server -DskipTests -DdockerImages`
 . Review the deployed Docker images at link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Console]
 and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
-. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
-. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
-. Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
-. `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
+. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz` *(PMC member)*
+. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz` *(PMC member)*
+. Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`. *(PMC member)*
+. `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"` *(PMC member)*
 . Wait for Apache Sonatype to sync the artifacts to link:https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[Maven Central].
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
@@ -277,8 +287,8 @@ if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if 
 code is still under potential development, it may stay.
 . Announce release - see <<email-templates,templates>> for suggested form
 .. Email `dev@`/`gremlin-users@` mailing lists
-.. Tweet from `@apachetinkerpop`
-.. Message the "Announcement" Discord channel
+.. Tweet from `@apachetinkerpop` *(PMC member)*
+.. Message the "Announcement" Discord channel *(PMC member)*
 
 == Post-release Tasks
 
@@ -287,7 +297,10 @@ performed during the VOTE period at the release manager's discretion, though it 
 VOTE is eminent before reopening development. When there are multiple release managers, it's best to coordinate these
 tasks as one individual may simply just handle them all.
 
-. Perform JIRA administration tasks:
+NOTE: Certain steps can only be performed by a PMC member. If you are a committer, please enlist
+the help of a PMC member for those steps.
+
+. Perform JIRA administration tasks *(PMC member)*:
 .. "Release" the current version and set the "release date"
 .. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
 . Prepare Git administration tasks. Apply the following steps as needed per release branch:
