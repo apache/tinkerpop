@@ -121,6 +121,9 @@ an issue when working with SNAPSHOT dependencies.
 The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
 scripts should work on Mac and Linux.
 
+TIP: We recommend performing documentation generation on Linux. For the scripts to work on Mac, you will need to
+install GNU versions of the utility programs via `homebrew`, e.g.`grep`, `awk`, `sed`, `findutils`, and `diffutils`.
+
 To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 3.3.x] is running in
 link:https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
