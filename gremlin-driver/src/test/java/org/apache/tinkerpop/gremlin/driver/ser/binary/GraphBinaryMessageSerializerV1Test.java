@@ -25,7 +25,10 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.util.EmptyMemory;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -83,6 +86,20 @@ public class GraphBinaryMessageSerializerV1Test {
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
+    }
+
+    @Test
+    public void shouldSerializeDefaultComputerResult() throws SerializationException {
+        final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
+                .code(ResponseStatusCode.SUCCESS)
+                .statusMessage("Found")
+                .statusAttribute("k1", 1)
+                .result(new DefaultComputerResult(EmptyGraph.instance(), EmptyMemory.instance()))
+                .create();
+
+        final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(buffer);
+        assertEquals(response.getResult().getData().toString(), deserialized.getResult().getData());
     }
 
     @Test

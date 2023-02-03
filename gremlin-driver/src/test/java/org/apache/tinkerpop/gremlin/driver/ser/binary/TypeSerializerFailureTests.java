@@ -85,10 +85,10 @@ public class TypeSerializerFailureTests {
                 Lambda.supplier(null),
                 metrics,
                 new DefaultTraversalMetrics(1L, Collections.singletonList(metrics)),
-                new DefaultRemoteTraverser<>(new Object(), 1L),
+                //new DefaultRemoteTraverser<>(new Object(), 1L),
                 tree,
-                new ReferenceVertexProperty<>("a prop", null, "value"),
-                new InvalidPath()
+                new ReferenceVertexProperty<>("a prop", null, "value")
+                //new InvalidPath()
         );
     }
 

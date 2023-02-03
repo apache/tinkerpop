@@ -87,29 +87,37 @@ public class GraphBinaryWriter {
         }
 
         final Class<?> objectClass = value.getClass();
-        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
 
-        if (serializer instanceof CustomTypeSerializer) {
-            // It's a custom type
-            CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
+        if (registry.getInternalSerializer(objectClass) == null) {
+            final TypeSerializer<String> serializer = registry.getSerializer(String.class);
+            // Try to serialize the value before creating a new composite buffer
+            buffer.writeBytes(serializer.getDataType().getDataTypeBuffer());
+            serializer.write(value.toString(), buffer, this);
+        } else {
+            final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+            if (serializer instanceof CustomTypeSerializer) {
+                // It's a custom type
+                CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
 
-            buffer.writeBytes(customTypeCodeBytes);
-            writeValue(customTypeSerializer.getTypeName(), buffer, false);
-            customTypeSerializer.write(value, buffer, this);
-            return;
+                buffer.writeBytes(customTypeCodeBytes);
+                writeValue(customTypeSerializer.getTypeName(), buffer, false);
+                customTypeSerializer.write(value, buffer, this);
+                return;
+            }
+
+            if (serializer instanceof TransformSerializer) {
+                // For historical reasons, there are types that need to be transformed into another type
+                // before serialization, e.g., Map.Entry
+                TransformSerializer<T> transformSerializer = (TransformSerializer<T>) serializer;
+                write(transformSerializer.transform(value), buffer);
+                return;
+            }
+
+            // Try to serialize the value before creating a new composite buffer
+            buffer.writeBytes(serializer.getDataType().getDataTypeBuffer());
+            serializer.write(value, buffer, this);
         }
 
-        if (serializer instanceof TransformSerializer) {
-            // For historical reasons, there are types that need to be transformed into another type
-            // before serialization, e.g., Map.Entry
-            TransformSerializer<T> transformSerializer = (TransformSerializer<T>) serializer;
-            write(transformSerializer.transform(value), buffer);
-            return;
-        }
-
-        // Try to serialize the value before creating a new composite buffer
-        buffer.writeBytes(serializer.getDataType().getDataTypeBuffer());
-        serializer.write(value, buffer, this);
     }
 
     /**

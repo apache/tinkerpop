@@ -340,7 +340,7 @@ public class TypeSerializerRegistry {
         }
     }
 
-    public <DT> TypeSerializer<DT> getSerializer(final Class<DT> type) throws IOException {
+    public <DT> TypeSerializer<DT> getInternalSerializer(final Class<DT> type) throws IOException {
         TypeSerializer<?> serializer = serializers.get(type);
 
         if (null == serializer) {
@@ -374,6 +374,11 @@ public class TypeSerializerRegistry {
         if (null == serializer && fallbackResolver != null) {
             serializer = fallbackResolver.apply(type);
         }
+        return (TypeSerializer<DT>) serializer;
+    }
+
+    public <DT> TypeSerializer<DT> getSerializer(final Class<DT> type) throws IOException {
+        TypeSerializer<?> serializer = getInternalSerializer(type);
 
         validateInstance(serializer, type.getTypeName());
 
