@@ -96,10 +96,10 @@ function generateUserAgent() {
   let cpuArch;
   runtimeVersion = osName = osVersion = cpuArch = 'NotAvailable';
   if (process != null) {
-    if (process.version != null) {
+    if (process.version) {
       runtimeVersion = process.version.replace(' ', '_');
     }
-    if (process.arch != null) {
+    if (process.arch) {
       cpuArch = process.arch.replace(' ', '_');
     }
   }
