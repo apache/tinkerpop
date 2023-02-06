@@ -95,11 +95,11 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 .OverrideRequestId(Settings.UserAgentRequestId).Create());
             Assert.Equal(Gremlin.Net.Process.Utils.UserAgent, userAgentResponse);
         }
-        
+
         [Fact]
         public async Task ShouldNotIncludeUserAgentInHandshakeRequestIfDisabled()
         {
-            var poolSettings = new ConnectionPoolSettings {EnableUserAgentOnConnect = false};
+            var poolSettings = new ConnectionPoolSettings { EnableUserAgentOnConnect = false };
 
             var gremlinServer = new GremlinServer(TestHost, Settings.Port);
             using var gremlinClient = new GremlinClient(gremlinServer, messageSerializer: Serializer,
@@ -109,6 +109,24 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var userAgentResponse = await gremlinClient.SubmitWithSingleResultAsync<String>(RequestMessage.Build("1")
                 .OverrideRequestId(Settings.UserAgentRequestId).Create());
             Assert.Equal("", userAgentResponse);
+        }
+
+        [Fact]
+        public async Task ShouldSendPerRequestSettingsToServer()
+        {
+            var gremlinServer = new GremlinServer(TestHost, Settings.Port);
+            using var gremlinClient = new GremlinClient(gremlinServer, messageSerializer: Serializer);
+
+            //verify that new client reconnects and new requests can be made again
+            var response = await gremlinClient.SubmitWithSingleResultAsync<String>(RequestMessage.Build("1")
+                .OverrideRequestId(Settings.PerRequestSettingsRequestId)
+                .AddArgument(Tokens.ArgsEvalTimeout, 1234)
+                .AddArgument(Tokens.ArgsBatchSize, 12)
+                .AddArgument(Tokens.ArgsUserAgent, "helloWorld")
+                .Create());
+
+            var expectedResponse = $"requestId={Settings.PerRequestSettingsRequestId} evaluationTimeout=1234, batchSize=12, userAgent=helloWorld";
+            Assert.Equal(expectedResponse, response);
         }
     }
 }

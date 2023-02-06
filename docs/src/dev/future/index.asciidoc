@@ -1,5 +1,3 @@
-= TinkerPop Future
-
 ////
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -16,9 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+
+:docinfo: shared
+:docinfodir: ../../
+:toc-position: left
+
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-:toc-position: left
+*x.y.z*
+
+= TinkerPop Future
 
 This document offers a rough view at what features can be expected from future releases and catalogs proposals for
 changes that might be better written and understood in a document form as opposed to a dev list post.

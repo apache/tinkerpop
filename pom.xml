@@ -407,6 +407,7 @@ limitations under the License.
                         <exclude>data/*.txt</exclude>
                         <exclude>**/bin/gremlin.sh</exclude>
                         <exclude>docs/static/**</exclude>
+                        <exclude>docs/original/**</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
                         <exclude>docs/gremlint/build/**</exclude>

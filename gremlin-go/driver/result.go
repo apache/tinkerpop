@@ -20,7 +20,10 @@ under the License.
 package gremlingo
 
 import (
+	"errors"
 	"fmt"
+	"math"
+	"math/bits"
 	"reflect"
 	"strconv"
 )
@@ -56,11 +59,14 @@ func (r *Result) GetByte() (byte, error) {
 
 // GetUint gets the result by coercing it into an int, else returns an error if not parsable.
 func (r *Result) GetUint() (uint, error) {
-	res, err := strconv.ParseUint(r.GetString(), 10, 64)
+	res, err := strconv.ParseUint(r.GetString(), 10, bits.UintSize)
 	if err != nil {
 		return 0, err
 	}
-	return uint(res), nil
+	if res <= math.MaxUint {
+		return uint(res), nil
+	}
+	return 0, errors.New("parsed value is greater than MaxUint")
 }
 
 // GetUint16 gets the result by coercing it into an int16, else returns an error if not parsable.

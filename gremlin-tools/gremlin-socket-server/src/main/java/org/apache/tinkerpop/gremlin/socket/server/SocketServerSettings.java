@@ -72,6 +72,13 @@ public class SocketServerSettings {
      */
     public UUID USER_AGENT_REQUEST_ID = null;
 
+    /**
+     * If a request with this ID comes to the server, the server responds with a string containing all overridden
+     * per request settings from the request message. String will be of the form
+     * "requestId=19436d9e-f8fc-4b67-8a76-deec60918424 evaluationTimeout=1234, batchSize=12, userAgent=testUserAgent"
+     */
+    public UUID PER_REQUEST_SETTINGS_REQUEST_ID = null;
+
     public static SocketServerSettings read(final Path confFilePath) throws IOException {
         return read(Files.newInputStream(confFilePath));
     }
