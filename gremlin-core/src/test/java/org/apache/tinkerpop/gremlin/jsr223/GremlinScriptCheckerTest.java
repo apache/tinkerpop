@@ -35,6 +35,7 @@ public class GremlinScriptCheckerTest {
         final GremlinScriptChecker.Result r = GremlinScriptChecker.parse("g.with(true).V().out('knows')");
         assertEquals(Optional.empty(), r.getTimeout());
         assertEquals(Optional.empty(), r.getRequestId());
+        assertEquals(Optional.empty(), r.getMaterializeProperties());
     }
 
     @Test
@@ -43,6 +44,7 @@ public class GremlinScriptCheckerTest {
         assertSame(EMPTY_RESULT, r);
         assertEquals(Optional.empty(), r.getTimeout());
         assertEquals(Optional.empty(), r.getRequestId());
+        assertEquals(Optional.empty(), r.getMaterializeProperties());
     }
 
     @Test
@@ -193,11 +195,40 @@ public class GremlinScriptCheckerTest {
     }
 
     @Test
+    public void shouldIdentifyMaterializePropertiesSingleQuoted() {
+        assertEquals("all", GremlinScriptChecker.parse("g.with('materializeProperties', 'all').with(true).V().out('knows')").
+                getMaterializeProperties().get());
+        assertEquals("all", GremlinScriptChecker.parse("g.with(\"materializeProperties\", 'all').with(true).V().out('knows')").
+                getMaterializeProperties().get());
+    }
+
+    @Test
+    public void shouldIdentifyMaterializePropertiesDoubleQuoted() {
+        assertEquals("all", GremlinScriptChecker.parse("g.with('materializeProperties', \"all\").with(true).V().out('knows')").
+                getMaterializeProperties().get());
+        assertEquals("all", GremlinScriptChecker.parse("g.with(\"materializeProperties\", \"all\").with(true).V().out('knows')").
+                getMaterializeProperties().get());
+    }
+
+    @Test
+    public void shouldIdentifyMaterializePropertiesWithEmbeddedQuote() {
+        assertEquals("te's\"t", GremlinScriptChecker.parse("g.with('materializeProperties', \"te's\"t\").with(true).V().out('knows')").
+                getMaterializeProperties().get());
+    }
+
+    @Test
+    public void shouldIdentifyMultipleMaterializeProperties() {
+        assertEquals("all", GremlinScriptChecker.parse("g.with('materializeProperties', \"hello\").with(\"materializeProperties\", 'world').with('materializeProperties', 'all').with(true).V().out('knows')").
+                getMaterializeProperties().get());
+    }
+
+    @Test
     public void shouldFindAllResults() {
         final GremlinScriptChecker.Result r = GremlinScriptChecker.parse(
-                "g.with('evaluationTimeout', 1000).with(true).with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").V().out('knows')");
+                "g.with('evaluationTimeout', 1000).with(true).with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(\"materializeProperties\", 'all').V().out('knows')");
         assertEquals(1000, r.getTimeout().get().longValue());
         assertEquals("db024fca-ed15-4375-95de-4c6106aef895", r.getRequestId().get());
+        assertEquals("all", r.getMaterializeProperties().get());
     }
 
     @Test

@@ -1199,27 +1199,8 @@ func TestConnection(t *testing.T) {
 		// vertex contains 2 properties, name and age
 		r, err := g.With("materializeProperties", MaterializeProperties.All).V().Has("person", "name", "marko").Next()
 		assert.Nil(t, err)
-		assert.NotNil(t, r)
 
-		vertex, err := r.GetVertex()
-		assert.Nil(t, err)
-		assert.NotNil(t, vertex)
-
-		properties, ok := vertex.Properties.([]interface{})
-		assert.True(t, ok)
-		assert.Equal(t, 2, len(properties))
-
-		property, ok := properties[0].(*VertexProperty)
-		assert.True(t, ok)
-		assert.NotNil(t, property)
-		assert.Equal(t, "name", property.Label)
-		assert.Equal(t, "marko", property.Value)
-
-		property, ok = properties[1].(*VertexProperty)
-		assert.True(t, ok)
-		assert.NotNil(t, property)
-		assert.Equal(t, "age", property.Label)
-		assert.Equal(t, int32(29), property.Value)
+		AssertMarkoVertexWithProperties(t, r)
 	})
 
 	t.Run("Skip properties when materializeProperties is tokens", func(t *testing.T) {
@@ -1231,15 +1212,8 @@ func TestConnection(t *testing.T) {
 		// vertex contains 2 properties, name and age
 		r, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Has("person", "name", "marko").Next()
 		assert.Nil(t, err)
-		assert.NotNil(t, r)
 
-		vertex, err := r.GetVertex()
-		assert.Nil(t, err)
-		assert.NotNil(t, vertex)
-
-		properties, ok := vertex.Properties.([]interface{})
-		assert.True(t, ok)
-		assert.Equal(t, 0, len(properties))
+		AssertMarkoVertexWithoutProperties(t, r)
 	})
 
 	t.Run("Get all properties when no materializeProperties", func(t *testing.T) {
@@ -1250,26 +1224,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().Has("person", "name", "marko").Next()
 		assert.Nil(t, err)
-		assert.NotNil(t, r)
 
-		vertex, err := r.GetVertex()
-		assert.Nil(t, err)
-		assert.NotNil(t, vertex)
-
-		properties, ok := vertex.Properties.([]interface{})
-		assert.True(t, ok)
-		assert.Equal(t, 2, len(properties))
-
-		property, ok := properties[0].(*VertexProperty)
-		assert.True(t, ok)
-		assert.NotNil(t, property)
-		assert.Equal(t, "name", property.Label)
-		assert.Equal(t, "marko", property.Value)
-
-		property, ok = properties[1].(*VertexProperty)
-		assert.True(t, ok)
-		assert.NotNil(t, property)
-		assert.Equal(t, "age", property.Label)
-		assert.Equal(t, int32(29), property.Value)
+		AssertMarkoVertexWithProperties(t, r)
 	})
 }

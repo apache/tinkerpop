@@ -57,13 +57,11 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
 
     public <R> Traverser.Admin<R> halt(final Traverser.Admin<R> traverser) {
         // !!!
-        /* if (this.useReference)
+        if (this.useReference)
             traverser.set(ReferenceFactory.detach(traverser.get()));
         else
-            traverser.set(DetachedFactory.detach(traverser.get(), true));*/
+            traverser.set(DetachedFactory.detach(traverser.get(), true));
 
-        // !!!
-        // traverser.set(DetachedFactory.detach(traverser.get(), true));
         return traverser;
     }
 

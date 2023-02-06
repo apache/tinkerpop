@@ -278,6 +278,13 @@ public class Context {
     }
 
     private String determineMaterializeProperties() {
+        // with() in Script request has the highest priority
+        if (requestContentType == RequestContentType.SCRIPT) {
+            final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
+            if (mp.isPresent())
+                return mp.get();
+        }
+
         final Map<String, Object> args = requestMessage.getArgs();
         return args.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES) ?
                 (String) args.get(Tokens.ARGS_MATERIALIZE_PROPERTIES) : Tokens.MATERIALIZE_PROPERTIES_ALL;

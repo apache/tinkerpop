@@ -34,15 +34,16 @@ public class GremlinScriptChecker {
     /**
      * An empty result whose properties return as empty.
      */
-    public static final Result EMPTY_RESULT = new Result(null, null);
+    public static final Result EMPTY_RESULT = new Result(null, null, null);
 
     /**
      * At least one of these tokens should be present somewhere in the Gremlin string for {@link #parse(String)} to
      * take any action at all.
      */
+    // todo: why not used `Tokens`?
     private static final Set<String> tokens = new HashSet<>(Arrays.asList("evaluationTimeout", "scriptEvaluationTimeout",
                                                                           "ARGS_EVAL_TIMEOUT", "ARGS_SCRIPT_EVAL_TIMEOUT",
-                                                                          "requestId", "REQUEST_ID"));
+                                                                          "requestId", "REQUEST_ID", "materializeProperties"));
     /**
      * Matches single line comments, multi-line comments and space characters.
      * <pre>
@@ -93,6 +94,11 @@ public class GremlinScriptChecker {
      * See {@link #patternWithOptions} for a full explain as this regex is embedded in there.
      */
     private static final String requestIdTokens = "[\"']requestId[\"']|(?:Tokens\\.)?REQUEST_ID";
+
+    /**
+     * Regex fragment for the materializeProperties to look for.
+     */
+    private static final String materializePropertiesTokens = "[\"']materializeProperties[\"']";
 
     /**
      * Matches {@code .with({timeout-token},{timeout})} with a matching group on the {@code timeout}.
@@ -162,7 +168,10 @@ public class GremlinScriptChecker {
      * </pre>
      */
     private static final Pattern patternWithOptions =
-            Pattern.compile("\\.with\\(((?:" + timeoutTokens + "),(?<to>\\d*)(:?L|l)?)|((?:" + requestIdTokens + "),[\"'](?<rid>.*?))[\"']\\)");
+            Pattern.compile("\\.with\\((((?:"
+                    + timeoutTokens + "),(?<to>\\d*)(:?L|l)?)|("
+                    + materializePropertiesTokens + ",[\"'](?<mp>.*?)[\"']?)|((?:"
+                    + requestIdTokens + "),[\"'](?<rid>.*?)[\"']))\\)");
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.
@@ -184,6 +193,7 @@ public class GremlinScriptChecker {
         // arguments given to Result class as null mean they weren't assigned (or the parser didn't find them somehow - eek!)
         Long timeout = null;
         String requestId = null;
+        String materializeProperties = null;
         do {
             // timeout is added up across all scripts
             final String to = m.group("to");
@@ -195,9 +205,13 @@ public class GremlinScriptChecker {
             // request id just uses the last one found
             final String rid = m.group("rid");
             if (rid != null) requestId = rid;
+
+            //materializeProperties just uses the last one found
+            final String mp = m.group("mp");
+            if (mp != null) materializeProperties = mp;
         } while (m.find());
 
-        return new Result(timeout, requestId);
+        return new Result(timeout, requestId, materializeProperties);
     }
 
     /**
@@ -206,10 +220,12 @@ public class GremlinScriptChecker {
     public static class Result {
         private final Long timeout;
         private final String requestId;
+        private final String materializeProperties;
 
-        private Result(final Long timeout, final String requestId) {
+        private Result(final Long timeout, final String requestId, final String materializeProperties) {
             this.timeout = timeout;
             this.requestId = requestId;
+            this.materializeProperties = materializeProperties;
         }
 
         /**
@@ -228,11 +244,20 @@ public class GremlinScriptChecker {
             return null == requestId ? Optional.empty() : Optional.of(requestId);
         }
 
+        /**
+         * Gets the value of the request identifier supplied using the {@code with()} source step. If there are
+         * multiple commands using this step, the last usage should represent the id returned here.
+         */
+        public Optional<String> getMaterializeProperties() {
+            return null == materializeProperties ? Optional.empty() : Optional.of(materializeProperties);
+        }
+
         @Override
         public String toString() {
             return "GremlinScriptChecker.Result{" +
                     "timeout=" + timeout +
                     ", requestId='" + requestId + '\'' +
+                    ", materializeProperties='" + materializeProperties + '\'' +
                     '}';
         }
     }
