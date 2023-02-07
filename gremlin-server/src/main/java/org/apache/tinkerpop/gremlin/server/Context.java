@@ -288,7 +288,7 @@ public class Context {
         final Map<String, Object> args = requestMessage.getArgs();
         // all options except MATERIALIZE_PROPERTIES_TOKENS treated as MATERIALIZE_PROPERTIES_ALL
         return args.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)
-                && args.get(Tokens.ARGS_MATERIALIZE_PROPERTIES) == Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                && args.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
                 ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
                 : Tokens.MATERIALIZE_PROPERTIES_ALL;
     }
