@@ -51,7 +51,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         public IRemoteConnection CreateRemoteConnection(string traversalSource, 
             int connectionPoolSize = 2,
-            IMessageSerializer messageSerializer = null)
+            IMessageSerializer? messageSerializer = null)
         {
             var c = new DriverRemoteConnectionImpl(
                 new GremlinClient(new GremlinServer(TestHost, TestPort), 

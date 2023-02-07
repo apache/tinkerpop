@@ -52,6 +52,30 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
         [Theory]
         [MemberData(nameof(Serializers))]
+        public void ShouldRespectMaterializePropertiesTokensForBytecode(IMessageSerializer serializer)
+        {
+            var connection = _connectionFactory.CreateRemoteConnection("gmodern", 2, serializer);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            var vertex = g.With(Tokens.ArgMaterializeProperties, "tokens").V(1).Next();
+
+            VerifyEmptyProperties(vertex);
+        }
+
+        [Theory]
+        [MemberData(nameof(Serializers))]
+        public void ShouldRespectMaterializePropertiesAllForBytecode(IMessageSerializer serializer)
+        {
+            var connection = _connectionFactory.CreateRemoteConnection("gmodern", 2, serializer);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            var vertex = g.With(Tokens.ArgMaterializeProperties, "all").V(1).Next();
+
+            VerifyVertexProperties(vertex);
+        }
+
+        [Theory]
+        [MemberData(nameof(Serializers))]
         public void ShouldHandleEmptyVertexPropertiesForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gimmutable", 2, serializer);
@@ -80,6 +104,28 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var client = _connectionFactory.CreateClient(serializer);
 
             var vertex = await client.SubmitWithSingleResultAsync<Vertex>("gimmutable.addV('test')");
+
+            VerifyEmptyProperties(vertex);
+        }
+
+        [Theory]
+        [MemberData(nameof(Serializers))]
+        public async Task ShouldRespectMaterializePropertiesAllForGremlin(IMessageSerializer serializer)
+        {
+            var client = _connectionFactory.CreateClient(serializer);
+
+            var vertex = await client.SubmitWithSingleResultAsync<Vertex>("gmodern.with('materializeProperties', 'all').V(1)");
+
+            VerifyVertexProperties(vertex);
+        }
+
+        [Theory]
+        [MemberData(nameof(Serializers))]
+        public async Task ShouldRespectMaterializePropertiesTokensForGremlin(IMessageSerializer serializer)
+        {
+            var client = _connectionFactory.CreateClient(serializer);
+
+            var vertex = await client.SubmitWithSingleResultAsync<Vertex>("gmodern.with('materializeProperties', 'tokens').V(1)");
 
             VerifyEmptyProperties(vertex);
         }
@@ -133,35 +179,35 @@ namespace Gremlin.Net.IntegrationTest.Driver
             VerifyEmptyProperties(edge);
         }
 
-        private static void VerifyVertexProperties(Vertex vertex)
+        private static void VerifyVertexProperties(Vertex? vertex)
         {
             Assert.NotNull(vertex);
             Assert.Equal(1, vertex.Id);
 
-            var properties = vertex.GetPropertiesAsDictionary();
+            var properties = vertex.GetPropertiesAsDictionary()!;
             Assert.Equal(2, properties.Count);
             Assert.True(properties.ContainsKey("age"));
             Assert.Equal(29, properties["age"].Single().Value);
         }
 
-        private static void VerifyEdgeProperties(Edge edge)
+        private static void VerifyEdgeProperties(Edge? edge)
         {
             Assert.NotNull(edge);
             Assert.Equal(7, edge.Id);
 
-            var properties = edge.GetPropertiesAsDictionary();
+            var properties = edge.GetPropertiesAsDictionary()!;
             Assert.Single(properties);
             Assert.True(properties.ContainsKey("weight"));
             Assert.Equal(0.5, properties["weight"].Single().Value);
         }
 
-        private static void VerifyEmptyProperties(Vertex vertex)
+        private static void VerifyEmptyProperties(Vertex? vertex)
         {
             Assert.NotNull(vertex);
             Assert.True((vertex.GetPropertiesAsDictionary()?.Count ?? 0) == 0);
         }
 
-        private static void VerifyEmptyProperties(Edge edge)
+        private static void VerifyEmptyProperties(Edge? edge)
         {
             Assert.NotNull(edge);
             Assert.True((edge.GetPropertiesAsDictionary()?.Count ?? 0) == 0);

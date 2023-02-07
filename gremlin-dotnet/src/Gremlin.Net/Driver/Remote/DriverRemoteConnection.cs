@@ -51,7 +51,7 @@ namespace Gremlin.Net.Driver.Remote
         private readonly List<string> _allowedKeys = new()
         {
             Tokens.ArgsEvalTimeout, "scriptEvaluationTimeout", Tokens.ArgsBatchSize,
-            Tokens.RequestId, Tokens.ArgsUserAgent
+            Tokens.RequestId, Tokens.ArgsUserAgent, Tokens.ArgMaterializeProperties
         };
 
         private readonly string? _sessionId;
