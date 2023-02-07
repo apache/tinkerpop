@@ -282,7 +282,9 @@ public class Context {
         if (requestContentType == RequestContentType.SCRIPT) {
             final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
             if (mp.isPresent())
-                return mp.get();
+                return mp.get().equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                        ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                        : Tokens.MATERIALIZE_PROPERTIES_ALL;
         }
 
         final Map<String, Object> args = requestMessage.getArgs();

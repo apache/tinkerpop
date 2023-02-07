@@ -183,12 +183,28 @@ public class ContextTest {
     {
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                .addArg(Tokens.ARGS_GREMLIN, "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'all').V().out('knows')")
+                .addArg(Tokens.ARGS_GREMLIN, "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'tokens').V().out('knows')")
                 .create();
         final Settings settings = new Settings();
         final Context context = new Context(request, ctx, settings, null, null, null);
 
         assertEquals(1000, context.getRequestTimeout());
+        assertEquals("tokens", context.getMaterializeProperties());
+    }
+
+    @Test
+    public void shouldSkipInvalidMaterializePropertiesParameterFromScriptRequest()
+    {
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                .addArg(Tokens.ARGS_GREMLIN,
+                        "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'some-invalid-value').V().out('knows')")
+                .create();
+        final Settings settings = new Settings();
+        final Context context = new Context(request, ctx, settings, null, null, null);
+
+        assertEquals(1000, context.getRequestTimeout());
+        // "all" is default value
         assertEquals("all", context.getMaterializeProperties());
     }
 }
