@@ -60,7 +60,7 @@ public class HaltedTraverserStrategyTest {
         System.setProperty("is.testing", "true");
     }
 
-    /* !!! @Test
+    @Test
     public void shouldReturnDetachedElements() {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
@@ -78,9 +78,9 @@ public class HaltedTraverserStrategyTest {
         g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
         // should handle nested collections
         g.V().out().fold().next().forEach(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
-    }*/
+    }
 
-    /* !!! @Test
+    @Test
     public void shouldReturnReferenceElements() {
         final Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserStrategy.reference());
@@ -108,6 +108,6 @@ public class HaltedTraverserStrategyTest {
         g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         // should handle nested collections
         g.V().out().fold().next().forEach(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
-    }*/
+    }
 
 }

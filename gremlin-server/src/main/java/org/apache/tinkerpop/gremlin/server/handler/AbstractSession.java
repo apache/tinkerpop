@@ -736,6 +736,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         final Map<String, Object> responseMetaData = generateResponseMetaData(sessionTask, code, itty);
         final Map<String, Object> statusAttributes = generateStatusAttributes(sessionTask, code, itty);
         try {
+            sessionTask.handleDetachment(aggregate);
+
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
                         .code(code)

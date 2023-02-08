@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.server.op;
 
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceElement;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -29,14 +27,12 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.slf4j.Logger;
@@ -287,17 +283,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 
-            if (!aggregate.isEmpty() && !ctx.getMaterializeProperties().equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
-                final Object firstElement = aggregate.get(0);
-
-                if (firstElement instanceof Element) {
-                    for (int i = 0; i < aggregate.size(); i++)
-                        aggregate.set(i, ReferenceFactory.detach((Element) aggregate.get(i)));
-                } else if (firstElement instanceof AbstractTraverser) {
-                    for (final Object item : aggregate)
-                        ((AbstractTraverser) item).detach();
-                }
-            }
+            ctx.handleDetachment(aggregate);
 
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
