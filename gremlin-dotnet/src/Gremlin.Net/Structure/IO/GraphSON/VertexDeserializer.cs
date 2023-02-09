@@ -36,12 +36,12 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 ? labelProperty.GetString()
                 : Vertex.DefaultLabel;
 
-            Dictionary<string, dynamic?>? properties = null;
+            dynamic?[]? properties = null;
             if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
                 && propertiesObject.ValueKind == JsonValueKind.Object)
             {
                 properties = propertiesObject.EnumerateObject()
-                    .ToDictionary(property => property.Name, property => reader.ToObject(property.Value));
+                    .SelectMany(p => (reader.ToObject(p.Value) as IEnumerable<object>)!).ToArray();
             }
 
             return new Vertex(id, label, properties);

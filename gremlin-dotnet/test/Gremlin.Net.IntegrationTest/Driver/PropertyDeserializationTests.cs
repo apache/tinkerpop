@@ -179,15 +179,39 @@ namespace Gremlin.Net.IntegrationTest.Driver
             VerifyEmptyProperties(edge);
         }
 
+        [Theory]
+        [MemberData(nameof(Serializers))]
+        public void ShouldHandleMultiplePropertiesWithSameNameForVertex(IMessageSerializer serializer)
+        {
+            var connection = _connectionFactory.CreateRemoteConnection("gimmutable", 2, serializer);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            var vertex = g.AddV()
+                .Property(Cardinality.List, "test", "value1")
+                .Property(Cardinality.List, "test", "value2")
+                .Property(Cardinality.List, "test", "value3")
+                .Next()!;
+
+            vertex = g.V(vertex.Id).Next();
+
+            Assert.NotNull(vertex);
+
+            var properties = vertex.Properties!;
+            Assert.Equal(3, properties.Length);
+            var propertyValues = properties.Cast<VertexProperty>().Where(p => p.Key == "test").Select(p => p.Value).ToArray();
+            Assert.Equal(3, propertyValues.Length);
+            Assert.Equal(new[] { "value1", "value2", "value3" }, propertyValues);
+        }
+
         private static void VerifyVertexProperties(Vertex? vertex)
         {
             Assert.NotNull(vertex);
             Assert.Equal(1, vertex.Id);
 
-            var properties = vertex.GetPropertiesAsDictionary()!;
-            Assert.Equal(2, properties.Count);
-            Assert.True(properties.ContainsKey("age"));
-            Assert.Equal(29, properties["age"].Single().Value);
+            Assert.Equal(2, vertex.Properties!.Length);
+            var age = vertex.Property("age");
+            Assert.NotNull(age);
+            Assert.Equal(29, age.Value);
         }
 
         private static void VerifyEdgeProperties(Edge? edge)
@@ -195,22 +219,22 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.NotNull(edge);
             Assert.Equal(7, edge.Id);
 
-            var properties = edge.GetPropertiesAsDictionary()!;
-            Assert.Single(properties);
-            Assert.True(properties.ContainsKey("weight"));
-            Assert.Equal(0.5, properties["weight"].Single().Value);
+            Assert.Single(edge.Properties!);
+            var weight = edge.Property("weight");
+            Assert.NotNull(weight);
+            Assert.Equal(0.5, weight.Value);
         }
 
         private static void VerifyEmptyProperties(Vertex? vertex)
         {
             Assert.NotNull(vertex);
-            Assert.True((vertex.GetPropertiesAsDictionary()?.Count ?? 0) == 0);
+            Assert.True((vertex.Properties?.Length ?? 0) == 0);
         }
 
         private static void VerifyEmptyProperties(Edge? edge)
         {
             Assert.NotNull(edge);
-            Assert.True((edge.GetPropertiesAsDictionary()?.Count ?? 0) == 0);
+            Assert.True((edge.Properties?.Length ?? 0) == 0);
         }
 
         public static List<object[]> Serializers => new()

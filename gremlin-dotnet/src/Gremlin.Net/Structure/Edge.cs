@@ -21,7 +21,6 @@
 
 #endregion
 
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Gremlin.Net.Structure
@@ -39,7 +38,7 @@ namespace Gremlin.Net.Structure
         /// <param name="label">The label of the edge.</param>
         /// <param name="inV">The incoming/head vertex of the edge.</param>
         /// <param name="properties">Optional properties of the edge.</param>
-        public Edge(object? id, Vertex outV, string label, Vertex inV, Dictionary<string, dynamic>? properties = null)
+        public Edge(object? id, Vertex outV, string label, Vertex inV, dynamic[]? properties = null)
             : base(id, label, properties)
         {
             OutV = outV;
@@ -57,13 +56,12 @@ namespace Gremlin.Net.Structure
         public Vertex OutV { get; }
 
         /// <summary>
-        /// Get all properties as dictionary
+        /// Get property by key
         /// </summary>
-        /// <returns>properties</returns>
-        public Dictionary<string, Property[]>? GetPropertiesAsDictionary()
+        /// <returns>property or null when not found</returns>
+        public Property? Property(string key)
         {
-            return Properties?.ToDictionary(property => property.Key,
-                        property => ((IEnumerable<dynamic>)property.Value).Cast<Property>().ToArray());
+            return Properties?.Cast<Property>().FirstOrDefault(p => p.Key == key);
         }
 
         /// <inheritdoc />

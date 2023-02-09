@@ -21,7 +21,6 @@
 
 #endregion
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
@@ -46,13 +45,12 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 ? labelProperty.GetString()
                 : "edge";
 
-            Dictionary<string, dynamic>? properties = null;
+            dynamic?[]? properties = null;
             if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
                 && propertiesObject.ValueKind == JsonValueKind.Object)
             {
                 properties = propertiesObject.EnumerateObject()
-                    .ToDictionary(property => property.Name,
-                        property => (dynamic)new dynamic?[] { reader.ToObject(property.Value) });
+                    .Select(p => reader.ToObject(p.Value)).ToArray();
             }
 
             return new Edge(edgeId, outV, edgeLabel, inV, properties);

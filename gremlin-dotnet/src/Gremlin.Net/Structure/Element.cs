@@ -37,7 +37,7 @@ namespace Gremlin.Net.Structure
         /// <param name="id">The id of the element.</param>
         /// <param name="label">The label of the element.</param>
         /// <param name="properties">Optional properties of the element.</param>
-        protected Element(object? id, string label, Dictionary<string, dynamic>? properties = null)
+        protected Element(object? id, string label, dynamic[]? properties = null)
         {
             Id = id;
             Label = label;
@@ -57,7 +57,7 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Gets the properties of this <see cref="Element" />.
         /// </summary>
-        public Dictionary<string, dynamic>? Properties { get; }
+        public dynamic[]? Properties { get; }
 
         /// <inheritdoc />
         public bool Equals(Element? other)

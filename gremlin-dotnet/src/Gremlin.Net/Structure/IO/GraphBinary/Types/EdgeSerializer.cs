@@ -23,7 +23,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +46,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
-            
+
             // !!! await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
 
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
@@ -79,10 +78,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var propertiesAsDictionary = (properties as List<object>)?.Cast<Property>()
-                .ToDictionary(k => k.Key, v => (dynamic)new dynamic[] { v });
+            var propertiesAsArray = (properties as List<object>)?.ToArray();
 
-            return new Edge(id, outV, label, inV, propertiesAsDictionary);
+            return new Edge(id, outV, label, inV, propertiesAsArray);
         }
     }
 }

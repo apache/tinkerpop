@@ -23,7 +23,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,10 +57,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false);
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var propertiesAsDictionary = (properties as List<object>)?.Cast<VertexProperty>()
-                .ToDictionary(k => k.Key, v => (dynamic)new dynamic[] { v });
+            var propertiesAsArray = (properties as List<object>)?.ToArray();
 
-            return new Vertex(id, label, propertiesAsDictionary);            
+            return new Vertex(id, label, propertiesAsArray);
         }
     }
 }
