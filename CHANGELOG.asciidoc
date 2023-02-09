@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-6]]
 === TinkerPop 3.5.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-
+* TINKERPOP-2810 gremlin-python aiohttp dependency requirement upper bound relaxed to <4.0.0
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
