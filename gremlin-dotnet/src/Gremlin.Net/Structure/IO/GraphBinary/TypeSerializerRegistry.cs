@@ -209,7 +209,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 }
             }
 
-            throw new InvalidOperationException($"No serializer found for type ${valueType}.");
+            throw new InvalidOperationException($"No serializer found for type '{valueType}'.");
         }
 
         private static bool IsDictionaryType(Type type, out Type keyType, out Type valueType)
@@ -266,7 +266,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <returns>A serializer for the provided custom type name.</returns>
         public CustomTypeSerializer GetSerializerForCustomType(string typeName)
         {
-            return _serializerByCustomTypeName[typeName];
+            return _serializerByCustomTypeName.TryGetValue(typeName, out var serializer)
+                ? serializer
+                : throw new InvalidOperationException($"No serializer found for type '{typeName}'.");
         }
         
         /// <summary>

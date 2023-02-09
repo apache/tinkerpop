@@ -68,6 +68,41 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public async Task WriteThrowsExceptionWhenNoWriterIsRegisteredForCustomType()
+        {
+            var sample = new SamplePerson("Olivia", new DateTimeOffset(2010, 4, 29, 5, 30, 3, TimeSpan.FromHours(1)));
+            var registryWithoutType = TypeSerializerRegistry.Build().Create();
+            var writer = CreateGraphBinaryWriter(registryWithoutType);
+            var serializationStream = new MemoryStream();
+            
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await writer.WriteAsync(sample, serializationStream);
+            });
+        }
+
+        [Fact]
+        public async Task ReadThrowsExceptionWhenNoReaderIsRegisteredForCustomType()
+        {
+            var sample = new SamplePerson("Olivia", new DateTimeOffset(2010, 4, 29, 5, 30, 3, TimeSpan.FromHours(1)));
+            var registryWithType = TypeSerializerRegistry.Build()
+                .AddCustomType(typeof(SamplePerson), new SamplePersonSerializer()).Create();
+            var writer = CreateGraphBinaryWriter(registryWithType);
+            var serializationStream = new MemoryStream();
+            
+            await writer.WriteAsync(sample, serializationStream);
+            serializationStream.Position = 0;
+            
+            var registryWithoutType = TypeSerializerRegistry.Build().Create();
+            var reader = CreateGraphBinaryReader(registryWithoutType);
+            
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await reader.ReadAsync(serializationStream);
+            });
+        }
+
         private static GraphBinaryWriter CreateGraphBinaryWriter(TypeSerializerRegistry registry) =>
             new GraphBinaryWriter(registry);
 
