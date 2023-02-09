@@ -75,6 +75,52 @@ describe('Client', function () {
         });
     });
 
+    it('should handle properties for bytecode request', function () {
+      return client.submit(new Bytecode().addStep('V', [1]))
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first().object;
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.strictEqual(vertex.properties.age[0].value, 29);
+          assert.strictEqual(vertex.properties.name[0].value, 'marko');
+        });
+    });
+
+    it('should skip properties for bytecode request', function () {
+      return client.submit(new Bytecode().addStep('V', [1]), null, {'materializeProperties': 'tokens'})
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first().object;
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.strictEqual(vertex.properties, undefined);
+        });
+    });
+
+    it('should handle properties for gremlin request', function () {
+      return client.submit('g.V(1)')
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first();
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.strictEqual(vertex.properties.age[0].value, 29);
+          assert.strictEqual(vertex.properties.name[0].value, 'marko');
+        });
+    });
+
+    it('should skip properties for gremlin request', function () {
+      return client.submit('g.with("materializeProperties", "tokens").V(1)')
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first();
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.strictEqual(vertex.properties, undefined);
+        });
+    });
+
     it('should be able to stream results from the gremlin server', (done) => {
       const output = [];
       let calls = 0;
