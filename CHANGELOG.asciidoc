@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-6]]
 === TinkerPop 3.5.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added `GraphFilter` support to `GraphSONRecordReader`.
 * gremlin-python aiohttp dependency requirement upper bound relaxed to <4.0.0
 * Changed `PartitionStrategy` to force its filters to the end of the chain for `Vertex` and `Edge` read steps, thus preserving order of the `has()`.
 
