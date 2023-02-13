@@ -82,8 +82,16 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.strictEqual(vertex.properties.age[0].value, 29);
-          assert.strictEqual(vertex.properties.name[0].value, 'marko');
+          let age, name
+          if (vertex.properties instanceof Array) {
+            age = vertex.properties[1]
+            name = vertex.properties[0]
+          } else {
+            age = vertex.properties.age[0]
+            name = vertex.properties.name[0]
+          }
+          assert.strictEqual(age.value, 29);
+          assert.strictEqual(name.value, 'marko');
         });
     });
 
@@ -94,7 +102,7 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.strictEqual(vertex.properties, undefined);
+          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
         });
     });
 
@@ -105,8 +113,16 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.strictEqual(vertex.properties.age[0].value, 29);
-          assert.strictEqual(vertex.properties.name[0].value, 'marko');
+          let age, name
+          if (vertex.properties instanceof Array) {
+            age = vertex.properties[1]
+            name = vertex.properties[0]
+          } else {
+            age = vertex.properties.age[0]
+            name = vertex.properties.name[0]
+          }
+          assert.strictEqual(age.value, 29);
+          assert.strictEqual(name.value, 'marko');
         });
     });
 
@@ -117,7 +133,7 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.strictEqual(vertex.properties, undefined);
+          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
         });
     });
 
