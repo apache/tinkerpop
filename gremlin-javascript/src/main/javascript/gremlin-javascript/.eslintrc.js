@@ -26,7 +26,7 @@ module.exports = {
     node: true,
   },
   parserOptions: {
-    ecmaVersion: 2017,
+    ecmaVersion: 2021,
   },
   ignorePatterns: ['test/**/*.js', 'doc/**/*.js'],
   extends: ['eslint:recommended', 'prettier'],

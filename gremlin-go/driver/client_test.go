@@ -37,7 +37,26 @@ func TestClient(t *testing.T) {
 	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
 
-	t.Run("Test client.submit()", func(t *testing.T) {
+	t.Run("Test client.SubmitWithOptions()", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+			})
+		defer client.Close()
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		resultSet, err := client.SubmitWithOptions("g.V().count()", *new(RequestOptions))
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, ok, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.NotNil(t, result)
+	})
+
+	t.Run("Test client.Submit()", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
@@ -68,6 +87,7 @@ func TestClient(t *testing.T) {
 				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
+		defer client.Close()
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
@@ -153,6 +173,12 @@ type SocketServerSettings struct {
 	 * during the web socket handshake.
 	 */
 	USER_AGENT_REQUEST_ID uuid.UUID `yaml:"USER_AGENT_REQUEST_ID"`
+	/**
+	 * If a request with this ID comes to the server, the server responds with a string containing all overridden
+	 * per request settings from the request message. String will be of the form
+	 * "requestId=19436d9e-f8fc-4b67-8a76-deec60918424 evaluationTimeout=1234, batchSize=12, userAgent=testUserAgent"
+	 */
+	PER_REQUEST_SETTINGS_REQUEST_ID uuid.UUID `yaml:"PER_REQUEST_SETTINGS_REQUEST_ID"`
 }
 
 func FromYaml(path string) *SocketServerSettings {
@@ -183,16 +209,17 @@ func TestClientAgainstSocketServer(t *testing.T) {
 	t.Run("Should get single vertex response from gremlin socket server", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testSocketServerUrl)
+		defer client.Close()
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
-		resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.SINGLE_VERTEX_REQUEST_ID})
+		resultSet, err := client.SubmitWithOptions("1", new(RequestOptionsBuilder).
+			SetRequestId(settings.SINGLE_VERTEX_REQUEST_ID).Create())
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.True(t, ok)
 		assert.NotNil(t, result)
-		client.Close()
 	})
 
 	/**
@@ -202,10 +229,12 @@ func TestClientAgainstSocketServer(t *testing.T) {
 	t.Run("Should include user agent in handshake request", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testSocketServerUrl)
+		defer client.Close()
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 
-		resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.USER_AGENT_REQUEST_ID})
+		resultSet, err := client.SubmitWithOptions("1", new(RequestOptionsBuilder).
+			SetRequestId(settings.USER_AGENT_REQUEST_ID).Create())
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -216,8 +245,6 @@ func TestClientAgainstSocketServer(t *testing.T) {
 
 		userAgentResponse := result.GetString()
 		assert.Equal(t, userAgent, userAgentResponse)
-
-		client.Close()
 	})
 
 	/**
@@ -230,10 +257,12 @@ func TestClientAgainstSocketServer(t *testing.T) {
 			func(settings *ClientSettings) {
 				settings.EnableUserAgentOnConnect = false
 			})
+		defer client.Close()
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 
-		resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.USER_AGENT_REQUEST_ID})
+		resultSet, err := client.SubmitWithOptions("1", new(RequestOptionsBuilder).
+			SetRequestId(settings.USER_AGENT_REQUEST_ID).Create())
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -246,8 +275,33 @@ func TestClientAgainstSocketServer(t *testing.T) {
 		//If the gremlin user agent is disabled, the underlying web socket library reverts to sending its default user agent
 		//during connection requests.
 		assert.Contains(t, userAgentResponse, "Go-http-client/")
+	})
 
-		client.Close()
+	/**
+	 * Tests that client is correctly sending all overridable per request settings (requestId, batchSize,
+	 * evaluationTimeout, and userAgent) to the server.
+	 */
+	t.Run("Should Send Per Request Settings To Server", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testSocketServerUrl)
+		defer client.Close()
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+
+		resultSet, err := client.SubmitWithOptions("1", new(RequestOptionsBuilder).
+			SetRequestId(settings.PER_REQUEST_SETTINGS_REQUEST_ID).
+			SetEvaluationTimeout(1234).
+			SetBatchSize(12).
+			SetUserAgent("helloWorld").
+			Create())
+		assert.Nil(t, err)
+		assert.NotNil(t, resultSet)
+		result, ok, err := resultSet.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		expectedResult := fmt.Sprintf("requestId=%v evaluationTimeout=%v, batchSize=%v, userAgent=%v",
+			settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld")
+		assert.Equal(t, expectedResult, result.Data)
 	})
 
 	/**
@@ -259,9 +313,11 @@ func TestClientAgainstSocketServer(t *testing.T) {
 		t.Run("Should try create new connection if closed by server", func(t *testing.T) {
 			skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 			client, err := NewClient(testSocketServerUrl)
+			defer client.Close()
 			assert.Nil(t, err)
 			assert.NotNil(t, client)
-			resultSet, err := client.Submit("1", map[string]interface{}{"requestId": settings.CLOSE_CONNECTION_REQUEST_ID})
+			resultSet, err := client.SubmitWithOptions("1", new(RequestOptionsBuilder).
+				SetRequestId(settings.CLOSE_CONNECTION_REQUEST_ID).Create())
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
 
@@ -269,14 +325,14 @@ func TestClientAgainstSocketServer(t *testing.T) {
 
 			assert.EqualError(t, err, "websocket: close 1005 (no status)")
 
-			resultSet, err = client.Submit("1", map[string]interface{}{"requestId": settings.SINGLE_VERTEX_REQUEST_ID})
+			resultSet, err = client.SubmitWithOptions("1", new(RequestOptionsBuilder).
+				SetRequestId(settings.SINGLE_VERTEX_REQUEST_ID).Create())
 			assert.Nil(t, err)
 			assert.NotNil(t, resultSet)
 			result, ok, err = resultSet.One()
 			assert.Nil(t, err)
 			assert.True(t, ok)
 			assert.NotNil(t, result)
-			client.Close()
 		})
 	*/
 }

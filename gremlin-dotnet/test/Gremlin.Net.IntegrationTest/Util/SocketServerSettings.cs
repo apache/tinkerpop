@@ -87,7 +87,7 @@ public class SocketServerSettings
     
     public static SocketServerSettings FromYaml(String path)
     {
-        var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().Build();
+        var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().IgnoreUnmatchedProperties().Build();
 
         return deserializer.Deserialize<SocketServerSettings>(File.ReadAllText(path));
     }

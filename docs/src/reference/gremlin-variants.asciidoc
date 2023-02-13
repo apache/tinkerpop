@@ -293,22 +293,29 @@ fmt.Println(result[0].GetString()) <3>
 ----
 
 <1> Submit a script that simply returns a Count of vertexes.
-<2> Get results from resultSet. Block until the the script is evaluated and results are sent back by the server.
+<2> Get results from resultSet. Block until the script is evaluated and results are sent back by the server.
 <3> Use the result.
 
 ==== Per Request Settings
 
-The `client.Submit()` functions accept a `bindings` which expects a map. The `bindings` provide a way to include options
-that are specific to the request made with the call to `Submit()`. A good use-case for this feature is to set a per-request
-override to the `evaluationTimeout` so that it only applies to the current request.
+Both the `Client` and `DriverRemoteConnection` types have a `SubmitWithOptions(traversalString, requestOptions)` variant
+of the standard `Submit()` method. These methods allow a `RequestOptions` struct to be passed in which will augment the
+execution on the server. `RequestOptions` can be constructed
+using `RequestOptionsBuilder`. A good use-case for this feature is to set a per-request override to the
+`evaluationTimeout` so that it only applies to the current request.
 
 [source,go]
 ----
-resultSet, err := client.Submit("g.V().repeat(both()).times(100)", map[string]interface{}{"evaluationTimeout": 5000})
+options := new(RequestOptionsBuilder).
+			SetEvaluationTimeout(5000).
+			AddBinding("x", 100).
+			Create()
+resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout`.
+`evaluationTimeout`. `RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
+traversal string.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
 with bytecode may try `g.with("evaluationTimeout", 500)` within a script. Scripts with multiple traversals and multiple
@@ -316,9 +323,9 @@ timeouts will be interpreted as a sum of all timeouts identified in the script f
 
 [source,go]
 ----
-resultSet, err := client.Submit("g.with('evaluationTimeout', 500).addV().iterate();"+
+resultSet, err := client.SubmitWithOptions("g.with('evaluationTimeout', 500).addV().iterate();"+
   "g.addV().iterate();"+
-  "g.with('evaluationTimeout', 500).addV();", map[string]interface{}{"evaluationTimeout": 500})
+  "g.with('evaluationTimeout', 500).addV();", new(RequestOptionsBuilder).SetEvaluationTimeout(500).Create())
 results, err := resultSet.All()
 ----
 
