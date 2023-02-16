@@ -409,9 +409,12 @@ username = <username>
 password =
 ----
 
-The release manager shall use the project's pypi credentials, which are available in the
-link:https://svn.apache.org/repos/private/pmc/tinkerpop[PMC SVN repository]. The `password` should be left blank so
-the deployment process in Maven will prompt for it at deployment time.
+The approach above assumes basic authentication and a blank password will in `.pyirc` will have Maven prompt for a
+password. That said, it is preferred that your account be secured with 2FA, in which case, basic authentication will
+no longer be allowed. Instead, an API token is required. It can be generated under your
+link:https://pypi.org/manage/account/token/[account settings] and then the username in `.pyirc` is set to `__token__`
+and the password to the token value. Please see link:https://pypi.org/help/#apitoken[PyPI documentation] for more
+details.
 
 For .NET releases, install link:http://www.mono-project.com/[Mono]. The release process is known to work with 6.12.0,
 so it is best to probably install that version. Release managers should probably also do an install of
