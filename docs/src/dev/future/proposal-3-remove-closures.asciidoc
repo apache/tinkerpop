@@ -22,7 +22,7 @@ In Discussion
 
 *Action Items*
 
-* Look at defining the semanctics around type exception
+* Look at defining the semantics around type exception
 * Look at semantics around support for Unicode (talk to Greg)
 
 === Motivation
@@ -335,7 +335,7 @@ below:
 [cols=",,,,,",options="header",]
 |===
 |Groovy |Java |Python |JavaScript |.NET |Go
-|asString() |asString() |asString() |asString() |AsString() |AsString()
+|asString() |asString() |as_string() |asString() |AsString() |AsString()
 
 |concat() |concat() |concat() |concat() |Concat() |Concat()
 
@@ -346,9 +346,9 @@ below:
 |substring() |substring() |substring() |substring() |Substring()
 |Substring()
 
-|rTrim() |rTrim() |rTrim() |rTrim() |RTrim() |RTrim()
+|rTrim() |rTrim() |rtrim() |rTrim() |RTrim() |RTrim()
 
-|lTrim() |lTrim() |lTrim() |lTrim() |LTrim() |LTrim()
+|lTrim() |lTrim() |ltrim() |lTrim() |LTrim() |LTrim()
 
 |trim() |trim() |trim() |trim() |Trim() |Trim()
 
@@ -356,9 +356,9 @@ below:
 
 |reverse() |reverse() |reverse() |reverse() |Reverse() |Reverse()
 
-|toUpper() |toUpper() |toUpper() |toUpper() |ToUpper() |ToUpper()
+|toUpper() |toUpper() |to_upper() |toUpper() |ToUpper() |ToUpper()
 
-|toLower() |toLower() |toLower() |toLower() |ToLower() |ToLower()
+|toLower() |toLower() |to_lower() |toLower() |ToLower() |ToLower()
 |===
 
 '''''
@@ -923,7 +923,7 @@ below:
 
 |remove() |remove() |remove() |remove() |Remove() |Remove()
 
-|indexOf() |indexOf() |indexOf() |indexOf() |IndexOf() |IndexOf()
+|indexOf() |indexOf() |index_of() |indexOf() |IndexOf() |IndexOf()
 
 |product() |product() |product() |product() |Product() |Product()
 
@@ -1344,9 +1344,9 @@ below:
 [cols=",,,,,",options="header",]
 |===
 |Groovy |Java |Python |JavaScript |.NET |Go
-|asDate() |asDate() |asDate() |asDate() |asDate() |asDate()
-|dateAdd() |dateAdd() |dateAdd() |dateAdd() |DateAdd() |DateAdd()
-|dateDiff() |dateDiff() |dateDiff() |dateDiff() |DateDiff() |DateDiff()
+|asDate() |asDate() |as_date() |asDate() |AsDate() |AsDate()
+|dateAdd() |dateAdd() |date_add() |dateAdd() |DateAdd() |DateAdd()
+|dateDiff() |dateDiff() |date_diff() |dateDiff() |DateDiff() |DateDiff()
 |===
 
 == Function Definitions
@@ -1379,34 +1379,34 @@ passed in as shown below:
 [cols=",,",options="header",]
 |===
 |Incoming Datatype |Example Query |Example Output
-|Integer |`g.inject(0).asString()` |1900-01-01T00:00:00Z
+|Integer |`g.inject(0).asDate()` |1900-01-01T00:00:00Z
 
-|Float |`g.inject(29.0).asString()` |1900-01-01T00:00:00Z
+|Float |`g.inject(29.0).asDate()` |1900-01-01T00:00:00Z
 
-|String |`g.inject('1/1/1900').asString()` |1900-01-01T00:00:00Z
+|String |`g.inject('1/1/1900').asDate()` |1900-01-01T00:00:00Z
 
-|UUID |`g.inject(UUID.randomUUID()).asString()`
+|UUID |`g.inject(UUID.randomUUID()).asDate()`
 |`IllegalArgumentException`
 
 |Map
-|`g.inject([["id": 1], ["id": 2, "something":"anything"]]).asString()`
+|`g.inject([["id": 1], ["id": 2, "something":"anything"]]).asDate()`
 |`IllegalArgumentException`]
 
-|Date |`g.inject(datetime()).asString()` |Sun Nov 04 00:00:00 UTC 2018
+|Date |`g.inject(datetime()).asDate()` |2023-02-16T01:36:40.27Z
 
-|List |`g.inject([1,2,3]).asString()` |`IllegalArgumentException`
+|List |`g.inject([1,2,3]).asDate()` |`IllegalArgumentException`
 
-|List (Local Scope) |`g.inject([1,2,3]).asString(local)`
-|[`IllegalArgumentException`
-
-|Vertex |`g.V(1).asString()` |`IllegalArgumentException`
-
-|Edge |`g.E(7).asString()` |`IllegalArgumentException`
-
-|Property |`g.V(1).properties('age').asString()`
+|List (Local Scope) |`g.inject([1,2,3]).asDate(local)`
 |`IllegalArgumentException`
 
-|null |`g.V().group().by('foo').select(keys).asString()`
+|Vertex |`g.V(1).asDate()` |`IllegalArgumentException`
+
+|Edge |`g.E(7).asDate()` |`IllegalArgumentException`
+
+|Property |`g.V(1).properties('age').asDate()`
+|`IllegalArgumentException`
+
+|null |`g.V().group().by('foo').select(keys).asDate()`
 |`IllegalArgumentException`
 |===
 
