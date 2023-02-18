@@ -42,31 +42,27 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             _messageSerializer = messageSerializer ?? new GraphSON3MessageSerializer();
         }
-        
+
         public IRemoteConnection CreateRemoteConnection(int connectionPoolSize = 2)
         {
             // gmodern is the standard test traversalsource that the main body of test uses
             return CreateRemoteConnection("gmodern", connectionPoolSize);
         }
 
-        public IRemoteConnection CreateRemoteConnection(string traversalSource, 
+        public IRemoteConnection CreateRemoteConnection(string traversalSource,
             int connectionPoolSize = 2,
             IMessageSerializer? messageSerializer = null)
         {
-            var c = new DriverRemoteConnectionImpl(
-                new GremlinClient(new GremlinServer(TestHost, TestPort), 
-                    messageSerializer ?? _messageSerializer,
-                    connectionPoolSettings: new ConnectionPoolSettings { PoolSize = connectionPoolSize }),
-                traversalSource);
+            var c = new DriverRemoteConnectionImpl(CreateClient(messageSerializer, connectionPoolSize), traversalSource);
             _cleanUp.Add(c);
             return c;
         }
 
-        public IGremlinClient CreateClient(IMessageSerializer messageSerializer = null)
+        public IGremlinClient CreateClient(IMessageSerializer? messageSerializer = null, int connectionPoolSize = 2)
         {
             var c = new GremlinClient(new GremlinServer(TestHost, TestPort),
                     messageSerializer ?? _messageSerializer,
-                    connectionPoolSettings: new ConnectionPoolSettings { PoolSize = 2 });
+                    connectionPoolSettings: new() { PoolSize = connectionPoolSize });
 
             _cleanUp.Add(c);
             return c;

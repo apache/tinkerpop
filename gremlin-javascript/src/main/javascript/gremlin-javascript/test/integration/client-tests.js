@@ -95,7 +95,7 @@ describe('Client', function () {
         });
     });
 
-    it('should skip properties for bytecode request', function () {
+    it('should skip properties for bytecode request with tokens', function () {
       return client.submit(new Bytecode().addStep('V', [1]), null, {'materializeProperties': 'tokens'})
         .then(function (result) {
           assert.ok(result);
@@ -126,7 +126,7 @@ describe('Client', function () {
         });
     });
 
-    it('should skip properties for gremlin request', function () {
+    it('should skip properties for gremlin request with tokens', function () {
       return client.submit('g.with("materializeProperties", "tokens").V(1)')
         .then(function (result) {
           assert.ok(result);

@@ -19,6 +19,11 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Timer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
@@ -212,9 +217,25 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                             logger.debug("Transforming result of request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
                                     requestArguments.getValue0(), requestArguments.getValue1(), o, Thread.currentThread().getName());
+                            // todo: move common detachment code to helper
+                            final Optional<String> mp = GremlinScriptChecker.parse(requestArguments.getValue0()).getMaterializeProperties();
+                            final List asList = IteratorUtils.asList(o);
+
+                            if (mp.isPresent() && mp.get().equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)) {
+                                final Object firstElement = asList.get(0);
+
+                                if (firstElement instanceof Element) {
+                                    for (int i = 0; i < asList.size(); i++)
+                                        asList.set(i, ReferenceFactory.detach((Element) asList.get(i)));
+                                } else if (firstElement instanceof AbstractTraverser) {
+                                    for (final Object item : asList)
+                                        ((AbstractTraverser) item).detach();
+                                }
+                            }
+
                             final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                                     .code(ResponseStatusCode.SUCCESS)
-                                    .result(IteratorUtils.asList(o)).create();
+                                    .result(asList).create();
 
                             // http server is sessionless and must handle commit on transactions. the commit occurs
                             // before serialization to be consistent with how things work for websocket based

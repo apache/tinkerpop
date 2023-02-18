@@ -77,7 +77,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
             context.write(null, buffer);
         }
         else {
-            List<?> asList = IteratorUtils.toList(value.properties());
+            final List<?> asList = IteratorUtils.toList(value.properties());
             context.write(asList, buffer);
         }
     }

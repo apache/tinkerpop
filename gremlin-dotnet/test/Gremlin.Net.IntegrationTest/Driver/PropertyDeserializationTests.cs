@@ -225,16 +225,10 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Equal(0.5, weight.Value);
         }
 
-        private static void VerifyEmptyProperties(Vertex? vertex)
+        private static void VerifyEmptyProperties(Element? element)
         {
-            Assert.NotNull(vertex);
-            Assert.True((vertex.Properties?.Length ?? 0) == 0);
-        }
-
-        private static void VerifyEmptyProperties(Edge? edge)
-        {
-            Assert.NotNull(edge);
-            Assert.True((edge.Properties?.Length ?? 0) == 0);
+            Assert.NotNull(element);
+            Assert.True((element.Properties?.Length ?? 0) == 0);
         }
 
         public static List<object[]> Serializers => new()

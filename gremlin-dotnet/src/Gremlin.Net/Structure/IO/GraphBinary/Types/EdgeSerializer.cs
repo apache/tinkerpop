@@ -47,8 +47,6 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
 
-            // !!! await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
-
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteNonNullableValueAsync(value.InV.Label, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.OutV.Id, stream, cancellationToken).ConfigureAwait(false);

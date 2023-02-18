@@ -56,7 +56,7 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
             context.write(null, buffer);
         }
         else {
-            List<?> asList = IteratorUtils.toList(value.properties());
+            final List<?> asList = IteratorUtils.toList(value.properties());
             context.write(asList, buffer);
         }
     }
