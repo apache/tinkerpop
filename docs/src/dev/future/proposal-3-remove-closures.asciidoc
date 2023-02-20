@@ -1152,7 +1152,7 @@ g.inject([1,2]).all([3])
 
 === `none()`
 
-Returns true if all items in the array `value` exist in the input
+Returns true if no items in the array `value` exist in the input
 
 ==== Signature(s)
 
