@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -229,24 +231,24 @@ public class GremlinScriptChecker {
         }
 
         /**
-         * Gets the value of the timeouts that were set using the {@code with()} source step. If there are multiple
-         * commands using this step, the timeouts are summed together.
+         * Gets the value of the timeouts that were set using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the timeouts are summed together.
          */
         public final Optional<Long> getTimeout() {
             return null == timeout ? Optional.empty() : Optional.of(timeout);
         }
 
         /**
-         * Gets the value of the request identifier supplied using the {@code with()} source step. If there are
-         * multiple commands using this step, the last usage should represent the id returned here.
+         * Gets the value of the request identifier supplied using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the last usage should represent the id returned here.
          */
         public Optional<String> getRequestId() {
             return null == requestId ? Optional.empty() : Optional.of(requestId);
         }
 
         /**
-         * Gets the value of the request identifier supplied using the {@code with()} source step. If there are
-         * multiple commands using this step, the last usage should represent the id returned here.
+         * Gets the value of the materializeProperties supplied using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the last usage should represent the value returned here.
          */
         public Optional<String> getMaterializeProperties() {
             return null == materializeProperties ? Optional.empty() : Optional.of(materializeProperties);
