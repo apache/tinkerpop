@@ -108,14 +108,15 @@ public class GremlinScriptChecker {
      * <pre>
      * From https://regex101.com/
      *
-     * \.with\((?:(?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|(?:(?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?))["']\)
+     * \.with\((((?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|(["']materializeProperties["'],["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))\)
      *
      * gm
-     * 1st Alternative \.with\((?:(?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
      * \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
      * with matches the characters with literally (case sensitive)
      * \( matches the character ( with index 4010 (2816 or 508) literally (case sensitive)
-     * Non-capturing group (?:(?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
+     * 1st Capturing Group (((?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|(["']materializeProperties["'],["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))
+     * 1st Alternative ((?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
+     * 2nd Capturing Group ((?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
      * Non-capturing group (?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT)
      * 1st Alternative ["']evaluationTimeout["']
      * Match a single character present in the list below ["']
@@ -145,7 +146,7 @@ public class GremlinScriptChecker {
      * Named Capture Group to (?<to>\d*)
      * \d matches a digit (equivalent to [0-9])
      * * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
-     * 2nd Capturing Group (:?L|l)?
+     * 4th Capturing Group (:?L|l)?
      * ? matches the previous token between zero and one times, as many times as possible, giving back as needed (greedy)
      * 1st Alternative :?L
      * : matches the character : with index 5810 (3A16 or 728) literally (case sensitive)
@@ -153,19 +154,19 @@ public class GremlinScriptChecker {
      * L matches the character L with index 7610 (4C16 or 1148) literally (case sensitive)
      * 2nd Alternative l
      * l matches the character l with index 10810 (6C16 or 1548) literally (case sensitive)
-     * 2nd Alternative (?:(?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?))["']\)
-     * Non-capturing group (?:(?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?))
-     * Non-capturing group (?:["']requestId["']|(?:Tokens\.)?REQUEST_ID)
-     * 1st Alternative ["']requestId["']
-     * 2nd Alternative (?:Tokens\.)?REQUEST_ID
+     * 2nd Alternative (["']materializeProperties["'],["'](?<mp>.*?)["']?)
+     * 5th Capturing Group (["']materializeProperties["'],["'](?<mp>.*?)["']?)
+     * Match a single character present in the list below ["']
+     * "' matches a single character in the list "' (case sensitive)
+     * materializeProperties matches the characters materializeProperties literally (case sensitive)
+     * Match a single character present in the list below ["']
+     * "' matches a single character in the list "' (case sensitive)
      * , matches the character , with index 4410 (2C16 or 548) literally (case sensitive)
      * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
-     * Named Capture Group rid (?<rid>.*?)
-     * . matches any character (except for line terminators)
-     * *? matches the previous token between zero and unlimited times, as few times as possible, expanding as needed (lazy)
+     * Named Capture Group mp (?<mp>.*?)
      * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
+     * 3rd Alternative ((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["'])
+     * 7th Capturing Group ((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["'])
      * \) matches the character ) with index 4110 (2916 or 518) literally (case sensitive)
      * </pre>
      */
