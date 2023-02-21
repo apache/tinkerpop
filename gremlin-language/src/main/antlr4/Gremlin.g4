@@ -1400,7 +1400,8 @@ genericLiteralMap
 
 // allow builds of Map that sorta make sense in the Gremlin context
 mapEntry
-    : stringLiteral COLON genericLiteral
+    : NEW COLON genericLiteral  // explicit for [new: true] - if we had other keywords like that maybe we'd group them up?
+    | stringLiteral COLON genericLiteral
     | numericLiteral COLON genericLiteral
     | (LPAREN traversalToken RPAREN | traversalToken) COLON genericLiteral
     | (LPAREN traversalDirection RPAREN | traversalDirection) COLON genericLiteral
