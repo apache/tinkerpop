@@ -54,7 +54,7 @@ public class GeneralLiteralVisitorTest {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(query));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.GenericLiteralRangeContext ctx = parser.genericLiteralRange();
-        return GenericLiteralVisitor.getInstance().visitGenericLiteralRange(ctx);
+        return GenericLiteralVisitor.instance().visitGenericLiteralRange(ctx);
     }
 
     @RunWith(Parameterized.class)
@@ -386,7 +386,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.IntegerLiteralContext ctx = parser.integerLiteral();
 
-            assertEquals(new BigInteger(expected, radix), GenericLiteralVisitor.getInstance().visitIntegerLiteral(ctx));
+            assertEquals(new BigInteger(expected, radix), GenericLiteralVisitor.instance().visitIntegerLiteral(ctx));
         }
     }
 
@@ -437,7 +437,7 @@ public class GeneralLiteralVisitorTest {
             final Constructor<?> ctor = clazz.getConstructor(String.class);
             final Object expectedValue = ctor.newInstance(expected);
 
-            assertEquals(expectedValue, GenericLiteralVisitor.getInstance().visitFloatLiteral(ctx));
+            assertEquals(expectedValue, GenericLiteralVisitor.instance().visitFloatLiteral(ctx));
         }
     }
 
@@ -475,7 +475,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.DateLiteralContext ctx = parser.dateLiteral();
 
-            final Date dt = (Date) GenericLiteralVisitor.getInstance().visitDateLiteral(ctx);
+            final Date dt = (Date) GenericLiteralVisitor.instance().visitDateLiteral(ctx);
             assertEquals(expected, dt);
         }
     }
@@ -502,7 +502,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.BooleanLiteralContext ctx = parser.booleanLiteral();
 
-            assertEquals(expected, GenericLiteralVisitor.getInstance().visitBooleanLiteral(ctx));
+            assertEquals(expected, GenericLiteralVisitor.instance().visitBooleanLiteral(ctx));
         }
     }
 
@@ -526,7 +526,10 @@ public class GeneralLiteralVisitorTest {
                     {"[from: 'source', Direction.to: 'target']", 2},
                     {"[(from): 'source', (Direction.to): 'target']", 2},
                     {"[\"name\":\"simba\",\"age\":32]", 2},
-                    {"[\"name\":\"simba\",\"age\":[2,3]]", 2}
+                    {"[\"name\":\"simba\",\"age\":[2,3]]", 2},
+                    {"[new: true]", 1},
+                    {"[new : true]", 1},
+                    {"['new' : true]", 1},
             });
         }
 
@@ -535,7 +538,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
-            final Object genericLiteral = GenericLiteralVisitor.getInstance().visitGenericLiteral(ctx);
+            final Object genericLiteral = GenericLiteralVisitor.instance().visitGenericLiteral(ctx);
 
             // verify type is Map
             assertThat(genericLiteral, instanceOf(Map.class));
@@ -553,7 +556,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("['world', 165, [12L, 0xA, 14.5, \"hello\"]]"));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
-            final Object genericLiteral = GenericLiteralVisitor.getInstance().visitGenericLiteral(ctx);
+            final Object genericLiteral = GenericLiteralVisitor.instance().visitGenericLiteral(ctx);
 
             // verify type is Object[]
             assertThat(genericLiteral, instanceOf(List.class));
@@ -596,7 +599,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("[]"));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
-            final Object genericLiteral = GenericLiteralVisitor.getInstance().visitGenericLiteral(ctx);
+            final Object genericLiteral = GenericLiteralVisitor.instance().visitGenericLiteral(ctx);
 
             // verify type is Object[]
             assertThat(genericLiteral, instanceOf(List.class));
@@ -616,7 +619,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.NullLiteralContext ctx = parser.nullLiteral();
-            assertEquals(null, GenericLiteralVisitor.getInstance().visitNullLiteral(ctx));
+            assertEquals(null, GenericLiteralVisitor.instance().visitNullLiteral(ctx));
         }
 
         @Test
@@ -627,7 +630,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.NanLiteralContext ctx = parser.nanLiteral();
 
-            final Object o = GenericLiteralVisitor.getInstance().visitNanLiteral(ctx);
+            final Object o = GenericLiteralVisitor.instance().visitNanLiteral(ctx);
             assertTrue(o instanceof Double);
             assertTrue(Double.isNaN((double) o));
         }
@@ -640,7 +643,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
 
-            assertEquals(Double.POSITIVE_INFINITY, GenericLiteralVisitor.getInstance().visitInfLiteral(ctx));
+            assertEquals(Double.POSITIVE_INFINITY, GenericLiteralVisitor.instance().visitInfLiteral(ctx));
         }
 
         @Test
@@ -651,7 +654,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
 
-            assertEquals(Double.POSITIVE_INFINITY, GenericLiteralVisitor.getInstance().visitInfLiteral(ctx));
+            assertEquals(Double.POSITIVE_INFINITY, GenericLiteralVisitor.instance().visitInfLiteral(ctx));
         }
 
         @Test
@@ -662,7 +665,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
 
-            assertEquals(Double.NEGATIVE_INFINITY, GenericLiteralVisitor.getInstance().visitInfLiteral(ctx));
+            assertEquals(Double.NEGATIVE_INFINITY, GenericLiteralVisitor.instance().visitInfLiteral(ctx));
         }
     }
 }
