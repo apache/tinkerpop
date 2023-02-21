@@ -23,11 +23,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/google/uuid"
 	"math"
 	"math/big"
 	"reflect"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Version 1.0
@@ -1049,11 +1050,11 @@ func durationReader(data *[]byte, i *int) (interface{}, error) {
 
 // {fully qualified id}{unqualified label}
 func vertexReader(data *[]byte, i *int) (interface{}, error) {
-	return vertexReaderNullByte(data, i, true)
+	return vertexReaderReadingProperties(data, i, true)
 }
 
 // {fully qualified id}{unqualified label}{fully qualified properties}
-func vertexReaderNullByte(data *[]byte, i *int, readProperties bool) (interface{}, error) {
+func vertexReaderReadingProperties(data *[]byte, i *int, readProperties bool) (interface{}, error) {
 	var err error
 	v := new(Vertex)
 	v.Id, err = readFullyQualifiedNullable(data, i, true)
@@ -1079,17 +1080,20 @@ func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	var err error
 	e := new(Edge)
 	e.Id, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	label, err := readUnqualified(data, i, stringType, false)
 	if err != nil {
 		return nil, err
 	}
 	e.Label = label.(string)
-	v, err := vertexReaderNullByte(data, i, false)
+	v, err := vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
 	}
 	e.InV = *v.(*Vertex)
-	v, err = vertexReaderNullByte(data, i, false)
+	v, err = vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
 	}
