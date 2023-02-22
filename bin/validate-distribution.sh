@@ -23,6 +23,13 @@
 # published KEYS file in order for that aspect of the validation
 # to pass.
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # Some quality of life improvements for mac users
+  # Note it is assumed that GNU grep has been installed via `brew install grep`
+  PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
+  sha512sum() { shasum -a 512 "$@"; }
+fi
+
 SCRIPT_DIR=$(cd `dirname $0` ; pwd)
 TMP_DIR="/tmp/tpdv"
 
@@ -147,7 +154,7 @@ else
   echo "OK"
 fi
 echo -n "* building project ... "
-touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
+touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript,gremlin-go}/.glv
 LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
 mvn clean install -q > "${LOG_FILE}" 2>&1 || {
   echo "failed"

@@ -612,7 +612,8 @@ list = g.V().has("person","name","marko").out("knows").toList()
 ----
 // script
 client, err := NewClient("ws://localhost:8182/gremlin")
-resultSet, err := client.Submit("g.V().has('person','name',name).out('knows')", map[string]interface{}{"name": "marko"})
+resultSet, err := client.SubmitWithOptions("g.V().has('person','name',name).out('knows')",
+	new(RequestOptionsBuilder).AddBinding("name", "marko").Create())
 result, err := resultSet.All()
 
 // bytecode
