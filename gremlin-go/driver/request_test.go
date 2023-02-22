@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"testing"
 
@@ -29,22 +28,39 @@ import (
 
 func TestRequest(t *testing.T) {
 	t.Run("Test makeStringRequest() with custom requestID", func(t *testing.T) {
-		requestId := fmt.Sprintf("%v", uuid.New())
-		r := makeStringRequest("g.V()", "g", "", map[string]interface{}{"requestId": requestId})
-		assert.Equal(t, requestId, fmt.Sprintf("%v", r.requestID))
+		requestId := uuid.New()
+		r := makeStringRequest("g.V()", "g", "",
+			new(RequestOptionsBuilder).SetRequestId(requestId).Create())
+		assert.Equal(t, requestId, r.requestID)
 	})
 
 	t.Run("Test makeStringRequest() with no bindings", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "")
+		r := makeStringRequest("g.V()", "g", "", *new(RequestOptions))
 		assert.NotNil(t, r.requestID)
 		assert.NotEqual(t, uuid.Nil, r.requestID)
 	})
 
 	t.Run("Test makeStringRequest() with custom evaluationTimeout", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "", map[string]interface{}{"evaluationTimeout": 1234})
+		r := makeStringRequest("g.V()", "g", "",
+			new(RequestOptionsBuilder).SetEvaluationTimeout(1234).Create())
 		assert.NotNil(t, r.requestID)
 		assert.NotEqual(t, uuid.Nil, r.requestID)
-		bindings := r.args["bindings"].(map[string]interface{})
-		assert.Equal(t, 1234, bindings["evaluationTimeout"])
+		assert.Equal(t, 1234, r.args["evaluationTimeout"])
+	})
+
+	t.Run("Test makeStringRequest() with custom batchSize", func(t *testing.T) {
+		r := makeStringRequest("g.V()", "g", "",
+			new(RequestOptionsBuilder).SetBatchSize(123).Create())
+		assert.NotNil(t, r.requestID)
+		assert.NotEqual(t, uuid.Nil, r.requestID)
+		assert.Equal(t, 123, r.args["batchSize"])
+	})
+
+	t.Run("Test makeStringRequest() with custom userAgent", func(t *testing.T) {
+		r := makeStringRequest("g.V()", "g", "",
+			new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create())
+		assert.NotNil(t, r.requestID)
+		assert.NotEqual(t, uuid.Nil, r.requestID)
+		assert.Equal(t, "TestUserAgent", r.args["userAgent"])
 	})
 }

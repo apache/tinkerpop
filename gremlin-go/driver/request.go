@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -37,8 +36,7 @@ const sessionProcessor = "session"
 const stringOp = "eval"
 const stringProcessor = ""
 
-// Bindings should be a key-object map (different from Binding class in Bytecode).
-func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, bindings ...map[string]interface{}) (req request) {
+func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
 	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": stringGremlin,
@@ -50,13 +48,27 @@ func makeStringRequest(stringGremlin string, traversalSource string, sessionId s
 		newProcessor = sessionProcessor
 		newArgs["session"] = sessionId
 	}
-	requestId := uuid.New()
-	if len(bindings) > 0 {
-		newArgs["bindings"] = bindings[0]
-		customRequestId, err := uuid.Parse(fmt.Sprintf("%v", bindings[0]["requestId"]))
-		if err == nil {
-			requestId = customRequestId
-		}
+	var requestId uuid.UUID
+	if requestOptions.requestID == uuid.Nil {
+		requestId = uuid.New()
+	} else {
+		requestId = requestOptions.requestID
+	}
+
+	if requestOptions.bindings != nil {
+		newArgs["bindings"] = requestOptions.bindings
+	}
+
+	if requestOptions.evaluationTimeout != 0 {
+		newArgs["evaluationTimeout"] = requestOptions.evaluationTimeout
+	}
+
+	if requestOptions.batchSize != 0 {
+		newArgs["batchSize"] = requestOptions.batchSize
+	}
+
+	if requestOptions.userAgent != "" {
+		newArgs["userAgent"] = requestOptions.userAgent
 	}
 
 	return request{
