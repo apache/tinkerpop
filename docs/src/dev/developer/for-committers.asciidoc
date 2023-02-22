@@ -70,6 +70,24 @@ On the day of the meeting, the meeting organizer will create a Google Hangout (o
 At that point, all who are interested can attend.  Meeting minutes should be
 taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
 
+== Media Content Submission
+
+Tinkerpop hosts link:https://www.twitch.tv/apachetinkerpop[Twitch streams] for various knowledge sharing and demos,
+as well as a link:https://www.youtube.com/@apachetinkerpop[YouTube channel] to upload video contents.
+Everyone in the community is welcome to submit contents to stream or upload, abiding the following process:
+
+1. Send a DISCUSS thread to the dev mailing list that describes the topic, the platform it goes to, who will present it and a date to do it.
+2. If the proposal comes from someone who isn't an official TinkerPop committer, then they must obtain a committer "sponsor",
+who is responsible for and endorses the content. (This can be asked on the DISCUSS thread).
+3. The proposal must achieve lazy consensus at minimum.
+
+In terms of content, Tinkerpop currently hosts two types, one is individual topics, for which each content would require a DISCUSS thread.
+Another is a class of topics, which is a series of related contents defined under one set of operations
+(e.g. the Contributorcast Twitch chat series running post-releases), and such class would require just one DISCUSS thread laying out
+the content and rules upfront.
+
+After obtaining approval from the DISCUSS thread, start planning and promoting your stream/video!
+
 == Release Notes
 
 There is a two-pronged approach to maintaining the change log and preparing the release notes.
