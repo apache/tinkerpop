@@ -34,7 +34,7 @@ execute.
 IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment>> is setup
 properly for release and includes a `.glv` files in the various GLV modules, so that they all build in full.
 
-TIP: It is recommended to carry out the release process on Linux.
+WARNING: The release process needs to be conducted in a Linux environment.
 
 == Development Versions
 
