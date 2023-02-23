@@ -414,6 +414,7 @@ limitations under the License.
                         <exclude>**/*.graffle</exclude>
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/mockito-extensions/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/incorrect-traversals.txt</exclude>
                         <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/groovy/plugin/script-customizer-*.groovy</exclude>
