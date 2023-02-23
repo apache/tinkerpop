@@ -158,7 +158,7 @@ public class GremlinScriptCheckerTest {
     public void shouldIdentifyRequestIdAsTokenKeyWithoutClassName() {
         assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
                 getRequestId().get());
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
+        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(REQUEST_ID, 'db024fca-ed15-4375-95de-4c6106aef895').with(true).V().out('knows')").
                 getRequestId().get());
     }
 
@@ -213,6 +213,22 @@ public class GremlinScriptCheckerTest {
     @Test
     public void shouldIdentifyMaterializePropertiesWithEmbeddedQuote() {
         assertEquals("te's\"t", GremlinScriptChecker.parse("g.with('materializeProperties', \"te's\"t\").with(true).V().out('knows')").
+                getMaterializeProperties().get());
+    }
+
+    @Test
+    public void shouldIdentifyMaterializePropertiesAsTokenKeyWithoutClassName() {
+        assertEquals("all", GremlinScriptChecker.parse("g.with(ARGS_MATERIALIZE_PROPERTIES, 'all').with(true).V().out('knows')").
+                getMaterializeProperties().get());
+        assertEquals("all", GremlinScriptChecker.parse("g.with(ARGS_MATERIALIZE_PROPERTIES, \"all\").with(true).V().out('knows')").
+                getMaterializeProperties().get());
+    }
+
+    @Test
+    public void shouldIdentifyMaterializePropertiesAsTokenKey() {
+        assertEquals("all", GremlinScriptChecker.parse("g.with(Tokens.ARGS_MATERIALIZE_PROPERTIES, 'all').with(true).V().out('knows')").
+                getMaterializeProperties().get());
+        assertEquals("all", GremlinScriptChecker.parse("g.with(Tokens.ARGS_MATERIALIZE_PROPERTIES, \"all\").with(true).V().out('knows')").
                 getMaterializeProperties().get());
     }
 
