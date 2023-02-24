@@ -50,4 +50,14 @@ public class DriverRemoteConnectionTest {
         assertEquals(100000L, options.getTimeout().get().longValue());
         assertEquals("test", options.getUserAgent().get());
     }
+
+    @Test
+    public void shouldBuildRequestOptionsWithNumerics() {
+        final RequestOptions options = DriverRemoteConnection.getRequestOptions(
+                g.with(Tokens.ARGS_BATCH_SIZE, 100).
+                  with(Tokens.ARGS_EVAL_TIMEOUT, 1000).
+                  V().asAdmin().getBytecode());
+        assertEquals(Integer.valueOf(100), options.getBatchSize().get());
+        assertEquals(Long.valueOf(1000), options.getTimeout().get());
+    }
 }
