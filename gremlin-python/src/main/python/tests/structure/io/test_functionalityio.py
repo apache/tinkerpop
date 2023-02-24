@@ -53,6 +53,14 @@ def test_edge(remote_connection):
     assert edge.properties[0].value == 0.5
 
 
+def test_edge_without_properties(remote_connection):
+    g = Graph().traversal().withRemote(remote_connection)
+    edge = g.with_('materializeProperties', 'tokens').E(7).next()
+    assert edge.id == 7
+    # empty array for GraphBinary and missing field for GraphSON
+    assert edge.properties is None or len(edge.properties) == 0
+
+
 def test_timestamp(remote_connection):
     g = Graph().traversal().withRemote(remote_connection)
     ts = timestamp(1481750076295 / 1000)

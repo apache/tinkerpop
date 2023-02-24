@@ -29,6 +29,28 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Properties on Elements
+
+By default properties on Elements are now returned. 
+If you don't need to get properties then you can do one of the following ways:
+
+* Configure server to not return properties, update groovy configuration file with `ReferenceElementStrategy`.
+Also this method is better to use with 3.5/3.6 drivers.
+For example 
+[source,groovy]
+----
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
+----
+
+* Use config per request `with('materializeProperties', 'tokens')`
+[source,csharp]
+----
+g.With(Tokens.ArgMaterializeProperties, "tokens").V(1).Next()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
+
+
 ==== Gremlin.NET: Nullable Annotations
 
 Gremlin.NET now uses link:https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-variable-annotations[nullable annotations]
