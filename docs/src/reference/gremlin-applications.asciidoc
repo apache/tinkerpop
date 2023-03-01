@@ -2260,11 +2260,11 @@ To manage properties for each request you can use <<configuration-steps-with,wit
 g.with('materializeProperties', 'tokens').V()
 ----
 
-The `tokens` value for the `materializeProperties` means that need to return only `id` and `label`. Another option
+The `tokens` value for the `materializeProperties` means that only `id` and `label` should be returned. Another option
 `all` used to indicate that all properties should be returned and is the default value.
 
 In some cases it can be inconvenient to load vertices with properties due to fat data or for compatibility reasons.
-That can be solved by utilize `ReferenceElementStrategy` when creating the out-of-the-box `GraphTraversalSource`.
+That can be solved by utilizing `ReferenceElementStrategy` when creating the out-of-the-box `GraphTraversalSource`.
 As the name suggests, this means that elements will be detached by reference and will therefore not have properties 
 included. The relevant configuration from the Gremlin Server initialization script looks like this:
 
@@ -2274,7 +2274,7 @@ globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementS
 ----
 
 This configuration is global to Gremlin Server and therefore all methods of connection will always return elements
-without properties. If this strategy is not included, then elements returned with properties.
+without properties. If this strategy is not included, then elements will be returned with properties.
 
 Ultimately, the detachment model should have little impact to Gremlin usage if the best practice of specifying only
 the data required by the application is adhered to. 
