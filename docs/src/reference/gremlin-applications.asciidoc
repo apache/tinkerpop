@@ -2261,7 +2261,7 @@ g.with('materializeProperties', 'tokens').V()
 ----
 
 The `tokens` value for the `materializeProperties` means that only `id` and `label` should be returned. Another option
-`all` used to indicate that all properties should be returned and is the default value.
+Another option, `all`, can be used to indicate that all properties should be returned and is the default value.
 
 In some cases it can be inconvenient to load vertices with properties due to fat data or for compatibility reasons.
 That can be solved by utilizing `ReferenceElementStrategy` when creating the out-of-the-box `GraphTraversalSource`.
