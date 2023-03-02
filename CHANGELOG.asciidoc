@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `SubmitWithOptions()` methods to `Client` and `DriverRemoteConnection` in Go GLV to pass `RequestOptions` to the server.
 * Fixed bug in which `gremlin-server` would not respond to clients if an `Error` was thrown during bytecode traversals.
 * Changed `with()` configuration for `ARGS_BATCH_SIZE` and `ARGS_EVAL_TIMEOUT` to be more forgiving on the type of `Number` used for the value.
+* Changed `gremlin-console` to add imports via an ImportCustomizer to reduce time spent resolving imports.
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
