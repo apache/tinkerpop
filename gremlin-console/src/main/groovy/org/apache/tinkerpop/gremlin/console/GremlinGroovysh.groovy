@@ -46,6 +46,8 @@ class GremlinGroovysh extends Groovysh {
         this.mediator = mediator
     }
 
+    public CompilerConfiguration getCompilerConfiguration() { return compilerConfig }
+
     protected List parseLine(final String line) {
         assert line != null
         return line.trim().tokenize()
