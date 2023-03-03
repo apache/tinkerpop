@@ -38,6 +38,9 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Reduces dependency from `gremlin-server` onto `gremlin-driver` to a test scope only.
 * Added `RequestOptions` and `RequestOptionsBuilder` types to Go GLV to encapsulate per-request settings and bindings.
 * Added `SubmitWithOptions()` methods to `Client` and `DriverRemoteConnection` in Go GLV to pass `RequestOptions` to the server.
+* Changed default behavior for returning properties on Elements for OLTP queries. Properties now returned.
+* Detachment is no longer performed in `TraverserIterator`.
+* Added `materializeProperties` request option to control properties serialization.
 
 == TinkerPop 3.6.0 (Tinkerheart)
 

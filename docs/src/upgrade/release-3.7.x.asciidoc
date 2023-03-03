@@ -33,22 +33,22 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 ===== Introduction
 
-By default properties on Elements are now returned for OLTP requests. Gremlin Server 3.5 and 3.6 does not return properties by default. 
-More hitory details about serialization of properties can be found in the link:https://lists.apache.org/thread/xltcon4zxnwq4fyw2r2126syyrqm8spy[Stephen's post].
+By default properties on `Element` are now returned for OLTP requests. Gremlin Server 3.5 and 3.6 can return properties only in some special cases. 
+More history details about serialization of properties can be found in the link:https://lists.apache.org/thread/xltcon4zxnwq4fyw2r2126syyrqm8spy[Stephen's post].
 
 ===== Behavior for OLAP queries
 
-Queries still won't return Properties on Elements. The main reason for this is performance considerations.
-If you need to get a properties, then this can be explicitly configured with `HaltedTraverserStrategy`
+Queries still won't return properties on Elements. The main reason for this is performance considerations.
+If you need to get a property, then this can be explicitly configured with `HaltedTraverserStrategy`
 
 [source,java]
 ----
   g.withComputer().withStrategies(HaltedTraverserFactoryStrategy.detached())
 ----
 
-===== Output compare for Gremlin Server 3.5/3.6 and 3.7
+===== Output comparison for Gremlin Server 3.5/3.6 and 3.7
 
-Let's take a closer look at Javascript GLV code example in 3.6 and 3.7
+Let's take a closer look at a Javascript GLV code example in 3.6 and 3.7:
 
 [source,javascript]
 ----
@@ -74,10 +74,10 @@ For 3.7:
 
 ===== Enabling the previous behavior
 
-GLV's 3.5/3.6  will not be able to work correctly with Properties on Elements. If you don't need to get properties then you can do one of the following ways:
+The GLVs in 3.5/3.6 will not be able to work correctly with properties on Elements. If you don't need to get properties then you can do one of the following:
 
-* Configure Gremlin Server to not return properties, update Gremlin Server initialization script with `ReferenceElementStrategy`.
-Also this method is better to use with 3.5/3.6 drivers.
+* To configure Gremlin Server to not return properties, update Gremlin Server initialization script with `ReferenceElementStrategy`.
+This method is better to use with 3.5/3.6 GLVs.
 For example 
 [source,groovy]
 ----
@@ -87,7 +87,7 @@ globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementS
 * Use config per request `with('materializeProperties', 'tokens')`
 [source,csharp]
 ----
-g.With(Tokens.ArgMaterializeProperties, "tokens").V(1).Next()
+g.With("materializeProperties", "tokens").V(1).Next()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
@@ -95,7 +95,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
 
 ==== Gremlin.NET: Nullable Annotations
 
-Gremlin.NET now uses link:https://learn.microsoft.com/en-us/dotnet/sharp/nullable-references#nullable-variable-annotations[nullable annotations]
+Gremlin.NET now uses link:https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-variable-annotations[nullable annotations]
 to state wether an argument or a return value can be null or not. This should make it much less likely to get a
 `NullReferenceException` from Gremlin.NET.
 

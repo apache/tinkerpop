@@ -2250,9 +2250,9 @@ to as "detached elements" and cases where properties are not included are "refer
 With the type of request and detachment model in mind, it is now possible to discuss how best to consider element
 properties in relation to them all in concert.
 
-By default, Gremlin Server sample configurations return all properties.
+By default, Gremlin Server configuration returns all properties.
 
-To manage properties for each request you can use <<configuration-steps-with,with()>> configuration option 
+To manage properties for each request you can use the <<configuration-steps-with,with()>> configuration option 
 `materializeProperties`
 
 [source,groovy]
@@ -2260,10 +2260,10 @@ To manage properties for each request you can use <<configuration-steps-with,wit
 g.with('materializeProperties', 'tokens').V()
 ----
 
-The `tokens` value for the `materializeProperties` means that only `id` and `label` should be returned. Another option
+The `tokens` value for the `materializeProperties` means that only `id` and `label` should be returned.
 Another option, `all`, can be used to indicate that all properties should be returned and is the default value.
 
-In some cases it can be inconvenient to load vertices with properties due to fat data or for compatibility reasons.
+In some cases it can be inconvenient to load Elements with properties due to large data size or for compatibility reasons.
 That can be solved by utilizing `ReferenceElementStrategy` when creating the out-of-the-box `GraphTraversalSource`.
 As the name suggests, this means that elements will be detached by reference and will therefore not have properties 
 included. The relevant configuration from the Gremlin Server initialization script looks like this:
