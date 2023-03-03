@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.console;
 import java.util.prefs.PreferenceChangeEvent
 import java.util.prefs.PreferenceChangeListener
 
-import org.codehaus.groovy.tools.shell.Groovysh
+import org.apache.groovy.groovysh.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
 public class Preferences {

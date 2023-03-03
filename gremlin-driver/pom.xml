@@ -158,8 +158,8 @@ limitations under the License.
                                     <exclude>ch.qos.logback:logback-classic</exclude>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                     <exclude>org.slf4j:jcl-over-slf4j</exclude>
-                                    <exclude>org.codehaus.groovy:groovy</exclude>
-                                    <exclude>org.codehaus.groovy:groovy-json</exclude>
+                                    <exclude>org.apache.groovy:groovy</exclude>
+                                    <exclude>org.apache.groovy:groovy-json</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>

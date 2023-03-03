@@ -967,7 +967,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("def class C { def C getC(){return this}}; new C()").all().join();
+            client.submit("class C { def C getC(){return this}}; new C()").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
@@ -1133,7 +1133,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProvideBetterExceptionForMethodCodeTooLarge() {
-        final int numberOfParameters = 4000;
+        final int numberOfParameters = 6000;
         final Map<String,Object> b = new HashMap<>();
 
         // generate a script with a ton of bindings usage to generate a "code too large" exception
