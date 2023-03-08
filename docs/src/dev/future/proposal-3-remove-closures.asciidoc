@@ -18,12 +18,7 @@ limitations under the License.
 
 === Status
 
-In Discussion
-
-*Action Items*
-
-* Look at defining the semantics around type exception
-* Look at semantics around support for Unicode (talk to Greg)
+This proposal has been accepted through a post to the TinkerPop Dev List and is ready to begin implementaion.
 
 === Motivation
 
