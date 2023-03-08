@@ -217,7 +217,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                             logger.debug("Transforming result of request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
                                     requestArguments.getValue0(), requestArguments.getValue1(), o, Thread.currentThread().getName());
-                            // todo: move common detachment code to helper
+
                             final Optional<String> mp = GremlinScriptChecker.parse(requestArguments.getValue0()).getMaterializeProperties();
                             final List asList = IteratorUtils.asList(o);
 

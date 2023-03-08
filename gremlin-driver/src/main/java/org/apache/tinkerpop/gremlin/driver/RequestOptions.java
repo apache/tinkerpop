@@ -95,7 +95,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private UUID overrideRequestId = null;
         private String userAgent = null;
-        private String materializeProperties = "";
+        private String materializeProperties = null;
         private String language = null;
         private boolean maintainStateAfterException = false;
 

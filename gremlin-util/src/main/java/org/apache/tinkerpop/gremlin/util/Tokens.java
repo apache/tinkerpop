@@ -88,7 +88,7 @@ public final class Tokens {
      * The name of the value denoting that all properties of Element should be returned.
      * Should be used with {@code ARGS_MATERIALIZE_PROPERTIES}
      */
-    
+
     public static final String MATERIALIZE_PROPERTIES_ALL = "all";
     /**
      * The name of the value denoting that only `ID` and `Label` of Element should be returned.
