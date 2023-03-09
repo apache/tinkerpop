@@ -22,12 +22,13 @@ package gremlingo
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 )
 
 func TestClient(t *testing.T) {
@@ -44,9 +45,10 @@ func TestClient(t *testing.T) {
 				settings.TlsConfig = testNoAuthTlsConfig
 				settings.AuthInfo = testNoAuthAuthInfo
 			})
-		defer client.Close()
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
+		defer client.Close()
+
 		resultSet, err := client.SubmitWithOptions("g.V().count()", *new(RequestOptions))
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
@@ -87,7 +89,7 @@ func TestClient(t *testing.T) {
 				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
-		defer client.Close()
+
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
