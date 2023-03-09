@@ -1000,7 +1000,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
             assertEquals(1, r.size());
 
-            final Vertex v = r.get(0).get(ReferenceVertex.class);
+            final Vertex v = r.get(0).get(DetachedVertex.class);
             assertEquals(1, v.id());
             assertEquals("person", v.label());
         } finally {
