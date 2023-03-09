@@ -90,6 +90,10 @@ globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementS
 g.With("materializeProperties", "tokens").V(1).Next()
 ----
 
+===== Possible issues
+
+ReferenceElement-type objects are no longer returned - you get a DetachedElement from remote requests. If you not have been coding to the `Element` interfaces then need to update the code with use the interfaces like `Vertex` and `Edge`.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
 
 
