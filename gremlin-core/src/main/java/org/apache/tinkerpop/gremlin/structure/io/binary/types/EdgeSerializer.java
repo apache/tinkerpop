@@ -60,7 +60,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
             properties.iterator().forEachRemaining(p -> propertiesAsMap.put(p.key(), p));
         }
 
-        return new DetachedEdge(id, label, propertiesAsMap, inVId, inVLabel, outVId, outVLabel);
+        return new DetachedEdge(id, label, propertiesAsMap, outVId, outVLabel, inVId, inVLabel);
     }
 
     @Override
