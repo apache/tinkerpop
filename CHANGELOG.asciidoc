@@ -41,6 +41,9 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Changed default behavior for returning properties on Elements for OLTP queries. Properties now returned.
 * Detachment is no longer performed in `TraverserIterator`.
 * Added `materializeProperties` request option to control properties serialization.
+* Modified serializers in to handle serialization and deserialization of properties.
+* Added functional properties to the graph structure components for .NET, GO and Python.
+* Modified the GremlinScriptChecker to extract the `materializeProperties` request option.
 
 == TinkerPop 3.6.0 (Tinkerheart)
 
