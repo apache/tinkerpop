@@ -44,6 +44,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Modified serializers in to handle serialization and deserialization of properties.
 * Added functional properties to the graph structure components for .NET, GO and Python.
 * Modified the GremlinScriptChecker to extract the `materializeProperties` request option.
+* Neo4jVertexProperty no longer throw Exception for `properties()`, but return empty iterable.
 
 == TinkerPop 3.6.0 (Tinkerheart)
 

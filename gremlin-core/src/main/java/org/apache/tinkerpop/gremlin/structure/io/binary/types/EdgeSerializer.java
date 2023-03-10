@@ -28,9 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -54,13 +52,8 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
         context.read(buffer);
 
         final List<Property> properties = context.read(buffer);
-        final Map<String, Object> propertiesAsMap = new HashMap<>();
 
-        if (properties != null) {
-            properties.iterator().forEachRemaining(p -> propertiesAsMap.put(p.key(), p));
-        }
-
-        return new DetachedEdge(id, label, propertiesAsMap, outVId, outVLabel, inVId, inVLabel);
+        return new DetachedEdge(id, label, properties, outVId, outVLabel, inVId, inVLabel);
     }
 
     @Override

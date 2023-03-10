@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
@@ -56,10 +58,10 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Parameterized.Parameters
     public static Collection serializers() {
-        return Arrays.asList(new Object[][] {
-                { new GraphBinaryMessageSerializerV1() },
-                { new GraphSONMessageSerializerV3d0() },
-                { new GraphSONMessageSerializerV2d0() }
+        return Arrays.asList(new Object[][]{
+                {new GraphBinaryMessageSerializerV1()},
+                {new GraphSONMessageSerializerV3d0()},
+                {new GraphSONMessageSerializerV2d0()}
         });
     }
 
@@ -67,8 +69,12 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void openConnection() {
         cluster = TestClientFactory.build().serializer(serializer).create();
         client = cluster.connect();
+
+        // VertexProperty related test tun on crew graph
+        final String remoteTraversalSourceName = name.getMethodName().contains("VertexProperty") ? "gcrew" : "gmodern";
+
         g = AnonymousTraversalSource.traversal().withRemote(
-                DriverRemoteConnection.using(cluster, "gmodern"));
+                DriverRemoteConnection.using(cluster, remoteTraversalSourceName));
     }
 
     @After
@@ -132,18 +138,63 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         assertEquals(Collections.emptyIterator(), edge.properties());
     }
 
-    private void assertVertexWithProperties(final Vertex vertex) {
-        assertEquals(1,  vertex.id());
+    @Test
+    public void shouldDeserializeVertexPropertyPropertiesForScripts() {
+        final Vertex vertex = client.submit("gcrew.V(7)").one().getVertex();
 
-        assertEquals(2,  IteratorUtils.count(vertex.properties()));
+        assertVertexWithVertexProperties(vertex);
+    }
+
+    @Test
+    public void shouldSkipVertexPropertyPropertiesForScripts() {
+        final Vertex vertex = client.submit("gcrew.with('materializeProperties', 'tokens').V(7)").one().getVertex();
+
+        assertEquals(Collections.emptyIterator(), vertex.properties());
+    }
+
+    @Test
+    public void shouldDeserializeVertexPropertyPropertiesForBytecode() {
+        final Vertex vertex = g.V(7).next();
+
+        assertVertexWithVertexProperties(vertex);
+    }
+
+    @Test
+    public void shouldSkipVertexPropertyPropertiesForBytecode() {
+        final Vertex vertex = g.with("materializeProperties", "tokens").V(7).next();
+
+        assertEquals(Collections.emptyIterator(), vertex.properties());
+    }
+
+    // asserted vertex 7 from crew graph
+    private void assertVertexWithVertexProperties(final Vertex vertex) {
+        assertEquals(7, vertex.id());
+
+        assertEquals(4, IteratorUtils.count(vertex.properties()));
+        assertEquals(3, IteratorUtils.count(vertex.properties("location")));
+        final VertexProperty vertexProperty = vertex.properties("location").next();
+        assertEquals("centreville", vertexProperty.value());
+        assertEquals(2, IteratorUtils.count(vertexProperty.properties()));
+        final Property vertexPropertyPropertyStartTime = vertexProperty.property("startTime");
+        assertEquals(1990, vertexPropertyPropertyStartTime.value());
+        final Property vertexPropertyPropertyEndTime = vertexProperty.property("endTime");
+        assertEquals(2000, vertexPropertyPropertyEndTime.value());
+    }
+
+    // asserted vertex 1 from modern graph
+    private void assertVertexWithProperties(final Vertex vertex) {
+        assertEquals(1, vertex.id());
+
+        assertEquals(2, IteratorUtils.count(vertex.properties()));
         assertEquals("marko", vertex.property("name").value());
         assertEquals(29, vertex.property("age").value());
     }
 
+    // asserted edge 7 from modern graph
     private void assertEdgeWithProperties(final Edge edge) {
-        assertEquals(7,  edge.id());
+        assertEquals(7, edge.id());
 
-        assertEquals(1,  IteratorUtils.count(edge.properties()));
+        assertEquals(1, IteratorUtils.count(edge.properties()));
         assertEquals(0.5, edge.property("weight").value());
     }
 }

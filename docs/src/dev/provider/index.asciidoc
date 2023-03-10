@@ -194,7 +194,8 @@ The following bullets provide some tips to consider when implementing the struct
 * `VertexProperty`
 ** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
 can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
-meta-properties, the `VertexProperty` needs to be implemented as an `Element`.
+meta-properties, the `VertexProperty` needs to be implemented as an `Element`. `VertexProperty` should return empty
+iterable for properties if not support meta-properties.
 
 [[olap-implementations]]
 ==== OLAP Implementations

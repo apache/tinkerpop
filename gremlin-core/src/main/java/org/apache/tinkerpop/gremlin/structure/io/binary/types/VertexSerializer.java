@@ -46,13 +46,8 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
         final Object id = context.read(buffer);
         final String label = context.readValue(buffer, String.class, false);
         final List<VertexProperty> properties = context.read(buffer);
-        final Map<String, Object> propertiesAsMap = new HashMap<>();
 
-        if (properties != null) {
-            properties.iterator().forEachRemaining(p-> propertiesAsMap.put(p.label(), Collections.singletonList(p)));
-        }
-
-        return new DetachedVertex(id, label, propertiesAsMap);
+        return new DetachedVertex(id, label, properties);
     }
 
     @Override

@@ -86,6 +86,19 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         }
     }
 
+    public DetachedVertex(final Object id, final String label, final List<VertexProperty> properties) {
+        super(id, label);
+        if (properties != null && !properties.isEmpty()) {
+            this.properties = new HashMap<>();
+            properties.iterator().forEachRemaining(property -> {
+                if (!this.properties.containsKey(property.key())) {
+                    this.properties.put(property.key(), new ArrayList());
+                }
+                this.properties.get(property.key()).add(property);
+            });
+        }
+    }
+
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
         throw Element.Exceptions.propertyAdditionNotSupported();

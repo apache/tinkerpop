@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -131,7 +132,11 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
     @Override
     void internalAddProperty(final Property p) {
         if (null == properties) properties = new HashMap<>();
-        this.properties.put(p.key(), Collections.singletonList(p));
+
+        if(!this.properties.containsKey(p.key())) {
+            this.properties.put(p.key(), new ArrayList());
+        }
+        this.properties.get(p.key()).add(p);
     }
 
     public void internalSetVertex(final DetachedVertex vertex) {

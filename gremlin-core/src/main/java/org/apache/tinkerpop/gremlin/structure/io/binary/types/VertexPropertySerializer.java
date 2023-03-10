@@ -50,10 +50,10 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
         context.read(buffer);
 
         final List<Property> properties = context.read(buffer);
-
         if (properties != null && !properties.isEmpty()) {
             for (Property p : properties) builder.addProperty(p);
         }
+
         return builder.create();
     }
 
@@ -66,10 +66,7 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
         // we don't serialize the parent vertex, let's hold a place for it
         context.write(null, buffer);
 
-        // Neo4jVertexProperty throw UnsupportedOperationException for properties,
-        // so for now VertexProperty will be serialized without inner properties
-        // final List<?> asList = IteratorUtils.toList(value.properties());
-        // context.write(asList, buffer);
-        context.write(null, buffer);
+        final List<?> asList = IteratorUtils.toList(value.properties());
+        context.write(asList, buffer);
     }
 }
