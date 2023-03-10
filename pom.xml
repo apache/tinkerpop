@@ -198,6 +198,28 @@ limitations under the License.
         <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
+
+        <!--
+        These options are necessary to run and pass the tests with JDK 17. There are some unexported APIs that we need
+        access to and we still rely on libraries that use deep reflection (notably Kryo). We can probably remove this
+        in the future when we don't need reflection and we turn this into a JPMS module.
+        -->
+        <jdk17JvmArgs>
+            -XX:+IgnoreUnrecognizedVMOptions
+            --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-exports=java.base/sun.security.x509=ALL-UNNAMED
+            --add-exports=java.base/sun.security.action=ALL-UNNAMED
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.nio=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.base/java.net=ALL-UNNAMED
+        </jdk17JvmArgs>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -224,7 +246,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[1.8,12)</version>
+                                    <version>[1.8,18)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.5.3,)</version>
@@ -582,6 +604,7 @@ limitations under the License.
                             -Dlog4j.configuration=${log4j-test.properties}
                             -Dbuild.dir=${project.build.directory}
                             -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                            ${jdk17JvmArgs}
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <excludes>
@@ -610,6 +633,7 @@ limitations under the License.
                                     -Dhost=localhost -Dport=8182
                                     -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                     -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                                    ${jdk17JvmArgs}
                                 </argLine>
                                 <forkCount>1</forkCount>
                                 <reuseForks>false</reuseForks>
@@ -875,7 +899,7 @@ limitations under the License.
         <profile>
             <id>jdk11</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>[11,18)</jdk>
             </activation>
             <properties>
                 <suresafeArgs>--illegal-access=permit</suresafeArgs>
@@ -1862,6 +1886,7 @@ limitations under the License.
                                 -Dlog4j.configuration=${log4j-silent.properties}
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 -Djava.net.preferIPv4Stack=true ${suresafeArgs}
+                                ${jdk17JvmArgs}
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
