@@ -93,7 +93,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void shouldSkipVertexPropertiesForScripts() {
         final Vertex vertex = client.submit("gmodern.with('materializeProperties', 'tokens').V(1)").one().getVertex();
 
-        assertEquals(Collections.emptyIterator(), vertex.properties());
+        assertVertexWithoutProperties(vertex);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void shouldSkipVertexPropertiesForBytecode() {
         final Vertex vertex = g.with("materializeProperties", "tokens").V(1).next();
 
-        assertEquals(Collections.emptyIterator(), vertex.properties());
+        assertVertexWithoutProperties(vertex);
     }
 
     @Test
@@ -121,7 +121,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void shouldSkipEdgePropertiesForScripts() {
         final Edge edge = client.submit("gmodern.with('materializeProperties', 'tokens').E(7)").one().getEdge();
 
-        assertEquals(Collections.emptyIterator(), edge.properties());
+        assertEdgeWithoutProperties(edge);
     }
 
     @Test
@@ -135,7 +135,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void shouldSkipEdgePropertiesForBytecode() {
         final Edge edge = g.with("materializeProperties", "tokens").E(7).next();
 
-        assertEquals(Collections.emptyIterator(), edge.properties());
+        assertEdgeWithoutProperties(edge);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void shouldSkipVertexPropertyPropertiesForScripts() {
         final Vertex vertex = client.submit("gcrew.with('materializeProperties', 'tokens').V(7)").one().getVertex();
 
-        assertEquals(Collections.emptyIterator(), vertex.properties());
+        assertVertexWithoutVertexProperties(vertex);
     }
 
     @Test
@@ -163,12 +163,13 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     public void shouldSkipVertexPropertyPropertiesForBytecode() {
         final Vertex vertex = g.with("materializeProperties", "tokens").V(7).next();
 
-        assertEquals(Collections.emptyIterator(), vertex.properties());
+        assertVertexWithoutVertexProperties(vertex);
     }
 
     // asserted vertex 7 from crew graph
     private void assertVertexWithVertexProperties(final Vertex vertex) {
         assertEquals(7, vertex.id());
+        assertEquals("person", vertex.label());
 
         assertEquals(4, IteratorUtils.count(vertex.properties()));
         assertEquals(3, IteratorUtils.count(vertex.properties("location")));
@@ -181,9 +182,26 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         assertEquals(2000, vertexPropertyPropertyEndTime.value());
     }
 
+    // asserted vertex 7 from crew graph
+    private void assertVertexWithoutVertexProperties(final Vertex vertex) {
+        assertEquals(7, vertex.id());
+        assertEquals("person", vertex.label());
+
+        assertEquals(0, IteratorUtils.count(vertex.properties()));
+    }
+
+    // asserted vertex 1 from modern graph
+    private void assertVertexWithoutProperties(final Vertex vertex) {
+        assertEquals(1, vertex.id());
+        assertEquals("person", vertex.label());
+
+        assertEquals(Collections.emptyIterator(), vertex.properties());
+    }
+
     // asserted vertex 1 from modern graph
     private void assertVertexWithProperties(final Vertex vertex) {
         assertEquals(1, vertex.id());
+        assertEquals("person", vertex.label());
 
         assertEquals(2, IteratorUtils.count(vertex.properties()));
         assertEquals("marko", vertex.property("name").value());
@@ -191,8 +209,17 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     }
 
     // asserted edge 7 from modern graph
+    private void assertEdgeWithoutProperties(final Edge edge) {
+        assertEquals(7, edge.id());
+        assertEquals("knows", edge.label());
+
+        assertEquals(Collections.emptyIterator(), edge.properties());
+    }
+
+    // asserted edge 7 from modern graph
     private void assertEdgeWithProperties(final Edge edge) {
         assertEquals(7, edge.id());
+        assertEquals("knows", edge.label());
 
         assertEquals(1, IteratorUtils.count(edge.properties()));
         assertEquals(0.5, edge.property("weight").value());
