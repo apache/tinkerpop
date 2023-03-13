@@ -69,13 +69,13 @@ func HeaderAuthInfo(header http.Header) *AuthInfo {
 
 // DynamicAuth is an AuthInfoProvider that allows dynamic credential generation.
 type DynamicAuth struct {
-	fn func() *AuthInfo
+	fn func() AuthInfoProvider
 }
 
 var _ AuthInfoProvider = (*DynamicAuth)(nil)
 
 // NewDynamicAuth provides a way to generate dynamic credentials with the specified generator function.
-func NewDynamicAuth(f func() *AuthInfo) *DynamicAuth {
+func NewDynamicAuth(f func() AuthInfoProvider) *DynamicAuth {
 	return &DynamicAuth{fn: f}
 }
 
