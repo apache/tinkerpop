@@ -21,8 +21,14 @@ package gremlingo
 
 import "net/http"
 
-// AuthInfo is an option struct that allows authentication information to be specified.
-// Authentication can be provided via http.Header Header directly.
+// AuthInfoProvider is an interface that allows authentication information to be specified.
+type AuthInfoProvider interface {
+	GetHeader() http.Header
+	GetBasicAuth() (ok bool, username, password string)
+}
+
+// AuthInfo is an option struct that allows authentication information to be specified statically.
+// Authentication can be provided via http.Header directly.
 // Basic authentication can also be used via the BasicAuthInfo function.
 type AuthInfo struct {
 	Header   http.Header
@@ -30,9 +36,11 @@ type AuthInfo struct {
 	Password string
 }
 
-// getHeader provides a safe way to get a header from the AuthInfo even if it is nil.
+var _ AuthInfoProvider = (*AuthInfo)(nil)
+
+// GetHeader provides a safe way to get a header from the AuthInfo even if it is nil.
 // This way we don't need any additional logic in the transport layer.
-func (authInfo *AuthInfo) getHeader() http.Header {
+func (authInfo *AuthInfo) GetHeader() http.Header {
 	if authInfo == nil {
 		return nil
 	} else {
@@ -40,10 +48,13 @@ func (authInfo *AuthInfo) getHeader() http.Header {
 	}
 }
 
-// getUseBasicAuth provides a safe way to check if basic auth info is available from the AuthInfo even if it is nil.
+// GetBasicAuth provides a safe way to check if basic auth info is available from the AuthInfo even if it is nil.
 // This way we don't need any additional logic in the transport layer.
-func (authInfo *AuthInfo) getUseBasicAuth() bool {
-	return authInfo != nil && authInfo.Username != "" && authInfo.Password != ""
+func (authInfo *AuthInfo) GetBasicAuth() (bool, string, string) {
+	if authInfo == nil || (authInfo.Username == "" && authInfo.Password == "") {
+		return false, "", ""
+	}
+	return true, authInfo.Username, authInfo.Password
 }
 
 // BasicAuthInfo provides a way to generate AuthInfo. Enter username and password and get the AuthInfo back.

@@ -65,7 +65,7 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 		ReadBufferSize:    transporter.connSettings.readBufferSize,
 		WriteBufferSize:   transporter.connSettings.writeBufferSize,
 	}
-	header := transporter.connSettings.authInfo.getHeader()
+	header := transporter.connSettings.authInfo.GetHeader()
 	if transporter.connSettings.enableUserAgentOnConnect {
 		if header == nil {
 			header = make(http.Header)
@@ -103,7 +103,7 @@ func (transporter *gorillaTransporter) Write(data []byte) error {
 	return nil
 }
 
-func (transporter *gorillaTransporter) getAuthInfo() *AuthInfo {
+func (transporter *gorillaTransporter) getAuthInfo() AuthInfoProvider {
 	return transporter.connSettings.authInfo
 }
 

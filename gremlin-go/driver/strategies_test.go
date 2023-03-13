@@ -21,11 +21,12 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func getModernGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+func getModernGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = tls
