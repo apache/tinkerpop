@@ -65,7 +65,8 @@ func (transporter *gorillaTransporter) Connect() (err error) {
 		ReadBufferSize:    transporter.connSettings.readBufferSize,
 		WriteBufferSize:   transporter.connSettings.writeBufferSize,
 	}
-	header := transporter.connSettings.authInfo.GetHeader()
+
+	header := transporter.getAuthInfo().GetHeader()
 	if transporter.connSettings.enableUserAgentOnConnect {
 		if header == nil {
 			header = make(http.Header)

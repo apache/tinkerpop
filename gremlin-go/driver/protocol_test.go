@@ -31,7 +31,7 @@ import (
 func TestProtocol(t *testing.T) {
 	t.Run("Test protocol connect error.", func(t *testing.T) {
 		connSettings := newDefaultConnectionSettings()
-		connSettings.authInfo, connSettings.tlsConfig = NoopAuthInfo, nil
+		connSettings.authInfo, connSettings.tlsConfig = nil, nil
 		connSettings.keepAliveInterval, connSettings.writeDeadline, connSettings.writeDeadline = keepAliveIntervalDefault, writeDeadlineDefault, connectionTimeoutDefault
 
 		protocol, err := newGremlinServerWSProtocol(newLogHandler(&defaultLogger{}, Info, language.English), Gorilla,
