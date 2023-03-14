@@ -32,6 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `with()` configuration for `ARGS_BATCH_SIZE` and `ARGS_EVAL_TIMEOUT` to be more forgiving on the type of `Number` used for the value.
 * Changed `gremlin-console` to add imports via an ImportCustomizer to reduce time spent resolving imports.
 * Bumped to Groovy 2.5.21.
+* Added `AuthInfoProvider` interface and `NewDynamicAuth()` to gremlin-go for dynamic authentication support.
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
