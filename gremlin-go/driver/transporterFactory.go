@@ -31,11 +31,17 @@ const (
 	Gorilla TransporterType = iota + 1
 )
 
-func getTransportLayer(transporterType TransporterType, url string, connSettings *connectionSettings) (transporter, error) {
+func getTransportLayer(transporterType TransporterType, url string, connSettings *connectionSettings, logHandler *logHandler) (transporter, error) {
 	var transporter transporter
 	switch transporterType {
 	case Gorilla:
-		transporter = &gorillaTransporter{url: url, connSettings: connSettings, writeChannel: make(chan []byte, writeChannelSizeDefault), wg: &sync.WaitGroup{}}
+		transporter = &gorillaTransporter{
+			url:          url,
+			logHandler:   logHandler,
+			connSettings: connSettings,
+			writeChannel: make(chan []byte, writeChannelSizeDefault),
+			wg:           &sync.WaitGroup{},
+		}
 	default:
 		return nil, newError(err0801GetTransportLayerNoTypeError)
 	}
