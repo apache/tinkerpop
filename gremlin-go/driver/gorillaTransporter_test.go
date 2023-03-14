@@ -27,6 +27,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/text/language"
 )
 
 const mockMessage string = "MockMessage"
@@ -69,6 +70,7 @@ func getNewGorillaTransporter() (gorillaTransporter, *mockWebsocketConn) {
 	mockConn := new(mockWebsocketConn)
 	return gorillaTransporter{
 		url:          "ws://mockHost:8182/gremlin",
+		logHandler:   newLogHandler(&defaultLogger{}, Info, language.English),
 		connection:   mockConn,
 		isClosed:     false,
 		connSettings: newDefaultConnectionSettings(),

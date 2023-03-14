@@ -39,7 +39,7 @@ type gorillaTransporter struct {
 	url          string
 	connection   websocketConn
 	isClosed     bool
-	logHandler   logHandler
+	logHandler   *logHandler
 	connSettings *connectionSettings
 	writeChannel chan []byte
 	wg           *sync.WaitGroup
