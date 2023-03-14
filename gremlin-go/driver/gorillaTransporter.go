@@ -104,6 +104,9 @@ func (transporter *gorillaTransporter) Write(data []byte) error {
 }
 
 func (transporter *gorillaTransporter) getAuthInfo() AuthInfoProvider {
+	if transporter.connSettings.authInfo == nil {
+		return NoopAuthInfo
+	}
 	return transporter.connSettings.authInfo
 }
 
