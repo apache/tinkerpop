@@ -72,7 +72,12 @@ type DynamicAuth struct {
 	fn func() AuthInfoProvider
 }
 
-var _ AuthInfoProvider = (*DynamicAuth)(nil)
+var (
+	_ AuthInfoProvider = (*DynamicAuth)(nil)
+
+	// NoopAuthInfo is a no-op AuthInfoProvider that can be used to disable authentication.
+	NoopAuthInfo = NewDynamicAuth(func() AuthInfoProvider { return &AuthInfo{} })
+)
 
 // NewDynamicAuth provides a way to generate dynamic credentials with the specified generator function.
 func NewDynamicAuth(f func() AuthInfoProvider) *DynamicAuth {
