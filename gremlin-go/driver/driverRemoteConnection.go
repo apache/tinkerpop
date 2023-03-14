@@ -21,10 +21,11 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"github.com/google/uuid"
-	"golang.org/x/text/language"
 	"runtime"
 	"time"
+
+	"github.com/google/uuid"
+	"golang.org/x/text/language"
 )
 
 // DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
@@ -36,7 +37,7 @@ type DriverRemoteConnectionSettings struct {
 	LogVerbosity             LogVerbosity
 	Logger                   Logger
 	Language                 language.Tag
-	AuthInfo                 *AuthInfo
+	AuthInfo                 AuthInfoProvider
 	TlsConfig                *tls.Config
 	KeepAliveInterval        time.Duration
 	WriteDeadline            time.Duration

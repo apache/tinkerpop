@@ -42,15 +42,15 @@ type connection struct {
 }
 
 type connectionSettings struct {
-	authInfo         			*AuthInfo
-	tlsConfig         			*tls.Config
-	keepAliveInterval 			time.Duration
-	writeDeadline     			time.Duration
-	connectionTimeout 			time.Duration
-	enableCompression 			bool
-	readBufferSize				int
-	writeBufferSize				int
-	enableUserAgentOnConnect		bool
+	authInfo                 AuthInfoProvider
+	tlsConfig                *tls.Config
+	keepAliveInterval        time.Duration
+	writeDeadline            time.Duration
+	connectionTimeout        time.Duration
+	enableCompression        bool
+	readBufferSize           int
+	writeBufferSize          int
+	enableUserAgentOnConnect bool
 }
 
 func (connection *connection) errorCallback() {
@@ -95,10 +95,11 @@ func (connection *connection) activeResults() int {
 
 // createConnection establishes a connection with the given parameters. A connection should always be closed to avoid
 // leaking connections. The connection has the following states:
-// 		initialized: connection struct is created but has not established communication with server
-// 		established: connection has established communication established with the server
-// 		closed: connection was closed by the user.
-//		closedDueToError: connection was closed internally due to an error.
+//
+//	initialized: connection struct is created but has not established communication with server
+//	established: connection has established communication established with the server
+//	closed: connection was closed by the user.
+//	closedDueToError: connection was closed internally due to an error.
 func createConnection(url string, logHandler *logHandler, connSettings *connectionSettings) (*connection, error) {
 	conn := &connection{
 		logHandler,
