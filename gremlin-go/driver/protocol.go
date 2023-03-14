@@ -179,7 +179,7 @@ func (protocol *gremlinServerWSProtocol) close(wait bool) error {
 func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, connSettings *connectionSettings, results *synchronizedMap,
 	errorCallback func()) (protocol, error) {
 	wg := &sync.WaitGroup{}
-	transport, err := getTransportLayer(transporterType, url, connSettings)
+	transport, err := getTransportLayer(transporterType, url, connSettings, handler)
 	if err != nil {
 		return nil, err
 	}
