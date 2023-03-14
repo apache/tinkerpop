@@ -21,8 +21,9 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestClient(t *testing.T) {
@@ -40,13 +41,13 @@ func TestClient(t *testing.T) {
 				settings.AuthInfo = testNoAuthAuthInfo
 			})
 		defer client.Close()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		resultSet, err := client.Submit("g.V().count()")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.True(t, ok)
 		assert.NotNil(t, result)
 	})
@@ -59,13 +60,13 @@ func TestClient(t *testing.T) {
 				settings.AuthInfo = testNoAuthAuthInfo
 			})
 		defer client.Close()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		resultSet, err := client.SubmitWithOptions("g.V().count()", *new(RequestOptions))
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.True(t, ok)
 		assert.NotNil(t, result)
 	})
