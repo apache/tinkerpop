@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.server.util;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
@@ -33,17 +32,12 @@ import java.util.Iterator;
 public class TraverserIterator implements Iterator<Object> {
 
     private final Traversal.Admin traversal;
-    private final HaltedTraverserStrategy haltedTraverserStrategy;
     private final TraverserSet bulker = new TraverserSet();
     private final int barrierSize;
 
     public TraverserIterator(final Traversal.Admin traversal) {
         this.traversal = traversal;
         this.barrierSize = traversal.getTraverserRequirements().contains(TraverserRequirement.ONE_BULK) ? 1 : 1000;
-        this.haltedTraverserStrategy = traversal.getStrategies().getStrategy(HaltedTraverserStrategy.class).orElse(
-                Boolean.valueOf(System.getProperty("is.testing", "false")) ?
-                        HaltedTraverserStrategy.detached() :
-                        HaltedTraverserStrategy.reference());
     }
 
     public Traversal.Admin getTraversal() {
@@ -61,7 +55,7 @@ public class TraverserIterator implements Iterator<Object> {
     public Object next() {
         if (this.bulker.isEmpty())
             this.fillBulker();
-        final Traverser.Admin t = this.haltedTraverserStrategy.halt(this.bulker.remove());
+        final Traverser.Admin t = this.bulker.remove();
         return new DefaultRemoteTraverser<>(t.get(), t.bulk());
     }
 

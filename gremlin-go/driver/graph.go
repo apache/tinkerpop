@@ -34,6 +34,7 @@ type Graph struct {
 type Element struct {
 	Id    interface{}
 	Label string
+	Properties interface{}
 }
 
 // Vertex contains a single Vertex which has a Label and an Id.

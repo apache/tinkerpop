@@ -1189,4 +1189,42 @@ func TestConnection(t *testing.T) {
 			assert.Equal(t, <-gotErrs[i] == nil, tt.nilErr, tt.msg)
 		}
 	})
+
+	t.Run("Get all properties when materializeProperties is all", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// vertex contains 2 properties, name and age
+		r, err := g.With("materializeProperties", MaterializeProperties.All).V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+
+		AssertMarkoVertexWithProperties(t, r)
+	})
+
+	t.Run("Skip properties when materializeProperties is tokens", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// vertex contains 2 properties, name and age
+		r, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+
+		AssertMarkoVertexWithoutProperties(t, r)
+	})
+
+	t.Run("Get all properties when no materializeProperties", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		r, err := g.V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+
+		AssertMarkoVertexWithProperties(t, r)
+	})
 }

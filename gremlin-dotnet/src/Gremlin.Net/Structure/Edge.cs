@@ -21,6 +21,8 @@
 
 #endregion
 
+using System.Linq;
+
 namespace Gremlin.Net.Structure
 {
     /// <summary>
@@ -35,8 +37,9 @@ namespace Gremlin.Net.Structure
         /// <param name="outV">The outgoing/tail vertex of the edge.</param>
         /// <param name="label">The label of the edge.</param>
         /// <param name="inV">The incoming/head vertex of the edge.</param>
-        public Edge(object? id, Vertex outV, string label, Vertex inV)
-            : base(id, label)
+        /// <param name="properties">Optional properties of the edge.</param>
+        public Edge(object? id, Vertex outV, string label, Vertex inV, dynamic[]? properties = null)
+            : base(id, label, properties)
         {
             OutV = outV;
             InV = inV;
@@ -51,6 +54,15 @@ namespace Gremlin.Net.Structure
         ///     Gets the outgoing/tail vertex of this edge.
         /// </summary>
         public Vertex OutV { get; }
+
+        /// <summary>
+        /// Get property by key
+        /// </summary>
+        /// <returns>property or null when not found</returns>
+        public Property? Property(string key)
+        {
+            return Properties?.Cast<Property>().FirstOrDefault(p => p.Key == key);
+        }
 
         /// <inheritdoc />
         public override string ToString()

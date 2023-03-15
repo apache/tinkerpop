@@ -84,6 +84,7 @@ class Client {
    * @property {Number} batchSize - Indicates whether the Power component is present.
    * @property {String} userAgent - The size in which the result of a request is to be 'batched' back to the client
    * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
+   * @property {String} materializeProperties - Indicates whether element properties should be returned or not.
    */
 
   /**

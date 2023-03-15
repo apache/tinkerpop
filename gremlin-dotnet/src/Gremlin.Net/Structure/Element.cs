@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace Gremlin.Net.Structure
 {
@@ -35,10 +36,12 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="id">The id of the element.</param>
         /// <param name="label">The label of the element.</param>
-        protected Element(object? id, string label)
+        /// <param name="properties">Optional properties of the element.</param>
+        protected Element(object? id, string label, dynamic[]? properties = null)
         {
             Id = id;
             Label = label;
+            Properties = properties;
         }
 
         /// <summary>
@@ -50,6 +53,11 @@ namespace Gremlin.Net.Structure
         ///     Gets the label of this <see cref="Element" />.
         /// </summary>
         public string Label { get; }
+
+        /// <summary>
+        ///     Gets the properties of this <see cref="Element" />.
+        /// </summary>
+        public dynamic[]? Properties { get; }
 
         /// <inheritdoc />
         public bool Equals(Element? other)

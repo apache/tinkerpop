@@ -22,12 +22,13 @@ package gremlingo
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 )
 
 func TestClient(t *testing.T) {
@@ -37,25 +38,6 @@ func TestClient(t *testing.T) {
 	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
 
-	t.Run("Test client.Submit()", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		client, err := NewClient(testNoAuthUrl,
-			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
-			})
-		defer client.Close()
-		assert.NoError(t, err)
-		assert.NotNil(t, client)
-		resultSet, err := client.Submit("g.V().count()")
-		assert.NoError(t, err)
-		assert.NotNil(t, resultSet)
-		result, ok, err := resultSet.One()
-		assert.NoError(t, err)
-		assert.True(t, ok)
-		assert.NotNil(t, result)
-	})
-
 	t.Run("Test client.SubmitWithOptions()", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
@@ -63,9 +45,10 @@ func TestClient(t *testing.T) {
 				settings.TlsConfig = testNoAuthTlsConfig
 				settings.AuthInfo = testNoAuthAuthInfo
 			})
-		defer client.Close()
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
+		defer client.Close()
+
 		resultSet, err := client.SubmitWithOptions("g.V().count()", *new(RequestOptions))
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
@@ -74,6 +57,88 @@ func TestClient(t *testing.T) {
 		assert.True(t, ok)
 		assert.NotNil(t, result)
 	})
+
+	t.Run("Test client.Submit()", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		resultSet, err := client.Submit("g.V(1)")
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err := resultSet.One()
+		assert.NoError(t, err)
+		assert.True(t, ok)
+
+		AssertMarkoVertexWithProperties(t, result)
+	})
+
+	t.Run("Test client.submit() with materializeProperties", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		resultSet, err := client.Submit("g.with('materializeProperties', 'tokens').V(1)")
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+		result, ok, err := resultSet.One()
+		assert.NoError(t, err)
+		assert.True(t, ok)
+
+		AssertMarkoVertexWithoutProperties(t, result)
+	})
+}
+
+func AssertMarkoVertexWithProperties(t *testing.T, result *Result) {
+	assert.NotNil(t, result)
+
+	vertex, err := result.GetVertex()
+	assert.NoError(t, err)
+	assert.NotNil(t, vertex)
+
+	properties, ok := vertex.Properties.([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(properties))
+
+	property, ok := properties[0].(*VertexProperty)
+	assert.True(t, ok)
+	assert.NotNil(t, property)
+	assert.Equal(t, "name", property.Label)
+	assert.Equal(t, "marko", property.Value)
+
+	property, ok = properties[1].(*VertexProperty)
+	assert.True(t, ok)
+	assert.NotNil(t, property)
+	assert.Equal(t, "age", property.Label)
+	assert.Equal(t, int32(29), property.Value)
+}
+
+func AssertMarkoVertexWithoutProperties(t *testing.T, result *Result) {
+	assert.NotNil(t, result)
+
+	vertex, err := result.GetVertex()
+	assert.NoError(t, err)
+	assert.NotNil(t, vertex)
+
+	properties, ok := vertex.Properties.([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 0, len(properties))
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.

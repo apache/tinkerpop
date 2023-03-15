@@ -55,7 +55,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
@@ -244,10 +244,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 }},
                 new Object[] {"ReferenceVertex", new ReferenceVertex(123, "person"), null},
                 new Object[] {"TinkerVertex", g.V().hasLabel("person").next(), null},
-                new Object[] {"ReferenceVertexProperty", new ReferenceVertexProperty<>(123, "name", "john"), (Consumer<ReferenceVertexProperty>) referenceProperty -> {
-                    assertEquals("name", referenceProperty.key());
-                    assertEquals("john", referenceProperty.value());
-                    assertEquals(123, referenceProperty.id());
+                new Object[] {"DetachedVertexProperty", new DetachedVertexProperty<>(123, "name", "john", null), (Consumer<DetachedVertexProperty>) vertexProperty -> {
+                    assertEquals("name", vertexProperty.key());
+                    assertEquals("john", vertexProperty.value());
+                    assertEquals(123, vertexProperty.id());
                 }},
                 new Object[] {"PathLabelled", g.V().as("a", "b").out().as("c").path().next(), null},
                 new Object[] {"PathNotLabelled", g.V().out().inE().values().path().next(), null},

@@ -154,7 +154,7 @@ module.exports = class VertexPropertySerializer {
       // {properties} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which contains properties. Note that as TinkerPop currently send "references" only, this value will always be null.
       let properties, properties_len;
       try {
-        ({ v: properties, len: properties_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
+        ({ v: properties, len: properties_len } = this.ioc.anySerializer.deserialize(cursor));
         len += properties_len;
       } catch (err) {
         err.message = '{properties}: ' + err.message;

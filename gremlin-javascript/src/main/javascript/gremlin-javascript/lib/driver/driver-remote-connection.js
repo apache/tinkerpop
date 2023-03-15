@@ -74,7 +74,14 @@ class DriverRemoteConnection extends RemoteConnection {
     const optionsStrategy = bytecode.sourceInstructions.find(
       (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
     );
-    const allowedKeys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent'];
+    const allowedKeys = [
+      'evaluationTimeout',
+      'scriptEvaluationTimeout',
+      'batchSize',
+      'requestId',
+      'userAgent',
+      'materializeProperties',
+    ];
 
     let requestOptions = undefined;
     if (optionsStrategy !== undefined) {

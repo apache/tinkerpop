@@ -26,7 +26,7 @@ from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.strategies import OptionsStrategy
-from gremlin_python.structure.graph import Graph
+from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport
 from gremlin_python.statics import *
 from asyncio import TimeoutError
@@ -137,6 +137,25 @@ async def async_connect(enable):
 def test_from_event_loop():
     assert not asyncio.get_event_loop().run_until_complete(async_connect(False))
     assert asyncio.get_event_loop().run_until_complete(async_connect(True))
+
+
+def test_client_gremlin(client):
+    result_set = client.submit('g.V(1)')
+    result = result_set.all().result()
+    assert 1 == len(result)
+    vertex = result[0]
+    assert type(vertex) is Vertex
+    assert 1 == vertex.id
+    assert 2 == len(vertex.properties)
+    assert 'name' == vertex.properties[0].key
+    assert 'marko' == vertex.properties[0].value
+    ##
+    result_set = client.submit('g.with("materializeProperties", "tokens").V(1)')
+    result = result_set.all().result()
+    assert 1 == len(result)
+    vertex = result[0]
+    assert 1 == vertex.id
+    assert 0 == len(vertex.properties)
 
 
 def test_client_bytecode(client):

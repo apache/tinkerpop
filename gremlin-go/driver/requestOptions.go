@@ -24,19 +24,21 @@ import (
 )
 
 type RequestOptions struct {
-	requestID         uuid.UUID
-	evaluationTimeout int
-	batchSize         int
-	userAgent         string
-	bindings          map[string]interface{}
+	requestID             uuid.UUID
+	evaluationTimeout     int
+	batchSize             int
+	userAgent             string
+	bindings              map[string]interface{}
+	materializeProperties string
 }
 
 type RequestOptionsBuilder struct {
-	requestID         uuid.UUID
-	evaluationTimeout int
-	batchSize         int
-	userAgent         string
-	bindings          map[string]interface{}
+	requestID             uuid.UUID
+	evaluationTimeout     int
+	batchSize             int
+	userAgent             string
+	bindings              map[string]interface{}
+	materializeProperties string
 }
 
 func (builder *RequestOptionsBuilder) SetRequestId(requestId uuid.UUID) *RequestOptionsBuilder {
@@ -64,6 +66,11 @@ func (builder *RequestOptionsBuilder) SetBindings(bindings map[string]interface{
 	return builder
 }
 
+func (builder *RequestOptionsBuilder) SetMaterializeProperties(materializeProperties string) *RequestOptionsBuilder {
+	builder.materializeProperties = materializeProperties
+	return builder
+}
+
 func (builder *RequestOptionsBuilder) AddBinding(key string, binding interface{}) *RequestOptionsBuilder {
 	if builder.bindings == nil {
 		builder.bindings = make(map[string]interface{})
@@ -80,6 +87,7 @@ func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions.batchSize = builder.batchSize
 	requestOptions.userAgent = builder.userAgent
 	requestOptions.bindings = builder.bindings
+	requestOptions.materializeProperties = builder.materializeProperties
 
 	return *requestOptions
 }

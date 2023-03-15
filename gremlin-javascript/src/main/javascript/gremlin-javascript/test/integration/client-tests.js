@@ -75,6 +75,68 @@ describe('Client', function () {
         });
     });
 
+    it('should handle properties for bytecode request', function () {
+      return client.submit(new Bytecode().addStep('V', [1]))
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first().object;
+          assert.ok(vertex instanceof graphModule.Vertex);
+          let age, name
+          if (vertex.properties instanceof Array) {
+            age = vertex.properties[1]
+            name = vertex.properties[0]
+          } else {
+            age = vertex.properties.age[0]
+            name = vertex.properties.name[0]
+          }
+          assert.strictEqual(age.value, 29);
+          assert.strictEqual(name.value, 'marko');
+        });
+    });
+
+    it('should skip properties for bytecode request with tokens', function () {
+      return client.submit(new Bytecode().addStep('V', [1]), null, {'materializeProperties': 'tokens'})
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first().object;
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+        });
+    });
+
+    it('should handle properties for gremlin request', function () {
+      return client.submit('g.V(1)')
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first();
+          assert.ok(vertex instanceof graphModule.Vertex);
+          let age, name
+          if (vertex.properties instanceof Array) {
+            age = vertex.properties[1]
+            name = vertex.properties[0]
+          } else {
+            age = vertex.properties.age[0]
+            name = vertex.properties.name[0]
+          }
+          assert.strictEqual(age.value, 29);
+          assert.strictEqual(name.value, 'marko');
+        });
+    });
+
+    it('should skip properties for gremlin request with tokens', function () {
+      return client.submit('g.with("materializeProperties", "tokens").V(1)')
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first();
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+        });
+    });
+
     it('should be able to stream results from the gremlin server', (done) => {
       const output = [];
       let calls = 0;

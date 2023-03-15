@@ -27,7 +27,7 @@ import (
 func TestGraphTraversalSource(t *testing.T) {
 
 	t.Run("GraphTraversalSource.With tests", func(t *testing.T) {
-		t.Run("Test for single param", func(t *testing.T) {
+		t.Run("Test for single property", func(t *testing.T) {
 			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
 			traversal := g.With("foo", "bar")
 			assert.NotNil(t, traversal)
@@ -40,7 +40,7 @@ func TestGraphTraversalSource(t *testing.T) {
 			assert.Equal(t, map[string]interface{}{"foo": "bar"}, config)
 		})
 
-		t.Run("Test for multiple param", func(t *testing.T) {
+		t.Run("Test for multiple property", func(t *testing.T) {
 			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
 			traversal := g.With("foo", "bar").With("foo2", "bar2")
 			assert.NotNil(t, traversal)
@@ -53,7 +53,7 @@ func TestGraphTraversalSource(t *testing.T) {
 			assert.Equal(t, map[string]interface{}{"foo": "bar", "foo2": "bar2"}, config)
 		})
 
-		t.Run("Test for param replacement", func(t *testing.T) {
+		t.Run("Test for property replacement", func(t *testing.T) {
 			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
 			traversal := g.With("foo", "bar").With("foo", "not bar")
 			assert.NotNil(t, traversal)

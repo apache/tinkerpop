@@ -93,7 +93,7 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
 
     @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-        throw VertexProperty.Exceptions.metaPropertiesNotSupported();
+        return Collections.emptyIterator();
     }
 
     @Override
