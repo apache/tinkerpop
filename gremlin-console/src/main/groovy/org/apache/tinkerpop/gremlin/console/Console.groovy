@@ -120,11 +120,13 @@ class Console {
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
 
+        org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
         def imports = (ImportCustomizer) CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").get()[0]
-        imports.getClassPackages().collect { Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { groovy.execute(it) }
-        imports.getMethodClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
-        imports.getEnumClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
-        imports.getFieldClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
+        ic.addStarImports(imports.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        groovy.getCompilerConfiguration().addCompilationCustomizers(ic)
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
         runner.reader.setHandleUserInterrupt(false)

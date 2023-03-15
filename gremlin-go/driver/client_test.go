@@ -45,15 +45,15 @@ func TestClient(t *testing.T) {
 				settings.TlsConfig = testNoAuthTlsConfig
 				settings.AuthInfo = testNoAuthAuthInfo
 			})
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
 
 		resultSet, err := client.SubmitWithOptions("g.V().count()", *new(RequestOptions))
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.True(t, ok)
 		assert.NotNil(t, result)
 	})
@@ -66,16 +66,16 @@ func TestClient(t *testing.T) {
 				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
 
 		resultSet, err := client.Submit("g.V(1)")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
 		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.True(t, ok)
 
 		AssertMarkoVertexWithProperties(t, result)
@@ -90,15 +90,15 @@ func TestClient(t *testing.T) {
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
 
 		resultSet, err := client.Submit("g.with('materializeProperties', 'tokens').V(1)")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.True(t, ok)
 
 		AssertMarkoVertexWithoutProperties(t, result)
@@ -109,7 +109,7 @@ func AssertMarkoVertexWithProperties(t *testing.T, result *Result) {
 	assert.NotNil(t, result)
 
 	vertex, err := result.GetVertex()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, vertex)
 
 	properties, ok := vertex.Properties.([]interface{})
@@ -133,7 +133,7 @@ func AssertMarkoVertexWithoutProperties(t *testing.T, result *Result) {
 	assert.NotNil(t, result)
 
 	vertex, err := result.GetVertex()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, vertex)
 
 	properties, ok := vertex.Properties.([]interface{})

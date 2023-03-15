@@ -123,15 +123,12 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
 		// Server has requested basic auth.
 		authInfo := protocol.transporter.getAuthInfo()
-		if authInfo.getUseBasicAuth() {
-			username := []byte(authInfo.Username)
-			password := []byte(authInfo.Password)
-
+		if ok, username, password := authInfo.GetBasicAuth(); ok {
 			authBytes := make([]byte, 0)
 			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, username...)
+			authBytes = append(authBytes, []byte(username)...)
 			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, password...)
+			authBytes = append(authBytes, []byte(password)...)
 			encoded := base64.StdEncoding.EncodeToString(authBytes)
 			request := makeBasicAuthRequest(encoded)
 			err := protocol.write(&request)
@@ -179,7 +176,7 @@ func (protocol *gremlinServerWSProtocol) close(wait bool) error {
 func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, connSettings *connectionSettings, results *synchronizedMap,
 	errorCallback func()) (protocol, error) {
 	wg := &sync.WaitGroup{}
-	transport, err := getTransportLayer(transporterType, url, connSettings)
+	transport, err := getTransportLayer(transporterType, url, connSettings, handler)
 	if err != nil {
 		return nil, err
 	}

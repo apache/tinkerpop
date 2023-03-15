@@ -253,11 +253,11 @@ public class DriverRemoteConnection implements RemoteConnection {
             final OptionsStrategy optionsStrategy = itty.next();
             final Map<String,Object> options = optionsStrategy.getOptions();
             if (options.containsKey(ARGS_EVAL_TIMEOUT))
-                builder.timeout((long) options.get(ARGS_EVAL_TIMEOUT));
+                builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
             if (options.containsKey(REQUEST_ID))
                 builder.overrideRequestId((UUID) options.get(REQUEST_ID));
             if (options.containsKey(ARGS_BATCH_SIZE))
-                builder.batchSize((int) options.get(ARGS_BATCH_SIZE));
+                builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
             if (options.containsKey(ARGS_USER_AGENT))
                 builder.userAgent((String) options.get(ARGS_USER_AGENT));
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))

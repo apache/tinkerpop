@@ -58,9 +58,17 @@ class PluggedIn {
     void activate() {
         plugin.getCustomizers("gremlin-groovy").get().each {
             if (it instanceof ImportCustomizer) {
-                it.getClassPackages().collect {Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { shell.execute(it) }
-                it.getMethodClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
-                it.getEnumClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
+                if (shell instanceof GremlinGroovysh) {
+                    org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
+                    ic.addStarImports(it.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
+                    ic.addStaticStars(it.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+                    ic.addStaticStars(it.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+                    ((GremlinGroovysh) shell).getCompilerConfiguration().addCompilationCustomizers(ic)
+                } else {
+                    it.getClassPackages().collect {Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { shell.execute(it) }
+                    it.getMethodClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
+                    it.getEnumClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
+                }
             } else if (it instanceof ScriptCustomizer) {
                 it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { shell.execute(it) }
             } else if (it instanceof BindingsCustomizer) {
