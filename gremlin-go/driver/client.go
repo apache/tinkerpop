@@ -21,9 +21,10 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"golang.org/x/text/language"
 	"runtime"
 	"time"
+
+	"golang.org/x/text/language"
 )
 
 // ClientSettings is used to modify a Client's settings on initialization.
@@ -33,7 +34,7 @@ type ClientSettings struct {
 	LogVerbosity      LogVerbosity
 	Logger            Logger
 	Language          language.Tag
-	AuthInfo          *AuthInfo
+	AuthInfo          AuthInfoProvider
 	TlsConfig         *tls.Config
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
