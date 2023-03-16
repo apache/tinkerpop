@@ -189,6 +189,30 @@ def remote_connection(request):
 
 
 @pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
+def remote_connection_crew(request):
+    try:
+        if request.param == 'graphbinaryv1':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
+        elif request.param == 'graphsonv2':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+        else:
+            raise ValueError("Invalid serializer option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
 def remote_transaction_connection(request):
     try:
         if request.param == 'graphbinaryv1':

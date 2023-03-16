@@ -203,23 +203,70 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Equal(new[] { "value1", "value2", "value3" }, propertyValues);
         }
 
+        [Theory]
+        [MemberData(nameof(Serializers))]
+        public void ShouldDeserializeVertexVertexPropertiesForBytecode(IMessageSerializer serializer)
+        {
+            var connection = _connectionFactory.CreateRemoteConnection("gcrew", 2, serializer);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            var vertex = g.V(7).Next();
+
+            VerifyVertexVertexProperties(vertex);
+        }
+
+        [Theory]
+        [MemberData(nameof(Serializers))]
+        public async Task ShouldDeserializeVertexVertexPropertiesForGremlin(IMessageSerializer serializer)
+        {
+            var client = _connectionFactory.CreateClient(serializer);
+
+            var vertex = await client.SubmitWithSingleResultAsync<Vertex>("gcrew.V(7)");
+
+            VerifyVertexVertexProperties(vertex);
+        }
+
         private static void VerifyVertexProperties(Vertex? vertex)
         {
             Assert.NotNull(vertex);
             Assert.Equal(1, vertex.Id);
-
+            Assert.Equal("person", vertex.Label);
             Assert.Equal(2, vertex.Properties!.Length);
+
             var age = vertex.Property("age");
             Assert.NotNull(age);
             Assert.Equal(29, age.Value);
+        }
+
+        private static void VerifyVertexVertexProperties(Vertex? vertex)
+        {
+            Assert.NotNull(vertex);
+            Assert.Equal(7, vertex.Id);
+            Assert.Equal("person", vertex.Label);
+            Assert.Equal(4, vertex.Properties!.Length);
+
+            var locations = vertex.Properties.Cast<VertexProperty>().Where(p => p.Key == "location");
+            Assert.NotNull(locations);
+            Assert.Equal(3, locations.Count());
+
+            var vertexProperty = locations.First();
+            Assert.Equal("centreville", vertexProperty.Value);
+            Assert.Equal(2, vertexProperty.Properties!.Length);
+
+            var vertexPropertyPropertyStartTime = vertexProperty.Property("startTime");
+            Assert.Equal(1990, vertexPropertyPropertyStartTime!.Value);
+
+            var vertexPropertyPropertyEndTime = vertexProperty.Property("endTime");
+            Assert.Equal(2000, vertexPropertyPropertyEndTime!.Value);
         }
 
         private static void VerifyEdgeProperties(Edge? edge)
         {
             Assert.NotNull(edge);
             Assert.Equal(7, edge.Id);
-
+            Assert.Equal("knows", edge.Label);
             Assert.Single(edge.Properties!);
+
             var weight = edge.Property("weight");
             Assert.NotNull(weight);
             Assert.Equal(0.5, weight.Value);

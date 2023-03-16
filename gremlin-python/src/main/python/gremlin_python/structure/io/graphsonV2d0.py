@@ -591,11 +591,17 @@ class VertexPropertyDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
+        properties = None
+        if "properties" in d:
+            properties = reader.to_object(d["properties"])
+            if properties is not None:
+                properties = list(map(lambda x: Property(x[0], x[1], None), properties.items()))
         vertex = Vertex(reader.to_object(d.get("vertex"))) if "vertex" in d else None
         return VertexProperty(reader.to_object(d["id"]),
                               d["label"],
                               reader.to_object(d["value"]),
-                              vertex)
+                              vertex,
+                              properties)
 
 
 class PropertyDeserializer(_GraphSONTypeIO):

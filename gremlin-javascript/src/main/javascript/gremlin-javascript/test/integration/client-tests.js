@@ -75,7 +75,7 @@ describe('Client', function () {
         });
     });
 
-    it('should handle properties for bytecode request', function () {
+    it('should handle Vertex properties for bytecode request', function () {
       return client.submit(new Bytecode().addStep('V', [1]))
         .then(function (result) {
           assert.ok(result);
@@ -95,7 +95,7 @@ describe('Client', function () {
         });
     });
 
-    it('should skip properties for bytecode request with tokens', function () {
+    it('should skip Vertex properties for bytecode request with tokens', function () {
       return client.submit(new Bytecode().addStep('V', [1]), null, {'materializeProperties': 'tokens'})
         .then(function (result) {
           assert.ok(result);
@@ -106,7 +106,7 @@ describe('Client', function () {
         });
     });
 
-    it('should handle properties for gremlin request', function () {
+    it('should handle Vertex properties for gremlin request', function () {
       return client.submit('g.V(1)')
         .then(function (result) {
           assert.ok(result);
@@ -126,7 +126,7 @@ describe('Client', function () {
         });
     });
 
-    it('should skip properties for gremlin request with tokens', function () {
+    it('should skip Vertex properties for gremlin request with tokens', function () {
       return client.submit('g.with("materializeProperties", "tokens").V(1)')
         .then(function (result) {
           assert.ok(result);
@@ -135,6 +135,36 @@ describe('Client', function () {
           assert.ok(vertex instanceof graphModule.Vertex);
           assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
         });
+    });
+
+    it('should handle VertexProperties properties for gremlin request', async function () {
+      const crewClient = helper.getClient('gcrew');
+      await crewClient.open();
+
+      const result = await crewClient.submit('g.V(7)');
+
+      assert.ok(result);
+      assert.strictEqual(result.length, 1);
+      const vertex = result.first();
+      
+      assertVertexProperties(vertex);
+
+      await crewClient.close();
+    });
+
+    it('should handle VertexProperties properties for bytecode request', async function () {
+      const crewClient = helper.getClient('gcrew');
+      await crewClient.open();
+
+      const result = await crewClient.submit(new Bytecode().addStep('V', [7]));
+
+      assert.ok(result);
+      assert.strictEqual(result.length, 1);
+      const vertex = result.first().object;
+      
+      assertVertexProperties(vertex);
+
+      await crewClient.close();
     });
 
     it('should be able to stream results from the gremlin server', (done) => {
@@ -214,3 +244,26 @@ describe('Client', function () {
     });
   });
 });
+
+function assertVertexProperties(vertex) {
+  assert.ok(vertex instanceof graphModule.Vertex);
+  let locations;
+  if (vertex.properties instanceof Array) {
+    locations = vertex.properties.filter(p => p.key == 'location');
+  } else {
+    locations = vertex.properties.location
+  }
+  assert.strictEqual(locations.length, 3);
+
+  const vertexProperty = locations[0];
+  assert.strictEqual(vertexProperty.value, 'centreville');
+  if (vertexProperty.properties instanceof Array) {
+    assert.strictEqual(vertexProperty.properties[0].key, 'startTime');
+    assert.strictEqual(vertexProperty.properties[0].value, 1990);
+    assert.strictEqual(vertexProperty.properties[1].key, 'endTime');
+    assert.strictEqual(vertexProperty.properties[1].value, 2000);
+  } else {
+    assert.strictEqual(vertexProperty.properties.startTime, 1990);
+    assert.strictEqual(vertexProperty.properties.endTime, 2000);
+  }
+}

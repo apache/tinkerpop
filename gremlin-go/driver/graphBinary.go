@@ -1142,15 +1142,12 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 
 	*i += 2
 
-	v, err := readFullyQualifiedNullable(data, i, true)
+	props, err := readFullyQualifiedNullable(data, i, true)
 	if err != nil {
 		return nil, err
 	}
 
-	vertex, ok := v.(*Vertex)
-	if ok {
-		vp.Vertex = *vertex
-	}
+	vp.Properties = props
 
 	return vp, nil
 }

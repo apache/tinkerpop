@@ -74,8 +74,8 @@ class Edge(Element):
 
 
 class VertexProperty(Element):
-    def __init__(self, id, label, value, vertex):
-        Element.__init__(self, id, label)
+    def __init__(self, id, label, value, vertex, properties=None):
+        Element.__init__(self, id, label, properties)
         self.value = value
         self.key = self.label
         self.vertex = vertex

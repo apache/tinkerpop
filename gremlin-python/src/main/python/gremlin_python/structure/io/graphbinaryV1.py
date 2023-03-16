@@ -708,7 +708,7 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     def _read_vertexproperty(cls, b, r):
         vp = VertexProperty(r.read_object(b), r.to_object(b, DataType.string, False), r.read_object(b), None)
         b.read(2)
-        vp.vertex = r.read_object(b)
+        vp.properties = r.read_object(b)
         return vp
 
 

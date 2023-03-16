@@ -45,6 +45,7 @@ const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
 const testServerModernGraphAlias = "gmodern"
 const testServerGraphAlias = "gimmutable"
+const testServerCrewGraphAlias = "gcrew"
 const manualTestSuiteName = "manual"
 const nonRoutableIPForConnectionTimeout = "ws://10.255.255.1/"
 
