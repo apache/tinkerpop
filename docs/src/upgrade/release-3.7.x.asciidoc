@@ -101,3 +101,17 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
 The `SimpleSocketServer` from `gremlin-driver` has been brought into a new module `gremlin-tools/gremlin-socket-server`
 and it has been adapted to be usable by all drivers for testing. See more about creating gremlin socket server tests
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-socket-server-tests[here].
+
+===== Mid-traversal E()
+
+Traversals now support mid-traversal E()-steps.
+
+Prior to this change you were limited to using E()-step only at the start of traversal, but now you can this step in
+the middle. This improvement makes it easier for users to build certain types of queries. For example, get edges with
+label knows, if there is none then add new one between josh and vadas.
+
+`g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas")))`
+
+Another reason is to make E() and V() steps equivalent in terms of use in the middle of traversal.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2798[TINKERPOP-2798]
