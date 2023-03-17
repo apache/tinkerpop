@@ -45,6 +45,8 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Added functional properties to the graph structure components for .NET, GO and Python.
 * Modified the GremlinScriptChecker to extract the `materializeProperties` request option.
 * Neo4jVertexProperty no longer throw Exception for `properties()`, but return empty iterable.
+* Bumped Groovy to 4.0.9.
+* Bumped GMavenPlus to 2.1.0.
 
 == TinkerPop 3.6.0 (Tinkerheart)
 

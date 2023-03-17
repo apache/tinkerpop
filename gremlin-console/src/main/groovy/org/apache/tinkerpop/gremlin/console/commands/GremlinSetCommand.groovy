@@ -20,11 +20,11 @@ package org.apache.tinkerpop.gremlin.console.commands
 
 import jline.console.completer.Completer
 
-import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.commands.SetCommand
-import org.codehaus.groovy.tools.shell.util.PackageHelper
+import org.apache.groovy.groovysh.Groovysh
+import org.apache.groovy.groovysh.commands.SetCommand
+import org.apache.groovy.groovysh.util.PackageHelper
+import org.apache.groovy.groovysh.util.SimpleCompleter
 import org.codehaus.groovy.tools.shell.util.Preferences
-import org.codehaus.groovy.tools.shell.util.SimpleCompletor
 
 /**
  * A Gremlin-specific implementation of the {@code SetCommand} provided by Groovy.  Didn't see another way to
@@ -79,8 +79,8 @@ class GremlinSetCommand extends SetCommand {
         }
 
         return [
-            new SimpleCompletor(loader),
-            null
+                new SimpleCompleter(loader),
+                null
         ]
     }
 }
