@@ -43,9 +43,10 @@ class Graph(object):
 
 
 class Element(object):
-    def __init__(self, id, label):
+    def __init__(self, id, label, properties=None):
         self.id = id
         self.label = label
+        self.properties = properties
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.id == other.id
@@ -55,16 +56,16 @@ class Element(object):
 
 
 class Vertex(Element):
-    def __init__(self, id, label="vertex"):
-        Element.__init__(self, id, label)
+    def __init__(self, id, label="vertex", properties=None):
+        Element.__init__(self, id, label, properties)
 
     def __repr__(self):
         return "v[" + str(self.id) + "]"
 
 
 class Edge(Element):
-    def __init__(self, id, outV, label, inV):
-        Element.__init__(self, id, label)
+    def __init__(self, id, outV, label, inV, properties=None):
+        Element.__init__(self, id, label, properties)
         self.outV = outV
         self.inV = inV
 
@@ -73,8 +74,8 @@ class Edge(Element):
 
 
 class VertexProperty(Element):
-    def __init__(self, id, label, value, vertex):
-        Element.__init__(self, id, label)
+    def __init__(self, id, label, value, vertex, properties=None):
+        Element.__init__(self, id, label, properties)
         self.value = value
         self.key = self.label
         self.vertex = vertex

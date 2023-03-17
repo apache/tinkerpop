@@ -283,6 +283,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 
+            ctx.handleDetachment(aggregate);
+
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
                         .code(code)

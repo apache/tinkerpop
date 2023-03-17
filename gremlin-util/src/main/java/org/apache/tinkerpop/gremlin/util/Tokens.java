@@ -79,6 +79,22 @@ public final class Tokens {
     public static final String ARGS_HOST = "host";
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
+    /**
+     * The name of the argument that allows to control the serialization of properties on the server.
+     */
+    public static final String ARGS_MATERIALIZE_PROPERTIES = "materializeProperties";
+
+    /**
+     * The name of the value denoting that all properties of Element should be returned.
+     * Should be used with {@code ARGS_MATERIALIZE_PROPERTIES}
+     */
+
+    public static final String MATERIALIZE_PROPERTIES_ALL = "all";
+    /**
+     * The name of the value denoting that only `ID` and `Label` of Element should be returned.
+     * Should be used with {@code ARGS_MATERIALIZE_PROPERTIES}
+     */
+    public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
 
     /**
      * Argument name that is intended to be used with a session which when its value is {@code true} makes it so

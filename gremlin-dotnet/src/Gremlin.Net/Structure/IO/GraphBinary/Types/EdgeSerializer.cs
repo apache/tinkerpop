@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
-            
+
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteNonNullableValueAsync(value.InV.Label, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.OutV.Id, stream, cancellationToken).ConfigureAwait(false);
@@ -53,7 +54,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
 
             // Placeholder for the parent vertex
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
-            
+
             // placeholder for the properties
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
@@ -70,14 +71,14 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
                 (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false));
             var outV = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
                 (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false));
-            
+
             // discard possible parent vertex
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
-            // discard possible properties
-            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var propertiesAsArray = (properties as List<object>)?.ToArray();
 
-            return new Edge(id, outV, label, inV);
+            return new Edge(id, outV, label, inV, propertiesAsArray);
         }
     }
 }

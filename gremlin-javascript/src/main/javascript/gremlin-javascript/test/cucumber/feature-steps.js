@@ -131,17 +131,30 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
   });
 });
 
+var removeProperties = function(p) {
+  if (p === undefined) {   
+  } else if (p instanceof graphModule.Vertex || p instanceof graphModule.Edge) {
+    p.properties = undefined;
+  } else if (p instanceof Array) {
+    p.forEach(removeProperties)
+  } else if (p instanceof Map) {
+    removeProperties(Array.from(p.keys()))
+    removeProperties(Array.from(p.values()))
+  } else if (p instanceof graphModule.Path) {
+    removeProperties(p.objects)
+  }
+
+  return p
+}
+
 When('iterated to list', function () {
-  return this.traversal.toList().then(list => this.result = list).catch(err => this.result = err);
+  return this.traversal.toList().then(list => this.result = removeProperties(list)).catch(err => this.result = err);
 });
 
 When('iterated next', function () {
   return this.traversal.next().then(it => {
-    this.result = it.value;
-    if (this.result instanceof Path) {
-      // Compare using the objects array
-      this.result = this.result.objects;
-    }
+    // for Path compare using the objects array
+    this.result = removeProperties(it.value instanceof Path ? it.value.objects : it.value )
   }).catch(err => this.result = err);
 });
 

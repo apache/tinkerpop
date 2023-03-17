@@ -68,7 +68,7 @@ describe('Client', function () {
                 requestId: settings.PER_REQUEST_SETTINGS_REQUEST_ID,
                 evaluationTimeout: 1234,
                 batchSize: 12,
-                userAgent: "helloWorld"
+                userAgent: 'helloWorld'
             })
             const expectedResult = `requestId=${settings.PER_REQUEST_SETTINGS_REQUEST_ID} evaluationTimeout=1234, batchSize=12, userAgent=helloWorld`;
             assert.equal(expectedResult, resultSet.first());

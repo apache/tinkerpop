@@ -343,7 +343,7 @@ func TestResult(t *testing.T) {
 		element := Element{}
 		r := Result{&element}
 		res := r.String()
-		assert.Equal(t, "result{object=&{<nil> } class=*gremlingo.Element}", res)
+		assert.Equal(t, "result{object=&{<nil>  <nil>} class=*gremlingo.Element}", res)
 	})
 
 	t.Run("Test Result.GetType() simple type", func(t *testing.T) {

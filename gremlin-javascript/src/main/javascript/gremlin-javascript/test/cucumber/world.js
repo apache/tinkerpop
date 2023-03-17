@@ -108,7 +108,15 @@ Before({tags: "@AllowNullPropertyValues"}, function() {
 
 function getVertices(connection) {
   const g = traversal().withRemote(connection);
-  return g.V().group().by('name').by(__.tail()).next().then(it => it.value);
+  return g.V().group().by('name').by(__.tail()).next().then(it => {
+    // properties excluded from verification
+    if (it.value instanceof Map) {
+      for (const value of it.value.values()) {
+        value.properties = undefined
+      }
+    }
+    return it.value
+  });
 }
 
 function getEdges(connection) {
@@ -120,6 +128,8 @@ function getEdges(connection) {
     .then(it => {
       const edges = {};
       it.value.forEach((v, k) => {
+        // properties excluded from verification
+        v.properties = undefined
         edges[getEdgeKey(k)] = v;
       });
       return edges;

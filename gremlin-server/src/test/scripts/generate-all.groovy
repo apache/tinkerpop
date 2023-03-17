@@ -60,24 +60,24 @@ globals << [hook : [
 ] as LifeCycleHook]
 
 // add default TraversalSource instances for each graph instance
-globals << [gclassic : traversal().withEmbedded(classic).withStrategies(ReferenceElementStrategy)]
-globals << [gmodern : traversal().withEmbedded(modern).withStrategies(ReferenceElementStrategy)]
-globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
-globals << [gcrew : traversal().withEmbedded(crew).withStrategies(ReferenceElementStrategy)]
-globals << [ggraph : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
-globals << [ggrateful : traversal().withEmbedded(grateful).withStrategies(ReferenceElementStrategy)]
-globals << [gsink : traversal().withEmbedded(sink).withStrategies(ReferenceElementStrategy)]
+globals << [gclassic : traversal().withEmbedded(classic)]
+globals << [gmodern : traversal().withEmbedded(modern)]
+globals << [g : traversal().withEmbedded(graph)]
+globals << [gcrew : traversal().withEmbedded(crew)]
+globals << [ggraph : traversal().withEmbedded(graph)]
+globals << [ggrateful : traversal().withEmbedded(grateful)]
+globals << [gsink : traversal().withEmbedded(sink)]
 
 // dynamically detect existence of gtx as it may or may not be present depending on the -DincludeNeo4j
 // and the configuration of the particular server instance. with docker/gremlin-server.sh the neo4j
 // "tx" configuration is already present and will therefore be enabled.
 def dynamicGtx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["tx"]
 if (dynamicGtx != null)
-    globals << [gtx : traversal().withEmbedded(dynamicGtx).withStrategies(ReferenceElementStrategy)]
+    globals << [gtx : traversal().withEmbedded(dynamicGtx)]
 
 // dynamically detect existence of gimmutable as it is only used in gremlin-go testing suite
 def dynamicGimmutable = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["immutable"]
 if (dynamicGimmutable != null)
-    globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable).withStrategies(ReferenceElementStrategy)]
+    globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable)]
 
 globals
