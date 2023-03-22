@@ -32,7 +32,7 @@ public final class Gremlin {
         try {
             version = Manifests.read("tinkerpop-version");
         }
-        catch (Exception e) {
+        catch (Throwable t) {
             version = "VersionNotFound";
         }
     }
