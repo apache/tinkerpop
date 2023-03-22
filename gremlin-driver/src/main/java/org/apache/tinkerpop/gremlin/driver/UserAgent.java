@@ -59,7 +59,7 @@ public class UserAgent {
         try {
             ret = supplier.get().replace(' ', '_');
         }
-        catch (Exception e) {
+        catch (Throwable t) {
             // No action taken, default value of "NotAvailable" will be used if supplier fails
         }
         return ret;
