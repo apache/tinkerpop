@@ -207,5 +207,38 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>glv-go-skipped-warning</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <missing>.glv</missing>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.ekryd.echo-maven-plugin</groupId>
+                        <artifactId>echo-maven-plugin</artifactId>
+                        <version>1.3.2</version>
+                        <executions>
+                            <execution>
+                                <id>skipped-go-glv-warning</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>echo</goal>
+                                </goals>
+                                <configuration>
+                                    <message>
+                                        Skipping Go GLV build. Activate by creating file tinkerpop/gremlin-go/.glv
+                                    </message>
+                                    <level>WARNING</level>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
