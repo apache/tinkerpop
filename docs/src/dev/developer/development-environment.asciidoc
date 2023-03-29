@@ -381,7 +381,7 @@ organization. So if you don't already have an account on Docker Hub then create 
 a PMC member adds your account to the TinkerPop organization. Afterwards, authentication information needs to be added to
 the `~/.docker/config.json` file. This information can simply be added with the `docker login` command which will ask for
 credentials. This must be done only once. Finally, `docker push` can be used to push images to Docker Hub which will
-be done automatically on `mvn deploy` or it can be triggered manually with `mvn dockerfile:push`.
+be done automatically on `mvn deploy` or it can be triggered manually with `mvn docker:push`.
 
 [[building-testing]]
 == Building and Testing
