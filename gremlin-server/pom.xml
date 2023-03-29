@@ -32,6 +32,7 @@ limitations under the License.
         -->
         <maven.exec.skip>false</maven.exec.skip> <!-- default -->
         <skipImageBuild>${maven.exec.skip}</skipImageBuild>
+        <docker.platforms>linux/amd64,linux/arm64/v8</docker.platforms>
     </properties>
     <dependencies>
         <dependency>
@@ -207,6 +208,38 @@ limitations under the License.
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <configuration>
+                        <images>
+                            <image>
+                                <name>tinkerpop/gremlin-server:${project.version}</name>
+                                <build>
+                                    <dockerFile>${project.build.directory}/../Dockerfile</dockerFile>
+                                    <args>
+                                        <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
+                                    </args>
+                                    <tags>
+                                        <!-- docker.tags.* properties are empty if project.version is a pre-release
+                                            resulting in no additional tags -->
+                                        <tag>${docker.tags.majorVersion.minorVersion}</tag>
+                                        <tag>${docker.tags.latest}</tag>
+                                    </tags>
+                                    <buildx>
+                                        <platforms>
+                                            <platform>${docker.platforms}</platform>
+                                        </platforms>
+                                    </buildx>
+                                </build>
+                            </image>
+                        </images>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
@@ -233,7 +266,6 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
-
 
         <profile>
             <!--
@@ -378,78 +410,24 @@ limitations under the License.
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>docker-image-build</id>
+                                <id>docker:build</id>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
-                                <configuration>
-                                    <tag>${project.version}</tag>
-                                    <buildArgs>
-                                        <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
-                                    </buildArgs>
-                                </configuration>
+                                <phase>package</phase>
                             </execution>
                             <execution>
-                                <id>docker-image-tag-minor-version</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-tag-latest</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push</id>
-                                <phase>deploy</phase>
+                                <id>docker:push</id>
                                 <goals>
                                     <goal>push</goal>
                                 </goals>
-                                <configuration>
-                                    <tag>${project.version}</tag>
-                                    <skip>${only.when.is.snapshot.used}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-minor-version</id>
                                 <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-latest</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <repository>tinkerpop/gremlin-server</repository>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
