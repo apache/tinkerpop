@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -111,10 +112,11 @@ final class Settings {
     public static Settings read(final InputStream stream) {
         Objects.requireNonNull(stream);
 
-        final Constructor constructor = new Constructor(Settings.class);
+        final LoaderOptions options = new LoaderOptions();
+        final Constructor constructor = new Constructor(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
-        settingsDescription.putListPropertyType("hosts", String.class);
-        settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
+        settingsDescription.addPropertyParameters("hosts", String.class);
+        settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final Yaml yaml = new Yaml(constructor);
