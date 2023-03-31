@@ -120,7 +120,7 @@ const gremlins = {
     g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX: [function({g}) { return g.V().has("name","marko").and().has("name","marko").and().has("name","marko") }], 
     g_V_coinX1X: [function({g}) { return g.V().coin(1.0) }], 
     g_V_coinX0X: [function({g}) { return g.V().coin(0.0) }], 
-    g_withStrategiesXSeedStrategyX_V_coinX50X: [function({g}) { return g.withStrategies(new SeedStrategy({seed:999999})).V().coin(0.5) }], 
+    g_withStrategiesXSeedStrategyX_V_order_byXnameX_coinX50X: [function({g}) { return g.withStrategies(new SeedStrategy({seed:999999})).V().order().by("name").coin(0.5) }], 
     g_VX1X_outXcreatedX_inXcreatedX_cyclicPath: [function({g, vid1}) { return g.V(vid1).out("created").in_("created").cyclicPath() }], 
     g_VX1X_both_both_cyclicPath_byXageX: [function({g, vid1}) { return g.V(vid1).both().both().cyclicPath().by("age") }], 
     g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path: [function({g, vid1}) { return g.V(vid1).out("created").in_("created").cyclicPath().path() }], 

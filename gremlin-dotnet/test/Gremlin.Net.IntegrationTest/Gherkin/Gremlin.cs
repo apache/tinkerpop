@@ -131,7 +131,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name","marko").And().Has("name","marko").And().Has("name","marko")}}, 
                {"g_V_coinX1X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Coin(1.0)}}, 
                {"g_V_coinX0X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Coin(0.0)}}, 
-               {"g_withStrategiesXSeedStrategyX_V_coinX50X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new SeedStrategy(seed: 999999)).V().Coin(0.5)}}, 
+               {"g_withStrategiesXSeedStrategyX_V_order_byXnameX_coinX50X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new SeedStrategy(seed: 999999)).V().Order().By("name").Coin(0.5)}}, 
                {"g_VX1X_outXcreatedX_inXcreatedX_cyclicPath", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out("created").In("created").CyclicPath()}}, 
                {"g_VX1X_both_both_cyclicPath_byXageX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Both().Both().CyclicPath().By("age")}}, 
                {"g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out("created").In("created").CyclicPath().Path()}}, 
