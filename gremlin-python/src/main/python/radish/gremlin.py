@@ -102,7 +102,7 @@ world.gremlins = {
     'g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX': [(lambda g:g.V().has('name','marko').and_().has('name','marko').and_().has('name','marko'))], 
     'g_V_coinX1X': [(lambda g:g.V().coin(float(1.0)))], 
     'g_V_coinX0X': [(lambda g:g.V().coin(float(0.0)))], 
-    'g_withStrategiesXSeedStrategyX_V_coinX50X': [(lambda g:g.withStrategies(*[TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().coin(float(0.5)))], 
+    'g_withStrategiesXSeedStrategyX_V_order_byXnameX_coinX50X': [(lambda g:g.withStrategies(*[TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().order().by('name').coin(float(0.5)))], 
     'g_VX1X_outXcreatedX_inXcreatedX_cyclicPath': [(lambda g, vid1=None:g.V(vid1).out('created').in_('created').cyclicPath())], 
     'g_VX1X_both_both_cyclicPath_byXageX': [(lambda g, vid1=None:g.V(vid1).both().both().cyclicPath().by('age'))], 
     'g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path': [(lambda g, vid1=None:g.V(vid1).out('created').in_('created').cyclicPath().path())], 
