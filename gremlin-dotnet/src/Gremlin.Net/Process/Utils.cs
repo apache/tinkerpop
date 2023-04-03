@@ -80,9 +80,9 @@ namespace Gremlin.Net.Process
         /// </summary>
         private static string GenerateUserAgent()
         {
-            var applicationName = Assembly.GetExecutingAssembly().GetName().Name?
+            var applicationName = Assembly.GetEntryAssembly()?.GetName().Name?
                                                         .Replace(' ', '_') ?? "NotAvailable";
-            var driverVersion = AssemblyName.GetAssemblyName("Gremlin.Net.dll").Version?.ToString()
+            var driverVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString()
                                                         .Replace(' ', '_')  ?? "NotAvailable";
             var languageVersion = Environment.Version.ToString().Replace(' ', '_');
             var osName = Environment.OSVersion.Platform.ToString().Replace(' ', '_');
