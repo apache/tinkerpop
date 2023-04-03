@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -58,10 +59,11 @@ public class AllowList {
     public static AllowList read(final String file) throws Exception {
         final InputStream stream = new FileInputStream(new File(file));
 
-        final Constructor constructor = new Constructor(AllowList.class);
+        final LoaderOptions options = new LoaderOptions();
+        final Constructor constructor = new Constructor(AllowList.class, options);
         final TypeDescription allowListDescription = new TypeDescription(AllowList.class);
-        allowListDescription.putMapPropertyType("grants", String.class, Object.class);
-        allowListDescription.putMapPropertyType("groups", String.class, Object.class);
+        allowListDescription.addPropertyParameters("grants", String.class, Object.class);
+        allowListDescription.addPropertyParameters("groups", String.class, Object.class);
         constructor.addTypeDescription(allowListDescription);
 
         final Yaml yaml = new Yaml(constructor);

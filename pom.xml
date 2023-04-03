@@ -154,7 +154,7 @@ limitations under the License.
         <antlr4.version>4.9.1</antlr4.version>
         <caffeine.version>2.3.1</caffeine.version>
         <commons.collections.version>3.2.2</commons.collections.version>
-        <commons.configuration.version>2.8.0</commons.configuration.version>
+        <commons.configuration.version>2.9.0</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.8.0</commons.io.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
@@ -177,7 +177,7 @@ limitations under the License.
         <mockito.version>4.10.0</mockito.version>
         <netty.version>4.1.86.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <snakeyaml.version>1.32</snakeyaml.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.2.1</spark.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
