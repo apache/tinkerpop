@@ -58,6 +58,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-5-6, 3.5.6>>.
 
 * Fixed bug in grammar that prevented declaration of a `Map` key named `new` without quotes.
+* Improved performance of comparison (equals) between not compatible types and nulls
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: January 16, 2023)
