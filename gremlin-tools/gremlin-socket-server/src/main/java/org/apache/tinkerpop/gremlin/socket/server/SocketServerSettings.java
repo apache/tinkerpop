@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.socket.server;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -85,7 +86,8 @@ public class SocketServerSettings {
 
     public static SocketServerSettings read(final InputStream confInputStream) {
         Objects.requireNonNull(confInputStream);
-        final Yaml yaml = new Yaml(new Constructor(SocketServerSettings.class));
+        final LoaderOptions options = new LoaderOptions();
+        final Yaml yaml = new Yaml(new Constructor(SocketServerSettings.class, options));
         return yaml.load(confInputStream);
     }
 }
