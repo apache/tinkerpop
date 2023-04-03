@@ -295,6 +295,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `gremlin-console` to add imports via an ImportCustomizer to reduce time spent resolving imports.
 * Bumped to Groovy 2.5.21.
 * Added `AuthInfoProvider` interface and `NewDynamicAuth()` to gremlin-go for dynamic authentication support.
+* Bumped to `snakeyaml` 2.0 to fix security vulnerability.
+* Bumped to Apache `commons-configuration` 2.9.0 to fix security vulnerability.
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)

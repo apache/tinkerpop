@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.TypeDescription
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
@@ -101,7 +102,8 @@ class FileSandboxExtension extends AbstractSandboxExtension {
         public Map<String,String> staticVariableTypes
 
         public static Settings read(final File file) throws Exception {
-            final Constructor constructor = new Constructor(Settings.class)
+            final LoaderOptions options = new LoaderOptions()
+            final Constructor constructor = new Constructor(Settings.class, options)
             final TypeDescription settingsDescription = new TypeDescription(Settings.class)
             settingsDescription.putListPropertyType("methodWhiteList", String.class)
             settingsDescription.putMapPropertyType("staticVariableTypes", String.class, String.class)
