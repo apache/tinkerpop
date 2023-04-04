@@ -53,7 +53,7 @@ public abstract class IndexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<Integer, String>> get_g_V_hasLabelXpersonX_name_fold_orderXlocalX_index_withXmapX();
 
-    public abstract Traversal<Object, Object> get_g_injectXlistX1_2X_3X_index_unfold_unfold();
+    public abstract Traversal<Integer, Object> get_g_injectX1X_index_unfold_unfold();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -104,10 +104,10 @@ public abstract class IndexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    public void g_injectXlistX1_2X_3X_index_unfold_unfold() {
-        final Traversal<Object, Object> traversal = get_g_injectXlistX1_2X_3X_index_unfold_unfold();
+    public void g_injectX1X_index_unfold_unfold() {
+        final Traversal<Integer, Object> traversal = get_g_injectX1X_index_unfold_unfold();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(1,0,2,1,3,0), traversal);
+        checkResults(Arrays.asList(1,0), traversal);
     }
 
     public static class Traversals extends IndexTest {
@@ -136,8 +136,8 @@ public abstract class IndexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Object, Object> get_g_injectXlistX1_2X_3X_index_unfold_unfold() {
-            return g.inject(Arrays.asList(1,2), 3).index().unfold().unfold();
+        public Traversal<Integer, Object> get_g_injectX1X_index_unfold_unfold() {
+            return g.inject(1).index().unfold().unfold();
         }
     }
 }

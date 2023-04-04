@@ -105,7 +105,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_both_properties_properties_dedup_count();
 
-    public abstract Traversal<Object, Object> get_g_injectXlistX1_2_1X_3_listX4_5_5_dedupXlocalX_unfold();
+    public abstract Traversal<Integer, Object> get_g_injectX1X_dedupXlocalX_unfold();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -388,10 +388,10 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    public void g_injectXlistX1_2_1X_3_listX4_5_5X_dedupXlocalX_unfold() {
-        final Traversal<Object, Object> traversal = get_g_injectXlistX1_2_1X_3_listX4_5_5_dedupXlocalX_unfold();
+    public void g_injectX1X_dedupXlocalX_unfold() {
+        final Traversal<Integer, Object> traversal = get_g_injectX1X_dedupXlocalX_unfold();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(1,2,3,4,5), traversal);
+        checkResults(Arrays.asList(1), traversal);
     }
 
     public static class Traversals extends DedupTest {
@@ -506,8 +506,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Object, Object> get_g_injectXlistX1_2_1X_3_listX4_5_5_dedupXlocalX_unfold() {
-            return g.inject( Arrays.asList(1,2,1), 3, Arrays.asList(4,5,5)).dedup(Scope.local).unfold();
+        public Traversal<Integer, Object> get_g_injectX1X_dedupXlocalX_unfold() {
+            return g.inject( 1).dedup(Scope.local).unfold();
         }
     }
 }

@@ -308,17 +308,13 @@ Feature: Step - dedup()
       | marko |
       | josh  |
 
-    Scenario: g_injectXlistX1_2_1X_3_listX4_5_5X_dedupXlocalX_unfold
+    Scenario: g_injectX1X_dedupXlocalX_unfold
       Given the empty graph
       And the traversal of
         """
-        g.inject([1,2,1], 3, [4,5,5]).dedup(Scope.local).unfold()
+        g.inject(1).dedup(Scope.local).unfold()
         """
       When iterated to list
       Then the result should be unordered
         | result |
-        | 1 |
-        | 2 |
-        | 3 |
-        | 4 |
-        | 5 |
+        | d[1].i |

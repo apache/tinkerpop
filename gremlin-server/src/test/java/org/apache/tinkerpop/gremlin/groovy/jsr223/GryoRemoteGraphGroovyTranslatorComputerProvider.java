@@ -136,11 +136,11 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         reason = "The inject() step is not supported by GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupTest",
-        method = "g_injectXlistX1_2_1X_3_listX4_5_5X_dedupXlocalX_unfold",
+        method = "g_injectX1X_dedupXlocalX_unfold",
         reason = "The inject() step is not supported by GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexTest",
-        method = "g_injectXlistX1_2X_3X_index_unfold_unfold",
+        method = "g_injectX1X_index_unfold_unfold",
         reason = "The inject() step is not supported by GraphComputer")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GryoRemoteGraphGroovyTranslatorComputerProvider extends GryoRemoteGraphGroovyTranslatorProvider {
