@@ -367,7 +367,7 @@ public final class IteratorUtils {
             itty = (Iterator) o;
         else if (o instanceof Object[])
             itty = new ArrayIterator<>((Object[]) o);
-        else if (o.getClass().isArray()) // handle for primitive array
+        else if (o != null && o.getClass().isArray()) // handle for primitive array
             itty = new org.apache.commons.collections.iterators.ArrayIterator(o);
         else if (o instanceof Stream)
             itty = ((Stream) o).iterator();

@@ -170,6 +170,14 @@ public class IteratorUtilsTest {
     }
 
     @Test
+    public void shouldConvertNullToIterator() {
+        Iterator itty = IteratorUtils.asIterator(null);
+
+        assertEquals(null, itty.next());
+        assertFalse(itty.hasNext());
+    }
+
+    @Test
     public void shouldConvertThrowableToIterator() {
         final Exception ex = new Exception("test1");
         assertIterator(IteratorUtils.asIterator(ex), 1);
