@@ -70,6 +70,7 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
         else if (start instanceof Map)
             return (S) sortMap((Map) start, this.chainedComparator);
         else
+            // todo: handle arrays or skip?
             return start;
     }
 

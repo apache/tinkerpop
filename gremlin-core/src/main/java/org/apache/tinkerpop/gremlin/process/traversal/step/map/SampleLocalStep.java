@@ -61,6 +61,7 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements See
         } else if (start instanceof Collection) {
             return mapCollection((Collection) start);
         } else {
+            // todo: handle arrays or skip?
             return start;
         }
     }

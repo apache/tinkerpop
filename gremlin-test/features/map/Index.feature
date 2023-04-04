@@ -63,3 +63,19 @@ Feature: Step - index()
     Then the result should be unordered
       | result |
       | m[{"d[0].i": "josh", "d[1].i": "marko", "d[2].i": "peter", "d[3].i": "vadas"}] |
+
+  Scenario: g_injectXlistX1_2X_3X_index_unfold_unfold
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1,2], 3).index().unfold().unfold()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | 1 |
+      | 0 |
+      | 2 |
+      | 1 |
+      | 3 |
+      | 0 |

@@ -86,6 +86,7 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
         } else if (start instanceof Iterable) {
             return (S) applyRangeIterable((Iterable) start, low, high);
         }
+        // todo: handle arrays or skip?
         return start;
     }
 
