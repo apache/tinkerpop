@@ -37,7 +37,7 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Fixed MergeV/MergeE steps to work when onCreate is immutable map.
 * Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
 * Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
-
+* Fixed bug which caused some traversals to throw `GremlinTypeErrorException` to users.
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: January 16, 2023)
