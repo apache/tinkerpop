@@ -552,6 +552,7 @@ world.gremlins = {
     'g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_descX_selectXcX': [(lambda g:g.V().project('a','b','c').by(__.bothE().weight.sum_()).by(__.bothE().count()).by('name').order().by(__.math('a / b'),Order.desc).select('c'))], 
     'g_V_mathXit_plus_itXbyXageX': [(lambda g:g.V().math('_+_').by('age'))], 
     'g_V_valueMap_mathXit_plus_itXbyXselectXageX_unfoldXX': [(lambda g:g.V().valueMap().math('_+_').by(__.select('age').unfold()))], 
+    'g_VX1X_outE_asXexpectedWeightX_mathXexpectedWeightPlusOneXbyXweightX': [(lambda g, v1=None:g.V(v1).outE().as_('expectedWeight').math('expectedWeight + 1').by('weight'))], 
     'g_V_age_max': [(lambda g:g.V().age.max_())], 
     'g_V_foo_max': [(lambda g:g.V().foo.max_())], 
     'g_V_name_max': [(lambda g:g.V().name.max_())], 

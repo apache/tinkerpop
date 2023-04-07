@@ -61,4 +61,14 @@ public class MathStepTest extends StepTest {
         assertEquals(Arrays.asList("ac", "b", "_", "x", "z2"), new ArrayList<>(MathStep.getVariables("(ac + b / _) + log2 (x^3)^z2 + b + (tan (log10 ac / sqrt b))")));
     }
 
+    @Test
+    public void shouldParseVariablesWithFunctionNameMatches() {
+        assertEquals(Arrays.asList("c", "expa"), new ArrayList<>(MathStep.getVariables("c - expa")));
+        assertEquals(Arrays.asList("c", "expa"), new ArrayList<>(MathStep.getVariables("c - expa - exp(13)")));
+        assertEquals(Arrays.asList("c", "expa"), new ArrayList<>(MathStep.getVariables("sin 3 - c - expa - exp(13)")));
+        assertEquals(Arrays.asList("c", "cosa"), new ArrayList<>(MathStep.getVariables("c + cosa - 2cos(13)")));
+        assertEquals(Arrays.asList("cosa", "c"), new ArrayList<>(MathStep.getVariables("cosa + c")));
+        assertEquals(Arrays.asList("number1", "expected_value"), new ArrayList<>(MathStep.getVariables("number1-expected_value")));
+    }
+
 }
