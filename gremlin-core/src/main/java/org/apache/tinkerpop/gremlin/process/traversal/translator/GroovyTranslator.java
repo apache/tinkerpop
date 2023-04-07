@@ -232,11 +232,13 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             final Iterator<? extends Map.Entry<?, ?>> itty = ((Map<?, ?>) o).entrySet().iterator();
             while (itty.hasNext()) {
                 final Map.Entry<?,?> entry = itty.next();
-                script.append("(");
+                final Object k = entry.getKey();
+                final boolean wrap = !(k instanceof String);
+                if (wrap) script.append("(");
                 convertToScript(entry.getKey());
-                script.append("):(");
+                if (wrap) script.append(")");
+                script.append(":");
                 convertToScript(entry.getValue());
-                script.append(")");
                 if (itty.hasNext())
                     script.append(",");
             }
