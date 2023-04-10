@@ -814,42 +814,42 @@ public class TinkerGraphTest {
             g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).to(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for from() - encountered: null", ise.getMessage());
+            assertEquals("The value given to addE(link).from() must resolve to a Vertex but null was specified instead", ise.getMessage());
         }
 
         try {
             g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).from(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: null", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but null was specified instead", ise.getMessage());
         }
 
         try {
             g.addE("link").property("k", 100).from(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: null", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but null was specified instead", ise.getMessage());
         }
 
         try {
             g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).from("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: String", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
         }
 
         try {
             g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: String", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
         }
 
         try {
             g.V(1).as("v").values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("v").from("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for from() - encountered: String", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
         }
     }
 
