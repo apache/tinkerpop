@@ -115,13 +115,13 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             final Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
             if (!(theTo instanceof Vertex))
                 throw new IllegalStateException(String.format(
-                        "addE(%s) could not find a Vertex for to() - encountered: %s", edgeLabel,
+                        "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                         null == theTo ? "null" : theTo.getClass().getSimpleName()));
 
             final Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
             if (!(theFrom instanceof Vertex))
                 throw new IllegalStateException(String.format(
-                        "addE(%s) could not find a Vertex for from() - encountered: %s", edgeLabel,
+                        "The value given to addE(%s).from() must resolve to a Vertex but %s was specified instead", edgeLabel,
                         null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
 
             Vertex toVertex = (Vertex) theTo;
