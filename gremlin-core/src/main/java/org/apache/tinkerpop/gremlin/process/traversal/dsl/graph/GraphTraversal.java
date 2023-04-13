@@ -1608,35 +1608,31 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.hasId((P) id);
         }
         else {
-            Object[] ids;
+            this.asAdmin().getBytecode().addStep(Symbols.hasId, id, otherIds);
+
+            //using ArrayList instead of arrays given P.within() turns all arguments into lists
+            final List<Object> ids = new ArrayList<>();
             if (id instanceof Object[]) {
-                ids = (Object[]) id;
-            } else {
-                ids = new Object[] {id};
-            }
-            int size = ids.length;
-            int capacity = size;
+                Collections.addAll(ids, (Object[]) id);
+            } else if (id instanceof Collection) {
+                // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
+                // this also aligns with behavior of hasId() when it's pushed down to g.V() (TINKERPOP-2863)
+                ids.addAll((Collection<?>) id);
+            } else
+                ids.add(id);
+
+            // unrolling ids from lists works cleaner with Collection too, as otherwise they will need to
+            // be turned into array first
             for (final Object i : otherIds) {
-                if (i.getClass().isArray()) {
-                    final Object[] tmp = (Object[]) i;
-                    int newLength = size + tmp.length;
-                    if (capacity < newLength) {
-                        ids = Arrays.copyOf(ids, capacity = size + tmp.length);
-                    }
-                    System.arraycopy(tmp, 0, ids, size, tmp.length);
-                    size = newLength;
-                } else {
-                    if (capacity == size) {
-                        ids = Arrays.copyOf(ids, capacity = size * 2);
-                    }
-                    ids[size++] = i;
-                }
+                if (i instanceof Object[]) {
+                    Collections.addAll(ids, (Object[]) i);
+                } else if (i instanceof Collection) {
+                    ids.addAll((Collection<?>) i);
+                } else
+                    ids.add(i);
             }
-            if (capacity > size) {
-                ids = Arrays.copyOf(ids, size);
-            }
-            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids);
-            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.length == 1 ? P.eq(ids[0]) : P.within(ids)));
+
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
         }
     }
 

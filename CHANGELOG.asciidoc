@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in parsing of `math()` expressions where variables were not being identified if they contained a text associated with a function.
 * Refactored `FilterRankingStrategy` to improve performance for deeply nested traversals.
 * Added `AuthInfoProvider` interface and `NewDynamicAuth()` to gremlin-go for dynamic authentication support.
+* Fixed bug where `hasId()` unrolls ids in Java arrays to put into `P.within` but not ids in lists, this also aligned behavior of start-step and mid-traversal hasId().
 * Bumped to `snakeyaml` 2.0 to fix security vulnerability.
 * Bumped to Apache `commons-configuration` 2.9.0 to fix security vulnerability.
 
