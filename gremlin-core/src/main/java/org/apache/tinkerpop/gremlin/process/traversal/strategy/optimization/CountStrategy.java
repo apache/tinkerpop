@@ -181,7 +181,7 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                             }
                         }
                     } else {
-                        TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
+                        TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange < 0 ? 0 : highRange), curr, traversal);
                     }
                     i++;
                 }
