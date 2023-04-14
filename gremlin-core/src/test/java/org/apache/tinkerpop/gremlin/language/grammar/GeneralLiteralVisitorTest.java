@@ -518,6 +518,7 @@ public class GeneralLiteralVisitorTest {
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
                     {"[\"name\":\"simba\"]", 1},
+                    {"[(\"name\"):\"simba\"]", 1},
                     {"[name:\"simba\", age: 29]", 2},
                     {"[:]", 0},
                     {"[1:'a']", 1},
@@ -527,6 +528,10 @@ public class GeneralLiteralVisitorTest {
                     {"[(from): 'source', (Direction.to): 'target']", 2},
                     {"[\"name\":\"simba\",\"age\":32]", 2},
                     {"[\"name\":\"simba\",\"age\":[2,3]]", 2},
+                    {"[(3I):\"32\",([1I, 2I, 3.1D]):4I,\"x\":4I,\"+x\":8I]", 4},
+                    {"[(3I):\"32\",[1I, 2I, 3.1D]:4I,\"x\":4I,\"+x\":8I]", 4},
+                    {"[[label: 'person', T.id: 1]:\"x\"]", 1},
+                    {"[([label: 'person', T.id: 1]):\"x\"]", 1},
                     {"[new: true]", 1},
                     {"[new : true]", 1},
                     {"['new' : true]", 1},

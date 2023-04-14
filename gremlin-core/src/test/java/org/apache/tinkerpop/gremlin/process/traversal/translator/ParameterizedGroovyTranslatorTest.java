@@ -167,7 +167,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals(Integer.valueOf(2), bindings.get("_args_3"));
         assertEquals(Double.valueOf(3.1), bindings.get("_args_4"));
         assertEquals(Integer.valueOf(4), bindings.get("_args_5"));
-        assertEquals("g.V().id().is([(_args_0):(_args_1),([_args_2, _args_3, _args_4]):(_args_5)])", script.getScript());
+        assertEquals("g.V().id().is([(_args_0):_args_1,([_args_2, _args_3, _args_4]):_args_5])", script.getScript());
     }
 
     @Test
