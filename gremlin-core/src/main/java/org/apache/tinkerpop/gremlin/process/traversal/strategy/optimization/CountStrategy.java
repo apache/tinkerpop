@@ -140,14 +140,17 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                         traversal.asAdmin().removeStep(curr); // CountStep
                         size -= 2;
                         if (!dismissCountIs) {
-                            final TraversalParent p;
-                            if ((p = traversal.getParent()) instanceof FilterStep && !(p instanceof ConnectiveStep)) {
-                                final Step<?, ?> filterStep = parent.asStep();
-                                final Traversal.Admin parentTraversal = filterStep.getTraversal();
-                                final Step notStep = new NotStep<>(parentTraversal,
-                                        traversal.getSteps().isEmpty() ? __.identity() : traversal);
-                                filterStep.getLabels().forEach(notStep::addLabel);
-                                TraversalHelper.replaceStep(filterStep, notStep, parentTraversal);
+                            if (parent instanceof ConnectiveStep) {
+                                // wrap the child of and()/or() in not().
+                                final Step<?, ?> notStep = transformToNotStep(traversal, parent);
+                                TraversalHelper.removeAllSteps(traversal);
+                                traversal.addStep(notStep);
+                            } else if (parent instanceof FilterStep) {
+                                // converts entire where(<x>.count().is(0)) to not(<x>). that's why ConnectiveStep
+                                // is handled differently above.
+                                final Step filterStep = parent.asStep();
+                                final Step<?, ?> notStep = transformToNotStep(traversal, parent);
+                                TraversalHelper.replaceStep(filterStep, notStep, filterStep.getTraversal());
                             } else {
                                 final Traversal.Admin inner;
                                 if (prev != null) {
@@ -185,6 +188,19 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
             }
             prev = curr;
         }
+    }
+
+    /**
+     * The {@code traversal} argument was marked as one that could be converted to {@code not()}, so wrap it inside
+     * that step and copy the labels.
+     */
+    private Step<?, ?> transformToNotStep(final Traversal.Admin<?, ?> traversal, final TraversalParent parent) {
+        final Step<?, ?> filterStep = parent.asStep();
+        final Traversal.Admin<?,?> parentTraversal = filterStep.getTraversal();
+        final Step<?,?> notStep = new NotStep<>(parentTraversal,
+                traversal.getSteps().isEmpty() ? __.identity() : traversal.clone());
+        filterStep.getLabels().forEach(notStep::addLabel);
+        return notStep;
     }
 
     private boolean doStrategy(final Step step) {
