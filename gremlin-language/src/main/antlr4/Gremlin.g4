@@ -1396,10 +1396,12 @@ genericLiteralMap
 // allow builds of Map that sorta make sense in the Gremlin context
 mapEntry
     : NEW COLON genericLiteral  // explicit for [new: true] - if we had other keywords like that maybe we'd group them up?
-    | stringLiteral COLON genericLiteral
-    | numericLiteral COLON genericLiteral
+    | (LPAREN stringLiteral RPAREN | stringLiteral) COLON genericLiteral
+    | (LPAREN numericLiteral RPAREN | numericLiteral) COLON genericLiteral
     | (LPAREN traversalToken RPAREN | traversalToken) COLON genericLiteral
     | (LPAREN traversalDirection RPAREN | traversalDirection) COLON genericLiteral
+    | (LPAREN genericLiteralCollection RPAREN | genericLiteralCollection) COLON genericLiteral
+    | (LPAREN genericLiteralMap RPAREN | genericLiteralMap) COLON genericLiteral
     | Identifier COLON genericLiteral
     ;
 
