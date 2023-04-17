@@ -30,6 +30,8 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Fixed bug in `GroovyTranslator` that surrounded `String` keys with parenthesis for `Map` when not necessary.
 * Added support to the grammar allowing `List` and `Map` key declarations for `Map` entries.
 * Improved performance of comparison (equals) between not compatible types and nulls
+* Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
+* Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: January 16, 2023)

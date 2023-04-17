@@ -19,10 +19,117 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponentVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.FailStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -41,6 +148,138 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class BytecodeHelper {
+    private static final Map<String, List<Class<? extends Step>>> byteCodeSymbolStepMap;
+
+    static {
+        final Map<String, List<Class<? extends Step>>> operationStepMap = new HashMap<String, List<Class<? extends Step>>>() {{
+            put(GraphTraversal.Symbols.map, Arrays.asList(LambdaMapStep.class, TraversalMapStep.class));
+            put(GraphTraversal.Symbols.flatMap, Arrays.asList(LambdaFlatMapStep.class, TraversalFlatMapStep.class));
+            put(GraphTraversal.Symbols.id, Collections.singletonList(IdStep.class));
+            put(GraphTraversal.Symbols.label, Collections.singletonList(LabelStep.class));
+            put(GraphTraversal.Symbols.identity, Collections.singletonList(IdentityStep.class));
+            put(GraphTraversal.Symbols.constant, Collections.singletonList(ConstantStep.class));
+            put(GraphTraversal.Symbols.V, Collections.singletonList(GraphStep.class));
+            put(GraphTraversal.Symbols.E, Collections.singletonList(GraphStep.class));
+            put(GraphTraversal.Symbols.to, Collections.emptyList());
+            put(GraphTraversal.Symbols.out, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.in, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.both, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.toE, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.outE, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.inE, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.bothE, Collections.singletonList(VertexStep.class));
+            put(GraphTraversal.Symbols.toV, Collections.singletonList(EdgeVertexStep.class));
+            put(GraphTraversal.Symbols.outV, Collections.singletonList(EdgeVertexStep.class));
+            put(GraphTraversal.Symbols.inV, Collections.singletonList(EdgeVertexStep.class));
+            put(GraphTraversal.Symbols.bothV, Collections.singletonList(EdgeVertexStep.class));
+            put(GraphTraversal.Symbols.otherV, Collections.singletonList(EdgeVertexStep.class));
+            put(GraphTraversal.Symbols.order, Arrays.asList(OrderGlobalStep.class, OrderLocalStep.class));
+            put(GraphTraversal.Symbols.properties, Collections.singletonList(PropertiesStep.class));
+            put(GraphTraversal.Symbols.values, Collections.singletonList(PropertiesStep.class));
+            put(GraphTraversal.Symbols.propertyMap, Collections.singletonList(PropertyMapStep.class));
+            put(GraphTraversal.Symbols.valueMap, Collections.singletonList(PropertyMapStep.class));
+            put(GraphTraversal.Symbols.elementMap, Collections.singletonList(ElementMapStep.class));
+            put(GraphTraversal.Symbols.select, Arrays.asList(SelectStep.class, SelectOneStep.class,
+                    TraversalSelectStep.class, TraversalMapStep.class));
+            put(GraphTraversal.Symbols.key, Collections.singletonList(PropertyKeyStep.class));
+            put(GraphTraversal.Symbols.value, Collections.singletonList(PropertyValueStep.class));
+            put(GraphTraversal.Symbols.path, Collections.singletonList(PathStep.class));
+            put(GraphTraversal.Symbols.match, Collections.singletonList(MatchStep.class));
+            put(GraphTraversal.Symbols.math, Collections.singletonList(MathStep.class));
+            put(GraphTraversal.Symbols.sack, Arrays.asList(SackStep.class, SackValueStep.class));
+            put(GraphTraversal.Symbols.loops, Collections.singletonList(LoopsStep.class));
+            put(GraphTraversal.Symbols.project, Collections.singletonList(ProjectStep.class));
+            put(GraphTraversal.Symbols.unfold, Collections.singletonList(UnfoldStep.class));
+            put(GraphTraversal.Symbols.fold, Collections.singletonList(FoldStep.class));
+            put(GraphTraversal.Symbols.count, Arrays.asList(CountGlobalStep.class, CountLocalStep.class));
+            put(GraphTraversal.Symbols.sum, Arrays.asList(SumGlobalStep.class, SumLocalStep.class));
+            put(GraphTraversal.Symbols.max, Arrays.asList(MaxGlobalStep.class, MaxLocalStep.class));
+            put(GraphTraversal.Symbols.min, Arrays.asList(MinGlobalStep.class, MinGlobalStep.class));
+            put(GraphTraversal.Symbols.mean, Arrays.asList(MeanGlobalStep.class, MeanLocalStep.class));
+            put(GraphTraversal.Symbols.group, Arrays.asList(GroupStep.class, GroupSideEffectStep.class));
+            put(GraphTraversal.Symbols.groupCount, Arrays.asList(GroupCountStep.class, GroupCountSideEffectStep.class));
+            put(GraphTraversal.Symbols.tree, Arrays.asList(TreeStep.class, TreeSideEffectStep.class));
+            put(GraphTraversal.Symbols.addV, Collections.singletonList(AddVertexStep.class));
+            put(GraphTraversal.Symbols.addE, Collections.singletonList(AddEdgeStep.class));
+            put(GraphTraversal.Symbols.mergeV, Collections.singletonList(MergeVertexStep.class));
+            put(GraphTraversal.Symbols.mergeE, Collections.singletonList(MergeEdgeStep.class));
+            put(GraphTraversal.Symbols.from, Collections.emptyList());
+            put(GraphTraversal.Symbols.filter, Arrays.asList(LambdaFilterStep.class, TraversalFilterStep.class));
+            put(GraphTraversal.Symbols.or, Collections.singletonList(OrStep.class));
+            put(GraphTraversal.Symbols.and, Collections.singletonList(AndStep.class));
+            put(GraphTraversal.Symbols.inject, Collections.singletonList(InjectStep.class));
+            put(GraphTraversal.Symbols.dedup, Arrays.asList(DedupGlobalStep.class, DedupLocalStep.class));
+            put(GraphTraversal.Symbols.where, Arrays.asList(WherePredicateStep.class, WhereTraversalStep.class,
+                    TraversalFilterStep.class));
+            put(GraphTraversal.Symbols.has, Collections.singletonList(HasStep.class));
+            // TODO-hppentak: check with stephen for not step. Do we need to include HasStep as well here?
+            put(GraphTraversal.Symbols.hasNot, Collections.singletonList(NotStep.class));
+            put(GraphTraversal.Symbols.hasLabel, Collections.singletonList(HasStep.class));
+            put(GraphTraversal.Symbols.hasId, Collections.singletonList(HasStep.class));
+            put(GraphTraversal.Symbols.hasKey, Collections.singletonList(HasStep.class));
+            put(GraphTraversal.Symbols.hasValue, Collections.singletonList(HasStep.class));
+            put(GraphTraversal.Symbols.is, Collections.singletonList(IsStep.class));
+            put(GraphTraversal.Symbols.not, Collections.singletonList(NotStep.class));
+            put(GraphTraversal.Symbols.range, Arrays.asList(RangeGlobalStep.class, RangeLocalStep.class));
+            put(GraphTraversal.Symbols.limit, Arrays.asList(RangeGlobalStep.class, RangeLocalStep.class));
+            put(GraphTraversal.Symbols.skip, Arrays.asList(RangeGlobalStep.class, RangeLocalStep.class));
+            put(GraphTraversal.Symbols.tail, Arrays.asList(TailGlobalStep.class, TailLocalStep.class));
+            put(GraphTraversal.Symbols.coin, Collections.singletonList(CoinStep.class));
+            put(GraphTraversal.Symbols.io, Collections.singletonList(IoStep.class));
+            put(GraphTraversal.Symbols.read, Collections.emptyList());
+            put(GraphTraversal.Symbols.write, Collections.emptyList());
+            put(GraphTraversal.Symbols.call, Collections.singletonList(CallStep.class));
+            put(GraphTraversal.Symbols.element, Collections.singletonList(ElementStep.class));
+            put(GraphTraversal.Symbols.timeLimit, Collections.singletonList(TimeLimitStep.class));
+            put(GraphTraversal.Symbols.simplePath, Collections.singletonList(PathFilterStep.class));
+            put(GraphTraversal.Symbols.cyclicPath, Collections.singletonList(PathFilterStep.class));
+            put(GraphTraversal.Symbols.sample, Arrays.asList(SampleGlobalStep.class, SampleLocalStep.class));
+            put(GraphTraversal.Symbols.drop, Collections.singletonList(DropStep.class));
+            put(GraphTraversal.Symbols.sideEffect, Arrays.asList(LambdaSideEffectStep.class, TraversalSideEffectStep.class));
+            put(GraphTraversal.Symbols.cap, Collections.singletonList(SideEffectCapStep.class));
+            put(GraphTraversal.Symbols.property, Collections.singletonList(AddPropertyStep.class));
+
+            /**
+             * @deprecated As of release 3.4.3, replaced by {@link Symbols#aggregate} with a {@link Scope#local}.
+             */
+            put(GraphTraversal.Symbols.store, Collections.singletonList(AggregateLocalStep.class));
+            put(GraphTraversal.Symbols.aggregate, Arrays.asList(AggregateLocalStep.class, AggregateGlobalStep.class));
+            put(GraphTraversal.Symbols.fail, Collections.singletonList(FailStep.class));
+            put(GraphTraversal.Symbols.subgraph, Collections.singletonList(SubgraphStep.class));
+            put(GraphTraversal.Symbols.barrier, Arrays.asList(NoOpBarrierStep.class, LambdaCollectingBarrierStep.class));
+            put(GraphTraversal.Symbols.index, Collections.singletonList(IndexStep.class));
+            put(GraphTraversal.Symbols.local, Collections.singletonList(LocalStep.class));
+            put(GraphTraversal.Symbols.emit, Collections.emptyList());
+            put(GraphTraversal.Symbols.repeat, Collections.singletonList(RepeatStep.class));
+            put(GraphTraversal.Symbols.until, Collections.emptyList());
+            put(GraphTraversal.Symbols.branch, Collections.singletonList(BranchStep.class));
+            put(GraphTraversal.Symbols.union, Collections.singletonList(UnionStep.class));
+            put(GraphTraversal.Symbols.coalesce, Collections.singletonList(CoalesceStep.class));
+            put(GraphTraversal.Symbols.choose, Collections.singletonList(ChooseStep.class));
+            put(GraphTraversal.Symbols.optional, Collections.singletonList(OptionalStep.class));
+            put(GraphTraversal.Symbols.pageRank, Collections.singletonList(PageRankVertexProgramStep.class));
+            put(GraphTraversal.Symbols.peerPressure, Collections.singletonList(PeerPressureVertexProgramStep.class));
+            put(GraphTraversal.Symbols.connectedComponent, Collections.singletonList(ConnectedComponentVertexProgramStep.class));
+            put(GraphTraversal.Symbols.shortestPath, Collections.singletonList(ShortestPathVertexProgramStep.class));
+            put(GraphTraversal.Symbols.program, Collections.singletonList(ProgramVertexProgramStep.class));
+            put(GraphTraversal.Symbols.by, Collections.emptyList());
+            put(GraphTraversal.Symbols.with, Collections.emptyList());
+            put(GraphTraversal.Symbols.times, Collections.emptyList());
+            put(GraphTraversal.Symbols.as, Collections.emptyList());
+            put(GraphTraversal.Symbols.option, Collections.emptyList());
+            put(Traversal.Symbols.profile, Collections.singletonList(ProfileStep.class));
+            put(Traversal.Symbols.none, Collections.singletonList(NoneStep.class));
+            put(TraversalSource.Symbols.withSack, Collections.emptyList());
+            put(TraversalSource.Symbols.withoutStrategies, Collections.emptyList());
+            put(TraversalSource.Symbols.withStrategies, Collections.emptyList());
+            put(TraversalSource.Symbols.withSideEffect, Collections.emptyList());
+            put(TraversalSource.Symbols.withRemote, Collections.emptyList());
+            put(TraversalSource.Symbols.withComputer, Collections.emptyList());
+            put(GraphTraversalSource.Symbols.withBulk, Collections.emptyList());
+            put(GraphTraversalSource.Symbols.withPath, Collections.emptyList());
+        }};
+        byteCodeSymbolStepMap = Collections.unmodifiableMap(operationStepMap);
+    }
 
     private BytecodeHelper() {
         // public static methods only
@@ -120,5 +359,22 @@ public final class BytecodeHelper {
                     arguments[i] = DetachedFactory.detach(arguments[i], false);
             }
         }
+    }
+
+    /**
+     * Returns a list of {@link Step} which can be added to the traversal for the provided operator.
+     * <p>
+     * Graph Traversal may or may not add the returned list of steps into the traversal. List only represents
+     * possible steps added to traversal given an operator.
+     * </p>
+     *
+     * @param operator Graph operator
+     * @return List of possible {@link Step}(s)
+     */
+    public static List<Class<? extends Step>> findPossibleTraversalSteps(final String operator) {
+        if (!byteCodeSymbolStepMap.containsKey(operator)) {
+            throw new IllegalArgumentException("Unable to find Traversal steps for the graph operator: " + operator);
+        }
+        return byteCodeSymbolStepMap.get(operator);
     }
 }
