@@ -64,14 +64,14 @@ Feature: Step - index()
       | result |
       | m[{"d[0].i": "josh", "d[1].i": "marko", "d[2].i": "peter", "d[3].i": "vadas"}] |
 
-  Scenario: g_injectX1X_index_unfold_unfold
-    Given the empty graph
+  Scenario: g_VX1X_valuesXageX_index_unfold_unfold
+    Given the modern graph
     And the traversal of
       """
-      g.inject(1).index().unfold().unfold()
+      g.V(1).values("age").index().unfold().unfold()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1].i |
+      | d[29].i |
       | d[0].i |

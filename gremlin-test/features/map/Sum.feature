@@ -140,3 +140,14 @@ Feature: Step - sum()
     Then the result should be unordered
       | result |
       | d[15].i |
+
+  Scenario: g_VX1X_valuesXageX_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").sum(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

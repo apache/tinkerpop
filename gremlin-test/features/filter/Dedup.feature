@@ -308,13 +308,13 @@ Feature: Step - dedup()
       | marko |
       | josh  |
 
-    Scenario: g_injectX1X_dedupXlocalX_unfold
-      Given the empty graph
+    Scenario: g_VX1X_valuesXageX_dedupXlocalX_unfold
+      Given the modern graph
       And the traversal of
         """
-        g.inject(1).dedup(Scope.local).unfold()
+        g.V(1).values("age").dedup(Scope.local).unfold()
         """
       When iterated to list
       Then the result should be unordered
         | result |
-        | d[1].i |
+        | d[29].i |

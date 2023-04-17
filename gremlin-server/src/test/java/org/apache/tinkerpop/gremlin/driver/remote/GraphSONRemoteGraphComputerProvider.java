@@ -131,14 +131,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
         method = "g_injectX1_null_nullX_path_dedup",
         reason = "The inject() step is not supported by GraphComputer")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupTest",
-        method = "g_injectX1X_dedupXlocalX_unfold",
-        reason = "The inject() step is not supported by GraphComputer")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexTest",
-        method = "g_injectX1X_index_unfold_unfold",
-        reason = "The inject() step is not supported by GraphComputer")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphSONRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
     public GraphSONRemoteGraphComputerProvider() {

@@ -188,3 +188,14 @@ Feature: Step - tail()
       | result |
       | l[josh,ripple] |
       | l[josh,lop] |
+
+  Scenario: g_VX1X_valuesXageX_tailXlocal_5X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").tail(Scope.local, 50)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

@@ -156,3 +156,14 @@ Feature: Step - count()
     Then the result should be ordered
       | result |
       | d[6].l |
+
+  Scenario: g_VX1X_valuesXageX_countXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").count(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |

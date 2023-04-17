@@ -263,3 +263,14 @@ Feature: Step - range()
       | marko |
       | josh |
       | peter |
+
+  Scenario: g_VX1X_valuesXageX_rangeXlocal_20_30X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").range(Scope.local, 20, 30)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

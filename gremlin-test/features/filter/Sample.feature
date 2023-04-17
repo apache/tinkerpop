@@ -72,3 +72,13 @@ Feature: Step - sample()
       of sample().
       """
 
+  Scenario: g_VX1X_valuesXageX_sampleXlocal_5X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").sample(Scope.local, 5)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

@@ -366,3 +366,14 @@ Feature: Step - order()
       | m[{"t[label]":"person"}] |
       | m[{"t[id]":"v[marko].id"}] |
       | m[{"age":29}] |
+
+  Scenario: g_VX1X_valuesXageX_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

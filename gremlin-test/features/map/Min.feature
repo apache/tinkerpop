@@ -156,3 +156,14 @@ Feature: Step - min()
     Then the result should be unordered
       | result |
       | d[9999999999].l |
+
+  Scenario: g_VX1X_valuesXageX_minXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).values("age").min(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
