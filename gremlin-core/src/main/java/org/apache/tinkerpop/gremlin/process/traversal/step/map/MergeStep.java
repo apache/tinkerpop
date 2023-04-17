@@ -33,8 +33,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -49,8 +50,8 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
-public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E> implements Mutating<Event>,
-                                                                              TraversalOptionParent<Merge, S, C> {
+public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
+        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C> {
 
     protected final boolean isStart;
     protected boolean first = true;
