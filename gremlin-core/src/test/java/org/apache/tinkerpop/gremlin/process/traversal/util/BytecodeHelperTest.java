@@ -18,14 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -37,13 +45,27 @@ import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class BytecodeHelperTest {
     private static final GraphTraversalSource g = EmptyGraph.instance().traversal();
-    
+    private static final List<String> MODULATING_OPERATORS = new ArrayList<String>() {{
+        add(GraphTraversal.Symbols.to);
+        add(GraphTraversal.Symbols.from);
+        add(GraphTraversal.Symbols.read);
+        add(GraphTraversal.Symbols.write);
+        add(GraphTraversal.Symbols.emit);
+        add(GraphTraversal.Symbols.until);
+        add(GraphTraversal.Symbols.by);
+        add(GraphTraversal.Symbols.with);
+        add(GraphTraversal.Symbols.times);
+        add(GraphTraversal.Symbols.as);
+        add(GraphTraversal.Symbols.option);
+    }};
+
     @Test
     public void shouldFindStrategy() {
         final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(g.with("x").with("y", 100).V().asAdmin().getBytecode(), OptionsStrategy.class);
@@ -99,5 +121,34 @@ public class BytecodeHelperTest {
         assertThat(BytecodeHelper.isGraphOperation(TX_COMMIT.getBytecode()), is(true));
         assertThat(BytecodeHelper.isGraphOperation(TX_ROLLBACK.getBytecode()), is(true));
         assertThat(BytecodeHelper.isGraphOperation(g.V().out("knows").asAdmin().getBytecode()), is(false));
+    }
+
+    @Test
+    public void findPossibleTraversalSteps() {
+        Arrays.stream(Traversal.Symbols.class.getDeclaredFields()).filter(field -> {
+            final int modifier = field.getModifiers();
+            // We are interested in public static final string fields defined in the class
+            return Modifier.isStatic(modifier) && Modifier.isPublic(modifier) && Modifier.isFinal(modifier);
+        }).forEach(field -> {
+            try {
+                final List<Class<? extends Step>> steps = BytecodeHelper.findPossibleTraversalSteps((String) field.get(null));
+                assertNotNull(steps);
+            } catch (Exception ex) {
+                Assert.fail(String.format("Error while finding possible Traversal step for operator %s. Exception: %s", field.getName(), ex));
+            }
+        });
+    }
+
+    @Test
+    public void findPossibleTraversalStepsForModulatorOperators() {
+        MODULATING_OPERATORS.forEach(operator -> {
+            try {
+                final List<Class<? extends Step>> steps = BytecodeHelper.findPossibleTraversalSteps(operator);
+                assertNotNull(steps);
+                assertThat(steps.size(), is(0));
+            } catch (Exception ex) {
+                Assert.fail(String.format("Error while finding possible Traversal step for operator %s. Exception: %s", operator, ex));
+            }
+        });
     }
 }
