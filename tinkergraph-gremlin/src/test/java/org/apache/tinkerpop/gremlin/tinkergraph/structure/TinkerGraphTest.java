@@ -697,7 +697,7 @@ public class TinkerGraphTest {
         final List<Vertex> expectedStartTraversal = g.V().hasId(1, 2).toList();
 
         assertEquals(expectedStartTraversal, g.V().hasId(new Integer[]{1, 2}).toList());
-        assertEquals(expectedStartTraversal,g.V().hasId(Arrays.asList(1, 2)).toList());
+        assertEquals(expectedStartTraversal, g.V().hasId(Arrays.asList(1, 2)).toList());
     }
 
     /**
