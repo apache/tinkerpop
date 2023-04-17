@@ -80,7 +80,7 @@ public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public int hashCode() {
-        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.path.hashCode());
+        return carriesUnmergeableSack() ? System.identityHashCode(this) : (31 * super.hashCode() + this.path.hashCode());
     }
 
     protected final boolean equals(final B_LP_O_P_S_SE_SL_Traverser other) {
