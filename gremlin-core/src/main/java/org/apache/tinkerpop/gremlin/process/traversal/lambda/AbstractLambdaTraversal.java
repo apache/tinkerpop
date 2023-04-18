@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGen
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -168,6 +169,11 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     @Override
     public boolean isLocked() {
         return null == this.bypassTraversal || this.bypassTraversal.isLocked();
+    }
+
+    @Override
+    public void lock() {
+       if (this.bypassTraversal != null) bypassTraversal.lock();
     }
 
     /**

@@ -113,6 +113,11 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public void lock() {
+        // nothing to do here as this type of traversal is always in a locked state
+    }
+
+    @Override
     public TraverserGenerator getTraverserGenerator() {
         return null;
     }
