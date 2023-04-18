@@ -43,7 +43,7 @@ import java.util.function.BinaryOperator;
  */
 public class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements TraversalParent, ByModulating {
 
-    private Traversal.Admin<S, E> keyTraversal = null;
+    protected Traversal.Admin<S, E> keyTraversal = null;
 
     public GroupCountStep(final Traversal.Admin traversal) {
         super(traversal);

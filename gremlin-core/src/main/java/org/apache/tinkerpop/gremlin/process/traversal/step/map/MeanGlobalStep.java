@@ -38,9 +38,9 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MeanGlobalStep<S extends Number, E extends Number> extends ReducingBarrierStep<S, E> {
+public class MeanGlobalStep<S extends Number, E extends Number> extends ReducingBarrierStep<S, E> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.BULK);
+    protected static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.BULK);
 
     public MeanGlobalStep(final Traversal.Admin traversal) {
         super(traversal);

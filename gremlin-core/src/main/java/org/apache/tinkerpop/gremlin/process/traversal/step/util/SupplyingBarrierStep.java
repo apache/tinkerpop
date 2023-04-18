@@ -35,7 +35,7 @@ import java.util.function.BinaryOperator;
  */
 public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier<Boolean> {
 
-    private boolean done = false;
+    protected boolean done = false;
 
     public SupplyingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);

@@ -31,9 +31,9 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsStep<S> extends FilterStep<S> {
+public class IsStep<S> extends FilterStep<S> {
 
-    private P<S> predicate;
+    protected P<S> predicate;
 
     public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);

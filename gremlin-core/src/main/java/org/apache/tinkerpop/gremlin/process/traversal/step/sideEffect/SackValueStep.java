@@ -38,11 +38,11 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SackValueStep<S, A, B> extends AbstractStep<S, S> implements TraversalParent, ByModulating, LambdaHolder {
+public class SackValueStep<S, A, B> extends AbstractStep<S, S> implements TraversalParent, ByModulating, LambdaHolder {
 
-    private Traversal.Admin<S, B> sackTraversal = null;
+    protected Traversal.Admin<S, B> sackTraversal = null;
 
-    private BiFunction<A, B, A> sackFunction;
+    protected BiFunction<A, B, A> sackFunction;
 
     public SackValueStep(final Traversal.Admin traversal, final BiFunction<A, B, A> sackFunction) {
         super(traversal);

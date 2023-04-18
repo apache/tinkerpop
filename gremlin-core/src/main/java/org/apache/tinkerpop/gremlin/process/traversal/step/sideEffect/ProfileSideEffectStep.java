@@ -32,11 +32,11 @@ import java.util.function.Supplier;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<DefaultTraversalMetrics, DefaultTraversalMetrics>, GraphComputing {
+public class ProfileSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<DefaultTraversalMetrics, DefaultTraversalMetrics>, GraphComputing {
     public static final String DEFAULT_METRICS_KEY = Graph.Hidden.hide("metrics");
 
-    private String sideEffectKey;
-    private boolean onGraphComputer = false;
+    protected String sideEffectKey;
+    protected boolean onGraphComputer = false;
 
     public ProfileSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
@@ -77,7 +77,7 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
         return start;
     }
 
-    private DefaultTraversalMetrics getTraversalMetricsFromSideEffects() {
+    protected DefaultTraversalMetrics getTraversalMetricsFromSideEffects() {
         return (DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey);
     }
 

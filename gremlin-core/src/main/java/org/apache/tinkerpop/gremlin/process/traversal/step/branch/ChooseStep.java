@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.HasNextStep;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
+public class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, M> choiceTraversal) {
         super(traversal);

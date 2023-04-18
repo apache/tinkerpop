@@ -42,6 +42,13 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCl
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
 
+    public PropertiesStep(final Traversal.Admin traversal, final PropertyType propertyType, final Parameters parameters, final String... propertyKeys) {
+        super(traversal);
+        this.parameters = parameters;
+        this.returnType = propertyType;
+        this.propertyKeys = propertyKeys;
+    }
+
     public PropertiesStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
         this.returnType = propertyType;

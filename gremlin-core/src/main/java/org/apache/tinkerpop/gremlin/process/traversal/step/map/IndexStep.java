@@ -42,14 +42,14 @@ import java.util.function.Function;
  */
 public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalParent, Configuring {
 
-    private final static IllegalArgumentException INVALID_CONFIGURATION_EXCEPTION =
+    protected final static IllegalArgumentException INVALID_CONFIGURATION_EXCEPTION =
             new IllegalArgumentException("WithOptions.indexer requires a single Integer argument (possible " + "" +
                     "values are: WithOptions.[list|map])");
 
-    private final Parameters parameters = new Parameters();
+    protected Parameters parameters = new Parameters();
 
-    private Function<Iterator<?>, Object> indexer;
-    private IndexerType indexerType;
+    protected Function<Iterator<?>, Object> indexer;
+    protected IndexerType indexerType;
 
     public IndexStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -78,7 +78,7 @@ public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalPar
         return super.hashCode() ^ this.indexer.hashCode();
     }
 
-    private static List<List<Object>> indexedList(final Iterator<?> iterator) {
+    protected static List<List<Object>> indexedList(final Iterator<?> iterator) {
         final List<List<Object>> list = new ArrayList<>();
         int i = 0;
         while (iterator.hasNext()) {
@@ -87,7 +87,7 @@ public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalPar
         return Collections.unmodifiableList(list);
     }
 
-    private static Map<Integer, Object> indexedMap(final Iterator<?> iterator) {
+    protected static Map<Integer, Object> indexedMap(final Iterator<?> iterator) {
         final Map<Integer, Object> map = new LinkedHashMap<>();
         int i = 0;
         while (iterator.hasNext()) {

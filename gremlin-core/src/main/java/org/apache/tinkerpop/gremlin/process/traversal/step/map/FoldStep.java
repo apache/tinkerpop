@@ -38,10 +38,10 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
+public class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
-    private final boolean listFold;
+    protected static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
+    protected final boolean listFold;
 
     public FoldStep(final Traversal.Admin traversal) {
         this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) Operator.addAll);

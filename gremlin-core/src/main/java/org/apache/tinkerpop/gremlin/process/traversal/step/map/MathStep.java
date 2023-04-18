@@ -47,13 +47,13 @@ import java.util.regex.Pattern;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MathStep<S> extends MapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
+public class MathStep<S> extends MapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
 
-    private static final String CURRENT = "_";
-    private final String equation;
-    private final TinkerExpression expression;
-    private TraversalRing<S, Number> traversalRing = new TraversalRing<>();
-    private Set<String> keepLabels;
+    protected static final String CURRENT = "_";
+    protected final String equation;
+    protected final TinkerExpression expression;
+    protected TraversalRing<S, Number> traversalRing = new TraversalRing<>();
+    protected Set<String> keepLabels;
 
     public MathStep(final Traversal.Admin traversal, final String equation) {
         super(traversal);
@@ -177,7 +177,7 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
 
     ///
 
-    private static final String[] FUNCTIONS = new String[]{
+    protected static final String[] FUNCTIONS = new String[]{
             "abs", "acos", "asin", "atan",
             "cbrt", "ceil", "cos", "cosh",
             "exp",
@@ -187,7 +187,7 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
             "tan", "tanh"
     };
 
-    private static final Pattern VARIABLE_PATTERN =  Pattern.compile("\\b(?![0-9]+|\\b(?:" +
+    protected static final Pattern VARIABLE_PATTERN =  Pattern.compile("\\b(?![0-9]+|\\b(?:" +
             String.join("|", FUNCTIONS) + ")\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\b");
 
     protected static final Set<String> getVariables(final String equation) {

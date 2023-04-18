@@ -42,8 +42,8 @@ import java.util.function.BinaryOperator;
 public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier<TraverserSet<S>> {
 
     protected TraverserSet<S> traverserSet;
-    private int maxBarrierSize;
-    private boolean barrierConsumed = false;
+    protected int maxBarrierSize;
+    protected boolean barrierConsumed = false;
 
     public CollectingBarrierStep(final Traversal.Admin traversal) {
         this(traversal, Integer.MAX_VALUE);
@@ -144,5 +144,9 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
         return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.addAll, false, true);
+    }
+
+    public int getMaxBarrierSize() {
+        return maxBarrierSize;
     }
 }

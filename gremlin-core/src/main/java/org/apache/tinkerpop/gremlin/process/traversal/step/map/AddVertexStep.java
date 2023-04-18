@@ -43,8 +43,8 @@ import java.util.Set;
 public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         implements Mutating<Event.VertexAddedEvent>, TraversalParent, Scoping {
 
-    private Parameters parameters = new Parameters();
-    private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
+    protected Parameters parameters = new Parameters();
+    protected CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);

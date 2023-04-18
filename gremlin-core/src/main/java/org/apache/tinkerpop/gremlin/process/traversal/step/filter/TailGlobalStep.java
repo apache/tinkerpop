@@ -39,12 +39,12 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, Barrier<TraverserSet<S>> {
+public class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, Barrier<TraverserSet<S>> {
 
-    private final long limit;
-    private Deque<Traverser.Admin<S>> tail;
-    private long tailBulk = 0L;
-    private boolean bypass = false;
+    protected final long limit;
+    protected Deque<Traverser.Admin<S>> tail;
+    protected long tailBulk = 0L;
+    protected boolean bypass = false;
 
     public TailGlobalStep(final Traversal.Admin traversal, final long limit) {
         super(traversal);
@@ -111,7 +111,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
         return Collections.singleton(TraverserRequirement.BULK);
     }
 
-    private void addTail(Traverser.Admin<S> start) {
+    protected void addTail(Traverser.Admin<S> start) {
         // Calculate the tail bulk including this new start.
         this.tailBulk += start.bulk();
         // Evict from the tail buffer until we have enough room.

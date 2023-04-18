@@ -38,12 +38,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalParent {
+public class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalParent {
 
-    private Traversal.Admin<S, S> repeatTraversal = null;
-    private Traversal.Admin<S, ?> untilTraversal = null;
-    private Traversal.Admin<S, ?> emitTraversal = null;
-    private String loopName = null;
+    protected Traversal.Admin<S, S> repeatTraversal = null;
+    protected Traversal.Admin<S, ?> untilTraversal = null;
+    protected Traversal.Admin<S, ?> emitTraversal = null;
+    protected String loopName = null;
     public boolean untilFirst = false;
     public boolean emitFirst = false;
 
@@ -113,11 +113,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return list;
     }
 
-    public final boolean doUntil(final Traverser.Admin<S> traverser, boolean utilFirst) {
+    public boolean doUntil(final Traverser.Admin<S> traverser, boolean utilFirst) {
         return utilFirst == this.untilFirst && null != this.untilTraversal && TraversalUtil.test(traverser, this.untilTraversal);
     }
 
-    public final boolean doEmit(final Traverser.Admin<S> traverser, boolean emitFirst) {
+    public boolean doEmit(final Traverser.Admin<S> traverser, boolean emitFirst) {
         return emitFirst == this.emitFirst && null != this.emitTraversal && TraversalUtil.test(traverser, this.emitTraversal);
     }
 
@@ -144,11 +144,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             this.repeatTraversal.reset();
     }
 
-    private final String untilString() {
+    protected String untilString() {
         return null == this.untilTraversal ? "until(false)" : "until(" + this.untilTraversal + ')';
     }
 
-    private final String emitString() {
+    protected String emitString() {
         return null == this.emitTraversal ? "emit(false)" : "emit(" + this.emitTraversal + ')';
     }
 

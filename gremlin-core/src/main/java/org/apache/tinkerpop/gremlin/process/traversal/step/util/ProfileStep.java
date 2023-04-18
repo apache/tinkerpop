@@ -35,9 +35,9 @@ import java.util.function.BinaryOperator;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryComputing<MutableMetrics> {  // pseudo GraphComputing but local traversals are "GraphComputing"
-    private MutableMetrics metrics;
-    private boolean onGraphComputer = false;
+public class ProfileStep<S> extends AbstractStep<S, S> implements MemoryComputing<MutableMetrics> {  // pseudo GraphComputing but local traversals are "GraphComputing"
+    protected MutableMetrics metrics;
+    protected boolean onGraphComputer = false;
 
     public ProfileStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -90,7 +90,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
         return this.starts.next();
     }
 
-    private void initializeIfNeeded() {
+    protected void initializeIfNeeded() {
         if (null == this.metrics) {
             this.onGraphComputer = TraversalHelper.onGraphComputer(this.getTraversal());
             this.metrics = new MutableMetrics(this.getPreviousStep().getId(), this.getPreviousStep().toString());
@@ -142,7 +142,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
             return metricsA;
         }
 
-        public static final ProfileBiOperator instance() {
+        public static ProfileBiOperator instance() {
             return INSTANCE;
         }
     }

@@ -33,9 +33,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalSideEffectStep<S> extends SideEffectStep<S> implements TraversalParent {
+public class TraversalSideEffectStep<S> extends SideEffectStep<S> implements TraversalParent {
 
-    private Traversal.Admin<S, ?> sideEffectTraversal;
+    protected Traversal.Admin<S, ?> sideEffectTraversal;
 
     public TraversalSideEffectStep(final Traversal.Admin traversal, final Traversal<S, ?> sideEffectTraversal) {
         super(traversal);

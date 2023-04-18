@@ -24,9 +24,9 @@ import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class InjectStep<S> extends StartStep<S> {
+public class InjectStep<S> extends StartStep<S> {
 
-    private final S[] injections;
+    protected final S[] injections;
 
     @SafeVarargs
     public InjectStep(final Traversal.Admin traversal, final S... injections) {

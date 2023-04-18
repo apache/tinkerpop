@@ -41,13 +41,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathFilterStep<S> extends FilterStep<S> implements FromToModulating, ByModulating, TraversalParent, PathProcessor {
+public class PathFilterStep<S> extends FilterStep<S> implements FromToModulating, ByModulating, TraversalParent, PathProcessor {
 
     protected String fromLabel;
     protected String toLabel;
-    private boolean isSimple;
-    private TraversalRing<Object, Object> traversalRing;
-    private Set<String> keepLabels;
+    protected boolean isSimple;
+    protected TraversalRing<Object, Object> traversalRing;
+    protected Set<String> keepLabels;
 
     public PathFilterStep(final Traversal.Admin traversal, final boolean isSimple) {
         super(traversal);

@@ -34,9 +34,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OptionalStep<S> extends AbstractStep<S, S> implements TraversalParent {
+public class OptionalStep<S> extends AbstractStep<S, S> implements TraversalParent {
 
-    private Traversal.Admin<S, S> optionalTraversal;
+    protected Traversal.Admin<S, S> optionalTraversal;
 
     public OptionalStep(final Traversal.Admin traversal, final Traversal.Admin<S, S> optionalTraversal) {
         super(traversal);

@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class ElementStep<P extends Property, E extends Element> extends ScalarMapStep<P, E> {
+public class ElementStep<P extends Property, E extends Element> extends ScalarMapStep<P, E> {
 
     public ElementStep(final Traversal.Admin traversal) {
         super(traversal);

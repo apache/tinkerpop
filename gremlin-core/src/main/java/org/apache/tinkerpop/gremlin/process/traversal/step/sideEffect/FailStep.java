@@ -57,9 +57,9 @@ public class FailStep<S> extends SideEffectStep<S> {
      * Default {@link Failure} implementation that is thrown by {@link FailStep}.
      */
     public static class FailException extends RuntimeException implements Failure {
-        private final Map<String,Object> metadata;
-        private final Traversal.Admin traversal;
-        private final Traverser.Admin traverser;
+        protected final Map<String,Object> metadata;
+        protected final Traversal.Admin traversal;
+        protected final Traverser.Admin traverser;
 
         public FailException(final Traversal.Admin traversal, final Traverser.Admin traverser,
                              final String message, final Map<String,Object> metadata) {

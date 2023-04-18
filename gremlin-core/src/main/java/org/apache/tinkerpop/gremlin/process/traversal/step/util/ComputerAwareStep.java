@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements GraphComputing {
 
-    private Iterator<Traverser.Admin<E>> previousIterator = EmptyIterator.instance();
+    protected Iterator<Traverser.Admin<E>> previousIterator = EmptyIterator.instance();
 
     public ComputerAwareStep(final Traversal.Admin traversal) {
         super(traversal);

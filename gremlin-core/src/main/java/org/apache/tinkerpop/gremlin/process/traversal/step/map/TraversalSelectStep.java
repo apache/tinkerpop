@@ -40,12 +40,12 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements TraversalParent, PathProcessor, ByModulating, Scoping {
+public class TraversalSelectStep<S, E> extends MapStep<S, E> implements TraversalParent, PathProcessor, ByModulating, Scoping {
 
-    private final Pop pop;
-    private Traversal.Admin<S, E> keyTraversal;
-    private Traversal.Admin<E, E> selectTraversal = null;
-    private Set<String> keepLabels;
+    protected final Pop pop;
+    protected Traversal.Admin<S, E> keyTraversal;
+    protected Traversal.Admin<E, E> selectTraversal = null;
+    protected Set<String> keepLabels;
 
     public TraversalSelectStep(final Traversal.Admin traversal, final Pop pop, final Traversal<S, E> keyTraversal) {
         super(traversal);

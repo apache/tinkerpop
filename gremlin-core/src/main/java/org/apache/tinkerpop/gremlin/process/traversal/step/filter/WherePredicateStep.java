@@ -45,7 +45,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent {
+public class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent {
 
     protected String startKey;
     protected List<String> selectKeys;
@@ -65,7 +65,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         this.configurePredicates(this.predicate);
     }
 
-    private void configurePredicates(final P<Object> predicate) {
+    protected void configurePredicates(final P<Object> predicate) {
         if (predicate instanceof ConnectiveP)
             ((ConnectiveP<Object>) predicate).getPredicates().forEach(this::configurePredicates);
         else {
@@ -75,7 +75,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         }
     }
 
-    private boolean setPredicateValues(final P<Object> predicate, final Traverser.Admin<S> traverser, final Iterator<String> selectKeysIterator) {
+    protected boolean setPredicateValues(final P<Object> predicate, final Traverser.Admin<S> traverser, final Iterator<String> selectKeysIterator) {
         if (predicate instanceof ConnectiveP) {
             for (P<Object> p : ((ConnectiveP<Object>) predicate).getPredicates()) {
                 if (!this.setPredicateValues(p, traverser, selectKeysIterator))

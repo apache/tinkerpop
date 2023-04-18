@@ -52,12 +52,12 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBarrierStep<S> implements ComparatorHolder<S, C>, TraversalParent, ByModulating, Seedable {
+public class OrderGlobalStep<S, C extends Comparable> extends CollectingBarrierStep<S> implements ComparatorHolder<S, C>, TraversalParent, ByModulating, Seedable {
 
-    private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
-    private MultiComparator<C> multiComparator = null;
-    private long limit = Long.MAX_VALUE;
-    private final Random random = new Random();
+    protected List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
+    protected MultiComparator<C> multiComparator = null;
+    protected long limit = Long.MAX_VALUE;
+    protected final Random random = new Random();
 
     public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -173,7 +173,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.multiComparator, this.random), false, true);
     }
 
-    private Optional<ProjectedTraverser<S, Object>> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+    protected Optional<ProjectedTraverser<S, Object>> createProjectedTraverser(final Traverser.Admin<S> traverser) {
         // this was ProjectedTraverser<S, C> but the projection may not be C in the case of a lambda where a
         // Comparable may not be expected but rather an object that can be compared in any way given a lambda.
         // not sure why this is suddenly an issue but Intellij would not let certain tests pass without this
@@ -189,7 +189,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         return projections.size() == comparators.size() ? Optional.of(new ProjectedTraverser(traverser, projections)) : Optional.empty();
     }
 
-    private final MultiComparator<C> createMultiComparator() {
+    protected MultiComparator<C> createMultiComparator() {
         final List<Comparator<C>> list = new ArrayList<>(this.comparators.size());
         for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
             list.add(pair.getValue1());

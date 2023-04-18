@@ -31,10 +31,10 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CoinStep<S> extends FilterStep<S> implements Seedable {
+public class CoinStep<S> extends FilterStep<S> implements Seedable {
 
-    private final Random random = new Random();
-    private final double probability;
+    protected final Random random = new Random();
+    protected final double probability;
 
     public CoinStep(final Traversal.Admin traversal, final double probability) {
         super(traversal);

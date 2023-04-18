@@ -31,8 +31,8 @@ import java.util.Iterator;
  */
 public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
-    private Traverser.Admin<S> head = null;
-    private Iterator<E> iterator = EmptyIterator.instance();
+    protected Traverser.Admin<S> head = null;
+    protected Iterator<E> iterator = EmptyIterator.instance();
 
     public FlatMapStep(final Traversal.Admin traversal) {
         super(traversal);

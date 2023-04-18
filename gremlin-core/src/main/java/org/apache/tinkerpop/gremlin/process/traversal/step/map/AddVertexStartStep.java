@@ -47,9 +47,9 @@ import java.util.Set;
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         implements Mutating<Event.VertexAddedEvent>, TraversalParent, Scoping {
 
-    private Parameters parameters = new Parameters();
-    private boolean first = true;
-    private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
+    protected Parameters parameters = new Parameters();
+    protected boolean first = true;
+    protected CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);

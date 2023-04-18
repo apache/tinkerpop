@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
+public class UnfoldStep<S, E> extends FlatMapStep<S, E> {
 
     public UnfoldStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -59,7 +59,7 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    private final Iterator<E> handleArrays(final Object array) {
+    protected Iterator<E> handleArrays(final Object array) {
         if (array instanceof Object[]) {
             return new ArrayIterator<>((E[]) array);
         } else {

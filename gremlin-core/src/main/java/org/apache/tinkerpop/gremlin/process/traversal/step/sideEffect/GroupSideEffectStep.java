@@ -44,16 +44,16 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S>
+public class GroupSideEffectStep<S, K, V> extends SideEffectStep<S>
         implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating, ProfilingAware, Grouping<S, K, V> {
 
-    private char state = 'k';
-    private Traversal.Admin<S, K> keyTraversal;
-    private Traversal.Admin<S, V> valueTraversal;
-    private Barrier barrierStep;
-    private boolean resetBarrierForProfiling = false;
+    protected char state = 'k';
+    protected Traversal.Admin<S, K> keyTraversal;
+    protected Traversal.Admin<S, V> valueTraversal;
+    protected Barrier barrierStep;
+    protected boolean resetBarrierForProfiling = false;
     ///
-    private String sideEffectKey;
+    protected String sideEffectKey;
 
     public GroupSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
@@ -85,7 +85,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S>
         return this.valueTraversal;
     }
 
-    private void setValueTraversal(final Traversal.Admin valueTraversal) {
+    protected void setValueTraversal(final Traversal.Admin valueTraversal) {
         this.valueTraversal = this.integrateChild(convertValueTraversal(valueTraversal));
         this.barrierStep = determineBarrierStep(this.valueTraversal);
         this.getTraversal().getSideEffects().register(this.sideEffectKey, null,

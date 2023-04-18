@@ -48,11 +48,11 @@ import java.util.Set;
 public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
         implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
 
-    private static final String FROM = Graph.Hidden.hide("from");
-    private static final String TO = Graph.Hidden.hide("to");
+    protected static final String FROM = Graph.Hidden.hide("from");
+    protected static final String TO = Graph.Hidden.hide("to");
 
-    private Parameters parameters = new Parameters();
-    private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
+    protected Parameters parameters = new Parameters();
+    protected CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);

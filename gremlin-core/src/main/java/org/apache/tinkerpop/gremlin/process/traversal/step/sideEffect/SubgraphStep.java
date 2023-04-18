@@ -45,19 +45,19 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable {
+public class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
+    protected static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.OBJECT,
             TraverserRequirement.SIDE_EFFECTS
     );
 
-    private Graph subgraph;
-    private String sideEffectKey;
-    private Graph.Features.VertexFeatures parentGraphFeatures;
-    private boolean subgraphSupportsMetaProperties = false;
+    protected Graph subgraph;
+    protected String sideEffectKey;
+    protected Graph.Features.VertexFeatures parentGraphFeatures;
+    protected boolean subgraphSupportsMetaProperties = false;
 
-    private static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
+    protected static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
         put(Graph.GRAPH, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"); // hard coded because TinkerGraph is not part of gremlin-core
     }};
 
@@ -110,7 +110,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
 
     ///
 
-    private Vertex getOrCreate(final Vertex vertex) {
+    protected Vertex getOrCreate(final Vertex vertex) {
         final Iterator<Vertex> vertexIterator = subgraph.vertices(vertex.id());
 
         try {
@@ -135,7 +135,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
         return subgraphVertex;
     }
 
-    private void addEdgeToSubgraph(final Edge edge) {
+    protected void addEdgeToSubgraph(final Edge edge) {
         final Iterator<Edge> edgeIterator = subgraph.edges(edge.id());
 
         try {

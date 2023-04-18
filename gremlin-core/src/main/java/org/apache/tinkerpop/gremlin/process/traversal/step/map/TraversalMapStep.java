@@ -36,9 +36,9 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class TraversalMapStep<S, E> extends MapStep<S, E> implements TraversalParent {
+public class TraversalMapStep<S, E> extends MapStep<S, E> implements TraversalParent {
 
-    private Traversal.Admin<S, E> mapTraversal;
+    protected Traversal.Admin<S, E> mapTraversal;
 
     public TraversalMapStep(final Traversal.Admin traversal, final Traversal<S, E> mapTraversal) {
         super(traversal);
@@ -83,5 +83,9 @@ public final class TraversalMapStep<S, E> extends MapStep<S, E> implements Trave
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements();
+    }
+
+    public Traversal.Admin<S, E> getMapTraversal() {
+        return mapTraversal;
     }
 }

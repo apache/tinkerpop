@@ -57,8 +57,8 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     protected transient Supplier<Iterator<E>> iteratorSupplier;
     protected boolean isStart;
     protected boolean done = false;
-    private Traverser.Admin<S> head = null;
-    private Iterator<E> iterator = EmptyIterator.instance();
+    protected Traverser.Admin<S> head = null;
+    protected Iterator<E> iterator = EmptyIterator.instance();
 
 
     public GraphStep(final Traversal.Admin traversal, final Class<E> returnClass, final boolean isStart, final Object... ids) {

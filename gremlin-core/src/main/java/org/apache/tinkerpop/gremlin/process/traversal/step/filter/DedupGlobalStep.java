@@ -53,16 +53,16 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, GraphComputing, Barrier<Map<Object, Traverser.Admin<S>>>, ByModulating, PathProcessor {
+public class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, GraphComputing, Barrier<Map<Object, Traverser.Admin<S>>>, ByModulating, PathProcessor {
 
-    private Traversal.Admin<S, Object> dedupTraversal = null;
-    private Set<Object> duplicateSet = new HashSet<>();
-    private boolean onGraphComputer = false;
-    private final Set<String> dedupLabels;
-    private Set<String> keepLabels;
-    private boolean executingAtMaster = false;
-    private Map<Object, Traverser.Admin<S>> barrier;
-    private Iterator<Map.Entry<Object, Traverser.Admin<S>>> barrierIterator;
+    protected Traversal.Admin<S, Object> dedupTraversal = null;
+    protected Set<Object> duplicateSet = new HashSet<>();
+    protected boolean onGraphComputer = false;
+    protected final Set<String> dedupLabels;
+    protected Set<String> keepLabels;
+    protected boolean executingAtMaster = false;
+    protected Map<Object, Traverser.Admin<S>> barrier;
+    protected Iterator<Map.Entry<Object, Traverser.Admin<S>>> barrierIterator;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);

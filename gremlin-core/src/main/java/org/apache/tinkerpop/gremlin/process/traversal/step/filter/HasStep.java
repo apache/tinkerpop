@@ -40,8 +40,8 @@ import java.util.Set;
  */
 public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Configuring {
 
-    private final Parameters parameters = new Parameters();
-    private List<HasContainer> hasContainers;
+    protected Parameters parameters = new Parameters();
+    protected List<HasContainer> hasContainers;
 
     public HasStep(final Traversal.Admin traversal, final HasContainer... hasContainers) {
         super(traversal);

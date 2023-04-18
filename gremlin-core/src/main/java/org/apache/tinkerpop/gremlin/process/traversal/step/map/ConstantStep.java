@@ -29,7 +29,7 @@ import java.util.Set;
 
 public class ConstantStep<S, E> extends ScalarMapStep<S, E> {
 
-    private final E constant;
+    protected final E constant;
 
     public ConstantStep(final Traversal.Admin traversal, final E constant) {
         super(traversal);

@@ -34,10 +34,10 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LocalStep<S, E> extends AbstractStep<S, E> implements TraversalParent {
+public class LocalStep<S, E> extends AbstractStep<S, E> implements TraversalParent {
 
-    private Traversal.Admin<S, E> localTraversal;
-    private boolean first = true;
+    protected Traversal.Admin<S, E> localTraversal;
+    protected boolean first = true;
 
     public LocalStep(final Traversal.Admin traversal, final Traversal.Admin<S, E> localTraversal) {
         super(traversal);

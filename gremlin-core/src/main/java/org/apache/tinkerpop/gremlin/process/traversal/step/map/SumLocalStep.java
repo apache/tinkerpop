@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends ScalarMapStep<S, E> {
+public class SumLocalStep<E extends Number, S extends Iterable<E>> extends ScalarMapStep<S, E> {
 
     public SumLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -52,7 +52,7 @@ public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends
         throw FastNoSuchElementException.instance();
     }
 
-    private E untilNonNull(final Iterator<E> itty) {
+    protected E untilNonNull(final Iterator<E> itty) {
         E result = null;
         while (itty.hasNext() && null == result) {
             result = itty.next();

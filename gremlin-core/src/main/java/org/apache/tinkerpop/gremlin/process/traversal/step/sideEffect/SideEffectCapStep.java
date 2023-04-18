@@ -37,9 +37,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
+public class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
-    private List<String> sideEffectKeys;
+    protected List<String> sideEffectKeys;
     public transient Map<String, SideEffectCapable<Object, E>> sideEffectCapableSteps;
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
@@ -99,7 +99,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
             return (E) this.getMapOfSideEffects();
     }
 
-    private Map<String, Object> getMapOfSideEffects() {
+    protected Map<String, Object> getMapOfSideEffects() {
         final TraversalSideEffects temp = this.getTraversal().getSideEffects();
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {

@@ -52,9 +52,9 @@ import java.util.Set;
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping {
 
-    private Parameters parameters = new Parameters();
-    private final VertexProperty.Cardinality cardinality;
-    private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
+    protected Parameters parameters = new Parameters();
+    protected final VertexProperty.Cardinality cardinality;
+    protected CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
         super(traversal);

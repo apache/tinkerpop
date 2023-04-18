@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LabelStep<S extends Element> extends ScalarMapStep<S, String> {
+public class LabelStep<S extends Element> extends ScalarMapStep<S, String> {
 
     public LabelStep(final Traversal.Admin traversal) {
         super(traversal);

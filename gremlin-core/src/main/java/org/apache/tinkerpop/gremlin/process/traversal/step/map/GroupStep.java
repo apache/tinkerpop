@@ -46,14 +46,14 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>>
+public class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>>
         implements ByModulating, TraversalParent, ProfilingAware, Grouping<S, K, V> {
 
-    private char state = 'k';
-    private Traversal.Admin<S, K> keyTraversal;
-    private Traversal.Admin<S, V> valueTraversal;
-    private Barrier barrierStep;
-    private boolean resetBarrierForProfiling = false;
+    protected char state = 'k';
+    protected Traversal.Admin<S, K> keyTraversal;
+    protected Traversal.Admin<S, V> valueTraversal;
+    protected Barrier barrierStep;
+    protected boolean resetBarrierForProfiling = false;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -82,7 +82,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>>
         return this.valueTraversal;
     }
 
-    private void setValueTraversal(final Traversal.Admin kvTraversal) {
+    protected void setValueTraversal(final Traversal.Admin kvTraversal) {
         this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
         this.barrierStep = determineBarrierStep(this.valueTraversal);
         this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));

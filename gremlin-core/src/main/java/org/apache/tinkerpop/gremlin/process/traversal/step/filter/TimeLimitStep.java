@@ -31,11 +31,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class TimeLimitStep<S> extends FilterStep<S> {
+public class TimeLimitStep<S> extends FilterStep<S> {
 
-    private AtomicLong startTime = new AtomicLong(-1);
-    private final long timeLimit;
-    private AtomicBoolean timedOut = new AtomicBoolean(false);
+    protected AtomicLong startTime = new AtomicLong(-1);
+    protected final long timeLimit;
+    protected AtomicBoolean timedOut = new AtomicBoolean(false);
 
 
     public TimeLimitStep(final Traversal.Admin traversal, final long timeLimit) {

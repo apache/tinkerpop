@@ -54,14 +54,14 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
  */
 public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
 
-    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
+    protected static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
-    private Traversal.Admin<S, Object> outVTraversal = null;
-    private Traversal.Admin<S, Object> inVTraversal = null;
+    protected Traversal.Admin<S, Object> outVTraversal = null;
+    protected Traversal.Admin<S, Object> inVTraversal = null;
 
     public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart) {
         super(traversal, isStart);

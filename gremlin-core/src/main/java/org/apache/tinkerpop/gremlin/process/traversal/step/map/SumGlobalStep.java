@@ -34,9 +34,9 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
+public class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
+    protected static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.BULK,
             TraverserRequirement.OBJECT
     );

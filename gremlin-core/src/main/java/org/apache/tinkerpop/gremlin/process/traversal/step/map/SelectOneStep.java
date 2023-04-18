@@ -40,12 +40,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor, ByModulating {
+public class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor, ByModulating {
 
-    private final Pop pop;
-    private final String selectKey;
-    private Traversal.Admin<S, E> selectTraversal = null;
-    private Set<String> keepLabels;
+    protected final Pop pop;
+    protected final String selectKey;
+    protected Traversal.Admin<S, E> selectTraversal = null;
+    protected Set<String> keepLabels;
 
     public SelectOneStep(final Traversal.Admin traversal, final Pop pop, final String selectKey) {
         super(traversal);

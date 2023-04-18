@@ -41,11 +41,11 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree, Tree>, TraversalParent, ByModulating, PathProcessor {
+public class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree, Tree>, TraversalParent, ByModulating, PathProcessor {
 
-    private TraversalRing<Object, Object> traversalRing;
-    private String sideEffectKey;
-    private Set<String> keepLabels;
+    protected TraversalRing<Object, Object> traversalRing;
+    protected String sideEffectKey;
+    protected Set<String> keepLabels;
 
     public TreeSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);

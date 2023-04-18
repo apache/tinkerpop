@@ -37,11 +37,11 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements Seedable {
+public class SampleLocalStep<S> extends ScalarMapStep<S, S> implements Seedable {
 
-    private final Random random = new Random();
+    protected final Random random = new Random();
 
-    private final int amountToSample;
+    protected final int amountToSample;
 
     public SampleLocalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
@@ -65,7 +65,7 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements See
         }
     }
 
-    private S mapCollection(final Collection collection) {
+    protected S mapCollection(final Collection collection) {
         if (collection.size() <= this.amountToSample)
             return (S) collection;
 
@@ -77,7 +77,7 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements See
         return (S) target;
     }
 
-    private S mapMap(final Map map) {
+    protected S mapMap(final Map map) {
         if (map.size() <= this.amountToSample)
             return (S) map;
 

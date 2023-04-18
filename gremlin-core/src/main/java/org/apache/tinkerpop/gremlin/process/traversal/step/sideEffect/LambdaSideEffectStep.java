@@ -28,9 +28,9 @@ import java.util.function.Consumer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaSideEffectStep<S> extends SideEffectStep<S> implements LambdaHolder {
+public class LambdaSideEffectStep<S> extends SideEffectStep<S> implements LambdaHolder {
 
-    private final Consumer<Traverser<S>> consumer;
+    protected final Consumer<Traverser<S>> consumer;
 
     public LambdaSideEffectStep(final Traversal.Admin traversal, final Consumer<Traverser<S>> consumer) {
         super(traversal);

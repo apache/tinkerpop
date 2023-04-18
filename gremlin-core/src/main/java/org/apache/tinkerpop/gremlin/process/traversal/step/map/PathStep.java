@@ -40,12 +40,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating, FromToModulating {
+public class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating, FromToModulating {
 
-    private TraversalRing<Object, Object> traversalRing;
-    private Set<String> keepLabels;
-    private String fromLabel;
-    private String toLabel;
+    protected TraversalRing<Object, Object> traversalRing;
+    protected Set<String> keepLabels;
+    protected String fromLabel;
+    protected String toLabel;
 
     public PathStep(final Traversal.Admin traversal) {
         super(traversal);

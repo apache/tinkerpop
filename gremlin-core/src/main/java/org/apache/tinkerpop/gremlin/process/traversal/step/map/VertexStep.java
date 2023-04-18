@@ -40,9 +40,9 @@ import java.util.Set;
 public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring {
 
     protected Parameters parameters = new Parameters();
-    private final String[] edgeLabels;
-    private Direction direction;
-    private final Class<E> returnClass;
+    protected final String[] edgeLabels;
+    protected Direction direction;
+    protected final Class<E> returnClass;
 
     public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final String... edgeLabels) {
         super(traversal);

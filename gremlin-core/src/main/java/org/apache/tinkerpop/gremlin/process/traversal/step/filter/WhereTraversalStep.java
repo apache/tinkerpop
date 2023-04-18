@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, PathProcessor, BinaryReductionStep {
+public class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, PathProcessor, BinaryReductionStep {
 
     protected Traversal.Admin<?, ?> whereTraversal;
     protected final Set<String> scopeKeys = new HashSet<>();
@@ -57,7 +57,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
         this.whereTraversal = this.integrateChild(this.whereTraversal);
     }
 
-    private void configureStartAndEndSteps(final Traversal.Admin<?, ?> whereTraversal) {
+    protected void configureStartAndEndSteps(final Traversal.Admin<?, ?> whereTraversal) {
         ConnectiveStrategy.instance().apply(whereTraversal);
         //// START STEP to WhereStartStep
         final Step<?, ?> startStep = whereTraversal.getStartStep();
@@ -151,7 +151,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     public static class WhereStartStep<S> extends ScalarMapStep<S, Object> implements Scoping {
 
-        private String selectKey;
+        protected String selectKey;
 
         public WhereStartStep(final Traversal.Admin traversal, final String selectKey) {
             super(traversal);
@@ -189,8 +189,8 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     public static class WhereEndStep extends FilterStep<Object> implements Scoping {
 
-        private final String matchKey;
-        private Object matchValue = null;
+        protected final String matchKey;
+        protected Object matchValue = null;
 
         public WhereEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);

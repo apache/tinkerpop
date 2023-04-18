@@ -36,10 +36,10 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
+public class RangeLocalStep<S> extends ScalarMapStep<S, S> {
 
-    private final long low;
-    private final long high;
+    protected final long low;
+    protected final long high;
 
     public RangeLocalStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
@@ -92,7 +92,7 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
     /**
      * Extracts specified range of elements from a Map.
      */
-    private static Map applyRangeMap(final Map map, final long low, final long high) {
+    protected static Map applyRangeMap(final Map map, final long low, final long high) {
         final long capacity = (high != -1 ? high : map.size()) - low;
         final Map result = new LinkedHashMap((int) Math.min(capacity, map.size()));
         long c = 0L;
@@ -111,7 +111,7 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
     /**
      * Extracts specified range of elements from a Collection.
      */
-    private static Object applyRangeIterable(final Iterable<Object> iterable, final long low, final long high) {
+    protected static Object applyRangeIterable(final Iterable<Object> iterable, final long low, final long high) {
         // See if we only want a single item.  It is also possible that we will allow more than one item, but that the
         // incoming container is only capable of producing a single item.  In that case, we will still emit a
         // container.  This allows the result type to be predictable based on the step arguments.  It also allows us to
@@ -154,5 +154,13 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    public long getLow() {
+        return low;
+    }
+
+    public long getHigh() {
+        return high;
     }
 }

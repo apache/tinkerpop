@@ -39,10 +39,10 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateLocalStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
+public class AggregateLocalStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
 
-    private Traversal.Admin<S, Object> storeTraversal = null;
-    private String sideEffectKey;
+    protected Traversal.Admin<S, Object> storeTraversal = null;
+    protected String sideEffectKey;
 
     public AggregateLocalStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);

@@ -34,9 +34,9 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
+public class TailLocalStep<S> extends ScalarMapStep<S, S> {
 
-    private final long limit;
+    protected final long limit;
 
     public TailLocalStep(final Traversal.Admin traversal, final long limit) {
         super(traversal);

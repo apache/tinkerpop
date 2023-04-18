@@ -46,10 +46,10 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep<S, S> implements ComparatorHolder<S, C>, ByModulating, TraversalParent, Seedable {
+public class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep<S, S> implements ComparatorHolder<S, C>, ByModulating, TraversalParent, Seedable {
 
-    private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
-    private final Random random = new Random();
+    protected List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
+    protected final Random random = new Random();
 
     public OrderLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -86,7 +86,7 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
     /**
      * Take the collection and apply modulators removing traversers that have modulators that aren't productive.
      */
-    private List<Pair<S, List<C>>> filterAndModulate(final Collection<S> original) {
+    protected List<Pair<S, List<C>>> filterAndModulate(final Collection<S> original) {
         if (comparators.isEmpty())
             this.comparators.add(new Pair<>(new IdentityTraversal(), (Comparator) Order.asc));
 

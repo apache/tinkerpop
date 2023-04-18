@@ -26,10 +26,10 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ClassFilterStep<S, T> extends FilterStep<S> {
+public class ClassFilterStep<S, T> extends FilterStep<S> {
 
-    private final Class<T> classFilter;
-    private final boolean allowClasses;
+    protected final Class<T> classFilter;
+    protected final boolean allowClasses;
 
     public ClassFilterStep(final Traversal.Admin traversal, final Class<T> classFilter, final boolean allowClasses) {
         super(traversal);
@@ -47,5 +47,13 @@ public final class ClassFilterStep<S, T> extends FilterStep<S> {
 
     public String toString() {
         return StringFactory.stepString(this, this.classFilter.getSimpleName());
+    }
+
+    public Class<T> getClassFilter() {
+        return classFilter;
+    }
+
+    public boolean isAllowClasses() {
+        return allowClasses;
     }
 }

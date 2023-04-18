@@ -28,7 +28,7 @@ import java.util.Collections;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnionStep<S, E> extends BranchStep<S, E, Pick> {
+public class UnionStep<S, E> extends BranchStep<S, E, Pick> {
 
     public UnionStep(final Traversal.Admin traversal, final Traversal.Admin<?, E>... unionTraversals) {
         super(traversal);

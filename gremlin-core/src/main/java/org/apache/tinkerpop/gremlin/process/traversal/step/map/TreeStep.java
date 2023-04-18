@@ -43,10 +43,10 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements TraversalParent, ByModulating, PathProcessor {
+public class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements TraversalParent, ByModulating, PathProcessor {
 
-    private TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
-    private Set<String> keepLabels;
+    protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
+    protected Set<String> keepLabels;
 
     public TreeStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -143,7 +143,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
             return mutatingSeed;
         }
 
-        public static final TreeBiOperator instance() {
+        public static TreeBiOperator instance() {
             return INSTANCE;
         }
     }

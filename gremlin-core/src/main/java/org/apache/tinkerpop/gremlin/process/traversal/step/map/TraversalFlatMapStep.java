@@ -33,9 +33,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalFlatMapStep<S, E> extends FlatMapStep<S, E> implements TraversalParent {
+public class TraversalFlatMapStep<S, E> extends FlatMapStep<S, E> implements TraversalParent {
 
-    private Traversal.Admin<S, E> flatMapTraversal;
+    protected Traversal.Admin<S, E> flatMapTraversal;
 
     public TraversalFlatMapStep(final Traversal.Admin traversal, final Traversal<S, E> flatMapTraversal) {
         super(traversal);

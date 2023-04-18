@@ -44,7 +44,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
 
-    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
+    protected static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");

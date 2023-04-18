@@ -53,20 +53,20 @@ import static org.apache.tinkerpop.gremlin.structure.service.Service.ServiceCall
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class CallStep<S, E> extends AbstractStep<S, E> implements TraversalParent, AutoCloseable, Configuring {
+public class CallStep<S, E> extends AbstractStep<S, E> implements TraversalParent, AutoCloseable, Configuring {
 
-    private final boolean isStart;
-    private boolean first = true;
+    protected final boolean isStart;
+    protected boolean first = true;
 
-    private ServiceCallContext ctx;
-    private String serviceName;
-    private Service<S, E> service;
-    private Map staticParams;
-    private Traversal.Admin<S,Map> mapTraversal;
-    private Parameters parameters;
+    protected ServiceCallContext ctx;
+    protected String serviceName;
+    protected Service<S, E> service;
+    protected Map staticParams;
+    protected Traversal.Admin<S,Map> mapTraversal;
+    protected Parameters parameters;
 
-    private transient Traverser.Admin<S> head = null;
-    private transient CloseableIterator iterator = EmptyCloseableIterator.instance();
+    protected transient Traverser.Admin<S> head = null;
+    protected transient CloseableIterator iterator = EmptyCloseableIterator.instance();
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart) {
         this(traversal, isStart, null);

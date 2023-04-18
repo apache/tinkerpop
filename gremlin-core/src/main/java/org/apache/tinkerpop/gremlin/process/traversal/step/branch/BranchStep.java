@@ -52,8 +52,8 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected Map<Pick, List<Traversal.Admin<S, E>>> traversalPickOptions = new HashMap<>();
     protected List<Pair<Traversal.Admin<M, ?>, Traversal.Admin<S, E>>> traversalOptions = new ArrayList<>();
 
-    private boolean first = true;
-    private boolean hasBarrier;
+    protected boolean first = true;
+    protected boolean hasBarrier;
 
     public BranchStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -142,7 +142,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     /**
      * Choose the right traversal option to apply and seed those options with this traverser.
      */
-    private void applyCurrentTraverser(final Traverser.Admin<S> start) {
+    protected void applyCurrentTraverser(final Traverser.Admin<S> start) {
         // first get the value of the choice based on the current traverser and use that to select the right traversal
         // option to which that traverser should be routed
         final M choice = TraversalUtil.apply(start, this.branchTraversal);
@@ -188,7 +188,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         return ends.iterator();
     }
 
-    private List<Traversal.Admin<S, E>> pickBranches(final M choice) {
+    protected List<Traversal.Admin<S, E>> pickBranches(final M choice) {
         final List<Traversal.Admin<S, E>> branches = new ArrayList<>();
         if (choice instanceof Pick) {
             if (this.traversalPickOptions.containsKey(choice)) {
@@ -258,5 +258,25 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         super.reset();
         this.getGlobalChildren().forEach(Traversal.Admin::reset);
         this.first = true;
+    }
+
+    public Traversal.Admin<S, M> getBranchTraversal() {
+        return branchTraversal;
+    }
+
+    public Map<Pick, List<Traversal.Admin<S, E>>> getTraversalPickOptions() {
+        return traversalPickOptions;
+    }
+
+    public List<Pair<Traversal.Admin<M, ?>, Traversal.Admin<S, E>>> getTraversalOptions() {
+        return traversalOptions;
+    }
+
+    public boolean isFirst() {
+        return first;
+    }
+
+    public boolean isHasBarrier() {
+        return hasBarrier;
     }
 }

@@ -31,9 +31,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RequirementsStep<S> extends AbstractStep<S, S> {
+public class RequirementsStep<S> extends AbstractStep<S, S> {
 
-    private final Set<TraverserRequirement> requirements;
+    protected final Set<TraverserRequirement> requirements;
 
     public RequirementsStep(final Traversal.Admin traversal, final Set<TraverserRequirement> requirements) {
         super(traversal);

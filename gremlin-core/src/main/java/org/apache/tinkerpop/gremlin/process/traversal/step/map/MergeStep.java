@@ -165,7 +165,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E> implements Mu
         return super.processNextStart();
     }
 
-    private void generateTraverser(final Object o) {
+    protected void generateTraverser(final Object o) {
         final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
         this.addStart(generator.generate(o, (Step) this, 1L));
     }

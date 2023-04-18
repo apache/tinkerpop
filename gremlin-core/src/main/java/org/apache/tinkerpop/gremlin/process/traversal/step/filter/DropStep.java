@@ -39,7 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
  */
 public class DropStep<S> extends FilterStep<S> implements Mutating<Event> {
 
-    private CallbackRegistry<Event> callbackRegistry;
+    protected CallbackRegistry<Event> callbackRegistry;
 
     public DropStep(final Traversal.Admin traversal) {
         super(traversal);

@@ -58,10 +58,10 @@ import java.util.stream.Collectors;
  */
 public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
 
-    private Parameters parameters = new Parameters();
-    private boolean first = true;
-    private String file;
-    private Mode mode = Mode.UNSET;
+    protected Parameters parameters = new Parameters();
+    protected boolean first = true;
+    protected String file;
+    protected Mode mode = Mode.UNSET;
 
     public IoStep(final Traversal.Admin traversal, final String file) {
         super(traversal);
@@ -141,7 +141,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
      * Builds a {@link GraphReader} instance to use. Attempts to detect the file format to be read using the file
      * extension or simply uses configurations provided by the user on the parameters given to the step.
      */
-    private GraphReader constructReader() {
+    protected GraphReader constructReader() {
         final Object objectOrClass = parameters.get(IO.reader, this::detectFileType).get(0);
         if (objectOrClass instanceof GraphReader)
             return (GraphReader) objectOrClass;
@@ -175,7 +175,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
      * Builds a {@link GraphWriter} instance to use. Attempts to detect the file format to be write using the file
      * extension or simply uses configurations provided by the user on the parameters given to the step.
      */
-    private GraphWriter constructWriter() {
+    protected GraphWriter constructWriter() {
         final Object objectOrClass = parameters.get(IO.writer, this::detectFileType).get(0);
         if (objectOrClass instanceof GraphWriter)
             return (GraphWriter) objectOrClass;

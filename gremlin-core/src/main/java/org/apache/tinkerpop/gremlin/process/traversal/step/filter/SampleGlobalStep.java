@@ -41,11 +41,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating, Seedable {
+public class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating, Seedable {
 
-    private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
-    private final int amountToSample;
-    private final Random random = new Random();
+    protected Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
+    protected final int amountToSample;
+    protected final Random random = new Random();
 
     public SampleGlobalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
@@ -126,7 +126,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
 
-    private Optional<ProjectedTraverser<S, Number>> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+    protected Optional<ProjectedTraverser<S, Number>> createProjectedTraverser(final Traverser.Admin<S> traverser) {
         final TraversalProduct product = TraversalUtil.produce(traverser, this.probabilityTraversal);
         if (product.isProductive()) {
             final Object o = product.get();

@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extends ScalarMapStep<S, Number> {
+public class MeanLocalStep<E extends Number, S extends Iterable<E>> extends ScalarMapStep<S, Number> {
 
     public MeanLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -57,7 +57,7 @@ public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extend
         throw FastNoSuchElementException.instance();
     }
 
-    private E untilNonNull(final Iterator<E> itty) {
+    protected E untilNonNull(final Iterator<E> itty) {
         E result = null;
         while (itty.hasNext() && null == result) {
             result = itty.next();

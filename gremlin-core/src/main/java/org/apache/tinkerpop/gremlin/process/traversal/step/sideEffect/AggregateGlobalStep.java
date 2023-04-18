@@ -45,11 +45,11 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier<S> {
+public class AggregateGlobalStep<S> extends AbstractStep<S, S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier<S> {
 
-    private Traversal.Admin<S, Object> aggregateTraversal = null;
-    private String sideEffectKey;
-    private TraverserSet<S> barrier;
+    protected Traversal.Admin<S, Object> aggregateTraversal = null;
+    protected String sideEffectKey;
+    protected TraverserSet<S> barrier;
 
     public AggregateGlobalStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);

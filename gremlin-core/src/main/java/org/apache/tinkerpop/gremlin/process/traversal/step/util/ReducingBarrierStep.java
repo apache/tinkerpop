@@ -51,7 +51,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     protected BinaryOperator<E> reducingBiOperator;
     protected boolean hasProcessedOnce = false;
 
-    private E seed = (E) NON_EMITTING_SEED;
+    protected E seed = (E) NON_EMITTING_SEED;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);

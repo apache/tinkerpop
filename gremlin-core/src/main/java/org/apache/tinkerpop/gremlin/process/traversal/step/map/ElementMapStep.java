@@ -49,7 +49,7 @@ import java.util.Set;
 public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> implements TraversalParent, GraphComputing {
 
     protected final String[] propertyKeys;
-    private boolean onGraphComputer = false;
+    protected boolean onGraphComputer = false;
 
     public ElementMapStep(final Traversal.Admin traversal, final String... propertyKeys) {
         super(traversal);

@@ -46,13 +46,13 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent, PathProcessor, ByModulating {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent, PathProcessor, ByModulating {
 
-    private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
-    private final Pop pop;
-    private final List<String> selectKeys;
-    private final Set<String> selectKeysSet;
-    private Set<String> keepLabels;
+    protected TraversalRing<Object, E> traversalRing = new TraversalRing<>();
+    protected final Pop pop;
+    protected final List<String> selectKeys;
+    protected final Set<String> selectKeysSet;
+    protected Set<String> keepLabels;
 
     public SelectStep(final Traversal.Admin traversal, final Pop pop, final String... selectKeys) {
         super(traversal);

@@ -66,24 +66,24 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping, PathProcessor {
+public class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping, PathProcessor {
 
     public enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
 
-    private List<Traversal.Admin<Object, Object>> matchTraversals;
-    private boolean first = true;
-    private Set<String> matchStartLabels = new HashSet<>();
-    private Set<String> matchEndLabels = new HashSet<>();
-    private Set<String> scopeKeys = null;
-    private final ConnectiveStep.Connective connective;
-    private final String computedStartLabel;
-    private MatchAlgorithm matchAlgorithm;
-    private Class<? extends MatchAlgorithm> matchAlgorithmClass = CountMatchAlgorithm.class; // default is CountMatchAlgorithm (use MatchAlgorithmStrategy to change)
-    private Map<String, Set<String>> referencedLabelsMap; // memoization of referenced labels for MatchEndSteps (Map<startStepId, referencedLabels>)
+    protected List<Traversal.Admin<Object, Object>> matchTraversals;
+    protected boolean first = true;
+    protected Set<String> matchStartLabels = new HashSet<>();
+    protected Set<String> matchEndLabels = new HashSet<>();
+    protected Set<String> scopeKeys = null;
+    protected final ConnectiveStep.Connective connective;
+    protected final String computedStartLabel;
+    protected MatchAlgorithm matchAlgorithm;
+    protected Class<? extends MatchAlgorithm> matchAlgorithmClass = CountMatchAlgorithm.class; // default is CountMatchAlgorithm (use MatchAlgorithmStrategy to change)
+    protected Map<String, Set<String>> referencedLabelsMap; // memoization of referenced labels for MatchEndSteps (Map<startStepId, referencedLabels>)
 
-    private Set<List<Object>> dedups = null;
-    private Set<String> dedupLabels = null;
-    private Set<String> keepLabels = null;
+    protected Set<List<Object>> dedups = null;
+    protected Set<String> dedupLabels = null;
+    protected Set<String> keepLabels = null;
 
     public MatchStep(final Traversal.Admin traversal, final ConnectiveStep.Connective connective, final Traversal... matchTraversals) {
         super(traversal);
@@ -96,11 +96,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     //////////////////
-    private String pullOutVariableStartStepToParent(final WhereTraversalStep<?> whereStep) {
+    protected String pullOutVariableStartStepToParent(final WhereTraversalStep<?> whereStep) {
         return this.pullOutVariableStartStepToParent(new HashSet<>(), whereStep.getLocalChildren().get(0), true).size() != 1 ? null : pullOutVariableStartStepToParent(new HashSet<>(), whereStep.getLocalChildren().get(0), false).iterator().next();
     }
 
-    private Set<String> pullOutVariableStartStepToParent(final Set<String> selectKeys, final Traversal.Admin<?, ?> traversal, boolean testRun) {
+    protected Set<String> pullOutVariableStartStepToParent(final Set<String> selectKeys, final Traversal.Admin<?, ?> traversal, boolean testRun) {
         final Step<?, ?> startStep = traversal.getStartStep();
         if (startStep instanceof WhereTraversalStep.WhereStartStep && !((WhereTraversalStep.WhereStartStep) startStep).getScopeKeys().isEmpty()) {
             selectKeys.addAll(((WhereTraversalStep.WhereStartStep<?>) startStep).getScopeKeys());
@@ -112,7 +112,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
     //////////////////
 
-    private void configureStartAndEndSteps(final Traversal.Admin<?, ?> matchTraversal) {
+    protected void configureStartAndEndSteps(final Traversal.Admin<?, ?> matchTraversal) {
         ConnectiveStrategy.instance().apply(matchTraversal);
         // START STEP to MatchStep OR MatchStartStep
         final Step<?, ?> startStep = matchTraversal.getStartStep();
@@ -272,7 +272,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.dedupLabels != null;
     }*/
 
-    private boolean isDuplicate(final Traverser<S> traverser) {
+    protected boolean isDuplicate(final Traverser<S> traverser) {
         if (null == this.dedups)
             return false;
         final Path path = traverser.path();
@@ -287,7 +287,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.dedups.contains(objects);
     }
 
-    private boolean hasMatched(final ConnectiveStep.Connective connective, final Traverser.Admin<S> traverser) {
+    protected boolean hasMatched(final ConnectiveStep.Connective connective, final Traverser.Admin<S> traverser) {
         int counter = 0;
         boolean matched = false;
         for (final Traversal.Admin<Object, Object> matchTraversal : this.matchTraversals) {
@@ -312,7 +312,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return matched;
     }
 
-    private Map<String, E> getBindings(final Traverser<S> traverser) {
+    protected Map<String, E> getBindings(final Traverser<S> traverser) {
         final Map<String, E> bindings = new HashMap<>();
         traverser.path().forEach((object, labels) -> {
             for (final String label : labels) {
@@ -323,7 +323,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return bindings;
     }
 
-    private void initializeMatchAlgorithm(final boolean onComputer) {
+    protected void initializeMatchAlgorithm(final boolean onComputer) {
         try {
             this.matchAlgorithm = this.matchAlgorithmClass.getConstructor().newInstance();
         } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
@@ -332,7 +332,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         this.matchAlgorithm.initialize(onComputer, this.matchTraversals);
     }
 
-    private boolean hasPathLabel(final Path path, final Set<String> labels) {
+    protected boolean hasPathLabel(final Path path, final Set<String> labels) {
         for (final String label : labels) {
             if (path.hasLabel(label))
                 return true;
@@ -340,7 +340,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return false;
     }
 
-    private Map<String, Set<String>> getReferencedLabelsMap() {
+    protected Map<String, Set<String>> getReferencedLabelsMap() {
         if (null == this.referencedLabelsMap) {
             this.referencedLabelsMap = new HashMap<>();
             for (final Traversal.Admin<?, ?> traversal : this.matchTraversals) {
@@ -354,7 +354,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.referencedLabelsMap;
     }
 
-    private TraverserSet standardAlgorithmBarrier;
+    protected TraverserSet standardAlgorithmBarrier;
 
     @Override
     protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
@@ -469,11 +469,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     //////////////////////////////
 
-    public static final class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
+    public static class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
 
-        private final String selectKey;
-        private Set<String> scopeKeys;
-        private MatchStep<?, ?> parent;
+        protected final String selectKey;
+        protected Set<String> scopeKeys;
+        protected MatchStep<?, ?> parent;
 
         public MatchStartStep(final Traversal.Admin traversal, final String selectKey) {
             super(traversal);
@@ -533,11 +533,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    public static final class MatchEndStep extends EndStep<Object> implements Scoping {
+    public static class MatchEndStep extends EndStep<Object> implements Scoping {
 
-        private final String matchKey;
-        private final Set<String> matchKeyCollection;
-        private MatchStep<?, ?> parent;
+        protected final String matchKey;
+        protected final Set<String> matchKeyCollection;
+        protected MatchStep<?, ?> parent;
 
         public MatchEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
@@ -546,7 +546,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
 
-        private <S> Traverser.Admin<S> retractUnnecessaryLabels(final Traverser.Admin<S> traverser) {
+        protected <S> Traverser.Admin<S> retractUnnecessaryLabels(final Traverser.Admin<S> traverser) {
             if (null == this.parent.getKeepLabels())
                 return traverser;
 
@@ -716,7 +716,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public static class GreedyMatchAlgorithm implements MatchAlgorithm {
 
-        private List<Traversal.Admin<Object, Object>> traversals;
+        protected List<Traversal.Admin<Object, Object>> traversals;
 
         @Override
         public void initialize(final boolean onComputer, final List<Traversal.Admin<Object, Object>> traversals) {

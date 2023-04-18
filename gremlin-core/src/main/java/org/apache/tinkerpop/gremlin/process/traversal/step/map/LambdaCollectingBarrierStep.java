@@ -30,9 +30,9 @@ import java.util.function.Consumer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<S> implements LambdaHolder {
+public class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<S> implements LambdaHolder {
 
-    private final Consumer<TraverserSet<S>> barrierConsumer;
+    protected final Consumer<TraverserSet<S>> barrierConsumer;
 
     public LambdaCollectingBarrierStep(final Traversal.Admin traversal, final Consumer<TraverserSet<S>> barrierConsumer, final int maxBarrierSize) {
         super(traversal, maxBarrierSize);

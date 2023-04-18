@@ -32,9 +32,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class NotStep<S> extends FilterStep<S> implements TraversalParent{
+public class NotStep<S> extends FilterStep<S> implements TraversalParent{
 
-    private Traversal.Admin<S, ?> notTraversal;
+    protected Traversal.Admin<S, ?> notTraversal;
 
     public NotStep(final Traversal.Admin traversal, final Traversal<S, ?> notTraversal) {
         super(traversal);

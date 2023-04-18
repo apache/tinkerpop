@@ -32,9 +32,9 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
+public class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.BULK);
+    protected static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.BULK);
 
     public CountGlobalStep(final Traversal.Admin traversal) {
         super(traversal);

@@ -28,9 +28,9 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaFilterStep<S> extends FilterStep<S> implements LambdaHolder {
+public class LambdaFilterStep<S> extends FilterStep<S> implements LambdaHolder {
 
-    private final Predicate<Traverser<S>> predicate;
+    protected final Predicate<Traverser<S>> predicate;
 
     public LambdaFilterStep(final Traversal.Admin traversal, final Predicate<Traverser<S>> predicate) {
         super(traversal);

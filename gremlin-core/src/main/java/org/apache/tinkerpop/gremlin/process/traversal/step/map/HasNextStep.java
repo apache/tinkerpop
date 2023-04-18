@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasNextStep<S> extends AbstractStep<S, Boolean> {
+public class HasNextStep<S> extends AbstractStep<S, Boolean> {
 
     public HasNextStep(final Traversal.Admin traversal) {
         super(traversal);
