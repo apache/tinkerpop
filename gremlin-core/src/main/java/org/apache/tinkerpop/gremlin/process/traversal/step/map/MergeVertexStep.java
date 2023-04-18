@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -192,9 +193,12 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
 
         final Map onCreateMap = materializeMap(traverser, onCreateTraversal);
         // null result from onCreateTraversal - use main mergeMap argument
-        if (onCreateMap == null)
+        if (onCreateMap == null || onCreateMap.size() == 0)
             return mergeMap;
         validateMapInput(onCreateMap, false);
+
+        if (mergeMap == null || mergeMap.size() == 0)
+            return onCreateMap;
 
         /*
          * Now we need to merge the two maps - onCreate should inherit traits from mergeMap, and it is not allowed to
@@ -202,9 +206,12 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
          */
 
         validateNoOverrides(mergeMap, onCreateMap);
-        onCreateMap.putAll(mergeMap);
 
-        return onCreateMap;
+        final Map<Object, Object> combinedMap = new HashMap<>(onCreateMap.size() + mergeMap.size());
+        combinedMap.putAll(onCreateMap);
+        combinedMap.putAll(mergeMap);
+
+        return combinedMap;
     }
 
 }
