@@ -88,7 +88,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, List<Double>> get_g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2X();
 
-    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_rangeXlocal_20_30X();
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_rangeXlocal_20_30X(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -355,7 +355,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_rangeXlocal_20_30X() {
-        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_rangeXlocal_20_30X();
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_rangeXlocal_20_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29), traversal);
     }
@@ -457,8 +457,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_rangeXlocal_20_30X() {
-            return g.V(1).values("age").range(Scope.local, 20, 30);
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_rangeXlocal_20_30X(final Object vid1) {
+            return g.V(vid1).values("age").range(Scope.local, 20, 30);
         }
     }
 }

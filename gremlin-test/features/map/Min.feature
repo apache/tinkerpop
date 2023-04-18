@@ -159,9 +159,10 @@ Feature: Step - min()
 
   Scenario: g_VX1X_valuesXageX_minXlocalX
     Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(1).values("age").min(Scope.local)
+      g.V(vid1).values("age").min(Scope.local)
       """
     When iterated to list
     Then the result should be unordered

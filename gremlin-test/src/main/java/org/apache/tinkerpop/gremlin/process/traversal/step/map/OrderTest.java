@@ -115,7 +115,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabel_descX();
 
-    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_orderXlocalX();
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_orderXlocalX(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -500,7 +500,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_orderXlocalX() {
-        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_orderXlocalX();
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_orderXlocalX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29), traversal);
     }
@@ -656,8 +656,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_orderXlocalX() {
-            return g.V(1).values("age").order(Scope.local);
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_orderXlocalX(final Object vid1) {
+            return g.V(vid1).values("age").order(Scope.local);
         };
     }
 }

@@ -53,7 +53,7 @@ public abstract class IndexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<Integer, String>> get_g_V_hasLabelXpersonX_name_fold_orderXlocalX_index_withXmapX();
 
-    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_index_unfold_unfold();
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_index_unfold_unfold(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -106,7 +106,7 @@ public abstract class IndexTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_index_unfold_unfold() {
-        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_index_unfold_unfold();
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_index_unfold_unfold(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29,0), traversal);
     }
@@ -137,8 +137,8 @@ public abstract class IndexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_index_unfold_unfold() {
-            return g.V(1).values("age").index().unfold().unfold();
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_index_unfold_unfold(final Object vid1) {
+            return g.V(vid1).values("age").index().unfold().unfold();
         }
     }
 }

@@ -68,7 +68,7 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_maxX();
 
-    public abstract Traversal<Vertex, Integer> get_g_VX1X_valuesXageX_maxXlocalX();
+    public abstract Traversal<Vertex, Integer> get_g_VX1X_valuesXageX_maxXlocalX(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -176,7 +176,7 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_maxXlocalX() {
-        final Traversal<Vertex, Integer> traversal = get_g_VX1X_valuesXageX_maxXlocalX();
+        final Traversal<Vertex, Integer> traversal = get_g_VX1X_valuesXageX_maxXlocalX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29), traversal);
     }
@@ -244,8 +244,8 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_VX1X_valuesXageX_maxXlocalX() {
-            return g.V(1).values("age").max(Scope.local);
+        public Traversal<Vertex, Integer> get_g_VX1X_valuesXageX_maxXlocalX(final Object vid1) {
+            return g.V(vid1).values("age").max(Scope.local);
         };
     }
 }

@@ -266,9 +266,10 @@ Feature: Step - range()
 
   Scenario: g_VX1X_valuesXageX_rangeXlocal_20_30X
     Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(1).values("age").range(Scope.local, 20, 30)
+      g.V(vid1).values("age").range(Scope.local, 20, 30)
       """
     When iterated to list
     Then the result should be unordered

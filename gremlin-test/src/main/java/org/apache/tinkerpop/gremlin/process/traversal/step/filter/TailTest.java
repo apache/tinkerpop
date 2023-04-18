@@ -76,7 +76,7 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X();
 
-    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_tailXlocal_5X();
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_tailXlocal_5X(final Object vid1);
 
     /**
      * Scenario: Global scope
@@ -240,7 +240,7 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_tailXlocal_5X() {
-        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_tailXlocal_5X();
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_tailXlocal_5X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29), traversal);
     }
@@ -308,8 +308,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_tailXlocal_5X() {
-            return g.V(1).values("age").tail(Scope.local,5);
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_tailXlocal_5X(final Object vid1) {
+            return g.V(vid1).values("age").tail(Scope.local,5);
         }
     }
 }

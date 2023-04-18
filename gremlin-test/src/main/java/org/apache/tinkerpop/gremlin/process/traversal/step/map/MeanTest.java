@@ -66,7 +66,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<List<Integer>, Double> get_g_injectXlistXnull_10_20_nullXX_meanXlocalX();
 
-    public abstract Traversal<Vertex, Double> get_g_VX1X_valuesXageX_meanXlocalX();
+    public abstract Traversal<Vertex, Double> get_g_VX1X_valuesXageX_meanXlocalX(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -153,7 +153,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_meanXlocalX() {
-        final Traversal<Vertex, Double> traversal = get_g_VX1X_valuesXageX_meanXlocalX();
+        final Traversal<Vertex, Double> traversal = get_g_VX1X_valuesXageX_meanXlocalX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29.0), traversal);
     }
@@ -216,8 +216,8 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Double> get_g_VX1X_valuesXageX_meanXlocalX() {
-            return g.V(1).values("age").mean(Scope.local);
+        public Traversal<Vertex, Double> get_g_VX1X_valuesXageX_meanXlocalX(final Object vid1) {
+            return g.V(vid1).values("age").mean(Scope.local);
         };
     }
 }

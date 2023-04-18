@@ -57,7 +57,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX();
 
-    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_sampleXlocal_5X();
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_sampleXlocal_5X(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -123,7 +123,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_sampleXlocal_5X() {
-        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_sampleXlocal_5X();
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_sampleXlocal_5X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29), traversal);
     }
@@ -155,8 +155,8 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_sampleXlocal_5X() {
-            return g.V(1).values("age").sample(Scope.local,5);
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_sampleXlocal_5X(final Object vid1) {
+            return g.V(vid1).values("age").sample(Scope.local,5);
         }
     }
 }
