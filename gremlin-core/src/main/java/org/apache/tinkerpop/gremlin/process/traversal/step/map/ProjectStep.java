@@ -37,15 +37,19 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> implements TraversalParent, ByModulating {
+public class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> implements TraversalParent, ByModulating {
 
     private final List<String> projectKeys;
     private TraversalRing<S, E> traversalRing;
 
     public ProjectStep(final Traversal.Admin traversal, final String... projectKeys) {
+        this(traversal, new TraversalRing<>(), projectKeys);
+    }
+
+    public ProjectStep(final Traversal.Admin traversal, final TraversalRing<S, E> traversalRing, final String... projectKeys) {
         super(traversal);
         this.projectKeys = Arrays.asList(projectKeys);
-        this.traversalRing = new TraversalRing<>();
+        this.traversalRing = traversalRing;
     }
 
     @Override
@@ -111,5 +115,9 @@ public final class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> im
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements();
+    }
+
+    public TraversalRing<S, E> getTraversalRing() {
+        return traversalRing;
     }
 }
