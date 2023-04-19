@@ -361,6 +361,11 @@ public class TraversalTest {
         }
 
         @Override
+        public void lock() {
+
+        }
+
+        @Override
         public Optional<Graph> getGraph() {
             return null;
         }

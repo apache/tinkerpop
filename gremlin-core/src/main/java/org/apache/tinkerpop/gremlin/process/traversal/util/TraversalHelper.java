@@ -488,7 +488,19 @@ public final class TraversalHelper {
      * @param traversal the root traversal to start application
      */
     public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal) {
-        consumer.accept(traversal);
+        applyTraversalRecursively(consumer, traversal, false);
+    }
+
+    /**
+     * Apply the provider {@link Consumer} function to the provided {@link Traversal} and all of its children.
+     *
+     * @param consumer  the function to apply to the each traversal in the tree
+     * @param traversal the root traversal to start application
+     */
+    public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal,
+                                                 final boolean applyToChildrenOnly) {
+        if (!applyToChildrenOnly)
+            consumer.accept(traversal);
 
         // we get accused of concurrentmodification if we try a for(Iterable)
         final List<Step> steps = traversal.getSteps();
