@@ -25,12 +25,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-5-6, 3.5.6>>.
 
+* Refactored `PropertyMapStep` to improve extensibility by providers.
 * Fixed bug in grammar that prevented declaration of a `Map` key named `new` without quotes.
 * Fixed bug in grammar that prevented parsing of `Map` key surrounded by parenthesis which is allowable in Groovy.
 * Fixed bug in `GroovyTranslator` that surrounded `String` keys with parenthesis for `Map` when not necessary.
 * Added support to the grammar allowing `List` and `Map` key declarations for `Map` entries.
 * Improved performance of comparison (equals) between not compatible types and nulls.
-* Fixed MergeV/MergeE steps to work when onCreate is immutable list.
+* Fixed MergeV/MergeE steps to work when onCreate is immutable map.
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: January 16, 2023)
@@ -307,6 +308,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to `snakeyaml` 2.0 to fix security vulnerability.
 * Bumped to Apache `commons-configuration` 2.9.0 to fix security vulnerability.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
+* Fixed performance issue when using SampleGlobalStep with a traverser that has either a LABELED_PATH or PATH requirement.
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
