@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,12 +63,16 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
     protected Parameters parameters = new Parameters();
     protected TraversalRing<K, E> traversalRing;
 
-    public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
+    public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, TraversalRing<K, E> traversalRing, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
         this.returnType = propertyType;
         this.propertyTraversal = null;
-        this.traversalRing = new TraversalRing<>();
+        this.traversalRing = traversalRing;
+    }
+
+    public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
+        this(traversal, propertyType, new TraversalRing<>(), propertyKeys);
     }
 
     public PropertyMapStep(final Traversal.Admin traversal, final int options, final PropertyType propertyType, final String... propertyKeys) {
@@ -247,5 +250,13 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
             }
             this.traversalRing.reset();
         }
+    }
+
+    public Traversal.Admin<Element, ? extends Property> getPropertyTraversal() {
+        return propertyTraversal;
+    }
+
+    public TraversalRing<K, E> getTraversalRing() {
+        return traversalRing;
     }
 }
