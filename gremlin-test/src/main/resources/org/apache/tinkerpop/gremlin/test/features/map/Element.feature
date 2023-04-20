@@ -19,41 +19,110 @@
 Feature: Step - element()
 
   # VertexProperty -> Vertex
-  Scenario: g_V_properties_element
+  Scenario: g_VX1X_properties_element
     Given the modern graph
-    And using the parameter xx1 defined as "v[josh]"
+    And using the parameter v2 defined as "v[josh]"
     And the traversal of
       """
-      g.V(xx1).properties().element().limit(1)
+      g.V(v2).properties().element().limit(1)
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | v[josh] |
 
-  # EdgeProperty -> Edge
-  Scenario: g_E_properties_element
+  Scenario: g_V_properties_element
     Given the modern graph
-    And using the parameter xx1 defined as "e[josh-created->lop].id"
     And the traversal of
       """
-      g.E(xx1).properties().element().limit(1)
+      g.V().properties().element()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[vadas] |
+      | v[vadas] |
+      | v[lop] |
+      | v[lop] |
+      | v[josh] |
+      | v[josh] |
+      | v[ripple] |
+      | v[ripple] |
+      | v[peter] |
+      | v[peter] |
+
+  Scenario: g_V_propertiesXageX_element
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("age").element()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  # EdgeProperty -> Edge
+  Scenario: g_EX_properties_element
+    Given the modern graph
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
+    And the traversal of
+      """
+      g.E(eid11).properties().element().limit(1)
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | e[josh-created->lop] |
 
-  # MetaProperty -> VertexProperty
-  @MultiMetaProperties
-  Scenario: g_V_properties_properties_element_element
-    Given the crew graph
-    And using the parameter xx1 defined as "v[stephen]"
+  Scenario: g_E_properties_element
+    Given the modern graph
     And the traversal of
       """
-      g.V(xx1).properties().properties().element().element().limit(1)
+      g.E().properties().element()
       """
     When iterated to list
     Then the result should be unordered
       | result |
+      | e[marko-created->lop] |
+      | e[marko-knows->josh] |
+      | e[marko-knows->vadas] |
+      | e[peter-created->lop] |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
+  # MetaProperty -> VertexProperty
+  @MultiMetaProperties
+  Scenario: g_VXv7_properties_properties_element_element
+    Given the crew graph
+    And using the parameter v7 defined as "v[stephen]"
+    And the traversal of
+      """
+      g.V(v7).properties().properties().element().element().limit(1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[stephen] |
+
+  @MultiMetaProperties
+  Scenario: g_V_properties_properties_element_element
+    Given the crew graph
+    And using the parameter v7 defined as "v[stephen]"
+    And the traversal of
+      """
+      g.V(v7).properties().properties().element().element()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[stephen] |
+      | v[stephen] |
+      | v[stephen] |
+      | v[stephen] |
       | v[stephen] |

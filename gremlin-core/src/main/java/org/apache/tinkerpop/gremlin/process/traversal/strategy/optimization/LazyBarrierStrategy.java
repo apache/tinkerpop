@@ -26,13 +26,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -78,12 +78,13 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // drop() is a problem for bulked edge/meta properties because of Property equality changes in TINKERPOP-2318
+        // drop()/element() is a problem for bulked edge/meta properties because of Property equality changes in TINKERPOP-2318
         // which made it so that a Property is equal if the key/value is equal. as a result, they bulk together which
         // is fine for almost all cases except when you wish to drop the property.
         if (TraversalHelper.onGraphComputer(traversal) ||
                 traversal.getTraverserRequirements().contains(TraverserRequirement.PATH) ||
-                TraversalHelper.hasStepOfAssignableClass(DropStep.class, traversal))
+                TraversalHelper.hasStepOfAssignableClass(DropStep.class, traversal)||
+                TraversalHelper.hasStepOfAssignableClass(ElementStep.class, traversal))
             return;
 
         boolean foundFlatMap = false;
