@@ -26,8 +26,6 @@ from gremlin_python.structure.graph import Vertex, Edge, Property, VertexPropert
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Merge, Direction
 
-from_ = Direction.OUT
-
 
 class TestGraphBinaryReader(object):
     graphbinary_reader = GraphBinaryReader()
@@ -189,7 +187,7 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
-        x = from_
+        x = Direction.from_
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 

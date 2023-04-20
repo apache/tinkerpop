@@ -33,13 +33,6 @@ label = __.label
 inV = __.inV
 project = __.project
 tail = __.tail
-direction = {
-    "OUT": Direction.OUT,
-    "IN": Direction.IN,
-    "BOTH": Direction.BOTH,
-    "from_": Direction.OUT,
-    "to": Direction.IN,
-}
 
 ignores = []
 
@@ -237,7 +230,7 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match(r"^t\[.*\]$", val):  # parse instance of T enum
         return T[val[2:-1]]
     elif isinstance(val, str) and re.match(r"^D\[.*\]$", val):  # parse instance of Direction enum
-        return direction[__alias_direction(val[2:-1])]
+        return Direction[__alias_direction(val[2:-1])]
     elif isinstance(val, str) and re.match(r"^M\[.*\]$", val):  # parse instance of Merge enum
         return Merge[__alias_merge(val[2:-1])]
     elif isinstance(val, str) and re.match(r"^null$", val):  # parse null to None
