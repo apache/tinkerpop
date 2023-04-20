@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
@@ -66,11 +67,14 @@ public class HasStepTest extends StepTest {
                 Arrays.asList(
                         __.hasId(1),
                         __.hasId(eq(1)),
-                        __.hasId(new Integer[]{1})),
+                        __.hasId(new Integer[]{1}),
+                        __.hasId(Collections.singletonList(1))),
                 Arrays.asList(
                         __.hasId(1, 2),
                         __.hasId(within(1, 2)),
-                        __.hasId(new Integer[]{1, 2})),
+                        __.hasId(new Integer[]{1, 2}),
+                        __.hasId(Arrays.asList(1, 2)),
+                        __.hasId(Collections.singletonList(1), Collections.singletonList(2))),
 
                 // hasLabel(Object label, Object... moreLabels) should be compatible with hasLabel(Object... labels)
                 Arrays.asList(
