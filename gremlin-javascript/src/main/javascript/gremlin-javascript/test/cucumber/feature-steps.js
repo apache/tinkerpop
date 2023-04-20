@@ -348,9 +348,7 @@ function toT(value) {
 function toDirection(value) {
   // swap Direction.from alias
   if (value === 'from')
-    return direction["out"];
-  else if (value === 'to')
-    return direction["in"];
+    return direction["from_"];
   else
     return direction[value.toLowerCase()];
 }

@@ -473,6 +473,22 @@ function toEnum(typeName, keys) {
   return result;
 }
 
+const directionAlias = {
+  from_: 'out',
+  to: 'in',
+};
+
+// for direction enums, maps the same EnumValue object to the enum aliases after creating them
+function toDirectionEnum(typeName, keys) {
+  const result = toEnum(typeName, keys);
+  Object.keys(directionAlias).forEach((k) => {
+    if (directionAlias.hasOwnProperty(k)) {
+      result[k] = result[directionAlias[k]];
+    }
+  });
+  return result;
+}
+
 class EnumValue {
   constructor(typeName, elementName) {
     this.typeName = typeName;
@@ -496,7 +512,7 @@ module.exports = {
   barrier: toEnum('Barrier', 'normSack'),
   cardinality: toEnum('Cardinality', 'list set single'),
   column: toEnum('Column', 'keys values'),
-  direction: toEnum('Direction', 'BOTH IN OUT from_ to'),
+  direction: toDirectionEnum('Direction', 'BOTH IN OUT from_ to'),
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
   merge: toEnum('Merge', 'onCreate onMatch outV inV'),
