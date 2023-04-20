@@ -482,9 +482,7 @@ const directionAlias = {
 function toDirectionEnum(typeName, keys) {
   const result = toEnum(typeName, keys);
   Object.keys(directionAlias).forEach((k) => {
-    if (directionAlias.hasOwnProperty(k)) {
-      result[k] = result[directionAlias[k]];
-    }
+    result[k] = result[directionAlias[k]];
   });
   return result;
 }
