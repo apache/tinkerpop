@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -69,8 +70,10 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
             return (S) sortCollection((Collection) start, this.chainedComparator);
         else if (start instanceof Map)
             return (S) sortMap((Map) start, this.chainedComparator);
-        else
-            return start;
+        else if (start != null && start.getClass().isArray()) {
+            return (S) sortCollection(IteratorUtils.asList(start), this.chainedComparator);
+        }
+        return start;
     }
 
     @Override

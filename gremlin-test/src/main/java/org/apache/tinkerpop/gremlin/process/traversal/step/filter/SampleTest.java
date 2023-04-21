@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -55,6 +56,8 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX();
 
     public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX();
+
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_sampleXlocal_5X(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -117,6 +120,14 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         assertEquals(5, map.get("person").size());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_sampleXlocal_5X() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_sampleXlocal_5X(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
     public static class Traversals extends SampleTest {
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
@@ -141,6 +152,11 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX() {
             return g.withoutStrategies(ProductiveByStrategy.class).V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").fold().sample(Scope.local, 5));
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_sampleXlocal_5X(final Object vid1) {
+            return g.V(vid1).values("age").sample(Scope.local,5);
         }
     }
 }

@@ -115,6 +115,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabel_descX();
 
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_orderXlocalX(final Object vid1);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
@@ -495,6 +497,14 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertThat(traversal.hasNext(), is(false));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_orderXlocalX() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_orderXlocalX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
     public Object getKey(final Object kv) {
         // remotes return LinkedHashMap and embedded returns Map.Entry :/
         if (kv instanceof Map.Entry)
@@ -644,5 +654,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Vertex> get_g_V_order_byXlabel_descX() {
             return g.V().order().by(__.label(), Order.desc);
         }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_orderXlocalX(final Object vid1) {
+            return g.V(vid1).values("age").order(Scope.local);
+        };
     }
 }

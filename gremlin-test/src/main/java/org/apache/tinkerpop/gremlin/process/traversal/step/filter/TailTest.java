@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -74,6 +75,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X();
+
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_tailXlocal_5X(final Object vid1);
 
     /**
      * Scenario: Global scope
@@ -231,6 +234,17 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         assertEquals(expected, actual);
     }
 
+    /**
+     * Scenario: Local scope, single item
+     */
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_tailXlocal_5X() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_tailXlocal_5X(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
     public static class Traversals extends TailTest {
 
         @Override
@@ -291,6 +305,11 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X() {
             return g.V().as("a").out().as("b").out().as("c").<String>select("a", "b", "c").by("name").tail(local, 1);
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_tailXlocal_5X(final Object vid1) {
+            return g.V(vid1).values("age").tail(Scope.local,5);
         }
     }
 }

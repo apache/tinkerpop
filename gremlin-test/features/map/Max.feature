@@ -144,3 +144,15 @@ Feature: Step - max()
     Then the result should be unordered
       | result |
       | m[{"ripple":"d[1.0].d","lop":"d[0.4].d"}] |
+
+  Scenario: g_VX1X_valuesXageX_maxXlocalX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).values("age").max(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

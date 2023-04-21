@@ -307,3 +307,15 @@ Feature: Step - dedup()
       | peter |
       | marko |
       | josh  |
+
+    Scenario: g_VX1X_valuesXageX_dedupXlocalX_unfold
+      Given the modern graph
+      And using the parameter vid1 defined as "v[marko].id"
+      And the traversal of
+        """
+        g.V(vid1).values("age").dedup(Scope.local).unfold()
+        """
+      When iterated to list
+      Then the result should be unordered
+        | result |
+        | d[29].i |

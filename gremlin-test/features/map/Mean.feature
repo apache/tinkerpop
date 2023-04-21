@@ -140,3 +140,15 @@ Feature: Step - mean()
     Then the result should be unordered
       | result |
       | d[15].d |
+
+  Scenario: g_VX1X_valuesXageX_meanXlocalX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).values("age").mean(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29.0].d |
