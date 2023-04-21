@@ -165,13 +165,23 @@ Column = Enum('Column', ' keys values')
 statics.add_static('keys', Column.keys)
 statics.add_static('values', Column.values)
 
-Direction = Enum('Direction', ' BOTH IN OUT')
+# alias from_ and to
+Direction = Enum(
+    value='Direction',
+    names=[
+        ('BOTH', 'BOTH'),
+        ('IN', 'IN'),
+        ('OUT', 'OUT'),
+        ('from_', "OUT"),
+        ('to', 'IN'),
+    ],
+)
 
 statics.add_static('OUT', Direction.OUT)
 statics.add_static('IN', Direction.IN)
 statics.add_static('BOTH', Direction.BOTH)
-statics.add_static('from_', Direction.IN)
-statics.add_static('to', Direction.BOTH)
+statics.add_static('from_', Direction.OUT)
+statics.add_static('to', Direction.IN)
 
 GraphSONVersion = Enum('GraphSONVersion', ' V1_0 V2_0 V3_0')
 

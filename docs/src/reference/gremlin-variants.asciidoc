@@ -2076,8 +2076,6 @@ from gremlin_python.process.traversal import Scope
 from gremlin_python.process.traversal import Barrier
 from gremlin_python.process.traversal import Bindings
 from gremlin_python.process.traversal import WithOptions
-from_ = Direction.OUT
-to = Direction.IN
 ----
 
 These can be used analogously to how they are used in Gremlin-Java.

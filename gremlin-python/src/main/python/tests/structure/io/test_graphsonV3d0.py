@@ -36,8 +36,6 @@ from gremlin_python.process.traversal import P, Merge, Barrier, Order, Operator,
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
-from_ = Direction.OUT
-
 
 class TestGraphSONReader(object):
     graphson_reader = GraphSONReader()
@@ -385,7 +383,7 @@ class TestGraphSONWriter(object):
         assert {"@type": "g:Operator", "@value": "sum"} == json.loads(self.graphson_writer.write_object(Operator.sum_))
         assert {"@type": "g:Operator", "@value": "sumLong"} == json.loads(self.graphson_writer.write_object(Operator.sum_long))
         assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(Direction.OUT))
-        assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(from_))
+        assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(Direction.from_))
 
     def test_P(self):
         result = {'@type': 'g:P',
