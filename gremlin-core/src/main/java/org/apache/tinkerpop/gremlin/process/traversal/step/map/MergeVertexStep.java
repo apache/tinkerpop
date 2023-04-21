@@ -73,46 +73,6 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
         return allowedTokens;
     }
 
-    /**
-     * Translate the Map into a g.V() traversal against the supplied graph. Graph providers will presumably optimize
-     * this traversal to use whatever indices are present and appropriate for efficiency.
-     *
-     * Callers are responsible for closing this iterator when finished.
-     */
-    public static CloseableIterator<Vertex> searchVertices(final Graph graph, final Map search) {
-        if (search == null)
-            return CloseableIterator.empty();
-
-        final Object id = search.get(T.id);
-        final String label = (String) search.get(T.label);
-
-        GraphTraversal t = id != null ? graph.traversal().V(id) : graph.traversal().V();
-
-        if (label != null)
-            t = t.hasLabel(label);
-
-        // add property constraints
-        for (final Map.Entry e : ((Map<?,?>) search).entrySet()) {
-            final Object k = e.getKey();
-            if (!(k instanceof String)) continue;
-            t = t.has((String) k, e.getValue());
-        }
-
-        // this should auto-close the underlying traversal
-        return CloseableIterator.of(t);
-    }
-
-    /**
-     * Translate the Map into search criteria. Default implementation is to translate the Map into a g.V() traversal.
-     * Graph providers will presumably optimize this traversal to use whatever indices are present and appropriate for
-     * efficiency.
-     *
-     * Callers are responsible for closing this iterator when finished.
-     */
-    protected CloseableIterator<Vertex> searchVertices(final Map search) {
-        return searchVertices(getGraph(), search);
-    }
-
     @Override
     protected Iterator<Vertex> flatMap(final Traverser.Admin<S> traverser) {
         final Graph graph = getGraph();

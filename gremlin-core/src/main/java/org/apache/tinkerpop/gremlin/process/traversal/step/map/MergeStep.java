@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
@@ -45,6 +46,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
@@ -248,6 +252,8 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
             if (ignoreTokens) {
                 if (!(k instanceof String)) {
                     throw new IllegalArgumentException(String.format("option(onMatch) expects keys in Map to be of String - check: %s", k));
+                } else {
+                    ElementHelper.validateProperty((String) k, v);
                 }
             } else {
                 if (!(k instanceof String) && !allowedTokens.contains(k)) {
@@ -255,16 +261,23 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
                             "%s() and option(onCreate) args expect keys in Map to be either String or %s - check: %s",
                             op, allowedTokens, k));
                 }
-                if (k == T.label && !(v instanceof String)) {
-                    throw new IllegalArgumentException(String.format("%s() and option(onCreate) args expect T.label value to be of String - found: %s",
-                            op, v.getClass().getSimpleName()));
-
+                if (k == T.label) {
+                    if (!(v instanceof String)) {
+                        throw new IllegalArgumentException(String.format(
+                                "%s() and option(onCreate) args expect T.label value to be of String - found: %s", op,
+                                v.getClass().getSimpleName()));
+                    } else {
+                        ElementHelper.validateLabel((String) v);
+                    }
                 }
                 if (k == Direction.OUT && v instanceof Merge && v != Merge.outV) {
                     throw new IllegalArgumentException(String.format("Only Merge.outV token may be used for Direction.OUT, found: %s", v));
                 }
                 if (k == Direction.IN && v instanceof Merge && v != Merge.inV) {
                     throw new IllegalArgumentException(String.format("Only Merge.inV token may be used for Direction.IN, found: %s", v));
+                }
+                if (k instanceof String) {
+                    ElementHelper.validateProperty((String) k, v);
                 }
             }
         });
@@ -290,6 +303,45 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     protected Map materializeMap(final Traverser.Admin<S> traverser, Traversal.Admin<S, ?> mapTraversal) {
         final Map map = (Map) TraversalUtil.apply(traverser, mapTraversal);
         return map == null ? new LinkedHashMap() : map;
+    }
+
+    /**
+     * Translate the Map into a g.V() traversal against the supplied graph. Graph providers will presumably optimize
+     * this traversal to use whatever indices are present and appropriate for efficiency.
+     *
+     * Callers are responsible for closing this iterator when finished.
+     */
+    protected CloseableIterator<Vertex> searchVertices(final Map search) {
+        if (search == null)
+            return CloseableIterator.empty();
+
+        final Graph graph = getGraph();
+        final Object id = search.get(T.id);
+        final String label = (String) search.get(T.label);
+
+        GraphTraversal t = searchVerticesTraversal(graph, id);
+        t = searchVerticesLabelConstraint(t, label);
+        t = searchVerticesPropertyConstraints(t, search);
+
+        // this should auto-close the underlying traversal
+        return CloseableIterator.of(t);
+    }
+
+    protected GraphTraversal searchVerticesTraversal(final Graph graph, final Object id) {
+        return id != null ? graph.traversal().V(id) : graph.traversal().V();
+    }
+
+    protected GraphTraversal searchVerticesLabelConstraint(GraphTraversal t, final String label) {
+        return label != null ? t.hasLabel(label) : t;
+    }
+
+    protected GraphTraversal searchVerticesPropertyConstraints(GraphTraversal t, final Map search) {
+        for (final Map.Entry e : ((Map<?,?>) search).entrySet()) {
+            final Object k = e.getKey();
+            if (!(k instanceof String)) continue;
+            t = t.has((String) k, e.getValue());
+        }
+        return t;
     }
 
     @Override

@@ -388,7 +388,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             return (Vertex) o;
         else if (o instanceof Map) {
             final Map search = (Map) o;
-            final Vertex v = IteratorUtils.findFirst(MergeVertexStep.searchVertices(getGraph(), search)).get();
+            final Vertex v = IteratorUtils.findFirst(searchVertices(search)).get();
             return tryAttachVertex(v);
         }
         throw new IllegalArgumentException(
