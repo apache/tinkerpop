@@ -88,6 +88,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X(final Object v1Id, final Object v2Id, final Object v3Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X_inList(final Object v1Id, final Object v2Id, final Object v3Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX2_3X(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX2_3X_inList(final Object v1Id, final Object v2Id);
+
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_isXgt_30XX();
@@ -354,7 +360,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Object id2 = convertToVertexId("vadas");
         final Object id3 = convertToVertexId("lop");
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2_3X(convertToVertexId("marko"), id2, id3);
-        assert_g_VX1X_out_hasXid_2_3X(id2, id3, traversal);
+        assert_g_has_2id(id2, id3, traversal);
     }
 
     @Test
@@ -363,14 +369,42 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Object id2 = convertToVertexId("vadas");
         final Object id3 = convertToVertexId("lop");
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2_3X(convertToVertexId("marko"), id2.toString(), id3.toString());
-        assert_g_VX1X_out_hasXid_2_3X(id2, id3, traversal);
+        assert_g_has_2id(id2, id3, traversal);
     }
 
-    protected void assert_g_VX1X_out_hasXid_2_3X(Object id2, Object id3, Traversal<Vertex, Vertex> traversal) {
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_out_hasXid_2_3X_inList() {
+        final Object id2 = convertToVertexId("vadas");
+        final Object id3 = convertToVertexId("lop");
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2_3X_inList(convertToVertexId("marko"), id2, id3);
+        assert_g_has_2id(id2, id3, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXid_1_2X() {
+        final Object id1 = convertToVertexId("marko");
+        final Object id2 = convertToVertexId("vadas");
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasIdX2_3X(id1, id2);
+        assert_g_has_2id(id1, id2, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXid_1_2X_inList() {
+        final Object id1 = convertToVertexId("marko");
+        final Object id2 = convertToVertexId("vadas");
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasIdX2_3X_inList(id1, id2);
+        assert_g_has_2id(id1, id2, traversal);
+    }
+
+    // asserts that the traversal returns two ids
+    protected void assert_g_has_2id(Object id1, Object id2, Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id2), is(id3)));
-        assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id2), is(id3)));
+        assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id1), is(id2)));
+        assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id1), is(id2)));
         assertThat(traversal.hasNext(), is(false));
     }
 
@@ -973,6 +1007,21 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X(final Object v1Id, final Object v2Id, final Object v3Id) {
             return g.V(v1Id).out().hasId(v2Id, v3Id);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X_inList(final Object v1Id, final Object v2Id, final Object v3Id) {
+            return g.V(v1Id).out().hasId(Arrays.asList(v2Id, v3Id));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasIdX2_3X(final Object v1Id, final Object v2Id) {
+            return g.V().hasId(v1Id, v2Id);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasIdX2_3X_inList(final Object v1Id, final Object v2Id) {
+            return g.V().hasId(Arrays.asList(v1Id, v2Id));
         }
 
         @Override

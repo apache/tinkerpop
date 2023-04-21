@@ -340,6 +340,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `Traversal.lock()` to provide an explicit way to finalize a traversal object.
 * Changed `Traversal.getGraph()` to get its `Graph` object from itself or, if not available, its parent.
 * Added `AuthInfoProvider` interface and `NewDynamicAuth()` to gremlin-go for dynamic authentication support.
+* Fixed bug where `hasId()` unrolls ids in Java arrays to put into `P.within` but not ids in lists, this also aligned behavior of start-step and mid-traversal hasId().
 * Bumped to `snakeyaml` 2.0 to fix security vulnerability.
 * Bumped to Apache `commons-configuration` 2.9.0 to fix security vulnerability.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
