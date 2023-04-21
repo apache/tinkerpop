@@ -63,6 +63,23 @@ describe('Traversal', function () {
       assert.strictEqual(bytecode.stepInstructions[2][2].elementName, 'desc');
     });
 
+    it('should add steps with Direction aliases from_ and to properly mapped to OUT and IN', function () {
+      const g = anon.traversal().withGraph(new graph.Graph());
+      const bytecode = g.V().to(t.direction.from_, 'knows').to(t.direction.in, 'created').getBytecode();
+      assert.ok(bytecode);
+      assert.strictEqual(bytecode.sourceInstructions.length, 0);
+      assert.strictEqual(bytecode.stepInstructions.length, 3);
+      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
+      assert.strictEqual(bytecode.stepInstructions[1][0], 'to');
+      assert.strictEqual(typeof bytecode.stepInstructions[1][1], 'object');
+      assert.strictEqual(bytecode.stepInstructions[1][1].typeName, 'Direction');
+      assert.strictEqual(bytecode.stepInstructions[1][1].elementName, 'OUT');
+      assert.strictEqual(bytecode.stepInstructions[1][2], 'knows');
+      assert.strictEqual(bytecode.stepInstructions[2][1].typeName, 'Direction');
+      assert.strictEqual(bytecode.stepInstructions[2][1].elementName, 'IN');
+      assert.strictEqual(bytecode.stepInstructions[2][2], 'created');
+    });
+
     it('should configure OptionStrategy for with_()', function () {
       const g = new graph.Graph().traversal();
       const bytecode = g.with_('x','test').with_('y').V().getBytecode();

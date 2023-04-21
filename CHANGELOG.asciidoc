@@ -63,6 +63,8 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Fixed bug in grammar that prevented parsing of `Map` key surrounded by parenthesis which is allowable in Groovy.
 * Fixed bug in `GroovyTranslator` that surrounded `String` keys with parenthesis for `Map` when not necessary.
 * Added support to the grammar allowing `List` and `Map` key declarations for `Map` entries.
+* Fixed `Direction` enum bug in `gremlin-javascript` where `Direction.from_` and `Direction.to` was not properly aliased to `Direction.OUT` and `Direction.IN`
+* Fixed `Direction` enum in `gremlin-python` where `Direction.from_` and `Direction.to` were not added, and they can now be used instead of defining `from_=Direction.OUT` and `to=Direction.IN`
 * Improved performance of comparison (equals) between not compatible types and nulls.
 * Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
 * Added static map capturing possible Traversal steps that shall be added to traversal for a given operator

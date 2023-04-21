@@ -27,7 +27,7 @@ from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import P, Direction
 from gremlin_python.process.traversal import Binding, Bindings
 from gremlin_python.process.graph_traversal import __
 
@@ -79,6 +79,20 @@ class TestTraversal(object):
         assert Binding('b', 'created') == bytecode.step_instructions[1][1]
         assert 'binding[b=created]' == str(bytecode.step_instructions[1][1])
         assert isinstance(hash(bytecode.step_instructions[1][1]), int)
+        ###
+        bytecode = g.V().to(Direction.from_, 'knows').to(Direction.to, 'created').bytecode
+        assert 0 == len(bytecode.bindings.keys())
+        assert 0 == len(bytecode.source_instructions)
+        assert 3 == len(bytecode.step_instructions)
+        assert "V" == bytecode.step_instructions[0][0]
+        assert "to" == bytecode.step_instructions[1][0]
+        assert Direction.OUT == bytecode.step_instructions[1][1]
+        assert "knows" == bytecode.step_instructions[1][2]
+        assert Direction.IN == bytecode.step_instructions[2][1]
+        assert "created" == bytecode.step_instructions[2][2]
+        assert 1 == len(bytecode.step_instructions[0])
+        assert 3 == len(bytecode.step_instructions[1])
+        assert 3 == len(bytecode.step_instructions[2])
 
     def test_P(self):
         # verify that the order of operations is respected
