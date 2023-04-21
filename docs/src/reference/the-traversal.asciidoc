@@ -1260,7 +1260,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `element()` step is a no-argument step that traverses from a `Property` to the `Element` that owns it.
 
-[gremlin-groovy]
+[gremlin-groovy,theCrew]
 ----
 g.V().properties().element() <1>
 g.E().properties().element() <2>

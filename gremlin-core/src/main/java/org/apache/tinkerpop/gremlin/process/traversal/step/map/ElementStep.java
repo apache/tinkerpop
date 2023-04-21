@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Traverse from a Property to its Element.
+ * Traverse from a {@link Property} to its {@link Element}.
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
