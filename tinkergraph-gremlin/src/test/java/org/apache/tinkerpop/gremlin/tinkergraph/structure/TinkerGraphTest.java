@@ -688,6 +688,32 @@ public class TinkerGraphTest {
         assertThat(g.V("id").hasNext(), is(true));
     }
 
+    /**
+     * Validating that start-step hasId() unwraps ids in lists in addition to ids in arrays as per TINKERPOP-2863
+     */
+    @Test
+    public void shouldCheckWithinListsOfIdsForStartStepHasId() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Vertex> expectedStartTraversal = g.V().hasId(1, 2).toList();
+
+        assertEquals(expectedStartTraversal, g.V().hasId(new Integer[]{1, 2}).toList());
+        assertEquals(expectedStartTraversal,g.V().hasId(Arrays.asList(1, 2)).toList());
+    }
+
+    /**
+     * Validating that mid-traversal hasId() also unwraps ids in lists in addition to ids in arrays as per TINKERPOP-2863
+     */
+    @Test
+    public void shouldCheckWithinListsOfIdsForMidTraversalHasId() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Vertex> expectedMidTraversal = g.V().has("name", "marko").outE("knows").inV().hasId(2, 4).toList();
+
+        assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(new Integer[]{2, 4}).toList());
+        assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(Arrays.asList(2, 4)).toList());
+    }
+
     @Test
     public void shouldOptionalUsingWithComputer() {
         // not all systems will have 3+ available processors (e.g. travis)
@@ -906,28 +932,6 @@ public class TinkerGraphTest {
     }
 
     /**
-     * Basically just trying to validate through {@link CountStrategy} that a child traversal constructed there gets
-     * its {@link Graph} instance set. By using {@link AssertGraphStrategy} an exception can get triggered in betweeen
-     * strategy applications to validate that the {@code Graph} is assigned.
-     */
-    @Test
-    public void shouldSetGraphBetweenStrategyApplicationsForNewChildTraversalsConstructedByStrategies() throws Exception {
-        final GraphTraversalSource g = TinkerGraph.open().traversal();
-        g.addV("node").property(T.id, 1).as("1")
-                .addV("node").property(T.id, 2).as("2")
-                .addV("node").property(T.id, 3).as("3")
-                .addV("node").property(T.id, 4).as("4")
-                .addE("child").from("1").to("2")
-                .addE("child").from("2").to("3")
-                .addE("child").from("4").to("3").iterate();
-
-        // this just needs to not throw an exception for it to pass
-        g.withStrategies(AssertGraphStrategy.instance()).V(3).repeat(__.inE("child").outV().simplePath())
-                .until(__.or(__.inE().count().is(0), __.loops().is(P.eq(2))))
-                .path().count().next();
-    }
-
-    /**
      * Coerces a {@code Color} to a {@link TinkerGraph} during serialization.  Demonstrates how custom serializers
      * can be developed that can coerce one value to another during serialization.
      */
@@ -1037,32 +1041,5 @@ public class TinkerGraphTest {
         public boolean requiresVersion(final Object version) {
             return false;
         }
-    }
-
-    /**
-     * Validates that a {@link Graph} is assigned to each {@link Traversal} if it is expected.
-     */
-    public static class AssertGraphStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
-
-        public static final AssertGraphStrategy INSTANCE = new AssertGraphStrategy();
-
-        private AssertGraphStrategy() {}
-
-        @Override
-        public void apply(final Traversal.Admin<?, ?> traversal) {
-            if (!(traversal instanceof AbstractLambdaTraversal) && (!traversal.getGraph().isPresent()
-                    || traversal.getGraph().get().equals(EmptyGraph.instance())))
-                throw new VerificationException("Graph object not set on Traversal", traversal);
-        }
-
-        @Override
-        public Set<Class<? extends VerificationStrategy>> applyPost() {
-            return Collections.singleton(ComputerVerificationStrategy.class);
-        }
-
-        public static AssertGraphStrategy instance() {
-            return INSTANCE;
-        }
-
     }
 }

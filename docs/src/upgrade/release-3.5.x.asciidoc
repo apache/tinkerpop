@@ -31,6 +31,23 @@ complete list of all the modifications that are part of this release.
 === Upgrading for Users
 
 
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== TraversalStrategy Expectations
+
+Given some important performance improvements in this version, providers may need to make alterations to their
+`TraversalStrategy` implementations as certain assumptions about the data available to a strategy may have changed.
+If a `TraversalStrategy` implementation requires access to the `Graph` implementation, side-effects, and similar data
+stored on a `Traversal`, it is best to get that information from the root of the traversal hierarchy rather than from
+the current traversal that the strategy is executing on as the strategy application process no longer take the
+expensive step to propagate that data throughout the traversal in between each strategy application. Use the
+`TraversalHelper.getRootTraversal()` helper function to get to the root traversal. Note also that
+`Traversal.getGraph()` will traverse through the parent traversals now when trying to find a `Graph`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2855[TINKERPOP-2855],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2888[TINKERPOP-2888]
 
 == TinkerPop 3.5.5
 
@@ -104,6 +121,7 @@ more likely now to note blocking behavior when a connection cannot be obtained.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2813[TINKERPOP-2813]
 
 ==== Added User Agent to Gremlin drivers
+
 Previously, a server does not distinguish amongst the different types of clients connecting to it. We have now added
 user agent to web socket handshake in all the drivers, each with their own configuration to enable or disable user agent.
 User agent is enabled by default for all drivers.
@@ -117,6 +135,7 @@ User agent is enabled by default for all drivers.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2480[TINKERPOP-2480]
 
 ==== Update to SSL Handshake Timeout Configuration
+
 Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. We have removed
 the default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
 

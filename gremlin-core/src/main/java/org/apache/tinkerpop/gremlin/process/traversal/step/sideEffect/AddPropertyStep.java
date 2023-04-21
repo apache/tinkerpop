@@ -20,9 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -50,7 +51,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping {
+        implements Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;

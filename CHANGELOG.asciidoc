@@ -32,6 +32,9 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Added support to the grammar allowing `List` and `Map` key declarations for `Map` entries.
 * Improved performance of comparison (equals) between not compatible types and nulls.
 * Fixed MergeV/MergeE steps to work when onCreate is immutable map.
+* Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
+* Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
+
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: January 16, 2023)
@@ -304,11 +307,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to Groovy 2.5.21.
 * Fixed bug in parsing of `math()` expressions where variables were not being identified if they contained a text associated with a function.
 * Refactored `FilterRankingStrategy` to improve performance for deeply nested traversals.
+* Refactored strategy application to improve performance by avoiding some excessive recursion.
+* Added `Traversal.lock()` to provide an explicit way to finalize a traversal object.
+* Changed `Traversal.getGraph()` to get its `Graph` object from itself or, if not available, its parent.
 * Added `AuthInfoProvider` interface and `NewDynamicAuth()` to gremlin-go for dynamic authentication support.
+* Fixed bug where `hasId()` unrolls ids in Java arrays to put into `P.within` but not ids in lists, this also aligned behavior of start-step and mid-traversal hasId().
 * Bumped to `snakeyaml` 2.0 to fix security vulnerability.
 * Bumped to Apache `commons-configuration` 2.9.0 to fix security vulnerability.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
-* Fixed performance issue when using SampleGlobalStep with a traverser that has either a LABELED_PATH or PATH requirement.
+* Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
