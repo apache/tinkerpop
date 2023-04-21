@@ -93,13 +93,19 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                 final IsStep isStep = (IsStep) traversal.getSteps().get(i + 1);
                 final P isStepPredicate = isStep.getPredicate();
                 Long highRange = null;
-                boolean useNotStep = false, dismissCountIs = false;
+                boolean useNotStep = false, dismissCountIs = false, hasGtOrLtNegative = false;
                 for (P p : isStepPredicate instanceof ConnectiveP ? ((ConnectiveP<?>) isStepPredicate).getPredicates() : Collections.singletonList(isStepPredicate)) {
                     final Object value = p.getValue();
                     final BiPredicate predicate = p.getBiPredicate();
                     if (value instanceof Number) {
                         final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                         final Long highRangeCandidate = (long) Math.ceil(((Number) value).doubleValue()) + highRangeOffset;
+
+                        if ((predicate.equals(Compare.gt) || predicate.equals(Compare.gte) || predicate.equals(Compare.lt) || predicate.equals(Compare.lte)) &&
+                            highRangeCandidate < 1) {
+                                hasGtOrLtNegative = true;
+                        }
+
                         final boolean update = highRange == null || highRangeCandidate > highRange;
                         if (update) {
                             if (parent instanceof EmptyStep) {
@@ -121,6 +127,13 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                             dismissCountIs &= curr.getLabels().isEmpty() && isStep.getLabels().isEmpty()
                                     && isStep.getNextStep() instanceof EmptyStep
                                     && (highRange == 1L && (predicate.equals(Compare.gt) || predicate.equals(Compare.gte)));
+                        }
+                        if (hasGtOrLtNegative) {
+                            // TINKERPOP-2893. Certain combinations of AND and OR will cause this optimization to be incorrect.
+                            // E.g. is(lt(x)) where x < 0, is always false since count() will return at least 0.
+                            // In this case, ANDing a "less than negative" predicate with another predicate should also return false regardless of highRange.
+                            useNotStep = false;
+                            dismissCountIs = false;
                         }
                     } else {
                         final Long highRangeOffset = RANGE_PREDICATES.get(predicate);

@@ -344,6 +344,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug where `hasId()` unrolls ids in Java arrays to put into `P.within` but not ids in lists, this also aligned behavior of start-step and mid-traversal hasId().
 * Bumped to `snakeyaml` 2.0 to fix security vulnerability.
 * Bumped to Apache `commons-configuration` 2.9.0 to fix security vulnerability.
+* Fixed `CountStrategy` bug for cases where predicates contain negative numbers by disabling the optimization.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
 * Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
 
