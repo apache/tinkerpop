@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -103,6 +104,36 @@ public class CountStrategyTest {
                 {__.where(__.or(__.out("none").out().count().is(0), __.has("none"))), __.where(__.or(__.not(__.out("none").out()), __.has("none"))) },
                 {__.where(__.or(__.out("none").out().count().is(0), __.has("none").count().is(0))), __.where(__.or(__.not(__.out("none").out()), __.not(__.has("none")))) },
                 {__.where(__.or(__.out("none").out(), __.has("none").count().is(0))), __.where(__.or(__.out("none").out(), __.not(__.has("none")))) },
+                {__.filter(__.out().count().is(gt(-1))), __.filter(__.out().limit(0).count().is(gt(-1)))},
+                {__.filter(__.out().count().is(gte(-1))), __.filter(__.out().limit(0).count().is(gte(-1)))},
+                {__.filter(__.out().count().is(gte(0))), __.filter(__.out().limit(0).count().is(gte(0)))},
+                {__.filter(__.out().count().is(lt(-1))), __.filter(__.out().limit(0).count().is(lt(-1)))},
+                {__.filter(__.out().count().is(lt(0))), __.filter(__.out().limit(0).count().is(lt(0)))},
+                {__.filter(__.out().count().is(lt(2))), __.filter(__.out().limit(2).count().is(lt(2)))},
+                {__.filter(__.out().count().is(lte(-1))), __.filter(__.out().limit(0).count().is(lte(-1)))},
+                {__.filter(__.out().count().is(lte(1))), __.filter(__.out().limit(2).count().is(lte(1)))},
+                {__.filter(__.out().count().is(P.eq(-1))), __.filter(__.out().limit(0).count().is(P.eq(-1)))},
+                {__.filter(__.out().count().is(neq(-1))), __.filter(__.out().limit(0).count().is(neq(-1)))},
+                {__.filter(__.out().count().is(lte(1))), __.filter(__.out().limit(2).count().is(lte(1)))},
+                {__.filter(__.out().count().is(lt(-3).and(gt(0)))), __.filter(__.out().limit(1).count().is(lt(-3).and(gt(0))))},
+                {__.filter(__.out().count().is(lt(1).and(gt(-5)))), __.filter(__.out().limit(1).count().is(lt(1).and(gt(-5))))},
+                {__.filter(__.out().count().is(gt(-5).and(lt(1)))), __.filter(__.out().limit(1).count().is(gt(-5).and(lt(1))))},
+                {__.filter(__.out().count().is(gt(-5).and(gt(7)))), __.filter(__.out().limit(8).count().is(gt(-5).and(gt(7))))},
+                {__.filter(__.out().count().is(lt(1).or(gt(-5)))), __.filter(__.out().limit(1).count().is(lt(1).or(gt(-5))))},
+                {__.filter(__.out().count().is(lt(1).or(gt(3)))), __.filter(__.out().limit(4).count().is(lt(1).or(gt(3))))},
+                {__.filter(__.out().count().is(gt(3).or(lt(-51)))), __.filter(__.out().limit(4).count().is(gt(3).or(lt(-51))))},
+                {__.filter(__.out().count().is(gt(-5).or(lt(1)))), __.filter(__.out().limit(1).count().is(gt(-5).or(lt(1))))},
+                {__.filter(__.out().count().is(lt(10).and(gt(1)))), __.filter(__.out().limit(10).count().is(lt(10).and(gt(1))))},
+                {__.filter(__.out().count().is(gt(1).and(lt(10)))), __.filter(__.out().limit(10).count().is(gt(1).and(lt(10))))},
+                {__.filter(__.out().count().is(lt(10).or(gt(1)))), __.filter(__.out().limit(10).count().is(lt(10).or(gt(1))))},
+                {__.filter(__.out().count().is(gt(1).or(lt(10)))), __.filter(__.out().limit(10).count().is(gt(1).or(lt(10))))},
+                {__.filter(__.out().count().is(lt(5).and(gt(10)))), __.filter(__.out().limit(11).count().is(lt(5).and(gt(10))))},
+                {__.filter(__.out().count().is(gt(10).and(lt(5)))), __.filter(__.out().limit(11).count().is(gt(10).and(lt(5))))},
+                {__.filter(__.out().count().is(lt(-5).and(lt(1)))), __.filter(__.out().limit(1).count().is(lt(-5).and(lt(1))))},
+                {__.filter(__.out().count().is(lt(-5).and(lt(-1)))), __.filter(__.out().limit(0).count().is(lt(-5).and(lt(-1))))},
+                {__.filter(__.out().count().is(lt(-5).or(lt(-1)))), __.filter(__.out().limit(0).count().is(lt(-5).or(lt(-1))))},
+                {__.where(__.in("knows").count().is(inside(-1,1).and(lt(-1)))), __.where(__.in("knows").limit(1).count().is(inside(-1,1).and(lt(-1))))}, // TINKERPOP-2893
+                {__.where(__.inV().count().is(outside(-1,-2))), __.where(__.inV().limit(0).count().is(outside(-1,-2)))}, // TINKERPOP-2892
                 {__.filter(__.bothE().count().is(gt(0))), __.filter(__.bothE())},
                 {__.filter(__.bothE().count().is(gte(1))), __.filter(__.bothE())},
                 {__.filter(__.bothE().count().is(gt(1))), __.filter(__.bothE().limit(2).count().is(gt(1)))},
