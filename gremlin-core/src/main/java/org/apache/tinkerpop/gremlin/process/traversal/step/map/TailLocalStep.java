@@ -54,7 +54,7 @@ public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
                         start instanceof Collection ? ((Collection) start).size() :
                                 start instanceof Path ? ((Path) start).size() :
                                         start instanceof Iterable ? IteratorUtils.count((Iterable) start) :
-                                                this.limit;
+                                                IteratorUtils.count(IteratorUtils.asIterator(start));
         final long low = high - this.limit;
         final S result = RangeLocalStep.applyRange(start, low, high);
         return result;

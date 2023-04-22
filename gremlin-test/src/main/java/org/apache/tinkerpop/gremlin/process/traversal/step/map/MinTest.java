@@ -70,6 +70,8 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Comparable> get_g_V_foo_injectX9999999999X_min();
 
+    public abstract Traversal<Vertex, Integer> get_g_VX1X_valuesXageX_minXlocalX(final Object vid1);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_age_min() {
@@ -181,6 +183,14 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_minXlocalX() {
+        final Traversal<Vertex, Integer> traversal = get_g_VX1X_valuesXageX_minXlocalX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
     public static class Traversals extends MinTest {
 
         @Override
@@ -247,5 +257,10 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Comparable> get_g_V_foo_injectX9999999999X_min() {
             return g.V().values("foo").inject(9999999999L).min();
         }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_VX1X_valuesXageX_minXlocalX(final Object vid1) {
+            return g.V(vid1).values("age").min(Scope.local);
+        };
     }
 }

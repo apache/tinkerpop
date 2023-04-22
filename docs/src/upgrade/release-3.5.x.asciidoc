@@ -49,6 +49,23 @@ expensive step to propagate that data throughout the traversal in between each s
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2855[TINKERPOP-2855],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2888[TINKERPOP-2888]
 
+===== Local steps should handle non-Iterables
+
+`index` steps and local steps `count`, `dedup`, `max`, `mean`, `min`, `order`, `range`, `sample`, `sum`, `tail` should
+work correctly with not only `Iterable` input, but also with arrays and single values.
+
+Examples of queries that should be supported:
+
+[source,groovy]
+----
+g.inject(1).max(local)
+----
+
+[source,java]
+----
+g.inject(new Integer[] {1,2},3).max(Scope.local).toList()
+----
+
 == TinkerPop 3.5.5
 
 *Release Date: January 16, 2023*

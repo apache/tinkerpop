@@ -105,6 +105,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_both_properties_properties_dedup_count();
 
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_dedupXlocalX_unfold(final Object vid1);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
@@ -384,6 +386,14 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_dedupXlocalX_unfold() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_dedupXlocalX_unfold(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
     public static class Traversals extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
@@ -493,6 +503,11 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_both_properties_properties_dedup_count() {
             return g.V().both().properties().properties().dedup().count();
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_dedupXlocalX_unfold(final Object vid1) {
+            return g.V(vid1).values("age").dedup(Scope.local).unfold();
         }
     }
 }
