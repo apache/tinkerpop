@@ -65,3 +65,16 @@ Feature: Step - index()
     Then the result should be unordered
       | result |
       | m[{"d[0].i": "josh", "d[1].i": "marko", "d[2].i": "peter", "d[3].i": "vadas"}] |
+
+  Scenario: g_VX1X_valuesXageX_index_unfold_unfold
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).values("age").index().unfold().unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[0].i |

@@ -159,6 +159,26 @@ public class IteratorUtilsTest {
     }
 
     @Test
+    public void shouldConvertPrimitiveArrayToIterator() {
+        final int[] array = new int[]{0, 1, 2, 3};
+
+        assertEquals(4, IteratorUtils.count(IteratorUtils.asIterator(array)));
+
+        final Iterator itty = IteratorUtils.asIterator(array);
+        for (int i = 0; i < array.length; i++) {
+            assertEquals(i, itty.next());
+        }
+    }
+
+    @Test
+    public void shouldConvertNullToIterator() {
+        Iterator itty = IteratorUtils.asIterator(null);
+
+        assertEquals(null, itty.next());
+        assertFalse(itty.hasNext());
+    }
+
+    @Test
     public void shouldConvertThrowableToIterator() {
         final Exception ex = new Exception("test1");
         assertIterator(IteratorUtils.asIterator(ex), 1);

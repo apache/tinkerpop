@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -85,6 +86,8 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
             return (S) applyRangeMap((Map) start, low, high);
         } else if (start instanceof Iterable) {
             return (S) applyRangeIterable((Iterable) start, low, high);
+        } else if (start != null && start.getClass().isArray()) {
+            return (S) applyRangeIterable(IteratorUtils.asList(start), low, high);
         }
         return start;
     }
