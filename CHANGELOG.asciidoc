@@ -339,6 +339,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in which `gremlin-server` would not respond to clients if an `Error` was thrown during bytecode traversals.
 * Changed `with()` configuration for `ARGS_BATCH_SIZE` and `ARGS_EVAL_TIMEOUT` to be more forgiving on the type of `Number` used for the value.
 * Changed `gremlin-console` to add imports via an ImportCustomizer to reduce time spent resolving imports.
+* Bumped to Groovy 2.5.22.
 * Fixed bug in parsing of `math()` expressions where variables were not being identified if they contained a text associated with a function.
 * Refactored `FilterRankingStrategy` to improve performance for deeply nested traversals.
 * Refactored strategy application to improve performance by avoiding some excessive recursion.
