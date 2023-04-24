@@ -29,7 +29,21 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.3/CHANGELOG.asc
 
 === Upgrading for Users
 
+=== Upgrading for Providers
 
+==== Graph System Providers
+
+===== Writing and Deleting Extension to Mutating Interface
+
+`Writing` and `Deleting` are two new interfaces that extend `Mutating`. These two interfaces can be used to distinguish
+whether a `Step` that implements `Mutating` will cause a write or a delete. A mapping has also been added that maps a
+`Bytecode` instruction to possible steps. By using these two changes in conjunction, you can tell if a traversal will
+change the underlying graph by calling `BytecodeHelper.findPossibleTraversalSteps()` on each `Bytecode` instruction of
+the traversal. Be aware that there are a small number of special steps (e.g. `io()` or `call()`) that aren't marked
+with these interfaces even though they could potentially modify the graph as they can't implement the current
+`Mutating` interface which brings in the `Event` subsystem.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2929[TINKERPOP-2929]
 
 == TinkerPop 3.6.2
 
