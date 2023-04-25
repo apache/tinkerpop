@@ -134,7 +134,11 @@ class Client:
             processor='session', op='close',
             args={'session': str(self._session)})
         conn = self._pool.get(True)
-        return conn.write(message).result()
+        try:
+            write_result_set = conn.write(message).result()
+            return write_result_set.all().result()  # wait for _receive() to finish
+        except protocol.GremlinServerError:
+            pass
 
     def _get_connection(self):
         protocol = self._protocol_factory()
