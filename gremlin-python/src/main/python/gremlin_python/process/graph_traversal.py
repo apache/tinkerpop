@@ -1092,6 +1092,7 @@ class Transaction:
     def __close_session(self, session):
         self._session_based_connection.close()
         self.__is_open = False
+        self._remote_connection.remove_session(self._session_based_connection)
         return session
 
 

@@ -155,6 +155,9 @@ class DriverRemoteConnection(RemoteConnection):
         self.__spawned_sessions.append(conn)
         return conn
 
+    def remove_session(self, conn):
+        self.__spawned_sessions.remove(conn)
+
     def commit(self):
         logging.info("Submitting commit graph operation.")
         return self._client.submit(Bytecode.GraphOp.commit())
