@@ -233,8 +233,8 @@ possible it would be best to migrate away from it as graph providers ramp up on 
 write optimizations that will make a big difference in performance.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2681[TINKERPOP-2681],
-link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergee-step[mergeE()-step],
-link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergev-step[mergeV()-step]
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergeedge-step[mergeE()-step],
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#mergevertex-step[mergeV()-step]
 
 ==== Direction Aliases
 
