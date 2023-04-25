@@ -2514,8 +2514,8 @@ vertices in the main merge argument and in the `onCreate` argument:
 g.mergeV([(T.id):1,(T.label):'Dog',name:'Toby']).as('Toby').
   mergeV([(T.id):2,(T.label):'Dog',name:'Brandy']).as('Brandy').
   mergeE([(T.label):'Sibling',created:'2022-02-07',(from):Merge.outV,(to):Merge.inV]).
-  option(Merge.outV, select('Toby')).
-  option(Merge.inV, select('Brandy'))
+    option(Merge.outV, select('Toby')).
+    option(Merge.inV, select('Brandy'))
 g.E().elementMap()
 ----
 
