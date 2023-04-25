@@ -47,109 +47,138 @@ limitations under the License.
         <!-- End Matomo Code -->
     </head>
     <body>
-      <!-- header -->
-         <div class="header">
-            <div class="container">
-              <nav class="navbar navbar-expand-lg  ">
-                  <div class="container-fluid">
+    <!-- header -->
+    <div class="header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg  ">
+                <div class="container-fluid">
                     <a class="navbar-brand" href="index.html">
                         <img src="img/logo.png" class="img-fluid" alt="img">
                     </a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                      <span class="fa fa-bars"></span>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="fa fa-bars"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                          <a class="nav-link active" aria-current="page" href="index.html">Home</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link" href="download.html">Download</a>
-                        </li>
-                          <li class="nav-item dropdown">
-                              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Documentation
-                              </a>
-                              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                 <li class="dropdown-header">Latest Documentation</li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/current" class="dropdown-item">Documentation Index</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/current/reference" class="dropdown-item">Reference</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/current/dev/provider" class="dropdown-item">Provider</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/current/dev/developer" class="dropdown-item">Developer</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/current/upgrade" class="dropdown-item">Upgrade Information</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/javadocs/current/core/" class="dropdown-item">Core Javadoc API</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/javadocs/current/full/" class="dropdown-item">Full Javadoc API</a></li>
-                                 <li><hr class="dropdown-divider"></li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/" class="dropdown-item">Documentation Archives</a></li>
-                                 <li><a href="https://tinkerpop.apache.org/javadocs/" class="dropdown-item">Javadoc Archives</a></li>
-                                 <li><hr class="dropdown-divider"></li>
-                                 <li><a href="https://tinkerpop.apache.org/docs/current/index.html#publications" class="dropdown-item">Publications</a></li>
-                              </ul>
-                              
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="index.html">Home</a>
                             </li>
-                         <li class="nav-item dropdown">
-                              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Tutorials
-                              </a>
-                              <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
-                                     <li><a href="gremlin.html" class="dropdown-item">Introduction to Gremlin</a></li>
-                                     <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/tutorials/getting-started/" >Getting Started</a></li>
-                                     <li><a class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/">The Gremlin Console</a></li>
-                                     <li><a class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/recipes/">Gremlin Recipes</a></li>
-                                     <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/tutorials/gremlins-anatomy/">Gremlin's Anatomy</a></li>
-                                     <li><hr class="dropdown-divider"></li>
-                                     <li><a class="dropdown-item" href="http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html">Book: Practical Gremlin by Kelvin Lawrence</a></li>
-                                     <li><a class="dropdown-item" href="http://sql2gremlin.com/">SQL2Gremlin</a></li>
-                                  </ul>
-                             
-                         </li>
-                          <li class="nav-item dropdown">
-                              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                  Community
-                              </a>
-                              <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
-                                  <li><a class="dropdown-item" href="https://discord.gg/kfebyvDM9H" target="_blank"><img src="img/discord-logo.png" class="nav-icon"/>Discord</a></li>
-                                  <li><a class="dropdown-item" href="https://www.answeroverflow.com/c/838910279550238720"><img src="img/answer-overflow-logo.png" class="nav-icon"/>Answer Overflow</a></li>
-                                  <li><a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/gremlin"><img src="img/stack-overflow-logo.png" class="nav-icon"/>Stack Overflow</a></li>
-                                  <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users"><img src="img/mail.png" class="nav-icon"/>User Mailing List</a></li>
-                                  <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org"><img src="img/mail.png" class="nav-icon"/>Developer Mailing List</a></li>
-                                  <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/"><img src="img/jira-logo.png" class="nav-icon"/>Issue Tracker</a></li>
-                                  <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a></li>
-                                  <li><a class="dropdown-item" href="providers.html">Data System Support</a></li>
-                                  <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
-                                  <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a></li>
-                                  <li><hr class="dropdown-divider"></li>
-                                  <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon"/>GitHub</a></li>
-                                  <li><a class="dropdown-item" href="https://www.twitch.tv/apachetinkerpop"><img src="img/twitch-logo.png" class="nav-icon"/>Twitch</a></li>
-                                  <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon"/>Twitter</a></li>
-                                  <li><a class="dropdown-item" href="https://www.youtube.com/@apachetinkerpop"><img src="img/youtube-logo.png" class="nav-icon"/>YouTube</a></li>
-                              </ul>
-                          </li>
-                        
-                         <li class="nav-item">
-                          <a class="nav-link" href="https://tinkerpop.apache.org/gremlint/">Gremlint</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Apache Software
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
-                                 <li><a  class="dropdown-item" href="https://www.apache.org/">Apache Homepage</a></li>
-                                 <li><a class="dropdown-item" href="https://www.apache.org/licenses/">License</a></li>
-                                 <li><a class="dropdown-item" href="https://www.apache.org/events/current-event">Events</a></li>
-                                 <li><a class="dropdown-item" href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a></li>
-                                 <li><a class="dropdown-item" href="https://www.apache.org/foundation/thanks.html">Thanks</a></li>
-                                 <li><a class="dropdown-item" href="https://www.apache.org/security/">Security</a></li>
-                              </ul>
-                          
-                        </li>
-                         
-                      </ul>
+                            <li class="nav-item">
+                                <a class="nav-link" href="download.html">Download</a>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Tools
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                                    <li><a class="dropdown-item" href="providers.html">Graph Systems</a></li>
+                                    <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="https://gremlify.com/">Gremlify: Try Gremlin</a></li>
+                                    <li><a class="dropdown-item" href="https://tinkerpop.apache.org/gremlint">Gremlint: Lint Gremlin</a></li>
+                                    <li><a class="dropdown-item" href="https://www.gremlator.com/">Gremlator: Translate Gremlin</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Documentation
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li class="dropdown-header">Latest Documentation</li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/current" class="dropdown-item">Documentation Index</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/current/reference" class="dropdown-item">Reference</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/current/dev/provider" class="dropdown-item">Provider</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/current/dev/developer" class="dropdown-item">Developer</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/current/upgrade" class="dropdown-item">Upgrade Information</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/javadocs/current/core/" class="dropdown-item">Core Javadoc API</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/javadocs/current/full/" class="dropdown-item">Full Javadoc API</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/" class="dropdown-item">Documentation Archives</a></li>
+                                    <li><a href="https://tinkerpop.apache.org/javadocs/" class="dropdown-item">Javadoc Archives</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a href="https://tinkerpop.apache.org/docs/current/index.html#publications" class="dropdown-item">Publications</a></li>
+                                </ul>
+
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Tutorials
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
+                                    <li><a href="gremlin.html" class="dropdown-item">Introduction to Gremlin</a></li>
+                                    <li><a class="dropdown-item"
+                                           href="https://tinkerpop.apache.org/docs/current/tutorials/getting-started/">Getting
+                                        Started</a></li>
+                                    <li><a class="dropdown-item"
+                                           href="https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/">The
+                                        Gremlin Console</a></li>
+                                    <li><a class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/recipes/">Gremlin
+                                        Recipes</a></li>
+                                    <li><a class="dropdown-item"
+                                           href="https://tinkerpop.apache.org/docs/current/tutorials/gremlins-anatomy/">Gremlin's
+                                        Anatomy</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                           href="http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html">Book: Practical
+                                        Gremlin by Kelvin Lawrence</a></li>
+                                    <li><a class="dropdown-item" href="http://sql2gremlin.com/">SQL2Gremlin</a></li>
+                                </ul>
+
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Community
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
+                                    <li><a class="dropdown-item" href="https://discord.gg/kfebyvDM9H" target="_blank"><img src="img/discord-logo.png" class="nav-icon"/>Discord</a></li>
+                                    <li><a class="dropdown-item" href="https://www.answeroverflow.com/c/838910279550238720"><img src="img/answer-overflow-logo.png" class="nav-icon"/>Answer Overflow</a></li>
+                                    <li><a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/gremlin"><img src="img/stack-overflow-logo.png" class="nav-icon"/>Stack Overflow</a></li>
+                                    <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users"><img src="img/mail.png" class="nav-icon"/>User Mailing List</a></li>
+                                    <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org"><img src="img/mail.png" class="nav-icon"/>Developer Mailing List</a></li>
+                                    <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/"><img src="img/jira-logo.png" class="nav-icon"/>Issue Tracker</a></li>
+                                    <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon"/>GitHub</a></li>
+                                    <li><a class="dropdown-item" href="https://www.twitch.tv/apachetinkerpop"><img src="img/twitch-logo.png" class="nav-icon"/>Twitch</a></li>
+                                    <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon"/>Twitter</a></li>
+                                    <li><a class="dropdown-item" href="https://www.youtube.com/@apachetinkerpop"><img src="img/youtube-logo.png" class="nav-icon"/>YouTube</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a></li>
+                                    <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown5" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Apache Software
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown5">
+                                    <li><a class="dropdown-item" href="https://www.apache.org/">Apache Homepage</a></li>
+                                    <li><a class="dropdown-item" href="https://www.apache.org/licenses/">License</a></li>
+                                    <li><a class="dropdown-item"
+                                           href="https://www.apache.org/events/current-event">Events</a></li>
+                                    <li><a class="dropdown-item" href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                           href="https://www.apache.org/foundation/thanks.html">Thanks</a></li>
+                                    <li><a class="dropdown-item" href="https://www.apache.org/security/">Security</a></li>
+                                </ul>
+
+                            </li>
+
+                        </ul>
                     </div>
-                  </div>
-                </nav>
-            </div>
+                </div>
+            </nav>
         </div>
+    </div>
         
         <!-- hero -->
         <div class="container hero-inner">
@@ -2272,8 +2301,8 @@ limitations under the License.
                 <div class="row d-flex justify-content-center">
                     <div class="col-md-8 col-lg-6">
                         <div class="ju-box">
-                            <h2 class="ft-40 text-blue bold">Join Us on</h2>
-                            <p class="bold">Join us on our Discord Chat</p>
+                            <h2 class="ft-40 text-blue bold">Join Us</h2>
+                            <p class="bold">Join us on our Discord Server</p>
                             <a href="https://discord.gg/kfebyvDM9H"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
                         </div>
                     </div>
