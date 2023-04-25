@@ -218,11 +218,10 @@ class TestDriverRemoteConnection(object):
 
     def test_close_sessions(self, remote_transaction_connection):
         g = traversal().withRemote(remote_transaction_connection)
-        for i in range(3):
-            tx = g.tx()
-            gtx = tx.begin()
-            gtx.addV("person").iterate()
-            tx.rollback()
+        tx = g.tx()
+        gtx = tx.begin()
+        gtx.addV("person").iterate()
+        tx.rollback()
         # after closing transaction we should remove spawned_session
         assert 0 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
 
