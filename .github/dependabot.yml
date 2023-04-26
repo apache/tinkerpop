@@ -32,6 +32,14 @@ updates:
     labels:
       - "javascript"
       - "dependencies"
+  - package-ecosystem: "npm"
+    directory: "/docs/gremlint"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - "javascript"
+      - "dependencies"
   - package-ecosystem: "gomod"
     directory: "/gremlin-go"
     schedule:
