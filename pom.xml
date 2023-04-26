@@ -353,6 +353,55 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
+                        <!-- sets the true.when.is.prerelease.version property to true if a prerelease version was used,
+                            empty string otherwise -->
+                        <id>build-helper-regex-is-prerelease-version2</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>true.when.is.prerelease.version</name>
+                            <value>${only.when.is.prerelease.version}</value>
+                            <regex>${project.version}</regex>
+                            <replacement></replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- sets the docker.tags.majorVersion.minorVersion property to
+                            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion} unless a prerelease version was,
+                            used. If a prerelease is used, an empty string is assigned instead. -->
+                        <id>build-helper-regex-set-docker-version-tag</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>docker.tags.majorVersion.minorVersion</name>
+                            <value>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}${true.when.is.prerelease.version}</value>
+                            <regex>.*true</regex>
+                            <replacement></replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- sets the docker.tags.latest property to "latest" unless a prerelease version was,
+                            used. If a prerelease is used, an empty string is assigned instead. -->
+                        <id>build-helper-regex-set-docker-latest-tag</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>docker.tags.latest</name>
+                            <value>latest${true.when.is.prerelease.version}</value>
+                            <regex>.*true</regex>
+                            <replacement></replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>parse-version</id>
                         <goals>
                             <goal>parse-version</goal>
@@ -627,9 +676,9 @@ limitations under the License.
                     <version>3.2.0</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>1.4.13</version>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.42.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -823,7 +872,6 @@ limitations under the License.
     </dependencyManagement>
 
     <profiles>
-
         <profile>
             <id>jdk11</id>
             <activation>

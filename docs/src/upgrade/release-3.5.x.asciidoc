@@ -30,6 +30,10 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== ARM64 Support for Gremlin Server Docker Image
+
+Gremlin server docker image now supports both AMD64 and ARM64. Multi-architecture image can now be found at
+https://hub.docker.com/r/tinkerpop/gremlin-server
 
 === Upgrading for Providers
 
