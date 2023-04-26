@@ -28,6 +28,7 @@ limitations under the License.
     <link href="css/responsive.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet"/>
     <link href="css/fonts.css" rel="stylesheet">
+    <link href="css/prism.css" rel="stylesheet">
     <!-- Matomo -->
     <script>
         var _paq = window._paq = window._paq || [];
@@ -246,8 +247,8 @@ limitations under the License.
 
 
                     <!-- clojure -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
+                    <div class="accordion-item" id="lang-clojure">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                                 <img src="img/community/clojure.png" class="img-fluid me-3" alt="img">Clojure
@@ -280,8 +281,8 @@ limitations under the License.
                     </div>
 
                     <!-- elixer -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingTwo">
+                    <div class="accordion-item" id="lang-elixer">
+                        <h2 class="accordion-header" >
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                 <img src="img/community/elixer.png" class="img-fluid me-3" alt="img">Elixer
@@ -311,8 +312,8 @@ limitations under the License.
                     </div>
 
                     <!-- go -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading3">
+                    <div class="accordion-item" id="lang-go">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
                                 <img src="img/community/go.png" class="img-fluid me-3" alt="img">Go
@@ -384,8 +385,8 @@ result, err := g.V().Out("knows").In("created").ToList()
                     </div>
 
                     <!-- groovy -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading4">
+                    <div class="accordion-item" id="lang-groovy">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
                                 <img src="img/community/groovy.png" class="img-fluid me-3" alt="img">Groovy
@@ -437,8 +438,8 @@ def l = g.V().out('knows').in('created').toList()
                     </div>
 
                     <!-- haskell -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading5">
+                    <div class="accordion-item" id="lang-haskell">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
                                 <img src="img/community/haskell.png" class="img-fluid me-3" alt="img">Haskell
@@ -468,8 +469,8 @@ def l = g.V().out('knows').in('created').toList()
                     </div>
 
                     <!-- java -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading6">
+                    <div class="accordion-item" id="lang-java">
+                        <h2 class="accordion-header">
                             <button class="accordion-button " type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse6" aria-expanded="true" aria-controls="collapse6">
                                 <img src="img/community/java.png" class="img-fluid me-3" alt="img">Java
@@ -479,7 +480,7 @@ def l = g.V().out('knows').in('created').toList()
                                         src="img/community/tool.png" class="img-fluid " alt="img"></div>
                             </button>
                         </h2>
-                        <div id="collapse6" class="accordion-collapse collapse show" aria-labelledby="heading6"
+                        <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="heading6"
                              data-bs-parent="#accordionExample">
                             <div class="accordion-body">
                                 <div class="d-flex align-items-start">
@@ -554,8 +555,8 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
                     </div>
 
                     <!-- javascript -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading7">
+                    <div class="accordion-item" id="lang-javascript">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
                                 <img src="img/community/javascript.png" class="img-fluid me-3" alt="img">Javascript
@@ -638,8 +639,8 @@ const l = await g.V().out('knows').in('created').toList();</code></pre>
                     </div>
 
                     <!-- kotlin -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading8">
+                    <div class="accordion-item" id="lang-kotlin">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
                                 <img src="img/community/kotlin.png" class="img-fluid me-3" alt="img">Kotlin
@@ -670,8 +671,8 @@ const l = await g.V().out('knows').in('created').toList();</code></pre>
 
 
                     <!-- c# -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading9">
+                    <div class="accordion-item" id="lang-csharp">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
                                 <img src="img/community/c-sharp-logo-png.png" class="img-fluid me-3" alt="img">.NET
@@ -735,8 +736,8 @@ var l = await g.V().Out("knows").In("created").ToList();</code></pre>
                     </div>
 
                     <!-- python -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading10">
+                    <div class="accordion-item" id="lang-python">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
                                 <img src="img/community/python.png" class="img-fluid me-3" alt="img">Python
@@ -821,8 +822,8 @@ l = g.V().both()[1:3].toList()</code></pre>
                     </div>
 
                     <!-- php -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading11">
+                    <div class="accordion-item" id="lang-php">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
                                 <img src="img/community/php.png" class="img-fluid me-3" alt="img">PHP
@@ -852,8 +853,8 @@ l = g.V().both()[1:3].toList()</code></pre>
                     </div>
 
                     <!-- ruby -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading12">
+                    <div class="accordion-item" id="lang-ruby">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
                                 <img src="img/community/ruby.png" class="img-fluid me-3" alt="img">Ruby
@@ -888,8 +889,8 @@ l = g.V().both()[1:3].toList()</code></pre>
 
 
                     <!-- rust -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading13">
+                    <div class="accordion-item" id="lang-rust">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse13" aria-expanded="false" aria-controls="collapse13">
                                 <img src="img/community/rust.png" class="img-fluid me-3" alt="img">Rust
@@ -920,8 +921,8 @@ l = g.V().both()[1:3].toList()</code></pre>
                 </div>
 
                 <!-- scala -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading14">
+                <div class="accordion-item" id="lang-scala">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse14" aria-expanded="false" aria-controls="collapse14">
                             <img src="img/community/scala.png" class="img-fluid me-3" alt="img">Scala
@@ -958,11 +959,12 @@ l = g.V().both()[1:3].toList()</code></pre>
                         </div>
                     </div>
                 </div>
+
                 <h2 class="ft-25 black bold mt-5 mb-4">Docker</h2>
 
                 <!-- docker -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading15">
+                <div class="accordion-item" id="docker">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
                             <img src="img/community/docker.png" class="img-fluid me-3" alt="img">Docker
@@ -1008,8 +1010,9 @@ l = g.V().both()[1:3].toList()</code></pre>
 
                 <!-- compilers/transpilers -->
                 <h2 class="ft-25 black bold mt-5 mb-4">Compilers and Transpilers</h2>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading16">
+
+                <div class="accordion-item" id="pilers">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse16" aria-expanded="false" aria-controls="collapse16">
                             <img src="img/community/compiler.png" class="img-fluid me-3" alt="img">Compilers and
@@ -1050,8 +1053,9 @@ l = g.V().both()[1:3].toList()</code></pre>
 
                 <!-- poweredby -->
                 <h2 class="ft-25 black bold mt-5 mb-4">Powered By</h2>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading17">
+
+                <div class="accordion-item" id="powered-by">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse17" aria-expanded="false" aria-controls="collapse17">
                             <img src="img/community/powered-by.png" class="img-fluid me-3" alt="img">Powered By
@@ -1221,5 +1225,11 @@ l = g.V().both()[1:3].toList()</code></pre>
 <script src="js/wow.min.js"></script>
 <script src="js/my.js"></script>
 <script src="js/prism.js"></script>
+<script>
+    jQuery(document).ready(function($) {
+        const hash = window.location.hash;
+        if (hash) $(hash + " > h2 > button.accordion-button").click();
+    });
+</script>
 </body>
 </html>
