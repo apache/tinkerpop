@@ -213,7 +213,7 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - commit', function() {
     before(function () {
-      // if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
+      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
 
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
