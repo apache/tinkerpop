@@ -32,19 +32,20 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Added support for mid-traversal `E()`-steps to Gremlin core and GLV's.
 * Added nullable annotations to Gremlin.NET.
 * Bumped Objenesis to 3.3 in `gremlin-shaded`.
-* Moves java serializer, message and token classes from `gremlin-driver` to a new `gremlin-util` module.
-* Moves `SimpleSocketServer` and its initializers to a new `gremlin-tools/gremlin-socket-server` module.
-* Configures `gremlin-socket-server` to build a docker image which can be used for testing GLV's. (Can be skipped with -DskipImageBuild)
-* Reduces dependency from `gremlin-server` onto `gremlin-driver` to a test scope only.
+* Moved Java serializer, message and token classes from `gremlin-driver` to a new `gremlin-util` module.
+* Moved `SimpleSocketServer` and its initializers to a new `gremlin-tools/gremlin-socket-server` module.
+* Configured `gremlin-socket-server` to build a docker image which can be used for testing GLV's. (Can be skipped with -DskipImageBuild)
+* Reduced dependency from `gremlin-server` onto `gremlin-driver` to a test scope only.
 * Added `RequestOptions` and `RequestOptionsBuilder` types to Go GLV to encapsulate per-request settings and bindings.
 * Added `SubmitWithOptions()` methods to `Client` and `DriverRemoteConnection` in Go GLV to pass `RequestOptions` to the server.
-* Changed default behavior for returning properties on Elements for OLTP queries. Properties are now returned.
+* Changed default behavior for returning properties on graph elements for OLTP queries so that properties are now returned.
 * Detachment is no longer performed in `TraverserIterator`.
 * Added `materializeProperties` request option to control properties serialization.
 * Modified serializers in to handle serialization and deserialization of properties.
 * Added functional properties to the graph structure components for .NET, GO and Python.
-* Modified the GremlinScriptChecker to extract the `materializeProperties` request option.
-* Neo4jVertexProperty no longer throw Exception for `properties()`, but return empty iterable.
+* Modified the 1GremlinScriptChecker1 to extract the `materializeProperties` request option.
+* `Neo4jVertexProperty` no longer throw Exception for `properties()`, but return empty `Iterable`.
+* Removed deprecated `getInstance()` method for grammar `Visitor` implementations.
 * Bumped Groovy to 4.0.9.
 * Bumped GMavenPlus to 2.1.0.
 

@@ -40,14 +40,6 @@ public class TraversalFunctionVisitor extends DefaultGremlinBaseVisitor<Function
     }
 
     /**
-     * @deprecated As of release 3.5.2, replaced by {@link #instance()}.
-     */
-    @Deprecated
-    public static TraversalFunctionVisitor getInstance() {
-        return instance();
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
