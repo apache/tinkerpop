@@ -29,6 +29,11 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.3/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Deprecation Warning for Go 1.17
+
+Release 3.6.3 will be the last version of 3.6.x to use Go 1.17 for `gremlin-go` as this runtime is no longer supported.
+The following release (3.6.4) of `gremlin-go` will use the latest available version of Go.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
