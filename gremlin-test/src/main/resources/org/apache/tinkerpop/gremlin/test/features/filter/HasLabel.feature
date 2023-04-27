@@ -87,6 +87,18 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  Scenario: g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().hasLabel("person").has("age", P.not(P.lte(10).and(P.not(P.between(11, 20)))).and(P.lt(29).or(P.eq(35)))).values("name")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | peter |
+
   Scenario: g_V_hasLabelXnullX
     Given the modern graph
     And the traversal of
