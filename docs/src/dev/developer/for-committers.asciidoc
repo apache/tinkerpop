@@ -181,8 +181,10 @@ Please refrain from creating arbitrary tags, as they produce permanent clutter.
 == Runtimes
 
 Each programming language has a runtime that TinkerPop supports. In general, TinkerPop will attempt to support the
-current LTS version for a particular major version for the lifetime of its minor and patch releases. Part of each
-major release cycle, should include some analysis of the current runtime supported.
+current LTS version for a particular major version for the lifetime of its minor and patch releases. A deprecation
+notice will be applied to the last release of TinkerPop that will support an outdated runtime and the runtime will be
+updated in the following release. Part of each major release cycle, should include some analysis of the current runtime
+supported.
 
 * Java - Typically, TinkerPop will find itself bound to the version held by its major dependencies like Apache Spark.
 * Javascript - Consult link:https://github.com/nodejs/Release[nodejs/Release] for the current active LTS of node and link:https://nodejs.org/en/download/releases/[here] for npm compatibility.
