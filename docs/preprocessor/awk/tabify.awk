@@ -66,14 +66,14 @@ BEGIN {
   evaluate = 1
 }
 
-/^\[source,(csharp|groovy|java|javascript|python),tab\]/ {
+/^\[source,(csharp|groovy|java|javascript|python|go),tab\]/ {
   status = 1
   lang = gensub(/^\[source,([^,\]]+).*/, "\\1", "g", $0)
   code = ""
   evaluate = 0
 }
 
-/^\[source,(csharp|groovy|java|javascript|python)\]/ {
+/^\[source,(csharp|groovy|java|javascript|python|go)\]/ {
   if (status == 3) {
     status = 1
     lang = gensub(/^\[source,([^\]]+).*/, "\\1", "g", $0)
@@ -81,7 +81,7 @@ BEGIN {
   }
 }
 
-! /^\[source,(csharp|groovy|java|javascript|python)/ {
+! /^\[source,(csharp|groovy|java|javascript|python|go)/ {
   if (status == 3 && $0 != "") {
     print_tabs(next_id, tabs, blocks)
     next_id = next_id + length(tabs)
