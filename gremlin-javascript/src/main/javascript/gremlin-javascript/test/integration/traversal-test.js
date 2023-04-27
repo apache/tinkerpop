@@ -213,7 +213,7 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - commit', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
+      // if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
 
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
@@ -248,6 +248,7 @@ describe('Traversal', function () {
       }).then(function (r) {
         assert.ok(r);
         assert.strictEqual(r.value, 2);
+        assert.ok(!tx._sessionBasedConnection.isOpen);
       });
     });
   });
@@ -288,6 +289,7 @@ describe('Traversal', function () {
       }).then(function (r) {
         assert.ok(r);
         assert.strictEqual(r.value, 0);
+        assert.ok(!tx._sessionBasedConnection.isOpen);
       });
     });
   });
