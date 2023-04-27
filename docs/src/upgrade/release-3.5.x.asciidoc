@@ -30,6 +30,12 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Deprecation Warning for Node 10 and Go 1.17
+
+Release 3.5.6 will be the last version of 3.5.x to use Node 10 for `gremlin-javascript` and Go 1.17 for `gremlin-go` as
+both of these runtimes are no longer supported. The following release (3.5.7) will likely contain Node 16 to align with
+3.6.x and `gremlin-go` will use the latest available version of Go.
+
 ==== ARM64 Support for Gremlin Server Docker Image
 
 Gremlin server docker image now supports both AMD64 and ARM64. Multi-architecture image can now be found at
