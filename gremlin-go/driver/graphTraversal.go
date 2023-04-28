@@ -831,5 +831,17 @@ func (t *Transaction) closeSession(rs ResultSet, err error) error {
 
 func (t *Transaction) closeConnection() {
 	t.sessionBasedConnection.Close()
+
+	// remove session based connection from spawnedSessions
+	connectionCount := len(t.remoteConnection.spawnedSessions)
+	if connectionCount > 0 {
+		for i, x := range t.remoteConnection.spawnedSessions {
+			if x == t.sessionBasedConnection {
+				t.remoteConnection.spawnedSessions[i] = t.remoteConnection.spawnedSessions[connectionCount-1]
+				t.remoteConnection.spawnedSessions = t.remoteConnection.spawnedSessions[:connectionCount-1]
+				break
+			}
+		}
+	}
 	t.isOpen = false
 }

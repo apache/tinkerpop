@@ -70,7 +70,7 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Fixed MergeV/MergeE steps to work when onCreate is immutable map.
 * Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
 * Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
-
+* Fixed bug which caused some traversals to throw `GremlinTypeErrorException` to users.
 
 [[release-3-6-2]]
 === TinkerPop 3.6.2 (Release Date: January 16, 2023)
@@ -333,7 +333,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `GraphFilter` support to `GraphSONRecordReader`.
 * gremlin-python aiohttp dependency requirement upper bound relaxed to <4.0.0.
 * Fixed network connection closing for sessions and transactions in `gremlin-python`.
-* Fixed memory cleanup for for sessions and transactions in `gremlin-python`.
+* Fixed memory cleanup for sessions and transactions in `gremlin-python` and `gremlin-go`.
 * Fixed bug in `CountStrategy` where `or()` and `and()` filters were not being rewritten properly for some patterns.
 * Changed `PartitionStrategy` to force its filters to the end of the chain for `Vertex` and `Edge` read steps, thus preserving order of the `has()`.
 * Added `RequestOptions` and `RequestOptionsBuilder` types to Go GLV to encapsulate per-request settings and bindings.

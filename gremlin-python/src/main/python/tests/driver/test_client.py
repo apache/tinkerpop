@@ -110,6 +110,7 @@ def test_client_connection_pool_after_error(client):
 
 def test_client_close_all_connection_in_pool(client):
     client = Client(test_no_auth_url, 'g', pool_size=1, session="75e9620e-da98-41e3-9378-0336db803de0")
+    assert client.available_pool_size == 1
     client.submit('2+2').all().result()
     client.close()
     assert client.available_pool_size == 0
