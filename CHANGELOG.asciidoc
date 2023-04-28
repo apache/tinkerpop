@@ -323,6 +323,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `CountStrategy` bug for cases where predicates contain negative numbers by disabling the optimization.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
 * Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
+* Reduce the toString() of ObjectWritable to avoid OOM for running OLAP queries on Spark.
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
