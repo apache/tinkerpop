@@ -113,7 +113,7 @@ Feature: Step - addV()
       """
     And the traversal of
       """
-      g.V().hasLabel("person").property("name", null)
+      g.V().hasLabel("person").property(Cardinality.single, "name", null)
       """
     When iterated to list
     Then the result should have a count of 4
