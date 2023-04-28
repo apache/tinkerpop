@@ -145,7 +145,7 @@ When evaluating boolean value expressions, we sometimes encounter situations tha
 other invalid arguments to other boolean value expressions.
 
 Rather than throwing an exception and halting the traversal, we extend normal binary boolean logics and introduce a
-third boolean option option - `ERROR`. How this `ERROR` result is handled is Graph provider dependent. For the reference
+third boolean option - `ERROR`. How this `ERROR` result is handled is Graph provider dependent. For the reference
 implementation, `ERROR` is an internal representation only and will not be propagated back to the client as an
 exception - it will eventually hit a binary reduction operation and be reduced to `FALSE` (thus quietly filters the
 solution that produced the `ERROR`). Before that happens though, it will be treated as its own boolean value with its
