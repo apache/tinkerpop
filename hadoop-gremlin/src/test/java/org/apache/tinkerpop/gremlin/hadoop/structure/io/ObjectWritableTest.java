@@ -52,11 +52,11 @@ public class ObjectWritableTest {
 
     @Test
     public void shouldDumpStringSize() {
-        Map<String, String> content = new HashMap();
+        final Map<String, String> content = new HashMap();
         content.put("a", "123456");
         content.put("b", "567890");
         final ObjectWritable object = new ObjectWritable(content);
-        String f = object.toString();
+        final String f = object.toString();
         assertTrue(f.startsWith(content.getClass().toString()));
         assertTrue(f.endsWith(content.size()+""));
     }

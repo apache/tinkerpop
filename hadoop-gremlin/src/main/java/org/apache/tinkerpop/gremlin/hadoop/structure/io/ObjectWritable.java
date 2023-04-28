@@ -71,14 +71,14 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         int s = 0;
         // handle Collection and Map
         if (this.t instanceof Collection) {
-            Collection c = (Collection)t;
+            final Collection c = (Collection)t;
             s = c.size();
         } else if (this.t instanceof Map) {
-            Map m = (Map)t;
+            final Map m = (Map)t;
             s = m.size();
         }
         if (s > 0) {
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             sb.append(this.t.getClass().toString()).append("@size=").append(s);
             return sb.toString();
         }
