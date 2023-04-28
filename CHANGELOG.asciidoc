@@ -36,6 +36,7 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Improved performance of comparison (equals) between not compatible types and nulls.
 * Fixed MergeV/MergeE steps to work when onCreate is immutable map.
 * Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
+* For mergeV/mergeE, added checks for illegal hidden keys and refactored searchVertices to allow subclasses to override search criteria.
 * Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
 * Fixed bug which caused some traversals to throw `GremlinTypeErrorException` to users.
 
