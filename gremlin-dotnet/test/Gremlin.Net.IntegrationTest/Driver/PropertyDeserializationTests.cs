@@ -29,6 +29,7 @@ using Gremlin.Net.Structure.IO.GraphBinary;
 using Gremlin.Net.Structure.IO.GraphSON;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -231,7 +232,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.NotNull(vertex);
             Assert.Equal(1, vertex.Id);
             Assert.Equal("person", vertex.Label);
-            Assert.Equal(2, vertex.Properties!.Length);
+            Assert.True(2 == vertex.Properties!.Length, $"Unexpected properties count: {JsonSerializer.Serialize(vertex.Properties)}");
 
             var age = vertex.Property("age");
             Assert.NotNull(age);
@@ -243,7 +244,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.NotNull(vertex);
             Assert.Equal(7, vertex.Id);
             Assert.Equal("person", vertex.Label);
-            Assert.Equal(4, vertex.Properties!.Length);
+            Assert.True(4 == vertex.Properties!.Length, $"Unexpected properties count: {JsonSerializer.Serialize(vertex.Properties)}");
 
             var locations = vertex.Properties.Cast<VertexProperty>().Where(p => p.Key == "location");
             Assert.NotNull(locations);
@@ -265,7 +266,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.NotNull(edge);
             Assert.Equal(7, edge.Id);
             Assert.Equal("knows", edge.Label);
-            Assert.Single(edge.Properties!);
+            Assert.True(1 == edge.Properties!.Length, $"Unexpected properties count: {JsonSerializer.Serialize(edge.Properties)}");
 
             var weight = edge.Property("weight");
             Assert.NotNull(weight);
