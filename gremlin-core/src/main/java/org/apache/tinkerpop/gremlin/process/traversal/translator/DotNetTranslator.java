@@ -443,6 +443,10 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                                             script.append("(object) ");
                                         }
                                     }
+                                } else if (methodName.equals(GraphTraversal.Symbols.property)) {
+                                    if (instArgs[0] instanceof VertexProperty.Cardinality && instArgs.length == 3) {
+                                        script.append("(object) ");
+                                    }
                                 }
                             }
                             convertToScript(instArg);
