@@ -221,6 +221,8 @@ class TestDriverRemoteConnection(object):
         g = traversal().withRemote(remote_transaction_connection)
         tx = g.tx()
         gtx = tx.begin()
+        # session created for new transaction
+        assert 1 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
         gtx.addV("person").iterate()
         tx.rollback()
         # after closing transaction we should remove spawned_session
