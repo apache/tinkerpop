@@ -732,3 +732,113 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error
 
+  # cannot use hidden namespace for id key
+  Scenario: g_mergeV_hidden_id_key_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"~id\": 1}]"
+    And the traversal of
+      """
+      g.mergeV(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for label key
+  Scenario: g_mergeV_hidden_label_key_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for label value
+  Scenario: g_mergeV_hidden_label_value_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\":\"~vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for id key for onCreate
+  Scenario: g_mergeV_hidden_id_key_onCreate_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"~id\": 1}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onCreate, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for label key for onCreate
+  Scenario: g_mergeV_hidden_label_key_onCreate_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onCreate, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for label value for onCreate
+  Scenario: g_mergeV_hidden_label_value_onCreate_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\":\"~vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onCreate, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for id key for onMatch
+  Scenario: g_mergeV_hidden_id_key_onMatch_matched_prohibited
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("vertex")
+      """
+    And using the parameter xx1 defined as "m[{\"~id\": 1}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onMatch, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for label key for onMatch
+  Scenario: g_mergeV_hidden_label_key_matched_onMatch_matched_prohibited
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("vertex")
+      """
+    And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onMatch, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # cannot use hidden namespace for label value for onMatch
+  Scenario: g_mergeV_hidden_label_value_onMatch_matched_prohibited
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("vertex")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\":\"~vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onMatch, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error
