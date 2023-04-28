@@ -70,4 +70,24 @@ func TestClient(t *testing.T) {
 		assert.True(t, ok)
 		assert.NotNil(t, result)
 	})
+
+	t.Run("Test client.Close()", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+			})
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		resultSet, err := client.Submit("2+2")
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+
+		client.Close()
+		pool := client.connections.(*loadBalancingPool)
+		assert.Equal(t, 1, len(pool.connections))
+		assert.True(t, pool.isClosed)
+		assert.Equal(t, closed, pool.connections[0].state)
+	})
 }
