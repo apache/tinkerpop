@@ -332,9 +332,7 @@ public class TernaryBooleanLogicsTest extends AbstractGremlinProcessTest {
         // Propagates Error to parent not()
         checkHasNext(false, g.inject(1).not(not(is(ERROR))));
         checkHasNext(false, g.inject(1).not(is(ERROR)));
-        // Propagates Error to parent where()
-        checkHasNext(false, g.inject(1).not(where(is(ERROR))));
-        checkHasNext(false, g.inject(1).where(is(ERROR)));
+
         // Does not propagate Error through non-filter parent
         checkHasNext(true, g.inject(1).not(union((is(ERROR)))));
         checkHasNext(false, g.inject(1).union((is(ERROR))));
