@@ -329,7 +329,7 @@ This release also includes changes from <<release-3-5-3, 3.5.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-6]]
-=== TinkerPop 3.5.6 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.6 (Release Date: May 1, 2023)
 
 * Added `GraphFilter` support to `GraphSONRecordReader`.
 * gremlin-python aiohttp dependency requirement upper bound relaxed to <4.0.0.
@@ -345,6 +345,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `with()` configuration for `ARGS_BATCH_SIZE` and `ARGS_EVAL_TIMEOUT` to be more forgiving on the type of `Number` used for the value.
 * Changed `gremlin-console` to add imports via an ImportCustomizer to reduce time spent resolving imports.
 * Bumped to Groovy 2.5.22.
+* Fixed `generateUserAgent()` in `gremlin-javascript` and `gremlin-dotnet` to handle null and undefined properly, and updated Java UserAgent error handling
 * Fixed bug in parsing of `math()` expressions where variables were not being identified if they contained a text associated with a function.
 * Refactored `FilterRankingStrategy` to improve performance for deeply nested traversals.
 * Refactored strategy application to improve performance by avoiding some excessive recursion.
@@ -358,6 +359,36 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
 * Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
 * Reduce the toString() of ObjectWritable to avoid OOM for running OLAP queries on Spark.
+
+==== Bugs
+
+* TINKERPOP-2526 Gremlin Console performance with incomplete multi-line scripts
+* TINKERPOP-2767 Repeat Out Times traversal hangs indefinitely on first execution
+* TINKERPOP-2820 gremlin-python _close_session race condition/FD leak
+* TINKERPOP-2855 Performance degradation in TinkerGraph 3.5.4 and 3.5.5
+* TINKERPOP-2856 math() step fails if variable name contains a keyword
+* TINKERPOP-2861 Fix incorrect symlinks in source release zip
+* TINKERPOP-2863 HasId Step generates incorrect results when given a list of IDs mid-traversal
+* TINKERPOP-2878 Incorrect handling of local operations when there are duplicate elements
+* TINKERPOP-2888 DefaultTraversal's applyStrategies performance decrease
+* TINKERPOP-2891 Inconsistent behavior when comparing a counted value with a negative value
+* TINKERPOP-2893 Incorrectly comparing a counted value with multiple predicates
+* TINKERPOP-2902 Critical security vulnerability in snakeyaml
+* TINKERPOP-2905 gremlin-go gorillaTransporter.logHandler is not initialized correctly and leads to panic
+* TINKERPOP-2911 CountStrategy converts count().is(0) wrongly under ConnectiveStrategy
+* TINKERPOP-2918 Utils.GenerateUserAgent assumes Gremlin.Net.dll to be present when, in some environments, it is not.
+
+==== Improvements
+
+* TINKERPOP-2841 Test and Fix Per Request Settings in Go
+* TINKERPOP-2852 Update Maven plugin for docker-images building for M1 compatibility
+* TINKERPOP-2857 GraphSONRecordReader does not allow configure a GraphFilter during deserialization
+* TINKERPOP-2865 Add has steps injected by PartitionStrategy at the end of the filter
+* TINKERPOP-2890 Avoid exceptions on local scope based steps where possible
+* TINKERPOP-2899 SampleGlobalStep samples inefficiently with TraverserSet running into hash collisions
+* TINKERPOP-2912 Improve error message for addE() when traverser is incorrect
+* TINKERPOP-2919 Improve performance of FilterRankingStrategy for deeply nested traversals
+* TINKERPOP-2934 Optimize ObjectWritable for displaying content of Java Collection or Map to reduce OOM
 
 [[release-3-5-5]]
 === TinkerPop 3.5.5 (Release Date: January 16, 2023)
