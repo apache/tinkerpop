@@ -28,7 +28,7 @@ limitations under the License.
     <ProjectReference Include="../Gremlin.Net/Gremlin.Net.csproj" />
 
     <!-- do not edit the version directly - maven updates it automatically -->
-    <PackageReference Include="Gremlin.Net" Version="3.6.3-SNAPSHOT" />
+    <PackageReference Include="Gremlin.Net" Version="3.6.3" />
   </ItemGroup>
 
 </Project>
