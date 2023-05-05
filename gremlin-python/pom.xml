@@ -264,14 +264,12 @@ limitations under the License.
                                             <arg line="--python=python3 env"/>
                                         </exec>
                                         <!--
-                                        seems like https://github.com/pypa/twine/issues/338 is the reason to stay bound
-                                        to this old version of twine. as long as keyring gets in the way and can't be
-                                        disabled as described then you don't get a prompt for the password on deploy
-                                        to pypi
+                                        Moving off of 1.12.1 due to incompatibility, password prompt should no longer be
+                                        an issue with API token access.
                                          -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install twine==1.12.1"/>
+                                            <arg line="install twine==4.0.2"/>
                                         </exec>
 					                    <!-- check the dist for errors before deploying -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
