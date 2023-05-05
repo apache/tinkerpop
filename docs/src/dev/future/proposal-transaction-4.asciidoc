@@ -41,7 +41,7 @@ I'm thinking of using write-only locks to reduce the impact of transactions on p
 
 ==== Overview of changes to code base
 ===== ElementContainer
-Storage for current Element value and ThreadLocal updated value with `isDeleted` flag.
+Storage for current Element value and ThreadLocal updated value with `isDeleted` flag. Similar for `Vertices` and `Edges`.
 [code]
 ----
 class ElementContainer {
@@ -71,7 +71,7 @@ Add TinkerTransactionGraphFeatures, TinkerTransactionGraphVertexFeatures, Tinker
 
 ==== CRUD operations with transaction
 ===== Create
-Add new ElementContainer to `vertices` in TinkerTransactionGraph.
+Add new ElementContainer to `vertices` and `edges` in TinkerTransactionGraph.
 
 ==== Read
 Read values from `vertices` ElementContainer, `transactionUpdatedValue` if present, otherwise `current`.
