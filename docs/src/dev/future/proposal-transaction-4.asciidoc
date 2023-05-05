@@ -21,7 +21,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 == Tinkerpop native transaction support
 
 === Introduction
-Now, if you need to use transactions in tinkerpop, the only solution is to use the Neo4J plugin. Unfortunately, this plugin has not been updated for a long time and is only compatible with Neo4J version 3.4, which reached end of life in March, 2020.
+Now, if you need to use transactions in tinkerpop, the only solution is to use the Neo4J plugin. Unfortunately, this plugin has not been updated for a long time and is only compatible with Neo4J version 3.4, which reached end of life in March 2020.
 
 === Motivation
 We would like to propose to implement native Tinkerpop transaction support. Users will be able to use transactions without the outdated Neo4J plugin.
@@ -54,11 +54,10 @@ class ElementContainer {
 ===== TinkerTransactionGraph
 Vertices and Edges will store with version number and dirty transaction values
 `Map<Object, ElementContainer> vertices` where `Object` is Vertex Id.
-Shared with TinkerGraph code will be moved to AbstractTinkerGraph.
+Shared code with TinkerGraph will be moved to AbstractTinkerGraph.
 
 ===== TinkerTransactionElement
 Add `currentVersion` to all TinkerElements.
-
 
 ===== TinkerThreadLocalTransaction
 Extension of AbstractThreadLocalTransaction. Add a unique transaction number. Can use `AtomicLong.incrementAndGet`
@@ -66,11 +65,9 @@ Extension of AbstractThreadLocalTransaction. Add a unique transaction number. Ca
 ===== Graph Feature files
 Add TinkerTransactionGraphFeatures, TinkerTransactionGraphVertexFeatures, TinkerTransactionGraphEdgeFeatures, TinkerTransactionGraphGraphFeatures, TinkerTransactionGraphVertexPropertyFeatures.
 
-
 ==== CRUD operations without transaction
 1. Wrap into transaction
 2. Commit
-
 
 ==== CRUD operations with transaction
 ===== Create
@@ -88,14 +85,14 @@ Set `isDeleted` flag in ElementContainer  in `vertices`.
 
 ==== Transaction flows
 ===== Commit flow
-1. make list of all affected elements by transaction#. The reason is to reduce the lock time.
-2. if any has never version, then fail.
-3. try to lock all Vertices/Edges changed in transaction. Lock is for write operations only. if some Vertex/Edge is already locked then fail.
-4. check versions again, fail if some element is updated. Code: `Vertices.get(id).current()).currentVersion() !=Vertices.get(id).transactionUpdatedValue().currentVersion()`
-5. for all Elements replace current version with value updated in transaction (or remove Element on Delete operation). Cleanup `transactionUpdatedValue`.
-6. change version of all updated Elements.
-7. unlock.
-8. update indexes if needed.
+1. Make list of all affected elements sorted by transaction#. The reason is to reduce the lock time.
+2. If any has a newer version, then fail.
+3. Try to lock all Vertices/Edges changed in transaction. Lock is for write operations only. If some Vertex/Edge is already locked then fail.
+4. Check versions again, fail if some element is updated. Code: `Vertices.get(id).current()).currentVersion() !=Vertices.get(id).transactionUpdatedValue().currentVersion()`
+5. For all Elements replace current version with value updated in transaction (or remove Element on Delete operation). Cleanup `transactionUpdatedValue`.
+6. Change version of all updated Elements.
+7. Unlock.
+8. Update indexes if needed.
 
 ===== Rollback
 Cleanup `transactionUpdatedValue` in `vertices`
@@ -103,7 +100,7 @@ Cleanup `transactionUpdatedValue` in `vertices`
 ===== Error
 On any error, including transaction conflict:
 1. Rollback
-2. throw exception
+2. Throw exception
 
 ===== Timeout
 Add transactionWatchdog which will rollback locked/expired transactions. Similar to `Session.touch`.
@@ -112,4 +109,3 @@ Add transactionWatchdog which will rollback locked/expired transactions. Similar
 
 ==== Additional changes
 Split TinkerFactory into AbstractTinkerFactory and TinkerFactory, add TinkerTransactionGraphFactory.
-
