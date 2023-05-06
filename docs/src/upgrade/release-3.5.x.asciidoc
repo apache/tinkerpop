@@ -38,8 +38,32 @@ both of these runtimes are no longer supported. The following release (3.5.7) wi
 
 ==== ARM64 Support for Gremlin Server Docker Image
 
-Gremlin server docker image now supports both AMD64 and ARM64. Multi-architecture image can now be found at
-https://hub.docker.com/r/tinkerpop/gremlin-server
+Gremlin Server Docker image now supports both AMD64 and ARM64. Multi-architecture image can now be found on
+link:https://hub.docker.com/r/tinkerpop/gremlin-server/tags[Docker Hub].
+
+see: link:https://issues.apache.org/jira/browse/TINKERPOP-2852[TINKERPOP-2852]
+
+==== Performance Improvements
+There are various performance improvements included in this release:
+
+* Gremlin Console now uses `ImportCustomizer` to add imports, reducing the time spent resolving imports. This especially
+reduces the overhead for executing many simple lines of code. Processing for documentation (which runs thousands of
+simple lines) was reduced from 90 minutes to 25 minutes. Users should notice performance improvements when using the Gremlin Console.
+* In some instances, a graph may contain elements whose Ids are sequentially increasing integers. When using the `path()`
+step with a `CollectingBarrierStep` in these graphs, one may observe a huge increase in processing time because of an
+inefficient hash algorithm. This hash algorithm has been updated and tests have shown a 40x improvement in these
+`CollectingBarrierStep` queries involving `path()`.
+* There is an important performance improvement to `TraversalStrategy` application which removes some unnecessary recursion
+when evaluating the Gremlin syntax tree and should improve traversal compilation times, particularly on traversals with
+many children. Tests have shown a 10x improvement in compilation time.
+* `FilterRankingStrategy` saw a fairly specific performance improvement that should be particularly noticeable for
+traversal that have many children and some depth to their syntax tree. A particularly complex traversal that was used in
+testing this behavior improved its compilation time from 1 minute 48 seconds to just a few milliseconds.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2526[TINKERPOP-2526],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2899[TINKERPOP-2899],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2855[TINKERPOP-2855],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2919[TINKERPOP-2919]
 
 === Upgrading for Providers
 
