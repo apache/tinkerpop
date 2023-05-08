@@ -21,10 +21,10 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 == Tinkerpop native transaction support
 
 === Introduction
-Now, if you need to use transactions in tinkerpop, the only solution is to use the Neo4J plugin. Unfortunately, this plugin has not been updated for a long time and is only compatible with Neo4J version 3.4, which reached end of life in March 2020.
+Now, if you need to use transactions in tinkerpop, the only solution is to use the Neo4j plugin. Unfortunately, this plugin has not been updated for a long time and is only compatible with Neo4j version 3.4, which reached end of life in March 2020.
 
 === Motivation
-We would like to propose to implement native Tinkerpop transaction support. Users will be able to use transactions without the outdated Neo4J plugin.
+We would like to propose to implement native Tinkerpop transaction support. Users will be able to use transactions without the outdated Neo4j plugin.
 
 === Assumptions
 
@@ -37,7 +37,7 @@ We would like to propose to implement native Tinkerpop transaction support. User
 ==== Design Overview
 The main changes relate to TinkerGraph, we need to make a similar solution but with transaction support. I think TinkerGraph should be unchanged because for many users performance will be more important.
 I think by default I can make 2 configurations on Gremlin Server and users themselves will choose what they need, TinkerGraph or TinkerTransactionGraph.
-I'm thinking of using write-only locks to reduce the impact of transactions on performance. In this case the isolation level will be `read committed`, the same as now with the Neo4J plugin. 
+I'm thinking of using write-only locks to reduce the impact of transactions on performance. In this case the isolation level will be `read committed`, the same as now with the Neo4j plugin. 
 I plan to only support ThreadLocalTransaction, therefore embedded graph transactions may not be fully supported.
 
 ==== Overview of changes to code base
