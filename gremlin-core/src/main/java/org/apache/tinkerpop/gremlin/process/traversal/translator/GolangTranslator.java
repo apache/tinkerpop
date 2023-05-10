@@ -312,19 +312,8 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final P<?> p) {
-
             if (p instanceof TextP) {
-                // special case the RegexPredicate since it isn't an enum. toString() for the final default will
-                // typically cover implementations (generally worked for Text prior to 3.6.0)
-                final BiPredicate<?, ?> tp = p.getBiPredicate();
-                if (tp instanceof Text.RegexPredicate) {
-                    final String regexToken = ((Text.RegexPredicate) p.getBiPredicate()).isNegate() ? "NotRegex" : "Regex";
-                    script.append(GO_PACKAGE_NAME + "TextP.").append(regexToken).append("(");
-                } else if (tp instanceof Text) {
-                    script.append(GO_PACKAGE_NAME + "TextP.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
-                } else {
-                    script.append(GO_PACKAGE_NAME + "TextP.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
-                }
+                script.append(GO_PACKAGE_NAME + "TextP.").append(resolveSymbol(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
@@ -345,7 +334,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                     }
                 }
             } else {
-                script.append(GO_PACKAGE_NAME + "P.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
+                script.append(GO_PACKAGE_NAME + "P.").append(resolveSymbol(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");
