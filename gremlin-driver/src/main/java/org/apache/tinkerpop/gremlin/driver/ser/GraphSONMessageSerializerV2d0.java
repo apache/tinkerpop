@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -110,7 +111,7 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
     }
 
     @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException {
+    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         try {
             return mapper.writeValueAsString(responseMessage);
         } catch (Exception ex) {
@@ -130,7 +131,7 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
     }
 
     @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException {
+    public String serializeRequestAsString(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
         try {
             return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {

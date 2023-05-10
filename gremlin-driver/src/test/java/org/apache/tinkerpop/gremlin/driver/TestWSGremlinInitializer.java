@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.slf4j.Logger;
@@ -82,6 +84,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
      */
     private static final GraphSONMessageSerializerV2d0 SERIALIZER = new GraphSONMessageSerializerV2d0();
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     @Override
     public void postInit(ChannelPipeline pipeline) {
@@ -128,7 +131,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 final ResponseMessage responseMessage = ResponseMessage.build(msg)
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(new RuntimeException()).create();
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(SERIALIZER.serializeResponseAsString(responseMessage)));
+                ctx.channel().writeAndFlush(new TextWebSocketFrame(SERIALIZER.serializeResponseAsString(responseMessage, allocator)));
             } else if (msg.getRequestId().equals(CLOSE_CONNECTION_REQUEST_ID)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
@@ -152,7 +155,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
             final GraphTraversalSource g = graph.traversal();
             final Vertex t = g.V().limit(1).next();
 
-            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(t).create());
+            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(t).create(), allocator);
         }
 
         /**
@@ -160,7 +163,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
          * @throws SerializationException
          */
         private String returnSimpleStringResponse(final UUID requestID, String message) throws SerializationException {
-            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(message).create());
+            return SERIALIZER.serializeResponseAsString(ResponseMessage.build(requestID).result(message).create(), allocator);
         }
 
         /**

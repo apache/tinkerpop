@@ -54,7 +54,7 @@ public final class WebSocketGremlinRequestEncoder extends MessageToMessageEncode
                 objects.add(new BinaryWebSocketFrame(encodedMessage));
             } else {
                 final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
-                objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
+                objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage, channelHandlerContext.alloc())));
             }
         } catch (Exception ex) {
             throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(

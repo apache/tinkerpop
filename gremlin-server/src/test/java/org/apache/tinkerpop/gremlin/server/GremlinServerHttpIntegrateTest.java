@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpHeaders;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
@@ -36,15 +38,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import java.io.File;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -54,7 +58,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.core.StringRegularExpression.matchesRegex;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 
@@ -362,6 +368,68 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(6, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).size());
+        }
+    }
+
+    @Test
+    public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResultGraphBinary() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=gclassic.V()"));
+        final String mime = SerTokens.MIME_GRAPHBINARY_V1D0;
+        httpget.addHeader("Accept", mime);
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(mime, response.getEntity().getContentType().getValue());
+            final String base64 = EntityUtils.toString(response.getEntity());
+            final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(TypeSerializerRegistry.INSTANCE);
+            final ResponseMessage msg = serializer.deserializeResponse(base64);
+            final List<Object> data = (List<Object>) msg.getResult().getData();
+            assertEquals(6, data.size());
+            for (Object o : data) {
+                assertThat(o, instanceOf(Vertex.class));
+            }
+        }
+    }
+
+    @Test
+    public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResultGraphBinaryToString() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=gclassic.V()"));
+        final String mime = SerTokens.MIME_GRAPHBINARY_V1D0 + "-stringd";
+        httpget.addHeader("Accept", mime);
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(mime, response.getEntity().getContentType().getValue());
+            final String base64 = EntityUtils.toString(response.getEntity());
+            final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(TypeSerializerRegistry.INSTANCE);
+            final ResponseMessage msg = serializer.deserializeResponse(base64);
+            final List<Object> data = (List<Object>) msg.getResult().getData();
+            assertEquals(6, data.size());
+            for (Object o : data) {
+                assertThat(o, instanceOf(String.class));
+                assertThat((String) o, matchesRegex("v\\[\\d\\]"));
+            }
+        }
+    }
+
+    @Test
+    public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResultTextPlain() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=gclassic.V()"));
+        final String mime = "text/plain";
+        httpget.addHeader("Accept", mime);
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(mime, response.getEntity().getContentType().getValue());
+            final String text = EntityUtils.toString(response.getEntity());
+            final String[] split = text.split(System.lineSeparator());
+            assertEquals(6, split.length);
+            for (String line : split) {
+                assertThat(line, matchesRegex("==>v\\[\\d\\]"));
+            }
         }
     }
 

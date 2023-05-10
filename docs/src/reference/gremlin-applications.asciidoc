@@ -901,6 +901,21 @@ Gremlin script.  The caveat is that these arguments will always be treated as `S
 types are preserved or to pass complex objects such as lists or maps, use `POST` which will at least support the
 allowed JSON data types.
 
+Passing the `Accept` header with a valid MIME type will trigger the server to return the result in a particular format.
+Note that in addition to the formats available given the server's `serializers` configuration, there is also a basic
+`text/plain` format which produces a text representation of results similar to the Gremlin Console:
+
+[source,text]
+----
+$ curl -H "Accept:text/plain" -X POST -d "{\"gremlin\":\"g.V()\"}" "http://localhost:8182"
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+----
+
 Finally, as Gremlin Server can host multiple `ScriptEngine` instances (e.g. `gremlin-groovy`, `nashorn`), it is
 possible to define the language to utilize to process the request:
 
