@@ -25,8 +25,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-5-7, 3.5.7>>.
 
-==== Bugs
-
 * Fixed bug in `TextP.regex` and `TextP.notRegex` serialization for Java GLV.
 
 [[release-3-6-3]]
