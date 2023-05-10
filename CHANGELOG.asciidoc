@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-7]]
 === TinkerPop 3.5.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Bumped `jackson-databind` to 2.15.0 to fix security vulnerability.
 * Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
 * Fixed gremlin-python `Client` problem where calling `submit()` after` `close()` would hang the system.
 * Added `gremlin.spark.dontDeleteNonEmptyOutput` to stop deleting the output folder if it is not empty in `spark-gremlin`.
