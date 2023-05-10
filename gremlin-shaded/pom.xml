@@ -103,6 +103,7 @@ limitations under the License.
                                   <artifact>*</artifact>
                                   <excludes>
                                     <exclude>META-INF/services/**</exclude>
+                                    <exclude>module-info.class</exclude>
                                   </excludes>
                                 </filter>
                             </filters>
