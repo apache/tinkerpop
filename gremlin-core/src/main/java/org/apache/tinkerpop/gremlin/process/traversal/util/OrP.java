@@ -65,6 +65,9 @@ public final class OrP<V> extends ConnectiveP<V> {
     }
 
     @Override
+    public String getPredicateName() { return "or"; }
+
+    @Override
     public OrP<V> clone() {
         final OrP<V> clone = (OrP<V>) super.clone();
         clone.biPredicate = new OrBiPredicate(clone);

@@ -166,6 +166,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_not_endingWithXasXX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_regexXrMarXX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_notRegexXrMarXX();
+
+    public abstract Traversal<Vertex, String> get_g_V_hasXname_regexXTinkerXX();
+
+    public abstract Traversal<Vertex, String> get_g_V_hasXname_regexXTinkerUnicodeXX();
+
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXperson_name_containingXoX_andXltXmXXX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainingXoXXX();
@@ -801,6 +809,59 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_hasXname_regexXrMarXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_regexXrMarXX();
+        printTraversalForm(traversal);
+
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().value("name").equals("marko"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_notRegexXrMarXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_notRegexXrMarXX();
+        printTraversalForm(traversal);
+
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertNotEquals("marko", traversal.next().value("name"));
+        }
+        assertEquals(5, counter);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_V_hasXname_regexXTinkerXX() {
+        g.addV("software").property("name", "Apache TinkerPop©").iterate();
+
+        final Traversal<Vertex, String> traversal = get_g_V_hasXname_regexXTinkerXX();
+        printTraversalForm(traversal);
+
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().equals("Apache TinkerPop©"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_V_hasXname_regexXTinkerUnicodeXX() {
+        g.addV("software").property("name", "Apache TinkerPop©").iterate();
+
+        final Traversal<Vertex, String> traversal = get_g_V_hasXname_regexXTinkerUnicodeXX();
+        printTraversalForm(traversal);
+
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().equals("Apache TinkerPop©"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_hasXperson_name_containingXoX_andXltXmXXX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXperson_name_containingXoX_andXltXmXXX();
         printTraversalForm(traversal);
@@ -1257,6 +1318,26 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_properties_hasValueXnull_joshX_value() {
             return g.V().properties().hasValue(null, "josh").value();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_regexXrMarXX() {
+            return g.V().has("name", TextP.regex("^mar"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_notRegexXrMarXX() {
+            return g.V().has("name", TextP.notRegex("^mar"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasXname_regexXTinkerXX() {
+            return g.V().has("name", TextP.regex("Tinker")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasXname_regexXTinkerUnicodeXX() {
+            return g.V().has("name", TextP.regex("Tinker.*\u00A9")).values("name");
         }
     }
 }
