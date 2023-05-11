@@ -463,17 +463,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                // special case the RegexPredicate since it isn't an enum. toString() for the final default will
-                // typically cover implementations (generally worked for Text prior to 3.6.0)
-                final BiPredicate<?, ?> tp = p.getBiPredicate();
-                if (tp instanceof Text.RegexPredicate) {
-                    final String regexToken = ((Text.RegexPredicate) p.getBiPredicate()).isNegate() ? "NotRegex" : "Regex";
-                    script.append("TextP.").append(regexToken).append("(");
-                } else if (tp instanceof Text) {
-                    script.append("TextP.").append(SymbolHelper.toCSharp(((Text) p.getBiPredicate()).name())).append("(");
-                } else {
-                    script.append("TextP.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
-                }
+                script.append("TextP.").append(SymbolHelper.toCSharp(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
@@ -492,7 +482,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     }
                 }
             } else {
-                script.append("P.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
+                script.append("P.").append(SymbolHelper.toCSharp(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");

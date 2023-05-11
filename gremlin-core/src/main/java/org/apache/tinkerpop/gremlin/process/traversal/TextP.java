@@ -43,6 +43,13 @@ public class TextP extends P<String> {
     }
 
     @Override
+    public String getPredicateName() {
+        return biPredicate instanceof Text.RegexPredicate ?
+                ((Text.RegexPredicate) biPredicate).isNegate() ? "notRegex" : "regex" :
+                biPredicate.toString();
+    }
+
+    @Override
     public TextP negate() {
         return new TextP(this.biPredicate.negate(), this.originalValue);
     }
