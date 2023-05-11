@@ -25,6 +25,25 @@ The original software and related information is available
 at http://www.jcraft.com/jsch/.
 
 ------------------------------------------------------------------------
+HPPC 0.7.1
+------------------------------------------------------------------------
+HPPC borrowed code, ideas or both from:
+
+ * Apache Lucene, http://lucene.apache.org/
+   (Apache license)
+ * Fastutil, http://fastutil.di.unimi.it/
+   (Apache license)
+ * Koloboke, https://github.com/OpenHFT/Koloboke
+   (Apache license)
+
+------------------------------------------------------------------------
+Jackson-Databind 2.14.0 and Jackson-Core - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.jackson
+------------------------------------------------------------------------
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers.
+
+------------------------------------------------------------------------
 JavaTuples 1.2
 ------------------------------------------------------------------------
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
@@ -42,18 +61,6 @@ LongAdder), which was released with the following comments:
     Written by Doug Lea with assistance from members of JCP JSR-166
     Expert Group and released to the public domain, as explained at
     http://creativecommons.org/publicdomain/zero/1.0/
-
-------------------------------------------------------------------------
-HPPC 0.7.1
-------------------------------------------------------------------------
-HPPC borrowed code, ideas or both from:
-
- * Apache Lucene, http://lucene.apache.org/
-   (Apache license)
- * Fastutil, http://fastutil.di.unimi.it/
-   (Apache license)
- * Koloboke, https://github.com/OpenHFT/Koloboke
-   (Apache license)
 
 ------------------------------------------------------------------------
 Netty 4.1.86
