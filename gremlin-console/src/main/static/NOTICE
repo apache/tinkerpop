@@ -43,11 +43,6 @@ The original software and related information is available
 at http://www.jcraft.com/jsch/.
 
 ------------------------------------------------------------------------
-JavaTuples 1.2
-------------------------------------------------------------------------
-Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
-
-------------------------------------------------------------------------
 HPPC 0.7.1
 ------------------------------------------------------------------------
 HPPC borrowed code, ideas or both from:
@@ -60,7 +55,23 @@ HPPC borrowed code, ideas or both from:
    (Apache license)
 
 ------------------------------------------------------------------------
+Jackson-Databind and Jackson-Core 2.14.0 (Included through gremlin-shaded)
+------------------------------------------------------------------------
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers.
+
+------------------------------------------------------------------------
+JavaTuples 1.2
+------------------------------------------------------------------------
+Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
+
+------------------------------------------------------------------------
 Netty 4.1.86
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
+------------------------------------------------------------------------
+Objenesis 2.4 (Included through gremlin-shaded)
+------------------------------------------------------------------------
+Copyright 2006-2016 Joe Walnes, Henri Tremblay, Leonardo Mesquita
