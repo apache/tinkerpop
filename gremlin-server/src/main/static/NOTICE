@@ -30,6 +30,42 @@ The original software and related information is available
 at http://www.jcraft.com/jsch/.
 
 ------------------------------------------------------------------------
+Byte-Buddy 1.10.5 and Byte-Buddy-Agent 1.10.5
+------------------------------------------------------------------------
+Copyright 2014 - 2019 Rafael Winterhalter
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+------------------------------------------------------------------------
+HPPC 0.7.1
+------------------------------------------------------------------------
+HPPC borrowed code, ideas or both from:
+
+ * Apache Lucene, http://lucene.apache.org/
+   (Apache license)
+ * Fastutil, http://fastutil.di.unimi.it/
+   (Apache license)
+ * Koloboke, https://github.com/OpenHFT/Koloboke
+   (Apache license)
+
+------------------------------------------------------------------------
+Jackson-Databind and Jackson-Core 2.14.0 (Included through gremlin-shaded)
+------------------------------------------------------------------------
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers.
+
+------------------------------------------------------------------------
 JavaTuples 1.2
 ------------------------------------------------------------------------
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
@@ -49,18 +85,11 @@ LongAdder), which was released with the following comments:
     http://creativecommons.org/publicdomain/zero/1.0/
 
 ------------------------------------------------------------------------
-HPPC 0.7.1
-------------------------------------------------------------------------
-HPPC borrowed code, ideas or both from:
-
- * Apache Lucene, http://lucene.apache.org/
-   (Apache license)
- * Fastutil, http://fastutil.di.unimi.it/
-   (Apache license)
- * Koloboke, https://github.com/OpenHFT/Koloboke
-   (Apache license)
-
-------------------------------------------------------------------------
 Netty 4.1.86
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
+
+------------------------------------------------------------------------
+Objenesis 2.4
+------------------------------------------------------------------------
+Copyright 2006-2016 Joe Walnes, Henri Tremblay, Leonardo Mesquita
