@@ -185,6 +185,10 @@ public enum GraphSONCompatibility implements Compatibility {
     V2D0_PARTIAL_3_5_6("3.5.6", "2.0", "v2d0-partial"),
     V2D0_NO_TYPE_3_5_6("3.5.6", "2.0", "v2d0-no-types"),
     V3D0_PARTIAL_3_5_6("3.5.6", "3.0", "v3d0"),
+    V1D0_3_5_7("3.5.7", "1.0", "v1d0"),
+    V2D0_PARTIAL_3_5_7("3.5.7", "2.0", "v2d0-partial"),
+    V2D0_NO_TYPE_3_5_7("3.5.7", "2.0", "v2d0-no-types"),
+    V3D0_PARTIAL_3_5_7("3.5.7", "3.0", "v3d0"),
 
     V1D0_3_6_0("3.6.0", "1.0", "v1d0"),
     V2D0_PARTIAL_3_6_0("3.6.0", "2.0", "v2d0-partial"),
