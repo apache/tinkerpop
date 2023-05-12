@@ -30,6 +30,25 @@ The original software and related information is available
 at http://www.jcraft.com/jsch/.
 
 ------------------------------------------------------------------------
+HPPC 0.7.1
+------------------------------------------------------------------------
+HPPC borrowed code, ideas or both from:
+
+ * Apache Lucene, http://lucene.apache.org/
+   (Apache license)
+ * Fastutil, http://fastutil.di.unimi.it/
+   (Apache license)
+ * Koloboke, https://github.com/OpenHFT/Koloboke
+   (Apache license)
+
+------------------------------------------------------------------------
+Jackson-Databind 2.14.0 and Jackson-Core (Included through gremlin-shaded)
+------------------------------------------------------------------------
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers.
+
+------------------------------------------------------------------------
 JavaTuples 1.2
 ------------------------------------------------------------------------
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
@@ -49,18 +68,11 @@ LongAdder), which was released with the following comments:
     http://creativecommons.org/publicdomain/zero/1.0/
 
 ------------------------------------------------------------------------
-HPPC 0.7.1
-------------------------------------------------------------------------
-HPPC borrowed code, ideas or both from:
-
- * Apache Lucene, http://lucene.apache.org/
-   (Apache license)
- * Fastutil, http://fastutil.di.unimi.it/
-   (Apache license)
- * Koloboke, https://github.com/OpenHFT/Koloboke
-   (Apache license)
-
-------------------------------------------------------------------------
 Netty 4.1.86
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
+
+------------------------------------------------------------------------
+Objenesis 2.4 (Included through gremlin-shaded)
+------------------------------------------------------------------------
+Copyright 2006-2016 Joe Walnes, Henri Tremblay, Leonardo Mesquita
