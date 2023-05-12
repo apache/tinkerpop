@@ -58,7 +58,8 @@ services:
       - TEST_TRANSACTIONS=true
     working_dir: /gremlin-dotnet
     command: >
-      bash -c "dotnet test ./Gremlin.Net.sln -c Release"
+      bash -c "dotnet test ./Gremlin.Net.sln -c Release;
+      EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-dotnet:
         condition: service_healthy
