@@ -16,40 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util.ser.binary;
+package org.apache.tinkerpop.gremlin.util.ser;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractRoundTripTest;
-import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.structure.io.Buffer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.junit.Test;
-import java.util.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
-public class GraphBinaryReaderWriterRoundTripTest extends AbstractRoundTripTest {
-    private final GraphBinaryWriter writer = new GraphBinaryWriter();
-    private final GraphBinaryReader reader = new GraphBinaryReader();
-    private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
+public class GraphSONMessageSerializerV3d0RoundTripTest extends AbstractRoundTripTest {
+
+    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+
+    public final GraphSONMessageSerializerV3d0 serializer = new GraphSONMessageSerializerV3d0();
 
     private static List<String> skippedTests
-            = Arrays.asList("ReferenceVertexProperty");
+            = Arrays.asList("ReferenceVertex", "ReferenceVertexProperty", "ReferenceProperty", "Graph");
 
     @Test
     public void shouldWriteAndRead() throws Exception {
-        // some tests are not valid for graphbinary
+        // some tests are not valid for json
         if (skippedTests.contains(name)) return;
 
-        // Test it multiple times as the type registry might change its internal state
         for (int i = 0; i < 5; i++) {
-            final Buffer buffer = bufferFactory.create(allocator.buffer());
-            writer.write(value, buffer);
-            buffer.readerIndex(0);
-            final Object result = reader.read(buffer);
+
+            final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(value).create(), allocator);
+            final Object result = serializer.deserializeResponse(bb).getResult().getData();
 
             Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);
         }

@@ -57,6 +57,11 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return originalValue;
     }
 
+    /*
+     * Get the name of the predicate
+     */
+    public String getPredicateName() { return biPredicate.toString(); }
+
     /**
      * Gets the current value to be passed to the predicate for testing.
      */

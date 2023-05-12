@@ -145,12 +145,7 @@ final class TraversalSerializersV2d0 {
         public void serialize(final P p, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField(GraphSONTokens.PREDICATE,
-                    p instanceof ConnectiveP ?
-                            p instanceof AndP ?
-                                    GraphSONTokens.AND :
-                                    GraphSONTokens.OR :
-                            p.getBiPredicate().toString());
+            jsonGenerator.writeStringField(GraphSONTokens.PREDICATE, p.getPredicateName());
             if (p instanceof ConnectiveP) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.VALUE);
                 for (final P<?> predicate : ((ConnectiveP<?>) p).getPredicates()) {
