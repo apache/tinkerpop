@@ -50,14 +50,12 @@ namespace Gremlin.Net.Driver
         private readonly string? _sessionId;
         private readonly bool _sessionEnabled;
 
-        private readonly ConcurrentQueue<(RequestMessage msg, CancellationToken cancellationToken)> _writeQueue =
-            new ConcurrentQueue<(RequestMessage, CancellationToken)>();
+        private readonly ConcurrentQueue<(RequestMessage msg, CancellationToken cancellationToken)> _writeQueue = new();
 
         private readonly ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId =
-            new ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage>();
-        
-        private readonly List<CancellationTokenRegistration> _cancellationTokenRegistrations =
-            new List<CancellationTokenRegistration>();
+            new();
+
+        private readonly ConcurrentDictionary<Guid, CancellationTokenRegistration> _cancellationByRequestId = new();
         private int _connectionState = 0;
         private int _writeInProgress = 0;
         private const int Closed = 1;
@@ -91,7 +89,8 @@ namespace Gremlin.Net.Driver
         {
             var receiver = new ResponseHandlerForSingleRequestMessage<T>();
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
-            _cancellationTokenRegistrations.Add(cancellationToken.Register(() =>
+
+            _cancellationByRequestId.GetOrAdd(requestMessage.RequestId, cancellationToken.Register(() =>
             {
                 if (_callbackByRequestId.TryRemove(requestMessage.RequestId, out var responseHandler))
                 {
@@ -142,10 +141,17 @@ namespace Gremlin.Net.Driver
             }
             catch (Exception e)
             {
-                if (receivedMsg.RequestId != null &&
-                    _callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out var responseHandler))
+                if (receivedMsg!.RequestId != null)
                 {
-                    responseHandler?.HandleFailure(e);
+                    if(_callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out var responseHandler))
+                    {
+                        responseHandler?.HandleFailure(e);
+                        
+                    }
+                    if (_cancellationByRequestId.TryRemove(receivedMsg.RequestId.Value, out var cancellation))
+                    {
+                        cancellation.Dispose();
+                    }
                 }
             }
         }
@@ -171,6 +177,10 @@ namespace Gremlin.Net.Driver
 
             if (status.Code == ResponseStatusCode.Success || status.Code == ResponseStatusCode.NoContent)
             {
+                if (_cancellationByRequestId.TryRemove(receivedMsg.RequestId.Value, out var cancellation))
+                {
+                    cancellation.Dispose();
+                }
                 responseHandler?.Finalize(status.Attributes);
                 _callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out _);
             }
@@ -254,6 +264,7 @@ namespace Gremlin.Net.Driver
                 cb.HandleFailure(exception);
             }
             _callbackByRequestId.Clear();
+            DisposeCancellationRegistrations();
         }
 
         private async Task SendMessageAsync(RequestMessage message, CancellationToken cancellationToken)
@@ -330,13 +341,19 @@ namespace Gremlin.Net.Driver
                 if (disposing)
                 {
                     _webSocketConnection?.Dispose();
-                    foreach (var registration in _cancellationTokenRegistrations)
-                    {
-                        registration.Dispose();
-                    }
+                    DisposeCancellationRegistrations();
                 }
                 _disposed = true;
             }
+        }
+
+        private void DisposeCancellationRegistrations()
+        {
+            foreach (var cancellation in _cancellationByRequestId.Values)
+            {
+                cancellation.Dispose();
+            }
+            _cancellationByRequestId.Clear();
         }
 
         #endregion
