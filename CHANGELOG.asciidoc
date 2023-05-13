@@ -21,11 +21,15 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
 [[release-3-6-4]]
-=== TinkerPop 3.6.4 (Release Date: NOT OFFICIALLY RELEASED YET)
-
-This release also includes changes from <<release-3-5-7, 3.5.7>>.
+=== TinkerPop 3.6.4 (Release Date: May 12, 2023)
 
 * Fixed bug in `TextP.regex` and `TextP.notRegex` serialization for Java GLV.
+* Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
+
+==== Bugs
+
+* TINKERPOP-2945 TextP.regex() Serialization Failing in Java driver
+* TINKERPOP-2944 Memory leak in Gremlin.Net driver if CancellationToken is used
 
 [[release-3-6-3]]
 === TinkerPop 3.6.3 (Release Date: May 1, 2023)
