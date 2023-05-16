@@ -68,14 +68,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * @deprecated As of release 3.5.2, replaced by {@link #instance()}.
-     */
-    @Deprecated
-    public static GenericLiteralVisitor getInstance() {
-        return instance();
-    }
-
-    /**
      * Parse a string literal context and return the string literal
      */
     public static String getStringLiteral(final GremlinParser.StringBasedLiteralContext stringLiteral) {

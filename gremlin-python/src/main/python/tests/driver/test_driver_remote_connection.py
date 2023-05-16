@@ -217,6 +217,17 @@ class TestDriverRemoteConnection(object):
         except GremlinServerError as gse:
             assert gse.status_code == 598
 
+    def test_close_sessions(self, remote_transaction_connection):
+        g = traversal().withRemote(remote_transaction_connection)
+        tx = g.tx()
+        gtx = tx.begin()
+        # session created for new transaction
+        assert 1 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
+        gtx.addV("person").iterate()
+        tx.rollback()
+        # after closing transaction we should remove spawned_session
+        assert 0 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
+
     def test_clone(self, remote_connection):
         g = traversal().withRemote(remote_connection)
         t = g.V().both()

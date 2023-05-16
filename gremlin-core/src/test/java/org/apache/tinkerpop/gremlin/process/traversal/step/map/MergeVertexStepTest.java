@@ -18,13 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MergeVertexStepTest {
 
@@ -74,5 +84,80 @@ public class MergeVertexStepTest {
         final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
                 new ReferenceVertex("weird"), 100000);
         MergeVertexStep.validateMapInput(m, true);
+    }
+
+    @Test
+    public void shouldWorkWithImmutableMap() {
+        final Traversal.Admin traversal = mock(Traversal.Admin.class);
+        when(traversal.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
+        final Traverser.Admin traverser = mock(Traverser.Admin.class);
+        when(traverser.split()).thenReturn(mock(Traverser.Admin.class));
+        final Traversal.Admin onCreateTraversal = mock(Traversal.Admin.class);
+        when(onCreateTraversal.next()).thenReturn(Collections.unmodifiableMap(CollectionFactory.asMap("key1", "value1")));
+        when(onCreateTraversal.getSideEffects()).thenReturn(mock(TraversalSideEffects.class));
+
+        final MergeVertexStep step = new MergeVertexStep(traversal, true);
+        step.addChildOption(Merge.onCreate, onCreateTraversal);
+
+        final Map mergeMap = CollectionFactory.asMap("key2", "value2");
+        final Map onCreateMap = step.onCreateMap(traverser, mergeMap);
+
+        assertEquals(CollectionFactory.asMap("key1", "value1", "key2", "value2"), onCreateMap);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithNullKey() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                null, "person");
+        MergeVertexStep.validateMapInput(m, true);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithNullLabelValue() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                T.label, null);
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithObjectAsLabelValue() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                T.label, new Object());
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithNullIdValue() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                T.id, null);
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithNullDirectionValue() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                Direction.IN, null);
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithHiddenIdKey() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                "~id", 10000);
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithHiddenLabelKey() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                "~label", "person");
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithHiddenLabelValue() {
+        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+                T.label, "~person");
+        MergeVertexStep.validateMapInput(m, false);
     }
 }

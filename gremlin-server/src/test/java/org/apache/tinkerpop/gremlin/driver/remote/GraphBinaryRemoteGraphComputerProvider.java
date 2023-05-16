@@ -128,6 +128,14 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         method = "g_V_hasXk_withinXcXX_valuesXkX",
         reason = "Requires some test data initialization with addV()")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
+        method = "g_V_hasXname_regexXTinkerXX",
+        reason = "Requires some test data initialization with addV()")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
+        method = "g_V_hasXname_regexXTinkerUnicodeXX",
+        reason = "Requires some test data initialization with addV()")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
         method = "g_injectX1_null_nullX_path",
         reason = "The inject() step is not supported by GraphComputer")

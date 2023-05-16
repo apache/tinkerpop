@@ -65,6 +65,9 @@ public final class AndP<V> extends ConnectiveP<V> {
     }
 
     @Override
+    public String getPredicateName() { return "and"; }
+
+    @Override
     public AndP<V> clone() {
         final AndP<V> clone = (AndP<V>) super.clone();
         clone.biPredicate = new AndBiPredicate(clone);

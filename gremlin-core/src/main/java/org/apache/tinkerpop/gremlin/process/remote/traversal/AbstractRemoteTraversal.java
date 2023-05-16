@@ -128,6 +128,11 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
     }
 
     @Override
+    public void lock() {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    @Override
     public Optional<Graph> getGraph() {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }

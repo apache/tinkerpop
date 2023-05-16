@@ -42,13 +42,6 @@ public class GremlinStringConstantsVisitor extends DefaultGremlinBaseVisitor<Obj
         return instance;
     }
 
-    /**
-     * @deprecated As of release 3.5.2, replaced by {@link #instance()}
-     */
-    public static GremlinStringConstantsVisitor getInstance() {
-        return instance();
-    }
-
     @Override
     public Object visitGremlinStringConstants(final GremlinParser.GremlinStringConstantsContext ctx) {
         return visitChildren(ctx);

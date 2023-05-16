@@ -21,16 +21,94 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
+== TinkerPop 3.5.7
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.7/CHANGELOG.asciidoc#release-3-5-7[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+
 == TinkerPop 3.5.6
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: May 1, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.6/CHANGELOG.asciidoc#release-3-5-6[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Deprecation Warning for Node 10 and Go 1.17
 
+Release 3.5.6 will be the last version of 3.5.x to use Node 10 for `gremlin-javascript` and Go 1.17 for `gremlin-go` as
+both of these runtimes are no longer supported. The following release (3.5.7) will likely contain Node 16 to align with
+3.6.x and `gremlin-go` will use the latest available version of Go.
+
+==== ARM64 Support for Gremlin Server Docker Image
+
+Gremlin Server Docker image now supports both AMD64 and ARM64. Multi-architecture image can now be found on
+link:https://hub.docker.com/r/tinkerpop/gremlin-server/tags[Docker Hub].
+
+see: link:https://issues.apache.org/jira/browse/TINKERPOP-2852[TINKERPOP-2852]
+
+==== Performance Improvements
+There are various performance improvements included in this release:
+
+* Gremlin Console now uses `ImportCustomizer` to add imports, reducing the time spent resolving imports. This especially
+reduces the overhead for executing many simple lines of code. Processing for documentation (which runs thousands of
+simple lines) was reduced from 90 minutes to 25 minutes. Users should notice performance improvements when using the Gremlin Console.
+* In some instances, a graph may contain elements whose Ids are sequentially increasing integers. When using the `path()`
+step with a `CollectingBarrierStep` in these graphs, one may observe a huge increase in processing time because of an
+inefficient hash algorithm. This hash algorithm has been updated and tests have shown a 40x improvement in these
+`CollectingBarrierStep` queries involving `path()`.
+* There is an important performance improvement to `TraversalStrategy` application which removes some unnecessary recursion
+when evaluating the Gremlin syntax tree and should improve traversal compilation times, particularly on traversals with
+many children. Tests have shown a 10x improvement in compilation time.
+* `FilterRankingStrategy` saw a fairly specific performance improvement that should be particularly noticeable for
+traversal that have many children and some depth to their syntax tree. A particularly complex traversal that was used in
+testing this behavior improved its compilation time from 1 minute 48 seconds to just a few milliseconds.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2526[TINKERPOP-2526],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2899[TINKERPOP-2899],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2855[TINKERPOP-2855],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2919[TINKERPOP-2919]
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== TraversalStrategy Expectations
+
+Given some important performance improvements in this version, providers may need to make alterations to their
+`TraversalStrategy` implementations as certain assumptions about the data available to a strategy may have changed.
+If a `TraversalStrategy` implementation requires access to the `Graph` implementation, side-effects, and similar data
+stored on a `Traversal`, it is best to get that information from the root of the traversal hierarchy rather than from
+the current traversal that the strategy is executing on as the strategy application process no longer take the
+expensive step to propagate that data throughout the traversal in between each strategy application. Use the
+`TraversalHelper.getRootTraversal()` helper function to get to the root traversal. Note also that
+`Traversal.getGraph()` will traverse through the parent traversals now when trying to find a `Graph`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2855[TINKERPOP-2855],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2888[TINKERPOP-2888]
+
+===== Local steps should handle non-Iterables
+
+`index` steps and local steps `count`, `dedup`, `max`, `mean`, `min`, `order`, `range`, `sample`, `sum`, `tail` should
+work correctly with not only `Iterable` input, but also with arrays and single values.
+
+Examples of queries that should be supported:
+
+[source,groovy]
+----
+g.inject(1).max(local)
+----
+
+[source,java]
+----
+g.inject(new Integer[] {1,2},3).max(Scope.local).toList()
+----
 
 == TinkerPop 3.5.5
 
@@ -104,6 +182,7 @@ more likely now to note blocking behavior when a connection cannot be obtained.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2813[TINKERPOP-2813]
 
 ==== Added User Agent to Gremlin drivers
+
 Previously, a server does not distinguish amongst the different types of clients connecting to it. We have now added
 user agent to web socket handshake in all the drivers, each with their own configuration to enable or disable user agent.
 User agent is enabled by default for all drivers.
@@ -117,6 +196,7 @@ User agent is enabled by default for all drivers.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2480[TINKERPOP-2480]
 
 ==== Update to SSL Handshake Timeout Configuration
+
 Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. We have removed
 the default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
 

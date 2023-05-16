@@ -44,13 +44,13 @@ Feature: Step - coin()
     Then the result should be empty
 
   @GraphComputerVerificationStrategyNotSupported @WithSeedStrategy
-  Scenario: g_withStrategiesXSeedStrategyX_V_coinX50X
+  Scenario: g_withStrategiesXSeedStrategyX_V_order_byXnameX_coinX50X
     Given the modern graph
     And the traversal of
       """
-      g.withStrategies(new SeedStrategy(seed: 999999)).V().coin(0.5)
+      g.withStrategies(new SeedStrategy(seed: 999999)).V().order().by("name").coin(0.5)
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[marko] |
+      | v[josh] |

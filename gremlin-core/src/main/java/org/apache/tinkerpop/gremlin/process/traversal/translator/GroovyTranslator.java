@@ -232,11 +232,13 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             final Iterator<? extends Map.Entry<?, ?>> itty = ((Map<?, ?>) o).entrySet().iterator();
             while (itty.hasNext()) {
                 final Map.Entry<?,?> entry = itty.next();
-                script.append("(");
+                final Object k = entry.getKey();
+                final boolean wrap = !(k instanceof String);
+                if (wrap) script.append("(");
                 convertToScript(entry.getKey());
-                script.append("):(");
+                if (wrap) script.append(")");
+                script.append(":");
                 convertToScript(entry.getValue());
-                script.append(")");
                 if (itty.hasNext())
                     script.append(",");
             }
@@ -356,13 +358,13 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
+                script.append("TextP.").append(p.getPredicateName()).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
                 // generated the way it was written which was P.and(P).and(P)
                 final List<P<?>> list = ((ConnectiveP) p).getPredicates();
-                final String connector = p instanceof OrP ? "or" : "and";
+                final String connector = p.getPredicateName();
                 for (int i = 0; i < list.size(); i++) {
                     produceScript(list.get(i));
 
@@ -375,7 +377,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                     }
                 }
             } else {
-                script.append("P.").append(p.getBiPredicate().toString()).append("(");
+                script.append("P.").append(p.getPredicateName()).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");

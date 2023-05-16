@@ -32,7 +32,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -61,6 +63,29 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         this.t = t;
     }
 
+    /**
+     * Shrink the content to display for both Collection and Map
+     * @return
+     */
+    private String shrinkedToString() {
+        int s = 0;
+        // handle Collection and Map
+        if (this.t instanceof Collection) {
+            final Collection c = (Collection)t;
+            s = c.size();
+        } else if (this.t instanceof Map) {
+            final Map m = (Map)t;
+            s = m.size();
+        }
+        if (s > 0) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(this.t.getClass().toString()).append("@size=").append(s);
+            return sb.toString();
+        }
+        // fallback
+        return Objects.toString(this.t);
+    }
+
     @Override
     public String toString() {
         // Spark's background logging apparently tries to log a `toString()` of certain objects while they're being
@@ -69,7 +94,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         final int maxAttempts = 5;
         for (int i = maxAttempts; ;) {
             try {
-                return Objects.toString(this.t);
+                return shrinkedToString();
             }
             catch (ConcurrentModificationException cme) {
                 if (--i > 0) {

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +44,8 @@ public final class CountLocalStep<S> extends ScalarMapStep<S, Long> {
         final S item = traverser.get();
         return (item instanceof Collection) ? ((Collection) item).size()
                 : (item instanceof Map) ? ((Map) item).size()
-                : (item instanceof Path) ? ((Path) item).size() : 1L;
+                : (item instanceof Path) ? ((Path) item).size()
+                : IteratorUtils.count(IteratorUtils.asIterator(item));
     }
 
     @Override

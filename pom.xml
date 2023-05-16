@@ -154,7 +154,7 @@ limitations under the License.
         <antlr4.version>4.9.1</antlr4.version>
         <caffeine.version>2.3.1</caffeine.version>
         <commons.collections.version>3.2.2</commons.collections.version>
-        <commons.configuration.version>2.8.0</commons.configuration.version>
+        <commons.configuration.version>2.9.0</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.8.0</commons.io.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
@@ -177,7 +177,7 @@ limitations under the License.
         <mockito.version>4.10.0</mockito.version>
         <netty.version>4.1.86.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <snakeyaml.version>1.32</snakeyaml.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.2.1</spark.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -349,6 +349,55 @@ limitations under the License.
                             <value>${project.version}</value>
                             <regex>.*-.*</regex>
                             <replacement>true</replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- sets the true.when.is.prerelease.version property to true if a prerelease version was used,
+                            empty string otherwise -->
+                        <id>build-helper-regex-is-prerelease-version2</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>true.when.is.prerelease.version</name>
+                            <value>${only.when.is.prerelease.version}</value>
+                            <regex>${project.version}</regex>
+                            <replacement></replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- sets the docker.tags.majorVersion.minorVersion property to
+                            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion} unless a prerelease version was,
+                            used. If a prerelease is used, an empty string is assigned instead. -->
+                        <id>build-helper-regex-set-docker-version-tag</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>docker.tags.majorVersion.minorVersion</name>
+                            <value>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}${true.when.is.prerelease.version}</value>
+                            <regex>.*true</regex>
+                            <replacement></replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- sets the docker.tags.latest property to "latest" unless a prerelease version was,
+                            used. If a prerelease is used, an empty string is assigned instead. -->
+                        <id>build-helper-regex-set-docker-latest-tag</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>docker.tags.latest</name>
+                            <value>latest${true.when.is.prerelease.version}</value>
+                            <regex>.*true</regex>
+                            <replacement></replacement>
                             <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
                     </execution>
@@ -619,7 +668,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.4.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -627,9 +676,9 @@ limitations under the License.
                     <version>3.2.0</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>1.4.13</version>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.42.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -823,7 +872,6 @@ limitations under the License.
     </dependencyManagement>
 
     <profiles>
-
         <profile>
             <id>jdk11</id>
             <activation>

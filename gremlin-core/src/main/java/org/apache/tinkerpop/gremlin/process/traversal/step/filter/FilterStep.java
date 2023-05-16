@@ -41,10 +41,11 @@ public abstract class FilterStep<S> extends AbstractStep<S, S> {
                 if (this.filter(traverser))
                     return traverser;
             } catch (GremlinTypeErrorException ex) {
-                if (this instanceof BinaryReductionStep || getTraversal().isRoot()) {
+                if (this instanceof BinaryReductionStep || getTraversal().isRoot() || !(getTraversal().getParent() instanceof FilterStep)) {
                     /*
-                     * Either we are at a known reduction point (TraversalFilterStep, WhereTraversalStep), or we
-                     * are at the top level of the query. In either of these cases we do a binary reduction from
+                     * Either we are at a known reduction point (TraversalFilterStep, WhereTraversalStep), we
+                     * are at the top level of the query, or our parent query is not a FilterStep and thus cannot handle
+                     * a GremlinTypeErrorException. In any of these cases we do a binary reduction from
                      * ERROR -> FALSE and filter the solution quietly.
                      */
                 } else {

@@ -983,7 +983,6 @@ func TestConnection(t *testing.T) {
 				})
 			assert.Nil(t, err)
 			assert.NotNil(t, remote)
-			defer remote.Close()
 
 			session1, _ := remote.CreateSession()
 			assert.NotNil(t, session1.client.session)
@@ -995,6 +994,9 @@ func TestConnection(t *testing.T) {
 			session3, _ := remote.CreateSession()
 			assert.NotNil(t, session3.client.session)
 			assert.Equal(t, 3, len(remote.spawnedSessions))
+
+			remote.Close()
+			assert.Equal(t, 0, len(remote.spawnedSessions))
 		})
 
 		t.Run("Test session failures", func(t *testing.T) {

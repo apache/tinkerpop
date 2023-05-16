@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -71,46 +72,6 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
     @Override
     protected Set getAllowedTokens() {
         return allowedTokens;
-    }
-
-    /**
-     * Translate the Map into a g.V() traversal against the supplied graph. Graph providers will presumably optimize
-     * this traversal to use whatever indices are present and appropriate for efficiency.
-     *
-     * Callers are responsible for closing this iterator when finished.
-     */
-    public static CloseableIterator<Vertex> searchVertices(final Graph graph, final Map search) {
-        if (search == null)
-            return CloseableIterator.empty();
-
-        final Object id = search.get(T.id);
-        final String label = (String) search.get(T.label);
-
-        GraphTraversal t = id != null ? graph.traversal().V(id) : graph.traversal().V();
-
-        if (label != null)
-            t = t.hasLabel(label);
-
-        // add property constraints
-        for (final Map.Entry e : ((Map<?,?>) search).entrySet()) {
-            final Object k = e.getKey();
-            if (!(k instanceof String)) continue;
-            t = t.has((String) k, e.getValue());
-        }
-
-        // this should auto-close the underlying traversal
-        return CloseableIterator.of(t);
-    }
-
-    /**
-     * Translate the Map into search criteria. Default implementation is to translate the Map into a g.V() traversal.
-     * Graph providers will presumably optimize this traversal to use whatever indices are present and appropriate for
-     * efficiency.
-     *
-     * Callers are responsible for closing this iterator when finished.
-     */
-    protected CloseableIterator<Vertex> searchVertices(final Map search) {
-        return searchVertices(getGraph(), search);
     }
 
     @Override
@@ -192,9 +153,12 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
 
         final Map onCreateMap = materializeMap(traverser, onCreateTraversal);
         // null result from onCreateTraversal - use main mergeMap argument
-        if (onCreateMap == null)
+        if (onCreateMap == null || onCreateMap.size() == 0)
             return mergeMap;
         validateMapInput(onCreateMap, false);
+
+        if (mergeMap == null || mergeMap.size() == 0)
+            return onCreateMap;
 
         /*
          * Now we need to merge the two maps - onCreate should inherit traits from mergeMap, and it is not allowed to
@@ -202,9 +166,12 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
          */
 
         validateNoOverrides(mergeMap, onCreateMap);
-        onCreateMap.putAll(mergeMap);
 
-        return onCreateMap;
+        final Map<Object, Object> combinedMap = new HashMap<>(onCreateMap.size() + mergeMap.size());
+        combinedMap.putAll(onCreateMap);
+        combinedMap.putAll(mergeMap);
+
+        return combinedMap;
     }
 
 }

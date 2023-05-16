@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -349,7 +350,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
 
         final Map onCreateMap = materializeMap(traverser, onCreateTraversal);
         // null result from onCreateTraversal - use main mergeMap argument
-        if (onCreateMap == null)
+        if (onCreateMap == null || onCreateMap.size() == 0)
             return mergeMap;
         validateMapInput(onCreateMap, false);
 
@@ -367,15 +368,17 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
          * Use the resolved version here so that onCreateMap picks up fully resolved vertex arguments from the main
          * merge argument and so we don't re-resolve them below.
          */
-        onCreateMap.putAll(mergeMap);
+        final Map<Object, Object> combinedMap = new HashMap<>(onCreateMap.size() + mergeMap.size());
+        combinedMap.putAll(onCreateMap);
+        combinedMap.putAll(mergeMap);
 
         /*
          * Do any final vertex resolution, for example if Merge tokens were used in option(onCreate) but not in the main
          * merge argument.
          */
-        resolveVertices(onCreateMap, traverser);
+        resolveVertices(combinedMap, traverser);
 
-        return onCreateMap;
+        return combinedMap;
     }
 
     /*
@@ -388,7 +391,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             return (Vertex) o;
         else if (o instanceof Map) {
             final Map search = (Map) o;
-            final Vertex v = IteratorUtils.findFirst(MergeVertexStep.searchVertices(getGraph(), search)).get();
+            final Vertex v = IteratorUtils.findFirst(searchVertices(search)).get();
             return tryAttachVertex(v);
         }
         throw new IllegalArgumentException(

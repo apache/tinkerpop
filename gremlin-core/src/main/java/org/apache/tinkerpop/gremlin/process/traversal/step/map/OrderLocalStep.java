@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -78,6 +80,10 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
             filteredAndModulated.stream().map(Pair::getValue0).map(entry -> (Map.Entry) entry).
                     forEach(entry -> sortedMap.put(entry.getKey(), entry.getValue()));
             return (S) sortedMap;
+        } else if (start != null && start.getClass().isArray()) {
+            final Collection<S> original = (Collection<S>) IteratorUtils.asList(start);
+            final List<Pair<S, List<C>>> filteredAndModulated = filterAndModulate(original);
+            return (S) filteredAndModulated.stream().map(Pair::getValue0).collect(Collectors.toList());
         }
 
         return start;

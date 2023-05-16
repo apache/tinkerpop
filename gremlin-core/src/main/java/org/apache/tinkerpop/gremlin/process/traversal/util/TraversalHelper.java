@@ -290,6 +290,29 @@ public final class TraversalHelper {
         return list;
     }
 
+    /**
+     * Get steps of the specified classes throughout the traversal.
+     */
+    public static List<Step<?,?>> getStepsOfAssignableClassRecursively(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
+        final List<Step<?,?>> list = new ArrayList<>();
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            for (Class<?> stepClass : stepClasses) {
+                if (stepClass.isAssignableFrom(step.getClass()))
+                    list.add(step);
+            }
+
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(localChild, stepClasses));
+                }
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(globalChild, stepClasses));
+                }
+            }
+        }
+        return list;
+    }
+
     public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {
         while (!(traversal.isRoot())) {
             if (traversal.getParent().getLocalChildren().contains(traversal))
@@ -465,7 +488,19 @@ public final class TraversalHelper {
      * @param traversal the root traversal to start application
      */
     public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal) {
-        consumer.accept(traversal);
+        applyTraversalRecursively(consumer, traversal, false);
+    }
+
+    /**
+     * Apply the provider {@link Consumer} function to the provided {@link Traversal} and all of its children.
+     *
+     * @param consumer  the function to apply to the each traversal in the tree
+     * @param traversal the root traversal to start application
+     */
+    public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal,
+                                                 final boolean applyToChildrenOnly) {
+        if (!applyToChildrenOnly)
+            consumer.accept(traversal);
 
         // we get accused of concurrentmodification if we try a for(Iterable)
         final List<Step> steps = traversal.getSteps();

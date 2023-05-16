@@ -160,3 +160,18 @@ Feature: Step - math()
       | d[58.0].d |
       | d[54.0].d |
       | d[70.0].d |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_VX1X_outE_asXexpectedWeightX_mathXexpectedWeightPlusOneXbyXweightX
+    Given the modern graph
+    And using the parameter v1 defined as "v[marko]"
+    And the traversal of
+      """
+      g.V(v1).outE().as("expectedWeight").math("expectedWeight + 1").by("weight")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1.4].d |
+      | d[1.5].d |
+      | d[2.0].d |

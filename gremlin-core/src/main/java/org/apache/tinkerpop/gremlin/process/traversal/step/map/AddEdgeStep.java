@@ -21,9 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -46,7 +46,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
-        implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
+        implements Writing<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -109,7 +109,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
         if (!(theTo instanceof Vertex))
             throw new IllegalStateException(String.format(
-                    "addE(%s) could not find a Vertex for to() - encountered: %s", edgeLabel,
+                    "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                     null == theTo ? "null" : theTo.getClass().getSimpleName()));
 
         final Object theFrom;
@@ -123,7 +123,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
         if (!(theFrom instanceof Vertex))
             throw new IllegalStateException(String.format(
-                    "addE(%s) could not find a Vertex for from() - encountered: %s", edgeLabel,
+                    "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                     null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
 
         Vertex toVertex = (Vertex) theTo;

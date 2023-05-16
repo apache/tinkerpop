@@ -234,28 +234,31 @@ describe('Traversal', function () {
         });
       }
     });
-    it('should commit a simple transaction', function () {
+    it('should commit a simple transaction', async function () {
       const g = traversal().withRemote(txConnection);
       const tx = g.tx();
       const gtx = tx.begin();
-      return Promise.all([
+      await Promise.all([
         gtx.addV("person").property("name", "jorge").iterate(),
         gtx.addV("person").property("name", "josh").iterate()
-      ]).then(() => {
-        return gtx.V().count().next();
-      }).then(function (r) {
-        // assert within the transaction....
-        assert.ok(r);
-        assert.strictEqual(r.value, 2);
+      ]);
 
-        // now commit changes to test outside of the transaction
-        return tx.commit();
-      }).then(() => {
-        return g.V().count().next();
-      }).then(function (r) {
-        assert.ok(r);
-        assert.strictEqual(r.value, 2);
-      });
+      let r = await gtx.V().count().next();
+      // assert within the transaction....
+      assert.ok(r);
+      assert.strictEqual(r.value, 2);
+
+      // now commit changes to test outside of the transaction
+      await tx.commit();
+
+      r = await g.V().count().next();
+      assert.ok(r);
+      assert.strictEqual(r.value, 2);
+      // connection closing async, so need to wait
+      while (tx._sessionBasedConnection.isOpen) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.ok(!tx._sessionBasedConnection.isOpen);
     });
   });
   describe('support remote transactions - rollback', function() {
@@ -274,28 +277,31 @@ describe('Traversal', function () {
         });
       }
     });
-    it('should rollback a simple transaction', function() {
+    it('should rollback a simple transaction', async function() {
       const g = traversal().withRemote(txConnection);
       const tx = g.tx();
       const gtx = tx.begin();
-      return Promise.all([
+      await Promise.all([
         gtx.addV("person").property("name", "jorge").iterate(),
         gtx.addV("person").property("name", "josh").iterate()
-      ]).then(() => {
-        return gtx.V().count().next();
-      }).then(function (r) {
-        // assert within the transaction....
-        assert.ok(r);
-        assert.strictEqual(r.value, 2);
+      ]);
 
-        // now rollback changes to test outside of the transaction
-        return tx.rollback();
-      }).then(() => {
-        return g.V().count().next();
-      }).then(function (r) {
-        assert.ok(r);
-        assert.strictEqual(r.value, 0);
-      });
+      let r = await gtx.V().count().next();
+      // assert within the transaction....
+      assert.ok(r);
+      assert.strictEqual(r.value, 2);
+
+      // now rollback changes to test outside of the transaction
+      await tx.rollback();
+
+      r = await g.V().count().next();
+      assert.ok(r);
+      assert.strictEqual(r.value, 0);
+      // connection closing async, so need to wait
+      while (tx._sessionBasedConnection.isOpen) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.ok(!tx._sessionBasedConnection.isOpen);
     });
   });
 });

@@ -187,8 +187,8 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
             "tan", "tanh"
     };
 
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\b(?!" +
-            String.join("|", FUNCTIONS) + "|([0-9]+))([a-zA-Z_][a-zA-Z0-9_]*)\\b");
+    private static final Pattern VARIABLE_PATTERN =  Pattern.compile("\\b(?![0-9]+|\\b(?:" +
+            String.join("|", FUNCTIONS) + ")\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\b");
 
     protected static final Set<String> getVariables(final String equation) {
         final Matcher matcher = VARIABLE_PATTERN.matcher(equation);

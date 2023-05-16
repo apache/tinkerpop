@@ -46,12 +46,12 @@ public class WsUserAgentHandler extends ChannelInboundHandlerAdapter {
     public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(USER_AGENT_HEADER_NAME);
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, java.lang.Object evt){
-        if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete){
+    public void userEventTriggered(final ChannelHandlerContext ctx, java.lang.Object evt) {
+        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
             final HttpHeaders requestHeaders = ((WebSocketServerProtocolHandler.HandshakeComplete) evt).requestHeaders();
 
-            if(requestHeaders.contains(USER_AGENT_HEADER_NAME)){
-                String userAgent = requestHeaders.get(USER_AGENT_HEADER_NAME);
+            if (requestHeaders.contains(USER_AGENT_HEADER_NAME)){
+                final String userAgent = requestHeaders.get(USER_AGENT_HEADER_NAME);
 
                 ctx.channel().attr(USER_AGENT_ATTR_KEY).set(userAgent);
                 logger.debug("New Connection on channel [{}] with user agent [{}]", ctx.channel().id().asShortText(), userAgent);
@@ -62,12 +62,11 @@ public class WsUserAgentHandler extends ChannelInboundHandlerAdapter {
                 // large number of unique user agents. For this reason the user agent is replaced with "other"
                 // for the purpose of metrics if this cap is ever exceeded and the user agent is not already being tracked.
                 if(MetricManager.INSTANCE.getCounterSize() > MAX_USER_AGENT_METRICS &&
-                    !MetricManager.INSTANCE.contains(metricName)){
+                    !MetricManager.INSTANCE.contains(metricName)) {
                     metricName = MetricRegistry.name(GremlinServer.class, "user-agent", "other");
                 }
                 MetricManager.INSTANCE.getCounter(metricName).inc();
-            }
-            else{
+            } else {
                 logger.debug("New Connection on channel [{}] with no user agent provided", ctx.channel().id().asShortText());
             }
         }

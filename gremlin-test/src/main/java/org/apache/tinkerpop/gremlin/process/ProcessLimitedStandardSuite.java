@@ -90,6 +90,8 @@ public class ProcessLimitedStandardSuite extends AbstractGremlinSuite {
             IncidentToAdjacentStrategyProcessTest.class,
             EarlyLimitStrategyProcessTest.class,
 
+            // semantics
+            TernaryBooleanLogicsTest.class,
     };
 
     /**

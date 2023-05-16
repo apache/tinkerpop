@@ -36,14 +36,6 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
         return instance;
     }
 
-    /**
-     * @deprecated As of release 3.5.2, replaced by {@link #instance()}.
-     */
-    @Deprecated
-    public static TraversalPredicateVisitor getInstance() {
-        return instance();
-    }
-
     private TraversalPredicateVisitor() {}
 
     /**

@@ -357,7 +357,7 @@ configuration step more closely.
 === WithStrategies Configuration
 
 The `withStrategies()` configuration allows inclusion of additional `TraversalStrategy` instances to be applied to
-any traversals spawned from the configured source. Please see the <<traversal-strategy,Traversal Strategy Section>>
+any traversals spawned from the configured source. Please see the <<traversalstrategy,Traversal Strategy Section>>
 for more details on how this configuration works.
 
 [[configuration-steps-withoutstrategies]]
@@ -1260,7 +1260,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `element()` step is a no-argument step that traverses from a `Property` to the `Element` that owns it.
 
-[gremlin-groovy]
+[gremlin-groovy,theCrew]
 ----
 g.V().properties().element() <1>
 g.E().properties().element() <2>
@@ -2005,7 +2005,7 @@ g.V().as('person').
 <2> For every person, get their two most historic locations.
 
 The two traversals above look nearly identical save the inclusion of `local()` which wraps a section of the traversal
-in a object-local traversal. As such, the `order().by()` and the `limit()` refer to a particular object, not to the
+in an object-local traversal. As such, the `order().by()` and the `limit()` refer to a particular object, not to the
 stream as a whole.
 
 Local Step is quite similar in functionality to <<general-steps,Flat Map Step>> where it can often be confused.
@@ -2018,6 +2018,20 @@ optimizations (i.e. when writing `TraversalStrategy` implementations. As another
 g.V().both().barrier().flatMap(groupCount().by("name"))
 g.V().both().barrier().local(groupCount().by("name"))
 ----
+
+Use of `local()` is often a mistake. This is especially true when its argument contains a reducing step. For example,
+let's say the requirement was to count the number of properties per `Vertex` in:
+
+[gremlin-groovy,modern]
+----
+g.V().both().local(properties('name','age').count())  <1>
+g.V().both().map(properties('name','age').count()) <2>
+----
+
+<1> The output here seems impossible because no single vertex in the "modern" graph can have more than two properties
+given the "name" and "age" filters, but because the counting is happening object-local the counting is occurring unique
+to each object rather than each global traverser.
+<2> Replacing `local()` with `map()` returns the result desired by the requirement.
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
@@ -2506,8 +2520,8 @@ vertices in the main merge argument and in the `onCreate` argument:
 g.mergeV([(T.id):1,(T.label):'Dog',name:'Toby']).as('Toby').
   mergeV([(T.id):2,(T.label):'Dog',name:'Brandy']).as('Brandy').
   mergeE([(T.label):'Sibling',created:'2022-02-07',(from):Merge.outV,(to):Merge.inV]).
-  option(Merge.outV, select('Toby')).
-  option(Merge.inV, select('Brandy'))
+    option(Merge.outV, select('Toby')).
+    option(Merge.inV, select('Brandy'))
 g.E().elementMap()
 ----
 

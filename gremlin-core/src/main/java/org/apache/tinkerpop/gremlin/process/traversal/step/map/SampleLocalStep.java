@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Seedable;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,9 +61,10 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements See
             return mapMap((Map) start);
         } else if (start instanceof Collection) {
             return mapCollection((Collection) start);
-        } else {
-            return start;
+        } else if (start != null && start.getClass().isArray()) {
+            return mapCollection(IteratorUtils.asList(start));
         }
+        return start;
     }
 
     private S mapCollection(final Collection collection) {
