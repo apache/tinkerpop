@@ -65,7 +65,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack(final Object v1Id);
 
-    public abstract Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
+    public abstract Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX900X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
 
     public abstract Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack();
 
@@ -136,7 +136,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
-        final Traversal<Vertex, BigDecimal> traversal = get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
+        final Traversal<Vertex, BigDecimal> traversal = get_g_withSackXBigInteger_TEN_powX900X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
         printTraversalForm(traversal);
         final BigDecimal half = BigDecimal.ONE.divide(BigDecimal.ONE.add(BigDecimal.ONE));
         assertTrue(traversal.hasNext());
@@ -200,8 +200,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
-            return g.withSack(BigInteger.TEN.pow(1000), Operator.assign).V().local(out("knows").barrier(normSack)).in("knows").barrier().sack();
+        public Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX900X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
+            return g.withSack(BigInteger.TEN.pow(900), Operator.assign).V().local(out("knows").barrier(normSack)).in("knows").barrier().sack();
         }
 
         @Override
