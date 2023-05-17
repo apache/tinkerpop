@@ -93,7 +93,7 @@ Set `isDeleted` flag in ElementContainer  in `vertices`.
 To reduce lock time double-checked locking used.
 1. Make list of all affected elements sorted by transaction#. The reason is to reduce the lock time.
 2. If any has a newer version, then fail.
-3. Try to lock all Vertices/Edges changed in transaction. For vertex delete operation also need to lock adjacent edges. Lock is for write operations only. If some Vertex/Edge is already locked then fail.
+3. Try to lock all Vertices/Edges changed in transaction. For vertex/edge delete operation also need to lock adjacent edges/vertices. Lock is for write operations only. If some Vertex/Edge is already locked then fail.
 4. Check versions again, fail if some element is updated. Code: `Vertices.get(id).current()).currentVersion() !=Vertices.get(id).transactionUpdatedValue().currentVersion()`
 5. For all Elements replace current version with value updated in transaction (or remove Element on Delete operation). Cleanup `transactionUpdatedValue`.
 6. Change version of all updated Elements.
@@ -113,5 +113,25 @@ Add transactionWatchdog which will rollback locked/expired transactions. Similar
 1. If the transaction was open longer than some preconfigured (default 10-20 minutes?) time.
 2. If the transaction start commit, but not finish (default 1-2 seconds?).
 
+===== Examples of conflict resolution
+* tx1 adds a property to v1, tx2 deletes v1 (same for edges)
+transaction that executed first will set the lock on v1, second transaction will fail on one of steps 2-4.
+* tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
+If tx1 try to commit first: tx1 add edge, tx2 delete v1 AND all edges including newly added.
+If tx2 try to commit first: tx2 deletes v1 or v2, tx1 will fail on step 1.
+* tx1 changes a Cardinality.single property to x, tx2 changes the same Cardinality.single property to y
+Last transaction will fail on step 2 or 4.
+* tx1 adds a new vertex v1, tx2 adds the same vertex (same for edges)
+Last transaction will fail on step 2 or 4 or 5.
+* tx1 removes vertex v1, tx2 removes the same vertex (same for edges)
+Both transactions will be successful. 
+* tx1 adds vertex v1, tx2 removes vertex v1 (same for edges)
+If v1 exists before and tx1 commit first: tx1 fail on step 5
+If v1 exists before and tx2 commit first: tx1 fail on step 2 or 4
+If v1 not exists before and tx1 commit first: tx1 ok; tx2 depends on commit time, ok when tx1 finished and fail on step 2 or 4 otherwise.
+If v1 not exists before and tx2 commit first: tx2 ok, tx1 ok
+
+
 ==== Additional changes
 Split TinkerFactory into AbstractTinkerFactory and TinkerFactory, add TinkerTransactionGraphFactory.
+Transfer responsibility of graph update operations from static TinkerHelper to TinkerGraph/TinkerTransactionGraph.
