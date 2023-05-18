@@ -28,6 +28,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
 * Changed `Gremlin.version()` to read from the more specificly named `tinkerpop-version` attribute.
 * Added warning on vertex property cardinality mismatch when reading GraphML.
+* Added a `union()` start step.
 * Bumped to `ws` 8.x for `gremlin-javascript`.
 * Added support for mid-traversal `E()`-steps to Gremlin core and GLV's.
 * Added nullable annotations to Gremlin.NET.

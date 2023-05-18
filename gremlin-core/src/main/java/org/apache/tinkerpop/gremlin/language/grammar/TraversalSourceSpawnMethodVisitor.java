@@ -33,10 +33,14 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     protected GraphTraversal graphTraversal;
     protected final DefaultGremlinBaseVisitor<Traversal> anonymousVisitor;
 
+    protected final GremlinAntlrToJava antlr;
+
     public TraversalSourceSpawnMethodVisitor(final GraphTraversalSource traversalSource,
-                                             final DefaultGremlinBaseVisitor<Traversal> anonymousVisitor) {
+                                             final DefaultGremlinBaseVisitor<Traversal> anonymousVisitor,
+                                             final GremlinAntlrToJava antlr) {
         this.traversalSource = traversalSource;
         this.anonymousVisitor = anonymousVisitor;
+        this.antlr = antlr;
     }
 
     /**
@@ -200,4 +204,11 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
                 anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_union(final GremlinParser.TraversalSourceSpawnMethod_unionContext ctx) {
+        return this.traversalSource.union(antlr.tListVisitor.visitNestedTraversalList(ctx.nestedTraversalList()));
+    }
 }

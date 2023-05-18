@@ -523,6 +523,19 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the union step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<TStart, TStart> Union<TStart>(params ITraversal[] unionTraversals)
+        {
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode));
+            var args = new List<object>(unionTraversals.Length);
+            args.AddRange(unionTraversals);
+            traversal.Bytecode.AddStep("union", args.ToArray());
+            return traversal;
+        }
+
     }
     
 #pragma warning restore 1591

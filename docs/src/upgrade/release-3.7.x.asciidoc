@@ -29,6 +29,37 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== union() Start Step
+
+The `union()`-step could only be used mid-traversal after a start step. The typical workaround for this issue was to
+use `inject()` with a dummy value to start the traversal and then utilize `union()`:
+
+[source,text]
+----
+gremlin> g.inject(0).union(V().has('name','vadas'),
+......1>                   V().has('software','name','lop').in('created')).
+......2>   values('name')
+==>vadas
+==>marko
+==>josh
+==>peter
+----
+
+As of this version, `union()` can be used more directly to avoid the workaround:
+
+[source,text]
+----
+gremlin> g.union(V().has('name','vadas'),
+......1>         V().has('software','name','lop').in('created')).
+......2>   values('name')
+==>vadas
+==>marko
+==>josh
+==>peter
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2873[TINKERPOP-2873]
+
 ==== Properties on Elements
 
 ===== Introduction
@@ -43,7 +74,7 @@ If you need to get a property, then this can be explicitly configured with `Halt
 
 [source,java]
 ----
-  g.withComputer().withStrategies(HaltedTraverserFactoryStrategy.detached())
+g.withComputer().withStrategies(HaltedTraverserFactoryStrategy.detached())
 ----
 
 ===== Output comparison for Gremlin Server 3.5/3.6 and 3.7
@@ -52,24 +83,24 @@ Let's take a closer look at a Javascript GLV code example in 3.6 and 3.7:
 
 [source,javascript]
 ----
-  const client = new Client('ws://localhost:8182/gremlin',{traversalSource: 'gmodern'});
-  await client.open();
-  const result = await client.submit('g.V(1)');
-  console.log(JSON.stringify(result.first()));
-  await client.close();
+const client = new Client('ws://localhost:8182/gremlin',{traversalSource: 'gmodern'});
+await client.open();
+const result = await client.submit('g.V(1)');
+console.log(JSON.stringify(result.first()));
+await client.close();
 ----
 
 The result will be different depending on the version of Gremlin Server.
 For 3.5/3.6:
 [source,json]
 ----
-  {"id":1,"label":"person"}
+{"id":1,"label":"person"}
 ----
 
 For 3.7:
 [source,json]
 ----
-  {"id":1,"label":"person","properties":{"name":[{"id":0,"label":"name","value":"marko","key":"name"}],"age":[{"id":1,"label":"age","value":29,"key":"age"}]}}
+{"id":1,"label":"person","properties":{"name":[{"id":0,"label":"name","value":"marko","key":"name"}],"age":[{"id":1,"label":"age","value":29,"key":"age"}]}}
 ---- 
 
 ===== Enabling the previous behavior
@@ -95,7 +126,6 @@ g.With("materializeProperties", "tokens").V(1).Next()
 ReferenceElement-type objects are no longer returned - you get a DetachedElement from remote requests. If you have not been implementing the `Element` interfaces then you will need to update the code to use interfaces like `Vertex` and `Edge`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
-
 
 ==== Gremlin.NET: Nullable Annotations
 

@@ -243,6 +243,11 @@ class GraphTraversalSource(object):
         traversal.bytecode.add_step("call", *args)
         return traversal
 
+    def union(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("union", *args)
+        return traversal
+
 
 class GraphTraversal(Traversal):
     def __init__(self, graph, traversal_strategies, bytecode):

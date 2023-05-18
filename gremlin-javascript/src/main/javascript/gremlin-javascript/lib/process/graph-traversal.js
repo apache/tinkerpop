@@ -337,6 +337,16 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('call', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
+
+  /**
+   * union GraphTraversalSource method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  union(...args) {
+    const b = new Bytecode(this.bytecode).addStep('union', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
 }
 
 /**
