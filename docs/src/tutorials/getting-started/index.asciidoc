@@ -614,6 +614,12 @@ v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
+[source,go]
+----
+v1, err := g.AddV("person").Property("name", "marko").Next()
+v2, err := g.AddV("person").Property("name", "stephen").Next()
+g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
+----
 
 === Conclusion
 
