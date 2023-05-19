@@ -60,7 +60,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_whereXinXknowsX_outXcreatedX_count_is_0XX_name();
 
-    public abstract Traversal<Vertex, Long> get_g_VX1X_valuesXageX_countXlocalX();
+    public abstract Traversal<Vertex, Long> get_g_VX1X_valuesXageX_countXlocalX(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -145,7 +145,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_valuesXageX_countXlocalX() {
-        final Traversal<Vertex, Long> traversal = get_g_VX1X_valuesXageX_countXlocalX();
+        final Traversal<Vertex, Long> traversal = get_g_VX1X_valuesXageX_countXlocalX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList(1L), traversal);
     }
@@ -198,8 +198,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_VX1X_valuesXageX_countXlocalX() {
-            return g.V(1).values("age").count(Scope.local);
+        public Traversal<Vertex, Long> get_g_VX1X_valuesXageX_countXlocalX(final Object v1Id) {
+            return g.V(v1Id).values("age").count(Scope.local);
         };
     }
 }
