@@ -32,7 +32,7 @@ def main():
     #
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
-    g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
+    g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
 
     # add some data - be sure to use a terminating step like iterate() so that the traversal
     # "executes". iterate() does not return any data and is used to just generate side-effects
