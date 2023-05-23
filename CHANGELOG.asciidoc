@@ -48,6 +48,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Removed deprecated `getInstance()` method for grammar `Visitor` implementations.
 * Bumped Groovy to 4.0.9.
 * Bumped GMavenPlus to 2.1.0.
+* Bumped Spark to 3.3.2.
 
 == TinkerPop 3.6.0 (Tinkerheart)
 
