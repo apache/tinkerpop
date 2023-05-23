@@ -103,9 +103,9 @@ public final class TinkerGraph implements Graph {
     protected TinkerIndex<TinkerVertex> vertexIndex = null;
     protected TinkerIndex<TinkerEdge> edgeIndex = null;
 
-    protected final IdManager<?> vertexIdManager;
-    protected final IdManager<?> edgeIdManager;
-    protected final IdManager<?> vertexPropertyIdManager;
+    protected IdManager<?> vertexIdManager;
+    protected IdManager<?> edgeIdManager;
+    protected IdManager<?> vertexPropertyIdManager;
     protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
     protected final boolean allowNullPropertyValues;
 

@@ -38,10 +38,6 @@ globals << [hook : [
     allowSetOfIdManager = { graph, idManagerFieldName, idManager ->
         java.lang.reflect.Field idManagerField = graph.class.getDeclaredField(idManagerFieldName)
         idManagerField.setAccessible(true)
-        java.lang.reflect.Field modifiersField = java.lang.reflect.Field.class.getDeclaredField("modifiers")
-        modifiersField.setAccessible(true)
-        modifiersField.setInt(idManagerField, modifiersField.getModifiers() & ~java.lang.reflect.Modifier.FINAL)
-
         idManagerField.set(graph, idManager)
     }
 

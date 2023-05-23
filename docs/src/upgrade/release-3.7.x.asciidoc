@@ -146,6 +146,24 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819]
 distributions. Any app which makes use of both `gremlin-driver` and `gremlin-server` will now need to directly
 include both modules.
 
+==== Building and Running with JDK 17
+
+You can now run TinkerPop with Java 17. Be advised that there are some issues with reflection and so you may need to
+either --add-opens or --add-exports certain modules to enable it to work with Java 17. This mostly affects the Kryo
+serialization library which is used with OLAP. If you use OLTP, then you may not need to add any of these options to
+the JVM. The following are only examples used by TinkerPop's automated tests and are placed here for convenience.
+
+    --add-opens=java.base/java.io=ALL-UNNAMED
+    --add-opens=java.base/java.nio=ALL-UNNAMED
+    --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+    --add-opens=java.base/java.lang=ALL-UNNAMED
+    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+    --add-opens=java.base/java.util=ALL-UNNAMED
+    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+    --add-opens=java.base/java.net=ALL-UNNAMED
+
 === Upgrading for Providers
 
 ==== Graph Driver Providers
