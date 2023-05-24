@@ -146,7 +146,7 @@ class Translator:
                 elif p == WithOptions.tokens:
                     script += 'WithOptions.tokens'
                     with_opts = True
-                elif type(p) == str:
+                elif isinstance(p, str):
                     script += f'\'{p}\''
                 elif type(p) == bool:
                     script += 'true' if p else 'false'
