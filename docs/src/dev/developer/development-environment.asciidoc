@@ -217,6 +217,15 @@ failed`. It often helps in this case to delete the directories for the dependenc
 in the `.m2` (`~/.m2/`) and in the `grapes` (`~/.groovy/grapes/`) cache. E.g., if the error is about
 `asm#asm;3.2!asm.jar`, then remove the `asm/asm` sub directory in both directories.
 
+NOTE: Unexpected failures with OLAP often point to a jar conflict that arises in scenarios where Hadoop or Spark
+dependencies (or other dependencies for that matter) are modified and conflict. It is not picked up by the enforcer
+plugin because the inconsistency arises through plugin installation in Gremlin Console at document generation time.
+Making adjustments to the various paths by way of the `<manifestEntries>` on the jar given the functionality provided
+by the `DependencyGrabber` class which allows you to manipulate (typically deleting conflicting files from `/lib` and
+`/plugin`) plugin loading will usually resolve it, though it could also be a more general environmental problem with
+Spark or Hadoop. The easiest way to see the error is to simply run the examples in the Gremlin Console which more
+plainly displays the error than the failure of the documentation generation process.
+
 To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:
 

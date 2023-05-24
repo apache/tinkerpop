@@ -352,13 +352,6 @@ limitations under the License.
                             <Gremlin-Plugin-Dependencies>
                                 org.apache.hadoop:hadoop-client:${hadoop.version};org.apache.hadoop:hadoop-yarn-server-web-proxy:${hadoop.version};org.apache.spark:spark-yarn_2.12:${spark.version}
                             </Gremlin-Plugin-Dependencies>
-                            <!-- initialization failures for using jackson after 2.12.* and hadoop pulls these in -->
-                            <Gremlin-Plugin-Paths>
-                                jackson-annotations-2.13.5.jar=;jackson-databind-2.13.5.jar=;jackson-core-2.13.5.jar=
-                            </Gremlin-Plugin-Paths>
-                            <Gremlin-Lib-Paths>
-                                jackson-annotations-2.13.5.jar=;jackson-databind-2.13.5.jar=;jackson-core-2.13.5.jar=
-                            </Gremlin-Lib-Paths>
                         </manifestEntries>
                     </archive>
                 </configuration>
