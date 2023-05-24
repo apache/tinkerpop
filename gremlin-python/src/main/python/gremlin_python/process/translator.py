@@ -133,7 +133,7 @@ class Translator:
                   script += f'WithOptions.{self.options[p]}'
                 elif type(p) == Bytecode:
                     script += self.translate(p, True)
-                elif type(p) == P:
+                elif isinstance(p, P):
                     script += self.process_predicate(p)
                 elif type(p) in [Cardinality, Pop, Operator]:
                     tmp = str(p)
