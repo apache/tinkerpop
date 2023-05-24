@@ -360,14 +360,14 @@ class TestTraversalStrategies(object):
                      "g.V().has('p1',endingWith('foo'))"])
 
         # 101
-        tests.append([g.V().has("p1", containing("foo")),
-                     "g.V().has('p1',containing('foo'))"])
+        class SuperStr(str):
+            pass
+        tests.append([g.V(SuperStr("foo_id")),
+                     "g.V('foo_id')"])
 
         # 102
-        class TestStr(str):
-            pass
-        tests.append([g.V(TestStr("foo_id")),
-                     "g.V('foo_id')"])
+        tests.append([g.V().has("p1", containing(SuperStr("foo"))),
+                     "g.V().has('p1',containing('foo'))"])
 
         tlr = Translator().of('g')
 
