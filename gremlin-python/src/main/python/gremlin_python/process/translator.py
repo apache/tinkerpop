@@ -67,7 +67,7 @@ class Translator:
     # Do any needed special processing for the representation
     # of strings and dates.
     def fixup(self, v):
-        if type(v) == str:
+        if isinstance(v, str):
             return f'\'{v}\''
         elif type(v) == datetime:
             return self.process_date(v)
