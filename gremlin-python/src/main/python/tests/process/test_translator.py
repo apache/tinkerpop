@@ -351,6 +351,24 @@ class TestTraversalStrategies(object):
         tests.append([g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name','peter')),
                      "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
 
+        # 99
+        tests.append([g.V().has("p1", starting_with("foo")),
+                     "g.V().has('p1',startingWith('foo'))"])
+
+        # 100
+        tests.append([g.V().has("p1", ending_with("foo")),
+                     "g.V().has('p1',endingWith('foo'))"])
+
+        # 101
+        tests.append([g.V().has("p1", containing("foo")),
+                     "g.V().has('p1',containing('foo'))"])
+
+        # 102
+        class TestStr(str):
+            pass
+        tests.append([g.V(TestStr("foo_id")),
+                     "g.V('foo_id')"])
+
         tlr = Translator().of('g')
 
         for t in range(len(tests)):
