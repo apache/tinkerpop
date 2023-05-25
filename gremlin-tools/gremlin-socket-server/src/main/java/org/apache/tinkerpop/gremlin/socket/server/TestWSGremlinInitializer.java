@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.socket.server;
 
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
@@ -63,6 +64,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
      */
     private static AbstractMessageSerializer SERIALIZER;
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public TestWSGremlinInitializer(final SocketServerSettings settings) {
         this.settings = settings;
@@ -131,7 +133,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 final ResponseMessage responseMessage = ResponseMessage.build(msg)
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(new RuntimeException()).create();
-                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(SERIALIZER.serializeResponseAsBinary(responseMessage, ByteBufAllocator.DEFAULT)));
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(SERIALIZER.serializeResponseAsBinary(responseMessage, allocator)));
             } else if (msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID) || msg.getRequestId().equals(settings.CLOSE_CONNECTION_REQUEST_ID_2)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
@@ -159,7 +161,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
             final List<Vertex> t = new ArrayList<>(1);
             t.add(g.V().limit(1).next());
 
-            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(t).create(), ByteBufAllocator.DEFAULT);
+            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(t).create(), allocator);
         }
 
         /**
@@ -170,7 +172,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
             //Need to package message in a list of size 1 as some GLV's serializers require all messages to be in a list
             final List<String> messageList = new ArrayList<>(1);
             messageList.add(message);
-            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(messageList).create(), ByteBufAllocator.DEFAULT);
+            return SERIALIZER.serializeResponseAsBinary(ResponseMessage.build(requestID).result(messageList).create(), allocator);
         }
 
         /**

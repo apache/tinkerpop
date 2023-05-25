@@ -175,6 +175,43 @@ public class GraphBinaryMessageSerializerV1Test {
         assertEquals(java.awt.Color.RED.toString(), deserialized.getResult().getData());
     }
 
+    @Test
+    public void shouldToStringSerializeAsText() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String,Object> conf = new HashMap<String,Object>() {{
+            put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+        }};
+        serializer.configure(conf, Collections.emptyMap());
+
+        final ResponseMessage messageWithUnexpectedType = ResponseMessage.build(UUID.randomUUID()).
+                result(java.awt.Color.RED).create();
+        final String base64 = serializer.serializeResponseAsString(messageWithUnexpectedType, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(base64);
+
+        assertEquals(java.awt.Color.RED.toString(), deserialized.getResult().getData());
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeRequestAsText() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String,Object> conf = new HashMap<String,Object>() {{
+            put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+        }};
+        serializer.configure(conf, Collections.emptyMap());
+
+        final RequestMessage request = RequestMessage.build("op1")
+                .processor("proc1")
+                .overrideRequestId(UUID.randomUUID())
+                .addArg("arg1", "value1")
+                .create();
+
+        final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
+        final int mimeLen = buffer.readByte();
+        buffer.readBytes(new byte[mimeLen]);
+        final RequestMessage deserialized = serializer.deserializeRequest(buffer);
+        assertThat(request, reflectionEquals(deserialized));
+    }
+
     private static void assertResponseEquals(ResponseMessage expected, ResponseMessage actual) {
         assertEquals(expected.getRequestId(), actual.getRequestId());
         // Status

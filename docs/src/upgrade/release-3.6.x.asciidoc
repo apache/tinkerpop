@@ -29,7 +29,24 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.6.5/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== HTTP Plain Text
 
+A `text/plain` MIME type has been added to the HTTP endpoint to return Gremlin Console formatted results in plain text.
+This format can be helpful for a variety of reasons. Reading JSON formatted results can be difficult sometimes and
+`text/plain` is a more simple, readable representation for when that is helpful.
+
+[source,text]
+----
+$ curl -H "Accept:text/plain" -X POST -d "{\"gremlin\":\"g.V()\"}" "http://localhost:8182"
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2947[TINKERPOP-2947]
 
 == TinkerPop 3.6.4
 
