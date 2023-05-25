@@ -18,6 +18,99 @@
 @StepClassBranch @StepUnion
 Feature: Step - union()
 
+  Scenario: g_unionXX
+    Given the modern graph
+    And the traversal of
+       """
+       g.union()
+       """
+    When iterated to list
+    Then the result should be empty
+
+  # this use of union() is a bit like inject() so just gonna use that tag to ignore
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_unionXconstantX1X_constantX2X_constantX3XX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[2].i"
+    And using the parameter xx3 defined as "d[3].i"
+    And the traversal of
+       """
+       g.union(constant(xx1), constant(xx2), constant(xx3))
+       """
+    When iterated to list
+    Then the result should be unordered
+       | result |
+       | d[1].i |
+       | d[2].i |
+       | d[3].i |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_name
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.V().values("name"))
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+      | vadas  |
+      | lop    |
+      | josh   |
+      | ripple |
+      | peter  |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXVXv1X_VX4XX_name
+    Given the modern graph
+    And using the parameter v1 defined as "v[vadas]"
+    And using the parameter v4 defined as "v[josh]"
+    And the traversal of
+       """
+       g.union(__.V(v1), __.V(v4)).values("name")
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas  |
+      | josh   |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_hasLabelXsoftwareX_V_hasLabelXpersonXX_name
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.V().hasLabel("software"), __.V().hasLabel("person")).values("name")
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+      | vadas  |
+      | lop    |
+      | josh   |
+      | ripple |
+      | peter  |
+
+  Scenario: g_V_unionXconstantX1X_constantX2X_constantX3XX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[2].i"
+    And using the parameter xx3 defined as "d[3].i"
+    And using the parameter v2 defined as "v[vadas]"
+    And the traversal of
+       """
+       g.V(v2).union(constant(xx1), constant(xx2), constant(xx3))
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+      | d[2].i |
+      | d[3].i |
+
   Scenario: g_V_unionXout__inX_name
     Given the modern graph
     And the traversal of

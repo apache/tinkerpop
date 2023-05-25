@@ -102,6 +102,7 @@ traversalSourceSpawnMethod
 	| traversalSourceSpawnMethod_inject
     | traversalSourceSpawnMethod_io
     | traversalSourceSpawnMethod_call
+    | traversalSourceSpawnMethod_union
     ;
 
 traversalSourceSpawnMethod_addE
@@ -147,6 +148,10 @@ traversalSourceSpawnMethod_call
     | 'call' LPAREN stringBasedLiteral COMMA genericLiteralMap RPAREN #traversalSourceSpawnMethod_call_string_map
     | 'call' LPAREN stringBasedLiteral COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_traversal
     | 'call' LPAREN stringBasedLiteral COMMA genericLiteralMap COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_map_traversal
+    ;
+
+traversalSourceSpawnMethod_union
+    : 'union' LPAREN nestedTraversalList RPAREN
     ;
 
 chainedTraversal

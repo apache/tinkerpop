@@ -4277,6 +4277,8 @@ g.V(4).union(
 g.V(4).union(
          __.in().values('age'),
          out().values('lang')).path()
+g.union(V().has('person','name','vadas'),
+        V().has('software','name','lop').in('created'))
 ----
 
 *Additional References*

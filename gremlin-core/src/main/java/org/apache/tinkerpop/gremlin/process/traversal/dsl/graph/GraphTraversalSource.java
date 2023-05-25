@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
@@ -46,6 +47,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -551,6 +553,21 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         final CallStep<S,S> step = null == childTraversal ? new CallStep(traversal, true, service, params) :
                 new CallStep(traversal, true, service, params, childTraversal.asAdmin());
+        return traversal.addStep(step);
+    }
+
+    /**
+     * Merges the results of an arbitrary number of traversals.
+     *
+     * @param unionTraversals the traversals to merge
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#union-step" target="_blank">Reference Documentation - Union Step</a>
+     * @since 3.7.0
+     */
+    public <S> GraphTraversal<S, S> union(final Traversal<?, S>... unionTraversals) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.union, unionTraversals);
+        final GraphTraversal.Admin traversal = new DefaultGraphTraversal(clone);
+        final UnionStep<?, S> step = new UnionStep<>(traversal, true, Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class));
         return traversal.addStep(step);
     }
 
