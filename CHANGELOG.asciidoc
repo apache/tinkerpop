@@ -22,9 +22,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+
 This release also includes changes from <<release-3-5-7, 3.5.7>>.
 
-
+* Added `text/plain` MIME type to the HTTP endpoint to return a Gremlin Console-like representation of the data.
+* Added GraphBinary serialization option to the HTTP endpoint.
 
 [[release-3-6-4]]
 === TinkerPop 3.6.4 (Release Date: May 12, 2023)

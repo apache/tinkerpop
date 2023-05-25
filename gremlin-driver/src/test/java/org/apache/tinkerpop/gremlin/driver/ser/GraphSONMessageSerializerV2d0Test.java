@@ -104,7 +104,7 @@ public class GraphSONMessageSerializerV2d0Test {
 
         final ResponseMessage toSerialize = ResponseMessage.build(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595"))
                 .result(Color.RED).create();
-        final String results = serializer.serializeResponseAsString(toSerialize);
+        final String results = serializer.serializeResponseAsString(toSerialize, allocator);
         final JsonNode json = mapper.readTree(results);
         assertNotNull(json);
         assertThat(json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA).booleanValue(), is(true));
@@ -113,7 +113,7 @@ public class GraphSONMessageSerializerV2d0Test {
     @Test
     public void shouldSerializeToJsonNullResultReturnsNull() throws Exception {
         final ResponseMessage message = ResponseMessage.build(msg).create();
-        final String results = SERIALIZER.serializeResponseAsString(message);
+        final String results = SERIALIZER.serializeResponseAsString(message, allocator);
         final JsonNode json = mapper.readTree(results);
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.path(SerTokens.TOKEN_REQUEST).asText());
@@ -126,7 +126,7 @@ public class GraphSONMessageSerializerV2d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -145,7 +145,7 @@ public class GraphSONMessageSerializerV2d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -166,7 +166,7 @@ public class GraphSONMessageSerializerV2d0Test {
         funList.add(null);
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -190,7 +190,7 @@ public class GraphSONMessageSerializerV2d0Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -217,7 +217,7 @@ public class GraphSONMessageSerializerV2d0Test {
         map.put(v1, 100);
         map.put(d, "test");
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(IteratorUtils.asList(map)).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(IteratorUtils.asList(map)).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -244,7 +244,7 @@ public class GraphSONMessageSerializerV2d0Test {
         e.property("abc", 123);
 
         final Iterable<Edge> iterable = IteratorUtils.list(g.edges());
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create(), allocator);
 
         final JsonNode json = mapper.readTree(results);
 
@@ -277,7 +277,7 @@ public class GraphSONMessageSerializerV2d0Test {
         e.property("abc", 123);
 
         final Iterable<Property<Object>> iterable = IteratorUtils.list(e.properties("abc"));
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create(), allocator);
 
         final JsonNode json = mapper.readTree(results);
 
@@ -310,7 +310,7 @@ public class GraphSONMessageSerializerV2d0Test {
         v.property(VertexProperty.Cardinality.single, "friends", friends);
 
         final Iterable iterable = IteratorUtils.list(g.vertices());
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -351,7 +351,7 @@ public class GraphSONMessageSerializerV2d0Test {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().has("name", "marko").next(), 1000);
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -410,7 +410,7 @@ public class GraphSONMessageSerializerV2d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final String results = SERIALIZER.serializeResponseAsString(response);
+        final String results = SERIALIZER.serializeResponseAsString(response, allocator);
         final ResponseMessage deserialized = SERIALIZER.deserializeResponse(results);
 
         assertEquals(id, deserialized.getRequestId());
@@ -429,7 +429,7 @@ public class GraphSONMessageSerializerV2d0Test {
         final GraphTraversalSource g = graph.traversal();
         final Tree t = g.V(1).out().properties("name").tree().next();
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(t).create());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(t).create(), allocator);
 
         final JsonNode json = mapper.readTree(results);
 

@@ -297,7 +297,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                         .code(code)
                         .statusAttributes(statusAttributes)
                         .responseMetaData(responseMetaData)
-                        .result(aggregate).create()));
+                        .result(aggregate).create(), nettyContext.alloc()));
             }
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
