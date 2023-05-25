@@ -369,6 +369,11 @@ class TestTraversalStrategies(object):
         tests.append([g.V().has("p1", containing(SuperStr("foo"))),
                      "g.V().has('p1',containing('foo'))"])
 
+        # 103
+        tests.append([g.V().has("p1", None),
+                     "g.V().has('p1',null)"])
+
+
         tlr = Translator().of('g')
 
         for t in range(len(tests)):

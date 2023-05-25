@@ -150,6 +150,8 @@ class Translator:
                     script += f'\'{p}\''
                 elif type(p) == bool:
                     script += 'true' if p else 'false'
+                elif p is None:
+                    script += 'null'
                 else:
                     script += str(p)
                 c += 1
