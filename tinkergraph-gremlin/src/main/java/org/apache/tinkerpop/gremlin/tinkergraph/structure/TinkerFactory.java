@@ -31,9 +31,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.INTEGER;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.LONG;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.INTEGER;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.LONG;
 
 /**
  * Helps create a variety of different toy graphs for testing and learning purposes.

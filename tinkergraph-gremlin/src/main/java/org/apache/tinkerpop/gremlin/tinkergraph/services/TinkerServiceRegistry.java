@@ -24,13 +24,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.TriFunction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -45,9 +43,9 @@ import java.util.function.BiFunction;
  */
 public class TinkerServiceRegistry extends ServiceRegistry {
 
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
 
-    public TinkerServiceRegistry(final TinkerGraph graph) {
+    public TinkerServiceRegistry(final AbstractTinkerGraph graph) {
         this.graph = graph;
     }
 
@@ -61,12 +59,12 @@ public class TinkerServiceRegistry extends ServiceRegistry {
     }
 
     public abstract static class TinkerServiceFactory<I, R> implements ServiceFactory<I, R> {
-        protected final TinkerGraph graph;
+        protected final AbstractTinkerGraph graph;
         protected final String name;
         protected final Map describeParams = new LinkedHashMap();
         protected final Map<Type,Set<TraverserRequirement>> requirements = new LinkedHashMap<>();
 
-        protected TinkerServiceFactory(final TinkerGraph graph, final String name) {
+        protected TinkerServiceFactory(final AbstractTinkerGraph graph, final String name) {
             this.graph = graph;
             this.name = name;
         }
@@ -134,7 +132,7 @@ public class TinkerServiceRegistry extends ServiceRegistry {
 
         private Map<Type, Service<I, R>> lambdas = new LinkedHashMap<>();
 
-        public LambdaServiceFactory(final TinkerGraph graph, final String name) {
+        public LambdaServiceFactory(final AbstractTinkerGraph graph, final String name) {
             super(graph, name);
         }
 

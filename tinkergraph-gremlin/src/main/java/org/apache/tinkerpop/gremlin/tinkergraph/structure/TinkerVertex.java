@@ -45,11 +45,17 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, List<VertexProperty>> properties;
     protected Map<String, Set<Edge>> outEdges;
     protected Map<String, Set<Edge>> inEdges;
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
     private boolean allowNullPropertyValues;
 
-    protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
+    protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         super(id, label);
+        this.graph = graph;
+        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+    }
+
+    protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
+        super(id, label, currentVersion);
         this.graph = graph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
     }
@@ -132,19 +138,23 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
+        // todo: !!!
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
+        // todo: check removed status with graph for both vertices
         if (this.removed) throw elementAlreadyRemoved(Vertex.class, this.id);
-        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
+        return graph.addEdge(this, (TinkerVertex) vertex, label, keyValues);
     }
 
     @Override
     public void remove() {
+        // todo: !!!
         final List<Edge> edges = new ArrayList<>();
         this.edges(Direction.BOTH).forEachRemaining(edges::add);
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties = null;
-        TinkerHelper.removeElementIndex(this);
-        this.graph.vertices.remove(this.id);
+        // todo: handle index
+        // TinkerHelper.removeElementIndex(this);
+        this.graph.removeVertex(this.id);
         this.removed = true;
     }
 
@@ -175,8 +185,8 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         if (this.removed) return Collections.emptyIterator();
-        if (TinkerHelper.inComputerMode((TinkerGraph) graph()))
-            return (Iterator) ((TinkerGraph) graph()).graphComputerView.getProperties(TinkerVertex.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
+        if (TinkerHelper.inComputerMode((AbstractTinkerGraph) graph()))
+            return (Iterator) ((AbstractTinkerGraph) graph()).graphComputerView.getProperties(TinkerVertex.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
         else {
             if (null == this.properties) return Collections.emptyIterator();
             if (propertyKeys.length == 1) {

@@ -53,29 +53,7 @@ public final class TinkerHelper {
     private TinkerHelper() {
     }
 
-    protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
-        ElementHelper.validateLabel(label);
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
-
-        Object idValue = graph.edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
-
-        final Edge edge;
-        if (null != idValue) {
-            if (graph.edges.containsKey(idValue))
-                throw Graph.Exceptions.edgeWithIdAlreadyExists(idValue);
-        } else {
-            idValue = graph.edgeIdManager.getNextId(graph);
-        }
-
-        edge = new TinkerEdge(idValue, outVertex, label, inVertex);
-        ElementHelper.attachProperties(edge, keyValues);
-        graph.edges.put(edge.id(), edge);
-        TinkerHelper.addOutEdge(outVertex, label, edge);
-        TinkerHelper.addInEdge(inVertex, label, edge);
-        return edge;
-
-    }
-
+    // todo: move to TinkerVertex
     protected static void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
         if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
         Set<Edge> edges = vertex.outEdges.get(label);
@@ -86,6 +64,7 @@ public final class TinkerHelper {
         edges.add(edge);
     }
 
+    // todo: move to TinkerVertex
     protected static void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
         if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
         Set<Edge> edges = vertex.inEdges.get(label);
@@ -96,27 +75,27 @@ public final class TinkerHelper {
         edges.add(edge);
     }
 
-    public static List<TinkerVertex> queryVertexIndex(final TinkerGraph graph, final String key, final Object value) {
+    public static List<TinkerVertex> queryVertexIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
         return null == graph.vertexIndex ? Collections.emptyList() : graph.vertexIndex.get(key, value);
     }
 
-    public static List<TinkerEdge> queryEdgeIndex(final TinkerGraph graph, final String key, final Object value) {
+    public static List<TinkerEdge> queryEdgeIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
         return null == graph.edgeIndex ? Collections.emptyList() : graph.edgeIndex.get(key, value);
     }
 
-    public static boolean inComputerMode(final TinkerGraph graph) {
+    public static boolean inComputerMode(final AbstractTinkerGraph graph) {
         return null != graph.graphComputerView;
     }
 
-    public static TinkerGraphComputerView createGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
+    public static TinkerGraphComputerView createGraphComputerView(final AbstractTinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
         return graph.graphComputerView = new TinkerGraphComputerView(graph, graphFilter, computeKeys);
     }
 
-    public static TinkerGraphComputerView getGraphComputerView(final TinkerGraph graph) {
+    public static TinkerGraphComputerView getGraphComputerView(final AbstractTinkerGraph graph) {
         return graph.graphComputerView;
     }
 
-    public static void dropGraphComputerView(final TinkerGraph graph) {
+    public static void dropGraphComputerView(final AbstractTinkerGraph graph) {
         graph.graphComputerView = null;
     }
 
@@ -125,37 +104,37 @@ public final class TinkerHelper {
     }
 
     public static void autoUpdateIndex(final TinkerEdge edge, final String key, final Object newValue, final Object oldValue) {
-        final TinkerGraph graph = (TinkerGraph) edge.graph();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
         if (graph.edgeIndex != null)
             graph.edgeIndex.autoUpdate(key, newValue, oldValue, edge);
     }
 
     public static void autoUpdateIndex(final TinkerVertex vertex, final String key, final Object newValue, final Object oldValue) {
-        final TinkerGraph graph = (TinkerGraph) vertex.graph();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
         if (graph.vertexIndex != null)
             graph.vertexIndex.autoUpdate(key, newValue, oldValue, vertex);
     }
 
     public static void removeElementIndex(final TinkerVertex vertex) {
-        final TinkerGraph graph = (TinkerGraph) vertex.graph();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
         if (graph.vertexIndex != null)
             graph.vertexIndex.removeElement(vertex);
     }
 
     public static void removeElementIndex(final TinkerEdge edge) {
-        final TinkerGraph graph = (TinkerGraph) edge.graph();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
         if (graph.edgeIndex != null)
             graph.edgeIndex.removeElement(edge);
     }
 
     public static void removeIndex(final TinkerVertex vertex, final String key, final Object value) {
-        final TinkerGraph graph = (TinkerGraph) vertex.graph();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
         if (graph.vertexIndex != null)
             graph.vertexIndex.remove(key, value, vertex);
     }
 
     public static void removeIndex(final TinkerEdge edge, final String key, final Object value) {
-        final TinkerGraph graph = (TinkerGraph) edge.graph();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
         if (graph.edgeIndex != null)
             graph.edgeIndex.remove(key, value, edge);
     }
@@ -210,19 +189,11 @@ public final class TinkerHelper {
         return (Iterator) vertices.iterator();
     }
 
-    public static Map<Object, Vertex> getVertices(final TinkerGraph graph) {
-        return graph.vertices;
-    }
-
-    public static Map<Object, Edge> getEdges(final TinkerGraph graph) {
-        return graph.edges;
-    }
-
     /**
      * Search for {@link Property}s attached to {@link Element}s of the supplied element type using the supplied
      * regex. This is a basic scan+filter operation, not a full text search against an index.
      */
-    public static <E extends Element> Iterator<Property> search(final TinkerGraph graph, final String regex,
+    public static <E extends Element> Iterator<Property> search(final AbstractTinkerGraph graph, final String regex,
                                                                 final Optional<Class<E>> type) {
 
         final Supplier<Iterator<Element>> vertices = () -> IteratorUtils.cast(graph.vertices());

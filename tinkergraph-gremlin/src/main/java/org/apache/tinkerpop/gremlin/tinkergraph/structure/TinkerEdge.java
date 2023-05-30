@@ -53,6 +53,14 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         TinkerHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
+    protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
+        super(id, label, currentVersion);
+        this.outVertex = outVertex;
+        this.inVertex = inVertex;
+        this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
+        TinkerHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
+    }
+
     @Override
     public <V> Property<V> property(final String key, final V value) {
         if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
@@ -87,6 +95,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
         final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
 
+        // todo: fix !!!
         if (null != outVertex && null != outVertex.outEdges) {
             final Set<Edge> edges = outVertex.outEdges.get(this.label());
             if (null != edges)
@@ -98,8 +107,9 @@ public final class TinkerEdge extends TinkerElement implements Edge {
                 edges.remove(this);
         }
 
-        TinkerHelper.removeElementIndex(this);
-        ((TinkerGraph) this.graph()).edges.remove(this.id());
+        // todo: handle index
+        // TinkerHelper.removeElementIndex(this);
+        ((AbstractTinkerGraph) this.graph()).removeEdge(this.id());
         this.properties = null;
         this.removed = true;
     }

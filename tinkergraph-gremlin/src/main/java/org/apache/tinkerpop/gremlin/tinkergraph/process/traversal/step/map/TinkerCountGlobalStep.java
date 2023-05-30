@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -49,10 +50,10 @@ public final class TinkerCountGlobalStep<S extends Element> extends AbstractStep
     protected Traverser.Admin<Long> processNextStart() throws NoSuchElementException {
         if (!this.done) {
             this.done = true;
-            final TinkerGraph graph = (TinkerGraph) this.getTraversal().getGraph().get();
+            final AbstractTinkerGraph graph = (AbstractTinkerGraph) this.getTraversal().getGraph().get();
             return this.getTraversal().getTraverserGenerator().generate(Vertex.class.isAssignableFrom(this.elementClass) ?
-                            (long) TinkerHelper.getVertices(graph).size() :
-                            (long) TinkerHelper.getEdges(graph).size(),
+                            (long) graph.getVerticesCount() :
+                            (long) graph.getEdgesCount(),
                     (Step) this, 1L);
         } else
             throw FastNoSuchElementException.instance();
