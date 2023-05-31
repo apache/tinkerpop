@@ -28,6 +28,11 @@ limitations under the License.
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-annotations</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-console</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -48,7 +53,17 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-language</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
