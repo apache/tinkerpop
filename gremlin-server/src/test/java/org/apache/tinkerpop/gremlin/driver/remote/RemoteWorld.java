@@ -115,6 +115,7 @@ public abstract class RemoteWorld implements World {
                 "@StepDrop",
                 "@StepInject",
                 "@StepV",
+                "@StepE",
                 "@GraphComputerVerificationOneBulk",
                 "@GraphComputerVerificationStrategyNotSupported",
                 "@GraphComputerVerificationMidVNotSupported",
