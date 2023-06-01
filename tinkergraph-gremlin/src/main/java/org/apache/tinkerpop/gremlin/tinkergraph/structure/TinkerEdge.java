@@ -92,21 +92,6 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public void remove() {
-        final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
-        final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
-
-        // todo: fix !!!
-        if (null != outVertex && null != outVertex.outEdges) {
-            final Set<Edge> edges = outVertex.outEdges.get(this.label());
-            if (null != edges)
-                edges.remove(this);
-        }
-        if (null != inVertex && null != inVertex.inEdges) {
-            final Set<Edge> edges = inVertex.inEdges.get(this.label());
-            if (null != edges)
-                edges.remove(this);
-        }
-
         // todo: handle index
         // TinkerHelper.removeElementIndex(this);
         ((AbstractTinkerGraph) this.graph()).removeEdge(this.id());
@@ -118,6 +103,14 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     public String toString() {
         return StringFactory.edgeString(this);
 
+    }
+
+    @Override
+    public Object clone() {
+        // todo: probably need deep clone
+        final TinkerEdge edge = new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
+        edge.properties = properties;
+        return edge;
     }
 
     @Override

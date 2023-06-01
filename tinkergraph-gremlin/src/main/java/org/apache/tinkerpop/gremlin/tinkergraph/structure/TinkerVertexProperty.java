@@ -93,6 +93,12 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     }
 
     @Override
+    public Object clone() {
+        // todo: implement
+        return this;
+    }
+
+    @Override
     public Object id() {
         return this.id;
     }

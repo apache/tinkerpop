@@ -64,7 +64,6 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     protected void doOpen() {
         if (isOpen())
             Transaction.Exceptions.transactionAlreadyOpen();
-        txNumber.set(openedTx.getAndIncrement());
     }
 
     @Override
@@ -73,24 +72,25 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     }
 
     protected long getTxNumber() {
+        // todo: think a bit more...
+        if (!isOpen()) txNumber.set(openedTx.getAndIncrement());
         return txNumber.get();
     }
 
     @Override
     protected void doCommit() throws TransactionException {
-        if (!isOpen())
-            throw new TransactionException(TX_CONFLICT);
+        final long txVersion = txNumber.get();
 
         final List<TinkerElementContainer<TinkerVertex>> changedVertices =
                 graph.getVertices().values().stream().filter(v -> v.isChanged()).collect(Collectors.toList());
         final List<TinkerElementContainer<TinkerEdge>> changedEdges =
                 graph.getEdges().values().stream().filter(v -> v.isChanged()).collect(Collectors.toList());
 
-        if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
-                changedEdges.stream().anyMatch(v -> v.updatedOutsideTransaction()))
-            throw new TransactionException(TX_CONFLICT);
-
         try {
+            if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
+                    changedEdges.stream().anyMatch(v -> v.updatedOutsideTransaction()))
+                throw new TransactionException(TX_CONFLICT);
+
             changedVertices.forEach(v -> {
                 if (!v.tryLock()) throw new TransactionException(TX_CONFLICT);
             });
@@ -102,11 +102,13 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
                     changedEdges.stream().anyMatch(v -> v.updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);
 
-            changedVertices.forEach(v -> v.commit());
-            changedEdges.forEach(e -> e.commit());
+            changedVertices.forEach(v -> v.commit(txVersion));
+            changedEdges.forEach(e -> e.commit(txVersion));
         } catch (TransactionException ex) {
             changedVertices.forEach(v -> v.rollback());
             changedEdges.forEach(e -> e.rollback());
+
+            throw ex;
         } finally {
             // todo: remove deleted elements from graph
 

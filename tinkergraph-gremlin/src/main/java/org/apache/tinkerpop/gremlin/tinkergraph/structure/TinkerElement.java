@@ -29,7 +29,7 @@ public abstract class TinkerElement implements Element {
     protected final Object id;
     protected final String label;
     protected boolean removed = false;
-    protected final long currentVersion;
+    protected long currentVersion;
 
     protected TinkerElement(final Object id, final String label) {
         this.id = id;
@@ -47,6 +47,8 @@ public abstract class TinkerElement implements Element {
     public int hashCode() {
         return ElementHelper.hashCode(this);
     }
+
+    public abstract  Object clone();
 
     @Override
     public Object id() {

@@ -44,14 +44,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -199,14 +192,51 @@ public final class TinkerGraph extends AbstractTinkerGraph {
         edge = new TinkerEdge(idValue, outVertex, label, inVertex);
         ElementHelper.attachProperties(edge, keyValues);
         edges.put(edge.id(), edge);
-        TinkerHelper.addOutEdge(outVertex, label, edge);
-        TinkerHelper.addInEdge(inVertex, label, edge);
+        addOutEdge(outVertex, label, edge);
+        addInEdge(inVertex, label, edge);
         return edge;
     }
 
+    private static void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
+        Set<Edge> edges = vertex.outEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.outEdges.put(label, edges);
+        }
+        edges.add(edge);
+    }
+
+    private static void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
+        Set<Edge> edges = vertex.inEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.inEdges.put(label, edges);
+        }
+        edges.add(edge);
+    }
+
     @Override
-    public void removeEdge(final Object edgeId)
-    {
+    public void removeEdge(final Object edgeId) {
+        if (edges.containsKey(edgeId)) return;
+
+        final TinkerEdge edge = (TinkerEdge) edges.get(edgeId);
+
+        final TinkerVertex outVertex = (TinkerVertex) edge.outVertex;
+        final TinkerVertex inVertex = (TinkerVertex) edge.inVertex;
+
+        if (null != outVertex && null != outVertex.outEdges) {
+            final Set<Edge> edges = outVertex.outEdges.get(edge.label());
+            if (null != edges)
+                edges.remove(this);
+        }
+        if (null != inVertex && null != inVertex.inEdges) {
+            final Set<Edge> edges = inVertex.inEdges.get(edge.label());
+            if (null != edges)
+                edges.remove(this);
+        }
+
         this.edges.remove(edgeId);
     }
 

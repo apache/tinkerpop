@@ -65,6 +65,8 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     public abstract void removeEdge(final Object edgeId);
 
+    public void touch(final TinkerVertex vertex) {};
+
     public abstract Iterator<Vertex> vertices(Object... vertexIds);
 
     public abstract Iterator<Edge> edges(Object... edgeIds);

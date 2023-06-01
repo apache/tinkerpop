@@ -48,6 +48,16 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return isDeleted.get() || transactionUpdatedValue.get() != null;
     }
 
+    public boolean isDeleted() { return isDeleted.get(); }
+
+    public void touch(final T transactionElement) {
+        if (element != transactionElement) return;
+
+        // todo: handle deleted
+        element = (T) transactionElement.clone();
+        setDraft(transactionElement);
+    }
+
     public void markDeleted() {
         isDeleted.set(true);
     }
@@ -65,7 +75,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
                 && transactionUpdatedValue.get().version() != element.version();
     }
 
-    public void commit() {
+    public void commit(final long txVersion) {
         if (isDeleted.get()) {
             // remove relation between edge and vertex
             if (element instanceof TinkerEdge) {
@@ -88,6 +98,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
             element = null;
         } else {
             element = transactionUpdatedValue.get();
+            element.currentVersion = txVersion;
         }
         usesInTransactions.decrementAndGet();
         reset();

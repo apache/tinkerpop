@@ -53,28 +53,7 @@ public final class TinkerHelper {
     private TinkerHelper() {
     }
 
-    // todo: move to TinkerVertex
-    protected static void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
-        Set<Edge> edges = vertex.outEdges.get(label);
-        if (null == edges) {
-            edges = new HashSet<>();
-            vertex.outEdges.put(label, edges);
-        }
-        edges.add(edge);
-    }
-
-    // todo: move to TinkerVertex
-    protected static void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
-        Set<Edge> edges = vertex.inEdges.get(label);
-        if (null == edges) {
-            edges = new HashSet<>();
-            vertex.inEdges.put(label, edges);
-        }
-        edges.add(edge);
-    }
-
+    //todo: move index related stuff to IndexHelper
     public static List<TinkerVertex> queryVertexIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
         return null == graph.vertexIndex ? Collections.emptyList() : graph.vertexIndex.get(key, value);
     }

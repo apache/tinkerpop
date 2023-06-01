@@ -144,7 +144,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
-        final long txNumber = ((TinkerThreadLocalTransaction) tx()).getTxNumber();
+        final long txNumber = transaction.getTxNumber();
         TinkerVertex vertex;
         TinkerElementContainer<TinkerVertex> container = null;
 
@@ -174,13 +174,23 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
+    public void touch(final TinkerVertex vertex) {
+        // already removed
+        if (!vertices.containsKey(vertex.id())) return;
+
+        final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
+
+        container.touch(vertex);
+    };
+
+    @Override
     public Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
 
-        final long txNumber = ((TinkerThreadLocalTransaction) tx()).getTxNumber();
+        final long txNumber = transaction.getTxNumber();
         TinkerEdge edge;
         TinkerElementContainer<TinkerEdge> container = null;
 
@@ -197,19 +207,68 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         // ElementHelper.attachProperties(edge, keyValues);
         container.setDraft(edge);
         edges.put(edge.id(), container);
-        // todo: add tx code
-        TinkerHelper.addOutEdge(outVertex, label, edge);
-        TinkerHelper.addInEdge(inVertex, label, edge);
+
+        addOutEdge(outVertex, label, edge);
+        addInEdge(inVertex, label, edge);
 
         return edge;
     }
 
+    // todo: add tx code
+    private static void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
+        Set<Edge> edges = vertex.outEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.outEdges.put(label, edges);
+        }
+        edges.add(edge);
+    }
+
+    // todo: add tx code
+    private static void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
+        Set<Edge> edges = vertex.inEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.inEdges.put(label, edges);
+        }
+        edges.add(edge);
+    }
+
     @Override
-    public void removeEdge(final Object edgeId)
-    {
+    public void removeEdge(final Object edgeId) {
         if (!edges.containsKey(edgeId)) return;
 
-        edges.get(edgeId).markDeleted();
+        final TinkerElementContainer<TinkerEdge> container = edges.get(edgeId);
+
+        if (container.isDeleted()) return;
+
+        final TinkerEdge edge = container.get();
+
+        if (edge == null) return;
+
+        final TinkerVertex outVertex = (TinkerVertex) edge.outVertex;
+        final TinkerVertex inVertex = (TinkerVertex) edge.inVertex;
+
+        if (null != outVertex && null != outVertex.outEdges) {
+            Set<Edge> edges = outVertex.outEdges.get(edge.label());
+            if (null != edges) {
+                // todo: possible race condition if already removed
+                touch(outVertex);
+                outVertex.outEdges.get(edge.label()).removeIf(e->e.id() == edge.id());
+            }
+        }
+        if (null != inVertex && null != inVertex.inEdges) {
+            final Set<Edge> edges = inVertex.inEdges.get(edge.label());
+            if (null != edges) {
+                // todo: possible race condition if already removed
+                touch(inVertex);
+                inVertex.inEdges.get(edge.label()).removeIf(e -> e.id() == edge.id());
+            }
+        }
+
+        container.markDeleted();
     }
 
     @Override

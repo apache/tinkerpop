@@ -61,6 +61,17 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
+    public Object clone() {
+        // todo: probably need deep clone
+        final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+        if (inEdges != null)
+            vertex.inEdges = (Map) ((HashMap) inEdges).clone();
+        if (outEdges != null)
+            vertex.outEdges = (Map) ((HashMap) outEdges).clone();
+        return vertex;
+    }
+
+    @Override
     public Graph graph() {
         return this.graph;
     }
@@ -90,6 +101,8 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        graph.touch(this);
+
         if (this.removed) throw elementAlreadyRemoved(Vertex.class, id);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         ElementHelper.validateProperty(key, value);
