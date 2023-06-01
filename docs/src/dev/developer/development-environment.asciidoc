@@ -260,7 +260,7 @@ other existing Node.js runtime instances in your machine.
 To run the development and build scripts of `gremlint` and its corresponding web page `docs/gremlint`, Node.js and npm
 have to be installed. When generating or publishing the TinkerPop website, the `docs/gremlint` web page has to be
 built. Consequently, the scripts `bin/generate-home.sh` and `bin/publish-home.sh` require that Node.js and npm are
-installed. Version 6.x or newer of npm is required. This is covered in more detail in the <<site,Site>> section.
+installed. Version 8.x or newer of npm is required. This is covered in more detail in the <<site,Site>> section.
 
 As of TinkerPop 3.5.5, `gremlin-javascript` uses Docker for all tests inside of Maven. Please make sure Docker is
 installed and running on your system.
