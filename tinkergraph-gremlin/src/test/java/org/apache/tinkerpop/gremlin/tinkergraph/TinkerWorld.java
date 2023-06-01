@@ -28,11 +28,15 @@ import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerDegreeCentralityFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph;
 import org.junit.AssumptionViolatedException;
 
 import java.io.File;
@@ -43,73 +47,155 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
- * The {@link World} implementation for TinkerGraph that provides the {@link GraphTraversalSource} instances required
- * by the Gherkin test suite.
+ * The abstract {@link World} implementation for AbstractTinkerGraph.
  */
-public class TinkerGraphWorld implements World {
-    private static final TinkerGraph modern = registerTestServices(TinkerFactory.createModern());
-    private static final TinkerGraph classic = registerTestServices(TinkerFactory.createClassic());
-    private static final TinkerGraph crew = registerTestServices(TinkerFactory.createTheCrew());
-    private static final TinkerGraph sink = registerTestServices(TinkerFactory.createKitchenSink());
-    private static final TinkerGraph grateful = registerTestServices(TinkerFactory.createGratefulDead());
-
-    private static TinkerGraph registerTestServices(final TinkerGraph graph) {
-        graph.getServiceRegistry().registerService(new TinkerTextSearchFactory(graph));
-        graph.getServiceRegistry().registerService(new TinkerDegreeCentralityFactory(graph));
-        return graph;
-    }
-
-    @Override
-    public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
-        if (null == graphData)
-            return registerTestServices(TinkerGraph.open(getNumberIdManagerConfiguration())).traversal();
-        else if (graphData == LoadGraphWith.GraphData.CLASSIC)
-            return classic.traversal();
-        else if (graphData == LoadGraphWith.GraphData.CREW)
-            return crew.traversal();
-        else if (graphData == LoadGraphWith.GraphData.MODERN)
-            return modern.traversal();
-        else if (graphData == LoadGraphWith.GraphData.SINK)
-            return sink.traversal();
-        else if (graphData == LoadGraphWith.GraphData.GRATEFUL)
-            return grateful.traversal();
-        else
-            throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
-    }
-
+public abstract class TinkerWorld implements World {
     @Override
     public String changePathToDataFile(final String pathToFileFromGremlin) {
         return ".." + File.separator + pathToFileFromGremlin;
     }
 
-    private static Configuration getNumberIdManagerConfiguration() {
+    /**
+     * Get an instance of the underlying AbstractTinkerGraph with the provided configuration.
+     */
+    public abstract AbstractTinkerGraph open(final Configuration configuration);
+
+    protected static Configuration getNumberIdManagerConfiguration() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.LONG.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, AbstractTinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, AbstractTinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, AbstractTinkerGraph.DefaultIdManager.LONG.name());
         return conf;
     }
 
+    protected static AbstractTinkerGraph registerTestServices(final AbstractTinkerGraph graph) {
+        graph.getServiceRegistry().registerService(new TinkerTextSearchFactory(graph));
+        graph.getServiceRegistry().registerService(new TinkerDegreeCentralityFactory(graph));
+        return graph;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Enables the storing of {@code null} property values when testing.
+     * The concrete {@link World} implementation for TinkerGraph that provides the {@link GraphTraversalSource}
+     * instances required by the Gherkin test suite.
      */
-    public static class NullWorld extends TinkerGraphWorld {
+    public static class TinkerGraphWorld extends TinkerWorld {
+        private static final AbstractTinkerGraph modern = registerTestServices(TinkerFactory.createModern());
+        private static final AbstractTinkerGraph classic = registerTestServices(TinkerFactory.createClassic());
+        private static final AbstractTinkerGraph crew = registerTestServices(TinkerFactory.createTheCrew());
+        private static final AbstractTinkerGraph sink = registerTestServices(TinkerFactory.createKitchenSink());
+        private static final AbstractTinkerGraph grateful = registerTestServices(TinkerFactory.createGratefulDead());
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            if (null == graphData)
+                return registerTestServices(TinkerGraph.open(getNumberIdManagerConfiguration())).traversal();
+            else if (graphData == LoadGraphWith.GraphData.CLASSIC)
+                return classic.traversal();
+            else if (graphData == LoadGraphWith.GraphData.CREW)
+                return crew.traversal();
+            else if (graphData == LoadGraphWith.GraphData.MODERN)
+                return modern.traversal();
+            else if (graphData == LoadGraphWith.GraphData.SINK)
+                return sink.traversal();
+            else if (graphData == LoadGraphWith.GraphData.GRATEFUL)
+                return grateful.traversal();
+            else
+                throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public AbstractTinkerGraph open(final Configuration configuration) {
+            return TinkerGraph.open(configuration);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The {@link World} implementation for TinkerTransactionGraph that provides the {@link GraphTraversalSource}
+     * instances required by the Gherkin test suite.
+     */
+    public static class TinkerTransactionGraphWorld extends TinkerWorld {
+        private static final AbstractTinkerGraph modern = registerTestServices(TinkerFactory.createTxModern());
+        private static final AbstractTinkerGraph classic = registerTestServices(TinkerFactory.createTxClassic());
+        private static final AbstractTinkerGraph crew = registerTestServices(TinkerFactory.createTxTheCrew());
+        private static final AbstractTinkerGraph sink = registerTestServices(TinkerFactory.createTxKitchenSink());
+        private static final AbstractTinkerGraph grateful = registerTestServices(TinkerFactory.createTxGratefulDead());
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            if (null == graphData)
+                return registerTestServices(TinkerTransactionGraph.open(getNumberIdManagerConfiguration())).traversal();
+            else if (graphData == LoadGraphWith.GraphData.CLASSIC)
+                return classic.traversal();
+            else if (graphData == LoadGraphWith.GraphData.CREW)
+                return crew.traversal();
+            else if (graphData == LoadGraphWith.GraphData.MODERN)
+                return modern.traversal();
+            else if (graphData == LoadGraphWith.GraphData.SINK)
+                return sink.traversal();
+            else if (graphData == LoadGraphWith.GraphData.GRATEFUL)
+                return grateful.traversal();
+            else
+                throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public AbstractTinkerGraph open(final Configuration configuration) {
+            return TinkerTransactionGraph.open(configuration);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Enables the storing of {@code null} property values when testing. This is a terminal decorator and shouldn't be
+     * used as an input into another decorator.
+     */
+    public static class NullWorld implements World {
+        private TinkerWorld world;
+
+        public NullWorld(TinkerWorld world) { this.world = world; }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             if (graphData != null)
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
 
-            final Configuration conf = TinkerGraphWorld.getNumberIdManagerConfiguration();
+            final Configuration conf = getNumberIdManagerConfiguration();
             conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
-            return TinkerGraph.open(conf).traversal();
+            return world.open(conf).traversal();
+        }
+
+        @Override
+        public void beforeEachScenario(final Scenario scenario) {
+            this.world.beforeEachScenario(scenario);
+        }
+
+        @Override
+        public void afterEachScenario() {
+            this.world.afterEachScenario();
+        }
+
+        @Override
+        public String changePathToDataFile(final String pathToFileFromGremlin) {
+            return this.world.changePathToDataFile(pathToFileFromGremlin);
+        }
+
+        @Override
+        public String convertIdToScript(final Object id, final Class<? extends Element> type) {
+            return this.world.convertIdToScript(id, type);
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Turns on {@link GraphComputer} when testing.
+     * Enables testing of GraphComputer functionality.
      */
-    public static class ComputerWorld extends TinkerGraphWorld {
+    public static class ComputerWorld implements World {
         private static final Random RANDOM = TestHelper.RANDOM;
 
         private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
@@ -125,24 +211,45 @@ public class TinkerGraphWorld implements World {
                 "@GraphComputerVerificationReferenceOnly",
                 "@TinkerServiceRegistry");
 
-        @Override
-        public void beforeEachScenario(final Scenario scenario) {
-            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
-            if (!ignores.isEmpty())
-                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
-        }
+        private World world;
+
+        public ComputerWorld(World world) { this.world = world; }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             if (null == graphData)
                 throw new AssumptionViolatedException("GraphComputer does not support mutation");
 
-            return super.getGraphTraversalSource(graphData).withStrategies(VertexProgramStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            return this.world.getGraphTraversalSource(graphData).withStrategies(VertexProgramStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
                 put(VertexProgramStrategy.WORKERS, Runtime.getRuntime().availableProcessors());
                 put(VertexProgramStrategy.GRAPH_COMPUTER, RANDOM.nextBoolean() ?
                         GraphComputer.class.getCanonicalName() :
                         TinkerGraphComputer.class.getCanonicalName());
             }})));
+        }
+
+        @Override
+        public void beforeEachScenario(final Scenario scenario) {
+            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
+            if (!ignores.isEmpty())
+                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
+
+            this.world.beforeEachScenario(scenario);
+        }
+
+        @Override
+        public void afterEachScenario() {
+            this.world.afterEachScenario();
+        }
+
+        @Override
+        public String changePathToDataFile(final String pathToFileFromGremlin) {
+            return this.world.changePathToDataFile(pathToFileFromGremlin);
+        }
+
+        @Override
+        public String convertIdToScript(final Object id, final Class<? extends Element> type) {
+            return this.world.convertIdToScript(id, type);
         }
     }
 }

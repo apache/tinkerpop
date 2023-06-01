@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Provides;
 import com.google.inject.Stage;
 import io.cucumber.guice.CucumberModules;
 import io.cucumber.junit.Cucumber;
@@ -31,12 +30,12 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "@AllowNullPropertyValues",
+        tags = "not @RemoteOnly and not @GraphComputerOnly and not @AllowNullPropertyValues",
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        objectFactory = TinkerGraphAllowNullFeatureTest.TinkerGraphGuiceFactory.class,
+        objectFactory = TinkerTransactionGraphFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
-public class TinkerGraphAllowNullFeatureTest {
+public class TinkerTransactionGraphFeatureTest {
 
     public static class TinkerGraphGuiceFactory extends AbstractGuiceFactory {
         public TinkerGraphGuiceFactory() {
@@ -47,12 +46,7 @@ public class TinkerGraphAllowNullFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerWorld.NullWorld.class);
-        }
-
-        @Provides
-        static TinkerWorld.NullWorld provideNullWorld() {
-            return new TinkerWorld.NullWorld(new TinkerWorld.TinkerGraphWorld());
+            bind(World.class).to(TinkerWorld.TinkerTransactionGraphWorld.class);
         }
     }
 }

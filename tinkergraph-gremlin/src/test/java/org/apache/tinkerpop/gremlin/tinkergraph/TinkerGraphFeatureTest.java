@@ -46,7 +46,7 @@ public class TinkerGraphFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerGraphWorld.class);
+            bind(World.class).to(TinkerWorld.TinkerGraphWorld.class);
         }
     }
 }

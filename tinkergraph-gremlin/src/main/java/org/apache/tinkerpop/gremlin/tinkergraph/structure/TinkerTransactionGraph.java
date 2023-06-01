@@ -254,16 +254,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public <I extends Io> I io(final Io.Builder<I> builder) {
-        if (builder.requiresVersion(GryoVersion.V1_0) || builder.requiresVersion(GraphSONVersion.V1_0))
-            return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV1d0.instance())).create();
-        else if (builder.requiresVersion(GraphSONVersion.V2_0))   // there is no gryo v2
-            return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV2d0.instance())).create();
-        else
-            return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV3d0.instance())).create();
-    }
-
-    @Override
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
     }
