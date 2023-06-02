@@ -68,6 +68,8 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
             vertex.inEdges = (Map) ((HashMap) inEdges).clone();
         if (outEdges != null)
             vertex.outEdges = (Map) ((HashMap) outEdges).clone();
+        if (properties != null)
+            vertex.properties = (Map) ((HashMap) properties).clone();
         return vertex;
     }
 
@@ -151,18 +153,24 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        // todo: !!!
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
-        // todo: check removed status with graph for both vertices
-        if (this.removed) throw elementAlreadyRemoved(Vertex.class, this.id);
+        if (this.removed || ((TinkerVertex) vertex).removed) throw elementAlreadyRemoved(Vertex.class, this.id);
+
+        graph.touch(this);
+        graph.touch((TinkerVertex) vertex);
+
         return graph.addEdge(this, (TinkerVertex) vertex, label, keyValues);
     }
 
     @Override
     public void remove() {
-        // todo: !!!
+        graph.touch(this);
+
         final List<Edge> edges = new ArrayList<>();
-        this.edges(Direction.BOTH).forEachRemaining(edges::add);
+        this.edges(Direction.BOTH).forEachRemaining(edge -> {
+            graph.touch((TinkerEdge) edge);
+            edges.add(edge);
+        });
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties = null;
         // todo: handle index

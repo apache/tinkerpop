@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -76,6 +75,9 @@ public class TinkerTransactionGraphTest {
         final GraphTraversalSource gtx3 = g.tx().begin();
         assertEquals(0L, (long) gtx3.V().count().next());
 
+        // should remove unused container
+        assertEquals(0, g.getVertices().size());
+
         countElementsInNewThreadTx(g, 0, 0);
     }
 
@@ -113,10 +115,13 @@ public class TinkerTransactionGraphTest {
 
         }
 
+        // should remove unused container
+        assertEquals(0, g.getVertices().size());
+
         assertEquals(0, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
 
-        countElementsInNewThreadTx(g, 2, 0);
+        countElementsInNewThreadTx(g, 0, 0);
     }
 
     @Test
@@ -171,6 +176,39 @@ public class TinkerTransactionGraphTest {
         // should be only 1 vertex with updated property
         assertEquals(1L, (long) gtx.V().count().next());
         assertEquals(2, gtx.V(vid).values("test").next());
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForVertexMetaProperty() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test", 1).iterate();
+        gtx.tx().commit();
+
+        // change meta property
+        gtx.V(vid).properties("test").property("meta1", "tx1").iterate();
+
+        // change same property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(vid).properties("test").property("meta2", "tx2").iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            //fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 vertex with updated property
+        assertEquals(1L, (long) gtx.V().count().next());
+        assertEquals("tx2", gtx.V(vid).properties("test").values("meta1", "meta2").next());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -324,6 +362,9 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, v2afterTx.inEdges.get("tests").size());
         assertNull(v2afterTx.outEdges);
 
+        // should remove unused container
+        assertEquals(0, g.getEdges().size());
+
         countElementsInNewThreadTx(g, 2, 0);
     }
 
@@ -407,6 +448,9 @@ public class TinkerTransactionGraphTest {
 
         }
 
+        // should remove unused container
+        assertEquals(0, g.getEdges().size());
+
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
 
@@ -457,6 +501,42 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, (long) gtx.E().count().next());
 
         countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxDeleteEdge() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge =  (TinkerEdge)gtx.addE("tests").from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.E(edge.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete edge used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(edge.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
     }
 
     // tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
@@ -527,10 +607,10 @@ public class TinkerTransactionGraphTest {
     }
 
     // tx1 changes a Cardinality.single property to x, tx2 changes the same Cardinality.single property to y
-    // same as shouldHandleConcurrentChangeForProperty
+    // tested in shouldHandleConcurrentChangeForVertexProperty and shouldHandleConcurrentChangeForProperty
 
     // tx1 removes vertex v1, tx2 removes the same vertex
-    // tested in shouldHandleConcurrentVertexDelete
+    // tested in shouldHandleConcurrentVertexDelete and shouldHandleConcurrentEdgeDelete
 
     // tx1 adds vertex v1, tx2 removes vertex v1
     @Test

@@ -55,7 +55,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     public void touch(final T transactionElement) {
         if (element != transactionElement) return;
 
-        // todo: handle deleted
+        // todo: handle deleted ?
         element = (T) transactionElement.clone();
         setDraft(transactionElement);
     }
@@ -65,7 +65,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     public void setDraft(final T transactionElement) {
-        if (transactionUpdatedValue.get() != null || isDeletedInTx.get())
+        if (transactionUpdatedValue.get() == null && !isDeletedInTx.get())
             usesInTransactions.incrementAndGet();
         transactionUpdatedValue.set(transactionElement);
     }
@@ -80,37 +80,25 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
     public void commit(final long txVersion) {
         if (isDeletedInTx.get()) {
-            // remove relation between edge and vertex
-            if (element instanceof TinkerEdge) {
-                final TinkerEdge edge = (TinkerEdge) element;
-                final TinkerVertex outVertex = (TinkerVertex) edge.outVertex;
-                final TinkerVertex inVertex = (TinkerVertex) edge.inVertex;
-
-                if (null != outVertex && null != outVertex.outEdges) {
-                    final Set<Edge> edges = outVertex.outEdges.get(edge.label());
-                    if (null != edges)
-                        edges.remove(this);
-                }
-                if (null != inVertex && null != inVertex.inEdges) {
-                    final Set<Edge> edges = inVertex.inEdges.get(edge.label());
-                    if (null != edges)
-                        edges.remove(this);
-                }
-            }
-
+            element.removed = true;
             element = null;
             isDeleted = true;
         } else {
             element = transactionUpdatedValue.get();
             element.currentVersion = txVersion;
+            // todo: if (isDeleted) throw?
         }
         usesInTransactions.decrementAndGet();
         reset();
     }
 
-    public Integer rollback() {
+    public void rollback() {
         reset();
-        return usesInTransactions.decrementAndGet();
+        usesInTransactions.decrementAndGet();
+    }
+
+    public boolean canBeRemoved() {
+        return usesInTransactions.get() == 0 && (isDeleted || element == null);
     }
 
     private void reset() {

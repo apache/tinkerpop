@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
@@ -76,8 +75,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     private final TinkerThreadLocalTransaction transaction = new TinkerThreadLocalTransaction(this);
 
-    private Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
-    private Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
+    protected Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
+    protected Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
     /**
      * An empty private constructor that initializes {@link TinkerTransactionGraph}.

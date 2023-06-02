@@ -123,6 +123,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
+        // in most cases vertex should already be touched, but let's play safe
         ((AbstractTinkerGraph)vertex.graph()).touch(vertex);
 
         if (this.removed) throw elementAlreadyRemoved(VertexProperty.class, id);

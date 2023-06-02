@@ -96,7 +96,8 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     public void remove() {
         // todo: handle index
         // TinkerHelper.removeElementIndex(this);
-        ((AbstractTinkerGraph) this.graph()).removeEdge(this.id());
+        ((AbstractTinkerGraph) graph()).touch(this);
+        ((AbstractTinkerGraph) graph()).removeEdge(this.id());
         this.properties = null;
         this.removed = true;
     }
