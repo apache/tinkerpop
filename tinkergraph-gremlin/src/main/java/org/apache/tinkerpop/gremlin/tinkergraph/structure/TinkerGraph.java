@@ -199,7 +199,7 @@ public final class TinkerGraph extends AbstractTinkerGraph {
 
     @Override
     public void removeEdge(final Object edgeId) {
-        if (edges.containsKey(edgeId)) return;
+        if (!edges.containsKey(edgeId)) return;
 
         final TinkerEdge edge = (TinkerEdge) edges.get(edgeId);
 

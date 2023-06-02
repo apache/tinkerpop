@@ -82,6 +82,31 @@ public class TinkerTransactionGraphTest {
     }
 
     @Test
+    public void shouldDeleteRelatedEdgesOnVertexDelete() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("tests").from(v1).to(v2).next();
+
+        gtx.tx().commit();
+
+        assertEquals(2L, (long) gtx.V().count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        gtx.V(v1.id()).drop().iterate();
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.V().count().next());
+        assertEquals(0L, (long) gtx3.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test
     public void shouldHandleConcurrentVertexDelete() throws InterruptedException {
         final TinkerTransactionGraph g = TinkerTransactionGraph.open();
 
