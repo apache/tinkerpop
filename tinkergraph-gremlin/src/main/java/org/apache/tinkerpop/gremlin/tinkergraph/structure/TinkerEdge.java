@@ -63,6 +63,8 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
+        ((AbstractTinkerGraph)outVertex.graph()).touch(this);
+
         if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
         ElementHelper.validateProperty(key, value);
 
@@ -102,7 +104,6 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     @Override
     public String toString() {
         return StringFactory.edgeString(this);
-
     }
 
     @Override

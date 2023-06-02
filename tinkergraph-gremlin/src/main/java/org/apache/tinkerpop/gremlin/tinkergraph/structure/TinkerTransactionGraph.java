@@ -149,8 +149,11 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         TinkerElementContainer<TinkerVertex> container = null;
 
         if (null != idValue) {
-            if (vertices.containsKey(idValue) && vertices.get(idValue).get() != null)
-                throw Exceptions.vertexWithIdAlreadyExists(idValue);
+            if (vertices.containsKey(idValue)) {
+                container = vertices.get(idValue);
+                if (container.get() != null)
+                    throw Exceptions.vertexWithIdAlreadyExists(idValue);
+            }
         } else {
             idValue = vertexIdManager.getNextId(this);
         }
@@ -176,11 +179,21 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public void touch(final TinkerVertex vertex) {
         // already removed
-        if (!vertices.containsKey(vertex.id())) return;
+        if (null == vertex || !vertices.containsKey(vertex.id())) return;
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
 
         container.touch(vertex);
+    };
+
+    @Override
+    public void touch(final TinkerEdge edge) {
+        // already removed
+        if (null == edge || !edges.containsKey(edge.id())) return;
+
+        final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
+
+        container.touch(edge);
     };
 
     @Override
@@ -195,8 +208,11 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         TinkerElementContainer<TinkerEdge> container = null;
 
         if (null != idValue) {
-            if (edges.containsKey(idValue) && edges.get(idValue).get() != null)
-                throw Exceptions.edgeWithIdAlreadyExists(idValue);
+            if (edges.containsKey(idValue)) {
+                container = edges.get(idValue);
+                if (container.get() != null)
+                    throw Exceptions.edgeWithIdAlreadyExists(idValue);
+            }
         } else {
             idValue = edgeIdManager.getNextId(this);
         }
@@ -214,28 +230,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         return edge;
     }
 
-    // todo: add tx code
-    private static void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
-        Set<Edge> edges = vertex.outEdges.get(label);
-        if (null == edges) {
-            edges = new HashSet<>();
-            vertex.outEdges.put(label, edges);
-        }
-        edges.add(edge);
-    }
-
-    // todo: add tx code
-    private static void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
-        Set<Edge> edges = vertex.inEdges.get(label);
-        if (null == edges) {
-            edges = new HashSet<>();
-            vertex.inEdges.put(label, edges);
-        }
-        edges.add(edge);
-    }
-
     @Override
     public void removeEdge(final Object edgeId) {
         if (!edges.containsKey(edgeId)) return;
@@ -249,21 +243,19 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (edge == null) return;
 
         final TinkerVertex outVertex = (TinkerVertex) edge.outVertex;
+        touch(outVertex);
         final TinkerVertex inVertex = (TinkerVertex) edge.inVertex;
+        touch(inVertex);
 
         if (null != outVertex && null != outVertex.outEdges) {
             Set<Edge> edges = outVertex.outEdges.get(edge.label());
             if (null != edges) {
-                // todo: possible race condition if already removed
-                touch(outVertex);
-                outVertex.outEdges.get(edge.label()).removeIf(e->e.id() == edge.id());
+                outVertex.outEdges.get(edge.label()).removeIf(e -> e.id() == edge.id());
             }
         }
         if (null != inVertex && null != inVertex.inEdges) {
             final Set<Edge> edges = inVertex.inEdges.get(edge.label());
             if (null != edges) {
-                // todo: possible race condition if already removed
-                touch(inVertex);
                 inVertex.inEdges.get(edge.label()).removeIf(e -> e.id() == edge.id());
             }
         }

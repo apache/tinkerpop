@@ -41,28 +41,16 @@ public class TinkerTransactionGraphTest {
         gtx.addV().next();
         gtx.addV().next();
 
-        assertEquals(2, (long)gtx.V().count().next());
+        assertEquals(2, (long) gtx.V().count().next());
 
-        // test count in second transaction before commit
-        final Thread thread = new Thread(() -> {
-            final GraphTraversalSource gtx2 = g.tx().begin();
-            assertEquals(0L, (long)gtx2.V().count().next());
-        });
-        thread.start();
-        thread.join();
+        countElementsInNewThreadTx(g, 0, 0);
 
         gtx.tx().commit();
 
         final GraphTraversalSource gtx3 = g.tx().begin();
-        assertEquals(2L, (long)gtx3.V().count().next());
+        assertEquals(2L, (long) gtx3.V().count().next());
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(2L, (long)gtx4.V().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 2, 0);
     }
 
     @Test
@@ -74,33 +62,61 @@ public class TinkerTransactionGraphTest {
         gtx.addV().property(T.id, vid).iterate();
         gtx.tx().commit();
 
-        assertEquals(1, (long)gtx.V().count().next());
+        assertEquals(1, (long) gtx.V().count().next());
 
         gtx.V(vid).drop().iterate();
-        assertEquals(0, (long)gtx.V().count().next());
+        assertEquals(0, (long) gtx.V().count().next());
 
-        // test count in other thread transaction
+        countElementsInNewThreadTx(g, 1, 0);
+
+        gtx.tx().commit();
+
+        assertEquals(0, (long) gtx.V().count().next());
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentVertexDelete() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        gtx.tx().commit();
+
+        gtx.V(v1.id()).drop().iterate();
+
+        // other tx try to remove same vertex
         final Thread thread = new Thread(() -> {
             final GraphTraversalSource gtx2 = g.tx().begin();
-            assertEquals(1L, (long)gtx2.V().count().next());
+
+            gtx2.V(v1.id()).drop().iterate();
+
+            // should be ok
+            assertEquals(0, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
         });
         thread.start();
         thread.join();
 
-        gtx.tx().commit();
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
 
-        assertEquals(0, (long)gtx.V().count().next());
+        }
 
-        final GraphTraversalSource gtx3 = g.tx().begin();
-        assertEquals(0L, (long)gtx3.V().count().next());
+        assertEquals(0, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(0L, (long)gtx4.V().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 2, 0);
     }
 
     @Test
@@ -181,28 +197,17 @@ public class TinkerTransactionGraphTest {
         gtx.addV().next();
         gtx.addV().next();
 
-        assertEquals(2, (long)gtx.V().count().next());
+        assertEquals(2, (long) gtx.V().count().next());
 
         // test count in second transaction before commit
-        final Thread thread = new Thread(() -> {
-            final GraphTraversalSource gtx2 = g.tx().begin();
-            assertEquals(0L, (long)gtx2.V().count().next());
-        });
-        thread.start();
-        thread.join();
+        countElementsInNewThreadTx(g, 0, 0);
 
         gtx.tx().rollback();
 
         final GraphTraversalSource gtx3 = g.tx().begin();
-        assertEquals(0L, (long)gtx3.V().count().next());
+        assertEquals(0L, (long) gtx3.V().count().next());
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(0L, (long)gtx4.V().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 0, 0);
     }
 
     ///// transaction tests
@@ -218,7 +223,7 @@ public class TinkerTransactionGraphTest {
         gtx.tx().commit();
 
         final GraphTraversalSource gtx2 = g.tx().begin();
-        assertEquals(2L, (long)gtx2.V().count().next());
+        assertEquals(2L, (long) gtx2.V().count().next());
     }
 
 
@@ -233,32 +238,18 @@ public class TinkerTransactionGraphTest {
         final Vertex v2 = gtx.addV().next();
         gtx.addE("tests").from(v1).to(v2).next();
 
-        assertEquals(2, (long)gtx.V().count().next());
-        assertEquals(1, (long)gtx.E().count().next());
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
 
-        // test count in second transaction before commit
-        final Thread thread = new Thread(() -> {
-            final GraphTraversalSource gtx2 = g.tx().begin();
-            assertEquals(0L, (long)gtx2.V().count().next());
-            assertEquals(0L, (long)gtx2.E().count().next());
-        });
-        thread.start();
-        thread.join();
+        countElementsInNewThreadTx(g, 0, 0);
 
         gtx.tx().commit();
 
         final GraphTraversalSource gtx3 = g.tx().begin();
-        assertEquals(2L, (long)gtx3.V().count().next());
-        assertEquals(1L, (long)gtx3.E().count().next());
+        assertEquals(2L, (long) gtx3.V().count().next());
+        assertEquals(1L, (long) gtx3.E().count().next());
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(2L, (long)gtx4.V().count().next());
-            assertEquals(1L, (long)gtx4.E().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 2, 1);
     }
 
     @Test
@@ -271,14 +262,14 @@ public class TinkerTransactionGraphTest {
         final Vertex v2 = gtx.addV().next();
         gtx.addE("tests").from(v1).to(v2).next();
 
-        assertEquals(2, (long)gtx.V().count().next());
-        assertEquals(1, (long)gtx.E().count().next());
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
 
         // test count in second transaction before commit
         final Thread thread = new Thread(() -> {
             final GraphTraversalSource gtx2 = g.tx().begin();
-            assertEquals(0L, (long)gtx2.V().count().next());
-            assertEquals(0L, (long)gtx2.E().count().next());
+            assertEquals(0L, (long) gtx2.V().count().next());
+            assertEquals(0L, (long) gtx2.E().count().next());
         });
         thread.start();
         thread.join();
@@ -286,17 +277,10 @@ public class TinkerTransactionGraphTest {
         gtx.tx().rollback();
 
         final GraphTraversalSource gtx3 = g.tx().begin();
-        assertEquals(0L, (long)gtx3.V().count().next());
-        assertEquals(0L, (long)gtx3.E().count().next());
+        assertEquals(0L, (long) gtx3.V().count().next());
+        assertEquals(0L, (long) gtx3.E().count().next());
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(0L, (long)gtx4.V().count().next());
-            assertEquals(0L, (long)gtx4.E().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 0, 0);
     }
 
     @Test
@@ -333,25 +317,53 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, (long) gtx.E().count().next());
 
         // should remove reference from edge to parent vertices
-        final TinkerVertex v1afterTx =  g.getVertices().get(v1.id()).get();
-        final TinkerVertex v2afterTx =  g.getVertices().get(v2.id()).get();
+        final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
+        final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
         assertNull(v1afterTx.inEdges);
         assertEquals(0, v1afterTx.outEdges.get("tests").size());
         assertEquals(0, v2afterTx.inEdges.get("tests").size());
         assertNull(v2afterTx.outEdges);
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(2L, (long) gtx4.V().count().next());
-            assertEquals(0L, (long) gtx4.E().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 2, 0);
     }
 
     @Test
-    public void shouldHandleConcurrentDelete() throws InterruptedException {
+    public void shouldHandleConcurrentChangeForProperty() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        // change test property
+        gtx.E(edge.id()).property("test", 1).iterate();
+
+        // change property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(edge.id()).property("test", 2).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 edge with updated property
+        assertEquals(1L, (long) gtx.E(edge.id()).count().next());
+        assertEquals(2, gtx.E(edge.id()).values("test").next());
+    }
+
+    @Test
+    public void shouldHandleConcurrentEdgeDelete() throws InterruptedException {
         final TinkerTransactionGraph g = TinkerTransactionGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -388,27 +400,176 @@ public class TinkerTransactionGraphTest {
         thread.join();
 
         // try do delete in initial tx
-        gtx.tx().commit();
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
 
         // should remove reference from edge to parent vertices
-        final TinkerVertex v1afterTx =  g.getVertices().get(v1.id()).get();
-        final TinkerVertex v2afterTx =  g.getVertices().get(v2.id()).get();
+        final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
+        final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
         assertNull(v1afterTx.inEdges);
         assertEquals(0, v1afterTx.outEdges.get("tests").size());
         assertEquals(0, v2afterTx.inEdges.get("tests").size());
         assertNull(v2afterTx.outEdges);
 
-        // test count in other thread transaction
-        final Thread thread2 = new Thread(() -> {
-            final GraphTraversalSource gtx4 = g.tx().begin();
-            assertEquals(2L, (long) gtx4.V().count().next());
-            assertEquals(0L, (long) gtx4.E().count().next());
-        });
-        thread2.start();
-        thread2.join();
+        countElementsInNewThreadTx(g, 2, 0);
     }
 
+
+    // Mike's test cases
+
+    //tx1 adds a property to v1, tx2 deletes v1
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete vertex used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(0, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    // tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
+    @Test
+    public void shouldHandleAddingEdgeWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add Edge
+        gtx.addE("test").from(v1).to(v2).iterate();
+
+        // tx2 in same time delete one of vertices used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    // tx1 adds a new vertex v1, tx2 adds the same vertex
+    @Test
+    public void shouldHandleAddingSameVertexInDifferentTx() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+
+        // tx2 in same time add vertex with same id
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.addV().property(T.id, vid).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    // tx1 changes a Cardinality.single property to x, tx2 changes the same Cardinality.single property to y
+    // same as shouldHandleConcurrentChangeForProperty
+
+    // tx1 removes vertex v1, tx2 removes the same vertex
+    // tested in shouldHandleConcurrentVertexDelete
+
+    // tx1 adds vertex v1, tx2 removes vertex v1
+    @Test
+    public void shouldHandleAddingVertexWhenOtherTxTryToDeleteSameVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+
+        // tx2 in same time try to delete same vertex
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(vid).drop().iterate();
+
+            assertEquals(0, (long) gtx.V().count().next());
+            assertEquals(0, (long) gtx.E().count().next());
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    // utility methods
+
+    private void countElementsInNewThreadTx(final TinkerTransactionGraph g, final long verticesCount, final long edgesCount) throws InterruptedException {
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx = g.tx().begin();
+            assertEquals(verticesCount, (long) gtx.V().count().next());
+            assertEquals(edgesCount, (long) gtx.E().count().next());
+        });
+        thread.start();
+        thread.join();
+    }
 }

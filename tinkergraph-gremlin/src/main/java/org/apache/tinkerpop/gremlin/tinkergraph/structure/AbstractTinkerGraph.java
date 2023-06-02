@@ -29,10 +29,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -66,6 +63,7 @@ public abstract class AbstractTinkerGraph implements Graph {
     public abstract void removeEdge(final Object edgeId);
 
     public void touch(final TinkerVertex vertex) {};
+    public void touch(final TinkerEdge edge) {};
 
     public abstract Iterator<Vertex> vertices(Object... vertexIds);
 
@@ -164,6 +162,29 @@ public abstract class AbstractTinkerGraph implements Graph {
     @Override
     public Configuration configuration() {
         return configuration;
+    }
+
+    ///////////// Utility methods ///////////////
+    protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        touch(vertex);
+        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
+        Set<Edge> edges = vertex.outEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.outEdges.put(label, edges);
+        }
+        edges.add(edge);
+    }
+
+    protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        touch(vertex);
+        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
+        Set<Edge> edges = vertex.inEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.inEdges.put(label, edges);
+        }
+        edges.add(edge);
     }
 
     ///////////// Features ///////////////

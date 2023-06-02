@@ -94,8 +94,10 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public Object clone() {
-        // todo: implement
-        return this;
+        // todo: probably need deep clone
+        final TinkerVertexProperty vp = new TinkerVertexProperty(id, vertex, key, value);
+        vp.properties = properties;
+        return vp;
     }
 
     @Override
@@ -121,6 +123,8 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
+        ((AbstractTinkerGraph)vertex.graph()).touch(vertex);
+
         if (this.removed) throw elementAlreadyRemoved(VertexProperty.class, id);
 
         if ((!allowNullPropertyValues && null == value)) {

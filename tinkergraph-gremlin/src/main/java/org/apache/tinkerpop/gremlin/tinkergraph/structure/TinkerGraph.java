@@ -197,26 +197,6 @@ public final class TinkerGraph extends AbstractTinkerGraph {
         return edge;
     }
 
-    private static void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
-        Set<Edge> edges = vertex.outEdges.get(label);
-        if (null == edges) {
-            edges = new HashSet<>();
-            vertex.outEdges.put(label, edges);
-        }
-        edges.add(edge);
-    }
-
-    private static void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
-        Set<Edge> edges = vertex.inEdges.get(label);
-        if (null == edges) {
-            edges = new HashSet<>();
-            vertex.inEdges.put(label, edges);
-        }
-        edges.add(edge);
-    }
-
     @Override
     public void removeEdge(final Object edgeId) {
         if (edges.containsKey(edgeId)) return;

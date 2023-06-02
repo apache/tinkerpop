@@ -26,8 +26,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 final class TinkerElementContainer<T extends TinkerElement> {
     private T element;
+    private boolean isDeleted = false;
     private ThreadLocal<T> transactionUpdatedValue = ThreadLocal.withInitial(() -> null);
-    private ThreadLocal<Boolean> isDeleted = ThreadLocal.withInitial(() -> false);
+    private ThreadLocal<Boolean> isDeletedInTx = ThreadLocal.withInitial(() -> false);
 
     // needed to understand whether this element is used in other transactions or it can be deleted during rollback
     private AtomicInteger usesInTransactions = new AtomicInteger(0);
@@ -39,16 +40,17 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     public T get() {
-        if (isDeleted.get()) return null;
+        if (isDeletedInTx.get()) return null;
         if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
+        if (isDeleted) return null;
         return element;
     }
 
     public boolean isChanged() {
-        return isDeleted.get() || transactionUpdatedValue.get() != null;
+        return isDeletedInTx.get() || transactionUpdatedValue.get() != null;
     }
 
-    public boolean isDeleted() { return isDeleted.get(); }
+    public boolean isDeleted() { return isDeleted || isDeletedInTx.get(); }
 
     public void touch(final T transactionElement) {
         if (element != transactionElement) return;
@@ -59,24 +61,25 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     public void markDeleted() {
-        isDeleted.set(true);
+        isDeletedInTx.set(true);
     }
 
     public void setDraft(final T transactionElement) {
-        if (transactionUpdatedValue.get() != null || isDeleted.get())
+        if (transactionUpdatedValue.get() != null || isDeletedInTx.get())
             usesInTransactions.incrementAndGet();
         transactionUpdatedValue.set(transactionElement);
     }
 
     public boolean updatedOutsideTransaction() {
         // todo: do we need to check version on delete?
-        return element != null
-                && transactionUpdatedValue.get() != null
-                && transactionUpdatedValue.get().version() != element.version();
+        return isDeleted ||
+                element != null
+                        && transactionUpdatedValue.get() != null
+                        && transactionUpdatedValue.get().version() != element.version();
     }
 
     public void commit(final long txVersion) {
-        if (isDeleted.get()) {
+        if (isDeletedInTx.get()) {
             // remove relation between edge and vertex
             if (element instanceof TinkerEdge) {
                 final TinkerEdge edge = (TinkerEdge) element;
@@ -96,6 +99,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
             }
 
             element = null;
+            isDeleted = true;
         } else {
             element = transactionUpdatedValue.get();
             element.currentVersion = txVersion;
@@ -111,7 +115,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
     private void reset() {
         transactionUpdatedValue.set(null);
-        isDeleted.set(false);
+        isDeletedInTx.set(false);
     }
 
     public boolean tryLock() {
