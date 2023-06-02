@@ -287,6 +287,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 .. Update `community.html`, specifically the version numbers for our official releases.
 .. Update link:https://tinkerpop.apache.org/download.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+.. Update `docs/gremlint/package.json` with the latest version of gremlint.
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
