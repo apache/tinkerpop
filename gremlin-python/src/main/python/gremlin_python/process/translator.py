@@ -67,7 +67,7 @@ class Translator:
     # Do any needed special processing for the representation
     # of strings and dates.
     def fixup(self, v):
-        if type(v) == str:
+        if isinstance(v, str):
             return f'\'{v}\''
         elif type(v) == datetime:
             return self.process_date(v)
@@ -133,7 +133,7 @@ class Translator:
                   script += f'WithOptions.{self.options[p]}'
                 elif type(p) == Bytecode:
                     script += self.translate(p, True)
-                elif type(p) == P:
+                elif isinstance(p, P):
                     script += self.process_predicate(p)
                 elif type(p) in [Cardinality, Pop, Operator]:
                     tmp = str(p)
@@ -146,10 +146,12 @@ class Translator:
                 elif p == WithOptions.tokens:
                     script += 'WithOptions.tokens'
                     with_opts = True
-                elif type(p) == str:
+                elif isinstance(p, str):
                     script += f'\'{p}\''
                 elif type(p) == bool:
                     script += 'true' if p else 'false'
+                elif p is None:
+                    script += 'null'
                 else:
                     script += str(p)
                 c += 1
