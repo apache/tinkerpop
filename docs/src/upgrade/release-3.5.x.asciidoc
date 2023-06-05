@@ -29,7 +29,7 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-
+`gremlin-javascript` and `gremlint` have upgraded from Node 10 to Node 16 as Node 10 has passed end of life.
 
 == TinkerPop 3.5.6
 

@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
 * Added `gremlin.spark.dontDeleteNonEmptyOutput` to stop deleting the output folder if it is not empty in `spark-gremlin`.
+* Upgraded `gremlin-javascript` and `gremlint` to Node 16.20.0.
 
 [[release-3-5-6]]
 === TinkerPop 3.5.6 (Release Date: May 1, 2023)
