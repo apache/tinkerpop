@@ -186,6 +186,43 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>gremlin-dotnet-src-skipped-warning</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <missing>.glv</missing>
+                </file>
+            </activation>
+            <properties>
+                <packaging.type>pom</packaging.type>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.ekryd.echo-maven-plugin</groupId>
+                        <artifactId>echo-maven-plugin</artifactId>
+                        <version>1.3.2</version>
+                        <executions>
+                            <execution>
+                                <id>skipped-gremlin-dotnet-src-warning</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>echo</goal>
+                                </goals>
+                                <configuration>
+                                    <message>
+                                        Skipping gremlin-dotnet build. Activate by creating files tinkerpop/gremlin-dotnet/src/.glv and tinkerpop/gremlin-dotnet/test/.glv
+                                    </message>
+                                    <level>WARNING</level>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!--
         Provides a way to deploy the Gremlin.Net GLV to nuget. This cannot be part of the standard maven execution
         because nuget does not have a staging environment like sonatype for releases. As soon as the release is
