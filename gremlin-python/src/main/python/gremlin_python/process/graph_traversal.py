@@ -134,7 +134,7 @@ class GraphTraversalSource(object):
         val = True if v is None else v
         if options_strategy is None:
             options_strategy = OptionsStrategy({k: val})
-            source = self.withStrategies(options_strategy)
+            source = self.with_strategies(options_strategy)
         else:
             options_strategy[1].configuration[k] = val
 
@@ -241,6 +241,11 @@ class GraphTraversalSource(object):
     def call(self, *args):
         traversal = self.get_graph_traversal()
         traversal.bytecode.add_step("call", *args)
+        return traversal
+
+    def union(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("union", *args)
         return traversal
 
 
@@ -1599,7 +1604,7 @@ def V(*args):
 
 
 def addE(*args):
-    return __.addE(*args)
+    return __.add_e(*args)
 
 
 def add_e(*args):
@@ -1607,7 +1612,7 @@ def add_e(*args):
 
 
 def addV(*args):
-    return __.addV(*args)
+    return __.add_v(*args)
 
 
 def add_v(*args):
@@ -1635,7 +1640,7 @@ def both(*args):
 
 
 def bothE(*args):
-    return __.bothE(*args)
+    return __.both_e(*args)
 
 
 def both_e(*args):
@@ -1643,7 +1648,7 @@ def both_e(*args):
 
 
 def bothV(*args):
-    return __.bothV(*args)
+    return __.both_v(*args)
 
 
 def both_v(*args):
@@ -1683,7 +1688,7 @@ def count(*args):
 
 
 def cyclicPath(*args):
-    return __.cyclicPath(*args)
+    return __.cyclic_path(*args)
 
 
 def cyclic_path(*args):
@@ -1703,7 +1708,7 @@ def element(*args):
 
 
 def elementMap(*args):
-    return __.elementMap(*args)
+    return __.element_map(*args)
 
 
 def element_map(*args):
@@ -1723,7 +1728,7 @@ def filter_(*args):
 
 
 def flatMap(*args):
-    return __.flatMap(*args)
+    return __.flat_map(*args)
 
 
 def flat_map(*args):
@@ -1739,7 +1744,7 @@ def group(*args):
 
 
 def groupCount(*args):
-    return __.groupCount(*args)
+    return __.group_count(*args)
 
 
 def group_count(*args):
@@ -1751,7 +1756,7 @@ def has(*args):
 
 
 def hasId(*args):
-    return __.hasId(*args)
+    return __.has_id(*args)
 
 
 def has_id(*args):
@@ -1759,7 +1764,7 @@ def has_id(*args):
 
 
 def hasKey(*args):
-    return __.hasKey(*args)
+    return __.has_key_(*args)
 
 
 def has_key_(*args):
@@ -1767,7 +1772,7 @@ def has_key_(*args):
 
 
 def hasLabel(*args):
-    return __.hasLabel(*args)
+    return __.has_label(*args)
 
 
 def has_label(*args):
@@ -1775,7 +1780,7 @@ def has_label(*args):
 
 
 def hasNot(*args):
-    return __.hasNot(*args)
+    return __.has_not(*args)
 
 
 def has_not(*args):
@@ -1783,7 +1788,7 @@ def has_not(*args):
 
 
 def hasValue(*args):
-    return __.hasValue(*args)
+    return __.has_value(*args)
 
 
 def has_value(*args):
@@ -1799,7 +1804,7 @@ def identity(*args):
 
 
 def inE(*args):
-    return __.inE(*args)
+    return __.in_e(*args)
 
 
 def in_e(*args):
@@ -1807,7 +1812,7 @@ def in_e(*args):
 
 
 def inV(*args):
-    return __.inV(*args)
+    return __.in_v(*args)
 
 
 def in_v(*args):
@@ -1899,7 +1904,7 @@ def order(*args):
 
 
 def otherV(*args):
-    return __.otherV(*args)
+    return __.other_v(*args)
 
 
 def other_v(*args):
@@ -1911,7 +1916,7 @@ def out(*args):
 
 
 def outE(*args):
-    return __.outE(*args)
+    return __.out_e(*args)
 
 
 def out_e(*args):
@@ -1919,7 +1924,7 @@ def out_e(*args):
 
 
 def outV(*args):
-    return __.outV(*args)
+    return __.out_v(*args)
 
 
 def out_v(*args):
@@ -1943,7 +1948,7 @@ def property(*args):
 
 
 def propertyMap(*args):
-    return __.propertyMap(*args)
+    return __.property_map(*args)
 
 
 def property_map(*args):
@@ -1971,7 +1976,7 @@ def select(*args):
 
 
 def sideEffect(*args):
-    return __.sideEffect(*args)
+    return __.side_effect(*args)
 
 
 def side_effect(*args):
@@ -1979,7 +1984,7 @@ def side_effect(*args):
 
 
 def simplePath(*args):
-    return __.simplePath(*args)
+    return __.simple_path(*args)
 
 
 def simple_path(*args):
@@ -2007,7 +2012,7 @@ def tail(*args):
 
 
 def timeLimit(*args):
-    return __.timeLimit(*args)
+    return __.time_limit(*args)
 
 
 def time_limit(*args):
@@ -2023,7 +2028,7 @@ def to(*args):
 
 
 def toE(*args):
-    return __.toE(*args)
+    return __.to_e(*args)
 
 
 def to_e(*args):
@@ -2031,7 +2036,7 @@ def to_e(*args):
 
 
 def toV(*args):
-    return __.toV(*args)
+    return __.to_v(*args)
 
 
 def to_v(*args):
@@ -2059,7 +2064,7 @@ def value(*args):
 
 
 def valueMap(*args):
-    return __.valueMap(*args)
+    return __.value_map(*args)
 
 
 def value_map(*args):

@@ -19,12 +19,14 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Timer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.slf4j.Logger;
@@ -65,10 +67,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -103,6 +107,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
      * Serializers for the response.
      */
     private final Map<String, MessageSerializer<?>> serializers;
+
+    /**
+     * Serializer for {@code text/plain} which is a serializer exclusive to HTTP.
+     */
+    private static final TextPlainMessageSerializer textPlainSerializer = new TextPlainMessageSerializer();
 
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
@@ -244,7 +253,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             attemptCommit(requestArguments.getValue3(), graphManager, settings.strictTransactionManagement);
 
                             try {
-                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
+                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage, ctx.alloc()).getBytes(UTF8));
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
 
@@ -352,6 +361,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final String accept = p.getValue0().equals("*/*") ? "application/json" : p.getValue0();
             if (serializers.containsKey(accept))
                 return Pair.with(accept, (MessageTextSerializer<?>) serializers.get(accept));
+            else if (accept.equals("text/plain")) {
+                return Pair.with(accept, textPlainSerializer);
+            }
         }
 
         return null;

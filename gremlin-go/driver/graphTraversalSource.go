@@ -215,6 +215,13 @@ func (gts *GraphTraversalSource) MergeV(args ...interface{}) *GraphTraversal {
 	return traversal
 }
 
+// Union allows for a multi-branched start to a traversal.
+func (gts *GraphTraversalSource) Union(args ...interface{}) *GraphTraversal {
+	traversal := gts.GetGraphTraversal()
+	traversal.Bytecode.AddStep("union", args...)
+	return traversal
+}
+
 func (gts *GraphTraversalSource) Tx() *Transaction {
 	return &Transaction{g: gts, remoteConnection: gts.remoteConnection}
 }

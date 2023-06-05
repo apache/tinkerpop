@@ -94,4 +94,50 @@ public class SparkCloneVertexProgramInterceptorTest extends AbstractSparkTest {
         assertEquals(totalV, totalVRef);
         assertEquals(totalE, totalERef);
     }
+
+    @Test
+    public void shouldStopPurgingOfExistingNonEmptyFolder() throws Exception {
+        // Build the random graph
+        final TinkerGraph randomGraph = TinkerGraph.open();
+        final int totalVertices = 200000;
+        TestHelper.createRandomGraph(randomGraph, totalVertices, 100);
+        final String inputLocation = TestHelper.makeTestDataFile(GryoSerializerIntegrateTest.class,
+                UUID.randomUUID().toString(),
+                "random-graph.kryo");
+        randomGraph.io(IoCore.gryo()).writeGraph(inputLocation);
+        randomGraph.clear();
+        randomGraph.close();
+
+        // Serialize the graph to disk by CloneVertexProgram + SparkGraphComputer
+        final String outputLocation = TestHelper.makeTestDataDirectory(GryoSerializerIntegrateTest.class, UUID.randomUUID().toString());
+        Configuration configuration1 = getBaseConfiguration();
+        configuration1.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
+        configuration1.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
+        configuration1.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration1.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
+        configuration1.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
+        configuration1.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+        Graph graph = GraphFactory.open(configuration1);
+        graph.compute(SparkGraphComputer.class).program(CloneVertexProgram.build().create()).submit().get();
+
+        // Read the total Vertex/Edge count for golden reference through the original graph
+        Configuration configuration2 = getBaseConfiguration();
+        configuration2.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
+        configuration2.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
+        configuration2.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration2.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, NullOutputFormat.class.getCanonicalName());
+        configuration2.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+        configuration2.setProperty(Constants.GREMLIN_SPARK_DONT_DELETE_NON_EMPTY_OUTPUT, true);
+        graph = GraphFactory.open(configuration2);
+        long totalVRef = graph.traversal().withComputer(SparkGraphComputer.class).V().count().next().longValue();
+
+        assertEquals(totalVRef, totalVertices);
+        // Should see exception if reuse the previous outputLocation which is not empty
+        graph = GraphFactory.open(configuration1);
+        try {
+            graph.traversal().withComputer(SparkGraphComputer.class).E().count().next().longValue();
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("is not empty"));
+        }
+    }
 }

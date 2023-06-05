@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assume.assumeThat;
 
 import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.junit.Test;
@@ -35,6 +37,9 @@ public class ScriptEngineCacheTest {
 
     @Test
     public void shouldGetEngineFromCache() {
+        String javaVersion = System.getProperty("java.version");
+        int majorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf('.')));
+        assumeThat("Requires lower than JDK 14.", majorVersion < 14, is(true));
         assertSame(ScriptEngineCache.get("nashorn"), ScriptEngineCache.get("nashorn"));
     }
 

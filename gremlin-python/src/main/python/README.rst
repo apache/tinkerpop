@@ -42,16 +42,16 @@ from the Python shell looks like this:
 
     >>> from gremlin_python.process.anonymous_traversal import traversal
     >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-    >>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+    >>> g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
 Once "g" has been created using a connection, it is then possible to start writing Gremlin traversals to query the
 remote graph:
 
-    >>> g.V().both()[1:3].toList()
+    >>> g.V().both()[1:3].to_list()
     [v[2], v[4]]
-    >>> g.V().both()[1].toList()
+    >>> g.V().both()[1].to_list()
     [v[2]]
-    >>> g.V().both().name.toList()
+    >>> g.V().both().name.to_list()
     [lop, vadas, josh, marko, marko, josh, peter, ripple, lop, marko, josh, lop]
 
 -----------------
@@ -84,7 +84,7 @@ Create Vertex
 
     def create_vertex(self, vid, vlabel):
         # default database cardinality is used when Cardinality argument is not specified
-        g.addV(vlabel).property(id, vid). \
+        g.add_v(vlabel).property(id, vid). \
           property(single, 'name', 'Apache'). \
           property('lastname', 'Tinkerpop'). \
           next()
@@ -95,13 +95,13 @@ Find Vertices
 .. code:: python
 
     def list_all(self, limit=500):
-        g.V().limit(limit).elementMap().toList()
+        g.V().limit(limit).element_map().to_list()
 
     def find_vertex(self, vid):
-        g.V(vid).elementMap().next()
+        g.V(vid).element_map().next()
 
     def list_by_label_name(self, vlabel, name):
-        g.V().has(vlabel, 'name', name).elementMap().toList()
+        g.V().has(vlabel, 'name', name).element_map().to_list()
 
 Update Vertex
 ^^^^^^^^^^^^^

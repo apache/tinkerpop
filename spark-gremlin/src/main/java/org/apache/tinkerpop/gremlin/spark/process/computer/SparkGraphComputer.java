@@ -315,10 +315,22 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
             SparkMemory memory = null;
             // delete output location
+            final boolean dontDeleteNonEmptyOutput =
+                    graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_DONT_DELETE_NON_EMPTY_OUTPUT, false);
             final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
             if (null != outputLocation) {
-                if (outputToHDFS && fileSystemStorage.exists(outputLocation))
-                    fileSystemStorage.rm(outputLocation);
+                if (outputToHDFS && fileSystemStorage.exists(outputLocation)) {
+                    if (dontDeleteNonEmptyOutput) {
+                        // DON'T delete the content if the folder is not empty
+                        if (fileSystemStorage.ls(outputLocation).size() == 0) {
+                            fileSystemStorage.rm(outputLocation);
+                        } else {
+                            throw new IllegalStateException("The output location '" + outputLocation + "' is not empty");
+                        }
+                    } else {
+                        fileSystemStorage.rm(outputLocation);
+                    }
+                }
                 if (outputToSpark && sparkContextStorage.exists(outputLocation))
                     sparkContextStorage.rm(outputLocation);
             }

@@ -83,9 +83,9 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
                 // if the request came in on a session then the serialization must occur that same thread except
                 // in the case of errors for reasons described above.
                 if (null == session || !o.getStatus().getCode().isSuccess())
-                    serialized = new Frame(textSerializer.serializeResponseAsString(o));
+                    serialized = new Frame(textSerializer.serializeResponseAsString(o, ctx.alloc()));
                 else
-                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get());
+                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o, ctx.alloc())).get());
 
                 objects.add(serialized);
             }
@@ -101,7 +101,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
                 objects.add(serializer.serializeResponseAsBinary(error, ctx.alloc()));
             } else {
                 final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
-                objects.add(textSerializer.serializeResponseAsString(error));
+                objects.add(textSerializer.serializeResponseAsString(error, ctx.alloc()));
             }
         }
     }

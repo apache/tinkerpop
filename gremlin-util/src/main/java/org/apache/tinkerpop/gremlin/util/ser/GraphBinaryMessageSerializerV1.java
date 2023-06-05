@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
@@ -36,6 +37,7 @@ import org.javatuples.Pair;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<GraphBinaryMapper> {
+public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<GraphBinaryMapper> implements MessageTextSerializer<GraphBinaryMapper> {
 
     public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_BUILDER = "builder";
@@ -51,6 +53,9 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<Gr
 
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRAPHBINARY_V1D0 + "-stringd";
+
+    private static final Base64.Encoder base64Encoder = Base64.getEncoder();
+    private static final Base64.Decoder base64Decoder = Base64.getDecoder();
 
     private byte[] header = MIME_TYPE.getBytes(UTF_8);
     private boolean serializeToString = false;
@@ -183,6 +188,41 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<Gr
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE};
+    }
+
+    @Override
+    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+        final ByteBuf bb = serializeResponseAsBinary(responseMessage, allocator);
+        return base64Encoder.encodeToString(convertToBytes(bb));
+    }
+
+    @Override
+    public String serializeRequestAsString(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
+        final ByteBuf bb = serializeRequestAsBinary(requestMessage, allocator);
+        return base64Encoder.encodeToString(convertToBytes(bb));
+    }
+
+    @Override
+    public RequestMessage deserializeRequest(final String msg) throws SerializationException {
+        return deserializeRequest(convertToByteBuf(msg));
+    }
+
+    @Override
+    public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
+        return deserializeResponse(convertToByteBuf(msg));
+    }
+
+    private byte[] convertToBytes(final ByteBuf bb) {
+        byte[] bytes = new byte[bb.readableBytes()];
+        bb.getBytes(bb.readerIndex(), bytes);
+        return bytes;
+    }
+
+    private ByteBuf convertToByteBuf(final String msg) {
+        final byte[] b = base64Decoder.decode(msg);
+        final ByteBuf bb = Unpooled.buffer(b.length);
+        bb.writeBytes(b);
+        return bb;
     }
 
     private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -31,9 +32,9 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface MessageTextSerializer<M> extends MessageSerializer<M> {
-    public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException;
+    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
-    public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException;
+    public String serializeRequestAsString(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException;
 
     public RequestMessage deserializeRequest(final String msg) throws SerializationException;
 
