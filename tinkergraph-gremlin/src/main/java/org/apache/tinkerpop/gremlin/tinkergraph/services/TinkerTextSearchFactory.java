@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
 import java.util.Collections;
@@ -79,7 +79,7 @@ public class TinkerTextSearchFactory<I, R> extends TinkerServiceRegistry.TinkerS
         }
     }
 
-    public TinkerTextSearchFactory(final TinkerGraph graph) {
+    public TinkerTextSearchFactory(final AbstractTinkerGraph graph) {
         super(graph, NAME);
     }
 

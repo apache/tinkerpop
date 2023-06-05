@@ -22,7 +22,6 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
@@ -458,7 +457,7 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     protected TinkerServiceRegistry.TinkerServiceFactory instantiate(final String className) {
         try {
-            return (TinkerServiceRegistry.TinkerServiceFactory) Class.forName(className).getConstructor(TinkerTransactionGraph.class).newInstance(this);
+            return (TinkerServiceRegistry.TinkerServiceFactory) Class.forName(className).getConstructor(AbstractTinkerGraph.class).newInstance(this);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
                  NoSuchMethodException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
