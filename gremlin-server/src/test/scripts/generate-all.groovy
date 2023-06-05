@@ -36,7 +36,7 @@ globals << [hook : [
     // things now, that test config would have been mixed in with release artifacts and there would have been ugly
     // exclusions to make packaging work properly.
     allowSetOfIdManager = { graph, idManagerFieldName, idManager ->
-        java.lang.reflect.Field idManagerField = graph.class.getDeclaredField(idManagerFieldName)
+        java.lang.reflect.Field idManagerField = graph.class.getSuperclass().getDeclaredField(idManagerFieldName)
         idManagerField.setAccessible(true)
         idManagerField.set(graph, idManager)
     }
