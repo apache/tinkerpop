@@ -29,6 +29,8 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+`gremlin-javascript` and `gremlint` have upgraded from Node 10 to Node 16 as Node 10 has passed end of life.
+`gremlin-go` has upgraded from Go 1.17 to Go 1.20 as Go 1.20 has passed end of life.
 
 
 == TinkerPop 3.5.6
@@ -221,7 +223,7 @@ A utility class `SparkIOUtil` is introduces, which allows users to load graph in
 After introducing a number of release candidates over the past several months, the official release of Gremlin-Go is now
 available starting at 3.5.4. There are a few simple prerequisites required to get started:
 
-* A Golang version of `1.17` or greater. Please see link:https://go.dev/dl/[Go Downloads] for more details on installing Golang.
+* A Golang version of `1.20` or greater. Please see link:https://go.dev/dl/[Go Downloads] for more details on installing Golang.
 * A basic understanding of link:https://go.dev/blog/using-go-modules[Go Modules].
 * A project set up using Go Modules where `gremlin-go` will be used as a dependency.
 
