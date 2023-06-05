@@ -90,6 +90,7 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
 
         try {
             // Double-checked locking to reduce lock time
+            // todo: consider collection changes for each transaction in local list
             if (changedVertices.stream().anyMatch(v -> v.getValue().updatedOutsideTransaction()) ||
                     changedEdges.stream().anyMatch(v -> v.getValue().updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);

@@ -62,15 +62,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         this.setProperty(Graph.GRAPH, TinkerTransactionGraph.class.getName());
     }};
 
-    public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
-    public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
-    public static final String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
-    public static final String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
-    public static final String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
-    public static final String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
-    public static final String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
-
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
     private final TinkerThreadLocalTransaction transaction = new TinkerThreadLocalTransaction(this);

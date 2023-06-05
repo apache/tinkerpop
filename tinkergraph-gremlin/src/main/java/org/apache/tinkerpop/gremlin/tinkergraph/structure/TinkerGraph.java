@@ -76,16 +76,6 @@ public final class TinkerGraph extends AbstractTinkerGraph {
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
     }};
 
-    // todo: move out
-    public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
-    public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
-    public static final String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
-    public static final String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
-    public static final String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
-    public static final String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
-    public static final String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
-
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
@@ -209,12 +199,12 @@ public final class TinkerGraph extends AbstractTinkerGraph {
         if (null != outVertex && null != outVertex.outEdges) {
             final Set<Edge> edges = outVertex.outEdges.get(edge.label());
             if (null != edges)
-                edges.remove(this);
+                edges.remove(edge);
         }
         if (null != inVertex && null != inVertex.inEdges) {
             final Set<Edge> edges = inVertex.inEdges.get(edge.label());
             if (null != edges)
-                edges.remove(this);
+                edges.remove(edge);
         }
 
         this.edges.remove(edgeId);
