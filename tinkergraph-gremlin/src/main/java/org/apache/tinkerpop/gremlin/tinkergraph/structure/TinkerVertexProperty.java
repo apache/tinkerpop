@@ -52,7 +52,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
      * with {@link TinkerGraphComputerView}.
      */
     public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
-        this(((TinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((TinkerGraph) vertex.graph()), vertex, key, value, propertyKeyValues);
+        this(((AbstractTinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((AbstractTinkerGraph) vertex.graph()), vertex, key, value, propertyKeyValues);
     }
 
     /**

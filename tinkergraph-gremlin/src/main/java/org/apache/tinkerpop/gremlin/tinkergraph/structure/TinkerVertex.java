@@ -146,7 +146,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public Set<String> keys() {
         if (null == this.properties) return Collections.emptySet();
-        return TinkerHelper.inComputerMode((TinkerGraph) graph()) ?
+        return TinkerHelper.inComputerMode((AbstractTinkerGraph) graph()) ?
                 Vertex.super.keys() :
                 this.properties.keySet();
     }

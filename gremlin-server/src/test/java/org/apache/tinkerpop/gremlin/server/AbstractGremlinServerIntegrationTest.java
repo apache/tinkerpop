@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -150,7 +150,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
         // calling close() on TinkerGraph does not free resources quickly enough. adding a clear() call let's gc
         // cleanup earlier
         server.getServerGremlinExecutor().getGraphManager().getAsBindings().values().stream()
-                .filter(g -> g instanceof TinkerGraph).forEach(g -> ((TinkerGraph) g).clear());
+                .filter(g -> g instanceof AbstractTinkerGraph).forEach(g -> ((AbstractTinkerGraph) g).clear());
 
         if (server != null) {
             server.stop().join();
