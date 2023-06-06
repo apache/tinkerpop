@@ -210,7 +210,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (container == null)
             container = new TinkerElementContainer<>();
         edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
-        // ElementHelper.attachProperties(edge, keyValues);
+        ElementHelper.attachProperties(edge, keyValues);
         container.setDraft(edge);
         edges.put(edge.id(), container);
 
