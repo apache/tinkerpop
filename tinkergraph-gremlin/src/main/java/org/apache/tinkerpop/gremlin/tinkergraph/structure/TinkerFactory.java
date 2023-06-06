@@ -58,9 +58,10 @@ public final class TinkerFactory {
      * Create the "classic" graph with transaction support.
      * @see #createClassic()
      */
-    public static AbstractTinkerGraph createTxClassic() {
+    public static TinkerTransactionGraph createTxClassic() {
         final TinkerTransactionGraph g = getTinkerTransactionGraphWithClassicNumberManager();
         generateClassic(g);
+        g.tx().commit();
         return g;
     }
 
@@ -99,6 +100,7 @@ public final class TinkerFactory {
     public static TinkerTransactionGraph createTxModern() {
         final TinkerTransactionGraph g = getTinkerTransactionGraphWithCurrentNumberManager();
         generateModern(g);
+        g.tx().commit();
         return g;
     }
 
@@ -154,6 +156,7 @@ public final class TinkerFactory {
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         final TinkerTransactionGraph g = TinkerTransactionGraph.open(conf);
         generateTheCrew(g);
+        g.tx().commit();
         return g;
     }
 
@@ -227,6 +230,7 @@ public final class TinkerFactory {
     public static TinkerTransactionGraph createTxKitchenSink() {
         final TinkerTransactionGraph g = getTinkerTransactionGraphWithCurrentNumberManager();
         generateKitchenSink(g);
+        g.tx().commit();
         return g;
     }
 
@@ -261,6 +265,7 @@ public final class TinkerFactory {
     public static TinkerTransactionGraph createTxGratefulDead() {
         final TinkerTransactionGraph g = getTinkerTransactionGraphWithCurrentNumberManager();
         generateGratefulDead(g);
+        g.tx().commit();
         return g;
     }
 
