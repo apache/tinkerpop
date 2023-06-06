@@ -22,13 +22,9 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.*;
-import org.apache.tinkerpop.gremlin.structure.io.Io;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
@@ -315,7 +311,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                                                                   final Object... ids) {
         final Iterator<T> iterator;
         if (0 == ids.length) {
-            iterator = new TinkerGraphIterator<>(elements.values().stream().map(e -> (T)e.get()).filter(e -> e != null).iterator());
+            iterator = new TinkerGraphIterator<>(elements.values().stream().map(e -> (T) e.get()).filter(e -> e != null).iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
 
@@ -327,7 +323,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 // ids cant be null so all of those filter out
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
-                return (T)elements.get(idManager.convert(iid)).get();
+                final TinkerElementContainer<C> element = elements.get(iid);
+                return element == null ? null : (T) elements.get(iid).get();
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
