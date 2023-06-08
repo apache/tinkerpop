@@ -26,7 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
-* Changed `Gremlin.version()` to read from the more specificly named `tinkerpop-version` attribute.
+* Changed `Gremlin.version()` to read from the more specifically named `tinkerpop-version` attribute.
 * Added warning on vertex property cardinality mismatch when reading GraphML.
 * Added a `union()` start step.
 * Bumped to `ws` 8.x for `gremlin-javascript`.
@@ -46,6 +46,8 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Added functional properties to the graph structure components for .NET, GO and Python.
 * Modified the 1GremlinScriptChecker1 to extract the `materializeProperties` request option.
 * `Neo4jVertexProperty` no longer throw Exception for `properties()`, but return empty `Iterable`.
+* Modified the grammar to allow for parameters to be specified in Gremlin.
+* Modified `GremlinLangScriptEngine` to take bindings.
 * Removed deprecated `getInstance()` method for grammar `Visitor` implementations.
 * Bumped Groovy to 4.0.9.
 * Bumped GMavenPlus to 2.1.0.

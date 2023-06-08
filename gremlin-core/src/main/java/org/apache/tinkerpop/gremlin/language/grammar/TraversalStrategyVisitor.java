@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
@@ -34,10 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 
 public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<TraversalStrategy> {
-    protected final DefaultGremlinBaseVisitor<Traversal> tvisitor;
+    protected final GremlinAntlrToJava antlr;
 
-    public TraversalStrategyVisitor(final DefaultGremlinBaseVisitor<Traversal> tvisitor) {
-        this.tvisitor = tvisitor;
+    public TraversalStrategyVisitor(final GremlinAntlrToJava antlrToJava) {
+        this.antlr = antlrToJava;
     }
 
     @Override
@@ -61,14 +60,14 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
             else if (strategyName.equals(SubgraphStrategy.class.getSimpleName()))
                 return getSubgraphStrategy(ctx.traversalStrategyArgs_SubgraphStrategy());
             else if (strategyName.equals(SeedStrategy.class.getSimpleName()))
-                return new SeedStrategy(Long.parseLong(ctx.integerLiteral().getText()));
+                return new SeedStrategy(antlr.argumentVisitor.parseNumber(ctx.integerArgument()).longValue());
             else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
                 return getProductiveByStrategy(ctx.traversalStrategyArgs_ProductiveByStrategy());
         }
         throw new IllegalStateException("Unexpected TraversalStrategy specification - " + ctx.getText());
     }
 
-    private static EdgeLabelVerificationStrategy getEdgeLabelVerificationStrategy(final List<GremlinParser.TraversalStrategyArgs_EdgeLabelVerificationStrategyContext> ctxs) {
+    private EdgeLabelVerificationStrategy getEdgeLabelVerificationStrategy(final List<GremlinParser.TraversalStrategyArgs_EdgeLabelVerificationStrategyContext> ctxs) {
         if (null == ctxs || ctxs.isEmpty())
             return EdgeLabelVerificationStrategy.build().create();
 
@@ -76,10 +75,10 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         ctxs.forEach(ctx -> {
             switch (ctx.getChild(0).getText()) {
                 case AbstractWarningVerificationStrategy.LOG_WARNING:
-                    builder.logWarning(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
+                    builder.logWarning(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
                 case AbstractWarningVerificationStrategy.THROW_EXCEPTION:
-                    builder.throwException(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
+                    builder.throwException(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
             }
         });
@@ -87,7 +86,7 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         return builder.create();
     }
 
-    private static ReservedKeysVerificationStrategy getReservedKeysVerificationStrategy(final List<GremlinParser.TraversalStrategyArgs_ReservedKeysVerificationStrategyContext> ctxs) {
+    private ReservedKeysVerificationStrategy getReservedKeysVerificationStrategy(final List<GremlinParser.TraversalStrategyArgs_ReservedKeysVerificationStrategyContext> ctxs) {
         if (null == ctxs || ctxs.isEmpty())
             return ReservedKeysVerificationStrategy.build().create();
 
@@ -95,13 +94,13 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         ctxs.forEach(ctx -> {
             switch (ctx.getChild(0).getText()) {
                 case AbstractWarningVerificationStrategy.LOG_WARNING:
-                    builder.logWarning(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
+                    builder.logWarning(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
                 case AbstractWarningVerificationStrategy.THROW_EXCEPTION:
-                    builder.throwException(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
+                    builder.throwException(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
                 case ReservedKeysVerificationStrategy.KEYS:
-                    builder.reservedKeys(new HashSet<>(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList()))));
+                    builder.reservedKeys(new HashSet<>(Arrays.asList(antlr.genericVisitor.parseStringList(ctx.stringLiteralList()))));
                     break;
             }
         });
@@ -109,21 +108,21 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         return builder.create();
     }
 
-    private static PartitionStrategy getPartitionStrategy(final List<GremlinParser.TraversalStrategyArgs_PartitionStrategyContext> ctxs) {
+    private PartitionStrategy getPartitionStrategy(final List<GremlinParser.TraversalStrategyArgs_PartitionStrategyContext> ctxs) {
         final PartitionStrategy.Builder builder = PartitionStrategy.build();
         ctxs.forEach(ctx -> {
             switch (ctx.getChild(0).getText()) {
                 case PartitionStrategy.INCLUDE_META_PROPERTIES:
-                    builder.includeMetaProperties(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
+                    builder.includeMetaProperties(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
                 case PartitionStrategy.READ_PARTITIONS:
-                    builder.readPartitions(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
+                    builder.readPartitions(Arrays.asList(antlr.genericVisitor.parseStringList(ctx.stringLiteralList())));
                     break;
                 case PartitionStrategy.WRITE_PARTITION:
-                    builder.writePartition(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
+                    builder.writePartition(antlr.argumentVisitor.parseString(ctx.stringArgument()));
                     break;
                 case PartitionStrategy.PARTITION_KEY:
-                    builder.partitionKey(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
+                    builder.partitionKey(antlr.argumentVisitor.parseString(ctx.stringArgument()));
                     break;
             }
         });
@@ -136,16 +135,16 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         ctxs.forEach(ctx -> {
             switch (ctx.getChild(0).getText()) {
                 case SubgraphStrategy.VERTICES:
-                    builder.vertices(tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+                    builder.vertices(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
                     break;
                 case SubgraphStrategy.EDGES:
-                    builder.edges(tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+                    builder.edges(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
                     break;
                 case SubgraphStrategy.VERTEX_PROPERTIES:
-                    builder.vertexProperties(tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+                    builder.vertexProperties(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
                     break;
                 case SubgraphStrategy.CHECK_ADJACENT_VERTICES:
-                    builder.checkAdjacentVertices(GenericLiteralVisitor.getBooleanLiteral(ctx.booleanLiteral()));
+                    builder.checkAdjacentVertices(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
             }
         });
@@ -153,9 +152,9 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         return builder.create();
     }
 
-    private static ProductiveByStrategy getProductiveByStrategy(final GremlinParser.TraversalStrategyArgs_ProductiveByStrategyContext ctx) {
+    private ProductiveByStrategy getProductiveByStrategy(final GremlinParser.TraversalStrategyArgs_ProductiveByStrategyContext ctx) {
         final ProductiveByStrategy.Builder builder = ProductiveByStrategy.build();
-        builder.productiveKeys(Arrays.asList(GenericLiteralVisitor.getStringLiteralList(ctx.stringLiteralList())));
+        builder.productiveKeys(Arrays.asList(antlr.genericVisitor.parseStringList(ctx.stringLiteralList())));
         return builder.create();
     }
 }

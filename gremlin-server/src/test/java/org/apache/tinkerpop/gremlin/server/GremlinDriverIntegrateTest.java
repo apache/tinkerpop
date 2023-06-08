@@ -1085,6 +1085,25 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldEvalInGremlinLangWithParameters() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
+                    addParameter("x", 100).
+                    addParameter("y", "test").
+                    addParameter("z", true).create();
+            final List<Result> l = client.submit("g.inject(x, y, z)", ro).all().get();
+            assertEquals(100, l.get(0).getInt());
+            assertEquals("test", l.get(1).getString());
+            assertEquals(true, l.get(2).getBoolean());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldCloseSession() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect(name.getMethodName());

@@ -41,7 +41,7 @@ public class TraversalRootVisitorTest {
     }
 
     @Test
-    public void testTraversalMethod_none()  {
+    public void shouldParseTraversalMethod_none()  {
         compare(g.V().none(), eval("g.V().none()"));
         compare(g.V().union(__.identity().none()), eval("g.V().union(__.identity().none())"));
     }

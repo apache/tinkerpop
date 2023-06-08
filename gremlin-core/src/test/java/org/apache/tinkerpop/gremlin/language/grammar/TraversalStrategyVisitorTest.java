@@ -79,11 +79,11 @@ public class TraversalStrategyVisitorTest {
     }
 
     @Test
-    public void testTraversalStrategy() {
+    public void shouldParseTraversalStrategy() {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.TraversalStrategyContext ctx = parser.traversalStrategy();
-        final TraversalStrategy strategy = new TraversalStrategyVisitor((DefaultGremlinBaseVisitor) antlrToLanguage.tvisitor).visitTraversalStrategy(ctx);
+        final TraversalStrategy strategy = new TraversalStrategyVisitor(antlrToLanguage).visitTraversalStrategy(ctx);
 
         assertEquals(expected, strategy);
         assertEquals(ConfigurationConverter.getMap(expected.getConfiguration()),
