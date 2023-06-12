@@ -269,7 +269,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 timerContext.stop();
 
                 // There is a race condition that this query may have finished before the timeoutFuture was created,
-                // though this is very unlikely. Either way we don't want a NPE.
+                // though this is very unlikely. This is handled in the settor, if this has already been grabbed.
+                // If we passed this point and the setter hasn't been called, it will cancel the timeoutFuture inside
+                // the setter to compensate.
                 final ScheduledFuture<?> timeoutFuture = context.getTimeoutExecutor();
                 if (null != timeoutFuture)
                     timeoutFuture.cancel(true);
