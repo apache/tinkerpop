@@ -355,11 +355,11 @@ class TestTraversalStrategies(object):
                      "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
 
         # 99
-        tests.append([g.V().has("p1", starting_with("foo")),
+        tests.append([g.V().has("p1", startingWith("foo")),
                      "g.V().has('p1',startingWith('foo'))"])
 
         # 100
-        tests.append([g.V().has("p1", ending_with("foo")),
+        tests.append([g.V().has("p1", endingWith("foo")),
                      "g.V().has('p1',endingWith('foo'))"])
 
         # 101
