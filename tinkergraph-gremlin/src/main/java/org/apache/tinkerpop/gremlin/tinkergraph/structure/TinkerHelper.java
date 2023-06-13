@@ -62,22 +62,6 @@ public final class TinkerHelper {
         return null == graph.edgeIndex ? Collections.emptyList() : graph.edgeIndex.get(key, value);
     }
 
-    public static boolean inComputerMode(final AbstractTinkerGraph graph) {
-        return null != graph.graphComputerView;
-    }
-
-    public static TinkerGraphComputerView createGraphComputerView(final AbstractTinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
-        return graph.graphComputerView = new TinkerGraphComputerView(graph, graphFilter, computeKeys);
-    }
-
-    public static TinkerGraphComputerView getGraphComputerView(final AbstractTinkerGraph graph) {
-        return graph.graphComputerView;
-    }
-
-    public static void dropGraphComputerView(final AbstractTinkerGraph graph) {
-        graph.graphComputerView = null;
-    }
-
     public static Map<String, List<VertexProperty>> getProperties(final TinkerVertex vertex) {
         return null == vertex.properties ? Collections.emptyMap() : vertex.properties;
     }
@@ -94,17 +78,17 @@ public final class TinkerHelper {
             graph.vertexIndex.autoUpdate(key, newValue, oldValue, vertex);
     }
 
-    public static void removeElementIndex(final TinkerVertex vertex) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
-        if (graph.vertexIndex != null)
-            graph.vertexIndex.removeElement(vertex);
-    }
-
-    public static void removeElementIndex(final TinkerEdge edge) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
-        if (graph.edgeIndex != null)
-            graph.edgeIndex.removeElement(edge);
-    }
+//    public static void removeElementIndex(final TinkerVertex vertex) {
+//        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
+//        if (graph.vertexIndex != null)
+//            graph.vertexIndex.removeElement(vertex);
+//    }
+//
+//    public static void removeElementIndex(final TinkerEdge edge) {
+//        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
+//        if (graph.edgeIndex != null)
+//            graph.edgeIndex.removeElement(edge);
+//    }
 
     public static void removeIndex(final TinkerVertex vertex, final String key, final Object value) {
         final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
@@ -118,6 +102,24 @@ public final class TinkerHelper {
             graph.edgeIndex.remove(key, value, edge);
     }
 
+    // todo: move to graph?
+    public static boolean inComputerMode(final AbstractTinkerGraph graph) {
+        return null != graph.graphComputerView;
+    }
+
+    public static TinkerGraphComputerView createGraphComputerView(final AbstractTinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
+        return graph.graphComputerView = new TinkerGraphComputerView(graph, graphFilter, computeKeys);
+    }
+
+    public static TinkerGraphComputerView getGraphComputerView(final AbstractTinkerGraph graph) {
+        return graph.graphComputerView;
+    }
+
+    public static void dropGraphComputerView(final AbstractTinkerGraph graph) {
+        graph.graphComputerView = null;
+    }
+
+    // todo: move to TinkerVertex?
     public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
         final List<Edge> edges = new ArrayList<>();
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
@@ -168,6 +170,7 @@ public final class TinkerHelper {
         return (Iterator) vertices.iterator();
     }
 
+    // todo: move to SearchHelper
     /**
      * Search for {@link Property}s attached to {@link Element}s of the supplied element type using the supplied
      * regex. This is a basic scan+filter operation, not a full text search against an index.

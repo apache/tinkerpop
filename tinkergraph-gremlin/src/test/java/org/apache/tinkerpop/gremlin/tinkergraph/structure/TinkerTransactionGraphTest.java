@@ -21,10 +21,14 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.junit.Test;
 
+import java.util.*;
+
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class TinkerTransactionGraphTest {
 
@@ -664,6 +668,140 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, (long) gtx.E().count().next());
 
         countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    // index tests
+
+    @Test
+    public void shouldCreateIndexForNewVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex("test-property", Vertex.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", 1).iterate();
+        gtx.addV().property("test-property", 2).iterate();
+
+        assertEquals(1L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(vid, gtx.V().has("test-property", 1).id().next());
+        assertEquals(0L, (long) gtx.V().has("test-property", 3).count().next());
+        assertEquals(2L, (long) gtx.V().count().next());
+
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(0L, (long) gtx2.V().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(vid, gtx3.V().has("test-property", 1).id().next());
+        assertEquals(0L, (long) gtx3.V().has("test-property", 3).count().next());
+        assertEquals(2L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.get(1).size());
+        assertEquals(vid, index.get(1).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldRemoveIndexForRemovedVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex("test-property", Vertex.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", 1).iterate();
+
+        gtx.tx().commit();
+
+        gtx.V(vid).drop().iterate();
+
+        assertEquals(0L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx.V().count().next());
+
+        // in another thread elements exists before commit
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.V().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+     }
+
+    @Test
+    public void shouldRemoveIndexForRemovedVertexProperty() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex("test-property", Vertex.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", 1).iterate();
+
+        gtx.tx().commit();
+
+        gtx.V(vid).properties("test-property").drop().iterate();
+
+        assertEquals(0L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.V().count().next());
+
+        // in another thread elements exists before commit
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.V().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+    }
+
+    // todo: move to new file
+    @Test
+    public void vertexCloneTest() {
+        final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerTransactionGraph.open());
+        final TinkerVertexProperty vp = new TinkerVertexProperty(vertex, "test", "qq");
+
+        vertex.properties = new HashMap<>();
+        vertex.properties.put("test", new ArrayList<>());
+        vertex.properties.get("test").add(vp);
+        final TinkerVertex copy = (TinkerVertex) vertex.clone();
+        vertex.properties.get("test").remove(vp);
+        assertEquals(1, copy.properties.get("test").size());
     }
 
     // utility methods

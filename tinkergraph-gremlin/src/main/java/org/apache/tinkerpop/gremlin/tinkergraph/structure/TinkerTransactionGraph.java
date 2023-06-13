@@ -404,61 +404,61 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     }
 
-//
+
 //    ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
-//
-//    /**
-//     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.
-//     * Whenever an element has the specified key mutated, the index is updated.
-//     * When the index is created, all existing elements are indexed to ensure that they are captured by the index.
-//     *
-//     * @param key          the property key to index
-//     * @param elementClass the element class to index
-//     * @param <E>          The type of the element class
-//     */
-//    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
-//        if (Vertex.class.isAssignableFrom(elementClass)) {
-//            if (null == this.vertexIndex) this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
-//            this.vertexIndex.createKeyIndex(key);
-//        } else if (Edge.class.isAssignableFrom(elementClass)) {
-//            if (null == this.edgeIndex) this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
-//            this.edgeIndex.createKeyIndex(key);
-//        } else {
-//            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
-//        }
-//    }
-//
-//    /**
-//     * Drop the index for the specified element class ({@link Vertex} or {@link Edge}) and key.
-//     *
-//     * @param key          the property key to stop indexing
-//     * @param elementClass the element class of the index to drop
-//     * @param <E>          The type of the element class
-//     */
-//    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
-//        if (Vertex.class.isAssignableFrom(elementClass)) {
-//            if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
-//        } else if (Edge.class.isAssignableFrom(elementClass)) {
-//            if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
-//        } else {
-//            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
-//        }
-//    }
-//
-//    /**
-//     * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).
-//     *
-//     * @param elementClass the element class to get the indexed keys for
-//     * @param <E>          The type of the element class
-//     * @return the set of keys currently being indexed
-//     */
-//    public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
-//        if (Vertex.class.isAssignableFrom(elementClass)) {
-//            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
-//        } else if (Edge.class.isAssignableFrom(elementClass)) {
-//            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
-//        } else {
-//            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
-//        }
-//    }
+
+    /**
+     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.
+     * Whenever an element has the specified key mutated, the index is updated.
+     * When the index is created, all existing elements are indexed to ensure that they are captured by the index.
+     *
+     * @param key          the property key to index
+     * @param elementClass the element class to index
+     * @param <E>          The type of the element class
+     */
+    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+        if (Vertex.class.isAssignableFrom(elementClass)) {
+            if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
+            this.vertexIndex.createKeyIndex(key);
+        } else if (Edge.class.isAssignableFrom(elementClass)) {
+            if (null == this.edgeIndex) this.edgeIndex = new TinkerTransactionalIndex<>(this, TinkerEdge.class);
+            this.edgeIndex.createKeyIndex(key);
+        } else {
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+    }
+
+    /**
+     * Drop the index for the specified element class ({@link Vertex} or {@link Edge}) and key.
+     *
+     * @param key          the property key to stop indexing
+     * @param elementClass the element class of the index to drop
+     * @param <E>          The type of the element class
+     */
+    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+        if (Vertex.class.isAssignableFrom(elementClass)) {
+            if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
+        } else if (Edge.class.isAssignableFrom(elementClass)) {
+            if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
+        } else {
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+    }
+
+    /**
+     * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).
+     *
+     * @param elementClass the element class to get the indexed keys for
+     * @param <E>          The type of the element class
+     * @return the set of keys currently being indexed
+     */
+    public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
+        if (Vertex.class.isAssignableFrom(elementClass)) {
+            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
+        } else if (Edge.class.isAssignableFrom(elementClass)) {
+            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
+        } else {
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+    }
 }

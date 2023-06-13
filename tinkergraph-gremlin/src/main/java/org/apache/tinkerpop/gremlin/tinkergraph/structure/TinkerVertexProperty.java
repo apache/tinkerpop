@@ -147,6 +147,8 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public void remove() {
         if (null != this.vertex.properties && this.vertex.properties.containsKey(this.key)) {
+            ((AbstractTinkerGraph)vertex.graph()).touch(vertex);
+
             this.vertex.properties.get(this.key).remove(this);
             if (this.vertex.properties.get(this.key).size() == 0) {
                 this.vertex.properties.remove(this.key);

@@ -106,11 +106,21 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
                     changedEdges.stream().anyMatch(e -> e.getValue().updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);
 
+            final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+            if (vertexIndex != null) vertexIndex.commit(changedVertices);
+            final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+            if (edgeIndex != null) edgeIndex.commit(changedEdges);
+
             changedVertices.forEach(v -> v.getValue().commit(txVersion));
             changedEdges.forEach(e -> e.getValue().commit(txVersion));
         } catch (TransactionException ex) {
             changedVertices.forEach(v -> v.getValue().rollback());
             changedEdges.forEach(e -> e.getValue().rollback());
+
+            final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+            if (vertexIndex != null) vertexIndex.rollback();
+            final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+            if (edgeIndex != null) edgeIndex.rollback();
 
             throw ex;
         } finally {
@@ -121,8 +131,6 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
             changedVertices.forEach(v -> v.getValue().releaseLock());
             changedEdges.forEach(e -> e.getValue().releaseLock());
         }
-
-        // todo: update indices ?
 
         doClose();
     }
@@ -135,7 +143,10 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
         graph.getVertices().values().stream().filter(v -> v.isChanged()).forEach(v -> v.rollback());
         graph.getEdges().values().stream().filter(e -> e.isChanged()).forEach(e -> e.rollback());
 
-        // todo: update indices ?
+        final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+        if (vertexIndex != null) vertexIndex.rollback();
+        final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+        if (vertexIndex != null) edgeIndex.rollback();
 
         doClose();
     }

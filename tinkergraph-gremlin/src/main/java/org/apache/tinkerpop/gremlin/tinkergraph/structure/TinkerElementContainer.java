@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.structure.Edge;
-
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -43,6 +40,10 @@ final class TinkerElementContainer<T extends TinkerElement> {
         if (isDeletedInTx.get()) return null;
         if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
         if (isDeleted) return null;
+        return element;
+    }
+
+    public T getUnmodified() {
         return element;
     }
 
