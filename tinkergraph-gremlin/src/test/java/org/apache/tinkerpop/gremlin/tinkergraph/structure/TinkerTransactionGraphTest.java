@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -670,7 +671,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 1, 0);
     }
 
-    // index tests
+    // index tests for vertex
 
     @Test
     public void shouldCreateIndexForNewVertex() throws InterruptedException {
@@ -790,18 +791,162 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, index.size());
     }
 
+    // index tests for edge
+
+    @Test
+    public void shouldCreateIndexForNewEdge() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex("test-property", Edge.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).from(v1).to(v2).next();
+
+        assertEquals(1L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        // in another thread index not updated yet
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(0L, (long) gtx2.E().has("test-property", 1).count().next());
+            assertEquals(0L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 1);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.size());
+        assertEquals(1, index.get(1).size());
+        assertEquals(edge.id(), index.get(1).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldChangeIndexForChangedEdge() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex("test-property", Edge.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        gtx.E(edge.id()).property("test-property", 2).iterate();
+
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().has("test-property", 2).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        // in another thread index not updated yet
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.E().has("test-property", 1).count().next());
+            assertEquals(0L, (long) gtx2.E().has("test-property", 2).count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().has("test-property", 2).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 1);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.size());
+        assertNull(index.get(1));
+        assertEquals(1, index.get(2).size());
+        assertEquals(edge.id(), index.get(2).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldRemoveIndexForRemovedEdge() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex("test-property", Edge.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        gtx.E(edge.id()).drop().iterate();
+
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx.E().count().next());
+
+        // in another thread elements exists before commit
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.E().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.E().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx3.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+    }
+
     // todo: move to new file
     @Test
     public void vertexCloneTest() {
         final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerTransactionGraph.open());
         final TinkerVertexProperty vp = new TinkerVertexProperty(vertex, "test", "qq");
-
         vertex.properties = new HashMap<>();
         vertex.properties.put("test", new ArrayList<>());
         vertex.properties.get("test").add(vp);
+
         final TinkerVertex copy = (TinkerVertex) vertex.clone();
         vertex.properties.get("test").remove(vp);
         assertEquals(1, copy.properties.get("test").size());
+    }
+
+    @Test
+    public void edgeCloneTest() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerVertex v1 = new TinkerVertex(1, "label", g);
+        final TinkerVertex v2 = new TinkerVertex(2, "label", g);
+        final TinkerEdge edge = new TinkerEdge(3, v1, "label", v2);
+        final TinkerProperty property = new TinkerProperty(edge, "test", "qq");
+        edge.properties = new HashMap<>();
+        edge.properties.put(property.key(), property);
+
+        final TinkerEdge copy = (TinkerEdge) edge.clone();
+        edge.properties.remove(property.key());
+        assertEquals(1, copy.properties.size());
     }
 
     // utility methods

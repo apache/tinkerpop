@@ -69,7 +69,6 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (outEdges != null)
             vertex.outEdges = (Map) ((HashMap) outEdges).clone();
         if (properties != null) {
-            // vertex.properties = (Map) ((HashMap) properties).clone();
             vertex.properties = properties.entrySet().stream().
                     collect(Collectors.toMap(Map.Entry::getKey, v -> (List<VertexProperty>) ((ArrayList) v.getValue()).clone()));
         }
@@ -176,8 +175,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         });
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties = null;
-        // todo: handle index
-        // TinkerHelper.removeElementIndex(this);
+        TinkerHelper.removeElementIndex(this);
         this.graph.removeVertex(this.id);
         this.removed = true;
     }

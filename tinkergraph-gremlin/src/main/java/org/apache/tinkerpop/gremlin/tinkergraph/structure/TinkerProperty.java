@@ -87,4 +87,9 @@ public final class TinkerProperty<V> implements Property<V> {
             ((TinkerVertexProperty) this.element).properties.remove(this.key);
         }
     }
+
+    @Override
+    public Object clone() {
+        return new TinkerProperty(element, key, value);
+    }
 }

@@ -78,17 +78,17 @@ public final class TinkerHelper {
             graph.vertexIndex.autoUpdate(key, newValue, oldValue, vertex);
     }
 
-//    public static void removeElementIndex(final TinkerVertex vertex) {
-//        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
-//        if (graph.vertexIndex != null)
-//            graph.vertexIndex.removeElement(vertex);
-//    }
-//
-//    public static void removeElementIndex(final TinkerEdge edge) {
-//        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
-//        if (graph.edgeIndex != null)
-//            graph.edgeIndex.removeElement(edge);
-//    }
+    public static void removeElementIndex(final TinkerVertex vertex) {
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
+        if (graph.vertexIndex != null)
+            graph.vertexIndex.removeElement(vertex);
+    }
+
+    public static void removeElementIndex(final TinkerEdge edge) {
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
+        if (graph.edgeIndex != null)
+            graph.edgeIndex.removeElement(edge);
+    }
 
     public static void removeIndex(final TinkerVertex vertex, final String key, final Object value) {
         final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();

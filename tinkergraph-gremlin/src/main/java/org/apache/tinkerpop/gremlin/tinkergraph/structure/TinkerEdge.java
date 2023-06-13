@@ -18,21 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,7 +54,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        ((AbstractTinkerGraph)outVertex.graph()).touch(this);
+        ((AbstractTinkerGraph) outVertex.graph()).touch(this);
 
         if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
         ElementHelper.validateProperty(key, value);
@@ -79,7 +70,6 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         this.properties.put(key, newProperty);
         TinkerHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
         return newProperty;
-
     }
 
     @Override
@@ -94,8 +84,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public void remove() {
-        // todo: handle index
-        // TinkerHelper.removeElementIndex(this);
+        TinkerHelper.removeElementIndex(this);
         ((AbstractTinkerGraph) graph()).touch(this);
         ((AbstractTinkerGraph) graph()).removeEdge(this.id());
         this.properties = null;
@@ -111,7 +100,11 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     public Object clone() {
         // todo: probably need deep clone
         final TinkerEdge edge = new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
-        edge.properties = properties;
+
+        if (properties != null) {
+            edge.properties = properties.entrySet().stream().
+                    collect(Collectors.toMap(k -> k.getKey(), v -> (TinkerProperty) ((TinkerProperty) v.getValue()).clone()));
+        }
         return edge;
     }
 

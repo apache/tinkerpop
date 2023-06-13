@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +39,11 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     }
 
     protected void putTxElement(final String key, final Object value, final T element) {
-        final Map<String, Map<Object, Set<T>>> index = txIndex.get();
+        Map<String, Map<Object, Set<T>>> index = txIndex.get();
+        if (index == null) {
+            txIndex.set(new HashMap<>());
+            index = txIndex.get();
+        }
 
         Map<Object, Set<T>> keyMap = index.get(key);
         if (null == keyMap) {
@@ -58,7 +59,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     }
 
     private List<T> getNotModifiedElements(final String key, final Object value) {
-        final Map<Object, Set<TinkerElementContainer<T>>> keyMap = this.index.get(key);
+        final Map<Object, Set<TinkerElementContainer<T>>> keyMap = index.get(key);
         if (null == keyMap)
             return new ArrayList<>();
 
@@ -119,7 +120,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
 
     @Override
     public void removeElement(final T element) {
-        if (this.indexClass.isAssignableFrom(element.getClass())) {
+        if (indexClass.isAssignableFrom(element.getClass())) {
             element.properties().forEachRemaining(p -> {
                         if (p.isPresent() && indexedKeys.contains(p.key())) {
                             remove(p.key(), p.value(), element);
@@ -158,9 +159,9 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
 
     @Override
     public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
-        if (this.indexedKeys.contains(key)) {
-            this.remove(key, oldValue, element);
-            this.putTxElement(key, newValue, element);
+        if (indexedKeys.contains(key)) {
+            remove(key, oldValue, element);
+            putTxElement(key, newValue, element);
         }
     }
 
@@ -171,14 +172,14 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
         if (key.isEmpty())
             throw new IllegalArgumentException("The key for the index cannot be an empty string");
 
-        if (this.indexedKeys.contains(key))
+        if (indexedKeys.contains(key))
             return;
-        this.indexedKeys.add(key);
+        indexedKeys.add(key);
 
         final Map elements =
-                Vertex.class.isAssignableFrom(this.indexClass) ?
-                        ((TinkerTransactionGraph) this.graph).vertices :
-                        ((TinkerTransactionGraph) this.graph).edges;
+                Vertex.class.isAssignableFrom(indexClass) ?
+                        ((TinkerTransactionGraph) graph).vertices :
+                        ((TinkerTransactionGraph) graph).edges;
 
         for (Object element : elements.values()) {
             addContainer((TinkerElementContainer<T>) element);
@@ -187,19 +188,19 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
 
     @Override
     public void dropKeyIndex(final String key) {
-        if (this.index.containsKey(key))
-            this.index.remove(key).clear();
-
-        final Map<String, Map<Object, Set<T>>> index = txIndex.get();
         if (index.containsKey(key))
             index.remove(key).clear();
 
-        this.indexedKeys.remove(key);
+        final Map<String, Map<Object, Set<T>>> index = txIndex.get();
+        if (index != null && index.containsKey(key))
+            index.remove(key).clear();
+
+        indexedKeys.remove(key);
     }
 
     @Override
     public Set<String> getIndexedKeys() {
-        return this.indexedKeys;
+        return indexedKeys;
     }
 
     private void removeContainer(TinkerElementContainer<T> container) {
