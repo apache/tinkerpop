@@ -152,7 +152,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
             this.vertex.properties.get(this.key).remove(this);
             if (this.vertex.properties.get(this.key).size() == 0) {
                 this.vertex.properties.remove(this.key);
-                TinkerHelper.removeIndex(this.vertex, this.key, this.value);
+                TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
             }
             final AtomicBoolean delete = new AtomicBoolean(true);
             this.vertex.properties(this.key).forEachRemaining(property -> {
@@ -160,7 +160,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
                 if ((currentPropertyValue != null && currentPropertyValue.equals(this.value) || null == currentPropertyValue && null == this.value))
                     delete.set(false);
             });
-            if (delete.get()) TinkerHelper.removeIndex(this.vertex, this.key, this.value);
+            if (delete.get()) TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
             this.properties = null;
             this.removed = true;
         }

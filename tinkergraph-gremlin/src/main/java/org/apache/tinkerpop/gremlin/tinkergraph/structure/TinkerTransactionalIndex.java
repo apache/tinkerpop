@@ -21,7 +21,11 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -38,7 +42,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
         super(graph, indexClass);
     }
 
-    protected void putTxElement(final String key, final Object value, final T element) {
+    private void putTxElement(final String key, final Object value, final T element) {
         Map<String, Map<Object, Set<T>>> index = txIndex.get();
         if (index == null) {
             txIndex.set(new HashMap<>());
@@ -50,10 +54,11 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
             index.putIfAbsent(key, new ConcurrentHashMap<>());
             keyMap = index.get(key);
         }
-        Set<T> objects = keyMap.get(indexable(value));
+        final Object indexableValue = indexable(value);
+        Set<T> objects = keyMap.get(indexableValue);
         if (null == objects) {
-            keyMap.putIfAbsent(value, ConcurrentHashMap.newKeySet());
-            objects = keyMap.get(value);
+            keyMap.putIfAbsent(indexableValue, ConcurrentHashMap.newKeySet());
+            objects = keyMap.get(indexableValue);
         }
         objects.add(element);
     }
@@ -102,7 +107,6 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     }
 
     @Override
-    // remove from tx index
     public void remove(final String key, final Object value, final T element) {
         final Map<String, Map<Object, Set<T>>> index = txIndex.get();
         if (null == index) return;
@@ -136,10 +140,11 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
             index.putIfAbsent(key, new ConcurrentHashMap<>());
             keyMap = index.get(key);
         }
-        Set<TinkerElementContainer<T>> objects = keyMap.get(value);
+        final Object indexableValue = indexable(value);
+        Set<TinkerElementContainer<T>> objects = keyMap.get(indexableValue);
         if (null == objects) {
-            keyMap.putIfAbsent(value, ConcurrentHashMap.newKeySet());
-            objects = keyMap.get(value);
+            keyMap.putIfAbsent(indexableValue, ConcurrentHashMap.newKeySet());
+            objects = keyMap.get(indexableValue);
         }
         objects.add(container);
     }
@@ -196,11 +201,6 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
             index.remove(key).clear();
 
         indexedKeys.remove(key);
-    }
-
-    @Override
-    public Set<String> getIndexedKeys() {
-        return indexedKeys;
     }
 
     private void removeContainer(TinkerElementContainer<T> container) {

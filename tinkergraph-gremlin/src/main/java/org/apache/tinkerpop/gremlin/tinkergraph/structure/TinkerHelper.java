@@ -23,18 +23,14 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,53 +49,8 @@ public final class TinkerHelper {
     private TinkerHelper() {
     }
 
-    //todo: move index related stuff to IndexHelper
-    public static List<TinkerVertex> queryVertexIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
-        return null == graph.vertexIndex ? Collections.emptyList() : graph.vertexIndex.get(key, value);
-    }
-
-    public static List<TinkerEdge> queryEdgeIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
-        return null == graph.edgeIndex ? Collections.emptyList() : graph.edgeIndex.get(key, value);
-    }
-
     public static Map<String, List<VertexProperty>> getProperties(final TinkerVertex vertex) {
         return null == vertex.properties ? Collections.emptyMap() : vertex.properties;
-    }
-
-    public static void autoUpdateIndex(final TinkerEdge edge, final String key, final Object newValue, final Object oldValue) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
-        if (graph.edgeIndex != null)
-            graph.edgeIndex.autoUpdate(key, newValue, oldValue, edge);
-    }
-
-    public static void autoUpdateIndex(final TinkerVertex vertex, final String key, final Object newValue, final Object oldValue) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
-        if (graph.vertexIndex != null)
-            graph.vertexIndex.autoUpdate(key, newValue, oldValue, vertex);
-    }
-
-    public static void removeElementIndex(final TinkerVertex vertex) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
-        if (graph.vertexIndex != null)
-            graph.vertexIndex.removeElement(vertex);
-    }
-
-    public static void removeElementIndex(final TinkerEdge edge) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
-        if (graph.edgeIndex != null)
-            graph.edgeIndex.removeElement(edge);
-    }
-
-    public static void removeIndex(final TinkerVertex vertex, final String key, final Object value) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) vertex.graph();
-        if (graph.vertexIndex != null)
-            graph.vertexIndex.remove(key, value, vertex);
-    }
-
-    public static void removeIndex(final TinkerEdge edge, final String key, final Object value) {
-        final AbstractTinkerGraph graph = (AbstractTinkerGraph) edge.graph();
-        if (graph.edgeIndex != null)
-            graph.edgeIndex.remove(key, value, edge);
     }
 
     // todo: move to graph?
@@ -170,7 +121,7 @@ public final class TinkerHelper {
         return (Iterator) vertices.iterator();
     }
 
-    // todo: move to SearchHelper
+    // todo: move to SearchHelper?
     /**
      * Search for {@link Property}s attached to {@link Element}s of the supplied element type using the supplied
      * regex. This is a basic scan+filter operation, not a full text search against an index.

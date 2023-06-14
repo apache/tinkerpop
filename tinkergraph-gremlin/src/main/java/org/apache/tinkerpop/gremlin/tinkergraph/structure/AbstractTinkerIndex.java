@@ -49,7 +49,10 @@ public abstract class AbstractTinkerIndex<T extends Element> {
 
     public abstract void dropKeyIndex(final String key);
 
-    public abstract Set<String> getIndexedKeys();
+
+    public Set<String> getIndexedKeys() {
+        return indexedKeys;
+    }
 
     /**
      * Provides a way for an index to have a {@code null} value as {@code ConcurrentHashMap} will not allow a

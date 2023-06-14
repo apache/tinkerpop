@@ -25,10 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
 import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager;

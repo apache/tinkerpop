@@ -18,12 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +50,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         this.outVertex = outVertex;
         this.inVertex = inVertex;
         this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
-        TinkerHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
+        TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
@@ -49,7 +58,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         this.outVertex = outVertex;
         this.inVertex = inVertex;
         this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
-        TinkerHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
+        TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
     @Override
@@ -68,7 +77,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         final Property<V> newProperty = new TinkerProperty<>(this, key, value);
         if (null == this.properties) this.properties = new HashMap<>();
         this.properties.put(key, newProperty);
-        TinkerHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
+        TinkerIndexHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
         return newProperty;
     }
 
@@ -84,7 +93,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public void remove() {
-        TinkerHelper.removeElementIndex(this);
+        TinkerIndexHelper.removeElementIndex(this);
         ((AbstractTinkerGraph) graph()).touch(this);
         ((AbstractTinkerGraph) graph()).removeEdge(this.id());
         this.properties = null;

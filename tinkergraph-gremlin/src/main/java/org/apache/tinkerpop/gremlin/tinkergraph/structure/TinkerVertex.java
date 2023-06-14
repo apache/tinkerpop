@@ -139,7 +139,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
             final List<VertexProperty> list = this.properties.getOrDefault(key, new ArrayList<>());
             list.add(vertexProperty);
             this.properties.put(key, list);
-            TinkerHelper.autoUpdateIndex(this, key, value, null);
+            TinkerIndexHelper.autoUpdateIndex(this, key, value, null);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         }
@@ -175,7 +175,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         });
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties = null;
-        TinkerHelper.removeElementIndex(this);
+        TinkerIndexHelper.removeElementIndex(this);
         this.graph.removeVertex(this.id);
         this.removed = true;
     }

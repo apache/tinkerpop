@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphIterator;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         else
             iterator = null == indexedContainer ?
                     this.iteratorList(graph.edges()) :
-                    TinkerHelper.queryEdgeIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
+                    TinkerIndexHelper.queryEdgeIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
                                 .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
                                 .collect(Collectors.<Edge>toList()).iterator();
 
@@ -101,7 +101,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         else
             iterator = (null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :
-                    IteratorUtils.filter(TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).iterator(),
+                    IteratorUtils.filter(TinkerIndexHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).iterator(),
                                          vertex -> HasContainer.testAll(vertex, this.hasContainers)));
 
         iterators.add(iterator);

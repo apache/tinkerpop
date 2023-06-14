@@ -56,7 +56,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
     public void touch(final T transactionElement) {
         if (element != transactionElement) return;
 
-        // todo: handle deleted ?
         element = (T) transactionElement.clone();
         setDraft(transactionElement);
     }

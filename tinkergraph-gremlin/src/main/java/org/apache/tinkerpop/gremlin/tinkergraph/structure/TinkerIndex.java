@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,10 +47,11 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
             this.index.putIfAbsent(key, new ConcurrentHashMap<>());
             keyMap = this.index.get(key);
         }
-        Set<T> objects = keyMap.get(value);
+        final Object indexableValue = indexable(value);
+        Set<T> objects = keyMap.get(indexableValue);
         if (null == objects) {
-            keyMap.putIfAbsent(value, ConcurrentHashMap.newKeySet());
-            objects = keyMap.get(value);
+            keyMap.putIfAbsent(indexableValue, ConcurrentHashMap.newKeySet());
+            objects = keyMap.get(indexableValue);
         }
         objects.add(element);
     }
@@ -143,10 +143,5 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
             this.index.remove(key).clear();
 
         this.indexedKeys.remove(key);
-    }
-
-    @Override
-    public Set<String> getIndexedKeys() {
-        return this.indexedKeys;
     }
 }
