@@ -550,6 +550,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     MatchAlgorithmStrategy.class,
                     AdjacentToIncidentStrategy.class,
                     ByModulatorOptimizationStrategy.class,
+                    ProductiveByStrategy.class,
                     CountStrategy.class,
                     FilterRankingStrategy.class,
                     IdentityRemovalStrategy.class,

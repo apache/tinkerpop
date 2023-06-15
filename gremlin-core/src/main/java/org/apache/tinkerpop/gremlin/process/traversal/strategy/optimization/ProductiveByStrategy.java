@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Grouping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -92,7 +93,22 @@ public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStr
                 filter(bm -> bm instanceof TraversalParent).forEach(bm -> {
             final TraversalParent parentStep = (TraversalParent) bm;
             final boolean parentStepIsGrouping = parentStep instanceof Grouping;
-            parentStep.getLocalChildren().forEach(child -> {
+            for (Traversal.Admin child : parentStep.getLocalChildren()) {
+                // just outright skip the PropertyMapStep.propertyTraversal - it is only set by SubgraphStrategy and
+                // for this case it doesn't make sense to force that traversal to be productive. if it is forced then
+                // PropertyMap actually gets a null Property object if the traversal is not productive and that
+                // causes an NPE. It doesn't make sense to catch the NPE there really as the code wants an empty
+                // Iterator<Property> rather than a productive null. Actually, the propertyTraversal isn't even a
+                // by() provided Traversal so it really doesn't make sense for this strategy to touch it. Another
+                // sort of example where strategies shouldn't have to know so much about one another. also, another
+                // scenario where ProductiveByStrategy isn't so good. the default behavior without this strategy
+                // works so much more nicely
+                if (parentStep instanceof PropertyMapStep) {
+                    final Traversal.Admin propertyTraversal = ((PropertyMapStep) parentStep).getPropertyTraversal();
+                    if (propertyTraversal != null && propertyTraversal.equals(child))
+                        continue;
+                }
+
                 // Grouping requires a bit of special handling because of TINKERPOP-2627 which is a bug that has
                 // some unexpected behavior for coalesce() as the value traversal. Grouping also has so inconsistencies
                 // in how null vs filter behavior works and that behavior needs to stay to not break in 3.5.x
@@ -120,7 +136,7 @@ public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStr
                         wrapValueTraversalInCoalesce(parentStep, child);
                     }
                 }
-            });
+            }
         });
     }
 

@@ -165,6 +165,10 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
         return propertyKeys;
     }
 
+    public Traversal.Admin<Element, ? extends Property> getPropertyTraversal() {
+        return propertyTraversal;
+    }
+
     public String toString() {
         return StringFactory.stepString(this, Arrays.asList(this.propertyKeys),
                 this.traversalRing, this.returnType.name().toLowerCase());
