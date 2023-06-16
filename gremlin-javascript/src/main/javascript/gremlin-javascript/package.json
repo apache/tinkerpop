@@ -22,7 +22,7 @@
     "colors": "1.4.0",
     "cross-env": "^7.0.3",
     "cucumber": "~6.0.7",
-    "eslint": "^7.32.0",
+    "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "grunt": "^1.5.3",
