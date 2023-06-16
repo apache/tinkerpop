@@ -16,23 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.language.grammar;
+package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-
-public class StructureElementVisitor extends GremlinBaseVisitor<Element> {
-
-    protected final GremlinAntlrToJava antlr;
-
-    public StructureElementVisitor(final GremlinAntlrToJava antlr) {
-        this.antlr = antlr;
-    }
-
-    @Override
-    public Vertex visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
-        return new ReferenceVertex(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
-                (String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
-    }
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+@FunctionalInterface
+public interface ThrowingBiFunction<T, U, R> {
+    R apply(final T t, final U u) throws Exception;
 }

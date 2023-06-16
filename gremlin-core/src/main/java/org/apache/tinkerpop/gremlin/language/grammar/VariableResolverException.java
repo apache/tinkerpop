@@ -18,21 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-
-public class StructureElementVisitor extends GremlinBaseVisitor<Element> {
-
-    protected final GremlinAntlrToJava antlr;
-
-    public StructureElementVisitor(final GremlinAntlrToJava antlr) {
-        this.antlr = antlr;
+/**
+ * The exception thrown when a variable cannot be resolved for a particular parameter name.
+ */
+public class VariableResolverException extends RuntimeException {
+    public VariableResolverException(final String message) {
+        super(message);
     }
 
-    @Override
-    public Vertex visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
-        return new ReferenceVertex(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
-                (String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
+    public VariableResolverException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

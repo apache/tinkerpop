@@ -46,11 +46,25 @@ public class TraversalSourceSpawnVisitorTest {
     }
 
     @Test
-    public void testTraversalSourceSpawnMethod_inject() {
-        // a random spawn of inject method.
-        compare(g.inject(1,2,3,4), eval("g.inject(1,2,3,4)"));
-        compare(g.inject(1,2,3,new HashMap<>()), eval("g.inject(1,2,3,[:])"));
+    public void shouldParseTraversalSourceSpawnMethod_inject() {
+        compare(g.inject(1), eval("g.inject(1)"));
+        compare(g.inject(1, 2, 3, 4), eval("g.inject(1,2,3,4)"));
+        compare(g.inject(1, 2, 3, new HashMap<>()), eval("g.inject(1,2,3,[:])"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_V() {
+        compare(g.V().out().values("name").inject("daniel"), eval("g.V().out().values('name').inject('daniel')"));
         compare(g.V(4).out().values("name").inject("daniel"), eval("g.V(4).out().values('name').inject('daniel')"));
+        compare(g.V(4, 5).out().values("name").inject("daniel"), eval("g.V(4, 5).out().values('name').inject('daniel')"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_E() {
+        compare(g.E().values("name").inject("daniel"), eval("g.E().values('name').inject('daniel')"));
+        compare(g.E(4).values("name").inject("daniel"), eval("g.E(4).values('name').inject('daniel')"));
+        compare(g.E(4, 5).values("name").inject("daniel"), eval("g.E(4, 5).values('name').inject('daniel')"));
+
     }
 
     private Object eval(final String query) {
