@@ -161,6 +161,9 @@ class Client:
         return self.submit_async(message, bindings, request_options)
 
     def submit_async(self, message, bindings=None, request_options=None):
+        if self.is_closed():
+            raise Exception("Client is closed")
+
         log.debug("message '%s'", str(message))
         args = {'gremlin': message, 'aliases': {'g': self._traversal_source}}
         processor = ''
