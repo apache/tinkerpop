@@ -108,6 +108,17 @@ def test_client_connection_pool_after_error(client):
     assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
+def test_client_no_hang_if_submit_on_closed(client):
+    assert client.submit('1 + 1').all().result()[0] == 2
+    client.close()
+    try:
+        # should fail since not hang if closed
+        client.submit('1 + 1').all().result()
+        assert False
+    except Exception as ex:
+        assert True
+
+
 def test_client_close_all_connection_in_pool(client):
     client = Client(test_no_auth_url, 'g', pool_size=1, session="75e9620e-da98-41e3-9378-0336db803de0")
     assert client.available_pool_size == 1
