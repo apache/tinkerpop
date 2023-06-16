@@ -41,6 +41,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Added `SubmitWithOptions()` methods to `Client` and `DriverRemoteConnection` in Go GLV to pass `RequestOptions` to the server.
 * Changed default behavior for returning properties on graph elements for OLTP queries so that properties are now returned.
 * Detachment is no longer performed in `TraverserIterator`.
+* Prevented `ConcurentModificationException` when removing all labels from a `Step`.
 * Added `materializeProperties` request option to control properties serialization.
 * Modified serializers in to handle serialization and deserialization of properties.
 * Added functional properties to the graph structure components for .NET, GO and Python.

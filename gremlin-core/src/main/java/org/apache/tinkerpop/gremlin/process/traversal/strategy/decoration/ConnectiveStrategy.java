@@ -95,7 +95,7 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                     }
                     i++;
                     currentStep.addLocalChild(connectiveTraversal = connectiveTraversal(connectiveTraversal, currentStep));
-                    currentStep.getLabels().forEach(currentStep::removeLabel);
+                    currentStep.clearLabels();
                     while (i < steps.size()) {
                         final Step nextStep = steps.get(i);
                         if (legalCurrentStep(nextStep)) {

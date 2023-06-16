@@ -147,6 +147,11 @@ public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, 
     public void removeLabel(final String label);
 
     /**
+     * Removes all labels on the step.
+     */
+    public void clearLabels();
+
+    /**
      * Get the unique id of the step.
      * These ids can change when strategies are applied and anonymous traversals are embedded in the parent traversal.
      * A developer should typically not need to call this method.
