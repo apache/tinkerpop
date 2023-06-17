@@ -36,7 +36,7 @@ updates:
     directory: "/docs/gremlint"
     schedule:
       interval: "daily"
-    target-branch: "3.5-dev"
+    target-branch: "master"
     labels:
       - "javascript"
       - "dependencies"
