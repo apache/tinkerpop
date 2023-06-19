@@ -22,7 +22,7 @@
  */
 'use strict';
 
-const { Traversal } = require('./traversal');
+const { Traversal, cardinality } = require('./traversal');
 const { Transaction } = require('./transaction');
 const remote = require('../driver/remote-connection');
 const Bytecode = require('./bytecode');
@@ -1453,6 +1453,45 @@ class GraphTraversal extends Traversal {
   }
 }
 
+class CardinalityValue extends Bytecode {
+  /**
+   * Creates a new instance of {@link CardinalityValue}.
+   * @param {String} card
+   * @param {Object} value
+   */
+  constructor(card, value) {
+    super();
+    this.addSource('CardinalityValueTraversal', [card, value]);
+  }
+
+  /**
+   * Create a value with single cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static single(value) {
+    return new CardinalityValue(cardinality.single, value);
+  }
+
+  /**
+   * Create a value with list cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static list(value) {
+    return new CardinalityValue(cardinality.list, value);
+  }
+
+  /**
+   * Create a value with set cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static set(value) {
+    return new CardinalityValue(cardinality.set, value);
+  }
+}
+
 function callOnEmptyTraversal(fnName, args) {
   const g = new GraphTraversal(null, null, new Bytecode());
   return g[fnName].apply(g, args);
@@ -1564,5 +1603,6 @@ const statics = {
 module.exports = {
   GraphTraversal,
   GraphTraversalSource,
+  CardinalityValue,
   statics,
 };

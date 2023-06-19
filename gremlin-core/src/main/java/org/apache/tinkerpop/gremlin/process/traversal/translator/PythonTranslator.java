@@ -362,6 +362,15 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             return script;
         }
 
+        @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            script.append("CardinalityValue." + resolveSymbol(inst.getArguments()[0].toString()) + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
+        }
+
         protected String resolveSymbol(final String methodName) {
             return SymbolHelper.toPython(methodName);
         }

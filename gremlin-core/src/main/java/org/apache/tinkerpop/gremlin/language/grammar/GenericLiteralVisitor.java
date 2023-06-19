@@ -504,7 +504,23 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitTraversalCardinality(final GremlinParser.TraversalCardinalityContext ctx) {
-        return TraversalEnumParser.parseTraversalEnumFromContext(VertexProperty.Cardinality.class, ctx);
+        // could be Cardinality.single() the method or single the enum so grab the right child index based on
+        // number of children
+        if (ctx.getChildCount() == 1) {
+            return TraversalEnumParser.parseTraversalEnumFromContext(VertexProperty.Cardinality.class, ctx);
+        } else {
+            final int idx = ctx.getChildCount() == 5 ? 1 : 0;
+            final String specifiedCard = ctx.children.get(idx).getText();
+            if (specifiedCard.endsWith(VertexProperty.Cardinality.single.name()))
+                return VertexProperty.Cardinality.single(visitGenericLiteral(ctx.genericLiteral()));
+            else if (specifiedCard.endsWith(VertexProperty.Cardinality.list.name()))
+                return VertexProperty.Cardinality.list(visitGenericLiteral(ctx.genericLiteral()));
+            else if (specifiedCard.endsWith(VertexProperty.Cardinality.set.name()))
+                return VertexProperty.Cardinality.set(visitGenericLiteral(ctx.genericLiteral()));
+            else
+                throw new GremlinParserException(String.format(
+                        "A Cardinality value not recognized: %s", specifiedCard));
+        }
     }
 
     /**

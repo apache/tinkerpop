@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
 import java.util.Iterator;
@@ -40,7 +44,19 @@ public interface VertexProperty<V> extends Property<V>, Element {
     public static final String DEFAULT_LABEL = "vertexProperty";
 
     public enum Cardinality {
-        single, list, set
+        single, list, set;
+
+        public static CardinalityValueTraversal single(final Object value) {
+            return new CardinalityValueTraversal(single, value);
+        }
+
+        public static CardinalityValueTraversal list(final Object value) {
+            return new CardinalityValueTraversal(list, value);
+        }
+
+        public static CardinalityValueTraversal set(final Object value) {
+            return new CardinalityValueTraversal(set, value);
+        }
     }
 
     /**

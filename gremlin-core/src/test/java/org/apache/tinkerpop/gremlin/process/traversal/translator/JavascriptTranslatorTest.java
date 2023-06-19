@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -118,6 +119,11 @@ public class JavascriptTranslatorTest {
     @Test
     public void shouldTranslateScope() {
         assertTranslation("Scope.local", Scope.local);
+    }
+
+    @Test
+    public void shouldTranslateCardinalityValue() {
+        assertTranslation("CardinalityValue.set(\"test\")", VertexProperty.Cardinality.set("test"));
     }
 
     @Test

@@ -63,6 +63,12 @@ public class GolangTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateCardinalityValue() {
+        assertEquals("g.Inject(gremlingo.CardinalityValue.Set(\"test\"))", translator.translate(
+                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getBytecode()).getScript());
+    }
+
+    @Test
     public void shouldTranslateMultilineStrings() {
         final String gremlinAsGo = translator.translate(
                 g.addV().property("text", "a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getBytecode()).getScript();
