@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -55,6 +56,9 @@ public class Context {
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
     private final AtomicBoolean startedResponse = new AtomicBoolean(false);
+    private ScheduledFuture<?> timeoutExecutor = null;
+    private boolean timeoutExecutorGrabbed = false;
+    private final Object timeoutExecutorLock = new Object();
 
     /**
      * The type of the request as determined by the contents of {@link Tokens#ARGS_GREMLIN}.
@@ -90,6 +94,25 @@ public class Context {
         this.gremlinArgument = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
         this.requestContentType = determineRequestContents();
         this.requestTimeout = determineTimeout();
+    }
+
+    public void setTimeoutExecutor(final ScheduledFuture<?> timeoutExecutor) {
+        synchronized (timeoutExecutorLock) {
+            this.timeoutExecutor = timeoutExecutor;
+
+            // Timeout was grabbed before we got here, this means the query executed before the timeout was created.
+            if (timeoutExecutorGrabbed) {
+                // Cancel the timeout.
+                this.timeoutExecutor.cancel(true);
+            }
+        }
+    }
+
+    public ScheduledFuture<?> getTimeoutExecutor() {
+        synchronized (timeoutExecutorLock) {
+            timeoutExecutorGrabbed = true;
+            return this.timeoutExecutor;
+        }
     }
 
     /**

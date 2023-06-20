@@ -63,6 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -286,6 +287,14 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 }
             } finally {
                 timerContext.stop();
+
+                // There is a race condition that this query may have finished before the timeoutFuture was created,
+                // though this is very unlikely. This is handled in the settor, if this has already been grabbed.
+                // If we passed this point and the setter hasn't been called, it will cancel the timeoutFuture inside
+                // the setter to compensate.
+                final ScheduledFuture<?> timeoutFuture = context.getTimeoutExecutor();
+                if (null != timeoutFuture)
+                    timeoutFuture.cancel(true);
             }
 
             return null;
@@ -295,12 +304,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final Future<?> executionFuture = context.getGremlinExecutor().getExecutorService().submit(evalFuture);
             if (seto > 0) {
                 // Schedule a timeout in the thread pool for future execution
-                context.getScheduledExecutorService().schedule(() -> {
+                context.setTimeoutExecutor(context.getScheduledExecutorService().schedule(() -> {
                     executionFuture.cancel(true);
                     if (!context.getStartedResponse()) {
                         context.sendTimeoutResponse();
                     }
-                }, seto, TimeUnit.MILLISECONDS);
+                }, seto, TimeUnit.MILLISECONDS));
             }
         } catch (RejectedExecutionException ree) {
             context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.TOO_MANY_REQUESTS)
