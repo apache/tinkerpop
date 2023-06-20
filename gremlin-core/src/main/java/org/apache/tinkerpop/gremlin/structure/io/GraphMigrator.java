@@ -84,9 +84,9 @@ public final class GraphMigrator {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {
-                if (fromGraph.features().graph().supportsTransactions() || fromGraph.features().graph().supportsThreadedTransactions())
+                if (fromGraph.features().graph().supportsTransactions())
                     fromGraph.tx().rollback();
-                if (toGraph.features().graph().supportsTransactions() || toGraph.features().graph().supportsThreadedTransactions())
+                if (toGraph.features().graph().supportsTransactions())
                     toGraph.tx().rollback();
             }
         }).start();
