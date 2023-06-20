@@ -262,7 +262,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public String toString() {
-        return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
+        return StringFactory.graphString(this, "vertices:" + this.getVerticesCount() + " edges:" + this.getEdgesCount());
     }
 
     @Override

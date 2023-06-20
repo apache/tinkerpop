@@ -121,6 +121,7 @@ public class FeatureSupportTest {
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_TRANSACTIONS, supported = false)
+        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS, supported = false)
         public void shouldSupportTransactionsIfAGraphConstructsATx() throws Exception {
             try {
                 graph.tx();
