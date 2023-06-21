@@ -222,12 +222,12 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
         });
     }
 
-    public void commit(final List<Map.Entry<Object, TinkerElementContainer<T>>> updatedElements) {
-        for (final Map.Entry<Object, TinkerElementContainer<T>> pair : updatedElements) {
-            removeContainer(pair.getValue());
-            if (!pair.getValue().isDeleted())
+    public void commit(final List<TinkerElementContainer<T>> updatedElements) {
+        for (final TinkerElementContainer<T> element : updatedElements) {
+            removeContainer(element);
+            if (!element.isDeleted())
                 // todo: compare and update only changed properties
-                addContainer(pair.getValue());
+                addContainer(element);
         }
 
         txIndex.set(null);

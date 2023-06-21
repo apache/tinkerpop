@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 final class TinkerElementContainer<T extends TinkerElement> {
     private T element;
+    private Object elementId;
     private boolean isDeleted = false;
     private ThreadLocal<T> transactionUpdatedValue = ThreadLocal.withInitial(() -> null);
     private ThreadLocal<Boolean> isDeletedInTx = ThreadLocal.withInitial(() -> false);
@@ -32,8 +33,8 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    public void TinkerElementContainer(final T element) {
-        this.element = element;
+    public TinkerElementContainer(final Object elementId) {
+        this.elementId = elementId;
     }
 
     public T get() {
@@ -47,27 +48,34 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
+    public Object getElementId() {
+        return elementId;
+    }
+
     public boolean isChanged() {
         return isDeletedInTx.get() || transactionUpdatedValue.get() != null;
     }
 
     public boolean isDeleted() { return isDeleted || isDeletedInTx.get(); }
 
-    public void touch(final T transactionElement) {
-        if (element != transactionElement) return;
-
-        element = (T) transactionElement.clone();
-        setDraft(transactionElement);
-    }
-
     public void markDeleted() {
         isDeletedInTx.set(true);
     }
 
-    public void setDraft(final T transactionElement) {
+    public void touch(final T transactionElement, TinkerThreadLocalTransaction tx) {
+        elementId = transactionElement.id();
+        if (element != transactionElement) return;
+
+        element = (T) transactionElement.clone();
+        setDraft(transactionElement, tx);
+    }
+
+    public void setDraft(final T transactionElement, TinkerThreadLocalTransaction tx) {
+        elementId = transactionElement.id();
         if (transactionUpdatedValue.get() == null && !isDeletedInTx.get())
             usesInTransactions.incrementAndGet();
         transactionUpdatedValue.set(transactionElement);
+        tx.touch(this);
     }
 
     public boolean updatedOutsideTransaction() {

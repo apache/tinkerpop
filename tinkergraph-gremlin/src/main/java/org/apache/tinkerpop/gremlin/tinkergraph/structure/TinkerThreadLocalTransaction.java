@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,6 +38,8 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
 
     private static final AtomicLong openedTx;
     private final ThreadLocal<Long> txNumber = ThreadLocal.withInitial(() -> NOT_STARTED);
+    private final ThreadLocal<List<TinkerElementContainer<TinkerVertex>>> txChangedVertices = new ThreadLocal<>();
+    private final ThreadLocal<List<TinkerElementContainer<TinkerEdge>>> txChangedEdges = new ThreadLocal<>();
 
     private final TinkerTransactionGraph graph;
 
@@ -77,32 +80,50 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
         return txNumber.get();
     }
 
+    protected <T extends TinkerElement> void touch(TinkerElementContainer<T> container) {
+        // todo: is there more simple way to check type?
+        final T element = container.get();
+        if (element instanceof TinkerVertex) {
+            if (null == txChangedVertices.get())
+                txChangedVertices.set(new ArrayList<>());
+            txChangedVertices.get().add((TinkerElementContainer<TinkerVertex>) container);
+        } else {
+            if (null == txChangedEdges.get())
+                txChangedEdges.set(new ArrayList<>());
+            txChangedEdges.get().add((TinkerElementContainer<TinkerEdge>) container);
+        }
+    }
+
     @Override
     protected void doCommit() throws TransactionException {
         final long txVersion = txNumber.get();
 
         // collect elements changed in tx
-        final List<Map.Entry<Object, TinkerElementContainer<TinkerVertex>>> changedVertices =
+        final List<Map.Entry<Object, TinkerElementContainer<TinkerVertex>>> changedVerticesX =
                 graph.getVertices().entrySet().stream().filter(v -> v.getValue().isChanged()).collect(Collectors.toList());
-        final List<Map.Entry<Object, TinkerElementContainer<TinkerEdge>>> changedEdges =
+        final List<Map.Entry<Object, TinkerElementContainer<TinkerEdge>>> changedEdgesX =
                 graph.getEdges().entrySet().stream().filter(v -> v.getValue().isChanged()).collect(Collectors.toList());
+
+        List<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
+        if (null == changedVertices) changedVertices = new ArrayList<>();
+        List<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
+        if (null == changedEdges) changedEdges = new ArrayList<>();
 
         try {
             // Double-checked locking to reduce lock time
-            // todo: consider collection changes for each transaction in local list
-            if (changedVertices.stream().anyMatch(v -> v.getValue().updatedOutsideTransaction()) ||
-                    changedEdges.stream().anyMatch(v -> v.getValue().updatedOutsideTransaction()))
+            if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
+                    changedEdges.stream().anyMatch(v -> v.updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);
 
             changedVertices.forEach(v -> {
-                if (!v.getValue().tryLock()) throw new TransactionException(TX_CONFLICT);
+                if (!v.tryLock()) throw new TransactionException(TX_CONFLICT);
             });
             changedEdges.forEach(e -> {
-                if (!e.getValue().tryLock()) throw new TransactionException(TX_CONFLICT);
+                if (!e.tryLock()) throw new TransactionException(TX_CONFLICT);
             });
 
-            if (changedVertices.stream().anyMatch(v -> v.getValue().updatedOutsideTransaction()) ||
-                    changedEdges.stream().anyMatch(e -> e.getValue().updatedOutsideTransaction()))
+            if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
+                    changedEdges.stream().anyMatch(e -> e.updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);
 
             final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
@@ -110,11 +131,11 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
             final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.commit(changedEdges);
 
-            changedVertices.forEach(v -> v.getValue().commit(txVersion));
-            changedEdges.forEach(e -> e.getValue().commit(txVersion));
+            changedVertices.forEach(v -> v.commit(txVersion));
+            changedEdges.forEach(e -> e.commit(txVersion));
         } catch (TransactionException ex) {
-            changedVertices.forEach(v -> v.getValue().rollback());
-            changedEdges.forEach(e -> e.getValue().rollback());
+            changedVertices.forEach(v -> v.rollback());
+            changedEdges.forEach(e -> e.rollback());
 
             final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
             if (vertexIndex != null) vertexIndex.rollback();
@@ -124,11 +145,14 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
             throw ex;
         } finally {
             // remove elements from graph if not used in other tx's
-            changedVertices.stream().filter(v -> v.getValue().canBeRemoved()).forEach(v -> graph.vertices.remove(v.getKey()));
-            changedEdges.stream().filter(e -> e.getValue().canBeRemoved()).forEach(e -> graph.edges.remove(e.getKey()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
 
-            changedVertices.forEach(v -> v.getValue().releaseLock());
-            changedEdges.forEach(e -> e.getValue().releaseLock());
+            txChangedVertices.set(null);
+            txChangedEdges.set(null);
+
+            changedVertices.forEach(v -> v.releaseLock());
+            changedEdges.forEach(e -> e.releaseLock());
         }
 
         doClose();
@@ -139,8 +163,10 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
         if (!isOpen())
             throw new TransactionException(TX_CONFLICT);
 
-        graph.getVertices().values().stream().filter(v -> v.isChanged()).forEach(v -> v.rollback());
-        graph.getEdges().values().stream().filter(e -> e.isChanged()).forEach(e -> e.rollback());
+        List<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
+        if (null != changedVertices) changedVertices.forEach(v -> v.rollback());
+        List<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
+        if (null != changedEdges) changedEdges.forEach(e -> e.rollback());
 
         final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
         if (vertexIndex != null) vertexIndex.rollback();

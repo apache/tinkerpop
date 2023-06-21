@@ -156,10 +156,10 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         }
 
         if (container == null)
-            container = new TinkerElementContainer<>();
+            container = new TinkerElementContainer<>(idValue);
         vertex = new TinkerVertex(idValue, label, this, txNumber);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
-        container.setDraft(vertex);
+        container.setDraft(vertex, (TinkerThreadLocalTransaction) tx());
         vertices.put(vertex.id(), container);
 
         return vertex;
@@ -180,7 +180,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
 
-        container.touch(vertex);
+        container.touch(vertex, (TinkerThreadLocalTransaction) tx());
     };
 
     @Override
@@ -190,7 +190,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
 
-        container.touch(edge);
+        container.touch(edge, (TinkerThreadLocalTransaction) tx());
     };
 
     @Override
@@ -215,10 +215,10 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         }
 
         if (container == null)
-            container = new TinkerElementContainer<>();
+            container = new TinkerElementContainer<>(idValue);
         edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
         ElementHelper.attachProperties(edge, keyValues);
-        container.setDraft(edge);
+        container.setDraft(edge, (TinkerThreadLocalTransaction) tx());
         edges.put(edge.id(), container);
 
         addOutEdge(outVertex, label, edge);
