@@ -98,12 +98,6 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     protected void doCommit() throws TransactionException {
         final long txVersion = txNumber.get();
 
-        // collect elements changed in tx
-        final List<Map.Entry<Object, TinkerElementContainer<TinkerVertex>>> changedVerticesX =
-                graph.getVertices().entrySet().stream().filter(v -> v.getValue().isChanged()).collect(Collectors.toList());
-        final List<Map.Entry<Object, TinkerElementContainer<TinkerEdge>>> changedEdgesX =
-                graph.getEdges().entrySet().stream().filter(v -> v.getValue().isChanged()).collect(Collectors.toList());
-
         List<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
         if (null == changedVertices) changedVertices = new ArrayList<>();
         List<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
