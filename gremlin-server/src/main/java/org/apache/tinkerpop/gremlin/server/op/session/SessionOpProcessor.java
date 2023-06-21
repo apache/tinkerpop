@@ -584,12 +584,14 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     protected void onError(final Graph graph, final Context ctx) {
         final boolean managedTransactionsForRequest = manageTransactions ?
                 true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        // todo:
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
         final boolean managedTransactionsForRequest = manageTransactions ?
                 true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        // todo:
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
     }
 
