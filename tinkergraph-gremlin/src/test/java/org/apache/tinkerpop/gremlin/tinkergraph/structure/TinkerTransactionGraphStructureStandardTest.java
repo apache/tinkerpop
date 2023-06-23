@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  * Executes the Standard Gremlin Structure Test Suite using TinkerTransactionGraph.
  */
 @RunWith(StructureStandardSuite.class)
-@GraphProviderClass(provider = TinkerTransactionGraphProvider.class, graph = TinkerGraph.class)
+@GraphProviderClass(provider = TinkerTransactionGraphProvider.class, graph = TinkerTransactionGraph.class)
 public class TinkerTransactionGraphStructureStandardTest {
 
 }

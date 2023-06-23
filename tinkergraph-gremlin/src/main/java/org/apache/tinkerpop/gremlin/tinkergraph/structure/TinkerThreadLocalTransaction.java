@@ -25,14 +25,11 @@ import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction {
 
-    // todo: rename and set messages
-    private static final String TX_CONFLICT = "conflict message";
+    private static final String TX_CONFLICT = "Conflict: element modified in another transaction";
 
     private static final long NOT_STARTED = -1;
 
@@ -81,7 +78,6 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     }
 
     protected <T extends TinkerElement> void touch(TinkerElementContainer<T> container) {
-        // todo: is there more simple way to check type?
         final T element = container.get();
         if (element instanceof TinkerVertex) {
             if (null == txChangedVertices.get())
