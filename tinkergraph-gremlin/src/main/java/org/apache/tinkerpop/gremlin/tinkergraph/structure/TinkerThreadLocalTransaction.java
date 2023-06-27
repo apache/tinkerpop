@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction {
@@ -152,9 +154,6 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
 
     @Override
     protected void doRollback() throws TransactionException {
-        if (!isOpen())
-            throw new TransactionException(TX_CONFLICT);
-
         Set<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
         if (null != changedVertices) changedVertices.forEach(v -> v.rollback());
         Set<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
