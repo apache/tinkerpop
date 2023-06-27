@@ -23,8 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction {
@@ -35,8 +34,8 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
 
     private static final AtomicLong openedTx;
     private final ThreadLocal<Long> txNumber = ThreadLocal.withInitial(() -> NOT_STARTED);
-    private final ThreadLocal<List<TinkerElementContainer<TinkerVertex>>> txChangedVertices = new ThreadLocal<>();
-    private final ThreadLocal<List<TinkerElementContainer<TinkerEdge>>> txChangedEdges = new ThreadLocal<>();
+    private final ThreadLocal<Set<TinkerElementContainer<TinkerVertex>>> txChangedVertices = new ThreadLocal<>();
+    private final ThreadLocal<Set<TinkerElementContainer<TinkerEdge>>> txChangedEdges = new ThreadLocal<>();
 
     private final TinkerTransactionGraph graph;
 
@@ -78,14 +77,17 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     }
 
     protected <T extends TinkerElement> void touch(TinkerElementContainer<T> container) {
-        final T element = container.get();
+        if (!isOpen()) txNumber.set(openedTx.getAndIncrement());
+
+        T element = container.get();
+        if (null == element) element = container.getUnmodified();
         if (element instanceof TinkerVertex) {
             if (null == txChangedVertices.get())
-                txChangedVertices.set(new ArrayList<>());
+                txChangedVertices.set(new HashSet<>());
             txChangedVertices.get().add((TinkerElementContainer<TinkerVertex>) container);
         } else {
             if (null == txChangedEdges.get())
-                txChangedEdges.set(new ArrayList<>());
+                txChangedEdges.set(new HashSet<>());
             txChangedEdges.get().add((TinkerElementContainer<TinkerEdge>) container);
         }
     }
@@ -94,10 +96,10 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     protected void doCommit() throws TransactionException {
         final long txVersion = txNumber.get();
 
-        List<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
-        if (null == changedVertices) changedVertices = new ArrayList<>();
-        List<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
-        if (null == changedEdges) changedEdges = new ArrayList<>();
+        Set<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
+        if (null == changedVertices) changedVertices = Collections.emptySet();
+        Set<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
+        if (null == changedEdges) changedEdges = Collections.emptySet();
 
         try {
             // Double-checked locking to reduce lock time
@@ -143,9 +145,9 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
 
             changedVertices.forEach(v -> v.releaseLock());
             changedEdges.forEach(e -> e.releaseLock());
-        }
 
-        doClose();
+            doClose();
+        }
     }
 
     @Override
@@ -153,15 +155,18 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
         if (!isOpen())
             throw new TransactionException(TX_CONFLICT);
 
-        List<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
+        Set<TinkerElementContainer<TinkerVertex>> changedVertices = txChangedVertices.get();
         if (null != changedVertices) changedVertices.forEach(v -> v.rollback());
-        List<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
+        Set<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
         if (null != changedEdges) changedEdges.forEach(e -> e.rollback());
 
         final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
         if (vertexIndex != null) vertexIndex.rollback();
         final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
         if (vertexIndex != null) edgeIndex.rollback();
+
+        txChangedVertices.set(null);
+        txChangedEdges.set(null);
 
         doClose();
     }

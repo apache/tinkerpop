@@ -51,7 +51,6 @@ globals << [hook : [
     TinkerFactory.generateTheCrew(crew)
     TinkerFactory.generateGratefulDead(grateful)
     TinkerFactory.generateKitchenSink(sink)
-
   }
 ] as LifeCycleHook]
 
@@ -75,5 +74,9 @@ if (dynamicGtx != null)
 def dynamicGimmutable = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["immutable"]
 if (dynamicGimmutable != null)
     globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable)]
+
+def dynamicGttx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["ttx"]
+if (dynamicGttx != null)
+    globals << [gttx : traversal().withEmbedded(dynamicGttx)]
 
 globals

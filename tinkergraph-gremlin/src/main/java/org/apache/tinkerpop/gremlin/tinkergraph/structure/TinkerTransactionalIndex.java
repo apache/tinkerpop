@@ -222,7 +222,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
         });
     }
 
-    public void commit(final List<TinkerElementContainer<T>> updatedElements) {
+    public void commit(final Set<TinkerElementContainer<T>> updatedElements) {
         for (final TinkerElementContainer<T> element : updatedElements) {
             removeContainer(element);
             if (!element.isDeleted())

@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerDegreeCentralityFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;

@@ -170,7 +170,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     {
         if (!vertices.containsKey(vertexId)) return;
 
-        vertices.get(vertexId).markDeleted();
+        vertices.get(vertexId).markDeleted((TinkerThreadLocalTransaction) tx());
     }
 
     @Override
@@ -257,7 +257,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             }
         }
 
-        container.markDeleted();
+        container.markDeleted((TinkerThreadLocalTransaction) tx());
     }
 
     @Override
@@ -387,7 +387,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     }
 
-    //todo: make shared base class
     public class TinkerGraphGraphFeatures implements Features.GraphFeatures {
 
         private TinkerGraphGraphFeatures() {
@@ -395,11 +394,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         @Override
         public boolean supportsConcurrentAccess() {
-            return false;
-        }
-
-        @Override
-        public boolean supportsTransactions() {
             return false;
         }
 
@@ -416,7 +410,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
 
-//    ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
+    /////////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
     /**
      * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.

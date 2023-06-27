@@ -58,11 +58,12 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
     public boolean isDeleted() { return isDeleted || isDeletedInTx.get(); }
 
-    public void markDeleted() {
+    public void markDeleted(final TinkerThreadLocalTransaction tx) {
         isDeletedInTx.set(true);
+        tx.touch(this);
     }
 
-    public void touch(final T transactionElement, TinkerThreadLocalTransaction tx) {
+    public void touch(final T transactionElement, final TinkerThreadLocalTransaction tx) {
         elementId = transactionElement.id();
         if (element != transactionElement) return;
 
@@ -70,7 +71,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
         setDraft(transactionElement, tx);
     }
 
-    public void setDraft(final T transactionElement, TinkerThreadLocalTransaction tx) {
+    public void setDraft(final T transactionElement, final TinkerThreadLocalTransaction tx) {
         elementId = transactionElement.id();
         if (transactionUpdatedValue.get() == null && !isDeletedInTx.get())
             usesInTransactions.incrementAndGet();

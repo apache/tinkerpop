@@ -60,7 +60,10 @@ settings.graphs.modern = platformAgnosticGremlinServerDir + "/src/test/scripts/t
 settings.graphs.crew = platformAgnosticGremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.grateful = platformAgnosticGremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.sink = platformAgnosticGremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
-if (testTransactions) settings.graphs.tx = platformAgnosticGremlinServerDir + "/src/test/scripts/neo4j-empty.properties"
+if (testTransactions) {
+    settings.graphs.tx = platformAgnosticGremlinServerDir + "/src/test/scripts/neo4j-empty.properties"
+    settings.graphs.ttx = platformAgnosticGremlinServerDir + "/src/test/scripts/tinkertransactiongraph-empty.properties"
+}
 settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [platformAgnosticGremlinServerDir + "/src/test/scripts/generate-all.groovy"]
 settings.port = 45940
 
