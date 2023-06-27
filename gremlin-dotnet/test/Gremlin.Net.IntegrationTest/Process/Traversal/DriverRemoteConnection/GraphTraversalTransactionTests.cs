@@ -23,75 +23,81 @@
 
 using System;
 using System.Threading.Tasks;
-using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
-    public class GraphTraversalTransactionTests : IDisposable
+    public class GraphTraversalTransactionTests
     {
-        private readonly IRemoteConnection _connection = new RemoteConnectionFactory().CreateRemoteConnection("gtx");
+        public static object[][] Graphs => new[] 
+        {
+            new [] { "gtx" },
+            new [] { "gttx" }
+        };
 
         [IgnoreIfTransactionsNotSupportedFact]
-        public async Task ShouldSupportRemoteTransactionsCommit()
+        [MemberData(nameof(Graphs))]        
+        public async Task ShouldSupportRemoteTransactionsCommit(string graph)
         {
-            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
+            var g = GetGts(graph);
             var tx = g.Tx();
             var gtx = tx.Begin();
             await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate()).ConfigureAwait(false);
             await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate()).ConfigureAwait(false);
-            
+
             // Assert within the transaction
             var count = await gtx.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(2, count);
-            
+
             // Vertices should not be visible in a different transaction before commiting
             count = await g.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(0, count);
-            
+
             // Now commit changes to test outside of the transaction
             await tx.CommitAsync().ConfigureAwait(false);
 
             count = await g.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(2, count);
+
+            EmptyGraph(g);
         }
-        
+
         [IgnoreIfTransactionsNotSupportedFact]
-        public async Task ShouldSupportRemoteTransactionsRollback()
+        [MemberData(nameof(Graphs))]
+        public async Task ShouldSupportRemoteTransactionsRollback(string graph)
         {
-            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
+            var g = GetGts(graph);
             var tx = g.Tx();
             var gtx = tx.Begin();
             await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate()).ConfigureAwait(false);
             await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate()).ConfigureAwait(false);
-            
+
             // Assert within the transaction
             var count = await gtx.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(2, count);
-            
+
             // Now rollback changes to test outside of the transaction
             await tx.RollbackAsync().ConfigureAwait(false);
 
             count = await g.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(0, count);
-            
-            g.V().Count().Next();
+
+            EmptyGraph(g);
         }
 
-        public void Dispose()
+        private GraphTraversalSource GetGts(string graph)
         {
-            EmptyGraph();
+            return AnonymousTraversalSource.Traversal().WithRemote(new RemoteConnectionFactory().CreateRemoteConnection(graph));
         }
 
-        private void EmptyGraph()
+        private static void EmptyGraph(GraphTraversalSource g)
         {
-            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
             g.V().Drop().Iterate();
         }
     }
 
-    public sealed class IgnoreIfTransactionsNotSupportedFact : FactAttribute
+    public sealed class IgnoreIfTransactionsNotSupportedFact : TheoryAttribute
     {
         public IgnoreIfTransactionsNotSupportedFact()
         {
