@@ -25,6 +25,7 @@ using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver;
 using static System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Gremlin.Net.Process
@@ -79,8 +80,7 @@ namespace Gremlin.Net.Process
         {
             var applicationName = Assembly.GetEntryAssembly()?.GetName().Name?
                                                         .Replace(' ', '_') ?? "NotAvailable";
-            var driverVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-                                                        .Replace(' ', '_')  ?? "NotAvailable";
+            var driverVersion = Tokens.GremlinVersion;
             var languageVersion = Environment.Version.ToString().Replace(' ', '_');
             var osName = Environment.OSVersion.Platform.ToString().Replace(' ', '_');
             var osVersion = Environment.OSVersion.Version.ToString().Replace(' ', '_');

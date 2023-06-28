@@ -531,6 +531,23 @@ limitations under the License.
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <version>1.5.3</version>
+                    <executions>
+                        <execution>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>replace</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <basedir>${basedir}</basedir>
+                    </configuration>
+                </plugin>
+
                 <!-- there is a jdk11 profile that will be enabled if built with that version - these settings will be overriden -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
