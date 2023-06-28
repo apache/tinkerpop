@@ -21,10 +21,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -72,53 +70,64 @@ public final class TinkerHelper {
 
     // todo: move to TinkerVertex?
     public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
-        final List<Edge> edges = new ArrayList<>();
+        final List<Object> edgeIds = new ArrayList<>();
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
             if (vertex.outEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.outEdges.values().forEach(edges::addAll);
+                    vertex.outEdges.values().forEach(edgeIds::addAll);
                 else if (edgeLabels.length == 1)
-                    edges.addAll(vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
+                    edgeIds.addAll(vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
                 else
-                    Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).forEach(edges::addAll);
+                    Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).forEach(edgeIds::addAll);
             }
         }
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
             if (vertex.inEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.inEdges.values().forEach(edges::addAll);
+                    vertex.inEdges.values().forEach(edgeIds::addAll);
                 else if (edgeLabels.length == 1)
-                    edges.addAll(vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
+                    edgeIds.addAll(vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
                 else
-                    Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).forEach(edges::addAll);
+                    Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).forEach(edgeIds::addAll);
             }
         }
-        return (Iterator) edges.iterator();
+        return edgeIds.size() == 0 ?
+                Collections.emptyIterator() :
+                IteratorUtils.map(vertex.graph().edges(edgeIds.toArray()), edge -> (TinkerEdge) edge);
     }
 
     public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
-        final List<Vertex> vertices = new ArrayList<>();
+        final List<Object> inEdgesIds = new ArrayList<>();
+        // todo: cleanup lambdas
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
             if (vertex.outEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.outEdges.values().forEach(set -> set.forEach(edge -> vertices.add(((TinkerEdge) edge).inVertex)));
+                    vertex.outEdges.values().forEach(set -> set.forEach(edge -> inEdgesIds.add(edge)));
                 else if (edgeLabels.length == 1)
-                    vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()).forEach(edge -> vertices.add(((TinkerEdge) edge).inVertex));
+                    vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()).forEach(edge -> inEdgesIds.add(edge));
                 else
-                    Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).flatMap(Set::stream).forEach(edge -> vertices.add(((TinkerEdge) edge).inVertex));
+                    Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).flatMap(Set::stream).forEach(edge -> inEdgesIds.add(edge));
             }
         }
+        final List<Object> outEdgesIds = new ArrayList<>();
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
             if (vertex.inEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.inEdges.values().forEach(set -> set.forEach(edge -> vertices.add(((TinkerEdge) edge).outVertex)));
+                    vertex.inEdges.values().forEach(set -> set.forEach(edge -> outEdgesIds.add(edge)));
                 else if (edgeLabels.length == 1)
-                    vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()).forEach(edge -> vertices.add(((TinkerEdge) edge).outVertex));
+                    vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()).forEach(edge -> outEdgesIds.add(edge));
                 else
-                    Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).flatMap(Set::stream).forEach(edge -> vertices.add(((TinkerEdge) edge).outVertex));
+                    Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).flatMap(Set::stream).forEach(edge -> outEdgesIds.add(edge));
             }
         }
-        return (Iterator) vertices.iterator();
+
+        final List<Object> verticesIds = new ArrayList<>();
+        if (inEdgesIds.size() != 0)
+            vertex.graph().edges(inEdgesIds.toArray()).forEachRemaining(edge -> verticesIds.add(edge.inVertex()));
+        if (outEdgesIds.size() != 0)
+            vertex.graph().edges(outEdgesIds.toArray()).forEachRemaining(edge -> verticesIds.add(edge.outVertex()));
+
+        return verticesIds.size() == 0 ? Collections.emptyIterator() : IteratorUtils.map(vertex.graph().vertices(verticesIds.toArray()), v -> (TinkerVertex) v);
     }
 
     // todo: move to SearchHelper?

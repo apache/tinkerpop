@@ -71,7 +71,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
-    private final TinkerThreadLocalTransaction transaction = new TinkerThreadLocalTransaction(this);
+    private final TinkerTransaction transaction = new TinkerTransaction(this);
 
     protected Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
     protected Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
@@ -136,11 +136,11 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-        if (!tx().isOpen()) Transaction.Exceptions.transactionMustBeOpenToReadWrite();
 
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
+        this.tx().readWrite();
         final long txNumber = transaction.getTxNumber();
         TinkerVertex vertex;
         TinkerElementContainer<TinkerVertex> container = null;
@@ -159,7 +159,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             container = new TinkerElementContainer<>(idValue);
         vertex = new TinkerVertex(idValue, label, this, txNumber);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
-        container.setDraft(vertex, (TinkerThreadLocalTransaction) tx());
+        container.setDraft(vertex, (TinkerTransaction) tx());
         vertices.put(vertex.id(), container);
 
         return vertex;
@@ -170,7 +170,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     {
         if (!vertices.containsKey(vertexId)) return;
 
-        vertices.get(vertexId).markDeleted((TinkerThreadLocalTransaction) tx());
+        vertices.get(vertexId).markDeleted((TinkerTransaction) tx());
     }
 
     @Override
@@ -180,7 +180,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
 
-        container.touch(vertex, (TinkerThreadLocalTransaction) tx());
+        this.tx().readWrite();
+        container.touch(vertex, (TinkerTransaction) tx());
     };
 
     @Override
@@ -190,7 +191,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
 
-        container.touch(edge, (TinkerThreadLocalTransaction) tx());
+        this.tx().readWrite();
+        container.touch(edge, (TinkerTransaction) tx());
     };
 
     @Override
@@ -199,6 +201,11 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
+
+        this.tx().readWrite();
+
+        touch(outVertex);
+        touch(inVertex);
 
         final long txNumber = transaction.getTxNumber();
         TinkerEdge edge;
@@ -218,7 +225,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             container = new TinkerElementContainer<>(idValue);
         edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
         ElementHelper.attachProperties(edge, keyValues);
-        container.setDraft(edge, (TinkerThreadLocalTransaction) tx());
+        container.setDraft(edge, (TinkerTransaction) tx());
         edges.put(edge.id(), container);
 
         addOutEdge(outVertex, label, edge);
@@ -239,25 +246,25 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         if (edge == null) return;
 
-        final TinkerVertex outVertex = (TinkerVertex) edge.outVertex;
+        final TinkerVertex outVertex = (TinkerVertex) edge.outVertex();
         touch(outVertex);
-        final TinkerVertex inVertex = (TinkerVertex) edge.inVertex;
+        final TinkerVertex inVertex = (TinkerVertex) edge.inVertex();
         touch(inVertex);
 
         if (null != outVertex && null != outVertex.outEdges) {
-            Set<Edge> edges = outVertex.outEdges.get(edge.label());
+            final Set<Object> edges = outVertex.outEdges.get(edge.label());
             if (null != edges) {
-                outVertex.outEdges.get(edge.label()).removeIf(e -> e.id() == edge.id());
+                outVertex.outEdges.get(edge.label()).removeIf(e -> e == edge.id());
             }
         }
         if (null != inVertex && null != inVertex.inEdges) {
-            final Set<Edge> edges = inVertex.inEdges.get(edge.label());
+            final Set<Object> edges = inVertex.inEdges.get(edge.label());
             if (null != edges) {
-                inVertex.inEdges.get(edge.label()).removeIf(e -> e.id() == edge.id());
+                inVertex.inEdges.get(edge.label()).removeIf(e -> e == edge.id());
             }
         }
 
-        container.markDeleted((TinkerThreadLocalTransaction) tx());
+        container.markDeleted((TinkerTransaction) tx());
     }
 
     @Override
@@ -307,8 +314,20 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
+    public Vertex vertex(final Object vertexId) {
+        final TinkerElementContainer<TinkerVertex> container = vertices.get(vertexIdManager.convert(vertexId));
+        return container == null ? null : container.get();
+    }
+
+    @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         return createElementIterator(Vertex.class, vertices, vertexIdManager, vertexIds);
+    }
+
+    @Override
+    public Edge edge(final Object edgeId) {
+        final TinkerElementContainer<TinkerEdge> container = edges.get(edgeIdManager.convert(edgeId));
+        return container == null ? null : container.get();
     }
 
     @Override
@@ -320,6 +339,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                                                                   final Map<Object, TinkerElementContainer<C>> elements,
                                                                   final IdManager idManager,
                                                                   final Object... ids) {
+        this.tx().readWrite();
+
         final Iterator<T> iterator;
         if (0 == ids.length) {
             iterator = new TinkerGraphIterator<>(elements.values().stream().map(e -> (T) e.get()).filter(e -> e != null).iterator());
@@ -399,6 +420,11 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         @Override
         public boolean supportsThreadedTransactions() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsTransactions() {
             return true;
         }
 

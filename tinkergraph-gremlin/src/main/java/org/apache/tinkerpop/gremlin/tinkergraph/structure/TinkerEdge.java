@@ -41,29 +41,27 @@ import java.util.stream.Collectors;
 public final class TinkerEdge extends TinkerElement implements Edge {
 
     protected Map<String, Property> properties;
-    protected final Vertex inVertex;
-    protected final Vertex outVertex;
+    protected final Object inVertexId;
+    protected final Object outVertexId;
+    private final AbstractTinkerGraph graph;
     private final boolean allowNullPropertyValues;
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
-        super(id, label);
-        this.outVertex = outVertex;
-        this.inVertex = inVertex;
-        this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
-        TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
+       this(id, outVertex, label, inVertex, 0);
     }
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
         super(id, label, currentVersion);
-        this.outVertex = outVertex;
-        this.inVertex = inVertex;
+        this.graph = (AbstractTinkerGraph)outVertex.graph();
+        this.outVertexId = outVertex.id();
+        this.inVertexId = inVertex.id();
         this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
         TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        ((AbstractTinkerGraph) outVertex.graph()).touch(this);
+        graph.touch(this);
 
         if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
         ElementHelper.validateProperty(key, value);
@@ -94,8 +92,8 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     @Override
     public void remove() {
         TinkerIndexHelper.removeElementIndex(this);
-        ((AbstractTinkerGraph) graph()).touch(this);
-        ((AbstractTinkerGraph) graph()).removeEdge(this.id());
+        graph.touch(this);
+        graph.removeEdge(this.id());
         this.properties = null;
         this.removed = true;
     }
@@ -108,9 +106,10 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     @Override
     public Object clone() {
         // todo: probably need deep clone
-        final TinkerEdge edge = new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
+        final TinkerEdge edge = new TinkerEdge(id, outVertex(), label, inVertex(), currentVersion);
 
         if (properties != null) {
+            // todo: replace clone with constructor !!!
             edge.properties = properties.entrySet().stream().
                     collect(Collectors.toMap(k -> k.getKey(), v -> (TinkerProperty) ((TinkerProperty) v.getValue()).clone()));
         }
@@ -119,12 +118,12 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public Vertex outVertex() {
-        return this.outVertex;
+        return graph.vertex(this.outVertexId);
     }
 
     @Override
     public Vertex inVertex() {
-        return this.inVertex;
+        return graph.vertex(this.inVertexId);
     }
 
     @Override
@@ -132,17 +131,17 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         if (removed) return Collections.emptyIterator();
         switch (direction) {
             case OUT:
-                return IteratorUtils.of(this.outVertex);
+                return IteratorUtils.of(this.outVertex());
             case IN:
-                return IteratorUtils.of(this.inVertex);
+                return IteratorUtils.of(this.inVertex());
             default:
-                return IteratorUtils.of(this.outVertex, this.inVertex);
+                return IteratorUtils.of(this.outVertex(), this.inVertex());
         }
     }
 
     @Override
     public Graph graph() {
-        return this.inVertex.graph();
+        return this.graph;
     }
 
     @Override

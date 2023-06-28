@@ -88,8 +88,9 @@ public abstract class AbstractTinkerGraph implements Graph {
     public void touch(final TinkerVertex vertex) {};
     public void touch(final TinkerEdge edge) {};
 
+    public abstract Vertex vertex(Object vertexId);
     public abstract Iterator<Vertex> vertices(Object... vertexIds);
-
+    public abstract Edge edge(Object edgeId);
     public abstract Iterator<Edge> edges(Object... edgeIds);
 
     public abstract Transaction tx();
@@ -201,23 +202,23 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
         touch(vertex);
         if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
-        Set<Edge> edges = vertex.outEdges.get(label);
+        Set<Object> edges = vertex.outEdges.get(label);
         if (null == edges) {
             edges = new HashSet<>();
             vertex.outEdges.put(label, edges);
         }
-        edges.add(edge);
+        edges.add(edge.id());
     }
 
     protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
         touch(vertex);
         if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
-        Set<Edge> edges = vertex.inEdges.get(label);
+        Set<Object> edges = vertex.inEdges.get(label);
         if (null == edges) {
             edges = new HashSet<>();
             vertex.inEdges.put(label, edges);
         }
-        edges.add(edge);
+        edges.add(edge.id());
     }
 
     ///////////// Features ///////////////

@@ -27,14 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,8 +36,8 @@ import java.util.stream.Collectors;
 public final class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, List<VertexProperty>> properties;
-    protected Map<String, Set<Edge>> outEdges;
-    protected Map<String, Set<Edge>> inEdges;
+    protected Map<String, Set<Object>> outEdges;
+    protected Map<String, Set<Object>> inEdges;
     private final AbstractTinkerGraph graph;
     private boolean allowNullPropertyValues;
 
@@ -65,9 +58,12 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         // todo: probably need deep clone
         final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
         if (inEdges != null)
-            vertex.inEdges = (Map) ((HashMap) inEdges).clone();
+            vertex.inEdges = inEdges.entrySet().stream().
+                    collect(Collectors.toMap(Map.Entry::getKey, v -> (Set<Object>) ((HashSet) v.getValue()).clone()));
         if (outEdges != null)
-            vertex.outEdges = (Map) ((HashMap) outEdges).clone();
+            vertex.outEdges = outEdges.entrySet().stream().
+                    collect(Collectors.toMap(Map.Entry::getKey, v -> (Set<Object>) ((HashSet) v.getValue()).clone()));
+        // todo: replace clone with constructor !!!
         if (properties != null) {
             vertex.properties = properties.entrySet().stream().
                     collect(Collectors.toMap(Map.Entry::getKey, v -> (List<VertexProperty>) ((ArrayList) v.getValue()).clone()));
@@ -158,9 +154,6 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
         if (this.removed || ((TinkerVertex) vertex).removed) throw elementAlreadyRemoved(Vertex.class, this.id);
 
-        graph.touch(this);
-        graph.touch((TinkerVertex) vertex);
-
         return graph.addEdge(this, (TinkerVertex) vertex, label, keyValues);
     }
 
@@ -169,10 +162,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         graph.touch(this);
 
         final List<Edge> edges = new ArrayList<>();
-        this.edges(Direction.BOTH).forEachRemaining(edge -> {
-            graph.touch((TinkerEdge) edge);
-            edges.add(edge);
-        });
+        this.edges(Direction.BOTH).forEachRemaining(edge -> edges.add(edge));
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties = null;
         TinkerIndexHelper.removeElementIndex(this);

@@ -138,7 +138,7 @@ public class IoCustomTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeCustomId() throws Exception {
         graph.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
-        if (graph.features().graph().supportsThreadedTransactions())
+        if (graph.features().graph().supportsTransactions())
             graph.tx().commit();
 
         final GraphWriter writer = writerMaker.apply(graph);

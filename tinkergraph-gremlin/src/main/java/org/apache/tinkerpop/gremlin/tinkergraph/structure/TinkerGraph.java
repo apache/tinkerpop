@@ -186,18 +186,18 @@ public final class TinkerGraph extends AbstractTinkerGraph {
 
         final TinkerEdge edge = (TinkerEdge) edges.get(edgeId);
 
-        final TinkerVertex outVertex = (TinkerVertex) edge.outVertex;
-        final TinkerVertex inVertex = (TinkerVertex) edge.inVertex;
+        final TinkerVertex outVertex = (TinkerVertex) edge.outVertexId;
+        final TinkerVertex inVertex = (TinkerVertex) edge.inVertexId;
 
         if (null != outVertex && null != outVertex.outEdges) {
-            final Set<Edge> edges = outVertex.outEdges.get(edge.label());
+            final Set<Object> edges = outVertex.outEdges.get(edge.label());
             if (null != edges)
-                edges.remove(edge);
+                edges.remove(edge.id());
         }
         if (null != inVertex && null != inVertex.inEdges) {
-            final Set<Edge> edges = inVertex.inEdges.get(edge.label());
+            final Set<Object> edges = inVertex.inEdges.get(edge.label());
             if (null != edges)
-                edges.remove(edge);
+                edges.remove(edge.id());
         }
 
         this.edges.remove(edgeId);
@@ -238,6 +238,11 @@ public final class TinkerGraph extends AbstractTinkerGraph {
     }
 
     @Override
+    public Vertex vertex(final Object vertexId) {
+        return vertices.get(vertexIdManager.convert(vertexId));
+    }
+
+    @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         return createElementIterator(Vertex.class, vertices, vertexIdManager, vertexIds);
     }
@@ -245,6 +250,11 @@ public final class TinkerGraph extends AbstractTinkerGraph {
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
+    }
+
+    @Override
+    public Edge edge(final Object edgeId) {
+        return edges.get(edgeIdManager.convert(edgeId));
     }
 
 

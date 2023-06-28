@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction {
+final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
     private static final String TX_CONFLICT = "Conflict: element modified in another transaction";
 
@@ -45,7 +45,7 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
         openedTx = new AtomicLong(0);
     }
 
-    public TinkerThreadLocalTransaction(final TinkerTransactionGraph g) {
+    public TinkerTransaction(final TinkerTransactionGraph g) {
         super(g);
         graph = g;
     }
@@ -65,11 +65,8 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
     protected void doOpen() {
         if (isOpen())
             Transaction.Exceptions.transactionAlreadyOpen();
-    }
 
-    @Override
-    protected void doClose() {
-        txNumber.set(NOT_STARTED);
+        txNumber.set(openedTx.getAndIncrement());
     }
 
     protected long getTxNumber() {
@@ -142,13 +139,13 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
             changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
             changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
 
-            txChangedVertices.set(null);
-            txChangedEdges.set(null);
+            txChangedVertices.remove();
+            txChangedEdges.remove();
 
             changedVertices.forEach(v -> v.releaseLock());
             changedEdges.forEach(e -> e.releaseLock());
 
-            doClose();
+            txNumber.set(NOT_STARTED);
         }
     }
 
@@ -164,9 +161,9 @@ final class TinkerThreadLocalTransaction extends AbstractThreadLocalTransaction 
         final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
         if (vertexIndex != null) edgeIndex.rollback();
 
-        txChangedVertices.set(null);
-        txChangedEdges.set(null);
+        txChangedVertices.remove();
+        txChangedEdges.remove();
 
-        doClose();
+        txNumber.set(NOT_STARTED);
     }
 }

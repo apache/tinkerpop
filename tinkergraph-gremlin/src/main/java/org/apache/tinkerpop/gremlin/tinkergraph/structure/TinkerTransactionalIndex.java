@@ -230,10 +230,10 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
                 addContainer(element);
         }
 
-        txIndex.set(null);
+        txIndex.remove();
     }
 
     public void rollback() {
-        txIndex.set(null);
+        txIndex.remove();
     }
 }
