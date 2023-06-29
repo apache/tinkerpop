@@ -272,14 +272,6 @@ limitations under the License.
                                     <file>src/main/static/licenses/jbcrypt</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jcabi-log</resource>
-                                    <file>src/main/static/licenses/jcabi-log</file>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jcabi-manifests</resource>
-                                    <file>src/main/static/licenses/jcabi-manifests</file>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/jline2</resource>
                                     <file>src/main/static/licenses/jline2</file>
                                 </transformer>

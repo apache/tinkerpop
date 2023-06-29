@@ -165,7 +165,6 @@ limitations under the License.
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <javapoet.version>1.8.0</javapoet.version>
         <jbcrypt.version>0.4</jbcrypt.version>
-        <jcabi.version>1.2.1</jcabi.version>
         <junit.version>4.13.1</junit.version>
         <kerby.version>2.0.1</kerby.version>
         <log4j.version>1.2.17</log4j.version>
@@ -1598,11 +1597,6 @@ limitations under the License.
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
                                         </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>com.jcabi</groupId>
-                                            <artifactId>jcabi-manifests</artifactId>
-                                            <version>${jcabi.version}</version>
-                                        </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
                             </execution>
@@ -1808,11 +1802,6 @@ limitations under the License.
                                             <groupId>org.yaml</groupId>
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>com.jcabi</groupId>
-                                            <artifactId>jcabi-manifests</artifactId>
-                                            <version>${jcabi.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
