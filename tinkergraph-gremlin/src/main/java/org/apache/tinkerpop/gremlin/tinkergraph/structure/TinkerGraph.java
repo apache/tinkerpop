@@ -186,8 +186,8 @@ public final class TinkerGraph extends AbstractTinkerGraph {
 
         final TinkerEdge edge = (TinkerEdge) edges.get(edgeId);
 
-        final TinkerVertex outVertex = (TinkerVertex) edge.outVertexId;
-        final TinkerVertex inVertex = (TinkerVertex) edge.inVertexId;
+        final TinkerVertex outVertex = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inVertex = (TinkerVertex) edge.inVertex();
 
         if (null != outVertex && null != outVertex.outEdges) {
             final Set<Object> edges = outVertex.outEdges.get(edge.label());
