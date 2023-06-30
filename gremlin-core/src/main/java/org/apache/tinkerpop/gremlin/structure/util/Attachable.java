@@ -197,8 +197,10 @@ public interface Attachable<V> {
             final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT, attachableEdge.get().label());
             while (edgeIterator.hasNext()) {
                 final Edge edge = edgeIterator.next();
-                if (ElementHelper.areEqual(edge, baseEdge))
+                if (ElementHelper.areEqual(edge, baseEdge)) {
+                    CloseableIterator.closeIterator(edgeIterator);
                     return Optional.of(edge);
+                }
             }
             return Optional.empty();
         }
