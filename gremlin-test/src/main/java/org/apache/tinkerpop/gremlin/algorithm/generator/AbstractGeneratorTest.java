@@ -49,6 +49,7 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
                         final Iterator<Vertex> innerItty = g2.vertices();
                         final Vertex v = IteratorUtils.filter(innerItty, vx -> vx.value("oid").equals(p.getValue0())).next();
                         CloseableIterator.closeIterator(innerItty);
+                        final boolean b = sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
                         return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
                     });
         } finally {
@@ -58,11 +59,23 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
 
     private boolean sameInVertices(final Vertex v, final List<Vertex> inVertices) {
         return inVertices.stream()
-                .allMatch(inVertex -> IteratorUtils.filter(v.vertices(Direction.IN), hv -> hv.value("oid").equals(inVertex.value("oid"))).hasNext());
+                .allMatch(inVertex ->
+                {
+                    final Iterator<Vertex> itty = v.vertices(Direction.IN);
+                    final boolean result = IteratorUtils.filter(itty, hv -> hv.value("oid").equals(inVertex.value("oid"))).hasNext();
+                    CloseableIterator.closeIterator(itty);
+                    return result;
+                });
     }
 
     private boolean sameOutVertices(final Vertex v, final List<Vertex> outVertices) {
         return outVertices.stream()
-                .allMatch(outVertex -> IteratorUtils.filter(v.vertices(Direction.OUT), hv -> hv.value("oid").equals(outVertex.value("oid"))).hasNext());
+                .allMatch(outVertex ->
+                {
+                    final Iterator<Vertex> itty = v.vertices(Direction.OUT);
+                    final boolean result = IteratorUtils.filter(itty, hv -> hv.value("oid").equals(outVertex.value("oid"))).hasNext();
+                    CloseableIterator.closeIterator(itty);
+                    return result;
+                });
     }
 }

@@ -271,8 +271,10 @@ public interface Attachable<V> {
                     final Edge edge = edgeIterator.next();
                     if (ElementHelper.areEqual(edge, propertyElement)) {
                         final Property property = edge.property(baseProperty.key());
-                        if (ElementHelper.areEqual(baseProperty, property))
+                        if (ElementHelper.areEqual(baseProperty, property)) {
+                            CloseableIterator.closeIterator(edgeIterator);
                             return Optional.of(property);
+                        }
                     }
                 }
                 return Optional.empty();
@@ -282,6 +284,7 @@ public interface Attachable<V> {
                     final VertexProperty vertexProperty = vertexPropertyIterator.next();
                     if (ElementHelper.areEqual(vertexProperty, baseProperty.element())) {
                         final Property property = vertexProperty.property(baseProperty.key());
+                        CloseableIterator.closeIterator(vertexPropertyIterator);
                         if (property.isPresent() && property.value().equals(baseProperty.value()))
                             return Optional.of(property);
                         else
