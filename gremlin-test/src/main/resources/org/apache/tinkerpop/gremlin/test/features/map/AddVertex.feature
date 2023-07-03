@@ -517,3 +517,18 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"friendWeight\", null)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",null)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
+
+  Scenario: g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").property(single, "age", 50)
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","alice").property("age", __.union(__.values("age"), constant(1)).sum())
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 0 for count of "g.V().has(\"person\",\"age\",50)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"age\",51)"
