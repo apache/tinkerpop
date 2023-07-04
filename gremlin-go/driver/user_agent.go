@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/debug"
 	"strings"
 )
 
@@ -38,28 +37,19 @@ var userAgent string
 
 const userAgentHeader = "User-Agent"
 
+const gremlinVersion = "3.6.5-SNAPSHOT" // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+
 func init() {
 	applicationName := "NotAvailable"
-	driverVersion := "NotAvailable"
 
 	path, err := os.Executable()
 	if err == nil {
 		applicationName = filepath.Base(path)
 	}
 
-	bi, ok := debug.ReadBuildInfo()
-	if ok {
-		for _, dep := range bi.Deps {
-			if strings.Contains(dep.Path, "gremlin-go") {
-				driverVersion = dep.Version
-				break
-			}
-		}
-	}
 	applicationName = strings.ReplaceAll(applicationName, " ", "_")
-	driverVersion = strings.ReplaceAll(driverVersion, " ", "_")
 	runtimeVersion := strings.ReplaceAll(runtime.Version(), " ", "_")
 	osName := strings.ReplaceAll(runtime.GOOS, " ", "_")
 	architecture := strings.ReplaceAll(runtime.GOARCH, " ", "_")
-	userAgent = fmt.Sprintf("%v Gremlin-Go.%v %v %v.NotAvailable %v", applicationName, driverVersion, runtimeVersion, osName, architecture)
+	userAgent = fmt.Sprintf("%v Gremlin-Go.%v %v %v.NotAvailable %v", applicationName, gremlinVersion, runtimeVersion, osName, architecture)
 }

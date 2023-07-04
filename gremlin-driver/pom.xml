@@ -158,10 +158,6 @@ limitations under the License.
                                     <shadedPattern>com.shaded.carrotsearch</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.jcabi</pattern>
-                                    <shadedPattern>com.shaded.jcabi</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>com.squareup</pattern>
                                     <shadedPattern>com.shaded.squareup</shadedPattern>
                                 </relocation>
@@ -209,14 +205,6 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/NOTICE</resource>
                                     <file>src/main/static/NOTICE</file>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jcabi-log</resource>
-                                    <file>src/main/static/licenses/jcabi-log</file>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jcabi-manifests</resource>
-                                    <file>src/main/static/licenses/jcabi-manifests</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/kryo</resource>

@@ -31,6 +31,11 @@ namespace Gremlin.Net.Driver
     public class Tokens
     {
         /// <summary>
+        ///     Current TinkerPop version.
+        /// </summary>
+        public static string GremlinVersion = "3.6.5-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+
+        /// <summary>
         ///     The key for the unique identifier of the request.
         /// </summary>
         public static string RequestId = "requestId";

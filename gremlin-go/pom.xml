@@ -65,6 +65,19 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <configuration>
+                    <file>driver/user_agent.go</file>
+                    <replacements>
+                        <replacement>
+                            <token>gremlinVersion = ".*"</token>
+                            <value>gremlinVersion = "${project.version}"</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
