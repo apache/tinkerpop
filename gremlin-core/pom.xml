@@ -71,17 +71,6 @@ limitations under the License.
             <version>0.7.1</version>
         </dependency>
         <dependency>
-            <groupId>com.jcabi</groupId>
-            <artifactId>jcabi-manifests</artifactId>
-            <version>${jcabi.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.squareup</groupId>
             <artifactId>javapoet</artifactId>
             <version>${javapoet.version}</version>
@@ -196,6 +185,19 @@ limitations under the License.
                         <arg>-parameters</arg>
                         <arg>-proc:none</arg>
                     </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <configuration>
+                    <file>src/main/java/org/apache/tinkerpop/gremlin/util/Gremlin.java</file>
+                    <replacements>
+                        <replacement>
+                            <token>gremlinVersion = ".*"</token>
+                            <value>gremlinVersion = "${project.version}"</value>
+                        </replacement>
+                    </replacements>
                 </configuration>
             </plugin>
         </plugins>

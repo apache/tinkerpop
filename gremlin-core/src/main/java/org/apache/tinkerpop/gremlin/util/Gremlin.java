@@ -18,24 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import com.jcabi.manifests.Manifests;
-
 import java.io.IOException;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
-    private static String version;
-
-    static {
-        try {
-            version = Manifests.read("version");
-        }
-        catch (Throwable t) {
-            version = "VersionNotFound";
-        }
-    }
+    private final static String gremlinVersion = "3.5.7-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
     private Gremlin() {
     }
@@ -45,7 +34,7 @@ public final class Gremlin {
      * the version. This typically would be the result of the version being missing from the manifest file.
      */
     public static String version() {
-        return version;
+        return gremlinVersion;
     }
 
     public static void main(final String[] arguments) throws IOException {
