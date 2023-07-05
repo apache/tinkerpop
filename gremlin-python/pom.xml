@@ -68,6 +68,19 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <configuration>
+                    <file>src/main/python/gremlin_python/driver/useragent.py</file>
+                    <replacements>
+                        <replacement>
+                            <token>gremlin_version = ".*"</token>
+                            <value>gremlin_version = "${project.version}"</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
