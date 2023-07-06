@@ -72,7 +72,7 @@ This release also includes changes from <<release-3-5-7, 3.5.7>>.
 === TinkerPop 3.6.4 (Release Date: May 12, 2023)
 
 * Fixed bug in `TextP.regex` and `TextP.notRegex` serialization for Java GLV.
-* Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
+* Fixed a memory leak in the Gremlin.Net driver that only occurred if a `CancellationToken` was provided.
 
 ==== Bugs
 
@@ -93,10 +93,10 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Fixed `Direction` enum bug in `gremlin-javascript` where `Direction.from_` and `Direction.to` was not properly aliased to `Direction.OUT` and `Direction.IN`
 * Fixed `Direction` enum in `gremlin-python` where `Direction.from_` and `Direction.to` were not added, and they can now be used instead of defining `from_=Direction.OUT` and `to=Direction.IN`
 * Improved performance of comparison (equals) between not compatible types and nulls.
-* Fixed MergeV/MergeE steps to work when onCreate is immutable map.
+* Fixed `mergeV()` and `mergeE()` steps to work when `onCreate` is immutable map.
 * Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
-* For mergeV/mergeE, added checks for illegal hidden keys and refactored searchVertices to allow subclasses to override search criteria.
-* Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
+* For `mergeV()` and `mergeE()`, added checks for illegal hidden keys and refactored `searchVertices` to allow subclasses to override search criteria.
+* Added static map capturing possible `Traversal` steps that shall be added to traversal for a given operator.
 * Fixed bug which caused some traversals to throw `GremlinTypeErrorException` to users.
 
 ==== Bugs
@@ -398,12 +398,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-7]]
 === TinkerPop 3.5.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
+* Fixed a memory leak in the Gremlin.Net driver that only occurred if a `CancellationToken` was provided.
 * Fixed gremlin-python `Client` problem where calling `submit()` after` `close()` would hang the system.
 * Added `gremlin.spark.dontDeleteNonEmptyOutput` to stop deleting the output folder if it is not empty in `spark-gremlin`.
 * Upgraded `gremlin-javascript` and `gremlint` to Node 16.20.0.
 * Upgraded `gremlin-go` to Go 1.20.
-* Improved the python Translator class
+* Improved the python `Translator` class.
 * Added `gremlin-java8.bat` file as a workaround to allow loading the console using Java 8 on Windows.
 * Fixed a bug in `gremlin-server` where timeout tasks were not cancelled and could cause very large memory usage when timeout is large.
 * Removed `jcabi-manifests` dependency from `gremlin-core`, `gremlin-driver`, and `gremlin-server`.
@@ -438,7 +438,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `CountStrategy` bug for cases where predicates contain negative numbers by disabling the optimization.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
 * Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
-* Reduce the toString() of ObjectWritable to avoid OOM for running OLAP queries on Spark.
+* Reduce the `toString()` of `ObjectWritable` to avoid OOM for running OLAP queries on Spark.
 
 ==== Bugs
 
