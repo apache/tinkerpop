@@ -339,3 +339,39 @@ Feature: Step - where()
       | lop |
       | lop |
       | ripple |
+
+  Scenario: g_V_asXnX_whereXorXhasLabelXsoftwareX_hasLabelXpersonXXX_selectXnX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("n").where(
+        __.or(__.hasLabel("software"), __.hasLabel("person"))
+      ).select("n").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |
+      | lop |
+      | ripple |
+
+  Scenario: g_V_asXnX_whereXorXselectXnX_hasLabelXsoftwareX_selectXnX_hasLabelXpersonXXX_selectXnX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("n").
+        where(__.or(__.select("n").hasLabel("software"), __.select("n").hasLabel("person"))).
+        select("n").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |
+      | lop |
+      | ripple |

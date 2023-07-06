@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Upgraded `gremlin-javascript` and `gremlint` to Node 16.20.0.
 * Upgraded `gremlin-go` to Go 1.20.
 * Improved the python `Translator` class with better handling for `P`, `None` and subclasses of `str`.
+* Fixed bug in `FilterRankingStrategy` that was preventing certain traversals from recognizing labels in child traversals.
 * Added `gremlin-java8.bat` file as a workaround to allow loading the console using Java 8 on Windows.
 * Fixed a bug in `gremlin-server` where timeout tasks were not cancelled and could cause very large memory usage when timeout is large.
 * Removed `jcabi-manifests` dependency from `gremlin-core`, `gremlin-driver`, and `gremlin-server`.
