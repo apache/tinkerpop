@@ -72,7 +72,7 @@ public final class TinkerHelper {
 
     // todo: move to TinkerVertex?
     public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
-        final Set<Object> outEdgeIds = new HashSet<>();
+        final List<Object> outEdgeIds = new ArrayList<>();
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
             if (vertex.outEdges != null) {
                 if (edgeLabels.length == 0)
@@ -84,7 +84,7 @@ public final class TinkerHelper {
             }
         }
 
-        final Set<Object> inEdgeIds = new HashSet<>();
+        final List<Object> inEdgeIds = new ArrayList<>();
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
             if (vertex.inEdges != null) {
                 if (edgeLabels.length == 0)

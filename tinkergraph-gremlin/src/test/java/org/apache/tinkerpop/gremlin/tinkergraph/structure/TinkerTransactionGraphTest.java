@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,6 +41,32 @@ public class TinkerTransactionGraphTest {
     final Object vid = 100;
 
     ///// vertex tests
+
+    @Test
+    public void shouldDeleteVertexOnCommit() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().iterate();
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+
+        gtx.V().drop().iterate();
+        assertEquals(0, (long) gtx.V().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+
+        gtx.tx().commit();
+
+        assertEquals(0, (long) gtx.V().count().next());
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
 
     @Test
     public void shouldDeleteUnusedVertexContainerOnCommit() {
@@ -592,20 +619,26 @@ public class TinkerTransactionGraphTest {
     public void vertexCloneTest() {
         final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerTransactionGraph.open());
         final TinkerVertexProperty vp = new TinkerVertexProperty(vertex, "test", "qq");
+        final TinkerEdge edge = new TinkerEdge(1, vertex, "label", vertex);
         vertex.properties = new HashMap<>();
         vertex.properties.put("test", new ArrayList<>());
         vertex.properties.get("test").add(vp);
+        vertex.inEdges = new HashMap<>();
+        vertex.inEdges.put("label", new HashSet<>());
+        vertex.inEdges.get("label").add(edge);
 
         final TinkerVertex copy = (TinkerVertex) vertex.clone();
         vertex.properties.get("test").remove(vp);
         assertEquals(1, copy.properties.get("test").size());
+        vertex.inEdges.get("label").remove(edge);
+        assertEquals(1, copy.inEdges.get("label").size());
     }
 
     @Test
     public void edgeCloneTest() {
         final TinkerTransactionGraph g = TinkerTransactionGraph.open();
-        final TinkerVertex v1 = new TinkerVertex(1, "label", g);
-        final TinkerVertex v2 = new TinkerVertex(2, "label", g);
+        final TinkerVertex v1 = (TinkerVertex) g.addVertex();
+        final TinkerVertex v2 = (TinkerVertex) g.addVertex();
         final TinkerEdge edge = new TinkerEdge(3, v1, "label", v2);
         final TinkerProperty property = new TinkerProperty(edge, "test", "qq");
         edge.properties = new HashMap<>();
