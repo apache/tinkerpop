@@ -72,31 +72,33 @@ public final class TinkerHelper {
 
     // todo: move to TinkerVertex?
     public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
-        final Set<Object> edgeIds = new HashSet<>();
+        final Set<Object> outEdgeIds = new HashSet<>();
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
             if (vertex.outEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.outEdges.values().forEach(edgeIds::addAll);
+                    vertex.outEdges.values().forEach(outEdgeIds::addAll);
                 else if (edgeLabels.length == 1)
-                    edgeIds.addAll(vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
+                    outEdgeIds.addAll(vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
                 else
-                    Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).forEach(edgeIds::addAll);
-            }
-        }
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
-            if (vertex.inEdges != null) {
-                if (edgeLabels.length == 0)
-                    vertex.inEdges.values().forEach(edgeIds::addAll);
-                else if (edgeLabels.length == 1)
-                    edgeIds.addAll(vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
-                else
-                    Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).forEach(edgeIds::addAll);
+                    Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).forEach(outEdgeIds::addAll);
             }
         }
 
-        return edgeIds.size() == 0
+        final Set<Object> inEdgeIds = new HashSet<>();
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
+            if (vertex.inEdges != null) {
+                if (edgeLabels.length == 0)
+                    vertex.inEdges.values().forEach(inEdgeIds::addAll);
+                else if (edgeLabels.length == 1)
+                    inEdgeIds.addAll(vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
+                else
+                    Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).forEach(inEdgeIds::addAll);
+            }
+        }
+
+        return outEdgeIds.size() == 0 && inEdgeIds.size() == 0
                 ? Collections.emptyIterator()
-                : edgeIds.stream()
+                : Stream.concat(outEdgeIds.stream(), inEdgeIds.stream())
                     .map(id -> ((AbstractTinkerGraph) vertex.graph()).edge(id))
                     .filter(v -> v != null)
                     .map(v -> (TinkerEdge) v).iterator();
