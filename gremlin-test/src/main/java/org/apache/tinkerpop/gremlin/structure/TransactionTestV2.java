@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.junit.Test;
 
-import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -34,7 +34,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     ///// vertex tests
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldCommit() throws InterruptedException {
         final GraphTraversalSource gtx = g.tx().begin();
@@ -55,7 +55,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     public void shouldDeleteVertexOnCommit() throws InterruptedException {
@@ -82,7 +82,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -109,7 +109,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     public void shouldHandleConcurrentVertexDelete() throws InterruptedException {
@@ -149,7 +149,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void shouldChangeVertexProperty() {
@@ -171,7 +171,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void shouldHandleConcurrentChangeForVertexProperty() throws InterruptedException {
@@ -205,7 +205,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
@@ -240,7 +240,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void shouldThrowExceptionWhenTryToAddVertexWithUsedId() {
@@ -256,7 +256,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldRollbackAddedVertex() throws InterruptedException {
         final GraphTraversalSource gtx = g.tx().begin();
@@ -280,7 +280,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     ///// transaction tests
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReopenClosedTransaction() {
         final GraphTraversalSource gtx = g.tx().begin();
@@ -298,7 +298,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     ///// Edge tests
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldCommitEdge() throws InterruptedException {
@@ -323,7 +323,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldRollbackAddedEdge() throws InterruptedException {
@@ -355,7 +355,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
@@ -393,7 +393,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
@@ -446,7 +446,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
@@ -487,7 +487,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
 
     //tx1 adds a property to v1, tx2 deletes v1
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void shouldHandleAddingPropertyWhenOtherTxDeleteVertex() throws InterruptedException {
@@ -522,7 +522,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
@@ -561,7 +561,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
 
     // tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -599,7 +599,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
 
     // tx1 adds a new vertex v1, tx2 adds the same vertex
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldHandleAddingSameVertexInDifferentTx() throws InterruptedException {
         final GraphTraversalSource gtx = g.tx().begin();
@@ -636,7 +636,7 @@ public class TransactionTestV2 extends AbstractGremlinTest {
 
     // tx1 adds vertex v1, tx2 removes vertex v1
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldHandleAddingVertexWhenOtherTxTryToDeleteSameVertex() throws InterruptedException {
         final GraphTraversalSource gtx = g.tx().begin();

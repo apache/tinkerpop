@@ -48,6 +48,10 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
+    public T getModified() {
+        return transactionUpdatedValue.get();
+    }
+
     public Object getElementId() {
         return elementId;
     }
@@ -89,7 +93,9 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
     public void commit(final long txVersion) {
         if (isDeletedInTx.get()) {
-            element.removed = true;
+            // created and deleted in same tx
+            if (null != element)
+                element.removed = true;
             element = null;
             isDeleted = true;
         } else {

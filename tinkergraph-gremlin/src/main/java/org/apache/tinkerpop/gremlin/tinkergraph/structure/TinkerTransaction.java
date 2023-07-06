@@ -78,8 +78,8 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
     protected <T extends TinkerElement> void touch(TinkerElementContainer<T> container) {
         if (!isOpen()) txNumber.set(openedTx.getAndIncrement());
 
-        T element = container.get();
-        if (null == element) element = container.getUnmodified();
+        T element = container.getUnmodified();
+        if (null == element) element = container.getModified();
         if (element instanceof TinkerVertex) {
             if (null == txChangedVertices.get())
                 txChangedVertices.set(new HashSet<>());
