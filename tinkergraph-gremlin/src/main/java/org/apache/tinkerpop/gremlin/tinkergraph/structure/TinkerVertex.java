@@ -89,7 +89,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
                 throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
         } else {
             if (this.properties != null && this.properties.containsKey(key)) {
-                final List<VertexProperty> list = (List) this.properties.get(key);
+                final List<VertexProperty> list = this.properties.get(key);
                 if (list.size() > 1)
                     throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
                 else
