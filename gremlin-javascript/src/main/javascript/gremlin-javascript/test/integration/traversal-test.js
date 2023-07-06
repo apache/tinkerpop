@@ -160,11 +160,11 @@ describe('Traversal', function () {
   describe("more complex traversals", function() {
     it('should return paths of value maps', function() {
       const g = traversal().withRemote(connection);
-      return g.V(1).out().in_().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
+      return g.V(1).out().order().in_().order().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
         assert.strictEqual(list[0].objects[0].get('name')[0], "marko");
-        assert.strictEqual(list[0].objects[1].get('name')[0], "lop");
+        assert.strictEqual(list[0].objects[1].get('name')[0], "vadas");
         assert.strictEqual(list[0].objects[2].get('name')[0], "marko");
       });
     });
