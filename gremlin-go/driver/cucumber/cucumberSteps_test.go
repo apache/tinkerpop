@@ -24,8 +24,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
-	"github.com/cucumber/godog"
 	"math"
 	"reflect"
 	"regexp"
@@ -33,6 +31,9 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+	"github.com/cucumber/godog"
 )
 
 type tinkerPopGraph struct {
@@ -639,6 +640,9 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 	// Shortcut.
 	if fmt.Sprint(expected) == fmt.Sprint(actual) {
 		return true
+	}
+	if len(expected) != len(actual) {
+		return false
 	}
 	expectedCopy := make([]interface{}, len(expected))
 	copy(expectedCopy, expected)
