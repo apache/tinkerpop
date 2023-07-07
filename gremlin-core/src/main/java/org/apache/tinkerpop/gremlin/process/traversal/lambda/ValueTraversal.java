@@ -115,7 +115,12 @@ public final class ValueTraversal<T, V> extends AbstractLambdaTraversal<T, V> {
                         "The by(\"%s\") modulator can only be applied to a traverser that is an Element or a Map - it is being applied to [%s] a %s class instead",
                         propertyKey, o, o.getClass().getSimpleName()));
         } else {
-            this.value = TraversalUtil.apply(start, this.bypassTraversal);
+            final Iterator<V> itty = TraversalUtil.applyAll(start, this.bypassTraversal);
+            if (itty.hasNext()) {
+                this.value = itty.next();
+            } else {
+                noStarts = true;
+            }
         }
     }
 
