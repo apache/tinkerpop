@@ -109,7 +109,6 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         final TinkerEdge edge = new TinkerEdge(id, outVertex(), label, inVertex(), currentVersion);
 
         if (properties != null) {
-            // todo: replace clone with constructor !!!
             edge.properties = properties.entrySet().stream().
                     collect(Collectors.toMap(k -> k.getKey(), v -> (TinkerProperty) ((TinkerProperty) v.getValue()).clone()));
         }

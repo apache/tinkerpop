@@ -70,7 +70,6 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
     }
 
     protected long getTxNumber() {
-        // todo: think a bit more...
         if (!isOpen()) txNumber.set(openedTx.getAndIncrement());
         return txNumber.get();
     }

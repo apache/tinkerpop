@@ -101,7 +101,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
         } else {
             element = transactionUpdatedValue.get();
             element.currentVersion = txVersion;
-            // todo: if (isDeleted) throw?
         }
         usesInTransactions.decrementAndGet();
         reset();

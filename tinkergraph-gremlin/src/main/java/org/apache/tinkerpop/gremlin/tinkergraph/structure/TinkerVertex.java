@@ -63,7 +63,6 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (outEdges != null)
             vertex.outEdges = outEdges.entrySet().stream().
                     collect(Collectors.toMap(Map.Entry::getKey, v -> (Set<Object>) ((HashSet) v.getValue()).clone()));
-        // todo: replace clone with constructor !!!
         if (properties != null) {
             vertex.properties = properties.entrySet().stream().
                     collect(Collectors.toMap(Map.Entry::getKey, v -> (List<VertexProperty>) ((ArrayList) v.getValue()).clone()));
