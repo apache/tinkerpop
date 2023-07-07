@@ -26,9 +26,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
 * Fixed gremlin-python `Client` problem where calling `submit()` after` `close()` would hang the system.
 * Added `gremlin.spark.dontDeleteNonEmptyOutput` to stop deleting the output folder if it is not empty in `spark-gremlin`.
+* Fixed a bug in `SubgraphStrategy` where the vertex property filter produced errors if a `Vertex` was missing the key provided to `by()` as a token.
 * Upgraded `gremlin-javascript` and `gremlint` to Node 16.20.0.
 * Upgraded `gremlin-go` to Go 1.20.
-* Improved the python Translator class
+* Improved the python `Translator` class with better handling for `P`, `None` and subclasses of `str`.
 * Added `gremlin-java8.bat` file as a workaround to allow loading the console using Java 8 on Windows.
 * Fixed a bug in `gremlin-server` where timeout tasks were not cancelled and could cause very large memory usage when timeout is large.
 * Removed `jcabi-manifests` dependency from `gremlin-core`, `gremlin-driver`, and `gremlin-server`.
@@ -63,7 +64,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `CountStrategy` bug for cases where predicates contain negative numbers by disabling the optimization.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
 * Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
-* Reduce the toString() of ObjectWritable to avoid OOM for running OLAP queries on Spark.
+* Reduce the `toString()` of `ObjectWritable` to avoid OOM for running OLAP queries on Spark.
 
 ==== Bugs
 
@@ -141,7 +142,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Provides users with potentially more information to driver TimeoutExceptions.
 * Fixed an issue in Go and Python GLVs where modifying per request settings to override request_id's was not working correctly.
 * Fixed incorrect implementation for `GraphTraversalSource.With` in `gremlin-go`.
-* Changed Gremlin.version() to return `"VersionNotFound"` if the version is missing from the manifest.
+* Changed `Gremlin.version()` to return "VersionNotFound" if the version is missing from the manifest.
 * Fixed local steps to avoid throwing an exception for non-iterable input.
 * Fixed a case sensitivity issue when comparing request UUIDs in `gremlin-javascript`.
 
