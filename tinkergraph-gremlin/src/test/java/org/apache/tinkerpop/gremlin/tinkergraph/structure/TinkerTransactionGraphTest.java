@@ -69,6 +69,28 @@ public class TinkerTransactionGraphTest {
     }
 
     @Test
+    public void shouldDeleteCreatedVertexOnCommit() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // create and drop Vertex in same transaction
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.V(vid).drop().iterate();
+
+        assertEquals(0, (long) gtx.V().count().next());
+        countElementsInNewThreadTx(g, 0, 0);
+
+        gtx.tx().commit();
+
+        assertEquals(0, (long) gtx.V().count().next());
+        countElementsInNewThreadTx(g, 0, 0);
+        // should remove unused container
+        assertEquals(0, g.getVertices().size());
+    }
+
+
+    @Test
     public void shouldDeleteUnusedVertexContainerOnCommit() {
         final TinkerTransactionGraph g = TinkerTransactionGraph.open();
 
@@ -82,6 +104,44 @@ public class TinkerTransactionGraphTest {
 
         // should remove unused container
         assertEquals(0, g.getVertices().size());
+    }
+
+    @Test
+    public void shouldDeleteUnusedVertexContainerOnRollback() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        gtx.V(vid).properties("test-property").iterate();
+        // 1 container for existing vertex
+        assertEquals(1, g.getVertices().size());
+
+        // other tx try to add new vertices and modify existing
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2.addV().addV().iterate();
+            gtx.V(vid).properties("test-property").iterate();
+
+            // 1 container for existing vertex + 2 for new ones
+            assertEquals(3, g.getVertices().size());
+
+            assertEquals(3, (long) gtx2.V().count().next());
+
+            gtx2.tx().rollback();
+            // containers for new vertices should be removed
+            assertEquals(1, g.getVertices().size());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().rollback();
+
+        // should keep container because vertex not created in this transaction
+        assertEquals(1, g.getVertices().size());
     }
 
     @Test

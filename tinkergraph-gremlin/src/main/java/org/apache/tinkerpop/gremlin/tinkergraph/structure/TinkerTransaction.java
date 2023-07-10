@@ -160,6 +160,11 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
         if (vertexIndex != null) edgeIndex.rollback();
 
+        if (null != changedVertices)
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
+        if (null != changedEdges)
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
+
         txChangedVertices.remove();
         txChangedEdges.remove();
 
