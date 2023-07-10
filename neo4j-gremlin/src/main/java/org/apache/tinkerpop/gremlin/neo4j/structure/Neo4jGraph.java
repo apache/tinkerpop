@@ -58,6 +58,11 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
 @Graph.OptIn("org.apache.tinkerpop.gremlin.neo4j.NativeNeo4jSuite")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.structure.TransactionTestV2",
+        method = "*",
+        reason = "Some scenarios are supported by Neo4jGraph")
+
 public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     static {
