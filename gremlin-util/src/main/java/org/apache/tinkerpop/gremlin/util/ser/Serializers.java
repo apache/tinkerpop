@@ -33,6 +33,7 @@ public enum Serializers {
      */
     GRAPHSON(SerTokens.MIME_JSON),
     GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
+    GRAPHSON_V1D0_SPARSE(SerTokens.MIME_GRAPHSON_V1D0_SPARSE),
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
     GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0);
@@ -54,6 +55,8 @@ public enum Serializers {
                 return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRAPHSON_V1D0:
                 return new GraphSONMessageSerializerGremlinV1d0();
+            case SerTokens.MIME_GRAPHSON_V1D0_SPARSE:
+                return new GraphSONMessageSerializerV1d0();
             case SerTokens.MIME_GRAPHSON_V2D0:
                 return new GraphSONMessageSerializerV2d0();
             case SerTokens.MIME_GRAPHBINARY_V1D0:

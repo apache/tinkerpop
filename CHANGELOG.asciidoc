@@ -67,6 +67,7 @@ This release also includes changes from <<release-3-5-7, 3.5.7>>.
 * Added `text/plain` MIME type to the HTTP endpoint to return a Gremlin Console-like representation of the data.
 * Added GraphBinary serialization option to the HTTP endpoint.
 * Fixed bug with `fail` step not working with a `VertexProgram` running on the server.
+* Introduced new mime-type `application/vnd.gremlin-v1.0+json;sparse=true` to allow direct specification of GraphSON 1.0 without types.
 
 [[release-3-6-4]]
 === TinkerPop 3.6.4 (Release Date: May 12, 2023)

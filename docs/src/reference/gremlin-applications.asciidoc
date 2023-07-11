@@ -1190,7 +1190,7 @@ $ curl -H "Accept:application/vnd.gremlin-v3.0+json" -X POST -d "{\"gremlin\":\"
 IMPORTANT: `GraphSONMessageSerializerGremlinV1d0` configures `application/vnd.gremlin-v1.0+json`, but this mime type does
 not support text serialization (i.e. `MessageTextSerializer`) which means that it cannot be used for the serializing
 results to the HTTP endpoint in Gremlin Server. GraphSON 1.0 must be configured with `application/json` using the
-`GraphSONMessageSerializerV1d0` as demonstrated above.
+`GraphSONMessageSerializerV1d0` as demonstrated above or use mimeType `application/vnd.gremlin-v1.0+json;sparse=true`.
 
 [[server-graphbinary]]
 ===== GraphBinary

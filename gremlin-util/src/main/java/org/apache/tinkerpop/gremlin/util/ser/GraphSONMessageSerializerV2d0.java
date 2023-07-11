@@ -50,14 +50,14 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
         header = buffer.array();
     }
 
-        /**
-         * Creates a default GraphSONMessageSerializer.
-         *
-         * By default this will internally instantiate a {@link GraphSONMapper} and register
-         * a {@link GremlinServerModule} and {@link GraphSONXModuleV2d0} to the mapper.
-         *
-         * @see #GraphSONMessageSerializerV2d0(GraphSONMapper.Builder)
-         */
+    /**
+     * Creates a default GraphSONMessageSerializer.
+     *
+     * By default this will internally instantiate a {@link GraphSONMapper} and register
+     * a {@link GremlinServerModule} and {@link GraphSONXModuleV2d0} to the mapper.
+     *
+     * @see #GraphSONMessageSerializerV2d0(GraphSONMapper.Builder)
+     */
     public GraphSONMessageSerializerV2d0() {
         super();
     }

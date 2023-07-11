@@ -40,7 +40,7 @@ import java.util.UUID;
  */
 public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV1d0.class);
-    private static final String MIME_TYPE = SerTokens.MIME_JSON;
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V1D0_SPARSE;
 
     private static byte[] header;
 
@@ -61,7 +61,7 @@ public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessage
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{MIME_TYPE};
+        return new String[]{MIME_TYPE, SerTokens.MIME_JSON};
     }
 
     @Override
