@@ -49,7 +49,6 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
                         final Iterator<Vertex> innerItty = g2.vertices();
                         final Vertex v = IteratorUtils.filter(innerItty, vx -> vx.value("oid").equals(p.getValue0())).next();
                         CloseableIterator.closeIterator(innerItty);
-                        final boolean b = sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
                         return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
                     });
         } finally {
