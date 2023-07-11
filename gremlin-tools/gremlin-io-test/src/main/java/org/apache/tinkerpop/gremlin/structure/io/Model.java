@@ -107,20 +107,20 @@ public class Model {
 
         // TODO: gotta fix graphbinary
         final Compatibility[] noTypeGraphSONPlusBrokenGraphBinary = Compatibilities.with(GraphSONCompatibility.class)
-                .configuredAs(".*no-types|v1d0").join(Compatibilities.with(GraphBinaryCompatibility.class)).matchToArray();
+                .configuredAs(".*no-types|v1").join(Compatibilities.with(GraphBinaryCompatibility.class)).matchToArray();
 
         // the inverse of this definition is basically 3.4.0 or better for GraphSON with no support for
         // untyped GraphSON anywhere along the way
-        final Compatibility[] before3_4_0 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+        final Compatibility[] before3_4_0 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1")
                 .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.4.0")).matchToArray();
 
         // the inverse of this definition is basically 3.5.0 or better for GraphSON with no support for
         // untyped GraphSON anywhere along the way
-        List<Compatibility> c = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0").match();
-        final Compatibility[] before3_5_0 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+        List<Compatibility> c = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1").match();
+        final Compatibility[] before3_5_0 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1")
                         .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.5.0")).matchToArray();
 
-        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").matchToArray();
+        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2-partial|v1|v2-no-types").matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 

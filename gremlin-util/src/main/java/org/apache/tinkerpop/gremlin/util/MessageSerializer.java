@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.util;
 
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.buffer.ByteBuf;

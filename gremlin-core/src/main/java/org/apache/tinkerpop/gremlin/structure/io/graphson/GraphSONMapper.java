@@ -287,9 +287,9 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
             if (includeDefaultXModule) {
                 if (this.version == GraphSONVersion.V2_0) {
-                    this.addCustomModule(GraphSONXModuleV2d0.build().create(false));
+                    this.addCustomModule(GraphSONXModuleV2.build().create(false));
                 } else if (this.version == GraphSONVersion.V3_0) {
-                    this.addCustomModule(GraphSONXModuleV3d0.build().create(false));
+                    this.addCustomModule(GraphSONXModuleV3.build().create(false));
                 }
             }
 

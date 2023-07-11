@@ -51,8 +51,8 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<Gr
     public static final String TOKEN_BUILDER = "builder";
     public static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
 
-    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
-    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRAPHBINARY_V1D0 + "-stringd";
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1;
+    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRAPHBINARY_V1 + "-stringd";
 
     private static final Base64.Encoder base64Encoder = Base64.getEncoder();
     private static final Base64.Decoder base64Decoder = Base64.getDecoder();

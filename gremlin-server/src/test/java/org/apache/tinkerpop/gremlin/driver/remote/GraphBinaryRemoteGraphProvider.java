@@ -25,6 +25,6 @@ import org.apache.tinkerpop.gremlin.util.ser.Serializers;
  */
 public class GraphBinaryRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
     public GraphBinaryRemoteGraphProvider() {
-        super(createClusterBuilder(Serializers.GRAPHBINARY_V1D0).create());
+        super(createClusterBuilder(Serializers.GRAPHBINARY_V1).create());
     }
 }

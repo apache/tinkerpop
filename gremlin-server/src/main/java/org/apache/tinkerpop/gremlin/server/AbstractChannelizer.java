@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2d0;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
@@ -80,7 +80,7 @@ import java.util.stream.Stream;
 public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
     protected static final List<Settings.SerializerSettings> DEFAULT_SERIALIZERS = Arrays.asList(
-            new Settings.SerializerSettings(GraphSONMessageSerializerV2d0.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GraphSONMessageSerializerV2.class.getName(), Collections.emptyMap()),
             new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap()),
             new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), new HashMap<String,Object>(){{
                 put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);

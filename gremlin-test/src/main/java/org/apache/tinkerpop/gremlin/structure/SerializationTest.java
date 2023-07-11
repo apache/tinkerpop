@@ -68,7 +68,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Enclosed.class)
 public class SerializationTest {
-    public static class GryoV1d0Test extends AbstractGremlinTest {
+    public static class GryoV1Test extends AbstractGremlinTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexAsDetached() throws Exception {
@@ -255,7 +255,7 @@ public class SerializationTest {
         }
     }
 
-    public static class GryoV3d0Test extends AbstractGremlinTest {
+    public static class GryoV3Test extends AbstractGremlinTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexAsDetached() throws Exception {
@@ -442,7 +442,7 @@ public class SerializationTest {
         }
     }
 
-    public static class GraphSONV1d0Test extends AbstractGremlinTest {
+    public static class GraphSONV1Test extends AbstractGremlinTest {
         private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
         };
 
@@ -623,7 +623,7 @@ public class SerializationTest {
         }
     }
 
-    public static class GraphSONV2d0Test extends AbstractGremlinTest {
+    public static class GraphSONV2Test extends AbstractGremlinTest {
         private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
         };
 
@@ -825,7 +825,7 @@ public class SerializationTest {
         }
     }
 
-    public static class GraphSONV3d0Test extends AbstractGremlinTest {
+    public static class GraphSONV3Test extends AbstractGremlinTest {
         private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
         };
 

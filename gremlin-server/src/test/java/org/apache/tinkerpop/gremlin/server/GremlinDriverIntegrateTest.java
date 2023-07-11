@@ -229,7 +229,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         try {
             final Client client = cluster.connect().alias("g");
 
@@ -879,7 +879,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED).create();
         final Client client = cluster.connect();
 
         try {
@@ -900,7 +900,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             final Map<String, Object> nameProperties = (Map<String, Object>) names.get(0);
             assertEquals(2, nameProperties.size());
-            assertEquals(0l, nameProperties.get("id"));
+            assertEquals(0, nameProperties.get("id"));
             assertEquals("marko", nameProperties.get("value"));
 
             final List<Object> ages = (List<Object>) properties.get("age");
@@ -908,7 +908,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             final Map<String, Object> ageProperties = (Map<String, Object>) ages.get(0);
             assertEquals(2, ageProperties.size());
-            assertEquals(1l, ageProperties.get("id"));
+            assertEquals(1, ageProperties.get("id"));
             assertEquals(29, ageProperties.get("value"));
         } finally {
             cluster.close();
@@ -917,7 +917,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONV2Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2).create();
         final Client client = cluster.connect();
 
         try {
@@ -938,7 +938,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONExtendedV2Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2).create();
         final Client client = cluster.connect();
 
         try {
@@ -954,7 +954,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONV3Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = cluster.connect();
 
         try {
@@ -975,7 +975,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONExtendedV3Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = cluster.connect();
 
         try {
@@ -991,7 +991,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphBinaryV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
         final Client client = cluster.connect();
 
         try {
@@ -1447,7 +1447,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
         final Client client = cluster.connect();
         try {
             try {
@@ -1470,7 +1470,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasGraphVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1496,7 +1496,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1691,7 +1691,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldSendUserAgent() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = Mockito.spy(cluster.connect().alias("g"));
         client.submit("", RequestOptions.build().userAgent("test").create()).all().get();
         cluster.close();
@@ -1704,7 +1704,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldSendUserAgentBytecode() {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = Mockito.spy(cluster.connect().alias("g"));
         Mockito.when(client.alias("g")).thenReturn(client);
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
@@ -1725,7 +1725,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldSendRequestIdBytecode() {
         final UUID overrideRequestId = UUID.randomUUID();
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = Mockito.spy(cluster.connect().alias("g"));
         Mockito.when(client.alias("g")).thenReturn(client);
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));

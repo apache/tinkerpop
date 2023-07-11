@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class Compatibilities {
 
     public static final Compatibilities UNTYPED_GRAPHSON = Compatibilities.with(GraphSONCompatibility.class)
-            .configuredAs(".*no-types|v1d0");
+            .configuredAs(".*no-types|v1");
 
     private final Class<? extends Enum<? extends Compatibility>> compatibility;
 

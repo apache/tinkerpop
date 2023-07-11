@@ -147,6 +147,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 public class GraphBinaryRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
 
     public GraphBinaryRemoteGraphComputerProvider() {
-        super(createClusterBuilder(Serializers.GRAPHBINARY_V1D0).create(), true);
+        super(createClusterBuilder(Serializers.GRAPHBINARY_V1).create(), true);
     }
 }

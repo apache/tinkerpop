@@ -37,10 +37,10 @@ public final class SerTokens {
     public static final String TOKEN_ARGS = "args";
 
     public static final String MIME_JSON = "application/json";
-    public static final String MIME_GRAPHSON_V1D0 = "application/vnd.gremlin-v1.0+json";
-    public static final String MIME_GRAPHSON_V1D0_UNTYPED = "application/vnd.gremlin-v1.0+json;types=false";
-    public static final String MIME_GRAPHSON_V2D0 = "application/vnd.gremlin-v2.0+json";
-    public static final String MIME_GRAPHSON_V2D0_UNTYPED = "application/vnd.gremlin-v2.0+json;types=false";
-    public static final String MIME_GRAPHSON_V3D0 = "application/vnd.gremlin-v3.0+json";
-    public static final String MIME_GRAPHBINARY_V1D0 = "application/vnd.graphbinary-v1.0";
+    public static final String MIME_GRAPHSON_V1 = "application/vnd.gremlin-v1.0+json";
+    public static final String MIME_GRAPHSON_V1_UNTYPED = "application/vnd.gremlin-v1.0+json;types=false";
+    public static final String MIME_GRAPHSON_V2 = "application/vnd.gremlin-v2.0+json";
+    public static final String MIME_GRAPHSON_V2_UNTYPED = "application/vnd.gremlin-v2.0+json;types=false";
+    public static final String MIME_GRAPHSON_V3 = "application/vnd.gremlin-v3.0+json";
+    public static final String MIME_GRAPHBINARY_V1 = "application/vnd.graphbinary-v1.0";
 }

@@ -24,13 +24,13 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2d0;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -70,10 +70,10 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
         this.settings = settings;
         switch(settings.SERIALIZER) {
             case "GraphSONV2":
-                SERIALIZER = new GraphSONMessageSerializerV2d0();
+                SERIALIZER = new GraphSONMessageSerializerV2();
                 break;
             case "GraphSONV3":
-                SERIALIZER = new GraphSONMessageSerializerV3d0();
+                SERIALIZER = new GraphSONMessageSerializerV3();
                 break;
             case "GraphBinaryV1":
                 SERIALIZER = new GraphBinaryMessageSerializerV1();

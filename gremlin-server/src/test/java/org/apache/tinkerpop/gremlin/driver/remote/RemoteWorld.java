@@ -160,24 +160,24 @@ public abstract class RemoteWorld implements World {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryRemoteWorld extends RemoteWorld {
-        public GraphBinaryRemoteWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1D0)); }
+        public GraphBinaryRemoteWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1)); }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphBinaryRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1D0)); }
+        public GraphBinaryRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1)); }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphSONRemoteWorld extends RemoteWorld {
-        public GraphSONRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V3D0)); }
+        public GraphSONRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V3)); }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphSONRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphSONRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHSON_V3D0)); }
+        public GraphSONRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHSON_V3)); }
     }
 }

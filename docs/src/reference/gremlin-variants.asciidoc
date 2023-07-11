@@ -830,7 +830,7 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cli
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
 ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
-the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3d0` or `GraphBinaryMessageSerializerV1d0` respectively)
+the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3` or `GraphBinaryMessageSerializerV1` respectively)
 in the same way and building that into the `Cluster` object.
 
 [[gremlin-java-lambda]]

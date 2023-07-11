@@ -146,6 +146,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphSONRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
     public GraphSONRemoteGraphComputerProvider() {
-        super(createClusterBuilder(Serializers.GRAPHSON_V3D0).create(), true);
+        super(createClusterBuilder(Serializers.GRAPHSON_V3).create(), true);
     }
 }

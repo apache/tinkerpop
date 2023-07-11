@@ -62,8 +62,8 @@ public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
                                               final Collection<NamedType> subtypes) {
         final TypeIdResolver idRes = this.idResolver(config, baseType, typeValidator, subtypes, true, false);
         return version == GraphSONVersion.V2_0 ?
-                new GraphSONTypeSerializerV2d0(idRes, this.getTypeProperty(), typeInfo, valuePropertyName) :
-                new GraphSONTypeSerializerV3d0(idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
+                new GraphSONTypeSerializerV2(idRes, this.getTypeProperty(), typeInfo, valuePropertyName) :
+                new GraphSONTypeSerializerV3(idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
     }
 
     public GraphSONTypeResolverBuilder valuePropertyName(final String valuePropertyName) {

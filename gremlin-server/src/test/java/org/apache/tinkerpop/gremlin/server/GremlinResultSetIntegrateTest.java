@@ -75,7 +75,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final MessageSerializer<GraphBinaryMapper> graphBinaryMessageSerializerV1 = new GraphBinaryMessageSerializerV1();
 
         return Arrays.asList(new Object[][]{
-                {Serializers.GRAPHBINARY_V1D0, graphBinaryMessageSerializerV1}
+                {Serializers.GRAPHBINARY_V1, graphBinaryMessageSerializerV1}
         });
     }
 

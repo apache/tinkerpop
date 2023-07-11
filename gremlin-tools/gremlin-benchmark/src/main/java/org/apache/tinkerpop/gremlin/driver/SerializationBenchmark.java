@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
@@ -113,7 +113,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
             .create();
 
     private static final GraphBinaryMessageSerializerV1 binarySerializer = new GraphBinaryMessageSerializerV1();
-    private static final GraphSONMessageSerializerV3d0 graphsonSerializer = new GraphSONMessageSerializerV3d0();
+    private static final GraphSONMessageSerializerV3 graphsonSerializer = new GraphSONMessageSerializerV3();
 
     static {
         bytecode.addStep("V");

@@ -55,16 +55,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedTestChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -963,7 +960,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = cluster.connect();
 
         try {
