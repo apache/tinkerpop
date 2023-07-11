@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 
 /**
  * An enum of the default serializers.
@@ -32,9 +31,30 @@ public enum Serializers {
      * GraphSON 3.0.
      */
     GRAPHSON(SerTokens.MIME_JSON),
+
+    /**
+     * GraphSON 1.0 with types.
+     */
     GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
-    GRAPHSON_V1D0_SPARSE(SerTokens.MIME_GRAPHSON_V1D0_SPARSE),
+
+    /**
+     * GraphSON 2.0 without types.
+     */
+    GRAPHSON_V1D0_UNTYPED(SerTokens.MIME_GRAPHSON_V1D0_UNTYPED),
+
+    /**
+     * GraphSON 2.0 with types.
+     */
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
+
+    /**
+     * GraphSON 2.0 without types.
+     */
+    GRAPHSON_V2D0_UNTYPED(SerTokens.MIME_GRAPHSON_V2D0_UNTYPED),
+
+    /**
+     * GraphSON 3.0 with types.
+     */
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
     GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0);
 
@@ -55,10 +75,12 @@ public enum Serializers {
                 return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRAPHSON_V1D0:
                 return new GraphSONMessageSerializerGremlinV1d0();
-            case SerTokens.MIME_GRAPHSON_V1D0_SPARSE:
-                return new GraphSONMessageSerializerV1d0();
+            case SerTokens.MIME_GRAPHSON_V1D0_UNTYPED:
+                return new GraphSONUntypedMessageSerializerV1d0();
             case SerTokens.MIME_GRAPHSON_V2D0:
                 return new GraphSONMessageSerializerV2d0();
+            case SerTokens.MIME_GRAPHSON_V2D0_UNTYPED:
+                return new GraphSONUntypedMessageSerializerV2d0();
             case SerTokens.MIME_GRAPHBINARY_V1D0:
                 return new GraphBinaryMessageSerializerV1();
             default:

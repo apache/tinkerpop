@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -33,48 +30,37 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 import org.apache.tinkerpop.shaded.jackson.databind.node.NullNode;
-import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.awt.Color;
-import java.io.ByteArrayOutputStream;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -83,21 +69,17 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@SuppressWarnings("unchecked")
-public class GraphSONMessageSerializerV2d0Test {
+public class GraphSONUntypedMessageSerializerV1d0Test {
 
-    public static final GraphSONMessageSerializerV2d0 SERIALIZER = new GraphSONMessageSerializerV2d0();
+    public static final GraphSONUntypedMessageSerializerV1d0 SERIALIZER = new GraphSONUntypedMessageSerializerV1d0();
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
     private static final ObjectMapper mapper = new ObjectMapper();
-
-    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
-    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+    private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
 
     @Test
     public void shouldConfigureIoRegistry() throws Exception {
-        final GraphSONMessageSerializerV2d0 serializer = new GraphSONMessageSerializerV2d0();
+        final GraphSONUntypedMessageSerializerV1d0 serializer = new GraphSONUntypedMessageSerializerV1d0();
         final Map<String, Object> config = new HashMap<String, Object>() {{
             put(AbstractMessageSerializer.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
         }};
@@ -109,8 +91,7 @@ public class GraphSONMessageSerializerV2d0Test {
         final String results = serializer.serializeResponseAsString(toSerialize, allocator);
         final JsonNode json = mapper.readTree(results);
         assertNotNull(json);
-        assertThat(json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA).get(GraphSONTokens.VALUEPROP).booleanValue(), is(true));
-        assertEquals("java:color", json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA).get(GraphSONTokens.VALUETYPE).textValue());
+        assertThat(json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA).booleanValue(), is(true));
     }
 
     @Test
@@ -148,7 +129,7 @@ public class GraphSONMessageSerializerV2d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create(), allocator);
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create(), allocator);
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
@@ -228,9 +209,9 @@ public class GraphSONMessageSerializerV2d0Test {
         final JsonNode jsonObject = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
         jsonObject.elements().forEachRemaining(e -> {
             if (e.has("x"))
-                assertEquals(1, e.get("x").get(GraphSONTokens.VALUEPROP).asInt());
+                assertEquals(1, e.get("x").asInt());
             else if (e.has(v1.id().toString()))
-                assertEquals(100, e.get(v1.id().toString()).get(GraphSONTokens.VALUEPROP).asInt());
+                assertEquals(100, e.get(v1.id().toString()).asInt());
             else if (e.has(StdDateFormat.instance.format(d)))
                 assertEquals("test", e.get(StdDateFormat.instance.format(d)).asText());
             else
@@ -258,17 +239,18 @@ public class GraphSONMessageSerializerV2d0Test {
         assertNotNull(converted);
         assertEquals(1, converted.size());
 
-        final JsonNode edgeAsJson = converted.get(0).get(GraphSONTokens.VALUEPROP);
+        final JsonNode edgeAsJson = converted.get(0);
         assertNotNull(edgeAsJson);
 
-        assertEquals(((Long) e.id()).longValue(), edgeAsJson.get(GraphSONTokens.ID).get(GraphSONTokens.VALUEPROP).asLong());
-        assertEquals(((Long) v1.id()).longValue(), edgeAsJson.get(GraphSONTokens.OUT).get(GraphSONTokens.VALUEPROP).asLong());
-        assertEquals(((Long) v2.id()).longValue(), edgeAsJson.get(GraphSONTokens.IN).get(GraphSONTokens.VALUEPROP).asLong());
+        assertEquals(((Long) e.id()).intValue(), edgeAsJson.get(GraphSONTokens.ID).asLong());  // lossy
+        assertEquals(((Long) v1.id()).intValue(), edgeAsJson.get(GraphSONTokens.OUT).asLong());// lossy
+        assertEquals(((Long) v2.id()).intValue(), edgeAsJson.get(GraphSONTokens.IN).asLong()); // lossy
         assertEquals(e.label(), edgeAsJson.get(GraphSONTokens.LABEL).asText());
+        assertEquals(GraphSONTokens.EDGE, edgeAsJson.get(GraphSONTokens.TYPE).asText());
 
         final JsonNode properties = edgeAsJson.get(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
-        assertEquals(123, properties.get("abc").get(GraphSONTokens.VALUEPROP).get("value").get(GraphSONTokens.VALUEPROP).asInt());
+        assertEquals(123, properties.get("abc").asInt());
     }
 
     @Test
@@ -294,7 +276,7 @@ public class GraphSONMessageSerializerV2d0Test {
         final JsonNode propertyAsJson = converted.get(0);
         assertNotNull(propertyAsJson);
 
-        assertEquals(123, propertyAsJson.get(GraphSONTokens.VALUEPROP).get("value").get(GraphSONTokens.VALUEPROP).asInt());
+        assertEquals(123, propertyAsJson.get("value").asInt());
     }
 
     @Test
@@ -323,7 +305,7 @@ public class GraphSONMessageSerializerV2d0Test {
         assertNotNull(converted);
         assertEquals(1, converted.size());
 
-        final JsonNode vertexAsJson = converted.get(0).get(GraphSONTokens.VALUEPROP);
+        final JsonNode vertexAsJson = converted.get(0);
         assertNotNull(vertexAsJson);
 
         final JsonNode properties = vertexAsJson.get(GraphSONTokens.PROPERTIES);
@@ -332,18 +314,18 @@ public class GraphSONMessageSerializerV2d0Test {
 
         final JsonNode friendProperties = properties.get("friends");
         assertEquals(1, friendProperties.size());
-        final JsonNode friendsProperty = friendProperties.get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE);
+        final JsonNode friendsProperty = friendProperties.get(0);
         assertNotNull(friendsProperty);
-        assertEquals(3, friendsProperty.size());
+        assertEquals(3, friends.size());
 
-        final String object1 = friendsProperty.get(0).asText();
+        final String object1 = friendsProperty.get(GraphSONTokens.VALUE).get(0).asText();
         assertEquals("x", object1);
 
-        final int object2 = friendsProperty.get(1).get(GraphSONTokens.VALUEPROP).asInt();
+        final int object2 = friendsProperty.get(GraphSONTokens.VALUE).get(1).asInt();
         assertEquals(5, object2);
 
-        final JsonNode object3 = friendsProperty.get(2);
-        assertEquals(500, object3.get("x").get(GraphSONTokens.VALUEPROP).asInt());
+        final JsonNode object3 = friendsProperty.get(GraphSONTokens.VALUE).get(2);
+        assertEquals(500, object3.get("x").asInt());
         assertEquals("some", object3.get("y").asText());
     }
 
@@ -365,7 +347,7 @@ public class GraphSONMessageSerializerV2d0Test {
 
         // with no embedded types the key (which is a vertex) simply serializes out to an id
         // {"result":{"1":1000},"code":200,"requestId":"2d62161b-9544-4f39-af44-62ec49f9a595","type":0}
-        assertEquals(1000, converted.get("1").get(GraphSONTokens.VALUEPROP).asInt());
+        assertEquals(1000, converted.get("1").asInt());
     }
 
     @Test
@@ -425,13 +407,37 @@ public class GraphSONMessageSerializerV2d0Test {
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
     }
-    
+
     @Test
-    public void shouldSerializeToTreeJson() throws Exception {
+    public void shouldDeserializeResponseMessageWithNullMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final Map<String, Object> metaData = new HashMap<>();
+        metaData.put("test", UUID.randomUUID().toString());
+        final Map<String, Object> attributes = Collections.emptyMap();
+
+        final ResponseMessage response = ResponseMessage.build(id)
+                .responseMetaData(metaData)
+                .code(ResponseStatusCode.SERVER_ERROR)
+                .result("some-result")
+                .statusAttributes(attributes)
+                // explicitly pass the null value
+                .statusMessage(null)
+                .create();
+
+        final String results = SERIALIZER.serializeResponseAsString(response, allocator);
+        final ResponseMessage deserialized = SERIALIZER.deserializeResponse(results);
+        Assert.assertNotNull(SERIALIZER.getClass().getSimpleName() + " should be able to deserialize ResponseMessage "
+                        + "with null message field", deserialized);
+    }
+
+    @Test
+    public void shouldSerializeToJsonTree() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Tree t = g.V(1).out().properties("name").tree().next();
 
+        
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(t).create(), allocator);
 
         final JsonNode json = mapper.readTree(results);
@@ -440,143 +446,30 @@ public class GraphSONMessageSerializerV2d0Test {
         assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
         final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
         assertNotNull(converted);
-
-        //result is: tree{v1=>tree{vp['name'->'vadas']=>null, vp['name'->'lop']=>null, vp['name'->'josh']=>null}}
         
         //check the first object and it's properties
-        assertEquals(1, converted.get(GraphSONTokens.VALUEPROP)
-                .get(0)
-                .get(GraphSONTokens.KEY).get(GraphSONTokens.VALUEPROP)
-                .get(GraphSONTokens.ID).get(GraphSONTokens.VALUEPROP).asInt());
-
-        assertEquals("marko", converted.get(GraphSONTokens.VALUEPROP)
-                .get(0)
-                .get(GraphSONTokens.KEY).get(GraphSONTokens.VALUEPROP)
-                .get(GraphSONTokens.PROPERTIES)
-                .get("name")
-                .get(0)
-                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
-
-        //check the leafs
-        Set expectedValues = new HashSet<String>() {{
-            add("vadas");
-            add("lop");
-            add("josh");
-        }};
+        assertEquals(1, converted.get("1").get("key").get("id").asInt());
+        assertEquals("marko", converted.get("1").get("key").get("properties").get("name").get(0).get("value").asText());
         
-        Set actualValues = new HashSet<String>();
-        for (int i = 0; i < 3; i++) {
-            actualValues.add(converted.get(GraphSONTokens.VALUEPROP)
-                .get(0)
-                .get(GraphSONTokens.VALUE).get(GraphSONTokens.VALUEPROP)
-                .get(i)
-                .get(GraphSONTokens.KEY).get(GraphSONTokens.VALUEPROP)
-                .get(GraphSONTokens.PROPERTIES)
-                .get("name")
-                .get(0)
-                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
-        }
-
-        assertEquals(expectedValues, actualValues);
-    }
-
-    @Test
-    public void shouldToStringUnknownObjects() {
-        GraphSONMapper gm20 = GraphSONMapper.build().version(GraphSONVersion.V2_0).create();
-        GraphSONMapper gm10 = GraphSONMapper.build().version(GraphSONVersion.V1_0).create();
-
-        GraphWriter writer = GraphSONWriter.build().mapper(gm20).create();
-        // subsequent creations of GraphWriters and GraphSONMappers should not affect
-        // each other.
-        GraphWriter writer2 = GraphSONWriter.build().mapper(gm10).create();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            writer.writeObject(baos, new FunObject("value"));
-            assertEquals(baos.toString(), "\"value\"");
-        } catch (Exception e) {
-            fail("should have succeeded serializing the unknown object to a string");
-        }
-    }
-
-    @Test
-    public void shouldSerializeAndDeserializeRequestMessageFromObjectMapper() throws IOException {
-        final ObjectMapper om = GraphSONMapper.build().version(GraphSONVersion.V2_0)
-                .addCustomModule(new GraphSONMessageSerializerGremlinV2d0.GremlinServerModule())
-                .create().createMapper();
-
-        final Map<String, Object> requestBindings = new HashMap<>();
-        requestBindings.put("x", 1);
-
-        final Map<String, Object> requestAliases = new HashMap<>();
-        requestAliases.put("g", "social");
-
-        final RequestMessage requestMessage = RequestMessage.build("eval").processor("session").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases, "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
-
-        final String json = om.writeValueAsString(requestMessage);
-        final RequestMessage readRequestMessage = om.readValue(json, RequestMessage.class);
-
-        assertEquals(requestMessage.getOp(), readRequestMessage.getOp());
-        assertEquals(requestMessage.getProcessor(), readRequestMessage.getProcessor());
-        assertEquals(requestMessage.getRequestId(), readRequestMessage.getRequestId());
-        assertEquals(requestMessage.getArgs(), readRequestMessage.getArgs());
-    }
-
-    @Test
-    public void shouldSerializeAndDeserializeResponseMessageFromObjectMapper() throws IOException {
-        final ObjectMapper om = GraphSONMapper.build().version(GraphSONVersion.V2_0)
-                .addCustomModule(new GraphSONMessageSerializerGremlinV2d0.GremlinServerModule())
-                .create().createMapper();
-        final Graph graph = TinkerFactory.createModern();
-
-        final ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-                code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
-                result(Collections.singletonList(graph.vertices().next())).create();
-
-        final String respJson = om.writeValueAsString(responseMessage);
-        final ResponseMessage responseMessageRead = om.readValue(respJson, ResponseMessage.class);
-
-        assertEquals(responseMessage.getRequestId(), responseMessageRead.getRequestId());
-        assertEquals(responseMessage.getResult().getMeta(), responseMessageRead.getResult().getMeta());
-        assertEquals(responseMessage.getResult().getData(), responseMessageRead.getResult().getData());
-        assertEquals(responseMessage.getStatus().getAttributes(), responseMessageRead.getStatus().getAttributes());
-        assertEquals(responseMessage.getStatus().getCode().getValue(), responseMessageRead.getStatus().getCode().getValue());
-        assertEquals(responseMessage.getStatus().getCode().isSuccess(), responseMessageRead.getStatus().getCode().isSuccess());
-        assertEquals(responseMessage.getStatus().getMessage(), responseMessageRead.getStatus().getMessage());
-    }
-
-    @Test
-    public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
-        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false));
-        GraphSONMessageSerializerV2d0 graphSONMessageSerializerV2d0 = new GraphSONMessageSerializerV2d0(builder);
-
-        ResponseMessage rm = convert("hello", graphSONMessageSerializerV2d0);
-        assertEquals(rm.getRequestId(), requestId);
-        assertEquals(rm.getResult().getData(), "hello");
-    }
-
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void shouldFailOnMessageSerializerWithMapperIfNoGremlinServerModule() {
-        final GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false));
-        final GraphSONMessageSerializerV2d0 graphSONMessageSerializerV2d0 = new GraphSONMessageSerializerV2d0(builder.create());
-
-        try {
-            convert("hello", graphSONMessageSerializerV2d0);
-            fail("Serialization should have failed since no GremlinServerModule registered.");
-        } catch (SerializationException e) {
-            assertTrue(e.getMessage().contains("Could not find a type identifier for the class"));
-            assertTrue(e.getCause() instanceof JsonMappingException);
-            assertTrue(e.getCause().getCause() instanceof IllegalArgumentException);
-        }
-    }
-
-    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
-        return serializer.deserializeResponse(bb);
+        //check objects tree structure
+        //check Vertex property
+        assertEquals("vadas", converted.get("1")
+                                 .get("value")
+                                 .get("2")
+                                 .get("value")
+                                 .get("3").get("key").get("value").asText());
+        assertEquals("name", converted.get("1")
+                                 .get("value")
+                                 .get("2")
+                                 .get("value")
+                                 .get("3").get("key").get("label").asText());
+        
+        // check subitem
+        assertEquals("lop", converted.get("1")
+                                 .get("value")
+                                 .get("3")
+                                 .get("key")
+                                 .get("properties").get("name").get(0).get("value").asText());
     }
 
     private class FunObject {
@@ -597,26 +490,15 @@ public class GraphSONMessageSerializerV2d0Test {
         }
     }
 
-    public static class ColorSimpleModule extends TinkerPopJacksonModule {
+    public static class ColorSimpleModule extends SimpleModule {
         public ColorSimpleModule() {
             super("color-fun");
             addSerializer(Color.class, new ColorSerializer());
-        }
 
-        @Override
-        public Map<Class, String> getTypeDefinitions() {
-            return new HashMap<Class, String>(){{
-                put(Color.class, "color");
-            }};
-        }
-
-        @Override
-        public String getTypeNamespace() {
-            return "java";
         }
     }
 
-    public static class ColorSerializer extends StdScalarSerializer<Color> {
+    public static class ColorSerializer extends StdSerializer<Color> {
         public ColorSerializer() {
             super(Color.class);
         }

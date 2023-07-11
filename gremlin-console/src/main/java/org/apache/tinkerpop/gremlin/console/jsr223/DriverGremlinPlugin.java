@@ -37,9 +37,9 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversal;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONUntypedMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -75,9 +75,9 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     ResponseStatus.class,
                     ResponseStatusCode.class,
                     GraphSONMessageSerializerGremlinV1d0.class,
-                    GraphSONMessageSerializerGremlinV2d0.class,
-                    GraphSONMessageSerializerV1d0.class,
+                    GraphSONUntypedMessageSerializerV1d0.class,
                     GraphSONMessageSerializerV2d0.class,
+                    GraphSONMessageSerializerV3d0.class,
                     GraphBinaryMessageSerializerV1.class,
                     MessageTextSerializer.class,
                     SerializationException.class,
