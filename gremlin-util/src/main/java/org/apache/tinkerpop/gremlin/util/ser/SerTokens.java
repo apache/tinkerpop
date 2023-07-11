@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -40,8 +38,9 @@ public final class SerTokens {
 
     public static final String MIME_JSON = "application/json";
     public static final String MIME_GRAPHSON_V1D0 = "application/vnd.gremlin-v1.0+json";
-    public static final String MIME_GRAPHSON_V1D0_SPARSE = "application/vnd.gremlin-v1.0+json;sparse=true";
+    public static final String MIME_GRAPHSON_V1D0_UNTYPED = "application/vnd.gremlin-v1.0+json;types=false";
     public static final String MIME_GRAPHSON_V2D0 = "application/vnd.gremlin-v2.0+json";
+    public static final String MIME_GRAPHSON_V2D0_UNTYPED = "application/vnd.gremlin-v2.0+json;types=false";
     public static final String MIME_GRAPHSON_V3D0 = "application/vnd.gremlin-v3.0+json";
     public static final String MIME_GRAPHBINARY_V1D0 = "application/vnd.graphbinary-v1.0";
 }

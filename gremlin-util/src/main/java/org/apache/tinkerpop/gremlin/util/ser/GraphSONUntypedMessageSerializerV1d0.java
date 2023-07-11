@@ -33,16 +33,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Serialize results to JSON with version 1.0.x schema.
+ * Serialize results to JSON with version 1.0.x schema and sparse serialization which does not embed types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.6.5, replaced by {@link GraphSONUntypedMessageSerializerV1d0}. In the future this will
- * become what was formerly known as {@link GraphSONMessageSerializerGremlinV1d0} which makes the naming consistent
- * for all GraphSON versions.
  */
-@Deprecated
-public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer<ObjectMapper> {
-    private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV1d0.class);
+public final class GraphSONUntypedMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer<ObjectMapper> {
+    private static final Logger logger = LoggerFactory.getLogger(GraphSONUntypedMessageSerializerV1d0.class);
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V1D0_UNTYPED;
 
     private static byte[] header;
@@ -54,11 +50,11 @@ public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessage
         header = buffer.array();
     }
 
-    public GraphSONMessageSerializerV1d0() {
+    public GraphSONUntypedMessageSerializerV1d0() {
         super();
     }
 
-    public GraphSONMessageSerializerV1d0(final GraphSONMapper mapper) {
+    public GraphSONUntypedMessageSerializerV1d0(final GraphSONMapper mapper) {
         super(mapper);
     }
 

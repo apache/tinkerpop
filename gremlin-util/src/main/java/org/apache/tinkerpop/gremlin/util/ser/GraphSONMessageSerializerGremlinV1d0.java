@@ -52,7 +52,7 @@ public final class GraphSONMessageSerializerGremlinV1d0 extends AbstractGraphSON
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{MIME_TYPE};
+        return new String[]{MIME_TYPE, SerTokens.MIME_JSON};
     }
 
     @Override

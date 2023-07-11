@@ -1132,12 +1132,37 @@ some serializers have additional configuration options as defined by the `serial
 available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with two
 different serializers: GraphSON and GraphBinary.
 
+WARNING: Irrespective of the serialization format chosen, it is highly recommended that the serialization format is
+specified explicitly. For example, prefer `application/vnd.gremlin-v3.0+json` to `application/json`. Use of the drivers
+tend to take care of this issue internally, but for all other mechanisms it is best to ensure the `Accept` type is
+defined this way to avoid possible breaking changes or unexpected results, as defaults may vary from server to server.
+
+WARNING: When connecting with drivers, never try to specify a serialization format that does not have embedded types.
+The drivers are designed to use that type information to properly produce results in the programming language's type
+system and may not function correctly without it. Generally speaking, `GraphBinary` is always the best choice for the
+drivers.
+
 ===== GraphSON
 
 The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those
 trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major
 programming languages and can be consumed by a wide variety of tools. The format itself is described in the
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Documentation].
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Documentation]. The following table shows the
+available GraphSON serializers that can be configured:
+
+[width="100%",cols="2,2,4,4",options="header"]
+|=========================================================
+|Version |Embedded Types |Mime Type |Class
+|1.0 |yes |`application/vnd.gremlin-v1.0+json` |`GraphSONMessageSerializerGremlinV1d0`
+|1.0 |no |`application/vnd.gremlin-v1.0+json;types=false` |`GraphSONUntypedMessageSerializerV1d0`
+|2.0 |yes |`application/vnd.gremlin-v2.0+json` |`GraphSONMessageSerializerV2d0`
+|2.0 |no |`application/vnd.gremlin-v2.0+json;types=false` |`GraphSONUntypedMessageSerializerV2d0`
+|3.0 |yes |`application/vnd.gremlin-v3.0+json` |`GraphSONMessageSerializerV3d0`
+|=========================================================
+
+The above serializer classes can be found in the `org.apache.tinkerpop.gremlin.util.ser` package of `gremlin-util`.
+
+Configuring GraphSON in the Gremlin Server configuration looks like this:
 
 [source,yaml]
 ----

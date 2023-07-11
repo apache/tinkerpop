@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -51,10 +49,8 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
     }
 
     /**
-     * Creates a default GraphSONMessageSerializer.
-     *
-     * By default this will internally instantiate a {@link GraphSONMapper} and register
-     * a {@link GremlinServerModule} and {@link GraphSONXModuleV2d0} to the mapper.
+     * Creates a default GraphSONMessageSerializer. By default this will internally instantiate a {@link GraphSONMapper}
+     * and register a {@link GremlinServerModule} and {@link GraphSONXModuleV2d0} to the mapper.
      *
      * @see #GraphSONMessageSerializerV2d0(GraphSONMapper.Builder)
      */

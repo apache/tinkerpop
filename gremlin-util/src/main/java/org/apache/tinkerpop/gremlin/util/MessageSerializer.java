@@ -33,12 +33,13 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
- * Serializes data to and from Gremlin Server.  Typically the object being serialized or deserialized will be an item
+ * Serializes data to and from Gremlin Server.  Typically, the object being serialized or deserialized will be an item
  * from an {@link Iterator} as returned from the {@code ScriptEngine} or an incoming {@link RequestMessage}.
  * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
- * the mime types they support.  If a mime type is supported more than once, the last {@link MessageSerializer}
- * instance loaded for that mime type is assigned. If a mime type is not found the default
- * {@link GraphSONMessageSerializerV1d0} is used to return the results.
+ * the mime types they support.  If a mime type is supported more than once, the first {@link MessageSerializer}
+ * instance loaded for that mime type is assigned. If a mime type is not found the server default is chosen. The
+ * default may change from version to version so it is best to not rely on it when developing applications and to
+ * always be explicit in specifying the type you wish to bind to.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
