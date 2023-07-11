@@ -1,0 +1,10 @@
+{
+  "@type" : "g:Binding",
+  "@value" : {
+    "key" : "x",
+    "value" : {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }
+  }
+}

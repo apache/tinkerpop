@@ -1,0 +1,15 @@
+{
+  "@type" : "g:Bytecode",
+  "@value" : {
+    "step" : [ [ "V" ], [ "has", {
+      "@type" : "g:T",
+      "@value" : "label"
+    }, {
+      "@type" : "g:P",
+      "@value" : {
+        "predicate" : "eq",
+        "value" : "person"
+      }
+    } ], [ "out" ], [ "in" ], [ "tree" ] ]
+  }
+}
