@@ -487,8 +487,6 @@ public class TransactionTestV2 extends AbstractGremlinTest {
     }
 
 
-    // Mike's test cases
-
     //tx1 adds a property to v1, tx2 deletes v1
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
@@ -631,12 +629,6 @@ public class TransactionTestV2 extends AbstractGremlinTest {
 
         countElementsInNewThreadTx(g, 1, 0);
     }
-
-    // tx1 changes a Cardinality.single property to x, tx2 changes the same Cardinality.single property to y
-    // tested in shouldHandleConcurrentChangeForVertexProperty and shouldHandleConcurrentChangeForProperty
-
-    // tx1 removes vertex v1, tx2 removes the same vertex
-    // tested in shouldHandleConcurrentVertexDelete and shouldHandleConcurrentDeleteEdge
 
     // tx1 adds vertex v1, tx2 removes vertex v1
     @Test
