@@ -83,6 +83,7 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * TINKERPOP-2925 mergeE() in javascript producing an error
 * TINKERPOP-2926 Gremlin-Java > An UnsupportedOperationException occurs on calling next() after a merge step with the option step modulator if the element does not exist
 * TINKERPOP-2928 element() not working in conjunction with edge properties
+* TINKERPOP-2963 Introduced new mime-type application/vnd.gremlin-v1.0+json;sparse=true to use GraphSON-1.0 in text format
 
 ==== Improvements
 

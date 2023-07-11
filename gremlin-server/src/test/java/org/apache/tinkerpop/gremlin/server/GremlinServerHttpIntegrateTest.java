@@ -929,6 +929,19 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(0, node.get("result").get("data").get(0).asInt());
         }
 
+        final HttpPost httppost1Sparse = new HttpPost(TestClientFactory.createURLString());
+        httppost1Sparse.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+        httppost1Sparse.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V1D0_SPARSE);
+        httppost1Sparse.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost1Sparse)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(SerTokens.MIME_GRAPHSON_V1D0_SPARSE, response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(0, node.get("result").get("data").get(0).asInt());
+        }
+
         final HttpPost httppost2 = new HttpPost(TestClientFactory.createURLString());
         httppost2.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
         httppost2.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V2D0);
