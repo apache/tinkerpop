@@ -60,6 +60,54 @@ gremlin> g.union(V().has('name','vadas'),
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2873[TINKERPOP-2873]
 
+==== Native transaction support
+
+===== Introduction
+
+Now, if you need to use transactions in TinkerPop, the only solution is to use the Neo4j plugin. Unfortunately, this plugin has not been updated for a long time and is only compatible with Neo4j version 3.4, which reached end of life in March 2020. TinkerGraph cannot be used as a replacement for other graphs that support transactions.
+
+===== How to start using new transaction graph
+
+By default Gremlin Server don't provide transaction compatible graph, so need to add new graph in server configuration yaml file
+[source,yaml]
+----
+  ttx: conf/tinkertransactiongraph-service.properties
+----
+
+and init graph in groovy script
+[source,groovy]
+----
+def dynamicGttx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["ttx"]
+if (dynamicGttx != null)
+    globals << [gttx : traversal().withEmbedded(dynamicGttx)]
+----
+
+===== Usage examples
+
+[source,java]
+----
+GraphTraversalSource g = traversal().withRemote(conn); <1>
+
+GraphTraversalSource gtx = g.tx().begin(); <2>
+try {
+    gtx.addV('test1').iterate(); <3>
+    gtx.addV('test2').iterate(); <3>
+
+    gtx.tx().commit(); <4>
+} catch (Exception ex) {
+    gtx.tx().rollback(); <5>
+}
+----
+
+<1> create connection to Gremlin Server with transaction enabled graph.
+<2> spawn a GraphTraversalSource with opened transaction.
+<3> made some updates to graph.
+<4> commit all.
+<5> rollback all changes on error.
+
+Addition documentation can be found in <<transactions,Transactions>> section.
+
+
 ==== Properties on Elements
 
 ===== Introduction
