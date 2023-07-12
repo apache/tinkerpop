@@ -99,42 +99,48 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_eq(final GremlinParser.TraversalPredicate_eqContext ctx) {
+    @Override
+    public P visitTraversalPredicate_eq(final GremlinParser.TraversalPredicate_eqContext ctx) {
         return P.eq(getSingleGenericLiteralArgument(ctx));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_neq(final GremlinParser.TraversalPredicate_neqContext ctx) {
+    @Override
+    public P visitTraversalPredicate_neq(final GremlinParser.TraversalPredicate_neqContext ctx) {
         return P.neq(getSingleGenericLiteralArgument(ctx));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_lt(final GremlinParser.TraversalPredicate_ltContext ctx) {
+    @Override
+    public P visitTraversalPredicate_lt(final GremlinParser.TraversalPredicate_ltContext ctx) {
         return P.lt(getSingleGenericLiteralArgument(ctx));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_lte(final GremlinParser.TraversalPredicate_lteContext ctx) {
+    @Override
+    public P visitTraversalPredicate_lte(final GremlinParser.TraversalPredicate_lteContext ctx) {
         return P.lte(getSingleGenericLiteralArgument(ctx));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_gt(final GremlinParser.TraversalPredicate_gtContext ctx) {
+    @Override
+    public P visitTraversalPredicate_gt(final GremlinParser.TraversalPredicate_gtContext ctx) {
         return P.gt(getSingleGenericLiteralArgument(ctx));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_gte(final GremlinParser.TraversalPredicate_gteContext ctx) {
+    @Override
+    public P visitTraversalPredicate_gte(final GremlinParser.TraversalPredicate_gteContext ctx) {
         return P.gte(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -157,7 +163,8 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_inside(final GremlinParser.TraversalPredicate_insideContext ctx) {
+    @Override
+    public P visitTraversalPredicate_inside(final GremlinParser.TraversalPredicate_insideContext ctx) {
         final Object[] arguments = getDoubleGenericLiteralArgument(ctx);
         return P.inside(arguments[0], arguments[1]);
     }
@@ -165,7 +172,8 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_outside(final GremlinParser.TraversalPredicate_outsideContext ctx) {
+    @Override
+    public P visitTraversalPredicate_outside(final GremlinParser.TraversalPredicate_outsideContext ctx) {
         final Object[] arguments = getDoubleGenericLiteralArgument(ctx);
         return P.outside(arguments[0], arguments[1]);
     }
@@ -173,7 +181,8 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_between(final GremlinParser.TraversalPredicate_betweenContext ctx) {
+    @Override
+    public P visitTraversalPredicate_between(final GremlinParser.TraversalPredicate_betweenContext ctx) {
         final Object[] arguments = getDoubleGenericLiteralArgument(ctx);
         return P.between(arguments[0], arguments[1]);
     }
@@ -181,7 +190,8 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_within(final GremlinParser.TraversalPredicate_withinContext ctx) {
+    @Override
+    public P visitTraversalPredicate_within(final GremlinParser.TraversalPredicate_withinContext ctx) {
         final int childIndexOfParameterValues = 2;
 
         // called with no args which is valid for java/groovy
@@ -205,7 +215,8 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
+    @Override
+    public P visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
         final int childIndexOfParameterValues = 2;
 
         // called with no args which is valid for java/groovy
@@ -229,7 +240,8 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     /**
      * {@inheritDoc}
      */
-    @Override public P visitTraversalPredicate_not(final GremlinParser.TraversalPredicate_notContext ctx) {
+    @Override
+    public P visitTraversalPredicate_not(final GremlinParser.TraversalPredicate_notContext ctx) {
         final int childIndexOfParameterPredicate = 2;
 
         return P.not(visitTraversalPredicate(castChildToTraversalPredicate(ctx, childIndexOfParameterPredicate)));

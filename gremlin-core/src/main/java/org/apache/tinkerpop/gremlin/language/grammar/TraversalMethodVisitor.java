@@ -441,7 +441,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_constant(final GremlinParser.TraversalMethod_constantContext ctx) {
         return graphTraversal
-                .constant(GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()));
+                .constant(new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral()));
     }
 
     /**
@@ -571,7 +571,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_fold_Object_BiFunction(final GremlinParser.TraversalMethod_fold_Object_BiFunctionContext ctx) {
         return graphTraversal.fold(
-                GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()),
+                new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral()),
                 (BiFunction) TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.getChild(4)));
     }
 
@@ -628,7 +628,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_hasId_Object_Object(final GremlinParser.TraversalMethod_hasId_Object_ObjectContext ctx) {
-        return graphTraversal.hasId(GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()),
+        return graphTraversal.hasId(new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral()),
                 GenericLiteralVisitor.getGenericLiteralList(ctx.genericLiteralList()));
     }
 
@@ -695,7 +695,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_hasValue_Object_Object(final GremlinParser.TraversalMethod_hasValue_Object_ObjectContext ctx) {
-        return graphTraversal.hasValue(GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()),
+        return graphTraversal.hasValue(new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral()),
                 GenericLiteralVisitor.getGenericLiteralList(ctx.genericLiteralList()));
     }
 
@@ -740,7 +740,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     public GraphTraversal visitTraversalMethod_has_String_String_Object(final GremlinParser.TraversalMethod_has_String_String_ObjectContext ctx) {
         return graphTraversal.has(GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral(0)),
                 GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral(1)),
-                GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()));
+                new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral()));
     }
 
     /**
@@ -847,7 +847,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_is_Object(final GremlinParser.TraversalMethod_is_ObjectContext ctx) {
-        return graphTraversal.is(GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()));
+        return graphTraversal.is(new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral()));
     }
 
     /**
@@ -1219,8 +1219,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_property_Cardinality_Object_Object_Object(final GremlinParser.TraversalMethod_property_Cardinality_Object_Object_ObjectContext ctx) {
         return graphTraversal.property(TraversalEnumParser.parseTraversalEnumFromContext(VertexProperty.Cardinality.class, ctx.getChild(2)),
-                GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral(0)),
-                GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral(1)),
+                new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral(0)),
+                new GenericLiteralVisitor(antlr).visitGenericLiteral(ctx.genericLiteral(1)),
                 GenericLiteralVisitor.getGenericLiteralList(ctx.genericLiteralList()));
     }
 
