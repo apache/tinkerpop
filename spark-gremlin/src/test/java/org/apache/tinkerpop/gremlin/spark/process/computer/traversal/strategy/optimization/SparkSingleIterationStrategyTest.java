@@ -63,8 +63,8 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"V1d0", GryoVersion.V1_0},
-                {"V3d0", GryoVersion.V3_0}});
+                {"V1", GryoVersion.V1_0},
+                {"V3", GryoVersion.V3_0}});
     }
 
     @Parameterized.Parameter(value = 0)
@@ -77,7 +77,7 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
     public void shouldSuccessfullyEvaluateSingleIterationTraversals() throws Exception {
         final String outputLocation = TestHelper.makeTestDataDirectory(SparkSingleIterationStrategyTest.class, UUID.randomUUID().toString());
         Configuration configuration = getBaseConfiguration();
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, TestFiles.PATHS.get("tinkerpop-modern-v3d0.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, TestFiles.PATHS.get("tinkerpop-modern-v3.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);

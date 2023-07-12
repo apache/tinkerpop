@@ -224,6 +224,28 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819]
 distributions. Any app which makes use of both `gremlin-driver` and `gremlin-server` will now need to directly
 include both modules.
 
+==== Serializer Renaming
+
+Serializers tended to have a standard suffix that denotes the version. It usually appears as something like "V1d0".
+The "d0" portion of this has always been a bit superfluous and was actually not used when GraphBinary was introduced,
+preferring a simple "V1". To bring greater consistency to the naming the "d0" has been dropped from all places where
+it was referenced that way.
+
+There was a bit of a misnaming in the early days of TinkerPop 3.x where typed versus untyped json was mixed up among
+the GraphSON `MessageSerializer` implementations. For GraphSON 1.0, untyped GraphSON was referred to as
+`GraphSONMessageSerializerV1d0` and typed as `GraphSONMessageSerializerGremlinV1d0`, but for version 2.0 of GraphSON,
+the idea of untyped GraphSON was left behind and so typed GraphSON became `GraphSONMessageSerializerV2d0` which
+followed to version 3.0. With the return of typed and untyped GraphSON for 3.6.5, it seemed important to unify all
+of this naming and given the previously mentioned removal of the "d0" we now have:
+
+* `GraphSONMessageSerializerV1` is now typed GraphSON 1.0
+* `GraphSONMessageSerializerGremlinV1d0` is removed.
+* `GraphSONUntypedMessageSerializerV1` is now untyped GraphSON 1.0
+* `GraphSONMessageSerializerV2` is now typed GraphSON 2.0
+* `GraphSONMessageSerializerGremlinV2d0` is removed - it was deprecated in 3.4.0 actually and served little purpose
+* `GraphSONUntypedMessageSerializerV2` is now untyped GraphSON 2.0
+* `GraphSONMessageSerializerV3` is GraphSON 3.0
+
 ==== Building and Running with JDK 17
 
 You can now run TinkerPop with Java 17. Be advised that there are some issues with reflection and so you may need to

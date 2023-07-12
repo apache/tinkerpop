@@ -41,13 +41,10 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
         return INSTANCE;
     }
 
-    private EmptyStep() {
-    }
+    private EmptyStep() { }
 
     @Override
-    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
-
-    }
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) { }
 
     @Override
     public boolean hasStarts() {
@@ -55,19 +52,13 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void addStart(final Traverser.Admin<S> start) {
-
-    }
+    public void addStart(final Traverser.Admin<S> start) { }
 
     @Override
-    public void setPreviousStep(final Step<?, S> step) {
-
-    }
+    public void setPreviousStep(final Step<?, S> step) { }
 
     @Override
-    public void reset() {
-
-    }
+    public void reset() { }
 
     @Override
     public Step<?, S> getPreviousStep() {
@@ -75,9 +66,7 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void setNextStep(final Step<E, ?> step) {
-
-    }
+    public void setNextStep(final Step<E, ?> step) { }
 
     @Override
     public Step<E, ?> getNextStep() {
@@ -90,9 +79,7 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void setTraversal(final Traversal.Admin<?, ?> traversal) {
-
-    }
+    public void setTraversal(final Traversal.Admin<?, ?> traversal) { }
 
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
@@ -106,19 +93,16 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void addLabel(final String label) {
-
-    }
+    public void addLabel(final String label) { }
 
     @Override
-    public void removeLabel(final String label) {
-
-    }
+    public void removeLabel(final String label) { }
 
     @Override
-    public void setId(final String id) {
+    public void clearLabels() { }
 
-    }
+    @Override
+    public void setId(final String id) { }
 
     @Override
     public String getId() {

@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -46,7 +46,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
     private static final ObjectMapper mapper = GraphSONMapper.build()
             .version(GraphSONVersion.V3_0)
-            .addCustomModule(GraphSONXModuleV3d0.build().create(false))
+            .addCustomModule(GraphSONXModuleV3.build().create(false))
             .create().createMapper();
 
     @State(Scope.Thread)

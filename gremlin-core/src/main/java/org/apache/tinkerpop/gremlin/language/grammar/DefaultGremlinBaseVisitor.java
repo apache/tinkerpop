@@ -34,7 +34,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 		final String className = (ctx != null)? ctx.getClass().getName() : "";
 		throw new UnsupportedOperationException("Method not implemented for context class " + className);
 	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1191,10 +1190,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitStringBasedLiteral(final GremlinParser.StringBasedLiteralContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitDateLiteral(final GremlinParser.DateLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1208,110 +1203,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitInfLiteral(final GremlinParser.InfLiteralContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants(final GremlinParser.GremlinStringConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitPageRankStringConstants(final GremlinParser.PageRankStringConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitPeerPressureStringConstants(final GremlinParser.PeerPressureStringConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitShortestPathStringConstants(final GremlinParser.ShortestPathStringConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitWithOptionsStringConstants(final GremlinParser.WithOptionsStringConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_pageRankStringConstants_edges(final GremlinParser.GremlinStringConstants_pageRankStringConstants_edgesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_pageRankStringConstants_times(final GremlinParser.GremlinStringConstants_pageRankStringConstants_timesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_pageRankStringConstants_propertyName(final GremlinParser.GremlinStringConstants_pageRankStringConstants_propertyNameContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_peerPressureStringConstants_edges(final GremlinParser.GremlinStringConstants_peerPressureStringConstants_edgesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_peerPressureStringConstants_times(final GremlinParser.GremlinStringConstants_peerPressureStringConstants_timesContext ctx) { notImplemented(ctx);return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_peerPressureStringConstants_propertyName(final GremlinParser.GremlinStringConstants_peerPressureStringConstants_propertyNameContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_shortestPathStringConstants_target(final GremlinParser.GremlinStringConstants_shortestPathStringConstants_targetContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_shortestPathStringConstants_edges(final GremlinParser.GremlinStringConstants_shortestPathStringConstants_edgesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_shortestPathStringConstants_distance(final GremlinParser.GremlinStringConstants_shortestPathStringConstants_distanceContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_shortestPathStringConstants_maxDistance(final GremlinParser.GremlinStringConstants_shortestPathStringConstants_maxDistanceContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_shortestPathStringConstants_includeEdges(final GremlinParser.GremlinStringConstants_shortestPathStringConstants_includeEdgesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_tokens(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_tokensContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_none(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_noneContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_ids(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_idsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_labels(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_labelsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_keys(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_keysContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_values(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_valuesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_all(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_allContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_indexer(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_indexerContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_list(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_listContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_withOptionsStringConstants_map(final GremlinParser.GremlinStringConstants_withOptionsStringConstants_mapContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1335,43 +1226,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitIoOptionsStringConstants(final GremlinParser.IoOptionsStringConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_ioOptionsStringConstants_reader(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_readerContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_ioOptionsStringConstants_writer(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_writerContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_ioOptionsStringConstants_gryo(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_gryoContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_ioOptionsStringConstants_graphson(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_graphsonContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_ioOptionsStringConstants_graphml(final GremlinParser.GremlinStringConstants_ioOptionsStringConstants_graphmlContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitConnectedComponentConstants(final GremlinParser.ConnectedComponentConstantsContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_connectedComponentStringConstants_component(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_componentContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_connectedComponentStringConstants_edges(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_edgesContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitGremlinStringConstants_connectedComponentStringConstants_propertyName(final GremlinParser.GremlinStringConstants_connectedComponentStringConstants_propertyNameContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1432,11 +1287,265 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_mergeV_empty(final GremlinParser.TraversalMethod_mergeV_emptyContext ctx) { notImplemented(ctx); return null; }
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_mergeE_empty(final GremlinParser.TraversalMethod_mergeE_emptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalSourceSpawnMethod_union(final GremlinParser.TraversalSourceSpawnMethod_unionContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitBooleanArgument(final GremlinParser.BooleanArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitVariable(final GremlinParser.VariableContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIntegerArgument(final GremlinParser.IntegerArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitFloatArgument(final GremlinParser.FloatArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+    @Override public T visitStringArgument(final GremlinParser.StringArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitStringNullableArgument(final GremlinParser.StringNullableArgumentContext ctx) { notImplemented(ctx); return null;}
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitStringNullableLiteral(final GremlinParser.StringNullableLiteralContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionKeys(final GremlinParser. WithOptionKeysContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPageRankConstants(final GremlinParser. PageRankConstantsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPeerPressureConstants(final GremlinParser. PeerPressureConstantsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitShortestPathConstants(final GremlinParser. ShortestPathConstantsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsValues(final GremlinParser. WithOptionsValuesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsKeys(final GremlinParser. IoOptionsKeysContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsValues(final GremlinParser. IoOptionsValuesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitConnectedComponentConstants_component(final GremlinParser. ConnectedComponentConstants_componentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitConnectedComponentConstants_edges(final GremlinParser. ConnectedComponentConstants_edgesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitConnectedComponentConstants_propertyName(final GremlinParser. ConnectedComponentConstants_propertyNameContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPageRankConstants_edges(final GremlinParser. PageRankConstants_edgesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPageRankConstants_times(final GremlinParser. PageRankConstants_timesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPageRankConstants_propertyName(final GremlinParser. PageRankConstants_propertyNameContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPeerPressureConstants_edges(final GremlinParser. PeerPressureConstants_edgesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPeerPressureConstants_times(final GremlinParser. PeerPressureConstants_timesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitPeerPressureConstants_propertyName(final GremlinParser. PeerPressureConstants_propertyNameContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitShortestPathConstants_target(final GremlinParser. ShortestPathConstants_targetContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitShortestPathConstants_edges(final GremlinParser. ShortestPathConstants_edgesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitShortestPathConstants_distance(final GremlinParser. ShortestPathConstants_distanceContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitShortestPathConstants_maxDistance(final GremlinParser. ShortestPathConstants_maxDistanceContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitShortestPathConstants_includeEdges(final GremlinParser. ShortestPathConstants_includeEdgesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_tokens(final GremlinParser. WithOptionsConstants_tokensContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_none(final GremlinParser. WithOptionsConstants_noneContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_ids(final GremlinParser. WithOptionsConstants_idsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_labels(final GremlinParser. WithOptionsConstants_labelsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_keys(final GremlinParser. WithOptionsConstants_keysContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_values(final GremlinParser. WithOptionsConstants_valuesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_all(final GremlinParser. WithOptionsConstants_allContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_indexer(final GremlinParser. WithOptionsConstants_indexerContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_list(final GremlinParser. WithOptionsConstants_listContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitWithOptionsConstants_map(final GremlinParser. WithOptionsConstants_mapContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsConstants_reader(final GremlinParser. IoOptionsConstants_readerContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsConstants_writer(final GremlinParser. IoOptionsConstants_writerContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsConstants_gryo(final GremlinParser. IoOptionsConstants_gryoContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsConstants_graphson(final GremlinParser. IoOptionsConstants_graphsonContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitIoOptionsConstants_graphml(final GremlinParser. IoOptionsConstants_graphmlContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitGenericLiteralArgument(final GremlinParser.GenericLiteralArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitGenericLiteralListArgument(GremlinParser.GenericLiteralListArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitStructureVertexArgument(GremlinParser.StructureVertexArgumentContext ctx) { notImplemented(ctx);  return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalDirectionArgument(GremlinParser.TraversalDirectionArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalOrderArgument(final GremlinParser.TraversalOrderArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalScopeArgument(final GremlinParser.TraversalScopeArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalTokenArgument(final GremlinParser.TraversalTokenArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalCardinalityArgument(final GremlinParser.TraversalCardinalityArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMergeArgument(final GremlinParser.TraversalMergeArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalPopArgument(final GremlinParser.TraversalPopArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalColumnArgument(final GremlinParser.TraversalColumnArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalComparatorArgument(final GremlinParser.TraversalComparatorArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalFunctionArgument(final GremlinParser.TraversalFunctionArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalBiFunctionArgument(final GremlinParser.TraversalBiFunctionArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public T visitTraversalSourceSpawnMethod_union(final GremlinParser.TraversalSourceSpawnMethod_unionContext ctx) { notImplemented(ctx); return null; }
+	public T visitTraversalSackMethodArgument(final GremlinParser.TraversalSackMethodArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGenericLiteralVarargs(final GremlinParser.GenericLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGenericLiteralMapArgument(final GremlinParser.GenericLiteralMapArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitGenericLiteralMapNullableArgument(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
 }

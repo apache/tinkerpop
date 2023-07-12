@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -38,6 +39,8 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,12 +48,14 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasNot;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
@@ -59,6 +64,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -508,6 +514,23 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().outE("uses").values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().properties("skill").as("b").identity().select("b").by(__.value()));
+        //
+
+        // testing situations where the key specified is not present for the vertices - TINKERPOP-2920 use of
+        // constant(true) here is sorta weird because a Traversal<?,VertexProperty> is expected, but not really
+        sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.VERTEX_PROPERTIES, constant(true));
+        }})));
+        final List<Map<String, Object>> l = sg.V().project("example").by("example").toList();
+        l.forEach(map -> {
+            assertEquals(0, map.size());
+        });
+        checkResults(Arrays.asList("aachen","baltimore","bremen","brussels","centreville","dulles","kaiserslautern",
+                        "oakland","purcellville","san diego","santa cruz","santa fe","seattle","spremberg"),
+                sg.withoutStrategies(ProductiveByStrategy.class).V().valueMap("location").select(Column.values).unfold().unfold());
+        checkResults(Arrays.asList("aachen","baltimore","bremen","brussels","centreville","dulles","kaiserslautern",
+                "oakland","purcellville","san diego","santa cruz","santa fe","seattle","spremberg"),
+                sg.V().valueMap("location").select(Column.values).unfold().unfold());
     }
 
     @Test

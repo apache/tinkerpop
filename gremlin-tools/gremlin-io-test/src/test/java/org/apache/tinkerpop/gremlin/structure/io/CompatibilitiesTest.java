@@ -35,8 +35,8 @@ public class CompatibilitiesTest {
     public void shouldFindVersionsBeforeRelease3_2_4() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .beforeRelease("3.2.4").match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_3,
-                MockCompatibility.V1D0_3_2_2, MockCompatibility.V1D0_3_2_2_PARTIAL));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1_3_2_3,
+                MockCompatibility.V1_3_2_2, MockCompatibility.V1_3_2_2_PARTIAL));
     }
 
     @Test
@@ -44,35 +44,35 @@ public class CompatibilitiesTest {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .afterRelease("3.2.7").match();
         assertThat(compatibilityList, containsInAnyOrder(
-                MockCompatibility.V1D0_3_3_0, MockCompatibility.V1D0_3_3_1,
-                MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
+                MockCompatibility.V1_3_3_0, MockCompatibility.V1_3_3_1,
+                MockCompatibility.V3_3_3_0, MockCompatibility.V3_3_3_1));
     }
 
     @Test
     public void shouldFindVersionsBetweenReleases3_2_3And3_2_5() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .betweenReleases("3.2.3", "3.2.5").match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4,
-                MockCompatibility.V1D0_3_2_4_PARTIAL));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1_3_2_4,
+                MockCompatibility.V1_3_2_4_PARTIAL));
     }
 
     @Test
     public void shouldFindVersionsBefore3_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .before("3.0").match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_2,
-                MockCompatibility.V1D0_3_2_2_PARTIAL,
-                MockCompatibility.V1D0_3_2_4_PARTIAL,
-                MockCompatibility.V1D0_3_2_3,
-                MockCompatibility.V1D0_3_2_4, MockCompatibility.V1D0_3_2_5,
-                MockCompatibility.V1D0_3_2_6, MockCompatibility.V1D0_3_3_0, MockCompatibility.V1D0_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1_3_2_2,
+                MockCompatibility.V1_3_2_2_PARTIAL,
+                MockCompatibility.V1_3_2_4_PARTIAL,
+                MockCompatibility.V1_3_2_3,
+                MockCompatibility.V1_3_2_4, MockCompatibility.V1_3_2_5,
+                MockCompatibility.V1_3_2_6, MockCompatibility.V1_3_3_0, MockCompatibility.V1_3_3_1));
     }
 
     @Test
     public void shouldFindVersionsAfter1_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .after("1.0").match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3_3_3_0, MockCompatibility.V3_3_3_1));
     }
 
     @Test
@@ -81,14 +81,14 @@ public class CompatibilitiesTest {
                 .afterRelease("3.2.7")
                 .after("1.0")
                 .match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3_3_3_0, MockCompatibility.V3_3_3_1));
     }
 
     @Test
     public void shouldFindGraphSONWithConfigurationPartial() {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .configuredAs(".*partial.*").match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4_PARTIAL, MockCompatibility.V1D0_3_2_2_PARTIAL));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1_3_2_4_PARTIAL, MockCompatibility.V1_3_2_2_PARTIAL));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class CompatibilitiesTest {
         final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .afterRelease("3.2.3")
                 .configuredAs(".*partial.*").match();
-        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4_PARTIAL));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1_3_2_4_PARTIAL));
     }
 
     @Test
@@ -108,22 +108,22 @@ public class CompatibilitiesTest {
                         .configuredAs(".*partial.*"))
                 .match();
         assertThat(compatibilityList, containsInAnyOrder(
-                MockCompatibility.V1D0_3_2_4_PARTIAL, MockCompatibility.V1D0_3_2_2_PARTIAL,
-                MockCompatibility.V3D0_3_3_1));
+                MockCompatibility.V1_3_2_4_PARTIAL, MockCompatibility.V1_3_2_2_PARTIAL,
+                MockCompatibility.V3_3_3_1));
     }
 
     enum MockCompatibility implements Compatibility {
-        V1D0_3_2_2("3.2.2", "1.0", "v1d0"),
-        V1D0_3_2_2_PARTIAL("3.2.2", "1.0", "v1d0-partial"),
-        V1D0_3_2_3("3.2.3", "1.0", "v1d0"),
-        V1D0_3_2_4("3.2.4", "1.0", "v1d0"),
-        V1D0_3_2_4_PARTIAL("3.2.4", "1.0", "v1d0-partial"),
-        V1D0_3_2_5("3.2.5", "1.0", "v1d0"),
-        V1D0_3_2_6("3.2.6", "1.0", "v1d0"),
-        V1D0_3_3_0("3.3.0", "1.0", "v1d0"),
-        V3D0_3_3_0("3.3.0", "3.0", "v3d0"),
-        V1D0_3_3_1("3.3.1", "1.0", "v1d0"),
-        V3D0_3_3_1("3.3.1", "3.0", "v3d0");
+        V1_3_2_2("3.2.2", "1.0", "v1"),
+        V1_3_2_2_PARTIAL("3.2.2", "1.0", "v1-partial"),
+        V1_3_2_3("3.2.3", "1.0", "v1"),
+        V1_3_2_4("3.2.4", "1.0", "v1"),
+        V1_3_2_4_PARTIAL("3.2.4", "1.0", "v1-partial"),
+        V1_3_2_5("3.2.5", "1.0", "v1"),
+        V1_3_2_6("3.2.6", "1.0", "v1"),
+        V1_3_3_0("3.3.0", "1.0", "v1"),
+        V3_3_3_0("3.3.0", "3.0", "v3"),
+        V1_3_3_1("3.3.1", "1.0", "v1"),
+        V3_3_3_1("3.3.1", "3.0", "v3");
 
         private final String mockVersion;
         private final String tinkerpopVersion;

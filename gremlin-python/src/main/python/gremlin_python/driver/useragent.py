@@ -18,20 +18,16 @@
 #
 import platform
 
+gremlin_version = "3.7.0-SNAPSHOT"  # DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 def _generate_user_agent():
     application_name = "NotAvailable"
-    try:
-        from gremlin_python import __version__
-        driver_version = __version__.version.replace(" ", "_")
-    except ImportError:
-        driver_version = "NotAvailable"
     runtime_version = platform.python_version().replace(" ", "_")
     os_name = platform.system().replace(" ", "_")
     os_version = platform.release().replace(" ", "_")
     architecture = platform.machine().replace(" ", "_")
     user_agent = "{appName} Gremlin-Python.{driverVersion} {runtimeVersion} {osName}.{osVersion} {cpuArch}".format(
-                    appName=application_name, driverVersion=driver_version, runtimeVersion=runtime_version,
+                    appName=application_name, driverVersion=gremlin_version, runtimeVersion=runtime_version,
                     osName=os_name, osVersion=os_version, cpuArch=architecture)
 
     return user_agent

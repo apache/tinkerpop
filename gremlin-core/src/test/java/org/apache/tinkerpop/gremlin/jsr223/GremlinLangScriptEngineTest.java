@@ -25,6 +25,10 @@ import org.junit.Test;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -44,6 +48,19 @@ public class GremlinLangScriptEngineTest {
         final Object result = scriptEngine.eval("g.V()");
         assertThat(result, instanceOf(Traversal.Admin.class));
         assertEquals(g.V().asAdmin().getBytecode(), ((Traversal.Admin) result).getBytecode());
+    }
+
+    @Test
+    public void shouldEvalGremlinScriptWithParameters() throws ScriptException {
+        final Bindings b = new SimpleBindings();
+        b.put("g", g);
+        b.put("x", 100);
+        b.put("y", 1000);
+        b.put("z", 10000);
+
+        final Object result = scriptEngine.eval("g.V(x, y, z)", b);
+        assertThat(result, instanceOf(Traversal.Admin.class));
+        assertEquals(g.V(100, 1000, 10000).asAdmin().getBytecode(), ((Traversal.Admin) result).getBytecode());
     }
 
     @Test

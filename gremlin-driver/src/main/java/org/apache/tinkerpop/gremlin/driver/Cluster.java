@@ -63,7 +63,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -1023,7 +1022,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1D0.simpleInstance();
+            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1.simpleInstance();
             return new Cluster(this);
         }
     }

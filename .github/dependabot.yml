@@ -30,15 +30,15 @@ updates:
       interval: "daily"
     target-branch: "3.5-dev"
     labels:
-      - "javascript"
+      - "gremlint"
       - "dependencies"
   - package-ecosystem: "npm"
     directory: "/docs/gremlint"
     schedule:
       interval: "daily"
-    target-branch: "3.5-dev"
+    target-branch: "master"
     labels:
-      - "javascript"
+      - "gremlint"
       - "dependencies"
   - package-ecosystem: "gomod"
     directory: "/gremlin-go"

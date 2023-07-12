@@ -454,6 +454,7 @@ const gremlins = {
     g_addV_propertyXset_emptyX: [function({g}) { return g.addV("foo") }, function({g}) { return g.V().hasLabel("person").values() }], 
     g_addVXpersonX_propertyXname_joshX_propertyXage_nullX: [function({g}) { return g.addV("person").property("name","josh").property("age",null) }, function({g}) { return g.V().has("person","age",null) }], 
     g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX: [function({g}) { return g.addV("person").property("name","marko").property("friendWeight",null,"acl",null) }, function({g}) { return g.V().has("person","name","marko").has("friendWeight",null) }, function({g}) { return g.V().has("person","name","marko").properties("friendWeight").has("acl",null) }, function({g}) { return g.V().has("person","name","marko").properties("friendWeight").count() }], 
+    g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX: [function({g}) { return g.addV("person").property("name","alice").property(Cardinality.single,"age",50) }, function({g}) { return g.V().has("person","name","alice").property("age",__.union(__.values("age"),__.constant(1)).sum()) }, function({g}) { return g.V().has("person","age",50) }, function({g}) { return g.V().has("person","age",51) }], 
     g_call: [function({g}) { return g.call() }], 
     g_callXlistX: [function({g}) { return g.call("--list") }], 
     g_callXlistX_withXstring_stringX: [function({g}) { return g.call("--list").with_("service","tinker.search") }], 

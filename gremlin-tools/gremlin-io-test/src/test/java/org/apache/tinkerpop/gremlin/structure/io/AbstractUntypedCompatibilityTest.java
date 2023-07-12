@@ -108,7 +108,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertEquals(resource.outVertex().id(), recycled.get("outV"));
 
         // deal with incompatibilities
-        if (getCompatibility().getConfiguration().equals("v1d0")) {
+        if (getCompatibility().getConfiguration().equals("v1")) {
             assertEquals("edge", fromStatic.get("type"));
             assertEquals(IteratorUtils.count(resource.properties()), ((Map) fromStatic.get("properties")).size());
             assertEquals(resource.value("since"), ((Map) fromStatic.get("properties")).get("since"));
@@ -368,7 +368,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(3)).value("startTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(3)).get("properties")).get("startTime"));
 
         // deal with incompatibilities
-        if (getCompatibility().getConfiguration().equals("v1d0")) {
+        if (getCompatibility().getConfiguration().equals("v1")) {
             assertEquals("vertex", fromStatic.get("type"));
         }
     }

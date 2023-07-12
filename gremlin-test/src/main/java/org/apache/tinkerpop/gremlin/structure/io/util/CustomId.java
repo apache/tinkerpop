@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.util;
 
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.Io;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
@@ -36,13 +34,11 @@ import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
-import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -95,8 +91,8 @@ public class CustomId {
         return cluster + ":" + elementId;
     }
 
-    public static class CustomIdJacksonSerializerV1d0 extends StdSerializer<CustomId> {
-        public CustomIdJacksonSerializerV1d0() {
+    public static class CustomIdJacksonSerializerV1 extends StdSerializer<CustomId> {
+        public CustomIdJacksonSerializerV1() {
             super(CustomId.class);
         }
 
@@ -124,8 +120,8 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdJacksonSerializerV2d0 extends StdSerializer<CustomId> {
-        public CustomIdJacksonSerializerV2d0() {
+    public static class CustomIdJacksonSerializerV2 extends StdSerializer<CustomId> {
+        public CustomIdJacksonSerializerV2() {
             super(CustomId.class);
         }
 
@@ -154,8 +150,8 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdJacksonDeserializerV2d0 extends AbstractObjectDeserializer<CustomId> {
-        public CustomIdJacksonDeserializerV2d0() {
+    public static class CustomIdJacksonDeserializerV2 extends AbstractObjectDeserializer<CustomId> {
+        public CustomIdJacksonDeserializerV2() {
             super(CustomId.class);
         }
 
@@ -165,17 +161,17 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdTinkerPopJacksonModuleV2d0 extends TinkerPopJacksonModule {
+    public static class CustomIdTinkerPopJacksonModuleV2 extends TinkerPopJacksonModule {
 
         private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
                 new LinkedHashMap<Class, String>() {{
                     put(CustomId.class, "id");
                 }});
 
-        public CustomIdTinkerPopJacksonModuleV2d0() {
+        public CustomIdTinkerPopJacksonModuleV2() {
             super("custom");
-            addSerializer(CustomId.class, new CustomIdJacksonSerializerV2d0());
-            addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV2d0());
+            addSerializer(CustomId.class, new CustomIdJacksonSerializerV2());
+            addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV2());
         }
 
         @Override
@@ -189,8 +185,8 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdJacksonSerializerV3d0 extends StdScalarSerializer<CustomId> {
-        public CustomIdJacksonSerializerV3d0() {
+    public static class CustomIdJacksonSerializerV3 extends StdScalarSerializer<CustomId> {
+        public CustomIdJacksonSerializerV3() {
             super(CustomId.class);
         }
 
@@ -204,8 +200,8 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdJacksonDeserializerV3d0 extends StdDeserializer<CustomId> {
-        public CustomIdJacksonDeserializerV3d0() {
+    public static class CustomIdJacksonDeserializerV3 extends StdDeserializer<CustomId> {
+        public CustomIdJacksonDeserializerV3() {
             super(CustomId.class);
         }
 
@@ -221,17 +217,17 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdTinkerPopJacksonModuleV3d0 extends TinkerPopJacksonModule {
+    public static class CustomIdTinkerPopJacksonModuleV3 extends TinkerPopJacksonModule {
 
         private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
                 new LinkedHashMap<Class, String>() {{
                     put(CustomId.class, "id");
                 }});
 
-        public CustomIdTinkerPopJacksonModuleV3d0() {
+        public CustomIdTinkerPopJacksonModuleV3() {
             super("custom");
-            addSerializer(CustomId.class, new CustomIdJacksonSerializerV3d0());
-            addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV3d0());
+            addSerializer(CustomId.class, new CustomIdJacksonSerializerV3());
+            addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV3());
         }
 
         @Override
@@ -251,7 +247,7 @@ public class CustomId {
 
         private CustomIdIoRegistry() {
             register(GryoIo.class, CustomId.class, null);
-            register(GraphSONIo.class, null, new CustomIdTinkerPopJacksonModuleV3d0());
+            register(GraphSONIo.class, null, new CustomIdTinkerPopJacksonModuleV3());
         }
 
         public static CustomIdIoRegistry instance() {

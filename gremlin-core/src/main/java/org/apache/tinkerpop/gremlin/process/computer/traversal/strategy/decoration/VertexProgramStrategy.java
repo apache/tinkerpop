@@ -82,7 +82,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         while (!(currentStep instanceof EmptyStep)) {
             if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {  // todo: is there a general solution?
                 currentLabels.addAll(currentStep.getLabels());
-                currentStep.getLabels().forEach(currentStep::removeLabel);
+                currentStep.clearLabels();
             } else {
                 currentLabels.forEach(currentStep::addLabel);
                 currentLabels.clear();

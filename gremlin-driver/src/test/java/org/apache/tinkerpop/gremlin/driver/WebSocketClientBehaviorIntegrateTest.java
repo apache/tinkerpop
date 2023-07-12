@@ -113,7 +113,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
@@ -131,7 +131,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .enableUserAgentOnConnect(false)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
@@ -203,7 +203,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
@@ -250,7 +250,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -298,7 +298,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
@@ -401,7 +401,7 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .maxInProcessPerConnection(1)
                 .minSimultaneousUsagePerConnection(0)
                 .maxSimultaneousUsagePerConnection(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -434,7 +434,7 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .maxInProcessPerConnection(1)
                 .minSimultaneousUsagePerConnection(0)
                 .maxSimultaneousUsagePerConnection(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -459,7 +459,7 @@ public class WebSocketClientBehaviorIntegrateTest {
     public void shouldContinueRunningIfServerGoesDownTemporarily() throws InterruptedException {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -499,7 +499,7 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .minConnectionPoolSize(1)
                 .maxWaitForConnection(500)
                 .connectionSetupTimeoutMillis(100)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -527,7 +527,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 

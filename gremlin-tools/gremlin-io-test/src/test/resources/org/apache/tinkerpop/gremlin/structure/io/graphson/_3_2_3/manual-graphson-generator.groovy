@@ -22,15 +22,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetri
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics
 
 import java.time.*
-import java.nio.file.*
+
 import org.apache.tinkerpop.gremlin.util.ser.*
 import org.apache.tinkerpop.gremlin.process.traversal.*
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.graphson.*
 import org.apache.tinkerpop.gremlin.util.message.*
-import org.apache.tinkerpop.gremlin.process.traversal.step.*
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
 import org.apache.commons.configuration.BaseConfiguration
 
 import java.util.concurrent.TimeUnit
@@ -153,8 +151,8 @@ createStaticTraversalMetrics = {
 }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV1d0.instance()).
-        addCustomModule(new AbstractGraphSONMessageSerializerV1d0.GremlinServerModule()).
+        addRegistry(TinkerIoRegistryV1.instance()).
+        addCustomModule(new AbstractGraphSONMessageSerializerV1.GremlinServerModule()).
         version(GraphSONVersion.V1_0).create().createMapper()
 
 v1GraphSONFile = new File("dev-docs/out-graphson-1d0.txt")
@@ -293,20 +291,20 @@ mapper = GraphSONMapper.build().
 }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV2d0.instance()).
+        addRegistry(TinkerIoRegistryV2.instance()).
         typeInfo(TypeInfo.PARTIAL_TYPES).
-        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addCustomModule(GraphSONXModuleV2.build().create(false)).
+        addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
         version(GraphSONVersion.V2_0).create().createMapper()
 
 file = new File("dev-docs/out-graphson-2d0-partial.txt")
 file.withWriter { writeSupportedV2Objects(it, mapper, toJsonV2d0PartialTypes) }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV2d0.instance()).
+        addRegistry(TinkerIoRegistryV2.instance()).
         typeInfo(TypeInfo.NO_TYPES).
-        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addCustomModule(GraphSONXModuleV2.build().create(false)).
+        addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
         version(GraphSONVersion.V2_0).create().createMapper()
 
 file = new File("dev-docs/out-graphson-2d0-no-type.txt")

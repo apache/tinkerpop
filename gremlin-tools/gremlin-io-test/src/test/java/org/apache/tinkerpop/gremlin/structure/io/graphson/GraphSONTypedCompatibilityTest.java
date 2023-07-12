@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,112 +37,112 @@ import java.util.Arrays;
 public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTest {
 
     private static ObjectMapper mapperV2 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV2d0.instance()).
+            addRegistry(TinkerIoRegistryV2.instance()).
             typeInfo(TypeInfo.PARTIAL_TYPES).
-            addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-            addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+            addCustomModule(GraphSONXModuleV2.build().create(false)).
+            addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
             version(GraphSONVersion.V2_0).create().createMapper();
 
     private static ObjectMapper mapperV3 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV3d0.instance()).
-            addCustomModule(GraphSONXModuleV3d0.build().create(false)).
-            addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3d0.GremlinServerModule()).
+            addRegistry(TinkerIoRegistryV3.instance()).
+            addCustomModule(GraphSONXModuleV3.build().create(false)).
+            addCustomModule(new GraphSONMessageSerializerV3.GremlinServerModule()).
             version(GraphSONVersion.V3_0).create().createMapper();
 
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_3, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_4, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_5, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_6, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_7, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_8, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_9, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_2_10, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_0, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_0, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_1, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_1, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_2, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_2, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_3, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_3, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_4, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_4, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_5, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_5, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_6, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_6, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_7, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_7, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_8, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_8, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_9, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_9, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_10, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_10, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_11, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_3_11, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_0, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_0, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_1, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_1, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_2, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_2, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_3, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_3, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_4, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_4, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_5, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_5, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_6, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_6, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_7, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_7, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_8, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_8, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_9, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_9, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_10, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_10, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_11, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_11, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_12, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_12, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_4_13, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_4_13, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_3, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_4, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_5, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_6, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_7, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_8, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_9, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_2_10, mapperV2 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_0, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_0, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_1, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_1, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_2, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_2, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_3, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_3, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_4, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_4, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_5, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_5, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_6, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_6, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_7, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_7, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_8, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_8, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_9, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_9, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_10, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_10, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_3_11, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_3_11, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_0, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_0, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_1, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_1, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_2, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_2, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_3, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_3, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_4, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_4, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_5, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_5, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_6, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_6, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_7, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_7, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_8, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_8, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_9, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_9, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_10, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_10, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_11, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_11, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_12, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_12, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_4_13, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_4_13, mapperV3 },
 
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_0, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_0, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_1, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_1, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_2, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_2, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_3, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_3, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_4, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_4, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_5, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_5, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_6, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_6, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_5_7, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_5_7, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_0, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_0, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_1, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_1, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_2, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_2, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_3, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_3, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_4, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_4, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_5, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_5, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_6, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_6, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_5_7, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_5_7, mapperV3 },
 
-                {GraphSONCompatibility.V2D0_PARTIAL_3_6_0, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_6_0, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_6_1, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_6_1, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_6_2, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_6_2, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_6_3, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_6_3, mapperV3 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_6_4, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_6_4, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_6_0, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_6_0, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_6_1, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_6_1, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_6_2, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_6_2, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_6_3, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_6_3, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_6_4, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_6_4, mapperV3 },
 
-                {GraphSONCompatibility.V2D0_PARTIAL_3_7_0, mapperV2 },
-                {GraphSONCompatibility.V3D0_PARTIAL_3_7_0, mapperV3 },
+                {GraphSONCompatibility.V2_PARTIAL_3_7_0, mapperV2 },
+                {GraphSONCompatibility.V3_PARTIAL_3_7_0, mapperV3 },
 
         });
     }

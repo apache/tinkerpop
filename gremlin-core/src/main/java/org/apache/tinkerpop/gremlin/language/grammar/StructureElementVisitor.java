@@ -24,20 +24,15 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 public class StructureElementVisitor extends GremlinBaseVisitor<Element> {
 
-    private StructureElementVisitor() {}
+    protected final GremlinAntlrToJava antlr;
 
-    private static StructureElementVisitor instance;
-
-    public static StructureElementVisitor instance() {
-        if (instance == null) {
-            instance = new StructureElementVisitor();
-        }
-        return instance;
+    public StructureElementVisitor(final GremlinAntlrToJava antlr) {
+        this.antlr = antlr;
     }
 
     @Override
     public Vertex visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
-        return new ReferenceVertex(GenericLiteralVisitor.instance().visitGenericLiteral(ctx.genericLiteral()),
-                GenericLiteralVisitor.getStringLiteral(ctx.stringBasedLiteral()));
+        return new ReferenceVertex(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
+                (String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 }

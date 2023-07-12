@@ -26,7 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
-* Changed `Gremlin.version()` to read from the more specificly named `tinkerpop-version` attribute.
+* Changed `Gremlin.version()` to read from the more specifically named `tinkerpop-version` attribute.
 * Added warning on vertex property cardinality mismatch when reading GraphML.
 * Added a `union()` start step.
 * Bumped to `ws` 8.x for `gremlin-javascript`.
@@ -41,12 +41,18 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Added `SubmitWithOptions()` methods to `Client` and `DriverRemoteConnection` in Go GLV to pass `RequestOptions` to the server.
 * Changed default behavior for returning properties on graph elements for OLTP queries so that properties are now returned.
 * Detachment is no longer performed in `TraverserIterator`.
+* Prevented `ConcurentModificationException` when removing all labels from a `Step`.
 * Added `materializeProperties` request option to control properties serialization.
 * Modified serializers in to handle serialization and deserialization of properties.
 * Added functional properties to the graph structure components for .NET, GO and Python.
 * Modified the 1GremlinScriptChecker1 to extract the `materializeProperties` request option.
 * `Neo4jVertexProperty` no longer throw Exception for `properties()`, but return empty `Iterable`.
+* Modified the grammar to allow for parameters to be specified in Gremlin.
+* Modified `GremlinLangScriptEngine` to take bindings.
 * Removed deprecated `getInstance()` method for grammar `Visitor` implementations.
+* Renamed all `MessageSerializer` implementations that used the "d0" suffix to drop that convention.
+* Removed deprecated `GraphSONMessageSerializerGremlinV1d0` as this is now `GraphSONMessageSerializerV1` to be consistent with other naming.
+* Added `GraphSONUntypedMessageSerializerV1` which was formerly `GraphSONMessageSerializerV1d0` to be consistent with other naming.
 * Bumped Groovy to 4.0.9.
 * Bumped GMavenPlus to 2.1.0.
 * Bumped Spark to 3.3.2.
@@ -64,12 +70,14 @@ This release also includes changes from <<release-3-5-7, 3.5.7>>.
 * Added `text/plain` MIME type to the HTTP endpoint to return a Gremlin Console-like representation of the data.
 * Added GraphBinary serialization option to the HTTP endpoint.
 * Fixed bug with `fail` step not working with a `VertexProgram` running on the server.
+* Introduced mime type `application/vnd.gremlin-v1.0+json;typed=false` to allow direct specification of GraphSON 1.0 without types.
+* Introduced mime type `application/vnd.gremlin-v2.0+json;typed=false` to allow direct specification of GraphSON 2.0 without types.
 
 [[release-3-6-4]]
 === TinkerPop 3.6.4 (Release Date: May 12, 2023)
 
 * Fixed bug in `TextP.regex` and `TextP.notRegex` serialization for Java GLV.
-* Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
+* Fixed a memory leak in the Gremlin.Net driver that only occurred if a `CancellationToken` was provided.
 
 ==== Bugs
 
@@ -90,10 +98,10 @@ This release also includes changes from <<release-3-5-6, 3.5.6>>.
 * Fixed `Direction` enum bug in `gremlin-javascript` where `Direction.from_` and `Direction.to` was not properly aliased to `Direction.OUT` and `Direction.IN`
 * Fixed `Direction` enum in `gremlin-python` where `Direction.from_` and `Direction.to` were not added, and they can now be used instead of defining `from_=Direction.OUT` and `to=Direction.IN`
 * Improved performance of comparison (equals) between not compatible types and nulls.
-* Fixed MergeV/MergeE steps to work when onCreate is immutable map.
+* Fixed `mergeV()` and `mergeE()` steps to work when `onCreate` is immutable map.
 * Introduced `Writing` and `Deleting` marker interfaces to identify whether a step can perform write or delete or both on Graph.
-* For mergeV/mergeE, added checks for illegal hidden keys and refactored searchVertices to allow subclasses to override search criteria.
-* Added static map capturing possible Traversal steps that shall be added to traversal for a given operator
+* For `mergeV()` and `mergeE()`, added checks for illegal hidden keys and refactored `searchVertices` to allow subclasses to override search criteria.
+* Added static map capturing possible `Traversal` steps that shall be added to traversal for a given operator.
 * Fixed bug which caused some traversals to throw `GremlinTypeErrorException` to users.
 
 ==== Bugs
@@ -395,8 +403,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-7]]
 === TinkerPop 3.5.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Fixed a memory leak in the Gremlin.Net driver that only occurred if a CancellationToken was provided.
+* Fixed a memory leak in the Gremlin.Net driver that only occurred if a `CancellationToken` was provided.
+* Fixed gremlin-python `Client` problem where calling `submit()` after` `close()` would hang the system.
 * Added `gremlin.spark.dontDeleteNonEmptyOutput` to stop deleting the output folder if it is not empty in `spark-gremlin`.
+* Fixed a bug in `SubgraphStrategy` where the vertex property filter produced errors if a `Vertex` was missing the key provided to `by()` as a token.
+* Upgraded `gremlin-javascript` and `gremlint` to Node 16.20.0.
+* Upgraded `gremlin-go` to Go 1.20.
+* Improved the python `Translator` class with better handling for `P`, `None` and subclasses of `str`.
+* Added `gremlin-java8.bat` file as a workaround to allow loading the console using Java 8 on Windows.
+* Fixed a bug in `gremlin-server` where timeout tasks were not cancelled and could cause very large memory usage when timeout is large.
+* Removed `jcabi-manifests` dependency from `gremlin-core`, `gremlin-driver`, and `gremlin-server`.
 
 [[release-3-5-6]]
 === TinkerPop 3.5.6 (Release Date: May 1, 2023)
@@ -428,7 +444,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `CountStrategy` bug for cases where predicates contain negative numbers by disabling the optimization.
 * Improved `count` step optimization for negative values in input for 'eq' comparison.
 * Fixed performance issue when using `SampleGlobalStep` with a traverser that has either a `LABELED_PATH` or `PATH` requirement.
-* Reduce the toString() of ObjectWritable to avoid OOM for running OLAP queries on Spark.
+* Reduce the `toString()` of `ObjectWritable` to avoid OOM for running OLAP queries on Spark.
 
 ==== Bugs
 
@@ -505,7 +521,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Provides users with potentially more information to driver TimeoutExceptions.
 * Fixed an issue in Go and Python GLVs where modifying per request settings to override request_id's was not working correctly.
 * Fixed incorrect implementation for `GraphTraversalSource.With` in `gremlin-go`.
-* Changed Gremlin.version() to return `"VersionNotFound"` if the version is missing from the manifest.
+* Changed `Gremlin.version()` to return "VersionNotFound" if the version is missing from the manifest.
 * Fixed local steps to avoid throwing an exception for non-iterable input.
 * Fixed a case sensitivity issue when comparing request UUIDs in `gremlin-javascript`.
 

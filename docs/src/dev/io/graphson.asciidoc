@@ -435,13 +435,27 @@ the basis for the format.
 
 The following sections discuss the GraphSON object serialization format as available in each version of GraphSON. Core
 to understanding these sections is to understand that GraphSON can be produced with and without types being embedded
-in the output. Without embedded types, the type system is restricted to standard JSON types of Object, List, String,
-Number, Boolean and that will lead to "lossyness" in the format (i.e. a float will be interpreted as double).
+in the output. Without embedded types, the type system is restricted to standard JSON types of `Object`, `List`,
+`String`, `Number`, `Boolean` and that will lead to "lossyness" in the format (i.e. a float will be interpreted as
+double). It is also worth considering that choosing a GraphSON format without embedded types may also restrict the
+type of results that can be obtained. For example, `g.V().groupCount()` returns a format with a `Map`. That's fine
+for GraphSON, but the key in that `Map` is a complex object (i.e. a `Vertex`) and as such is not compatible with JSON
+itself which can only support `String` keys.
+
+WARNING: The `application/json` mime type is shared with all versions of GraphSON and their variations and does not
+reflect a particular one. Servers will return the GraphSON version and variation that this mime type is configured for
+and it could be different (or change) from server to server. When building applications, it is recommended that the
+mime type is made explicit on requests to avoid breaking changes or unexpected results.
 
 [[graphson-1d0]]
 == Version 1.0
 
-Version 1.0 of GraphSON was released with TinkerPop 3.0.0. When types are embedded, GraphSON uses the standard
+Version 1.0 of GraphSON was released with TinkerPop 3.0.0. It is referred to by the following mime types:
+
+* `application/vnd.gremlin-v1.0+json` - types embedded
+* `application/vnd.gremlin-v1.0+json;sparse=true` - no types embedded
+
+When types are embedded, GraphSON uses the standard
 link:https://github.com/FasterXML/jackson-databind[Jackson] type embedding approach that writes the full Java class
 name into a "@class" field in the JSON. While this approach isn't especially language agnostic it does at least give
 some hint as to what the expected type is.
@@ -1138,14 +1152,15 @@ link:https://github.com/FasterXML/jackson-databind[Jackson] (a JVM library) and 
 types. While the <<graphson-1d0,GraphSON 1.0>> section focused on GraphSON without embedded types, GraphSON 2.0 will
 do the opposite as embedded types is the expected manner in which non-JVM languages will interact with TinkerPop.
 
-With GraphSON 2.0, there are essentially two type formats:
+GraphSON 2.0 is referred to by the following mime types:
 
-* A non-typed value which is assumed the type implied by JSON. These non-types are limited to `String`, `Boolean`,
-`Map` and `Collection`.
-* All other values are typed by way of a "complex object" that defines a `@typeId` and `@value`. The `@typeId` is
-composed of two parts: a namespace and a type name, in the format "namespace:typename". A namespace allows TinkerPop
-providers and users to categorize custom types that they may implement and avoid collision with existing TinkerPop
-types. By default, TinkerPop types will have the namespace "g" (or "gx" for "extended" types).
+* `application/vnd.gremlin-v2.0+json` - All other values are typed by way of a "complex object" that defines a
+`@typeId` and `@value`. The `@typeId` is composed of two parts: a namespace and a type name, in the format
+"namespace:typename". A namespace allows TinkerPop providers and users to categorize custom types that they may
+implement and avoid collision with existing TinkerPop types. By default, TinkerPop types will have the namespace "g"
+(or "gx" for "extended" types).
+* `application/vnd.gremlin-v2.0+json;sparse=true` - A non-typed value which is assumed the type implied by JSON.
+These non-types are limited to `String`, `Boolean`, `Map` and `Collection`.
 
 === Core
 
@@ -3836,8 +3851,8 @@ The following example is a `ZoneOffset` of three hours, six minutes, and nine se
 [[graphson-3d0]]
 == Version 3.0
 
-Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is the default format when not specified as of this
-version. It is quite similar to GraphSON 2.0 and in most cases will appear compatible to the eye, however there are
+Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is represented by the `application/vnd.graphbinary-v3.0`
+mime type. It is quite similar to GraphSON 2.0 and in most cases will appear compatible to the eye, however there are
 some critical differences:
 
 * GraphSON 3.0 does not have an option to be typeless. Types are always embedded except for strings and boolean values

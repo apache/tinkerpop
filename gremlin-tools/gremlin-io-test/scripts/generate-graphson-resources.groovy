@@ -76,8 +76,8 @@ writeSupportedV1Objects = { writer, mapper ->
 }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV1d0.instance()).
-        addCustomModule(new AbstractGraphSONMessageSerializerV1d0.GremlinServerModule()).
+        addRegistry(TinkerIoRegistryV1.instance()).
+        addCustomModule(new AbstractGraphSONMessageSerializerV1.GremlinServerModule()).
         version(GraphSONVersion.V1_0).create().createMapper()
 
 v1GraphSONFile = new File("${projectBuildDir}/dev-docs/out-graphson-1d0.txt")
@@ -135,10 +135,10 @@ writeSupportedV2V3Objects = { writer, mapper, toJsonFunction, modelFilter, exten
 }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV2d0.instance()).
+        addRegistry(TinkerIoRegistryV2.instance()).
         typeInfo(TypeInfo.PARTIAL_TYPES).
-        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addCustomModule(GraphSONXModuleV2.build().create(false)).
+        addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
         version(GraphSONVersion.V2_0).create().createMapper()
 
 v2ExtendedDescription = """Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:
@@ -158,10 +158,10 @@ if (file.exists()) file.delete()
 file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0PartialTypes, {it.isCompatibleWith(GraphSONCompatibility.V2D0_PARTIAL_3_5_0)}, v2ExtendedDescription) }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV2d0.instance()).
+        addRegistry(TinkerIoRegistryV2.instance()).
         typeInfo(TypeInfo.NO_TYPES).
-        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addCustomModule(GraphSONXModuleV2.build().create(false)).
+        addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
         version(GraphSONVersion.V2_0).create().createMapper()
 
 file = new File("${projectBuildDir}/dev-docs/out-graphson-2d0-no-type.txt")
@@ -169,9 +169,9 @@ if (file.exists()) file.delete()
 file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0NoTypes, {it.isCompatibleWith(GraphSONCompatibility.V2D0_NO_TYPE_3_5_0)}, v2ExtendedDescription) }
 
 mapper = GraphSONMapper.build().
-        addRegistry(TinkerIoRegistryV2d0.instance()).
-        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-        addCustomModule(new org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+        addRegistry(TinkerIoRegistryV2.instance()).
+        addCustomModule(GraphSONXModuleV2.build().create(false)).
+        addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
         version(GraphSONVersion.V3_0).create().createMapper()
 
 v3ExtendedDescription = """Note that the "extended" types require the addition of the separate `GraphSONXModuleV3d0` module as follows:

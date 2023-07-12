@@ -436,6 +436,7 @@ world.gremlins = {
     'g_addV_propertyXset_emptyX': [(lambda g:g.addV('foo')), (lambda g:g.V().hasLabel('person').values())], 
     'g_addVXpersonX_propertyXname_joshX_propertyXage_nullX': [(lambda g:g.addV('person').property('name','josh').property('age',None)), (lambda g:g.V().has('person','age',None))], 
     'g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX': [(lambda g:g.addV('person').property('name','marko').property('friendWeight',None,'acl',None)), (lambda g:g.V().has('person','name','marko').has('friendWeight',None)), (lambda g:g.V().has('person','name','marko').properties('friendWeight').has('acl',None)), (lambda g:g.V().has('person','name','marko').properties('friendWeight').count())], 
+    'g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX': [(lambda g:g.addV('person').property('name','alice').property(Cardinality.single,'age',50)), (lambda g:g.V().has('person','name','alice').property('age',__.union(__.age,__.constant(1)).sum_())), (lambda g:g.V().has('person','age',50)), (lambda g:g.V().has('person','age',51))], 
     'g_call': [(lambda g:g.call())], 
     'g_callXlistX': [(lambda g:g.call('--list'))], 
     'g_callXlistX_withXstring_stringX': [(lambda g:g.call('--list').with_('service','tinker.search'))], 

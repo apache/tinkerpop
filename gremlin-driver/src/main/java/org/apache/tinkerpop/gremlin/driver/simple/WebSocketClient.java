@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -64,10 +67,31 @@ public class WebSocketClient extends AbstractClient {
         b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
         final String protocol = uri.getScheme();
-        if (!"ws".equals(protocol))
+        if (!"ws".equalsIgnoreCase(protocol) && !"wss".equalsIgnoreCase(protocol))
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
+        final String host = uri.getHost();
+        final int port;
+        if (uri.getPort() == -1) {
+            if ("ws".equalsIgnoreCase(protocol)) {
+                port = 80;
+            } else if ("wss".equalsIgnoreCase(protocol)) {
+                port = 443;
+            } else {
+                port = -1;
+            }
+        } else {
+            port = uri.getPort();
+        }
 
         try {
+            final boolean ssl = "wss".equalsIgnoreCase(protocol);
+            final SslContext sslCtx;
+            if (ssl) {
+                sslCtx = SslContextBuilder.forClient()
+                        .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+            } else {
+                sslCtx = null;
+            }
             final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
                     uri, WebSocketVersion.V13, null, true, EmptyHttpHeaders.INSTANCE, 65536), 10000, false);
             final MessageSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV1();
@@ -76,6 +100,9 @@ public class WebSocketClient extends AbstractClient {
                         @Override
                         protected void initChannel(final SocketChannel ch) {
                             final ChannelPipeline p = ch.pipeline();
+                            if (sslCtx != null) {
+                                p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
+                            }
                             p.addLast(
                                     new HttpClientCodec(),
                                     new HttpObjectAggregator(65536),

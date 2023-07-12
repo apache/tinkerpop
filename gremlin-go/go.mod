@@ -17,15 +17,15 @@
 
 module github.com/apache/tinkerpop/gremlin-go/v3
 
-go 1.17
+go 1.20
 
 require (
 	github.com/cucumber/godog v0.12.6
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
-	github.com/stretchr/testify v1.8.3
-	golang.org/x/text v0.9.0
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/text v0.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

@@ -48,6 +48,24 @@ $ curl -H "Accept:text/plain" -X POST -d "{\"gremlin\":\"g.V()\"}" "http://local
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2947[TINKERPOP-2947]
 
+==== Untyped GraphSON
+
+Prior to GraphSON 3.0, there were options to have GraphSON returned with and without types. The latter was helpful
+for getting a more simple to process JSON format that relied strictly on the JSON type system. This format was of
+course lossy in nature and not conducive for use with the language variants that were developing as the primary
+mechanism for working with Gremlin. Of course, simple HTTP never really went away and forcing the type system on
+consumers makes that route of connecting harder than it should be.
+
+With HTTP users in mind, this version brings back both versions of untyped GraphSON by adding the following mime types:
+
+* GraphSON 1.0 - `application/vnd.gremlin-v1.0+json;types=false`
+* GraphSON 2.0 - `application/vnd.gremlin-v2.0+json;types=false`
+
+Neither is configured by default in Gremlin Server, but can be added if desired by editing the Gremlin Server
+configuration file.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2965[TINKERPOP-2965]
+
 == TinkerPop 3.6.4
 
 *Release Date: May 12, 2023*

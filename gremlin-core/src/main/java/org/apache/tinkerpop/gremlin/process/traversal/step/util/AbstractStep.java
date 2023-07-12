@@ -76,6 +76,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
+    public void clearLabels() {
+        this.labels.clear();
+    }
+
+    @Override
     public Set<String> getLabels() {
         return Collections.unmodifiableSet(this.labels);
     }

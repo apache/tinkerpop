@@ -25,7 +25,8 @@
 
 const crypto = require('crypto');
 const os = require('os');
-const { readFileSync } = require('fs');
+
+const gremlinVersion = '3.7.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 exports.toLong = function toLong(value) {
   return new Long(value);
@@ -84,12 +85,6 @@ exports.ImmutableMap = ImmutableMap;
 
 function generateUserAgent() {
   const applicationName = (process.env.npm_package_name || 'NotAvailable').replace('_', ' ');
-  let driverVersion;
-  try {
-    driverVersion = JSON.parse(readFileSync(__dirname + '/../package.json')).version.replace('_', ' ');
-  } catch (e) {
-    driverVersion = 'NotAvailable';
-  }
   let runtimeVersion;
   let osName;
   let osVersion;
@@ -108,7 +103,7 @@ function generateUserAgent() {
     osVersion = os.release().replace(' ', '_');
   }
 
-  const userAgent = `${applicationName} Gremlin-Javascript.${driverVersion} ${runtimeVersion} ${osName}.${osVersion} ${cpuArch}`;
+  const userAgent = `${applicationName} Gremlin-Javascript.${gremlinVersion} ${runtimeVersion} ${osName}.${osVersion} ${cpuArch}`;
 
   return userAgent;
 }
