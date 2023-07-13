@@ -54,14 +54,17 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -311,6 +314,38 @@ public final class TraversalHelper {
             }
         }
         return list;
+    }
+
+    /**
+     * Get steps of the specified classes throughout the traversal, collecting them in a fashion that orders them
+     * from the deepest steps first.
+     */
+    public static List<Step<?,?>> getStepsOfAssignableClassRecursivelyFromDepth(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
+        final List<Step<?,?>> list = new ArrayList<>();
+        final Stack<Step<?,?>> stack = new Stack<>();
+
+        traversal.getSteps().forEach(stack::push);
+
+        while (!stack.isEmpty()) {
+            final Step<?,?> current = stack.pop();
+            list.add(current);
+
+            if (current instanceof TraversalParent) {
+                ((TraversalParent) current).getLocalChildren().forEach(localChild -> localChild.getSteps().forEach(stack::push));
+                ((TraversalParent) current).getGlobalChildren().forEach(globalChild -> globalChild.getSteps().forEach(stack::push));
+            }
+        }
+
+        // sort by depth
+        list.sort(DepthComparator.instance());
+
+        return list.stream().filter(s -> {
+            for (Class<?> stepClass : stepClasses) {
+                if (stepClass.isAssignableFrom(s.getClass()))
+                    return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
     }
 
     public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {

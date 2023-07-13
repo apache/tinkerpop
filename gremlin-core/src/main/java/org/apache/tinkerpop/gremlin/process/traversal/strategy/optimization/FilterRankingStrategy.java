@@ -38,17 +38,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -83,20 +81,37 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             // traversals. This little cache keeps the effective data of that function which is if there is a
             // lambda in the children and the set of scope keys. note that the lambda sorta trumps the labels in
             // that if there is a lambda there's no real point to doing any sort of eval of the labels.
+            //
+            // this cache holds the parent and a pair. the first item in the pair is a boolean which is true if
+            // lambda is present and false otherwise. the second item in the pair is a set of labels from any
+            // Scoping steps
             final Map<TraversalParent, Pair<Boolean, Set<String>>> traversalParentCache = new HashMap<>();
             final Map<Step, Integer> stepRanking = new HashMap<>();
 
-            // build up the little cache
+            // gather the parents and their Scoping/LambdaHolder steps to build up the cache. since the traversal is
+            // processed in depth first manner, the entries gathered to m are deepest child first and held in order,
+            // so that the cache can be constructed with parent's knowing their children were processed first
             final Map<TraversalParent, List<Step<?,?>>> m =
-                    TraversalHelper.getStepsOfAssignableClassRecursively(traversal, Scoping.class, LambdaHolder.class).stream().
-                    collect(Collectors.groupingBy(step -> ((Step) step).getTraversal().getParent()));
+                    TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal, TraversalParent.class).stream().
+                    collect(Collectors.groupingBy(step -> ((Step) step).getTraversal().getParent(), LinkedHashMap::new, Collectors.toList()));
+
+            // build the cache and use it to detect if any children impact the Pair in any way. in the case of a
+            // child with a lambda, the parent would simply inherit that true. in the case of additional labels they
+            // would just be appended to the list for the parent.
             m.forEach((k, v) -> {
-                final boolean hasLambda = v.stream().anyMatch(s -> s instanceof LambdaHolder);
+                final boolean hasLambda = v.stream().anyMatch(s -> s instanceof LambdaHolder ||
+                        (traversalParentCache.containsKey(s) && traversalParentCache.get(s).getValue0()));
                 if (hasLambda) {
                     traversalParentCache.put(k, Pair.with(true, Collections.emptySet()));
                 } else {
-                    traversalParentCache.put(k, Pair.with(false, v.stream().filter(s -> s instanceof Scoping).
-                            flatMap(s -> ((Scoping) s).getScopeKeys().stream()).collect(Collectors.toSet())));
+                    final Set<String> currentEntryScopeLabels = v.stream().filter(s -> s instanceof Scoping).
+                            flatMap(s -> ((Scoping) s).getScopeKeys().stream()).collect(Collectors.toSet());
+                    final Set<String> allScopeLabels = new HashSet<>(currentEntryScopeLabels);
+                    v.stream().filter(traversalParentCache::containsKey).forEach(s -> {
+                        final TraversalParent parent = (TraversalParent) s;
+                        allScopeLabels.addAll(traversalParentCache.get(parent).getValue1());
+                    });
+                    traversalParentCache.put(k, Pair.with(false, allScopeLabels));
                 }
             });
 
