@@ -40,7 +40,7 @@ public class GraphSONMessageSerializerV3RoundTripTest extends AbstractRoundTripT
 
     public final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
 
-    private static List<String> skippedTests
+    private static final List<String> skippedTests
             = Arrays.asList("ReferenceVertex", "ReferenceVertexProperty", "ReferenceProperty", "Graph");
 
     @Test

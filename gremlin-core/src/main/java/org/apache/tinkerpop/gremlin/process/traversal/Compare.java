@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 
-import java.util.function.BiPredicate;
-
 /**
  * {@code Compare} is a {@code BiPredicate} that determines whether the first argument is {@code ==}, {@code !=},
  * {@code >}, {@code >=}, {@code <}, {@code <=} to the second argument.
@@ -31,7 +29,7 @@ import java.util.function.BiPredicate;
  * @author Matt Frantz (http://github.com/mhfrantz)
  * @author Daniel Kuppitz (http://gemlin.guru)
  */
-public enum Compare implements BiPredicate<Object, Object> {
+public enum Compare implements PBiPredicate<Object, Object> {
 
     /**
      * Evaluates if the first object is equal to the second per Gremlin Comparison semantics.
