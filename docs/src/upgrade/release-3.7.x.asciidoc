@@ -259,5 +259,6 @@ See link:https://issues.apache.org/jira/browse/TINKERPOP-2798[TINKERPOP-2798]
 Custom predicates used in `P` now should implement `PBiPredicate` interface.
 
 It allows to set the name of the predicate that will be used for serialization by overriding `getPredicateName`.
+In previous version `toString` used for this.
 
 In most cases it should be enough just to replace `BiPredicate` with `PBiPredicate` in predicate declaration.
