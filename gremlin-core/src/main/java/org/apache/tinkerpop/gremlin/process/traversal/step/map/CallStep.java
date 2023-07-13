@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.structure.util.CloseableIterator.EmptyCloseableIterator;
@@ -308,7 +309,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
 
     @Override
     public int hashCode() {
-        int hashCode = super.hashCode() ^ this.serviceName.hashCode();
+        int hashCode = super.hashCode() ^ Objects.hashCode(this.serviceName);
         if (!staticParams.isEmpty())
             hashCode ^= staticParams.hashCode();
         if (mapTraversal != null)

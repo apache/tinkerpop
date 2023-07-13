@@ -379,6 +379,7 @@ Feature: Step - where()
       | lop |
       | ripple |
 
+  @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_asXnX_whereXorXselectXnX_hasLabelXsoftwareX_selectXnX_hasLabelXpersonXXX_selectXnX_byXnameX
     Given the modern graph
     And the traversal of
