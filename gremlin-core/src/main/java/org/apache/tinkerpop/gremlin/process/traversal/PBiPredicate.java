@@ -23,6 +23,9 @@ import java.util.function.BiPredicate;
 
 /**
  * Marker interface for predefined {@code BiPredicate} predicates that can be used in {@code Predicate}}.
+ *
+ * Allows to set the name of the predicate that will be used for serialization.
+ * Restricts the use of random {@code BiPredicate} with {@link P}.
  **/
 public interface PBiPredicate<T, U> extends BiPredicate<T, U> {
 
