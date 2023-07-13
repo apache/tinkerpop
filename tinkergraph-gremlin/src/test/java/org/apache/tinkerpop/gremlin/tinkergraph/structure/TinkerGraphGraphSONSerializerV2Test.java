@@ -64,13 +64,13 @@ public class TinkerGraphGraphSONSerializerV2Test {
     // As of TinkerPop 3.2.1 default for GraphSON 2.0 means types enabled.
     private final Mapper defaultMapperV2 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
-            .addCustomModule(GraphSONXModuleV2.build().create(false))
+            .addCustomModule(GraphSONXModuleV2.build())
             .addRegistry(TinkerIoRegistryV2.instance())
             .create();
 
     private final Mapper noTypesMapperV2 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
-            .addCustomModule(GraphSONXModuleV2.build().create(false))
+            .addCustomModule(GraphSONXModuleV2.build())
             .typeInfo(TypeInfo.NO_TYPES)
             .addRegistry(TinkerIoRegistryV2.instance())
             .create();

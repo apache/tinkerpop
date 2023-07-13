@@ -45,7 +45,7 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
     private static ObjectMapper mapperV2 = GraphSONMapper.build().
                     addRegistry(TinkerIoRegistryV2.instance()).
                     typeInfo(TypeInfo.NO_TYPES).
-                    addCustomModule(GraphSONXModuleV2.build().create(false)).
+                    addCustomModule(GraphSONXModuleV2.build()).
                     addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
                     version(GraphSONVersion.V2_0).create().createMapper();
 

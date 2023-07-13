@@ -19,11 +19,11 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,13 +31,13 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 
 /**
- * Serialize results to JSON with version 2.0.x schema and the extended module without embedded types.
+ * Serialize results to JSON with version 3.0.x schema and the extended module without embedded types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GraphSONUntypedMessageSerializerV2 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializer<ObjectMapper> {
-    private static final Logger logger = LoggerFactory.getLogger(GraphSONUntypedMessageSerializerV2.class);
-    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V2_UNTYPED;
+public final class GraphSONUntypedMessageSerializerV3 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializer<ObjectMapper> {
+    private static final Logger logger = LoggerFactory.getLogger(GraphSONUntypedMessageSerializerV3.class);
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V3_UNTYPED;
 
     private static byte[] header;
 
@@ -54,9 +54,9 @@ public final class GraphSONUntypedMessageSerializerV2 extends AbstractGraphSONMe
      * By default this will internally instantiate a {@link GraphSONMapper} and register
      * a {@link GremlinServerModule} and {@link GraphSONXModuleV2} to the mapper.
      *
-     * @see #GraphSONUntypedMessageSerializerV2(GraphSONMapper.Builder)
+     * @see #GraphSONUntypedMessageSerializerV3(GraphSONMapper.Builder)
      */
-    public GraphSONUntypedMessageSerializerV2() {
+    public GraphSONUntypedMessageSerializerV3() {
         super();
     }
 
@@ -67,7 +67,7 @@ public final class GraphSONUntypedMessageSerializerV2 extends AbstractGraphSONMe
      * this method will automatically register a {@link GremlinServerModule} to the provided
      * mapper.
      */
-    public GraphSONUntypedMessageSerializerV2(final GraphSONMapper.Builder mapperBuilder) {
+    public GraphSONUntypedMessageSerializerV3(final GraphSONMapper.Builder mapperBuilder) {
         super(mapperBuilder);
     }
 
@@ -78,7 +78,6 @@ public final class GraphSONUntypedMessageSerializerV2 extends AbstractGraphSONMe
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        // already set to 2.0 in AbstractGraphSONMessageSerializerV2
         return builder.typeInfo(TypeInfo.NO_TYPES).addCustomModule(new GremlinServerModule());
     }
 

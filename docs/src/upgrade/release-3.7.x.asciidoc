@@ -267,7 +267,8 @@ of this naming and given the previously mentioned removal of the "d0" we now hav
 * `GraphSONMessageSerializerV2` is now typed GraphSON 2.0
 * `GraphSONMessageSerializerGremlinV2d0` is removed - it was deprecated in 3.4.0 actually and served little purpose
 * `GraphSONUntypedMessageSerializerV2` is now untyped GraphSON 2.0
-* `GraphSONMessageSerializerV3` is GraphSON 3.0
+* `GraphSONMessageSerializerV3` is typed GraphSON 3.0 as it always has been
+* `GraphSONUntypedMessageSerializerV3` is untyped GraphSON 3.0 which is newly added
 
 ==== Building and Running with JDK 17
 

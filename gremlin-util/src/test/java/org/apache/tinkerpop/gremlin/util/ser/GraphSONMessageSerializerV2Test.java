@@ -547,7 +547,7 @@ public class GraphSONMessageSerializerV2Test {
 
     @Test
     public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
-        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2.build().create(false));
+        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2.build());
         GraphSONMessageSerializerV2 graphSONMessageSerializerV2 = new GraphSONMessageSerializerV2(builder);
 
         ResponseMessage rm = convert("hello", graphSONMessageSerializerV2);
@@ -559,7 +559,7 @@ public class GraphSONMessageSerializerV2Test {
     @Test
     @SuppressWarnings("deprecation")
     public void shouldFailOnMessageSerializerWithMapperIfNoGremlinServerModule() {
-        final GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2.build().create(false));
+        final GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2.build());
         final GraphSONMessageSerializerV2 graphSONMessageSerializerV2 = new GraphSONMessageSerializerV2(builder.create());
 
         try {
