@@ -26,13 +26,14 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -73,7 +74,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
         final Property oldProperty = super.property(key);
         final Property<V> newProperty = new TinkerProperty<>(this, key, value);
-        if (null == this.properties) this.properties = new HashMap<>();
+        if (null == this.properties) this.properties = new ConcurrentHashMap<>();
         this.properties.put(key, newProperty);
         TinkerIndexHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
         return newProperty;
@@ -108,10 +109,9 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         // todo: probably need deep clone
         final TinkerEdge edge = new TinkerEdge(id, outVertex(), label, inVertex(), currentVersion);
 
-        if (properties != null) {
-            edge.properties = properties.entrySet().stream().
-                    collect(Collectors.toMap(k -> k.getKey(), v -> (TinkerProperty) ((TinkerProperty) v.getValue()).clone()));
-        }
+        if (properties != null)
+            edge.properties = CollectionUtil.Clone((ConcurrentHashMap<String, Property>) properties);
+
         return edge;
     }
 

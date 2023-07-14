@@ -26,10 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -680,11 +679,11 @@ public class TinkerTransactionGraphTest {
         final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerTransactionGraph.open());
         final TinkerVertexProperty vp = new TinkerVertexProperty(vertex, "test", "qq");
         final TinkerEdge edge = new TinkerEdge(1, vertex, "label", vertex);
-        vertex.properties = new HashMap<>();
+        vertex.properties = new ConcurrentHashMap<>();
         vertex.properties.put("test", new ArrayList<>());
         vertex.properties.get("test").add(vp);
-        vertex.inEdges = new HashMap<>();
-        vertex.inEdges.put("label", new HashSet<>());
+        vertex.inEdges = new ConcurrentHashMap<>();
+        vertex.inEdges.put("label", ConcurrentHashMap.newKeySet());
         vertex.inEdges.get("label").add(edge);
 
         final TinkerVertex copy = (TinkerVertex) vertex.clone();
@@ -701,7 +700,7 @@ public class TinkerTransactionGraphTest {
         final TinkerVertex v2 = (TinkerVertex) g.addVertex();
         final TinkerEdge edge = new TinkerEdge(3, v1, "label", v2);
         final TinkerProperty property = new TinkerProperty(edge, "test", "qq");
-        edge.properties = new HashMap<>();
+        edge.properties = new ConcurrentHashMap<>();
         edge.properties.put(property.key(), property);
 
         final TinkerEdge copy = (TinkerEdge) edge.clone();

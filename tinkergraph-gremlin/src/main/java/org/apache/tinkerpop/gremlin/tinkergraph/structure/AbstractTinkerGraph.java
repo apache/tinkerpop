@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -201,10 +202,10 @@ public abstract class AbstractTinkerGraph implements Graph {
     ///////////// Utility methods ///////////////
     protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
         touch(vertex);
-        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
+        if (null == vertex.outEdges) vertex.outEdges = new ConcurrentHashMap<>();
         Set<Object> edges = vertex.outEdges.get(label);
         if (null == edges) {
-            edges = new HashSet<>();
+            edges = ConcurrentHashMap.newKeySet();
             vertex.outEdges.put(label, edges);
         }
         edges.add(edge.id());
@@ -212,10 +213,10 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
         touch(vertex);
-        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
+        if (null == vertex.inEdges) vertex.inEdges = new ConcurrentHashMap<>();
         Set<Object> edges = vertex.inEdges.get(label);
         if (null == edges) {
-            edges = new HashSet<>();
+            edges = ConcurrentHashMap.newKeySet();;
             vertex.inEdges.put(label, edges);
         }
         edges.add(edge.id());

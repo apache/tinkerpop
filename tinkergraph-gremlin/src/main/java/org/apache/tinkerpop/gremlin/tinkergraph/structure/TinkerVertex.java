@@ -25,17 +25,17 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -66,15 +66,14 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         // todo: probably need deep clone
         final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
         if (inEdges != null)
-            vertex.inEdges = inEdges.entrySet().stream().
-                    collect(Collectors.toMap(Map.Entry::getKey, v -> (Set<Object>) ((HashSet) v.getValue()).clone()));
+            vertex.inEdges = CollectionUtil.Clone((ConcurrentHashMap<String, Set<Object>>) inEdges);
+
         if (outEdges != null)
-            vertex.outEdges = outEdges.entrySet().stream().
-                    collect(Collectors.toMap(Map.Entry::getKey, v -> (Set<Object>) ((HashSet) v.getValue()).clone()));
-        if (properties != null) {
-            vertex.properties = properties.entrySet().stream().
-                    collect(Collectors.toMap(Map.Entry::getKey, v -> (List<VertexProperty>) ((ArrayList) v.getValue()).clone()));
-        }
+            vertex.outEdges = CollectionUtil.Clone((ConcurrentHashMap<String, Set<Object>>) outEdges);
+
+        if (properties != null)
+            vertex.properties = CollectionUtil.Clone((ConcurrentHashMap<String, List<VertexProperty>>) properties);
+
         return vertex;
     }
 
@@ -138,7 +137,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
             final VertexProperty<V> vertexProperty = new TinkerVertexProperty<V>(idValue, this, key, value);
 
-            if (null == this.properties) this.properties = new HashMap<>();
+            if (null == this.properties) this.properties = new ConcurrentHashMap<>();
             final List<VertexProperty> list = this.properties.getOrDefault(key, new ArrayList<>());
             list.add(vertexProperty);
             this.properties.put(key, list);
