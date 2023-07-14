@@ -46,10 +46,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
- * graph interfaces provided by TinkerPop.
+ * graph interfaces with transaction support provided by TinkerPop.
  *
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Valentyn Kahamlyk
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
