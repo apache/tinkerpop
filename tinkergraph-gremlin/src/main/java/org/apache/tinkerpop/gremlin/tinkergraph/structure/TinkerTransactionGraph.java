@@ -356,7 +356,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
                 final TinkerElementContainer<C> element = elements.get(iid);
-                return element == null ? null : (T) elements.get(iid).get();
+                return element == null ? null : (T) element.get();
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
