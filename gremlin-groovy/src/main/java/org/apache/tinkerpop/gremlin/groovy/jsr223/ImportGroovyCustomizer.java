@@ -58,7 +58,7 @@ class ImportGroovyCustomizer implements GroovyCustomizer {
             customizer.getMethodImports().stream()
                     .filter(m -> !m.getDeclaringClass().equals(__.class))
                     .forEach(m -> ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.getName()));
-            customizer.getEnumImports().forEach(m -> ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.name()));
+            customizer.getEnumClasses().forEach(m -> ic.addStaticStars(m.getCanonicalName())); // TINKERPOP-2953
             customizer.getFieldImports().forEach(f -> ic.addStaticImport(f.getDeclaringClass().getCanonicalName(), f.getName()));
         }
 
