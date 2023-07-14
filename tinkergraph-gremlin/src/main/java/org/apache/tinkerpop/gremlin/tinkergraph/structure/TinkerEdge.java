@@ -151,6 +151,8 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
         if (null == this.properties) return Collections.emptyIterator();
         if (propertyKeys.length == 1) {
+            if (null == propertyKeys[0])
+                return Collections.emptyIterator();
             final Property<V> property = this.properties.get(propertyKeys[0]);
             return null == property ? Collections.emptyIterator() : IteratorUtils.of(property);
         } else

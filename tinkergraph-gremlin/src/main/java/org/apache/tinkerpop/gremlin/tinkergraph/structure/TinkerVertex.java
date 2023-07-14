@@ -208,6 +208,8 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         else {
             if (null == this.properties) return Collections.emptyIterator();
             if (propertyKeys.length == 1) {
+                if (null == propertyKeys[0])
+                    return Collections.emptyIterator();
                 final List<VertexProperty> properties = this.properties.getOrDefault(propertyKeys[0], Collections.emptyList());
                 if (properties.size() == 1) {
                     return IteratorUtils.of(properties.get(0));
