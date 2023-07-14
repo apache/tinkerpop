@@ -52,11 +52,15 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     }
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
+        this(id, (AbstractTinkerGraph) outVertex.graph(), outVertex.id(), label, inVertex.id(), currentVersion);
+    }
+
+    private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion) {
         super(id, label, currentVersion);
-        this.graph = (AbstractTinkerGraph)outVertex.graph();
-        this.outVertexId = outVertex.id();
-        this.inVertexId = inVertex.id();
-        this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
+        this.graph = graph;
+        this.outVertexId = outVertexId;
+        this.inVertexId = inVertexId;
+        this.allowNullPropertyValues = graph.features().edge().supportsNullPropertyValues();
         TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
@@ -107,7 +111,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     @Override
     public Object clone() {
         // todo: probably need deep clone
-        final TinkerEdge edge = new TinkerEdge(id, outVertex(), label, inVertex(), currentVersion);
+        final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion);
 
         if (properties != null)
             edge.properties = CollectionUtil.Clone((ConcurrentHashMap<String, Property>) properties);
