@@ -28,11 +28,13 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformat
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -508,5 +510,30 @@ public class GremlinGroovyScriptEngineTest {
         assertThat(bytecodeBindings.containsKey("three"), is(true));
 
         assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2953.
+     */
+    @Test
+    public void shouldBeAbleToCallStaticallyImportedValuesMethodWithArgument() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Object values = engine.eval("values('a')");
+        assertTrue(values instanceof GraphTraversal);
+    }
+
+    @Test
+    public void shouldBeAbleToCallStaticallyImportedValuesMethodWithoutArguments() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        engine.eval("values()");
+        // values() is evaluated ambiguously by Groovy and could either be Column.values() or __.values()
+        // so assume it works if no "groovy.lang.MissingMethodException: No signature of method" thrown.
+    }
+
+    @Test
+    public void shouldBeAbleToCallColumnEnumConstantValues() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Object values = engine.eval("values");
+        assertEquals(Column.values, values);
     }
 }
