@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Serialize results to JSON with version 1.0.x schema and sparse serialization which does not embed types.
+ * Serialize results to JSON with version 1.0.x schema and serialization which does not embed types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

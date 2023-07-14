@@ -453,7 +453,7 @@ mime type is made explicit on requests to avoid breaking changes or unexpected r
 Version 1.0 of GraphSON was released with TinkerPop 3.0.0. It is referred to by the following mime types:
 
 * `application/vnd.gremlin-v1.0+json` - types embedded
-* `application/vnd.gremlin-v1.0+json;sparse=true` - no types embedded
+* `application/vnd.gremlin-v1.0+json;types=false` - no types embedded
 
 When types are embedded, GraphSON uses the standard
 link:https://github.com/FasterXML/jackson-databind[Jackson] type embedding approach that writes the full Java class
@@ -1154,13 +1154,14 @@ do the opposite as embedded types is the expected manner in which non-JVM langua
 
 GraphSON 2.0 is referred to by the following mime types:
 
-* `application/vnd.gremlin-v2.0+json` - All other values are typed by way of a "complex object" that defines a
-`@typeId` and `@value`. The `@typeId` is composed of two parts: a namespace and a type name, in the format
-"namespace:typename". A namespace allows TinkerPop providers and users to categorize custom types that they may
-implement and avoid collision with existing TinkerPop types. By default, TinkerPop types will have the namespace "g"
-(or "gx" for "extended" types).
-* `application/vnd.gremlin-v2.0+json;sparse=true` - A non-typed value which is assumed the type implied by JSON.
-These non-types are limited to `String`, `Boolean`, `Map` and `Collection`.
+* `application/vnd.gremlin-v2.0+json` - Values are typed by way of a "complex object" that defines a `@typeId` and
+`@value`. The `@typeId` is composed of two parts: a namespace and a type name, in the format "namespace:typename". A
+namespace allows TinkerPop providers and users to categorize custom types that they may implement and avoid collision
+with existing TinkerPop types. By default, TinkerPop types will have the namespace "g" (or "gx" for "extended" types).
+* `application/vnd.gremlin-v2.0+json;types=false` - Values do not have their types embedded in the JSON. This format
+does not follow the 1.0 untyped format in that it does not include a "type" field for `Vertex` and `Edge` objects and
+it serializes property values in those graph objects with a `label` field which is redundant as the "key" field for
+that property will already represent that value.
 
 === Core
 
