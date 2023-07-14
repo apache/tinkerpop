@@ -125,7 +125,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     public void releaseLock() {
-        if (lock.isLocked())
+        if (lock.isHeldByCurrentThread())
             lock.unlock();
     }
 }
