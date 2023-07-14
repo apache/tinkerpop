@@ -68,7 +68,7 @@ Now, if you need to use transactions in TinkerPop, the only solution is to use t
 
 ===== How to start using new transaction graph
 
-By default Gremlin Server don't provide transaction compatible graph, so need to add new graph in server configuration yaml file
+By default Gremlin Server doesn't provide transaction compatible graph, so one needs to add a new graph in server configuration yaml file
 [source,yaml]
 ----
   ttx: conf/tinkertransactiongraph-service.properties
@@ -99,11 +99,11 @@ try {
 }
 ----
 
-<1> create connection to Gremlin Server with transaction enabled graph.
-<2> spawn a GraphTraversalSource with opened transaction.
-<3> made some updates to graph.
-<4> commit all.
-<5> rollback all changes on error.
+<1> Create connection to Gremlin Server with transaction enabled graph.
+<2> Spawn a GraphTraversalSource with opened transaction.
+<3> Make some updates to graph.
+<4> Commit all changes.
+<5> Rollback all changes on error.
 
 Addition documentation can be found in <<transactions,Transactions>> section.
 
