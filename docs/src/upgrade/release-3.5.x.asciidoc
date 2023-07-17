@@ -32,6 +32,20 @@ complete list of all the modifications that are part of this release.
 `gremlin-javascript` and `gremlint` have upgraded from Node 10 to Node 16 as Node 10 has passed end of life.
 `gremlin-go` has upgraded from Go 1.17 to Go 1.20 as Go 1.20 has passed end of life.
 
+Introduced max number length (10000 chars), string length (20 000 000 chars), and nesting depth (1000)
+constraints for GraphSON deserialization due to security vulnerabilities with earlier versions of Jackson Databind.
+New constraints are not expected to impact most users but can be overriden via GraphSONMapper.Builder or through serializer configuration.
+Example:
+```
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0,
+      config: {
+        maxNumberLength: 500,
+        maxStringLength: 500,
+        maxNestingDepth: 500
+      }
+  }
+```
 
 == TinkerPop 3.5.6
 

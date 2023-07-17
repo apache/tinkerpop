@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
+import org.apache.tinkerpop.shaded.jackson.core.JsonFactory;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.StreamReadConstraints;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder;
@@ -61,18 +63,21 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONMapper implements Mapper<ObjectMapper> {
+    public static final int DEFAULT_MAX_NUMBER_LENGTH = 10000;
 
     private final List<SimpleModule> customModules;
     private final boolean loadCustomSerializers;
     private final boolean normalize;
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
+    private final StreamReadConstraints streamReadConstraints;
 
     private GraphSONMapper(final Builder builder) {
         this.customModules = builder.customModules;
         this.loadCustomSerializers = builder.loadCustomModules;
         this.normalize = builder.normalize;
         this.version = builder.version;
+        this.streamReadConstraints = builder.streamReadConstraintsBuilder.build();
 
         if (null == builder.typeInfo)
             this.typeInfo = builder.version == GraphSONVersion.V1_0 ? TypeInfo.NO_TYPES : TypeInfo.PARTIAL_TYPES;
@@ -82,7 +87,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
     @Override
     public ObjectMapper createMapper() {
-        final ObjectMapper om = new ObjectMapper();
+        final ObjectMapper om = new ObjectMapper(JsonFactory.builder().streamReadConstraints(streamReadConstraints).build());
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         final GraphSONModule graphSONModule = version.getBuilder().create(normalize);
@@ -174,6 +179,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         builder.loadCustomModules = mapper.loadCustomSerializers;
         builder.normalize = mapper.normalize;
         builder.typeInfo = mapper.typeInfo;
+        builder.streamReadConstraintsBuilder = mapper.streamReadConstraints.rebuild();
 
         return builder;
     }
@@ -200,6 +206,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V3_0;
         private boolean includeDefaultXModule = false;
+        private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
+                .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
 
         /**
          * GraphSON 2.0/3.0 should have types activated by default (3.0 does not have a typeless option), and 1.0
@@ -276,6 +284,21 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          */
         public Builder typeInfo(final TypeInfo typeInfo) {
             this.typeInfo = typeInfo;
+            return this;
+        }
+
+        public Builder maxNumberLength(final int maxNumLength) {
+            this.streamReadConstraintsBuilder.maxNumberLength(maxNumLength);
+            return this;
+        }
+
+        public Builder maxNestingDepth(final int maxNestingDepth) {
+            this.streamReadConstraintsBuilder.maxNestingDepth(maxNestingDepth);
+            return this;
+        }
+
+        public Builder maxStringLength(final int maxStringLength) {
+            this.streamReadConstraintsBuilder.maxStringLength(maxStringLength);
             return this;
         }
 
