@@ -165,11 +165,13 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void removeVertex(final Object vertexId)
-    {
+    public void removeVertex(final Object vertexId) {
         if (!vertices.containsKey(vertexId)) return;
 
-        vertices.get(vertexId).markDeleted((TinkerTransaction) tx());
+        // vertex can be deleted in other thread, so need to double check
+        final TinkerElementContainer<?> container = vertices.get(vertexId);
+        if (null != container)
+            container.markDeleted((TinkerTransaction) tx());
     }
 
     @Override
