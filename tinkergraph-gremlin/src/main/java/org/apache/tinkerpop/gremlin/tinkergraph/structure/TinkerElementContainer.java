@@ -85,15 +85,9 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
     public boolean updatedOutsideTransaction() {
         // todo: do we need to check version on delete?
-        try {
-            return isDeleted ||
-                    element != null
-                            && transactionUpdatedValue.get() != null
-                            && transactionUpdatedValue.get().version() != element.version();
-        } catch (NullPointerException ex) {
-            // possible situation when element was removed in another thread when code executed between line 90 and 92
-            return isDeleted;
-        }
+        final T updatedValue = transactionUpdatedValue.get();
+        return isDeleted ||
+                element != null && updatedValue != null && updatedValue.version() != element.version();
     }
 
     public void commit(final long txVersion) {
