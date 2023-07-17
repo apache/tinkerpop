@@ -168,7 +168,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     public void removeVertex(final Object vertexId) {
         if (!vertices.containsKey(vertexId)) return;
 
-        // vertex can be deleted in other thread, so need to double check
+        // vertex can be deleted in other thread, so need to double-check
         final TinkerElementContainer<?> container = vertices.get(vertexId);
         if (null != container)
             container.markDeleted((TinkerTransaction) tx());
@@ -181,8 +181,10 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
 
-        this.tx().readWrite();
-        container.touch(vertex, (TinkerTransaction) tx());
+        if (null != container) {
+            this.tx().readWrite();
+            container.touch(vertex, (TinkerTransaction) tx());
+        }
     };
 
     @Override
@@ -192,8 +194,10 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
 
-        this.tx().readWrite();
-        container.touch(edge, (TinkerTransaction) tx());
+        if (null != container) {
+            this.tx().readWrite();
+            container.touch(edge, (TinkerTransaction) tx());
+        }
     };
 
     @Override
