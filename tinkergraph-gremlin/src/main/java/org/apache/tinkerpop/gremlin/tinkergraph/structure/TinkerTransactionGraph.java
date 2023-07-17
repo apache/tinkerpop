@@ -213,7 +213,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         touch(inVertex);
 
         final long txNumber = transaction.getTxNumber();
-        TinkerEdge edge;
         TinkerElementContainer<TinkerEdge> container = null;
 
         if (null != idValue) {
@@ -228,7 +227,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         if (container == null)
             container = new TinkerElementContainer<>(idValue);
-        edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
+        final TinkerEdge edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
         ElementHelper.attachProperties(edge, keyValues);
         container.setDraft(edge, (TinkerTransaction) tx());
         edges.put(edge.id(), container);
@@ -245,7 +244,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edgeId);
 
-        if (container.isDeleted()) return;
+        if (null == container || container.isDeleted()) return;
 
         final TinkerEdge edge = container.get();
 
