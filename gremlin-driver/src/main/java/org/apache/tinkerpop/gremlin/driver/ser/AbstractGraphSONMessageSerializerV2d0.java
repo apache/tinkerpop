@@ -73,6 +73,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
         final GraphSONMapper.Builder initialBuilder = initBuilder(null);
         addIoRegistries(config, initialBuilder);
+        applyMaxTokenLimits(initialBuilder, config);
         mapper = configureBuilder(initialBuilder).create().createMapper();
     }
 
@@ -141,6 +142,21 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
         final GraphSONMapper.Builder b = null == builder ? GraphSONMapper.build() : builder;
         return b.addCustomModule(GraphSONXModuleV2d0.build().create(false))
                 .version(GraphSONVersion.V2_0);
+    }
+
+    private GraphSONMapper.Builder applyMaxTokenLimits(final GraphSONMapper.Builder builder, final Map<String, Object> config) {
+        if(config != null) {
+            if(config.containsKey("maxNumberLength")) {
+                builder.maxNumberLength((int)config.get("maxNumberLength"));
+            }
+            if(config.containsKey("maxStringLength")) {
+                builder.maxStringLength((int)config.get("maxStringLength"));
+            }
+            if(config.containsKey("maxNestingDepth")) {
+                builder.maxNestingDepth((int)config.get("maxNestingDepth"));
+            }
+        }
+        return builder;
     }
 
     @Override
