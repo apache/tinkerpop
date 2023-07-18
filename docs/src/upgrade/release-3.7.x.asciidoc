@@ -29,6 +29,32 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== String concat() Step
+
+Previously string manipulations were only possible using closures, which may or may not be supported by different providers.
+Here we introduce the `concat()`-step as the beginning of a series of string manipulation steps aimed to replace the usage of closure.
+
+Previously in 3.6, one needs to use closure if one wishes to add a new vertex with a label like an existing vertex but
+with some prefix attached:
+
+[source,text]
+----
+gremlin> g.V(1).map{"prefix_" + it.get().label}.as('a').addV(select('a'))
+==>v[13]
+gremlin> g.V(13).label()
+==>prefix_person
+----
+
+As of this version, `concat()` can be used to operate necessary string concatenations in the Gremlin language syntax.
+
+[source,text]
+----
+gremlin> g.addV(constant("prefix_").concat(__.V(1).label()))
+==>v[14]
+gremlin> g.V(14).label()
+==>prefix_person
+----
+
 ==== union() Start Step
 
 The `union()`-step could only be used mid-traversal after a start step. The typical workaround for this issue was to

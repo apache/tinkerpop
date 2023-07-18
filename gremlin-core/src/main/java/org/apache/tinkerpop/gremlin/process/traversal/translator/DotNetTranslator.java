@@ -505,6 +505,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             TO_CS_MAP.put(GraphTraversal.Symbols.cap, "Cap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.choose, "Choose<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.coalesce, "Coalesce<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.concat, "Concat<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.constant, "Constant<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.elementMap, "ElementMap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.flatMap, "FlatMap<object>");

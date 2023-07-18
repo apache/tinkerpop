@@ -427,35 +427,33 @@ Concatenates one or more strings together
 
 `concat(Traversal)`
 
-`concat(Scope, String...)`
-
-`concat(Scope, Traversal)`
-
 ==== Parameters
 
-* String... - One or more String values to concatenate to the input
+* `String...` - One or more String values to concatenate to the input
 string
-* Traversal - A traversal value to concatenate
-* Scope - Scope Enum
+* `Traversal` - A traversal value to concatenate
 
 ==== Allowed incoming traverser types
 
-String data types or array, if local scope is used. If a non-string
+String data types. If a non-string
 traverser, or the list containing non-string values, is passed in then
 an `IllegalArgumentException` will be thrown
 
 ==== Expected Output
 
-A String value representing the concatenation of all the
+A String value representing the concatenation of all the incoming traverser and input values
 
 ....
 g.inject('this').concat('is', 'a', 'test')
 ==>thisisatest
 g.V(1).values('first_name').concat(' ').concat(V(1).values('last_name')
 ==>John Doe
-g.inject(['this', 'is', 'a', 'test']).concat(local)
-==>thisisatest
-g.inject(['John', ' ']).concat(local, V(1).values('last_name')
+g.inject('this', 'is', 'a', 'test').concat(' inserted')
+==>this inserted
+==>is inserted
+==>a inserted
+==>test inserted
+g.inject('John').concat(' ').concat(V(1).values('last_name'))
 ==>John Doe
 ....
 

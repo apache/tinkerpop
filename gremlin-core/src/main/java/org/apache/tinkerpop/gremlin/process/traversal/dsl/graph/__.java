@@ -587,6 +587,20 @@ public class __ {
         return __.<A>start().math(expression);
     }
 
+    /**
+     * @see GraphTraversal#concat(Traversal)
+     */
+    public static <A> GraphTraversal<A, String> concat(final Traversal<?, String> concatTraversal) {
+        return __.<A>start().concat(concatTraversal);
+    }
+
+    /**
+     * @see GraphTraversal#concat(String...)
+     */
+    public static <A> GraphTraversal<A, String> concat(final String... concatString) {
+        return __.<A>start().concat(concatString);
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**

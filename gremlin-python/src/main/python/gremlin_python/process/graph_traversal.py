@@ -375,6 +375,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("coin", *args)
         return self
 
+    def concat(self, *args):
+        self.bytecode.add_step("concat", *args)
+        return self
+
     def connectedComponent(self, *args):
         warnings.warn(
             "gremlin_python.process.GraphTraversalSource.connectedComponent will be replaced by "
@@ -1036,6 +1040,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).coin(*args)
 
     @classmethod
+    def concat(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).concat(*args)
+
+    @classmethod
     def constant(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).constant(*args)
 
@@ -1679,6 +1687,10 @@ def coin(*args):
     return __.coin(*args)
 
 
+def concat(*args):
+    return __.concat(*args)
+
+
 def constant(*args):
     return __.constant(*args)
 
@@ -2118,6 +2130,8 @@ statics.add_static('choose', choose)
 statics.add_static('coalesce', coalesce)
 
 statics.add_static('coin', coin)
+
+statics.add_static('concat', concat)
 
 statics.add_static('constant', constant)
 
