@@ -234,6 +234,8 @@ We also used this opportunity to convert some of these pure data classes into a 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
 
+==== Graph System Providers
+
 ===== Reworked Gremlin Socket Server
 
 The `SimpleSocketServer` from `gremlin-driver` has been brought into a new module `gremlin-tools/gremlin-socket-server`
@@ -262,3 +264,5 @@ It allows to set the name of the predicate that will be used for serialization b
 In previous version `toString` used for this.
 
 In most cases it should be enough just to replace `BiPredicate` with `PBiPredicate` in predicate declaration.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2949[TINKERPOP-2949]
