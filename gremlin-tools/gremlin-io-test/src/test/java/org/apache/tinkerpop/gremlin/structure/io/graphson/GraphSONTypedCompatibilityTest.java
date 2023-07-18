@@ -39,13 +39,13 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
     private static ObjectMapper mapperV2 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV2.instance()).
             typeInfo(TypeInfo.PARTIAL_TYPES).
-            addCustomModule(GraphSONXModuleV2.build().create(false)).
+            addCustomModule(GraphSONXModuleV2.build()).
             addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
             version(GraphSONVersion.V2_0).create().createMapper();
 
     private static ObjectMapper mapperV3 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV3.instance()).
-            addCustomModule(GraphSONXModuleV3.build().create(false)).
+            addCustomModule(GraphSONXModuleV3.build()).
             addCustomModule(new GraphSONMessageSerializerV3.GremlinServerModule()).
             version(GraphSONVersion.V3_0).create().createMapper();
 

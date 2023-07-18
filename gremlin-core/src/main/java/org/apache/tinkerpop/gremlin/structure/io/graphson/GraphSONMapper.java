@@ -78,11 +78,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         this.normalize = builder.normalize;
         this.version = builder.version;
         this.streamReadConstraints = builder.streamReadConstraintsBuilder.build();
-
-        if (null == builder.typeInfo)
-            this.typeInfo = builder.version == GraphSONVersion.V1_0 ? TypeInfo.NO_TYPES : TypeInfo.PARTIAL_TYPES;
-        else
-            this.typeInfo = builder.typeInfo;
+        this.typeInfo = builder.typeInfo;
     }
 
     @Override
@@ -90,7 +86,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         final ObjectMapper om = new ObjectMapper(JsonFactory.builder().streamReadConstraints(streamReadConstraints).build());
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        final GraphSONModule graphSONModule = version.getBuilder().create(normalize);
+        final GraphSONModule graphSONModule = version.getBuilder().create(normalize, typeInfo);
         om.registerModule(graphSONModule);
         customModules.forEach(om::registerModule);
 
@@ -98,11 +94,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (loadCustomSerializers)
             om.findAndRegisterModules();
 
-        // graphson 3.0 only allows type - there is no option to remove embedded types
-        if (version == GraphSONVersion.V3_0 && typeInfo == TypeInfo.NO_TYPES)
-            throw new IllegalStateException(String.format("GraphSON 3.0 does not support %s", TypeInfo.NO_TYPES));
-
-        if (version == GraphSONVersion.V3_0 || (version == GraphSONVersion.V2_0 && typeInfo != TypeInfo.NO_TYPES)) {
+        if ((version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) && typeInfo != TypeInfo.NO_TYPES) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(this.typeInfo)
@@ -142,8 +134,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                         .typeProperty(GraphSONTokens.CLASS);
                 om.setDefaultTyping(typer);
             }
+        } else if (version == GraphSONVersion.V3_0) {
+
         } else {
-            throw new IllegalStateException("Unknown GraphSONVersion : " + version);
+            throw new IllegalStateException("Unknown GraphSONVersion: " + version);
         }
 
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
@@ -201,6 +195,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
     public static class Builder implements Mapper.Builder<Builder> {
         private List<SimpleModule> customModules = new ArrayList<>();
+        private List<GraphSONModule.GraphSONModuleBuilder> customModuleBuilders = new ArrayList<>();
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
@@ -208,11 +203,6 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean includeDefaultXModule = false;
         private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
                 .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
-
-        /**
-         * GraphSON 2.0/3.0 should have types activated by default (3.0 does not have a typeless option), and 1.0
-         * should use no types by default.
-         */
         private TypeInfo typeInfo = null;
 
         private Builder() {
@@ -248,6 +238,17 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          */
         public Builder addCustomModule(final SimpleModule custom) {
             this.customModules.add(custom);
+            return this;
+        }
+
+        /**
+         * Supplies a mapper module builder to be lazily constructed. The advantage to using this mechanism over
+         * {@link #addCustomModule(SimpleModule)} is that if the module is constructed with {@link TypeInfo} it can
+         * inherit it from the value supplied to {@link #typeInfo(TypeInfo)} (as well as the {@link #normalize(boolean)}
+         * option.
+         */
+        public Builder addCustomModule(final GraphSONModule.GraphSONModuleBuilder moduleBuilder) {
+            this.customModuleBuilders.add(moduleBuilder);
             return this;
         }
 
@@ -308,16 +309,33 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                 simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
             });
 
+            typeInfo = inferTypeInfo(typeInfo, version);
+
+            // finish building off the modules.
+            customModuleBuilders.forEach(b -> {
+                this.addCustomModule(b.create(this.normalize, typeInfo));
+            });
+
             if (includeDefaultXModule) {
                 if (this.version == GraphSONVersion.V2_0) {
-                    this.addCustomModule(GraphSONXModuleV2.build().create(false));
+                    this.addCustomModule(GraphSONXModuleV2.build().create(this.normalize, typeInfo));
                 } else if (this.version == GraphSONVersion.V3_0) {
-                    this.addCustomModule(GraphSONXModuleV3.build().create(false));
+                    this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
                 }
             }
 
             return new GraphSONMapper(this);
         }
 
+        /**
+         * User the version to infer the {@link TypeInfo} if it is not explicitly supplied. GraphSON 1.0 defaults to
+         * no types, since it's Jackson type system is fairly impenetrable, but we otherwise use types.
+         */
+        private static TypeInfo inferTypeInfo(final TypeInfo typeInfo, final GraphSONVersion version) {
+            if (null == typeInfo)
+                return version == GraphSONVersion.V1_0 ? TypeInfo.NO_TYPES : TypeInfo.PARTIAL_TYPES;
+            else
+                return typeInfo;
+        }
     }
 }

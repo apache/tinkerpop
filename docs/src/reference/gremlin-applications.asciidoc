@@ -1144,7 +1144,7 @@ drivers.
 
 ===== GraphSON
 
-The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those
+The GraphSON serializer produces human-readable output in JSON format and is a good configuration choice for those
 trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major
 programming languages and can be consumed by a wide variety of tools. The format itself is described in the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Documentation]. The following table shows the
@@ -1158,9 +1158,17 @@ available GraphSON serializers that can be configured:
 |2.0 |yes |`application/vnd.gremlin-v2.0+json` |`GraphSONMessageSerializerV2d0`
 |2.0 |no |`application/vnd.gremlin-v2.0+json;types=false` |`GraphSONUntypedMessageSerializerV2d0`
 |3.0 |yes |`application/vnd.gremlin-v3.0+json` |`GraphSONMessageSerializerV3d0`
+|3.0 |no |`application/vnd.gremlin-v3.0+json;types=false` |`GraphSONMessageSerializerV3d0`
 |=========================================================
 
 The above serializer classes can be found in the `org.apache.tinkerpop.gremlin.util.ser` package of `gremlin-util`.
+
+NOTE: Gremlin can produce results that cannot be serialized with untyped GraphSON as the result simply cannot fit
+the structure JSON inherently allows. A simple example would be `g.V().groupCount()` which returns a `Map`. A `Map`
+is no problem for JSON, but the key to this `Map` is a `Vertex`, which is a complex object, and cannot be a key in
+JSON which only allows `String` keys. Untyped GraphSON will simply convert the `Vertex` to a `String` for purpose of
+serialization and as a result that data and type is lost. If this information is needed, switch to a typed format or
+adjust the Gremlin query in some way to return it in a different form that fits JSON structure.
 
 Configuring GraphSON in the Gremlin Server configuration looks like this:
 
@@ -1211,11 +1219,6 @@ $ curl -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
 $ curl -H "Accept:application/vnd.gremlin-v3.0+json" -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
 {"requestId":"9fdf0892-d86c-41f2-94b5-092785c473eb","status":{"message":"","code":200,"attributes":{"@type":"g:Map","@value":[]}},"result":{"data":{"@type":"g:List","@value":[{"@type":"g:Int32","@value":99}]},"meta":{"@type":"g:Map","@value":[]}}
 ----
-
-IMPORTANT: `GraphSONMessageSerializerGremlinV1d0` configures `application/vnd.gremlin-v1.0+json`, but this mime type does
-not support text serialization (i.e. `MessageTextSerializer`) which means that it cannot be used for the serializing
-results to the HTTP endpoint in Gremlin Server. GraphSON 1.0 must be configured with `application/json` using the
-`GraphSONMessageSerializerV1d0` as demonstrated above or use mimeType `application/vnd.gremlin-v1.0+json;types=false`.
 
 [[server-graphbinary]]
 ===== GraphBinary

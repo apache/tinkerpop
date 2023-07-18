@@ -140,7 +140,7 @@ public abstract class AbstractGraphSONMessageSerializerV2 extends AbstractMessag
 
     private GraphSONMapper.Builder initBuilder(final GraphSONMapper.Builder builder) {
         final GraphSONMapper.Builder b = null == builder ? GraphSONMapper.build() : builder;
-        return b.addCustomModule(GraphSONXModuleV2.build().create(false))
+        return b.addCustomModule(GraphSONXModuleV2.build())
                 .version(GraphSONVersion.V2_0);
     }
 

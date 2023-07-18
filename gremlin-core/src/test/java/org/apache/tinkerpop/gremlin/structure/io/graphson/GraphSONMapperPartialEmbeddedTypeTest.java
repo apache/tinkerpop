@@ -64,20 +64,19 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0)
-                        .addCustomModule(GraphSONXModuleV2.build().create(false))
+                        .addCustomModule(GraphSONXModuleV2.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
-                        .addCustomModule(GraphSONXModuleV3.build().create(false))
+                        .addCustomModule(GraphSONXModuleV3.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }
 
-    @Parameterized.Parameter(1)
-    public ObjectMapper mapper;
-
-
     @Parameterized.Parameter(0)
     public String version;
+
+    @Parameterized.Parameter(1)
+    public ObjectMapper mapper;
 
     @Test
     public void elementOrderShouldNotMatter() throws Exception {

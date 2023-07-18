@@ -133,7 +133,7 @@ public final class GraphSONXModuleV2 extends GraphSONModule {
         }
 
         @Override
-        public GraphSONModule create(final boolean normalize) {
+        public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
             return new GraphSONXModuleV2(normalize);
         }
     }
