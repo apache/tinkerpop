@@ -21,22 +21,55 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Container to store the value of an element which can be specific to each transaction.
+ * Responsible for transactional operations for the element that stores.
+ * @param <T> type of element to store.
+ */
 final class TinkerElementContainer<T extends TinkerElement> {
+    /**
+     * Committed value of element.
+     */
     private T element;
+    /**
+     * Id of element. Used if element is removed or set to {@code null}.
+     */
     private Object elementId;
+    /**
+     * Used to separate deleted elements from {@code null} ones.
+     */
     private boolean isDeleted = false;
+    /**
+     * Value of elements updated in current transaction.
+     */
     private ThreadLocal<T> transactionUpdatedValue = ThreadLocal.withInitial(() -> null);
+    /**
+     * Marker for element deleted in current transaction.
+     */
     private ThreadLocal<Boolean> isDeletedInTx = ThreadLocal.withInitial(() -> false);
 
-    // needed to understand whether this element is used in other transactions or it can be deleted during rollback
+    /**
+     * Count of usages of container in different transactions.
+     * Needed to understand whether this element is used in other transactions or it can be deleted during rollback.
+     */
     private AtomicInteger usesInTransactions = new AtomicInteger(0);
 
+    /**
+     * Used to protect container from simultaneous modification in different transactions.
+     */
     private final ReentrantLock lock = new ReentrantLock();
 
+    /**
+     * Constructor only requires the element id to be stored.
+     * @param elementId id of element to store.
+     */
     public TinkerElementContainer(final Object elementId) {
         this.elementId = elementId;
     }
 
+    /**
+     * Get transaction specific value of stored element.
+     */
     public T get() {
         if (isDeletedInTx.get()) return null;
         if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
@@ -44,29 +77,53 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
+    /**
+     * Get current committed value of stored element.
+     */
     public T getUnmodified() {
         return element;
     }
 
+    /**
+     * Get modified in the current transaction value of stored element.
+     */
     public T getModified() {
         return transactionUpdatedValue.get();
     }
 
+    /**
+     * Get id of stored element.
+     */
     public Object getElementId() {
         return elementId;
     }
 
+    /**
+     * Needed to understand if the element has changed in the current transaction
+     */
     public boolean isChanged() {
         return isDeletedInTx.get() || transactionUpdatedValue.get() != null;
     }
 
+    /**
+     * Used to understand if the element has deleted in the current transaction
+     */
     public boolean isDeleted() { return isDeleted || isDeletedInTx.get(); }
 
+    /**
+     * Mark element as deleted in the current transaction.
+     */
     public void markDeleted(final TinkerTransaction tx) {
         isDeletedInTx.set(true);
         tx.touch(this);
     }
 
+    /**
+     * Mark element as changed in the current transaction.
+     * A copy of the element is made and set as a value in the transaction.
+     * @param transactionElement updated element
+     * @param tx current transaction
+     */
     public void touch(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
         if (element != transactionElement) return;
@@ -75,6 +132,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
         setDraft(transactionElement, tx);
     }
 
+    /**
+     * Set element value specific to current transaction.
+     * @param transactionElement updated element
+     * @param tx current transaction
+     */
     public void setDraft(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
         if (transactionUpdatedValue.get() == null && !isDeletedInTx.get())
@@ -83,6 +145,9 @@ final class TinkerElementContainer<T extends TinkerElement> {
         tx.touch(this);
     }
 
+    /**
+     * Used to understand if elements was changed by other transaction.
+     */
     public boolean updatedOutsideTransaction() {
         // todo: do we need to check version on delete?
         final T updatedValue = transactionUpdatedValue.get();
@@ -90,6 +155,10 @@ final class TinkerElementContainer<T extends TinkerElement> {
                 element != null && updatedValue != null && updatedValue.version() != element.version();
     }
 
+    /**
+     * Commit changes for the stored element.
+     * @param txVersion version of transaction
+     */
     public void commit(final long txVersion) {
         if (isDeletedInTx.get()) {
             // created and deleted in same tx
@@ -105,24 +174,41 @@ final class TinkerElementContainer<T extends TinkerElement> {
         reset();
     }
 
+    /**
+     * Rollback changes for the stored element.
+     */
     public void rollback() {
         reset();
         usesInTransactions.decrementAndGet();
     }
 
+    /**
+     * Used to check if container can be removed or still used by another transaction.
+     * Should be used after commit or rollback.
+     */
     public boolean canBeRemoved() {
         return usesInTransactions.get() == 0 && (isDeleted || element == null);
     }
 
+    /**
+     * Cleanup changes made in the current transaction.
+     */
     private void reset() {
         transactionUpdatedValue.remove();
         isDeletedInTx.set(false);
     }
 
+    /**
+     * Try to lock container to apply changes to stored element.
+     * @return True if lock was successful.
+     */
     public boolean tryLock() {
         return lock.tryLock();
     }
 
+    /**
+     * Release lock after applying changes.
+     */
     public void releaseLock() {
         if (lock.isHeldByCurrentThread())
             lock.unlock();

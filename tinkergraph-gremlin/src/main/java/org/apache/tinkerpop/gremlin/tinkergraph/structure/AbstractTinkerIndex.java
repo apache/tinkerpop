@@ -25,6 +25,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Storage for indexes that can be used by different implementations of {@link AbstractTinkerGraph}.
+ *
+ * @param <T> type of {@link Element} to be indexed
+ *
+ * @author Valentyn Kahamlyk
+ */
 public abstract class AbstractTinkerIndex<T extends Element> {
 
     protected final Class<T> indexClass;
@@ -36,20 +43,63 @@ public abstract class AbstractTinkerIndex<T extends Element> {
         this.indexClass = indexClass;
     }
 
+    /**
+     * Get list of elements which have a property with the desired value.
+     * @param key property key
+     * @param value property value
+     * @return list of elements
+     */
     public abstract List<T> get(final String key, final Object value);
+
+    /**
+     * Get count of elements which have a property with the desired value.
+     * @param key property key
+     * @param value property value
+     * @return count of elements
+     */
     public abstract long count(final String key, final Object value);
 
+    /**
+     * Remove elements with some property from index.
+     * Convenient to use when removed only one property of an element.
+     * @param key property key
+     * @param value property value
+     * @param element changed element
+     */
     public abstract void remove(final String key, final Object value, final T element);
 
+    /**
+     * Remove elements from all indexes.
+     * Can be used when element was deleted or has changed more than 1 property.
+     * @param element changed element
+     */
     public abstract void removeElement(final T element);
 
+    /**
+     * Update index for single property of element.
+     * @param key property key
+     * @param newValue updated value of property
+     * @param oldValue optional value of property before update
+     * @param element changed element
+     */
     public abstract void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element);
 
+    /**
+     * Create new index
+     * @param key property key
+     */
     public abstract void createKeyIndex(final String key);
 
+    /**
+     * Drop index
+     * @param key property key
+     */
     public abstract void dropKeyIndex(final String key);
 
-
+    /**
+     * Get all index keys for Graph
+     * @return set of index keys
+     */
     public Set<String> getIndexedKeys() {
         return indexedKeys;
     }

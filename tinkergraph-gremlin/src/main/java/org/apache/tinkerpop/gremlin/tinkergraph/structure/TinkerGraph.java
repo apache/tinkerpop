@@ -204,11 +204,6 @@ public final class TinkerGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public String toString() {
-        return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
-    }
-
-    @Override
     public void clear() {
         super.clear();
         this.vertices.clear();

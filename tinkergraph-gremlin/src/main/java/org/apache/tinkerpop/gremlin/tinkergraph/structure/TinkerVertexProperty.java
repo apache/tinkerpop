@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -146,24 +147,27 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public void remove() {
-        if (null != this.vertex.properties && this.vertex.properties.containsKey(this.key)) {
-            ((AbstractTinkerGraph)vertex.graph()).touch(vertex);
+        if (null == this.vertex.properties) return;
 
-            this.vertex.properties.get(this.key).remove(this);
-            if (this.vertex.properties.get(this.key).size() == 0) {
-                this.vertex.properties.remove(this.key);
-                TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
-            }
-            final AtomicBoolean delete = new AtomicBoolean(true);
-            this.vertex.properties(this.key).forEachRemaining(property -> {
-                final Object currentPropertyValue = property.value();
-                if ((currentPropertyValue != null && currentPropertyValue.equals(this.value) || null == currentPropertyValue && null == this.value))
-                    delete.set(false);
-            });
-            if (delete.get()) TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
-            this.properties = null;
-            this.removed = true;
+        final List<VertexProperty> properties = this.vertex.properties.get(this.key);
+        if (null == properties) return;
+
+        ((AbstractTinkerGraph) vertex.graph()).touch(vertex);
+
+        properties.remove(this);
+        if (properties.size() == 0) {
+            this.vertex.properties.remove(this.key);
+            TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
         }
+        final AtomicBoolean delete = new AtomicBoolean(true);
+        this.vertex.properties(this.key).forEachRemaining(property -> {
+            final Object currentPropertyValue = property.value();
+            if ((currentPropertyValue != null && currentPropertyValue.equals(this.value) || null == currentPropertyValue && null == this.value))
+                delete.set(false);
+        });
+        if (delete.get()) TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
+        this.properties = null;
+        this.removed = true;
     }
 
     @Override

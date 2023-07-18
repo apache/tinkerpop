@@ -176,7 +176,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public void touch(final TinkerVertex vertex) {
-        // already removed
+        // already removed, so skip
         if (null == vertex || !vertices.containsKey(vertex.id())) return;
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
@@ -189,7 +189,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public void touch(final TinkerEdge edge) {
-        // already removed
+        // already removed, so skip
         if (null == edge || !edges.containsKey(edge.id())) return;
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
@@ -209,6 +209,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         this.tx().readWrite();
 
+        // mark both related vertices as changed because they contains list of in/out edges
         touch(outVertex);
         touch(inVertex);
 
@@ -272,11 +273,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public String toString() {
-        return StringFactory.graphString(this, "vertices:" + this.getVerticesCount() + " edges:" + this.getEdgesCount());
-    }
-
-    @Override
     public void clear() {
         super.clear();
         this.vertices.clear();
@@ -295,7 +291,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public boolean hasVertex(Object id) {
-        return vertices.containsKey(id);
+        return null != vertex(id);
     }
 
     Map<Object, TinkerElementContainer<TinkerVertex>> getVertices () { return vertices; }
@@ -307,7 +303,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public boolean hasEdge(Object id) {
-        return edges.containsKey(id);
+        return null != edge(id);
     }
 
     Map<Object, TinkerElementContainer<TinkerEdge>> getEdges () { return edges; }

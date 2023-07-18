@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
@@ -46,8 +47,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+/**
+ * Base class for {@link TinkerGraph} and {@link TinkerTransactionGraph}.
+ * Contains common methods, variables and constants, but leaves the work with elements and indices
+ * to concrete implementations.
+ *
+ * @author Valentyn Kahamlyk
+ */
 public abstract class AbstractTinkerGraph implements Graph {
-
 
     public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
     public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
@@ -78,28 +85,92 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected String graphLocation;
     protected String graphFormat;
 
-    public abstract Vertex addVertex(Object... keyValues);
+    /**
+     * {@inheritDoc}
+     */
+    public abstract Vertex addVertex(final Object... keyValues);
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract void removeVertex(final Object vertexId);
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues);
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract void removeEdge(final Object edgeId);
 
+    /**
+     * Mark {@link Vertex} as changed in transaction.
+     * If the graph does not support transactions, then does nothing.
+     * @param vertex
+     */
     public void touch(final TinkerVertex vertex) {};
+
+    /**
+     * Mark {@link Edge} as changed in transaction.
+     * If the graph does not support transactions, then does nothing.
+     * @param edge
+     */
     public void touch(final TinkerEdge edge) {};
 
-    public abstract Vertex vertex(Object vertexId);
-    public abstract Iterator<Vertex> vertices(Object... vertexIds);
-    public abstract Edge edge(Object edgeId);
-    public abstract Iterator<Edge> edges(Object... edgeIds);
+    /**
+     * Return {@link Vertex} by id.
+     * Does not create an iterator, so is the preferred method when only 1 element needs to be returned.
+     * @param vertexId
+     * @return Vertex
+     */
+    public abstract Vertex vertex(final Object vertexId);
 
+    /**
+     * {@inheritDoc}
+     */
+    public abstract Iterator<Vertex> vertices(final Object... vertexIds);
+
+    /**
+     * Return {@link Edge} by id.
+     * Does not create an iterator, so is the preferred method when only 1 element needs to be returned.
+     * @param edgeId
+     * @return Edge
+     */
+    public abstract Edge edge(final Object edgeId);
+
+    /**
+     * {@inheritDoc}
+     */
+    public abstract Iterator<Edge> edges(final Object... edgeIds);
+
+    /**
+     * {@inheritDoc}
+     */
     public abstract Transaction tx();
 
+    /**
+     * Graph-specific implementation for number of vertices.
+     * @return count of vertices in Graph.
+     */
     public abstract int getVerticesCount();
-    public abstract boolean hasVertex(Object id);
+
+    /**
+     * {@inheritDoc}
+     */
+    public abstract boolean hasVertex(final Object id);
+
+    /**
+     * Graph-specific implementation for number of vertices.
+     * @return count of vertices in Graph.
+     */
     public abstract int getEdgesCount();
-    public abstract boolean hasEdge(Object id);
+
+    /**
+     * {@inheritDoc}
+     */
+    public abstract boolean hasEdge(final Object id);
 
     protected void loadGraph() {
         final File f = new File(graphLocation);
@@ -148,6 +219,7 @@ public abstract class AbstractTinkerGraph implements Graph {
         }
     }
 
+
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
         if (builder.requiresVersion(GryoVersion.V1_0) || builder.requiresVersion(GraphSONVersion.V1_0))
@@ -173,6 +245,14 @@ public abstract class AbstractTinkerGraph implements Graph {
         return this.variables;
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.graphString(this, "vertices:" + this.getVerticesCount() + " edges:" + this.getEdgesCount());
+    }
+
+    /**
+     * Clear internal graph data
+     */
     public void clear() {
         this.variables = null;
         this.currentId.set(-1L);
@@ -180,7 +260,6 @@ public abstract class AbstractTinkerGraph implements Graph {
         this.edgeIndex = null;
         this.graphComputerView = null;
     }
-
 
     /**
      * This method only has an effect if the {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_LOCATION} is set, in which case the
@@ -301,7 +380,22 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
-    //todo
+    /**
+     * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).
+     *
+     * @param elementClass the element class to get the indexed keys for
+     * @param <E>          The type of the element class
+     * @return the set of keys currently being indexed
+     */
+    public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
+        if (Vertex.class.isAssignableFrom(elementClass)) {
+            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
+        } else if (Edge.class.isAssignableFrom(elementClass)) {
+            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
+        } else {
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+    }
 
     ///////////// Id manager ///////////////
     /**
@@ -486,23 +580,6 @@ public abstract class AbstractTinkerGraph implements Graph {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
                  NoSuchMethodException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).
-     *
-     * @param elementClass the element class to get the indexed keys for
-     * @param <E>          The type of the element class
-     * @return the set of keys currently being indexed
-     */
-    public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
-        if (Vertex.class.isAssignableFrom(elementClass)) {
-            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
-        } else if (Edge.class.isAssignableFrom(elementClass)) {
-            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
-        } else {
-            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
     }
 }

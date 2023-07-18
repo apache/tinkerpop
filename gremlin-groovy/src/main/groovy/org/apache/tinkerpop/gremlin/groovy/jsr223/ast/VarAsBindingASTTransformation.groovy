@@ -20,13 +20,12 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223.ast
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.Translator
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory
+import org.apache.tinkerpop.gremlin.util.CollectionUtil
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
@@ -123,7 +122,7 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                                 case GraphTraversal.Symbols.mergeE:
                                 case GraphTraversal.Symbols.mergeV:
                                     bindingValue = new MethodCallExpression(
-                                        new ClassExpression(new ClassNode(CollectionFactory)), "asMap",
+                                        new ClassExpression(new ClassNode(CollectionUtil)), "asMap",
                                         new TupleExpression(new ConstantExpression(UUID.randomUUID().toString()),
                                                             new ConstantExpression(UUID.randomUUID().toString())))
                                     break
@@ -131,7 +130,7 @@ class VarAsBindingASTTransformation implements ASTTransformation {
                                 case GraphTraversal.Symbols.option:
                                     if (i == 1)
                                         bindingValue = new MethodCallExpression(
-                                            new ClassExpression(new ClassNode(CollectionFactory)), "asMap",
+                                            new ClassExpression(new ClassNode(CollectionUtil)), "asMap",
                                             new TupleExpression(new ConstantExpression(UUID.randomUUID().toString()),
                                                                 new ConstantExpression(UUID.randomUUID().toString())))
                                     break
