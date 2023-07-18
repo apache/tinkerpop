@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Valentyn Kahamlyk
  */
 final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTinkerIndex<T> {
 

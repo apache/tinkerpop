@@ -37,8 +37,7 @@ import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
  */
 public final class GraphMigrator {
 
-    private GraphMigrator() {
-    }
+    private GraphMigrator() { }
 
     /**
      * Use Gryo to pipe the data from one graph to another graph.  Uses readers and writers generated from each
@@ -84,10 +83,8 @@ public final class GraphMigrator {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {
-                if (fromGraph.features().graph().supportsTransactions())
-                    fromGraph.tx().rollback();
-                if (toGraph.features().graph().supportsTransactions())
-                    toGraph.tx().rollback();
+                if (fromGraph.features().graph().supportsTransactions()) fromGraph.tx().rollback();
+                if (toGraph.features().graph().supportsTransactions()) toGraph.tx().rollback();
             }
         }).start();
 
