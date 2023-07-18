@@ -24,5 +24,5 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializer;
  * Represents a special TypeSerializer placeholder that transforms the value into another before serializing it.
  */
 public interface TransformSerializer<T> extends TypeSerializer<T> {
-    Object transform(T value);
+    Object transform(final T value);
 }

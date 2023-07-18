@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -111,14 +112,33 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         if (object instanceof Bytecode.Binding)
             return translateObject(((Bytecode.Binding) object).value());
         else if (object instanceof Bytecode) {
-            try {
-                final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversalStart.invoke(null);
-                for (final Bytecode.Instruction instruction : ((Bytecode) object).getStepInstructions()) {
-                    invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
+            // source based bytecode at this stage of translation could have special meaning, but generally this is
+            // going to spawn a new anonymous traversal.
+            final Bytecode bc = (Bytecode) object;
+            if (!bc.getSourceInstructions().isEmpty()) {
+                // currently, valid source instructions will be singly defined. would be odd to get this error. could
+                // be just bad construction from a language variant if it appears. maybe better as an assertion but
+                // third-party variants might benefit from this error
+                if (bc.getSourceInstructions().size() != 1) {
+                    throw new IllegalStateException("More than one source instruction defined in bytecode");
                 }
-                return traversal;
-            } catch (final Throwable e) {
-                throw new IllegalStateException(e.getMessage());
+
+                final Bytecode.Instruction inst = bc.getSourceInstructions().get(0);
+                if (inst.getOperator().equals(CardinalityValueTraversal.class.getSimpleName())) {
+                    return CardinalityValueTraversal.from(inst);
+                } else {
+                    throw new IllegalStateException(String.format("Unknown source instruction for %s", inst.getOperator()));
+                }
+            } else {
+                try {
+                    final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversalStart.invoke(null);
+                    for (final Bytecode.Instruction instruction : bc.getStepInstructions()) {
+                        invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
+                    }
+                    return traversal;
+                } catch (final Throwable e) {
+                    throw new IllegalStateException(e.getMessage());
+                }
             }
         } else if (object instanceof TraversalStrategyProxy) {
             final Map<String, Object> map = new HashMap<>();

@@ -182,6 +182,16 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            final String card = inst.getArguments()[0].toString();
+            script.append(GO_PACKAGE_NAME + "CardinalityValue." + card.substring(0, 1).toUpperCase() + card.substring(1) + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
+        }
+
+        @Override
         protected Script produceScript(final Set<?> o) {
             final Iterator<?> iterator = o.iterator();
             script.append(GO_PACKAGE_NAME + "NewSimpleSet(");

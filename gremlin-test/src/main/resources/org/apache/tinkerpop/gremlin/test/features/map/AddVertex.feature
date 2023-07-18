@@ -429,7 +429,6 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
 
- 
   Scenario: g_addV_propertyXmapX
     Given the empty graph
     And the traversal of
@@ -449,6 +448,42 @@ Feature: Step - addV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+
+  @MultiMetaProperties
+  Scenario: g_V_hasXname_fooX_propertyXname_setXbarX_age_43X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property(Cardinality.single, "name", "foo").property("age", 42)
+      """
+    And the traversal of
+      """
+      g.V().has('name','foo').property(["name": Cardinality.set("bar"), "age": 43 ])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"bar\")"
+    And the graph should return 1 for count of "g.V().has(\"age\",43)"
+    And the graph should return 0 for count of "g.V().has(\"age\",42)"
+
+  @MultiMetaProperties
+  Scenario: g_V_hasXname_fooX_propertyXset_name_bar_age_singleX43XX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property(Cardinality.single, "name", "foo").property("age", 42)
+      """
+    And the traversal of
+      """
+      g.V().has('name','foo').property(Cardinality.set, ["name":"bar", "age": Cardinality.single(43) ])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"bar\")"
+    And the graph should return 1 for count of "g.V().has(\"age\",43)"
+    And the graph should return 0 for count of "g.V().has(\"age\",42)"
 
   Scenario: g_addV_propertyXnullX
     Given the empty graph

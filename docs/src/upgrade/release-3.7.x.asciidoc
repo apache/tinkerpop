@@ -60,6 +60,77 @@ gremlin> g.union(V().has('name','vadas'),
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2873[TINKERPOP-2873]
 
+==== Map and Cardinality
+
+Relatively recent changes to the Gremlin language have allowed properties to be set by way of a `Map`. As it pertains
+to vertices, a `Map` can be given to `mergeV()` and `property()` steps. The limitation was that setting `Cardinality`
+with this syntax was not possible without reverting back to `property()` steps that took a `Cardinality` as an argument
+in some way. The following paragraphs show how changes for in 3.6.5 make this syntax much better for multi-properties.
+
+The `mergeV()` step makes it much easier to write upsert-like traversals. Of course, if you had a graph that required
+the use of multi-properties, some of the ease of `mergeV()` was lost. It typically meant falling back to traversals
+using `sideEffect()` or similar direct uses of `property()` to allow it to work properly:
+
+[source,groovy]
+----
+g.mergeV([(T.id): '1234']).
+  option(onMatch, sideEffect(property(single,'age', 20).
+                             property(set,'city','miami')).constant([:]))
+----
+
+For this version, `mergeV()` gets two new bits of syntax. First, it is possible to individually define the cardinality
+for each property value in the `Map` for `onCreate` or `onMerge` events. Therefore, the above example could be written
+as:
+
+[source,text]
+----
+gremlin> g.addV().property(id,1234).property('age',19).property(set, 'city', 'detroit')
+==>v[1234]
+gremlin> g.mergeV([(T.id): 1234]).
+......1>   option(onMatch, ['age': single(20), 'city': set('miami')])
+==>v[1234]
+gremlin> g.V(1234).valueMap()
+==>[city:[detroit,miami],age:[20]]
+----
+
+The other option available is to provide a default `Cardinality` to the `option()` as follows, continuing from the
+previous example:
+
+[source,text]
+----
+gremlin> g.mergeV([(T.id): 1234]).
+......1>     option(onMatch, ['age': 21, 'city': set('orlando')], single)
+==>v[1234]
+gremlin> g.mergeV([(T.id): 1234]).
+......1>     option(onMatch, ['age': 22, 'city': set('boston')], single)
+==>v[1234]
+gremlin> g.V(1234).valueMap()
+==>[city:[detroit,miami,orlando,boston],age:[22]]
+----
+
+In the above example, any property value that does not have its cardinality explicitly defined, will be assumed to be
+the cardinality of the argument specified.
+
+For `property(Map)` the `Cardinality` could be set universally for the `Map` with `property(Cardinality, Map)` but
+there was no mechanism to set that value individually. Using the same pattern above and constructing a
+`CardinalityValue` now allows this possibility.
+
+[source,text]
+----
+gremlin> g.addV().property(id,1234).property('age',19).property(set, 'city', 'detroit')
+==>v[1234]
+gremlin> g.V(1234).property(['age': 20, 'city': set('miami')])
+==>v[1234]
+gremlin> g.V(1234).property(['age': single(21), 'city': set('orlando')])
+==>v[1234]
+gremlin> g.V(1234).property(single, ['age': 21, 'city': set('boston')])
+==>v[1234]
+gremlin> g.V(1234).valueMap()
+==>[city:[detroit,miami,orlando,boston],age:[21]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2957[TINKERPOP-2957]
+
 ==== Properties on Elements
 
 ===== Introduction

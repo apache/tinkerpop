@@ -575,6 +575,7 @@ traversalMethod_not
 traversalMethod_option
 	: 'option' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_option_Predicate_Traversal
 	| 'option' LPAREN traversalMergeArgument COMMA genericLiteralMapNullableArgument RPAREN #traversalMethod_option_Merge_Map
+	| 'option' LPAREN traversalMergeArgument COMMA genericLiteralMapNullableArgument COMMA traversalCardinality RPAREN #traversalMethod_option_Merge_Map_Cardinality
 	| 'option' LPAREN traversalMergeArgument COMMA nestedTraversal RPAREN #traversalMethod_option_Merge_Traversal
 	| 'option' LPAREN genericLiteralArgument COMMA nestedTraversal RPAREN #traversalMethod_option_Object_Traversal
 	| 'option' LPAREN nestedTraversal RPAREN #traversalMethod_option_Traversal
@@ -916,7 +917,13 @@ traversalDirection
     ;
 
 traversalCardinality
-    : 'single' | 'Cardinality.single'
+    : 'Cardinality.single' LPAREN genericLiteral RPAREN
+    | 'Cardinality.set' LPAREN genericLiteral RPAREN
+    | 'Cardinality.list' LPAREN genericLiteral RPAREN
+    | 'single' LPAREN genericLiteral RPAREN
+    | 'set' LPAREN genericLiteral RPAREN
+    | 'list' LPAREN genericLiteral RPAREN
+    | 'single' | 'Cardinality.single'
     | 'set' | 'Cardinality.set'
     | 'list' | 'Cardinality.list'
     ;

@@ -2666,22 +2666,35 @@ Metadata > {}
 ======================================================================================================================================================================
 ----
 
-In some cases, such as when adding multi-properties or meta-properties to a vertex, one or
-more `property` steps can follow the `mergeV()` step. Note that meta-properties and
-multi-properties cannot be added directly using just `mergeV()` as a key/value pair such as
-`'my-numbers:[1,2,3,4]` will be treated as a `List` object and not a set of multi-property
-values.
+When working with multi-properties, there are two ways to specify them for `mergeV()`. First, you can specify them
+individually using a `CardinalityValue` as the value in the `Map`. The `CardinalityValue` allows you to specify the
+value as well as the `Cardinality` for that value. Note that it is only possible to specify one value with this syntax
+even if you are using `set` or `list`.
 
 [gremlin-groovy]
 ----
 g.mergeV([(T.label):'Dog', name:'Max']). <1>
-  property(list,'alias','Maximus').
-  property(list,'alias','Maxamillion') <2>
+    option(onCreate, [alias: set('Maximus')]). <2>
+  property(set,'alias','Maxamillion') <3>
 g.V().has('name','Max').valueMap().with(WithOptions.tokens)
 ----
 
 <1> Find or create a vertex for Max.
-<2> Whether Max was found or created, add some aliases with list cardinality.
+<2> If Max is not found then add an alias of `set` cardinality.
+<3> Whether Max was found or created, add another alias with `set` cardinality.
+
+The second option is to specify `Cardinality` for the entire range of values as follows:
+
+[gremlin-groovy]
+----
+g.mergeV([(T.label):'Dog', name:'Max']).
+    option(onCreate, [alias: 'Maximus', city: 'Boston'], set) <1>
+g.mergeV([(T.label):'Dog', name:'Max']).
+    option(onCreate, [alias: 'Maximus', city: single('Boston')], set) <2>
+----
+
+<1> If Max is created then set the alias and city with cardinality of `set`.
+<2> If Max is created then set the alias with cardinality of `set` and city with cardinality `single`.
 
 More than one vertex can be created by a single `mergeV()` operation. This is done by
 injecting a `List` of `Map` objects into the traversal and letting them stream into the `mergeV()`
@@ -3334,20 +3347,23 @@ g.V(1).property(['city': 'santa fe', 'state': 'new mexico'])  <1>
 g.V(1).property(list,'age',35)  <2>
 g.V(1).property(list, ['city': 'santa fe', 'state': 'new mexico'])  <3>
 g.V(1).valueMap()
-g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
-g.V(1).properties('friendWeight').valueMap() <5>
-g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
-g.addV().property(null) <7>
+g.V(1).property(list, ['age': single(36), 'city': 'wilmington', 'state': 'delaware'])  <4>
+g.V(1).valueMap()
+g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <5>
+g.V(1).properties('friendWeight').valueMap() <6>
+g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <7>
+g.addV().property(null) <8>
 g.addV().property(set, null)
 ----
 
-<1> Properties can also take a Map as an argument.
+<1> Properties can also take a `Map` as an argument.
 <2> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
-<3> If a cardinality is specified for a Map then that cardinality will be used for all properties in the map.  If you need different cardinalities per property then you should individually add the property values.
-<4> It is possible to select the property value (as well as key) via a traversal.
-<5> For vertices, the `property()`-step can add meta-properties.
-<6> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
-<7> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
+<3> If a cardinality is specified for a `Map` then that cardinality will be used for all properties in the map.
+<4> Assign the `Cardinality` individually to override the specified `list` or the default cardinality if not specified.
+<5> It is possible to select the property value (as well as key) via a traversal.
+<6> For vertices, the `property()`-step can add meta-properties.
+<7> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
+<8> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
 
 *Additional References*
 

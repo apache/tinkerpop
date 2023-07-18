@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -43,7 +44,6 @@ import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Generic Literal visitor test
@@ -672,6 +672,44 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser.InfLiteralContext ctx = parser.infLiteral();
 
             assertEquals(Double.NEGATIVE_INFINITY, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitInfLiteral(ctx));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class CardinalityTest {
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public Object expected;
+
+        @Parameterized.Parameters()
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"single(\"test\")", VertexProperty.Cardinality.single("test")},
+                    {"list(\"test\")", VertexProperty.Cardinality.list("test")},
+                    {"set(\"test\")", VertexProperty.Cardinality.set("test")},
+                    {"Cardinality.single(\"test\")", VertexProperty.Cardinality.single("test")},
+                    {"Cardinality.list(\"test\")", VertexProperty.Cardinality.list("test")},
+                    {"Cardinality.set(\"test\")", VertexProperty.Cardinality.set("test")},
+                    {"single(1l)", VertexProperty.Cardinality.single(1L)},
+                    {"list(1l)", VertexProperty.Cardinality.list(1L)},
+                    {"set(1l)", VertexProperty.Cardinality.set(1L)},
+                    {"Cardinality.single", VertexProperty.Cardinality.single},
+                    {"Cardinality.list", VertexProperty.Cardinality.list},
+                    {"Cardinality.set", VertexProperty.Cardinality.set},
+                    {"single", VertexProperty.Cardinality.single},
+                    {"list", VertexProperty.Cardinality.list},
+                    {"set", VertexProperty.Cardinality.set},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalCardinalityContext ctx = parser.traversalCardinality();
+            assertEquals(expected, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalCardinality(ctx));
         }
     }
 }

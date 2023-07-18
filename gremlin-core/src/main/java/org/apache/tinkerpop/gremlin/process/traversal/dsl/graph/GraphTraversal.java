@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
@@ -2541,6 +2542,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * If a {@link Map} is supplied then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
      * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
+     * If a {@link CardinalityValueTraversal} is specified as a value then it will override any
+     * {@link VertexProperty.Cardinality} specified for the {@code key}.
      * <p />
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
@@ -2554,13 +2557,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
         if (key instanceof VertexProperty.Cardinality) {
-            if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-                final Map<Object, Object> map = (Map)value;
+            // expect property(Cardinality, Map) where Map has entry type of either:
+            // + <String<k>,CardinalityValue<v>> = property(v.cardinality, k, v.value) - overrides the Cardinality provided by "key"
+            // + <String<k>,Object<v>> = property(key, k, v) - uses Cardinality of key
+            if (value instanceof Map) {
+                // Handle the property(Cardinality, Map) signature
+                final Map<Object, Object> map = (Map) value;
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                    property(key, entry.getKey(), entry.getValue());
+                    final Object val = entry.getValue();
+                    if (val instanceof CardinalityValueTraversal) {
+                        final CardinalityValueTraversal cardVal = (CardinalityValueTraversal) val;
+                        property(cardVal.getCardinality(), entry.getKey(), cardVal.getValue());
+                    } else {
+                        // explicitly cast to avoid a possible recursive call.
+                        property((VertexProperty.Cardinality) key, entry.getKey(), entry.getValue());
+                    }
                 }
                 return this;
-            } else if (value == null) { // Just return the input if you pass a null
+            } else if (value == null) {
+                // Just return the input if you pass a null
                 return this;
             } else {
                 return this.property((VertexProperty.Cardinality) key, value, null == keyValues ? null : keyValues[0],
@@ -2568,7 +2583,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                                 Arrays.copyOfRange(keyValues, 1, keyValues.length) :
                                 new Object[]{});
             }
-        } else  { //handles if cardinality is not the first parameter
+        } else  {
+            // handles if cardinality is not the first parameter
             return this.property(null, key, value, keyValues);
         }
     }
@@ -2577,6 +2593,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * When a {@link Map} is supplied then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
      * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
+     * <p/>
+     * A value may use a {@link CardinalityValueTraversal} to allow specification of the
+     * {@link VertexProperty.Cardinality} along with the property value itself.
      * <p/>
      * If a {@link Map} is not supplied then an exception is thrown.
      * <p />
@@ -2591,7 +2610,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> property(final Map<Object, Object> value) {
         if (value != null) {
             for (Map.Entry<Object, Object> entry : value.entrySet()) {
-                property(null, entry.getKey(), entry.getValue());
+                final Object val = entry.getValue();
+                if (val instanceof CardinalityValueTraversal) {
+                    final CardinalityValueTraversal cardVal = (CardinalityValueTraversal) val;
+                    property(cardVal.getCardinality(), entry.getKey(), cardVal.getValue());
+                } else {
+                    property(null, entry.getKey(), entry.getValue());
+                }
             }
         }
         return this;
@@ -3283,6 +3308,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <M, E2> GraphTraversal<S, E> option(final M token, final Map<Object, Object> m) {
         this.asAdmin().getBytecode().addStep(Symbols.option, token, m);
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
+        return this;
+    }
+
+    /**
+     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+     * the documentation of such steps to understand the usage context.
+     *
+     * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
+     * @return the traversal with the modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
+     * @since 3.7.0
+     */
+    public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final Map<Object, Object> m, final VertexProperty.Cardinality cardinality) {
+        this.asAdmin().getBytecode().addStep(Symbols.option, merge, m, cardinality);
+        // do explicit cardinality for every single pair in the map
+        for (Object k : m.keySet()) {
+            final Object o = m.get(k);
+            if (!(o instanceof CardinalityValueTraversal))
+                m.put(k, new CardinalityValueTraversal(cardinality, o));
+        }
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }
 

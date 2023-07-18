@@ -510,6 +510,10 @@ To make the code more readable and close to the Gremlin query language), you can
 	var order = gremlingo.Order
 ----
 
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
+`CardinalityValue` class rather than `Cardinality` itself.
+
 [[gremlin-go-limitations]]
 === Limitations
 
@@ -1308,6 +1312,8 @@ const pop = gremlin.process.pop
 const order = gremlin.process.order
 const scope = gremlin.process.scope
 const t = gremlin.process.t
+const cardinality = gremlin.process.cardinality
+const CardinalityValue = gremlin.process.CardinalityValue
 ----
 
 By defining these imports it becomes possible to write Gremlin in the more shorthand, canonical style that is
@@ -1570,6 +1576,10 @@ bits of conflicting Gremlin get an underscore appended as a suffix:
 *Steps* - <<from-step,from_()>>, <<in-step,in_()>>, <<with-step,with_()>>
 *Tokens* - `Direction.from_`
 
+In addition, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
+`CardinalityValue` class rather than `Cardinality` itself.
+
 Gremlin allows for `Map` instances to include `null` keys, but `null` keys in Javascript have some interesting behavior
 as in:
 
@@ -1605,6 +1615,7 @@ g.V().hasLabel('person').groupCount().by('age')
 
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
+
 [[gremlin-javascript-limitations]]
 === Limitations
 
@@ -1919,17 +1930,21 @@ g.V().Repeat(__.Out()).Times(2).Values<string>("name");
 Gremlin allows for `Map` instances to include `null` keys, but `null` keys in C# `Dictionary` instances are not allowed.
 It is therefore necessary to rewrite a traversal such as:
 
-[source,javascript]
+[source,csharp]
 ----
-g.V().groupCount().by('age')
+g.V().GroupCount<object>().By("age")
 ----
 
 where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
 
-[source,javascript]
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
+`CardinalityValue` class rather than `Cardinality` itself.
+
+[source,csharp]
 ----
-g.V().has('age').groupCount().by('age')
-g.V().hasLabel('person').groupCount().by('age')
+g.V().Has("age").GroupCount<object>().By("age")
+g.V().HasLabel("person").GroupCount<object>().By("age")
 ----
 
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
@@ -2066,6 +2081,7 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 from gremlin_python.process.traversal import T
 from gremlin_python.process.traversal import Order
 from gremlin_python.process.traversal import Cardinality
+from gremlin_python.process.traversal import CardinalityValue
 from gremlin_python.process.traversal import Column
 from gremlin_python.process.traversal import Direction
 from gremlin_python.process.traversal import Operator
@@ -2456,6 +2472,10 @@ bits of conflicting Gremlin get an underscore appended as a suffix:
 <<with-step,with_()>>
 
 *Tokens* - <<a-note-on-scopes,Scope.global_>>, `Direction.from_`, `Operator.sum_`
+
+In addition, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
+`CardinalityValue` class rather than `Cardinality` itself.
 
 [[gremlin-python-limitations]]
 === Limitations

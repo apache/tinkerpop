@@ -29,12 +29,15 @@ import java.util.stream.Stream;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -96,18 +99,28 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
                 validateMapInput(onMatchMap, true);
 
                 onMatchMap.forEach((key, value) -> {
+                    Object val = value;
+                    VertexProperty.Cardinality card = graph.features().vertex().getCardinality(key);
+
+                    // a value can be a traversal in the case where the user specifies the cardinality for the value.
+                    if (value instanceof CardinalityValueTraversal) {
+                        final CardinalityValueTraversal cardinalityValueTraversal =  (CardinalityValueTraversal) value;
+                        card = cardinalityValueTraversal.getCardinality();
+                        val = cardinalityValueTraversal.getValue();
+                    }
+
                     // trigger callbacks for eventing - in this case, it's a VertexPropertyChangedEvent. if there's no
                     // registry/callbacks then just set the property
                     if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
                         final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
                         final Property<?> p = v.property(key);
                         final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(v.property(key)) : null;
-                        final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(v), oldValue, value);
+                        final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(v), oldValue, val);
                         this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
                     }
 
                     // try to detect proper cardinality for the key according to the graph
-                    v.property(graph.features().vertex().getCardinality(key), key, value);
+                    v.property(card, key, val);
                 });
             });
         }

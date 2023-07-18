@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 
+* Allowed `mergeV()` and `property(Map)` to more easily define `Cardinality` values for properties for `onMatch` and `onCreate` options.
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
 * Changed `Gremlin.version()` to read from the more specifically named `tinkerpop-version` attribute.
 * Added warning on vertex property cardinality mismatch when reading GraphML.
