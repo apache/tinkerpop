@@ -27,11 +27,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 
 /**
  * Service call with I input type and R return type. Services can return {@link Traverser}s or raw values (which will be

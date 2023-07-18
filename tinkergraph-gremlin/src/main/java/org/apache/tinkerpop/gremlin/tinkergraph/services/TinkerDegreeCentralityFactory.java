@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.LongStream;
 
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 
 /**
  * Count the IN/OUT/BOTH edges for a set of vertices. Demonstrates a {@link Service.Type#Streaming} service.

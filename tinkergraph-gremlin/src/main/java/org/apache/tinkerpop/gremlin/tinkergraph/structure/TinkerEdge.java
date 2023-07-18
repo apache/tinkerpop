@@ -114,7 +114,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion);
 
         if (properties != null)
-            edge.properties = CollectionUtil.Clone((ConcurrentHashMap<String, Property>) properties);
+            edge.properties = CollectionUtil.clone((ConcurrentHashMap<String, Property>) properties);
 
         return edge;
     }

@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,8 +39,6 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,10 +53,10 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
         Date date = new Date();
         List list1 = Arrays.asList(1, 2, 3);
         List list2 = Arrays.asList(1, 2, 3, 4);
-        Set set1 = CollectionFactory.asSet(list1);
-        Set set2 = CollectionFactory.asSet(list2);
-        Map map1 = CollectionFactory.asMap(1, 11, 2, 22, 3, false, 4, 44);
-        Map map2 = CollectionFactory.asMap(1, 11, 2, 22, 33);
+        Set set1 = CollectionUtil.asSet(list1);
+        Set set2 = CollectionUtil.asSet(list2);
+        Map map1 = CollectionUtil.asMap(1, 11, 2, 22, 3, false, 4, 44);
+        Map map2 = CollectionUtil.asMap(1, 11, 2, 22, 33);
 
         Object[] unordered = { map2, 1, map1, "foo", null, list1, date, set1, list2, true, uuid, "bar", 2.0, false, set2 };
     }

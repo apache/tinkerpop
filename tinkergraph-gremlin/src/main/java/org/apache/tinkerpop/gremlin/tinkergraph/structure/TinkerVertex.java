@@ -66,13 +66,13 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         // todo: probably need deep clone
         final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
         if (inEdges != null)
-            vertex.inEdges = CollectionUtil.Clone((ConcurrentHashMap<String, Set<Object>>) inEdges);
+            vertex.inEdges = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdges);
 
         if (outEdges != null)
-            vertex.outEdges = CollectionUtil.Clone((ConcurrentHashMap<String, Set<Object>>) outEdges);
+            vertex.outEdges = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) outEdges);
 
         if (properties != null)
-            vertex.properties = CollectionUtil.Clone((ConcurrentHashMap<String, List<VertexProperty>>) properties);
+            vertex.properties = CollectionUtil.clone((ConcurrentHashMap<String, List<VertexProperty>>) properties);
 
         return vertex;
     }

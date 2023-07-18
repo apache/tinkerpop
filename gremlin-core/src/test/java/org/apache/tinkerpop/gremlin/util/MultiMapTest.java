@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util.tools;
+package org.apache.tinkerpop.gremlin.util;
 
 import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.junit.Test;

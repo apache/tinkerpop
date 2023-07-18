@@ -20,6 +20,11 @@
 package org.apache.tinkerpop.gremlin.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,8 +33,30 @@ public final class CollectionUtil {
     private CollectionUtil() {
     }
 
-    public static <K,V> ConcurrentHashMap<K,V> Clone(ConcurrentHashMap<K,V> map) {
-        ConcurrentHashMap<K, V> result = new ConcurrentHashMap<>();
+    public static <E> List<E> asList(final E... elements) {
+        return new ArrayList<>(Arrays.asList(elements));
+    }
+
+    public static <E> LinkedHashSet<E> asSet(final E... elements) {
+        return asSet(Arrays.asList(elements));
+    }
+
+    public static <E> LinkedHashSet<E> asSet(final Collection<E> elements) {
+        return new LinkedHashSet<>(elements);
+    }
+
+    public static <K,V> LinkedHashMap<K,V> asMap(final Object... elements) {
+        final LinkedHashMap<K,V> map = new LinkedHashMap<>();
+        for (int i = 0; i < elements.length; i+=2) {
+            final K k = (K) elements[i];
+            final V v = (V) (i+1 < elements.length ? elements[i+1] : null);
+            map.put(k, v);
+        }
+        return map;
+    }
+
+    public static <K,V> ConcurrentHashMap<K,V> clone(final ConcurrentHashMap<K,V> map) {
+        final ConcurrentHashMap<K, V> result = new ConcurrentHashMap<>();
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             V clonedValue;
