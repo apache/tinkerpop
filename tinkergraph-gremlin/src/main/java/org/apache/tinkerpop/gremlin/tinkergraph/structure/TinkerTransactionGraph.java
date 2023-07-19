@@ -147,7 +147,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (null != idValue) {
             if (vertices.containsKey(idValue)) {
                 container = vertices.get(idValue);
-                if (container.get() != null)
+                if (container != null && container.get() != null)
                     throw Exceptions.vertexWithIdAlreadyExists(idValue);
             }
         } else {
