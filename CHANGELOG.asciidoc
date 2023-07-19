@@ -56,6 +56,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Removed deprecated `GraphSONMessageSerializerGremlinV1d0` as this is now `GraphSONMessageSerializerV1` to be consistent with other naming.
 * Added `GraphSONUntypedMessageSerializerV1` which was formerly `GraphSONMessageSerializerV1d0` to be consistent with other naming.
 * Added `GraphSONUntypedMessageSerializerV3` which essentially matches the format of GraphSON 1.0 in its untyped form.
+* Removed `gremlin-io-test` and moved that IO type of testing to `gremlin-util`.
 * Bumped Groovy to 4.0.9.
 * Bumped GMavenPlus to 2.1.0.
 * Bumped Spark to 3.3.2.

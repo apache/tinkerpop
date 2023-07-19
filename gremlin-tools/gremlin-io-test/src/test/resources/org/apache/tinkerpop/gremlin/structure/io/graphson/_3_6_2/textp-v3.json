@@ -1,7 +1,0 @@
-{
-  "@type" : "g:TextP",
-  "@value" : {
-    "predicate" : "containing",
-    "value" : "ark"
-  }
-}
