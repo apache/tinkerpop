@@ -159,7 +159,9 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         vertex = new TinkerVertex(idValue, label, this, txNumber);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         container.setDraft(vertex, (TinkerTransaction) tx());
-        vertices.put(vertex.id(), container);
+        // is other thread added container for same vertex?
+        if (null != vertices.put(vertex.id(), container))
+            return addVertex(keyValues);
 
         return vertex;
     }
@@ -231,7 +233,9 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         final TinkerEdge edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
         ElementHelper.attachProperties(edge, keyValues);
         container.setDraft(edge, (TinkerTransaction) tx());
-        edges.put(edge.id(), container);
+        // is edge added by other thread?
+        if (null != edges.put(edge.id(), container))
+            return addEdge(outVertex, inVertex, label, keyValues);
 
         addOutEdge(outVertex, label, edge);
         addInEdge(inVertex, label, edge);
