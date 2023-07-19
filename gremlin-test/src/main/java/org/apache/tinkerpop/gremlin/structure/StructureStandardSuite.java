@@ -105,7 +105,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             SerializationTest.class,
             StarGraphTest.class,
             TransactionTest.class,
-            TransactionTestV2.class,
+            TransactionMultiThreadedTest.class,
             VertexTest.class
     };
 

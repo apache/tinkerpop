@@ -161,6 +161,8 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         }
         final AtomicBoolean delete = new AtomicBoolean(true);
         this.vertex.properties(this.key).forEachRemaining(property -> {
+            if (null == property) return;
+
             final Object currentPropertyValue = property.value();
             if ((currentPropertyValue != null && currentPropertyValue.equals(this.value) || null == currentPropertyValue && null == this.value))
                 delete.set(false);
