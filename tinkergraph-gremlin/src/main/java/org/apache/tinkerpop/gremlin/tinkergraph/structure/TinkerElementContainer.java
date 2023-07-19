@@ -122,8 +122,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
      * Mark element as deleted in the current transaction.
      */
     public void markDeleted(final TinkerTransaction tx) {
-        isDeletedInTx.set(true);
-        tx.markChanged(this);
+        if (!isDeletedInTx.get()) {
+            usesInTransactions.incrementAndGet();
+            isDeletedInTx.set(true);
+            tx.markChanged(this);
+        }
     }
 
     /**
@@ -146,7 +149,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void setDraft(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
-        if (transactionUpdatedValue.get() == null && !isDeletedInTx.get())
+        if (transactionUpdatedValue.get() == null)
             usesInTransactions.incrementAndGet();
         transactionUpdatedValue.set(transactionElement);
         tx.markChanged(this);
@@ -167,6 +170,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
      * @param txVersion version of transaction
      */
     public void commit(final long txVersion) {
+        updateUsesCount();
         if (isDeletedInTx.get()) {
             // created and deleted in same tx
             if (null != element)
@@ -177,7 +181,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
             element = transactionUpdatedValue.get();
             element.currentVersion = txVersion;
         }
-        usesInTransactions.decrementAndGet();
         reset();
     }
 
@@ -185,8 +188,15 @@ final class TinkerElementContainer<T extends TinkerElement> {
      * Rollback changes for the stored element.
      */
     public void rollback() {
+        updateUsesCount();
         reset();
-        usesInTransactions.decrementAndGet();
+    }
+
+    private void updateUsesCount() {
+        if (isDeletedInTx.get())
+            usesInTransactions.decrementAndGet();
+        if (transactionUpdatedValue.get() != null)
+            usesInTransactions.decrementAndGet();
     }
 
     /**

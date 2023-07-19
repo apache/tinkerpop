@@ -137,31 +137,28 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
+        if (null == idValue)
+            idValue = vertexIdManager.getNextId(this);
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
         this.tx().readWrite();
         final long txNumber = transaction.getTxNumber();
-        TinkerVertex vertex;
-        TinkerElementContainer<TinkerVertex> container = null;
 
-        if (null != idValue) {
-            if (vertices.containsKey(idValue)) {
-                container = vertices.get(idValue);
-                if (container != null && container.get() != null)
-                    throw Exceptions.vertexWithIdAlreadyExists(idValue);
-            }
-        } else {
-            idValue = vertexIdManager.getNextId(this);
-        }
+        final TinkerElementContainer<TinkerVertex> newContainer = new TinkerElementContainer<>(idValue);
+        // try to add new container or get existing
+        TinkerElementContainer<TinkerVertex> container = vertices.putIfAbsent(idValue, newContainer);
 
+        // is existing container contains Vertex?
+        if (container != null && container.get() != null)
+            throw Exceptions.vertexWithIdAlreadyExists(idValue);
+
+        // no existing container, let's use new one
         if (container == null)
-            container = new TinkerElementContainer<>(idValue);
-        vertex = new TinkerVertex(idValue, label, this, txNumber);
+            container = newContainer;
+
+        final TinkerVertex vertex = new TinkerVertex(idValue, label, this, txNumber);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         container.setDraft(vertex, (TinkerTransaction) tx());
-        // is other thread added container for same vertex?
-        if (null != vertices.put(vertex.id(), container))
-            return addVertex(keyValues);
 
         return vertex;
     }
@@ -208,34 +205,31 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
+        if (null == idValue)
+            idValue = edgeIdManager.getNextId(this);
 
         this.tx().readWrite();
+        final long txNumber = transaction.getTxNumber();
 
         // mark both related vertices as changed because they contains list of in/out edges
         touch(outVertex);
         touch(inVertex);
 
-        final long txNumber = transaction.getTxNumber();
-        TinkerElementContainer<TinkerEdge> container = null;
+        final TinkerElementContainer<TinkerEdge> newContainer = new TinkerElementContainer<>(idValue);
+        // try to add new container or get existing
+        TinkerElementContainer<TinkerEdge> container = edges.putIfAbsent(idValue, newContainer);
 
-        if (null != idValue) {
-            if (edges.containsKey(idValue)) {
-                container = edges.get(idValue);
-                if (container != null && container.get() != null)
-                    throw Exceptions.edgeWithIdAlreadyExists(idValue);
-            }
-        } else {
-            idValue = edgeIdManager.getNextId(this);
-        }
+        // is existing container contains Vertex?
+        if (container != null && container.get() != null)
+            throw Exceptions.vertexWithIdAlreadyExists(idValue);
 
+        // no existing container, let's use new one
         if (container == null)
-            container = new TinkerElementContainer<>(idValue);
+            container = newContainer;
+
         final TinkerEdge edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
         ElementHelper.attachProperties(edge, keyValues);
         container.setDraft(edge, (TinkerTransaction) tx());
-        // is edge added by other thread?
-        if (null != edges.put(edge.id(), container))
-            return addEdge(outVertex, inVertex, label, keyValues);
 
         addOutEdge(outVertex, label, edge);
         addInEdge(inVertex, label, edge);

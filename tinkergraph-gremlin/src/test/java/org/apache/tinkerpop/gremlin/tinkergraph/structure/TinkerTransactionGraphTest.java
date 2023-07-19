@@ -18,28 +18,138 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectWriter;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class TinkerTransactionGraphTest {
 
     final Object vid = 100;
 
     ///// vertex tests
+
+    public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
+        getAssertVertexEdgeCounts(expectedVertexCount, expectedEdgeCount).accept(graph);
+    }
+
+    public static Consumer<Graph> getAssertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
+        return (g) -> {
+            assertEquals(expectedVertexCount, IteratorUtils.count(g.vertices()));
+            assertEquals(expectedEdgeCount, IteratorUtils.count(g.edges()));
+        };
+    }
+
+    public void tryCommit(final Graph graph, final Consumer<Graph> assertFunction) {
+        assertFunction.accept(graph);
+        if (graph.features().graph().supportsTransactions()) {
+            graph.tx().commit();
+            assertFunction.accept(graph);
+        }
+    }
+
+    @Test
+    public void  T1() {
+
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(8);
+        List<Future<?>> futures = new ArrayList<>();
+
+        int ok = 0, error = 0;
+        for (int h = 0; h < 1000; h++) { // 1000
+            long startTime = System.currentTimeMillis();
+
+            g.V(5).drop().iterate();
+            g.tx().commit();
+
+            final AtomicLong rollback = new AtomicLong(0), commit = new AtomicLong(0);
+
+            for (int i = 0; i < 100; i++) {
+                final int n = i;
+
+                futures.add(threadPool.submit(() -> {
+                    for (int j = 0; j < 2; j++) {
+                    try {
+                        if (graph.getVerticesCount() != 0) {
+                            final TinkerElementContainer container = graph.vertices.get(5);
+                            // final int version = container == null? -1 : container.version;
+                            // System.out.println(" -- before commit in t "+ n +"; " + version);
+                        }
+                        g.addV().property(T.id, 5).iterate();
+                        g.V(5).drop().iterate();
+                        g.tx().commit();
+                        commit.incrementAndGet();
+                        if (graph.getVerticesCount() != 0) {
+                            final TinkerElementContainer container = graph.vertices.get(5);
+                            // final int version = container == null? -1 : container.version;
+                            // System.out.println(" -- after commit in t "+ n +"; " + version);
+                        }
+                        //break;
+                    } catch (TransactionException | IllegalArgumentException te) {
+                        if (graph.getVerticesCount() != 0) {
+                            final TinkerElementContainer container = graph.vertices.get(5);
+                            // final int version = container == null? -1 : container.version;
+                            // System.out.println(" -- before rollback in t "+ n +"; " + version);
+                        }
+                        g.tx().rollback();
+                        rollback.incrementAndGet();
+                        if (graph.getVerticesCount() != 0) {
+                            final TinkerElementContainer container = graph.vertices.get(5);
+                            // final int version = container == null? -1 : container.version;
+                            // System.out.println(" -- after rollback in t "+ n +"; " + version);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    }
+                }));
+            }
+            while (futures.size() != 0) {
+                List<Future<?>> completed = futures.stream().filter(Future::isDone).collect(Collectors.toList());
+
+                try {
+                    for (Future<?> future : completed) {
+                        future.get();
+                    }
+                    futures.removeAll(completed);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (g.V().count().next() != 0) {
+                error++;
+                Vertex v = g.V(5).next();
+                System.out.println(v.hashCode());
+            } else
+                ok++;
+
+            System.out.println("Time:" + (System.currentTimeMillis() - startTime)
+                    + " OK: " + ok + "; error: " + error
+                    + "; commits: " + commit.get() + "; rollbacks: " + rollback.get());
+        }
+
+        threadPool.shutdown();
+    }
 
     @Test
     public void shouldDeleteVertexOnCommit() throws InterruptedException {
