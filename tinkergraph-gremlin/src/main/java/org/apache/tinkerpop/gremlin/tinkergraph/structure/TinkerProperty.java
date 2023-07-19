@@ -91,4 +91,8 @@ public final class TinkerProperty<V> implements Property<V> {
     public Object clone() {
         return new TinkerProperty(element, key, value);
     }
+
+    public TinkerProperty copy(final Element newOwner) {
+        return new TinkerProperty(newOwner, key, value);
+    }
 }

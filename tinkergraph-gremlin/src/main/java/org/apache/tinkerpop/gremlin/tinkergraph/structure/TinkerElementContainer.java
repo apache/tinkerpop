@@ -115,7 +115,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void markDeleted(final TinkerTransaction tx) {
         isDeletedInTx.set(true);
-        tx.touch(this);
+        tx.markChanged(this);
     }
 
     /**
@@ -126,9 +126,8 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void touch(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
-        if (element != transactionElement) return;
+        if (transactionUpdatedValue.get() == transactionElement) return;
 
-        element = (T) transactionElement.clone();
         setDraft(transactionElement, tx);
     }
 
@@ -142,7 +141,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
         if (transactionUpdatedValue.get() == null && !isDeletedInTx.get())
             usesInTransactions.incrementAndGet();
         transactionUpdatedValue.set(transactionElement);
-        tx.touch(this);
+        tx.markChanged(this);
     }
 
     /**

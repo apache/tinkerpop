@@ -62,8 +62,8 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
+    // plan D: put synchronized
     public Object clone() {
-        // todo: probably need deep clone
         final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
         if (inEdges != null)
             vertex.inEdges = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdges);
@@ -71,8 +71,19 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (outEdges != null)
             vertex.outEdges = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) outEdges);
 
-        if (properties != null)
-            vertex.properties = CollectionUtil.clone((ConcurrentHashMap<String, List<VertexProperty>>) properties);
+        if (properties != null) {
+            final ConcurrentHashMap<String, List<VertexProperty>> result = new ConcurrentHashMap<>();
+
+            // clone will not work because TinkerVertexProperty contains link to Vertex
+            for (Map.Entry<String, List<VertexProperty>> entry : properties.entrySet()) {
+                final List<VertexProperty> clonedValue = entry.getValue().stream()
+                        .map(vp ->((TinkerVertexProperty) vp).copy(vertex))
+                        .collect(Collectors.toList());
+
+                result.put(entry.getKey(), clonedValue);
+            }
+            vertex.properties = result;
+        }
 
         return vertex;
     }

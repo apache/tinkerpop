@@ -343,7 +343,10 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
         final Iterator<T> iterator;
         if (0 == ids.length) {
-            iterator = new TinkerGraphIterator<>(elements.values().stream().map(e -> (T) e.get()).filter(e -> e != null).iterator());
+            iterator = new TinkerGraphIterator<>(
+                    elements.values().stream().map(e -> (T) e.get()).filter(e -> e != null)
+                            // todo: clone only if traversal contains mutating steps
+                            .map(e->(T)((TinkerElement)e).clone()).iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
 
@@ -356,7 +359,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
                 final TinkerElementContainer<C> element = elements.get(iid);
-                return element == null ? null : (T) element.get();
+                return element == null ? null : (T) element.get().clone();
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?

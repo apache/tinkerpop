@@ -98,7 +98,7 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
     /**
      * Adds element to list of changes in current transaction.
      */
-    protected <T extends TinkerElement> void touch(TinkerElementContainer<T> container) {
+    protected <T extends TinkerElement> void markChanged(TinkerElementContainer<T> container) {
         if (!isOpen()) txNumber.set(openedTx.getAndIncrement());
 
         T element = container.getUnmodified();
@@ -114,6 +114,22 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         }
     }
 
+    /**
+     * Try to commit all changes made in current transaction.
+     * Workflow:
+     * 1. collect all changes
+     * 2. verify if any elements already changed, throw {@link TransactionException} if any
+     * 3. try to lock all containers to prevent other tx from making changes
+     * 4. one more time verify elements versions
+     * 5. update indices
+     * 6. commit all changes
+     * On {@link TransactionException}:
+     *  rollback all changes
+     * Lastly:
+     *  cleanup transaction intermediate variables.
+     *
+     * @throws TransactionException
+     */
     @Override
     protected void doCommit() throws TransactionException {
         final long txVersion = txNumber.get();
@@ -179,6 +195,15 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         }
     }
 
+    /**
+     * Rollback all changes made in current transaction.
+     * Workflow:
+     * 1. Rollback all changes. Lock is not needed here because only this thread have access to data.
+     * 2. Rollback indices changes, should be safe.
+     * 3. Cleanup transaction intermediate variables.
+     *
+     * @throws TransactionException
+     */
     @Override
     protected void doRollback() throws TransactionException {
         // rollback for all changed elements

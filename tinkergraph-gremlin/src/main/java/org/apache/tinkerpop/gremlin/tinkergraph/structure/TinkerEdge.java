@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -109,12 +108,16 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     }
 
     @Override
+    // plan D: put synchronized
     public Object clone() {
-        // todo: probably need deep clone
         final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion);
 
-        if (properties != null)
-            edge.properties = CollectionUtil.clone((ConcurrentHashMap<String, Property>) properties);
+        if (properties != null) {
+            Map<String, Property> cloned = new ConcurrentHashMap<>();
+            properties.entrySet().stream().forEach(p -> cloned.put(p.getKey(), ((TinkerProperty) p.getValue()).copy(edge)));
+
+            edge.properties = cloned;
+        }
 
         return edge;
     }
