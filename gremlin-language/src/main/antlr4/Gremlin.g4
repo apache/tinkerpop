@@ -283,6 +283,7 @@ traversalMethod
 	| traversalMethod_write
 	| traversalMethod_element
 	| traversalMethod_call
+	| traversalMethod_concat
 	;
 traversalMethod_V
 	: 'V' LPAREN genericLiteralVarargs RPAREN
@@ -803,6 +804,10 @@ traversalMethod_call
     | 'call' LPAREN stringArgument COMMA genericLiteralMapArgument COMMA nestedTraversal RPAREN #traversalMethod_call_string_map_traversal
     ;
 
+traversalMethod_concat
+	: 'concat' LPAREN nestedTraversal RPAREN #traversalMethod_concat_Traversal
+	| 'concat' LPAREN stringLiteralVarargs RPAREN #traversalMethod_concat_String
+	;
 
 /*********************************************
     ARGUMENT AND TERMINAL RULES

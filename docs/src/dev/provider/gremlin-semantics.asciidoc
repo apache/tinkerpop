@@ -609,6 +609,36 @@ link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/o
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[[concat-step]]
+=== concat()
+
+*Description:* Concatenates the incoming String traverser with the input String arguments, and return the joined String.
+
+*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+* `String...` - If one or more String values are provided, they will be concatenated together with the
+incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
+* `Traversal` - The `Traversal` value must resolve to a `String`. The first result returned from the traversal will be
+concatenated with the incoming traverser.
+
+Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
+concatenated, the `null` value will be propagated and returned.
+
+*Exceptions*
+
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConcatStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
+
 [[dedup-step]]
 === dedup()
 

@@ -161,6 +161,12 @@ func (g *GraphTraversal) Coin(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Concat adds the concat step to the GraphTraversal.
+func (g *GraphTraversal) Concat(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("concat", args...)
+	return g
+}
+
 // ConnectedComponent adds the connectedComponent step to the GraphTraversal.
 func (g *GraphTraversal) ConnectedComponent(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("connectedComponent", args...)

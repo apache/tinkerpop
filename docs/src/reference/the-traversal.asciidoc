@@ -1049,6 +1049,44 @@ g.V().coin(1.0)
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coin-double-++[`coin(double)`]
 
+[[concat-step]]
+=== Concat Step
+
+The `concat()`-step (*map*) concatenates one or more String values together to the incoming String traverser.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.addV(constant("prefix_").concat(__.V(1).label())).property(id, 10) <1>
+g.V(10).label()
+g.V().hasLabel('person').values('name').as('a').
+    constant('Mr.').concat(__.select('a')) <2>
+g.V().hasLabel('software').as('a').values('name').
+    concat(' uses ').
+    concat(select('a').values('lang')) <3>
+g.V(1).outE().as("a").constant("").
+    concat(V(1).values("name")).
+    concat(" ").
+    concat(select("a").label()).
+    concat(" ").
+    concat(select("a").inV().values("name")) <4>
+g.inject('hello', 'hi').concat(__.V().values('name')) <5>
+g.inject('This').concat(' ').concat('is a ', 'gremlin.') <6>
+----
+
+<1> Add a new vertex with id 10 which should be labeled like an existing vertex but with some prefix attached
+<2> Attach the prefix "Mr." to all the names using the `constant()`-step
+<3> Generate a string of software names and the language they use
+<4> Generate a string description for each of marko's outgoing edges
+<5> The `concat()` step will append the first result from the child traversal to the incoming traverser
+<6> A generic use of `concat()` to join strings together
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#concat-String++[`concat(String...)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#concat-Traversal++[`concat(Traversal)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#concat-step++[`Semantics`]
+
 [[connectedcomponent-step]]
 === ConnectedComponent Step
 
