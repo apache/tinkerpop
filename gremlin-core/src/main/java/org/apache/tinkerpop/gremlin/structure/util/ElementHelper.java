@@ -339,8 +339,11 @@ public final class ElementHelper {
     public static <V> Optional<VertexProperty<V>> stageVertexProperty(final Vertex vertex,
                                                                       final VertexProperty.Cardinality cardinality,
                                                                       final String key, final V value, final Object... keyValues) {
-        if (cardinality.equals(VertexProperty.Cardinality.single))
-            vertex.properties(key).forEachRemaining(VertexProperty::remove);
+        if (cardinality.equals(VertexProperty.Cardinality.single)) {
+            final Iterator<VertexProperty<Object>> properties = vertex.properties(key);
+            if (null != properties)
+                properties.forEachRemaining(VertexProperty::remove);
+        }
         else if (cardinality.equals(VertexProperty.Cardinality.set)) {
             final Iterator<VertexProperty<V>> itty = vertex.properties(key);
             while (itty.hasNext()) {
